@@ -1,0 +1,277 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <title>SDAI file format.</title>
+</head>
+<SCRIPT>
+function change_title() {
+	parent.document.title="SDAI file format";
+}
+</SCRIPT>
+<body onload="change_title();">
+<h2>SDAI file format</h2>
+Last update 2003-09-03
+<p>SDAI file is the compressed ZIP format file complying with the following specifications:
+<ul>
+<li><a href="ftp://ftp.uu.net/pub/archiving/zip/doc/appnote-970311-iz.zip">
+      Info-ZIP Application Note 970311
+      </a> - a detailed description of the Info-ZIP format.</li>
+<li>The limitation to the above specification is that <code><b>.ZIP file comment length</b></code>
+field in the <code><b>end of central directory record</b></code> is equal to 0.</li>
+<li><a href="http://www.isi.edu/in-notes/rfc1950.txt">
+      ZLIB Compressed Data Format Specification version 3.3</a> &nbsp;(RFC 1950)</li>
+<li><a href="http://www.isi.edu/in-notes/rfc1951.txt">
+      DEFLATE Compressed Data Format Specification version 1.3</a>&nbsp;(RFC 1951)</li>
+</ul>
+</p>
+
+<p>SDAI file contains all binary and property files of the SdaiRepository, normally stored
+in the special SdaiRepository directory. The list of files that could be stored in SDAI file:</p>
+<ul>
+<li><code>repository</code> &nbsp; file is used to store an information about the SdaiRepository, SdaiModels, SchemaInstances
+ and associated SdaiModels. Only the <code>repository</code> file is mandatory in SDAI file.
+<a href="#repository">SdaiRepository binary file format</a></li>
+<li><code>mX</code> &nbsp; files are used to store a data of the SdaiModel. There the <code>X</code> in the
+file name means the <a href="#model_id">SdaiModel's identifier</a> which can be obtained using the
+<a href="../api_ref/jsdai/lang/SdaiModel.html#getId()">jsdai.lang.SdaiModel.getId()</a> method.
+<a href="#model">SdaiModel binary file format</a></li>
+<li><code>extdata.properties</code> &nbsp; file is used to store an information about an external data of
+SdaiRepository instances. The persistent label of the entity instance is used as a property key and
+the name of the external data is stored as a property value.</li>
+<li><code>eX</code> &nbsp; files are used to store the external data. There the <code>X</code> in the
+file name means the persistent label of the entity instance.</li>
+</ul>
+</p>
+
+<h3><a name="repository">SdaiRepository binary file format</a></h3>
+<blockquote>
+<pre>sdai_repository_file :=
+    'R'         <i>// SdaiRepository start</i>
+    BUILD_NUMBER: integer           <i>// build number</i>
+    JSDAI_VERSION_MAJOR: short      <i>// major version number</i>
+    JSDAI_VERSION_MIDDLE: short     <i>// middle version number</i>
+    JSDAI_VERSION_MINOR: short      <i>// minor version number</i>
+
+    'B'
+    DESCRIPTION_COUNT: short        <i>// count of descriptions</i>
+    { DESCRIPTION: string }         <i>// descriptions</i>
+
+    'B'
+    NAME: string                    <i>// SdaiRepository name</i>
+    CHANGE_DATE: string             <i>// SdaiRepository changed date</i>
+    AUTHOR_COUNT: integer           <i>// count of SdaiRepository authors</i>
+    { AUTHOR: string }              <i>// SdaiRepository authors</i>
+    ORGANIZATION_COUNT: integer     <i>// count of SdaiRepository organizations</i>
+    { ORGANIZATION: string }        <i>// SdaiRepository organizations</i>
+    PREPROCESSOR_VERSION: string    <i>// SdaiRepository preprocessor version</i>
+    ORIGINATING_SYSTEM: string      <i>// SdaiRepository originating system</i>
+    AUTHORIZATION: string           <i>// SdaiRepository authorization</i>
+
+    'B'
+    0: short                        <i>// RESERVED</i>
+
+    'B'
+    [ 'L' DEFAUL_LANGUAGE: string ] <i>// default/general language</i>
+    [ 'C'
+        CONTEXT_COUNT: short        <i>// count of contexts names</i>
+        { CONTEXT: string }         <i>// contexts names</i>
+    ]
+    'I'
+    LARGEST_PERSISTENT_LABEL: long  <i>// largest persistent label</i>
+    
+    'S'         <i>// section of schema names</i>
+    SCHEMA_COUNT: short             <i>// count of schema</i>
+    { SCHEMA_NAME: string }         <i>// schema names</i>
+    
+    'S'         <i>// section of SdaiModels</i>
+    SDAI_MODEL_COUNT: integer       <i>// count of SdaiModels</i>
+    SDAI_MODEL_COUNT: short         <i>// count of SdaiModels</i>
+    { SDAI_MODEL: <a href="#model_definition">sdai_model_definition</a> }   <i>// SdaiModels</i>
+    
+    'S'         <i>// section of SchemaInstances</i>
+    SCHEMA__INSTANCE_COUNT: short   <i>// count of SchemaInstances</i>
+    { SCHEMA_INSTANCE: <a href="#schema_instance_definition">schema_instance_definition</a> }  <i>// SchemaInstances</i>
+    'E'         <i>// SdaiRepository end</i>
+    
+    
+<a name="model_definition">sdai_model_definition</a> :=
+    'B'         <i>// SdaiModel start</i>
+    NAME: string                            <i>// name of SdaiModel</i>
+    <a name="model_id">ID</a>: integer                             <i>// identifier of SdaiModel</i>
+    UNDERLYING_SCHEMA_INDEX: short          <i>// index of underlying schema</i>
+    'D'
+    CHANGE_DATE: string                     <i>// change date </i>
+    [ 'L' DEFAULT_LANGUAGE: string ]        <i>// default language</i>
+    [ 'C'
+    CONTEXT_COUNT: short                    <i>// count of contexts</i>
+    { CONTEXT: string }                     <i>// contexts</i>
+    ]
+
+
+<a name="schema_instance_definition">schema_instance_definition</a> :=
+    'B'         <i>// SchemaInstance start</i>
+    NAME: string                            <i>// name of SchemaInstance</i>
+    NATIVE_SCHEMA_INDEX: short              <i>// index of native schema</i>
+    'D'
+    CHANGE_DATE: string                     <i>// change date</i>
+    VALIDATION_DATE: string                 <i>// validation date</i>
+    VALIDATION_RESULT: byte                 <i>// validation result: true, false</i>
+    VALIDATION_LEVEL: short                 <i>// validation level</i>
+    DESCRIPTION_COUNT: short                <i>// count of descriptions</i>
+    { DESCRIPTION }: string                 <i>// descriptions</i>
+    AUTHOR_COUNT: short                     <i>// count of authors</i>
+    { AUTHOR }: string                      <i>// authors</i>
+    ORGANIZATION_COUNT: short               <i>// count of organizations</i>
+    { ORGANIZATION }: string                <i>// organizations</i>
+    [ 'P' PREPROCESSOR_VERSION: string ]    <i>// preprocessor version</i>
+    [ 'O' ORIGINATING_SYSTEM: string ]      <i>// originating system</i>
+    [ 'A' AUTHORIZATION: string ]           <i>// authorization</i>
+    [ 'L' LANGUAGE: string ]                <i>// language</i>
+    'C'
+    CONTEXT_COUNT: short                    <i>// count of contexts</i>
+    { CONTEXT }: string                     <i>// contexts</i>
+    ASSOCIATED_SDAI_MODEL_COUNT: short      <i>// count of associated SdaiModels</i>
+    { ASSCOCIATED_SDAI_MODEL: <a href="#associated_model_definition">associated_sdai_model_definition</a> }  <i>// associated SdaiModels</i>
+
+
+<a name="associated_model_definition">associated_sdai_model_definition</a> :=
+    ( 'L' INDEX: integer            <i>// index of SdaiModel</i>
+    | NAME: string                  <i>// name of SdaiModel</i>
+      SDAI_REPOSITORY_NAME: string  <i>// name of SdaiRepository</i>
+    }
+
+
+</pre>
+</blockquote>
+
+<h3><a name="model">SdaiModel binary file format</a></h3>
+
+<blockquote>
+<pre>sdai_model_file :=
+    'D'        <i>// SdaiModel start</i>
+    BUILD_NUMBER: integer        <i>// build number</i>
+    INSTANCE_COUNT: long         <i>// count of instances in this SdaiModel</i>
+    { PERSISTENT_LABEL: long }   <i>// persistent labels (sorted in increasing order) of instances of this SdaiModel</i>
+
+    'S'
+    DEFINED_TYPE_COUNT: short       <i>// count of defined data types which do not have an immediate underlying select data type</i>
+    { DEFINED_TYPE_NAME: string }   <i>// names of the defined data types</i>
+
+    'S'
+    ENTITY_TYPE_COUNT: short        <i>// count of entity data types</i>
+    { ENTITY_TYPE: <a herf="#entity_type_definition">entity_type_definition</a> } <i>// entity data types in upper case, sorted alphabetically</i>
+
+    'S'
+    POPULATED_COMPLEX_TYPE_COUNT: short  <i>// count of populated complex entity data types, even those with only one entity data type</i>
+    { COMPLEX_ENTITY_INSTANCE: <a href="#complex_entity_instance_definition">complex_entity_instance_definition</a> } <i>// complex entity instances sorted lexicographically</i>
+    { ENTITY_INSTANCE_VALUE: <a href="#entity_instance_value_definition">entity_instance_value_definition</a> }     <i>// entity instance sorted by persistent label</i>
+    'E'        <i>// SdaiModel end</i>
+
+
+<a name="entity_type_definition">entity_type_definition</a> :=
+    ENTITY_TYPE_NAME: string            <i>// entity data type name from dictionary</i>
+    EXPLICIT_ATTRIBUTE_COUNT: short     <i>// count of all non-redeclaring explicit attributes of this entity data type, but not of it's supertypes</i>
+                                        <i>// the order is as defined in express. It can be used as index 0, 1, 2...</i>
+    { EXPLICIT_ATTRIBUTE_NAME: string } <i>// explicit attribute names</i>
+    SUPERTYPE_COUNT: short              <i>// count of supertypes</i>
+    { SUPERTYPE_INDEX: short }          <i>// index of supertypes</i>
+
+
+<a name="complex_entity_instance_definition">complex_entity_instance_definition</a> :=
+    ENTITY_TYPE_COUNT: short            <i>// count of leave entity data types</i>
+    { ENTITY_TYPE_INDEX: short }        <i>// indexes of all leave entity data types in upper case, sorted alphabetically</i>
+    INSTANCE_COUNT: long 		        <i>// count of instances</i>
+    { PERSISTENT_LABEL: long } ;        <i>// persistent labels (sorted in increasing order)</i>
+
+
+<a name="entity_instance_value_definition">entity_instance_value_definition</a> :=
+    'c'        <i>// start-indication</i>
+    COMPLEX_TYPE_INDEX: short           <i>// index to complex entity type</i>
+    { VALUE: <a href="#value_definition">value_definition</a> }         <i>// values for all attributes in single entity data types sorted in given order above (composing)</i>
+    [{ AIM2ARM_LINK: <a href="#aim2arm_link_definition">aim2arm_link_definition</a> }]  <i>// AIM to ARM links</i>
+
+
+<a name="value_definition">value_definition</a> :=  <i>// value of a single attribute</i>
+    ( '$' <i>// MISSING, UNSET</i>
+    | '*' <i>// REDEFINED</i>
+    | 'u' <i>// UNKNOWN</i>
+    | 't' <i>// TRUE</i>
+    | 'f' <i>// FALSE</i>
+    | 'r' VALUE: double       <i>// Real value</i>
+    | 'i' VALUE: integer      <i>// Integer value</i>
+    | 's' VALUE: string       <i>// String value</i>
+    | 'b' VALUE: string       <i>// Binary value</i>
+    | 'B' <i>// Binary value</i>
+          BINARY_LENGTH := long
+          BINARY_UNUSED := byte
+          {BINARY_BYTES := byte ^ 0x80}
+    | 'e' VALUE: string       <i>// Enumeration value definition</i>
+    | 'p' VALUE: short        <i>// index to typed parameters needed for values of select data types, recursive definition</i>
+    | ( '1'         <i>// instance-ref inside this SdaiModel</i>
+        POPULATED_COMPLEX_ENTITY_INDEX: short      <i>// index of populated complex entity type</i>
+        INSTANCE_INDEX: integer                    <i>// instance index</i>
+      )
+    | ( '2'         <i>// instance reference inside this SdaiRepository with SdaiModel name</i>
+        SDAI_MODEL_NAME: string                    <i>// SdaiModel name</i>
+        ENTITY_TYPE: <a href="#entity_type_reference">entity_type_reference</a>         <i>// entity type</i>
+        PERSISTENT_LABEL: long                     <i>// persistent label</i>
+      )
+    | ( '3'         <i>// instance reference inside this SdaiRepository with SdaiModel index</i>
+        SDAI_MODEL_INDEX: short                    <i>// SdaiModel index</i>
+        ENTITY_TYPE: <a href="#entity_type_reference">entity_type_reference</a>         <i>// entity type</i>
+        PERSISTENT_LABEL: long                     <i>// persistent label</i>
+      )
+    | ( '4'         <i>// instance reference with SdaiRepository name and SdaiModel name</i>
+        SDAI_REPOSITORY_NAME: string               <i>// SdaiRepository name</i>
+        SDAI_MODEL_NAME: string                    <i>// SdaiModel name</i>
+        ENTITY_TYPE: <a href="#entity_type_reference">entity_type_reference</a>         <i>// entity type</i>
+        PERSISTENT_LABEL: long                     <i>// persistent label</i>
+      )
+    | ( '5'         <i>// instance reference with SdaiRepository index and SdaiModel name</i>
+        SDAI_REPOSITORY_INDEX: short               <i>// SdaiRepository index</i>
+        SDAI_MODEL_NAME: string                    <i>// SdaiModel name</i>
+        ENTITY_TYPE: <a href="#entity_type_reference">entity_type_reference</a>         <i>// entity type</i>
+        PERSISTENT_LABEL: long                     <i>// persistent label</i>
+      )
+    | ( '6'         <i>// instance reference with SdaiRepository index and SdaiModel index</i>
+        SDAI_REPOSITORY_INDEX: short              <i>// SdaiRepository index</i>
+        SDAI_MODEL_INDEX: short                   <i>// SdaiModel index</i>
+        ENTITY_TYPE: <a href="#entity_type_reference">entity_type_reference</a>        <i>// entity type</i>
+        PERSISTENT_LABEL: long                    <i>// persistent label</i>
+      )
+   | '(' { value } ')' <i>// for all aggregates, starting with first member or valid index position</i>
+   )
+
+
+<a name="entity_type_reference">entity_type_reference</a> :=
+    ( 
+      ( '1' <i>// types from the current data dictionary are used</i>
+       POPULATED_COMPLEX_ENTITY_INDEX: short <i>// index of populated complex entity type</i>
+      )
+    | ( '2' <i>// type is not found in the current data dictionary</i>
+       POPULATED_COMPLEX_ENTITY_NAME: string <i>// name of populated complex entity type</i>
+      )
+    | ( '3' <i>// type is not found in the current data dictionary</i>
+       POPULATED_COMPLEX_ENTITY_INDEX: short <i>// index of populated complex entity type</i>
+      )
+    )
+
+
+<a name="aim2arm_link_definition">aim2arm_link_definition</a> :=
+    ( 'l' 
+       SDAI_REPOSITORY_NAME: string  <i>// ARM SdaiRepository name (empty string "" indicates current SdaiRepository)</i>
+       SDAI_MODEL_NAME: string       <i>// ARM SdaiModel name</i>
+       PERSISTENT_LABEL: long        <i>// ARM instance persistent label</i>
+    )
+    | ( 'k' 
+       SDAI_MODEL_INDEX: short       <i>// ARM SdaiModel index</i>
+       PERSISTENT_LABEL: long        <i>// ARM instance persistent label</i>
+    )
+
+</pre>
+</blockquote>
+<p>&nbsp;</p>
+
+</body>
+</html>

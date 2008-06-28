@@ -1,0 +1,2301 @@
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <title>Mapping EXPRESS to Java (early binding)</title>
+  <meta name="Author" content="Lothar Klein">
+</head>
+<body lang="EN-US" link="blue" vlink="blue" style="">
+<div class="Section1">
+<h1 align="center" style="text-align: center;">Mapping EXPRESS to Java
+(early binding)<br>
+for JSDAI v3.6.0<br>
+</h1>
+<p class="MsoNormal" align="right" style="text-align: right;">Last
+update
+2004-02-09</p>
+<p class="MsoNormal" align="center" style="text-align: center;">Author:
+Lothar Klein, Raimundas Raciunas<br>
+(c) Copyright LKSoftWare GmbH</p>
+<h2>Contents</h2>
+<p><a href="#Introduction">Introduction</a> <br>
+<a href="#data-type">Mapping of EXPRESS Data Types</a> <a
+ href="#entity"><br>
+Mapping of EXPRESS Entities</a> <br>
+&nbsp;&nbsp;&nbsp; <a href="#entity_data_type">Entity data types</a> <br>
+&nbsp;&nbsp;&nbsp; <a href="#complex_entity_data_type">Complex entity
+data</a> <br>
+&nbsp;&nbsp;&nbsp; <a href="#partial_complex_entity_data_type">Partial
+complex entity data types</a> <br>
+&nbsp;&nbsp; <a href="#extended_example">An extended example</a> <a
+ href="#aggregate"><br>
+Aggregates</a> &nbsp;<br>
+&nbsp;&nbsp;&nbsp; <a href="#nested-aggregate">Nested Aggregates</a> <br>
+&nbsp;&nbsp;&nbsp; <a href="#aggregate-entity">Aggregates of Entity
+Data
+Types</a> &nbsp;<br>
+&nbsp;&nbsp;&nbsp; <a href="#aggregate_simple_data_type">Aggregates of
+Simple Data Types and Enumerations</a> <br>
+<a href="#attributes">Mapping of Entity Attributes</a> <br>
+&nbsp;&nbsp;&nbsp; <a href="#attribute_assignable">Attributes of
+Assignable Data Type</a> <br>
+&nbsp;&nbsp;&nbsp; <a href="#attribute_aggregate_data_type">Attributes
+of Aggregate Data Types</a> <br>
+&nbsp;&nbsp;&nbsp; <a href="#attribute_select_data_type">Attributes
+and Aggregate
+Members of Select Data Types</a> <br>
+<a href="#enumeration-type">Enumeration data types</a> <br>
+<a href="#schema-class">Schema Class</a> <br>
+<a href="#constant">Constants</a> <br>
+<a href="#function-procedure">Functions &amp; Procedures</a> <br>
+<a href="#global-rule">Global Rules</a> <br>
+<a href="#local-rule-entity">Local Rules in Entities</a> <br>
+<a href="#local-rule-defined-type">Local Rules in Defined Types</a> </p>
+<h2><a name="Introduction"></a>Introduction</h2>
+<p>The contents of this document is a compatible extension of ISO/TS
+10303-27:2000,&nbsp;<span class="standardsqueryresult-content"><i>
+Industrial automation systems and integration -- Product data
+representation
+and exchange -- Part 27: Implementation methods: Java<sup>TM</sup>
+programming
+language binding to the standard data access interface with
+Internet/Intranet
+extension. </i>Readers of this document should be familiar with Java
+and
+the EXPRESS data modeling language as defined ins ISO 10303-11:1994 and
+its
+2nd edition to be published in 2004.</span></p>
+<p>The data types of EXPRESS are entity, simple (integer, real, number,
+boolean,
+logical, string, binary), aggregate, defined type, enumeration and
+select.
+Together with constants, functions, procedures and rules they are
+grouped
+in schemas which can be build on top of each other. The key objects for
+data
+integration and exchange are <b>instances of (complex) entity data
+types
+, </b>which are the focus of this document.</p>
+<p><b>JSDAI<sup>TM</sup></b> supports two native kinds of access to
+entity instances and their attributes, <b>early binding</b> and <b>late
+binding</b> access. In addition JSDAI provides a High Level Interface
+(HLI) to access
+the AIM data of STEP-APs on ARM level. This document focuses on the
+native
+early binding access only. </p>
+<p>For early binding EXPRESS entities are mapped to corresponding Java
+classes and interfaces with access methods for individual entity
+attributes. This allows a natural programming in the Java environment
+and possible incorrect usage of entities and their attributes can be
+detected by the Java compiler. The Java classes and interfaces are
+created by the <b>JSDAI ExpressCompiler</b> as described below. Most
+applications like CAx-STEP translators are using
+early binding, since the EXPRESS schema(s) are known and programming is
+rather transparent and easy. Only for a few special applications where
+the underlying EXPRESS schema(s) is not know at compile time the more
+complex late binding access is needed. SdaiTerm and SdaiEdit are
+examples of such late binding applications. </p>
+<p>Below you will find the mapping of the EXPRESS elements <i>schema</i>,
+<i>entity</i>, <i>attribute</i>, <i>simple data types</i>, <i>defined
+type</i> , and <i>aggregate</i> to Java as supported from JSDAI
+version 1.0 on. These
+are the elements, needed for the data representation, analysis and
+modification
+of the integration and exchange structure. The mapping of the other
+EXPRESS
+elements <i>constant</i>, <i>function</i>, <i>procedure</i> and <i>rule</i>
+to Java as supported from JSDAI version 4.0 on are given as well.</p>
+<p>The EXPRESS examples of this document are taken from the extended
+ESTS-Schema,
+which is the basis of ISO/TS 10303-35, <i>Conformance Testing
+Methodology
+and Framework: Abstract test methods for SDAI implementations</i>.</p>
+<h2><a name="data-type"></a>Mapping of EXPRESS Data Types</h2>
+<p>The mapping of EXPRESS data types to Java is straightforward as
+defined
+in the following table:</p>
+<table border="1" cellpadding="0" width="100%" style="width: 100%;">
+  <tbody>
+    <tr>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal"><b>EXPRESS data type</b></p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal"><b>Java type</b></p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal"><b>UNSET value</b></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">ENTITY</p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">interface <i>jsdai.lang.EEntity </i>with
+extensions <i>EX</i>xx and class <i>jsdai.lang.CEntity </i>with
+subtypes <i>
+CXxx</i></p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">null</p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">NUMBER</p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal"><i>double</i></p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">Double.NaN</p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">REAL</p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal"><i>double</i></p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">Double.NaN</p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">INT</p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">long</p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">Integer.MIN_VALUE</p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">BOOLEAN</p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal"><i>boolean</i></p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">- internal only -</p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">BINARY</p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">class <i>jsdai.lang.Binary</i></p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">null</p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">STRING</p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">class <i>java.lang.String</i></p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">null</p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">LOGICAL</p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal"><i>int</i></p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">0</p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">ENUMERATION</p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal"><i>int</i></p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">0</p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">AGGREGATES</p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">interface <i>jsdai.lang.Aggregate </i>and
+specializations <i>AXxx </i>and <i>A_xxx</i></p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">null</p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">SELECT</p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">case a) for entity attributes <br>
+&nbsp; overloaded methods in <i>EXxx </i><br>
+case b) for aggregate members<br>
+&nbsp; overloaded methods in <i>AXxx</i></p>
+      </td>
+      <td valign="top" style="padding: 1.5pt;">
+      <p class="MsoNormal">-</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>JSDAI does not allow to invoke the <i>set</i> and <i>get</i>
+methods for unset values; an exception is thrown in such a case.
+Instead
+applications have
+to use the special test and unset methods. See below.</p>
+<p>JSDAI supports both late binding and early binding in parallel. Late
+binding access is supported by the interfaces <i>EEntity </i>and <i>Aggregate
+</i>in package <i>jsdai.lang. </i>For early binding Java packages <i>jsdai.SYyy
+</i>are created for each EXPRESS schema <i>yyy</i>. These packages
+includes
+schema specific interfaces and classes <i>jsdai.SYyy.EXxx,
+jsdai.SYyy.CXxx</i> , <i>jsdai.SYyy.AXxx</i>. In addition a special
+class <i>jsdai.SYyy.SYyy</i> is provided for each express schema,
+representing the schema itself.</p>
+<h2><a name="entity"></a>Mapping of EXPRESS Entities</h2>
+<p class="MsoNormal">Let's take a simple test schema with entities <i>alpha</i>
+, <i>beta</i> , <i>gamma</i>, <i>delta</i>. </p>
+<ul type="disc">
+  <li class="MsoNormal" style=""><i>alpha </i>is not a subtype of any
+other entity</li>
+  <li class="MsoNormal" style=""><i>beta</i> is a subtype of <i>alpha</i></li>
+  <li class="MsoNormal" style=""><i>gamma</i> is a subtype of <i>alpha</i></li>
+  <li class="MsoNormal" style=""><i>delta</i> is a subtype of <i>beta</i>
+and <i>gamma</i></li>
+</ul>
+<p class="MsoNormal">Here is the EXPRESS-G representation <br>
+<img border="0" width="297" height="286" id="_x0000_i1025"
+ src="alpha.gif"><br>
+And here is the same in EXPRESS </p>
+<p class="MsoNormal" style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">ENTITY alpha;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">END_ENTITY;</span></tt>
+</p>
+<p style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">ENTITY beta</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;SUBTYPE
+OF (alpha);</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">END_ENTITY;</span></tt></p>
+<p style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">ENTITY delta</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;SUBTYPE
+OF (beta,gamma);</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">END_ENTITY;</span></tt></p>
+<p style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">ENTITY gamma</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;SUBTYPE
+OF (alpha);</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">END_ENTITY;</span></tt></p>
+<p class="MsoNormal">The term "entity" is not very exact. EXPRESS
+distinguishes
+between the terms <b>entity data type</b>, <b>complex entity data
+type </b>
+and <b>partial complex entity data types</b>. Lets see how these are
+mapped
+into Java. For this it is important to understand how the Java
+inheritance
+mechanism works for classes and interfaces: </p>
+<ul type="disc">
+  <li class="MsoNormal" style="">A class can inherit only from no or
+one other class</li>
+  <li class="MsoNormal" style="">An interface can extend no, one or
+several other interfaces</li>
+  <li class="MsoNormal" style="">A class can implement no, one or
+several interfaces</li>
+</ul>
+<h3><a name="entity_data_type"></a>Entity data types</h3>
+<p class="MsoNormal">An <i>entity data type</i> is one of the
+"entities"
+above without its supertypes or any other type. It is mapped to a Java
+Interface
+witch name begins with "E" followed by the EXPRESS name. When mapping
+an
+EXPRESS name to Java the first character is always written in capital
+letters
+and all others - in lowercase letters. <br>
+&nbsp; <br>
+&nbsp; </p>
+<table border="1" cellpadding="0" style="">
+  <tbody>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><b>entity data type</b></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><b>entity interface</b></p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><i>alpha</i></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">EAlpha extends jsdai.lang.EEntity</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><i>beta</i></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">EBeta extends EAlpha</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><i>gamma</i></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">EGamma extends EAlpha</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><i>delta</i></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">EDelta extends EBeta, EGamma</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>If an entity has no supertypes, then the corresponding Java
+interface extends
+jsdai.lang.EEntity. Otherwise the Java interface extends one or several
+supertypes.
+</p>
+<h3><a name="complex_entity_data_type"></a>Complex entity data types</h3>
+<p class="MsoNormal">A <i>complex entity data type</i> is a valid
+combination
+of <i>entity data types from</i> which <i>instances </i>can exist.
+Depending
+on the sub-supertype tree and possible supertype constraints not every
+combination
+is valid. Entity instances can only be created for valid combinations.
+The
+<i>complex entity data type</i> is mapped to a Java class with the
+prefix
+"C", followed by the name of one or more of the "leave" <i>entity data
+types</i> for this particular <i>complex entity data type</i>. If
+there are more than
+one "leave" <i>entity data type</i>, then they are given in
+alphabetical
+order, separated by a "$". </p>
+<p>Throughout this documentation we use the term <b>entity</b> for a
+single
+or <i>complex entity data type</i> with only one leave element. The
+term
+<b>complex entity</b> is used for a <i>complex entity data</i> type
+with
+more than one leave elements. A complex entity is the result of a AND
+or
+ANDOR combination of subtypes. <br>
+&nbsp; <br>
+&nbsp; </p>
+<table border="1" cellpadding="0" width="43%" style="width: 43%;">
+  <tbody>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">&nbsp;</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">&nbsp;</p>
+      </td>
+      <td colspan="4" style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;"><b>entity
+interface</b></p>
+      </td>
+    </tr>
+    <tr>
+      <td nowrap="nowrap" style="padding: 0.75pt;">
+      <p class="MsoNormal"><b>complex entity data type</b></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><b>entity class</b></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><i>EAlpha</i></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><i>EBeta</i></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><i>EGamma</i></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><i>EDelta</i></p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">alpha</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CAlpha</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">&nbsp;</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">&nbsp;</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">&nbsp;</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">alpha&amp;beta</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CBeta</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">&nbsp;</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">&nbsp;</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">alpha&amp;gamma</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CGamma</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">&nbsp;</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">&nbsp;</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">alpha&amp;beta&amp;gamma</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CBeta$gamma</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">&nbsp;</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">alpha&amp;beta&amp;gamma&amp;delta</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CDelta</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>Some corresponding entity instances in a part21 file may look like
+this:
+</p>
+<p class="MsoNormal" style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">...</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">#11=ALFA(...);</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">#22=BETA(...);</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">#33=GAMMA(...);</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">#44=(ALFA(...)BETA(...)GAMMA(...));</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">#55=DELTA(...);</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">...</span></tt></p>
+<p class="MsoNormal">If the name of an entity class contains a "$",
+then
+instances of this complex entity data type appear in a part21 file
+always in the "external mapping" format (e.g. #44). </p>
+<p>Please note that supertype constraints such as ONEOF, AND, ANDOR are
+not mapped to Java. It is the responsibility of the ExpressCompiler to
+determine the valid <i>complex entity data type</i>s and generate the
+corresponding
+Java classes "C...". Even for entities defined to be <b>abstract </b>supertypes
+a corresponding Java class "CXxx" is generated, however it is not
+possible
+to create instances of such a class. </p>
+<h3><a name="partial_complex_entity_data_type"></a>Partial complex
+entity data types</h3>
+<p class="MsoNormal">Like the complex entity data type, a partial
+complex
+entity data type is a combination of single entity data types. However
+because
+it
+is not a valid combination of entity data types no instances can be
+created
+from it. It is therefore not directly mapped to Java. There are a few
+cases
+when an application may wish to operate on on partial complex entity
+data tpes. For this the late
+binding
+class <b>Value </b>(from JSDAI version 4.0 on) may be used, which is
+able
+to represent values of any EXPRESS data type. </p>
+<h3><a name="extended_example"></a>An extended example</h3>
+<p class="MsoNormal"><img border="0" width="503" height="310"
+ id="_x0000_i1026" src="kappa.gif">The above mentioned sub-supertype
+tree in the ESTS-schema is in fact more
+complex. Together with the entities <i>kappa</i>, <i>lamda </i>and <i>mu
+</i>there exist several more valid complex entity data types that can
+be
+constructed:<br>
+&nbsp; </p>
+<table border="1" cellpadding="0" width="43%" style="width: 43%;">
+  <tbody>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">&nbsp;</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">&nbsp;</p>
+      </td>
+      <td colspan="7" style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;"><b>entity
+interface</b></p>
+      </td>
+    </tr>
+    <tr>
+      <td nowrap="nowrap" style="padding: 0.75pt;">
+      <p class="MsoNormal"><b>complex entity data type</b></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><b>entity class</b></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><i>EAlpha</i></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><i>EBeta</i></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><i>EGamma</i></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><i>EDelta</i></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">EKappa</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">ELamda</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">EMu</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">alpha</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CAlpha</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">&nbsp;-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">&nbsp;-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">&nbsp;-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">alpha&amp;beta</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CBeta</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">&nbsp;-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">&nbsp;-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">alpha&amp;gamma&amp;kappa</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CGamma</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">&nbsp;-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">&nbsp;-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">alpha&amp;gamma&amp;kappa&amp;lamda</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CGamma$lamda</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">alpha&amp;gamma&amp;kappa&amp;lamda&amp;mu</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CGamma$mu</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">alpha&amp;beta&amp;gamma&amp;kappa</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CBeta$gamma</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">alpha&amp;beta&amp;gamma&amp;kappa&amp;lamda</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CBeta$gamma$lamda</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">alpha&amp;beta&amp;gamma&amp;kappa&amp;lamda&amp;mu</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CBeta$gamma$mu</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">alpha&amp;beta&amp;gamma&amp;delta&amp;kappa</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CDelta</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">alpha&amp;beta&amp;gamma&amp;delta&amp;kappa&amp;lamda</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CDelta$lamda</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">-</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">alpha&amp;beta&amp;gamma&amp;delta&amp;kappa&amp;lamda&amp;mu</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">CDelta$mu</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal" align="center" style="text-align: center;">x</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p class="MsoNormal">&nbsp; </p>
+<h2><a name="aggregate"></a>Aggregates</h2>
+<p class="MsoNormal"><b>SET</b>, <b>BAG</b>, <b>LIST</b>, and <b>ARRAY</b>
+are the persistent aggregate types in EXPRESS used for entity
+attributes.
+The aggregate types <b>GENERIC</b> are used for functions and
+procedures.
+The type <b>non-persistent list</b> is used by various SDAI
+operations. The
+mapping to JSDAI does not distinguish among these different aggregate
+types;
+it distinguishes only by the base type of the aggregate (however there
+is
+a difference of the allowed operations depending of the kind of
+aggregate).
+The base type of an aggregate is either </p>
+<ol start="1" type="1">
+  <li class="MsoNormal" style="">another aggregate (nested aggregates)</li>
+  <li class="MsoNormal" style="">an entity data type</li>
+  <li class="MsoNormal" style="">a simple type such as INTEGER, REAL,
+BOOLEAN, LOGICAL, BINARY, STRING
+or an enumeration type</li>
+  <li class="MsoNormal" style="">a defined type with an underlying type
+which is not directly or indirectly
+a select type. This is handled the same way as case 3)</li>
+  <li class="MsoNormal" style="">a defined type with an underlying type
+which is directly or indirectly
+a select type. <a href="attribute_select_data_type">See </a> </li>
+</ol>
+<p class="MsoNormal">The Java interface <b><i>jsdai.lang.Aggregate </i></b>
+contains late binding methods to read and modify the aggregate members.
+See
+the <i>jsdai.lang.Aggregate </i>documentation for more details of the
+available
+methods. The aggregate members can be accessed by:</p>
+<ul type="disc">
+  <li class="MsoNormal" style="">test methods: <i>testByIndex</i>, <i>testCurrentMember</i></li>
+  <li class="MsoNormal" style="">get methods: <i>getByIndex</i>, <i>getCurrentMember</i></li>
+  <li class="MsoNormal" style="">set methods: <i>setByIndex</i>, <i>setCurrentMember</i></li>
+  <li class="MsoNormal" style="">add methods: <i>addBefore</i>, <i>addAfter</i>,
+    <i>addByIndex</i> , <i>addUnordered</i></li>
+  <li class="MsoNormal" style="">special methods for nested aggregates:
+    <i>createAggregateAsCurrentMember</i> , <i>createAggregateAfter</i>,
+    <i>createAggregateBefore</i>, <i>createAggregateByIndex</i> , <i>createAggregateUnordered</i>,
+    <i>addAggregateByIndex</i></li>
+</ul>
+<p class="MsoNormal">There exists many implementing classes of the
+Aggregate interface with more specialized access methods, some are
+pre-defined in package jsdai.lang, others are generated by the
+ExpressCompiler in the schema packages.</p>
+<p>Instances of aggregate types can exist only as non-persistent lists
+or
+as possibly nested values of entity attributes with aggregate base
+types. Aggregates instances cannot be shared for different attributes.
+Therefore
+no <b><i>setAaa </i></b>methods are provided for aggregates. Instead
+they
+have to be created in place with <b><i>createAaa </i></b>methods.</p>
+<p>Case 3) and </p>
+<h3><a name="nested-aggregate"></a>Nested Aggregates</h3>
+<p class="MsoNormal">Java classes for non-nested aggregates starts with
+the prefix "A". In the case of a double nested aggregate the prefix is
+"Aa",
+in the case of a triple nested aggregate "Aaa" and so on. The return
+type
+of the <i>get </i>and <i>create </i>methods of nested aggregates is
+the same
+type minus one hierarchy level.</p>
+<h3><a name="aggregate-entity"></a>Aggregates of Entity Data Types</h3>
+<p class="MsoNormal">For every entity a corresponding Java class
+representing
+an aggregate of this entity data type is created by the
+ExpressCompiler.
+Nested aggregates are only generated as needed in the Express
+schema(s).
+For a given entity xxx the class name are AXxx, AaXxx, AaaXxx ect. <br>
+<br>
+For the non nested aggregate classes the return value of the <i>get </i>
+methods is EXxx. </p>
+<h3><a name="aggregate_simple_data_type"></a>Aggregates of Simple Data
+Types and Enumerations</h3>
+<p class="MsoNormal">For every simple data type a corresponding Java
+class
+for its aggregate including nested levels is available. These aggregate
+class
+names begin with the prefix "A_" followed by the name of the simple
+type. In the case of double nested aggregates the prefix is "Aa_", for
+triple nested
+aggregates - "Aaa_", etc.. &nbsp;<br>
+&nbsp; </p>
+<table border="1" cellpadding="0" style="">
+  <tbody>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><b>EXPRESS type</b></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><b>Java type</b></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><b>single nested aggregate</b></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><b>double nested aggregate</b></p>
+      </td>
+      <td valign="top" style="padding: 0.75pt;">
+      <p class="MsoNormal"><b>trippel nested aggregate</b></p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">NUMBER</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">double</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.A_double</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aa_double</p>
+      </td>
+      <td valign="top" style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aaa_double</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">REAL</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">double</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.A_double</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aa_double</p>
+      </td>
+      <td valign="top" style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aaa_double</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">INTEGER</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">int</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.A_integer</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aa_integer</p>
+      </td>
+      <td valign="top" style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aaa_integer</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">BOOLEAN</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">boolean</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.A_boolean</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aa_boolean</p>
+      </td>
+      <td valign="top" style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aaa_boolean</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">LOGICAL</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">int</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.A_enumeration</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aa_enumeration</p>
+      </td>
+      <td valign="top" style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aaa_enumeration</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">BINARY</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">java.util.BitSet</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.A_bitset</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aa_bitset</p>
+      </td>
+      <td valign="top" style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aaa_bitset</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">STRING</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">java.lang.String</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.A_string</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aa_string</p>
+      </td>
+      <td valign="top" style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aaa_string</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">enumerations</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">int</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.A_enumeration</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aa_enumeration</p>
+      </td>
+      <td valign="top" style="padding: 0.75pt;">
+      <p class="MsoNormal">jsdai.lang.Aaa_enumeration</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<h2><a name="attributes"></a>Mapping of EXPRESS Attributes</h2>
+<p>Depending of the type of an attribute <i>aaa </i>the following
+access methods
+are provided in the corresponding Java interfaces and classes of the
+entity:</p>
+<p style="margin-left: 0.5in; text-indent: -0.25in;"><!--[if !supportLists]--><span
+ style="font-size: 10pt; font-family: Symbol;">&middot;<span
+ style="font-family: &quot;Times New Roman&quot;; font-style: normal; font-variant: normal; font-weight: normal; font-size: 7pt; line-height: normal; font-stretch: normal; font-size-adjust: none;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><!--[endif]--><b>
+test<i>Aaa</i>, </b>to test if the attribute has a value or if it is
+unset.
+In the case that the data type of the attribute contains a select type
+the
+return type is integer, indicating the actual select case. Otherwise
+the
+return type is boolean. The return values 0 respectively false indicate
+an
+unset value.</p>
+<p style="margin-left: 0.5in; text-indent: -0.25in;"><!--[if !supportLists]--><span
+ style="font-size: 10pt; font-family: Symbol;">&middot;<span
+ style="font-family: &quot;Times New Roman&quot;; font-style: normal; font-variant: normal; font-weight: normal; font-size: 7pt; line-height: normal; font-stretch: normal; font-size-adjust: none;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><!--[endif]--><b>
+get<i>Aaa</i></b> to retrieve the actual value of the attribute. The
+return
+value depends on the type of the attribute. As needed several
+overloaded
+methods are provided in the case of a select type.</p>
+<p style="margin-left: 0.5in; text-indent: -0.25in;"><!--[if !supportLists]--><span
+ style="font-size: 10pt; font-family: Symbol;">&middot;<span
+ style="font-family: &quot;Times New Roman&quot;; font-style: normal; font-variant: normal; font-weight: normal; font-size: 7pt; line-height: normal; font-stretch: normal; font-size-adjust: none;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><!--[endif]--><b>
+set<i>Aaa</i></b> to set the value of an attribute. No UNSET value is
+allowed.
+Values of an Aggregate type cannot be assigned with these methods; see <i>
+createAaa</i> below. As needed several overloaded methods are provided
+in
+the case of an select type.&nbsp;</p>
+<p style="margin-left: 0.5in; text-indent: -0.25in;"><!--[if !supportLists]--><span
+ style="font-size: 10pt; font-family: Symbol;">&middot;<span
+ style="font-family: &quot;Times New Roman&quot;; font-style: normal; font-variant: normal; font-weight: normal; font-size: 7pt; line-height: normal; font-stretch: normal; font-size-adjust: none;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><!--[endif]--><b>
+unset<i>Aaa</i></b> to unset the value of an attribute.</p>
+<p style="margin-left: 0.5in; text-indent: -0.25in;"><!--[if !supportLists]--><span
+ style="font-size: 10pt; font-family: Symbol;">&middot;<span
+ style="font-family: &quot;Times New Roman&quot;; font-style: normal; font-variant: normal; font-weight: normal; font-size: 7pt; line-height: normal; font-stretch: normal; font-size-adjust: none;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><!--[endif]--><b>
+create<i>Aaa</i></b> to create an aggregate, assign it as value for the
+attribute
+and also to return it. As needed several overloaded methids are
+provided
+in the case of an select type.</p>
+<p style="margin-left: 0.5in; text-indent: -0.25in;"><!--[if !supportLists]--><span
+ style="font-size: 10pt; font-family: Symbol;">&middot;<span
+ style="font-family: &quot;Times New Roman&quot;; font-style: normal; font-variant: normal; font-weight: normal; font-size: 7pt; line-height: normal; font-stretch: normal; font-size-adjust: none;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><!--[endif]--><b>
+usedin<i>Aaa</i></b>, static methods to follow an explicit attribute of
+some
+entity type in inverse order.</p>
+<p style="margin-left: 0.5in; text-indent: -0.25in;"><!--[if !supportLists]--><span
+ style="font-size: 10pt; font-family: Symbol;">&middot;<span
+ style="font-family: &quot;Times New Roman&quot;; font-style: normal; font-variant: normal; font-weight: normal; font-size: 7pt; line-height: normal; font-stretch: normal; font-size-adjust: none;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><!--[endif]--><b>
+attribute<i>Aaa</i></b>, static methods to retrieve the corresponding
+dictionary
+object for that aggregate.</p>
+<p>The first parameter of all <i>testAaa</i>, <i>getAaa</i>, <i>setAaa</i>
+, <i>unsetAaa</i> and <i>createAaa</i> methods are always of type
+EXxx with
+xxx be the name of the entity in which this attribute is declared. This
+parameter
+is only used for the (rare) case of <b>name conflicts of attributes</b>
+in
+a sub-supertype tree. In most cases applications provide only a simple
+null
+value for this parameter. Only in rare cases a casted null value is
+provided
+to distinguish the entity to which this attribute belongs to.</p>
+<p>JSDAI does not support the ALIAS statements of EXPRESS attributes.
+In
+the case of an alias the original name of this attribute has to be used.</p>
+<p>EXPRESS defines three kinds of attributes, <b>explicit</b>, <b>derived</b>
+and <b>inverse</b>. In addition attributes can be <b>redeclared </b>in
+subtypes.
+So we have the combinations of redeclared explicit, redeclared derived
+and
+redeclared inverse. In addition explicit attributes can be redeclared
+as
+derived.</p>
+<p>For explicit but no redeclared attributes all methods as described
+above
+are provided. For redeclared explicit attributes no additional methods
+are
+defined in the subtype.</p>
+<p>For derived attributes only the <i>testAaa</i>, <i>getAaa</i> and <i>attributeAaa</i>
+methods are available.</p>
+<p>For inverse attributes only the <i>getAaa</i> and <i>attributeAaa</i>
+methods
+are provided.&nbsp; </p>
+<h3><a name="attribute_assignable"></a>Attributes of Assignable Data
+Types</h3>
+<p class="MsoNormal">The following table shows how the seven EXPRESS
+simple
+data types are mapped to Java. Also the valid <b>range</b> and the <b>unset</b>
+value are given. <br>
+&nbsp; <br>
+&nbsp; </p>
+<table border="1" cellpadding="0" style="">
+  <tbody>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><b>EXPRESS primitive&nbsp;</b></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><b>Java type</b></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><b>value range</b></p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal"><b>unset value</b></p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">NUMBER</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">double</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">Double.MIN_VALUE ... Double.MAX_VALUE</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">Double.NaN</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">REAL</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">double</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">Double.MIN_VALUE ... Double.MAX_VALUE</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">Double.NaN</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">INTEGER</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">int</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">(Integer.MIN_VALUE+1) ... Integer.MAX_VALUE</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">Integer.MIN_VALUE</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">LOGICAL</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">int</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">1(FALSE), 2(TRUE), 3(UNKNOWN)</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">0</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">BOOLEAN</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">boolean</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">true, false</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">(internal)</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">STRING</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">java.lang.String</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">any</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">null</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">BINARY</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">java.util.BitSet</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">any</p>
+      </td>
+      <td style="padding: 0.75pt;">
+      <p class="MsoNormal">null</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p>Let us use the primitive data types as direct base types for entity
+attributes.
+For this we have constructed entity <i>omega</i>. We did add an
+attribute
+to another entity <i>iota</i>. Here is the EXPRESS-G <br>
+<img border="0" width="433" height="316" id="_x0000_i1027"
+ src="omega.gif"><br>
+And here is the EXPRESS </p>
+<p class="MsoNormal" style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">ENTITY iota;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">END_ENTITY;</span></tt>
+</p>
+<p style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">TYPE tau =
+ENUMERATION OF</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;(stigma,
+digamma, koppa, sampi);</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">END_TYPE;</span></tt></p>
+<p style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">TYPE xi = INTEGER;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">END_TYPE;</span></tt></p>
+<p style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">ENTITY omega;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;o0
+: iota;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;o1
+: NUMBER;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;o2
+: REAL;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;o3
+: INTEGER;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;o4
+: LOGICAL;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;o5
+: BOOLEAN;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;o6
+: STRING;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;o7
+: BINARY;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;o8
+: tau;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;o9
+: xi;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">END_ENTITY;</span></tt></p>
+<p class="MsoNormal">As explained, the corresponding&nbsp;Java
+interface
+EOmega and Java class COmega (and EIota and CIota) are created. In
+EOmega
+access methods to test, get, set and unset attributes are specified
+which
+are implemented in COmega. In this example all attributes are mandatory
+(not optional). For a valid entity instance all attributes must have
+values. Nevertheless,
+it is a valid state in JSDAI that these attributes may be unset.
+Therefore
+also test and unset methods are available not only for optional but
+also
+for mandatory attributes. Also, after creating a new entity instance
+all its
+attributes are unset. </p>
+<p>Every public JSDAI method is able to throw SdaiExceptions. Depending
+on
+the kind of the method, there may be various reasons why to throw an
+exception.
+A reason for the attribute access methods is e.g. that the instance is
+invalid because the session was closed, the access to the SdaiModel was
+ended, etc.
+In this case an SdaiException with argument EI_NAVL (entity instance
+not
+valid) is thrown. </p>
+<p>A <b>test</b> method checks whether an attribute has a value or
+not. It returns true if the value is set and false if it unset. </p>
+<p class="MsoNormal" style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+testO0(EOmega type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+testO1(EOmega
+type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+testO2(EOmega
+type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+testO3(EOmega
+type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+testO4(EOmega
+type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+testO5(EOmega
+type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+testO6(EOmega
+type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+testO7(EOmega
+type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+testO8(EOmega
+type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+testO9(EOmega
+type) throws SdaiException;</span></tt></p>
+<p class="MsoNormal"><b>The get</b> methods return the actual values of
+attributes.
+An SdaiException with the argument VA_NSET (value not set) is thrown if
+the
+attribute has an unset value. </p>
+<p class="MsoNormal" style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp; EIota
+getO0(EOmega type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;double
+getO1(EOmega type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;double
+getO2(EOmega type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;
+int getO3(EOmega type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;
+int getO4(EOmega type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+getO5(EOmega
+type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;String
+getO6(EOmega type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;BitSet
+getO7(EOmega type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;
+int getO8(EOmega type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;
+int getO9(EOmega type) throws SdaiException;</span></tt></p>
+<p class="MsoNormal">The <b>set</b> methods set new values for
+attributes.
+In the case that an application tries to set a value outside the
+specified
+range above, e.g. the unset value, an exception VT_NVLD (value type
+invalid)
+is thrown. </p>
+<p class="MsoNormal" style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">void setO0(EOmega
+type,&nbsp;&nbsp; EIota value) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">void
+setO1(EOmega type,&nbsp; double value) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">void
+setO2(EOmega type,&nbsp; double value) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">void
+setO3(EOmega type,&nbsp;&nbsp;&nbsp;&nbsp; int value) throws
+SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">void
+setO4(EOmega type,&nbsp;&nbsp;&nbsp;&nbsp; int value) throws
+SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">void
+setO5(EOmega type, boolean value) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">void
+setO6(EOmega type,&nbsp; String value) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">void
+setO7(EOmega type,&nbsp; BitSet value) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">void
+setO8(EOmega type,&nbsp;&nbsp;&nbsp;&nbsp; int value) throws
+SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">void
+setO9(EOmega type,&nbsp;&nbsp;&nbsp;&nbsp; int value) throws
+SdaiException;</span></tt></p>
+<p class="MsoNormal">Finally, an unset method is available for each
+attribute.
+</p>
+<p class="MsoNormal" style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+unsetO0(EOmega type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+unsetO1(EOmega type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+unsetO2(EOmega
+type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+unsetO3(EOmega
+type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+unsetO4(EOmega
+type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+unsetO5(EOmega
+type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+unsetO6(EOmega type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+unsetO7(EOmega
+type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+unsetO8(EOmega
+type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">boolean
+unsetO9(EOmega
+type) throws SdaiException;</span></tt></p>
+<p class="MsoNormal">Looking for the first time at the test, get, set
+and
+unset methods, one may think that the set and unset methods are
+superfluous
+because this functionality could also be realized by the get and set
+methods.
+This is correct but there exist cases where an attribute is of a select
+data
+type (see below), which may lead to different Java types, e.g. double,
+and
+int.</p>
+<h3><a name="attribute_aggregate_data_type"></a>Attributes of
+Aggregation Types</h3>
+<p class="MsoNormal">Knowing what happen with attributes based on
+simple
+entity data types we can continue with attributes based on aggregates
+of
+simple entity data types. Entity sigma has such attributes of various
+aggregation
+base types with different bounds. <br>
+<img border="0" width="438" height="259" id="_x0000_i1028"
+ src="sigma.gif"></p>
+<p class="MsoNormal" style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">ENTITY sigma;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;s0
+: SET [0:?] OF iota;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;s1
+: LIST [0:?] OF NUMBER;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;s2
+: BAG [0:?] OF REAL;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;s3
+: ARRAY [0:4] OF INTEGER;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;s4
+: SET [2:4] OF LOGICAL;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;s5
+: LIST [2:4] OF BOOLEAN;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;s6
+: BAG [2:4] OF STRING;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;o7
+: ARRAY [2:4] OF BINARY;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;s8
+: LIST [1:?] OF tau;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;s9
+: LIST [1:?] OF xi;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">END_ENTITY;</span></tt></p>
+<p class="MsoNormal">Similar to the simple data types there are also <b>test</b>
+, <b>get</b> and <b>unset</b> methods for attributes of aggregation
+data
+types. But instead of <b>set</b> methods <b>create</b> methods are
+available.
+The create methods create aggregate instances in place. It is not
+possible
+to assign an aggregate as the value for an attribute. The test and
+unset
+methods look rather similar to the ones for the simple data types and
+are
+not repeated here. The set and also the create methods return the
+actual/new
+aggregate. </p>
+<p class="MsoNormal" style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+AIota getS0(ESigma type) throws
+SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+A_real getS1(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+A_real getS2(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;
+A_integer getS3(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">A_enumeration
+getS4(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;
+A_boolean getS5(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;
+A_string getS6(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;
+A_binary getS7(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">A_enumeration
+getS8(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;
+A_integer getS9(ESigma type) throws SdaiException;</span></tt></p>
+<p class="MsoNormal"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">The create
+methods create a new aggregate, set it as the actual value for
+the attribute and return also this value. The old value of the
+attribute
+becomes invalid.</span></tt> </p>
+<p class="MsoNormal" style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+AIota createS0(ESigma type) throws
+SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+A_real createS1(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+A_real createS2(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;
+A_integer createS3(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">A_enumeration
+createS4(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;
+A_boolean createS5(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;
+A_string createS6(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;
+A_binary createS7(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">A_enumeration
+createS8(ESigma type) throws SdaiException;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;
+A_integer createS9(ESigma type) throws SdaiException;</span></tt></p>
+<h3><a name="attribute_select_data_type"></a>Attributes and aggregate
+members of select data types</h3>
+<p class="MsoNormal">For attributes of <b>SELECT</b> types, multiple
+early binding methods <b>getAaa</b> and <b>set</b>Aaa / <b>create</b>Aaa
+methods
+for a single attribute may be available, one for each <b>select case</b>.
+The <b>testAaa</b> method returns an integer, indicating the actual
+select
+case.<br>
+<br>
+<b><i>Select case</i></b> and <b><i>select path</i></b> are concepts,
+describing
+the complex mechanism with select data types, especially when they are
+nested
+and invoke other defied types which are not select types. There are
+three
+possible kinds of elements in a select list</p>
+<ol start="1" type="1">
+  <li class="MsoNormal" style="">entity types</li>
+  <li class="MsoNormal" style="">defined types with an underlying
+select type, we call this a nested
+select type</li>
+  <li class="MsoNormal" style="">defined types with an underlying type
+which is either another defined
+type, a simple type an aggregation type or an enumeration.</li>
+</ol>
+<p class="MsoNormal">Case 3 get more complex if the underlying type of
+the underlying type is again a select type. These cases needs also
+special provisions
+in the <i>Clear Text Encoding of the Exchange Structure</i>, ISO
+10303-21
+(STEP-File)<br>
+<br>
+The simple type of the run-time value (for example REAL) does not
+define
+the type of the select value sufficiently. More than one chain of
+defined
+and/or select types may lead to a REAL type. So the path through the
+select
+elements and their underlying types is needed to define the select
+value
+fully. We call such a chain a select path. <br>
+<br>
+The actual value of an attribute or an aggregate member of a select
+type consists of two parts, the <b>select path </b>and the <b>primitive
+value</b>
+. The primitive value is either unset or one of: an entity instance or
+an
+aggregate instance, or an enumeration value or a value of a simple
+type.
+In the case of an unset value the select case is always 0. In the case
+of
+an entity instance the select case is always 1. In all other cases the
+ExpressCompiler
+generates the possible select paths and enumerates these <b>select
+cases</b> , starting from 2. This numbering is important, because early
+binding <b>
+test</b> method returns int value - the select case number of the
+current
+value, or 0 if unset. <br>
+<br>
+For convenience of JSDAI application programmers, for each select case
+(except case 1) integer constants are present in entity interfaces for
+each attribute of select type. <br>
+The names of these constants are constructed in the following way: The
+name starts with the lowercase letter <b>s</b> followed by the name of
+the attribute,
+and further followed by the names of the defined types that form the
+select
+path for the select case. All the names are normalized: the first
+letter of
+each name is always in uppercase, the rest - in lowercase. <br>
+<br>
+In early binding <b>get</b> and <b>set/create</b> methods, the select
+path
+is represented by a sequence of parameters, representing the used
+defined
+types through their interfaces.<br>
+The used algorithm is analog to the encoding specification in ISO
+10303-21.
+<br>
+The nodes of a select paths include only those defined types, which do
+not
+have a select type as underlying type. So the nodes can only be defined
+types
+with the underlying type aggregates, enumeration, simple types or
+another
+defined type. However, in the case that several defined types where the
+underlying
+type is again a defined type are chained, only the first defined type
+is
+given as node.<br>
+&nbsp;<br>
+This logic described above is rather complex and not easy to understand
+and to describe. However it is needed to fully support the mechanisms
+provided
+in EXPRESS. In practice people don't have to worry about this because
+all
+this is handled by the ExpressCompiler and people have only to look in
+the documentation, generated by ExpressDoc or in the generated Java
+code to see what to do.<br>
+<br>
+The return type of the early binding <b>get</b> and<b> create</b>
+methods
+for entity attributes and aggregate members is the type of the
+primitive
+value. For attribute <b>set</b> methods the primitive value is given
+by the
+second parameter. For aggregate set methods the primitive value is
+given
+by the first parameter. </p>
+<p>For each select case, a separate pair of overloaded <b>get</b> and <b>
+set/create&nbsp;</b>methods is available in the entity interface. The
+methods
+are distinguished by their signature, given by additional appended
+parameters,
+representing the nodes of the select path. An application has to pass
+casted
+null values for them. The methods for case 1, if present, do not have
+any
+additional parameters to define the select path. <b>EEntity</b> is
+used for
+return/value types to accommodate various entity types in select. </p>
+<p>Here is entity epsilon, which has some attributes of select type. </p>
+<h3><img border="0" width="711" height="422" id="_x0000_i1029"
+ src="epsilon.gif"></h3>
+<p class="MsoNormal">The attribute e5 is of select type rho. It has 14
+select cases. Here are constants and methods that are available for
+this attribute
+in the interface EEpsilon: </p>
+<p>These constants are defined for SELECT attribute e5: </p>
+<p class="MsoNormal" style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+sE5Phi &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+2;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+sE5Psi &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 3;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+sE5Chi &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 4;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+sE5Tau &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 5;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+sE5Xi &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 6;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+sE5Pie &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 7;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+sE5OmicronPhi = 8;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+sE5OmicronPsi = 9;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+sE5OmicronChi = 10;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+sE5OmicronTau = 11;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+sE5OmicronXi &nbsp;= 12;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+sE5OmicronPie = 13;</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+sE5Upsilon &nbsp;&nbsp;&nbsp;= 14;</span></tt></p>
+<p class="MsoNormal">Methods for SELECT attribute e5: </p>
+<p class="MsoNormal" style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+testE5(EEpsilon type) throws SdaiException;</span></tt></p>
+<p class="MsoNormal" style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;EEntity
+getE5(EEpsilon type)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 1</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;AOmega
+getE5(EEpsilon type, EPhi node1)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 2</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;AaOmega
+getE5(EEpsilon type, EPsi node1)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 3</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">A_double
+getE5(EEpsilon type, EChi node1)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 4</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+getE5(EEpsilon type, ETau node1)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 5</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+getE5(EEpsilon type, EXi node1)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 6</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+getE5(EEpsilon type, EPie node1)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 7</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;AOmega
+getE5(EEpsilon type, EOmicron node1, EPhi node2) throws SdaiException;
+//
+case 8</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;AaOmega
+getE5(EEpsilon type, EOmicron node1, EPsi node2) throws SdaiException;
+//
+case 9</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">A_double
+getE5(EEpsilon type, EOmicron node1, EChi node2) throws SdaiException;
+//
+case 10</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+getE5(EEpsilon type, EOmicron node1, ETau node2) throws SdaiException;
+//
+case 11</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+getE5(EEpsilon type, EOmicron node1, EXi node2) &nbsp;throws
+SdaiException;
+// case 12</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+getE5(EEpsilon type, EOmicron node1, EPie node2) throws SdaiException;
+//
+case 13</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ANu
+getE5(EEpsilon type, EUpsilon node1)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 14</span></tt></p>
+<p class="MsoNormal" style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;void
+setE5(EEpsilon type, EEntity value)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 1</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;AOmega
+createE5(EEpsilon type, EPhi node1)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 2</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;AaOmega
+createE5(EEpsilon type, EPsi node1)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 3</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">A_double
+createE5(EEpsilon type, EChi node1)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 4</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;void
+setE5(EEpsilon type, int value, ETau node1)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 5</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;void
+setE5(EEpsilon type, int value, EXi node1)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 6</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;void
+setE5(EEpsilon type, int value, EPie node1)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 7</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;AOmega
+createE5(EEpsilon type, EOmicron node1, EPhi node2)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 8</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;AaOmega
+createE5(EEpsilon type, EOmicron node1, EPsi node2)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 9</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">A_double
+createE5(EEpsilon type, EOmicron node1, EChi node2)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 10</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;void
+setE5(EEpsilon type, int value, EOmicron node1, ETau node2) throws
+SdaiException;
+// case 11</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;void
+setE5(EEpsilon type, int value, EOmicron node1, EXi node2) &nbsp;throws
+SdaiException;
+// case 12</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;void
+setE5(EEpsilon type, int value, EOmicron node1, EPie node2) throws
+SdaiException;
+// case 13</span></tt><br>
+<tt><span style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ANu
+createE5(EEpsilon type, EUpsilon node1)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throws
+SdaiException; // case 14</span></tt></p>
+<p class="MsoNormal" style="margin-right: 0.5in; margin-left: 0.5in;"><tt><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;">&nbsp;&nbsp;&nbsp;&nbsp;void
+unsetE5(EEpsilon type) throws SdaiException;</span></tt></p>
+<h2><a name="enumeration-type"></a>Mapping of Enumeration Types</h2>
+<p class="MsoNormal">For each defined type xxx whose underlying type is
+an enumeration type a corresponding "static" Java class with the name
+EXxx is
+created. No objects are going to be creates of this class since it is
+only
+used to provide the enumeration elements for easy early binding
+handling.<br>
+<br>
+Example: &nbsp;The EXPRESS definition<br>
+<br>
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; TYPE tau =
+ENUMERATION (</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; stigma, digamma, koppa, sampi ) ;</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; END_TYPE; --
+tau</span><br>
+<br>
+results into this Java class:<br>
+<br>
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; public final
+class ETau {</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; static final int STIGMA = 1;</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; static final int DIGAMMA = 2;</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; static final int KOPPA = 3;</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; static final int SAMPI = 4;</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; static String[] values =
+{"STIGMA",
+"DIGAMMA", "KOPPA", "SAMPI"};</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; static int toInt(String str)
+static String toString(int value);</span><br
+ style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; }</span></p>
+<h2><a name="schema-class"></a>Schema class</h2>
+<p>For each express schema, the express compiler generates a special
+schema class. It is located in the generated java package for the
+schema as a public class, and with the the same as the package.
+Example, if the name of the
+schema is <i>ESTS</i>, then the name of the package is <i>jsdai.SEsts</i>
+, and the name of the special schema class in the package is also <i>SEsts</i>
+. To the full name is <i>jsdai.SEsts.SEsts</i>.</p>
+<p>The schema class itself is used as a parameter for the following
+public JSDAI methods:</p>
+<p style="margin-left: 0.5in; text-indent: -0.25in;"><!--[if !supportLists]--><span
+ style="font-size: 10pt; font-family: Symbol;">&middot;<span
+ style="font-family: &quot;Times New Roman&quot;; font-style: normal; font-variant: normal; font-weight: normal; font-size: 7pt; line-height: normal; font-stretch: normal; font-size-adjust: none;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><!--[endif]-->
+in class <span style="font-style: italic;">jsdai.lang.SdaiRepository</span></p>
+<p
+ style="margin-left: 1in; text-indent: -0.25in; font-family: monospace;"><!--[if !supportLists]--><span
+ style="font-size: 10pt;"></span>public
+SdaiModel createSdaiModel(String model_name, Class schema) throws
+SdaiException
+{...}</p>
+<p
+ style="margin-left: 1in; text-indent: -0.25in; font-family: monospace;"><!--[if !supportLists]--><span
+ style="font-size: 10pt;"></span><!--[endif]-->public
+SchemaInstance createSchemaInstance(String name, Class schema) throws
+SdaiException
+{...)</p>
+<p style="margin-left: 0.5in; text-indent: -0.25in;"><!--[if !supportLists]--><span
+ style="font-size: 10pt; font-family: Symbol;">&middot;<span
+ style="font-family: &quot;Times New Roman&quot;; font-style: normal; font-variant: normal; font-weight: normal; font-size: 7pt; line-height: normal; font-stretch: normal; font-size-adjust: none;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><!--[endif]-->
+in class <span style="font-style: italic;">jsdai.lang.SdaiSession</span></p>
+<p style="margin-left: 1in; text-indent: -0.25in;"><!--[if !supportLists]--><span
+ style="font-size: 10pt; font-family: &quot;Courier New&quot;;"></span><!--[endif]--><span
+ style="font-family: monospace;">public
+Class getComplexEntityClass(Class[] types, Class schema) throws
+SdaiException
+{...}</span></p>
+<p
+ style="margin-left: 1in; text-indent: -0.25in; font-family: monospace;"><!--[if !supportLists]--><span
+ style="font-size: 10pt;"></span>static
+public EData_type findDataType(String name, Class schema) throws
+SdaiException
+{...}</p>
+<p>The schema class also contains public static fields for all defined
+data
+types, specified locally in this schema. For a defined type with the
+name
+some_type, the following method is present in the schema class:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+ style="font-family: monospace;">public static
+jsdai.dictionary.EDefined_type
+_some_type;</span></p>
+<p>The schema class contains also public static fields for types, such
+as aggregates, that are not explicitly declared in express as defined
+data types, but still are types of attributes, parameters or local
+variables and are
+needed in the implementation of expressions. Their names are
+constructed
+to reflect the type, including aggregate names and bound values.</p>
+<p>Examples</p>
+<p style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; SET [1:2] OF LIST [0:3] OF
+INTEGER &nbsp;</p>
+<p>&nbsp;&nbsp;&nbsp; maps to</p>
+<p style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; public static
+jsdai.dictionary.EData_type
+_set_1_2_list_0_3_integer;</p>
+<p><br>
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; ARRAY OF BAG OF GENERIC</span> </p>
+<p>&nbsp;&nbsp;&nbsp; maps to</p>
+<p style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; public static
+jsdai.dictionary.EData_type
+_array___bag___generic;</p>
+<p>For the identification when the classes and interfaces where
+generated
+by the JSDAI ExpressCompiler and by which version, the schema class
+contains fields like these:</p>
+<p style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; public static final String
+time_stamp = "2002-11-22 T01:41:39";</p>
+<p style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; public static final String
+version
+= "3.5, 2002-10-10";</p>
+<p>The schema class also is the place for express constants; see below.
+</p>
+<p>The methods implementing domain rules in defined types are also locaded in the schema class.
+<br>See <b>Local Rules in Defined Types</b>.
+</p>
+<p>Furthermore the schema class also plays an important role in the
+internal mechanism of JSDAI and holds several non-public methods and
+data fields..</p>
+<h2><a name="constant"></a>Constants</h2>
+<p>The schema class contains public methods implementing express
+constants.
+For a constant with the name some_constant, the following method is
+present
+in the schema class:</p>
+<p style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+public static Value
+cSome_constant(SdaiContext
+_context) throws SdaiException {...}</p>
+<h2><a name="function-procedure"></a>Functions &amp; Procedures</h2>
+<p>An express function <span style="font-style: italic;">xxx</span>
+with parameters <span style="font-style: italic;">parameter_1,&nbsp;
+..., parameter_n</span>, is mapped to the public java class <span
+ style="font-style: italic;">FXxx</span> with<br>
+the public method<br>
+<span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; public static Value
+run(SdaiContext context, Value parameter_1, ..., Value parameter_n) <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; throws </span><span
+ style="font-family: monospace;">SdaiException {...}</span><br
+ style="font-family: monospace;">
+</p>
+<p>The type of the parameters and the return type is <span
+ style="font-family: monospace;">Value</span>, even though <span
+ style="font-family: monospace;">FXxx </span>is early binding
+representation of the function<br>
+<span style="font-style: italic;">xxx</span>. In JSDAI, evaluation of
+expressions is always based on Value..<br>
+</p>
+<p>Express functions usually are used in expressions to calculate
+derived attribute values or constraints in rules, and their arguments
+are also expressions so everything fits together nicely.&nbsp; However,
+functions can also be used directly in JSDAI applications if necessary.
+In that case, an instance of SdaiContext must be provided as the first
+parameter by the JSDAI application. Otherwise, it is provided
+automatically as long as SdaiContext is set in the SdaiSession. <br>
+<br>
+Likewise, an express procedure <span style="font-style: italic;">yyy </span>with
+parameters <span style="font-style: italic;">parameter_1,&nbsp; ...,
+parameter_n </span>is mapped to the public java class <span
+ style="font-family: monospace;">FYyy</span> with the public method</p>
+<p><span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+public static void run(SdaiContext context, Value parameter_1, ...,
+Value parameter_n) <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; throws
+SdaiException {...}</span><br style="font-family: monospace;">
+</p>
+
+<p>
+Express VAR parameters are supported in procedures.
+<br>Type labels are supported in functions and procedures for generic types
+but not for aggregates or aggregate members. 
+</p>
+
+<h2><a name="global-rule"></a>Global Rules</h2>
+An express global rule <span style="font-style: italic;">xxx </span>is
+mapped to the public java class <span style="font-style: italic;">RXxx</span>.
+This class contains methods for validation of all domain rules in the
+global rule,<br>
+for example, for domain rule WR1 the following method is available:<br>
+<br>
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+public int rWr1(SdaiContext context) throws SdaiException {...}</span><br>
+<br>
+The return type of the method is int, representing an Express LOGICAL
+value.<br>
+<p>
+Also a single method to validate all the domain rules in a global rule is provided:
+
+<br>
+<br>
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	public int run(SdaiContext _context, A_string violations) throws SdaiException {...}</span><br>
+
+<br>
+The A_string parameter is provided to accumulate the information about violations of domain rules.
+<br>The labels of failed domain rules are added to the instance of A_string supplied via this parameter.	
+<br>The return value is logical AND of return values of the methods of all the domain rules.
+
+</p>
+<h2><a name="local-rule-entity"></a>Local Rules in Entities</h2>
+<p>For each local rule (for each domain rule in WHERE clause) in
+express entity <span style="font-style: italic;">xxx</span>, a special
+method is available in the corresponding java class <span
+ style="font-style: italic;">CXxx</span>,<br>
+for example, for domain rule WR1, the following method is present:</p>
+<p><span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+public int rWr1(SdaiContext context) throws SdaiException {...}</span><br
+ style="font-family: monospace;">
+</p>
+<p>The return type of the method is int, representing an Express
+LOGICAL value.</p>
+<h2><a name="local-rule-defined-type"></a>Local Rules in Defined Types</h2>
+<p>
+For each domain rule in a defined type, the corresponding static method is provided in the schema class of the schema where the type is defined.
+<br>The name of the method is constructed in the following way:
+"r" + "The_name_of_the_type" + "The_label_of_the_domain_rule".
+<br>So, for the domain rule "WR1" in type "dimension",
+the following method is provided:
+
+<p><span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	public static int rDimensionWr1(SdaiContext _context, Value self) throws SdaiException {...}</span><br
+
+<br><br>
+The return value is java int representing express LOGICAL, as in similar methods in global rules and in entities.
+The Value parameter is used to pass a specific value which conformance to the domain rules of the type are to be checked.
+It corresponds to express built-in constant SELF used in domain rules of types.
+
+<br><br>
+For each defined type which has domain rules or which underlying type (or, possibly, chained underlying types) has(have) domain rules,
+a special method to validate all the domain rules is also provided in the schema class of the schema where the type is defined.
+For example, for the above type "dimension" the following method would be present:
+
+<p><span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	public static int runDimension(SdaiContext _context, Value self, A_string violations) throws SdaiException {...}</span><br
+
+<br><br>	
+Here, Value parameter is the same as in the methods for separate domain rules, representing express SELF.
+<br><br>
+A_string parameter is used to accumulate information about violations.
+
+<br>
+It contains all the failed domain rules in the form "type_name.domain_rule_label"
+<br><br>
+The return value of the method is logical AND of return values of the methods of all the domain rules of the type and of its (chained) underlying type(s).
+<br>The underlying types may be defined in other schemas, in that case, their corresponding domain rule metohds would not be present in the schema class of the current schema,
+but their return values would still participate in the logical AND.
+<br>If the underlying type is an aggregate, the domain rules of the types of elements of the aggregate are not validated, 
+they should be validated separately. <br>Likewise, if the underlying type is SELECT, the domain rules of the types of elements of the select type are
+not validated in this method.
+
+<br><br>	
+Validation of domain rules of defined types is usually invoked from other JSDAI methods, such as for validation of attributes,
+therefore, an application programmer does not have to concern himself with parameters of Value type. 
+
+
+
+</p>
+<p class="MsoNormal" style="margin-bottom: 12pt;"><!--[if !supportEmptyParas]-->&nbsp;<!--[endif]--><o:p></o:p></p>
+<div class="MsoNormal" align="center" style="text-align: center;">
+<hr size="2" width="100%" align="center"> </div>
+<p>JSDAI is a registered trademark of LKSoftWare GmbH<br>
+Java is a registered trademark of Sun Microsystems</p>
+</div>
+</body>
+</html>
+

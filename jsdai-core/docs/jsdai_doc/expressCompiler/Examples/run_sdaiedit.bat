@@ -1,0 +1,2 @@
+set CLASS_PATH=jar\example.jar;..\..\..\lib\jsdai_runtime.jar;..\..\..\lib\commons-lang-1.0.1.jar;..\..\..\lib\commons-collections.jar;..\..\..\lib\jsdai_edit.jar;..\..\..\lib\jsdai_xim_full.jar;
+java -Djsdai.properties=..\..\..\lib\ -cp %CLASS_PATH% jsdai.edit.SdaiEdit

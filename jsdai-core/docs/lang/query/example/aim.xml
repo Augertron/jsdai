@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<query xmlns="http://www.lksoft.com/SDAI/Query/V1">
+
+  <domain>
+    <repository>
+      <name>my rep</name>
+    </repository>
+    <model>
+      <union>
+        <name>my model</name>
+        <name>your model</name>
+      </union>
+    </model>
+  </domain>
+
+  <domain>
+    <model>
+      <underlying-schema>ELECTRONIC_ASSEMBLY_INTERCONNECT_AND_PACKAGING_DESIGN</underlying-schema>
+    </model>
+  </domain>
+
+  <domain>
+    <union>
+      <grp>
+        <repository>
+          <name>rep1</name>
+        </repository>
+      </grp>
+      <grp>
+        <repository>
+          <organization>org1</organization>
+        </repository>
+        <model>
+          <underlying-schema>ELECTRONIC_ASSEMBLY_INTERCONNECT_AND_PACKAGING_DESIGN</underlying-schema>
+        </model>
+      </grp>
+    </union>
+  </domain>
+
+  <result name="all-pcb">
+    <type ent="interconnect_definition">
+      <and>
+        <grp>
+          <fwd attr="frame_of_reference"/>
+          <fwd attr="name">
+            <seq>physical design</seq>
+          </fwd>
+        </grp>
+        <grp>
+          <inv attr="named_item" ent="name_attribute"/>
+          <fwd attr="attribute_value">
+            <seq>interconnect module</seq>
+          </fwd>
+        </grp>
+      </and>
+    </type>
+  </result>
+
+  <result name="all-pcb_usage_view">
+    <union>
+      <type ent="interconnect_definition"/>
+      <type ent="externally_defined_interconnect_definition"/>
+      <type ent="library_defined_interconnect_definition"/>
+    </union>
+    <and>
+      <grp>
+        <fwd attr="frame_of_reference"/>
+        <fwd attr="name">
+          <eq>physical design usage</eq>
+        </fwd>
+      </grp>
+      <grp>
+        <inv attr="named_item" ent="name_attribute"/>
+        <fwd attr="attribute_value">
+          <eq>interconnect module</eq>
+        </fwd>
+      </grp>
+    </and>
+  </result>
+
+</query>

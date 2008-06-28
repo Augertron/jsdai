@@ -1,0 +1,102 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <title>SDAI file.</title>
+</head>
+<SCRIPT>
+function change_title() {
+	parent.document.title="SDAI file";
+}
+</SCRIPT>
+<body onload="change_title();">
+<h2>SDAI file</h2>
+Last update 2003-09-03
+<h3>Introduction</h3>
+<p>SDAI file contains the equivalent information as a part21 (ISO 10303-21) file, but in a binary encoded way which can be much
+faster processed and needs less storage space. SDAI file can be easily used for exchange.</p>
+<p>SDAI file features:
+<ul>
+  <li>the format is inherently compressed (ZIP)</li>
+  <li>it can easily be converted into the part21 (ISO 10303-21) or part28 (ISO 10303-28) format.</li>
+  <li>it allows to include non-STEP files (e.g. jpeg or pdf) bound to an entity instance.</li>
+  <li>it can contain several data sections, e.g. one for the ARM and one for the AIM population.</li>
+  <li>the format supports all features of SDAI with a couple of extensions.</li>
+</ul>
+
+</p>
+<h3>Creating SdaiRepository to be stored in SDAI file:</h3>
+<p>If you want to create a SdaiRepository to be stored in SDAI file then use <tt>createRepository()</tt> method and pass
+path of SDAI file as a <tt>location</tt> (second) parameter. If the value of the <tt>name</tt> (first) parameter is null
+or an empty string "", then a SdaiRepository with name derived from SDAI file name will be created.
+If SdaiRepository with the specified or derived name already exists, then SdaiRepository with modified name
+(SdaiRepository name plus sequence number) will be created.</p>
+<blockquote>
+  <b>Example</b><br><br>
+  <code>
+    // create SdaiRepositories stored in SDAI files<br>
+    repo = s.createRepository("MyRepo1", "c:\\myrepos\\MyRepo.sdai");<br>
+    repo = s.createRepository("", "c:\\MyRepo2.sdai");<br>
+	repo = s.createRepository(null, "c:\\MyRepo2.sdai");<br>
+  </code>
+</blockquote>
+
+<p>If <tt>createRepository()</tt> method is called with <tt>location</tt> parameter set to null, then SdaiRepository
+is created into <tt>sdairepos</tt> directory and it's format depends on the value of an additional property
+<tt>new.repository.format</tt> in jsdai.properties file.
+<ul>
+  <li>if property <tt>new.repository.format</tt> does not exists or it's value is equal <tt>DIR</tt> then conventional
+  SdaiRepository is created (SdaiRepository files are stored in SdaiRepository directory).</li>
+  <li>if value of property <tt>new.repository.format</tt> is equal <tt>SDAI</tt> then SdaiRepository stored in SDAI file is
+  created (SdaiRepository files are stored in one compressed SDAI file).</li>
+</ul>
+</p>
+<blockquote>
+  <b>Example</b><br><br>
+  <code>
+    //fragment of jsdai.properties file<br>
+    new.repository.format = SDAI<br><br>
+    
+	// create SdaiRepository stored in SDAI file in <tt>sdairepos</tt> directory<br>
+    repo = s.createRepository("MyRepo", null);<br>
+  </code>
+</blockquote>
+
+
+<h3>Linking SdaiRepository stored in SDAI file:</h3>
+If you want to link an existing SdaiRepository stored in SDAI file then use <tt>linkRepository()</tt> method and
+pass path of SDAI file as a <tt>location</tt> (second) parameter. If the value of the <tt>name</tt> (first) parameter is null
+or an empty string "", then SdaiRepository name is derived from SDAI file name.
+If SdaiRepository with the specified or derived name already exists and <tt>name</tt> parameter was not null,
+then SdaiRepository with modified name (SdaiRepository name plus sequence number) is linked.
+If SdaiRepository with the specified or derived name already exists and <tt>name</tt> parameter was null,
+then <tt>SdaiException</tt> LC_NVLD is thrown.
+
+<blockquote>
+  <b>Example</b><br><br>
+  <code>
+    // link SdaiRepositories stored in SDAI files<br>
+    rep = s.linkRepository("MyRepo1", "c:\\myrepos\\MyRepo.sdai");<br>
+	rep = s.linkRepository("", "c:\\MyRepo2.sdai");<br>
+	rep = s.linkRepository(null, "c:\\MyRepo2.sdai");<br>
+  </code>
+</blockquote>
+
+<p>During session start all SdaiRepositories (conventional and stored in SDAI files) located in <tt>sdairepos</tt> directory
+are automatically linked to <tt>known_servers</tt>.</p>
+
+<h3>SDAI file format:</h3>
+<p>SDAI file format has several advantages:
+<ol>
+  <li>Only one file per SdaiRepository is used. It is very simple to exchange such files between users.</li>
+  <li>Space used to store SdaiRepository is reduced. Over 50% of storage space is saved.</li>
+</ol>
+And drawbacks:
+<ol>
+  <li>Reading and writing operations are slower. It is due compression/recompression of data stored in SDAI file.</li>
+</ol></p>
+<p><a href="SDAIFileFormat.html">SDAI file format specification</a></p>
+<p>&nbsp;</p>
+
+</body>
+</html>

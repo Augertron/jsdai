@@ -1,0 +1,635 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+     <extension
+         id="net.jsdai.express_compiler.expressNature"
+         name="Express nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="jsdai.express_compiler.ExpressNature">
+         </run>
+      </runtime>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.ide.projectNatureImages">
+      <image
+            icon="icons/express_project.gif"
+            natureId="net.jsdai.express_compiler.expressNature"
+            id="net.jsdai.express_compiler.expressProjectNatureImage">
+      </image>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            name="Express"
+            icon="icons/express_perspective.gif"
+            class="jsdai.express_compiler.ExpressPerspectiveFactory"
+            id="net.jsdai.express_compiler.ExpressPerspective">
+      </perspective>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.ui.resourcePerspective">
+         <perspectiveShortcut
+               id="net.jsdai.express_compiler.ExpressPerspective">
+         </perspectiveShortcut>
+         <actionSet id="net.jsdai.express_compiler.actionSet"/>
+      </perspectiveExtension>
+      <perspectiveExtension targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <perspectiveShortcut id="net.jsdai.express_compiler.ExpressPerspective"/>
+         <actionSet id="net.jsdai.express_compiler.actionSet"/>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="net.jsdai.express_compiler.ExpressPerspective">
+         <perspectiveShortcut id="org.eclipse.ui.resourcePerspective"/>
+         <perspectiveShortcut id="org.eclipse.jdt.ui.JavaPerspective"/>
+         <newWizardShortcut id="net.jsdai.common.JSDAIJava"/>
+         <newWizardShortcut id="net.jsdai.express_compiler.wizards.NewExpressProjectWizard"/>
+         <newWizardShortcut id="net.jsdai.express_compiler.wizards.NewExpressFileWizard"/>
+         <newWizardShortcut id="org.eclipse.ui.wizards.new.folder"/>
+         <newWizardShortcut id="org.eclipse.ui.wizards.new.file"/>
+         <showInPart
+               id="net.jsdai.express_compiler.views.ExpressConsoleView">
+         </showInPart>
+         <actionSet id="net.jsdai.express_compiler.actionSet"/>
+      </perspectiveExtension>
+      <perspectiveExtension targetID="net.jsdai.express_g.perspective">
+         <perspectiveShortcut id="net.jsdai.express_compiler.ExpressPerspective"/>
+         <newWizardShortcut id="net.jsdai.common.JSDAIJava"/>
+         <newWizardShortcut id="net.jsdai.express_compiler.wizards.NewExpressProjectWizard"/>
+         <newWizardShortcut id="net.jsdai.express_compiler.wizards.NewExpressFileWizard"/>
+         <actionSet id="net.jsdai.express_compiler.actionSet"/>
+      </perspectiveExtension>
+   </extension>
+
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="jsdai.express_compiler.editor.ExpressEditor"
+            icon="icons/exp_file.gif"
+            contributorClass="jsdai.express_compiler.editor.ExpressActionContributor"
+            name="Express Editor"
+            id="net.jsdai.express_compiler.editor.ExpressEditor"
+            extensions="exp"/>
+      <editor
+            class="jsdai.express_compiler.list_editor.ExpressListEditor"
+            icon="icons/exl_file.gif"
+            contributorClass="jsdai.express_compiler.list_editor.ExpressListActionContributor"
+            name="Express List Editor"
+            id="net.jsdai.express_compiler.list_editor.ExpressListEditor"
+            extensions="exl"/>
+      <editor
+            class="jsdai.express_compiler.p21_editor.P21Editor"
+            icon="icons/p21_step_file.gif"
+            contributorClass="jsdai.express_compiler.p21_editor.P21ActionContributor"
+            name="P21 Editor"
+            id="net.jsdai.express_compiler.p21_editor.P21Editor"
+            extensions="stp,p21,pf"/>
+   </extension>
+
+
+   <extension
+         id="net.jsdai.express_compiler.editor.ExpressDocumentSetupParticipant"
+         name="%documentSetupParticipantName"
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            extensions="exp"
+            class="jsdai.express_compiler.editor.ExpressDocumentSetupParticipant">
+      </participant>
+   </extension>
+
+
+   <extension
+         id="net.jsdai.express_compiler.list_editor.ExpressListDocumentSetupParticipant"
+         name="%listDocumentSetupParticipantName"
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            extensions="exl"
+            class="jsdai.express_compiler.list_editor.ExpressListDocumentSetupParticipant">
+      </participant>
+   </extension>
+
+    <extension point="org.eclipse.core.filebuffers.documentSetup" 
+        id="net.jsdai.express_compiler.p21_editor.P21DocumentSetupParticipant" 
+        name="P21 Document Setup Participant" >
+        <participant
+            class="jsdai.express_compiler.p21_editor.P21DocumentSetupParticipant"
+            contentTypeId="org.eclipse.core.runtime.text"
+            extensions="stp,p21,pf"/>
+    </extension>
+
+
+
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            name="Express projects"
+            class="jsdai.express_compiler.preferences.ExpressProjectPreferences"
+            id="net.jsdai.express_compiler.preferences.ExpressProjectPreferences"
+            category="net.jsdai.common.preferences.page">
+      </page>
+       <page
+            name="Express"
+            class="jsdai.express_compiler.preferences.ExpressPreferences"
+            id="net.jsdai.express_compiler.preferences.ExpressPreferences"
+            category="net.jsdai.common.preferences.page">
+      </page>
+      <page
+            name="Express compiler"
+            class="jsdai.express_compiler.preferences.ExpressCompilerIOPreferences"
+            id="net.jsdai.express_compiler.preferences.ExpressCompilerPreferences"
+            category="net.jsdai.common.preferences.page">
+      </page>
+      <page
+            name="More settings"
+            class="jsdai.express_compiler.preferences.ExpressCompilerPreferences"
+            id="net.jsdai.express_compiler.preferences.ExpressCompilerOtherPreferences"
+            category="net.jsdai.express_compiler.preferences.ExpressCompilerPreferences">
+      </page>
+<!--
+      <page
+            name="Editors"
+            class="jsdai.express_compiler.preferences.ExpressEditorsPreferences"
+            id="net.jsdai.express_compiler.preferences.ExpressEditorsPreferences"
+            category="net.jsdai.common.preferences.editors">
+      </page>
+-->
+      <page
+            name="Express"
+            class="jsdai.express_compiler.preferences.ExpressEditorPreferences"
+            id="net.jsdai.express_compiler.preferences.ExpressEditorPreferences"
+            category="net.jsdai.common.preferences.editors">
+      </page>
+      <!-- No preferences available yet
+      <page
+            name="Express List"
+            class="jsdai.express_compiler.preferences.ExpressListEditorPreferences"
+            id="net.jsdai.express_compiler.preferences.ExpressListEditorPreferences"
+            category="net.jsdai.common.preferences.editors">
+      </page-->
+      <!-- No preferences available yet
+      <page
+            name="Complex Entities"
+            class="jsdai.express_compiler.preferences.ExpressComplexEntityEditorPreferences"
+            id="net.jsdai.express_compiler.preferences.ExpressComplexEntityEditorPreferences"
+            category="net.jsdai.common.preferences.editors">
+      </page-->
+<!--
+      <page
+            name="Part 21"
+            class="jsdai.express_compiler.preferences.P21EditorPreferences"
+            id="net.jsdai.express_compiler.preferences.P21EditorPreferences"
+            category="net.jsdai.common.preferences.editors">
+      </page>
+-->
+      <page
+            name="Part 21"
+            class="jsdai.express_compiler.preferences.P21EditorPreferences"
+            id="net.jsdai.express_compiler.preferences.P21EditorPreferences"
+            category="net.jsdai.common.preferences.editors">
+      </page>
+      <!-- No preferences available yet
+      <page
+            name="Tools"
+            class="jsdai.express_compiler.preferences.ToolsPreferences"
+            id="net.jsdai.express_compiler.preferences.ToolsPreferences"
+            category="net.jsdai.common.preferences.page">
+      </page-->
+      <!-- No preferences available yet
+      <page
+            name="Part 21 Validator"
+            class="jsdai.express_compiler.preferences.ValidationPreferences"
+            id="net.jsdai.express_compiler.preferences.ValidationPreferences"
+            category="net.jsdai.express_compiler.preferences.ToolsPreferences">
+      </page-->
+      <!-- No preferences available yet
+      <page
+            name="HTML Generator"
+            class="jsdai.express_compiler.preferences.HtmlPreferences"
+            id="net.jsdai.express_compiler.preferences.HtmlPreferences"
+            category="net.jsdai.express_compiler.preferences.ToolsPreferences">
+      </page-->
+
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            name="JSDAI Express"
+            id="net.jsdai.express.new">
+      </category> 
+      <wizard
+            class="jsdai.express_compiler.wizards.NewExpressProjectWizard"
+            icon="icons/express_project_new.gif"
+            category="net.jsdai.express.new"
+            project="true"
+            name="Express Project"
+            id="net.jsdai.express_compiler.wizards.NewExpressProjectWizard"
+            preferredPerspectives="net.jsdai.express_compiler.ExpressPerspective"
+            finalPerspective="net.jsdai.express_compiler.ExpressPerspective" >
+       </wizard>
+      <wizard
+            class="jsdai.express_compiler.wizards.NewExpressFileWizard"
+            icon="icons/exp_file_new.gif"
+            category="net.jsdai.express.new"
+            name="Express File"
+            id="net.jsdai.express_compiler.wizards.NewExpressFileWizard" >
+       </wizard>
+    </extension>
+
+<!-- Projet                                                                 -->
+   <extension
+         id="net.jsdai.express_compiler.ExpressProject"
+         name="Express Project"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="jsdai.express_compiler.ExpressProject">
+         </run>
+      </runtime>
+   </extension>
+
+<!-- Menu                                                                 -->
+   <extension
+         name="Express Menu"
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            label="Express Actions"
+            description="Action set containing EXPRESS related actions"
+            id="net.jsdai.express_compiler.actionSet">
+         <menu
+               label="E&amp;xpress"
+               id="net.jsdai.express_compiler.ExpressMenu">
+            <separator
+                  name="first_separator">
+            </separator>
+            <separator
+                  name="second_separator">
+            </separator>
+         </menu>
+<!--
+         <action
+               label="About JSDAI Express Compiler"
+               tooltip="About the Express Compiler plug-in"
+               class="jsdai.express_compiler.actions.AboutExpressCompilerAction"
+               menubarPath="net.jsdai.express_compiler.ExpressMenu/second_separator"
+               id="net.jsdai.express_compiler.actions.AboutExpressCompilerAction">
+         </action>
+-->
+         <action
+               label="Run validation"
+               icon="icons/validate_p21.gif"
+               tooltip="Validate instances in a .p21 file"
+               class="jsdai.express_compiler.actions.ValidateAction"
+               menubarPath="net.jsdai.express_compiler.ExpressMenu/first_separator"
+               toolbarPath="org.eclipse.debug.ui.launchActionSet/express"
+               id="net.jsdai.express_compiler.actions.ValidateAction">
+         </action>
+         <action
+               label="Compile Express"
+               icon="icons/compile_express.gif"
+               tooltip="Compile Express files in the project"
+               class="jsdai.express_compiler.actions.ExpressCompilerProjectAction"
+               menubarPath="net.jsdai.express_compiler.ExpressMenu/first_separator"
+               toolbarPath="org.eclipse.debug.ui.launchActionSet/express"
+               id="net.jsdai.express_compiler.actions.ExpressCompilerProjectAction">
+         </action>
+         <action
+               label="New Express file"
+               icon="icons/exp_file_new.gif"
+               tooltip="Create new Express file with .exp extension"
+               class="jsdai.express_compiler.actions.NewExpressFileAction"
+               menubarPath="net.jsdai.express_compiler.ExpressMenu/first_separator"
+               toolbarPath="org.eclipse.debug.ui.launchActionSet/express"
+               id="net.jsdai.express_compiler.actions.NewExpressFileWizard">
+         </action>
+         <action
+               label="New Express Project"
+               icon="icons/express_project_new.gif"
+               tooltip="Create new Express project"
+               class="jsdai.express_compiler.actions.NewExpressProjectAction"
+               menubarPath="net.jsdai.express_compiler.ExpressMenu/first_separator"
+               toolbarPath="org.eclipse.debug.ui.launchActionSet/express"
+               id="net.jsdai.express_compiler.actions.NewExpressProjectAction">
+         </action>
+      </actionSet>
+      <actionSet
+            id="net.jsdai.express_compiler.express_editor.actionSet"
+            label="Express Editor Actions">
+         <menu
+               label="E&amp;xpress"
+               id="net.jsdai.express_compiler.ExpressMenu">
+            <separator
+                  name="first_separator">
+            </separator>
+            <separator
+                  name="second_separator">
+            </separator>
+         </menu>
+         <action
+               class="jsdai.express_compiler.actions.ExpressCompilerEditorAction"
+               icon="icons/compile_express_single.gif"
+               id="net.jsdai.express_compiler.actions.ExpressCompilerEditorAction"
+               label="Check Express file for errors"
+               menubarPath="net.jsdai.express_compiler.ExpressMenu/second_separator"
+               toolbarPath="org.eclipse.debug.ui.launchActionSet/express"
+               tooltip="Compile the current Express file to check for errors only">
+         </action>
+      </actionSet>
+   </extension>
+   <extension
+         point="org.eclipse.ui.actionSetPartAssociations">
+      <actionSetPartAssociation targetID="net.jsdai.express_compiler.express_editor.actionSet">
+         <part id="net.jsdai.express_compiler.editor.ExpressEditor"/>
+      </actionSetPartAssociation>
+   </extension>
+
+   <extension
+         point="org.eclipse.help.toc">
+      <toc
+            primary="false"
+            file="help/toc.xml"/>
+   </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="help/contexts.xml"
+            plugin="net.jsdai.express_compiler"/>
+   </extension>
+
+
+   <extension
+         point="org.eclipse.ui.contexts">
+      <context
+            name="Editing Express Source"
+            description="Editing Express Source Context"
+            parentId="org.eclipse.ui.textEditorScope"
+            id="net.jsdai.express_editor.expressEditorScope">
+      </context>
+   </extension>
+
+
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            adaptable="true"
+            objectClass="org.eclipse.core.resources.IProject"
+            name="Express"
+            class="jsdai.express_compiler.properties.ExpressProjectPropertyPage"
+            id="net.jsdai.express_compiler.properties.ExpressProjectProperties">
+            <filter
+              name="nature"
+              value="net.jsdai.express_compiler.expressNature">
+            </filter>            
+      </page>
+      <page
+            adaptable="true"
+            objectClass="org.eclipse.core.resources.IProject"
+            name="Output"
+            class="jsdai.express_compiler.properties.ExpressProjectPermanentPropertyPage"
+            id="net.jsdai.express_compiler.properties.ExpressProjectPermanentPropertyPage"
+            category="net.jsdai.express_compiler.properties.ExpressProjectProperties">
+            <filter
+              name="nature"
+              value="net.jsdai.express_compiler.expressNature">
+            </filter>            
+      </page>
+
+
+
+      <page
+            adaptable="true"
+            objectClass="org.eclipse.core.resources.IProject"
+            name="Temporary files"
+            class="jsdai.express_compiler.properties.ExpressProjectTempPropertyPage"
+            id="net.jsdai.express_compiler.properties.ExpressProjectTempPropertyPage"
+            category="net.jsdai.express_compiler.properties.ExpressProjectProperties">
+            <filter
+              name="nature"
+              value="net.jsdai.express_compiler.expressNature">
+            </filter>            
+      </page>
+
+      <page
+            adaptable="true"
+            objectClass="org.eclipse.core.resources.IProject"
+            name="Input"
+            class="jsdai.express_compiler.properties.ExpressProjectIOPropertyPage"
+            id="net.jsdai.express_compiler.properties.ExpressProjectIOPropertyPage"
+            category="net.jsdai.express_compiler.properties.ExpressProjectProperties">
+            <filter
+              name="nature"
+              value="net.jsdai.express_compiler.expressNature">
+            </filter>            
+      </page>
+      <page
+            adaptable="true"
+            objectClass="org.eclipse.core.resources.IProject"
+            name="Compiler settings"
+            class="jsdai.express_compiler.properties.ExpressProjectCompilerPropertyPage"
+            id="net.jsdai.express_compiler.properties.ExpressProjectCompilerPropertyPage"
+            category="net.jsdai.express_compiler.properties.ExpressProjectProperties">
+            <filter
+              name="nature"
+              value="net.jsdai.express_compiler.expressNature">
+            </filter>            
+      </page>
+    </extension>
+
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            objectClass="org.eclipse.core.resources.IProject"
+            adaptable="false"
+            id="net.jsdai.express_compiler.popups">
+            <filter
+              name="nature"
+              value="net.jsdai.express_compiler.expressNature">
+            </filter>            
+         <action
+               label="Compile Express"
+               icon="icons/compile_express.gif"
+               helpContextId="net.jsdai.express_compiler.express_compile_action_context"
+               class="jsdai.express_compiler.actions.ExpressCompilerProjectAction"
+               enablesFor="1"
+                id="net.jsdai.express_compiler.actions.ExpressCompilerProjectAction">
+         </action>
+         <action
+               label="Run validation"
+               icon="icons/validate_p21.gif"
+               helpContextId="net.jsdai.xdt.build.ui.expressview.run_validation_action_context"
+               class="jsdai.express_compiler.actions.ValidateAction"
+               enablesFor="1"
+                id="net.jsdai.express_compiler.actions.ValidateAction">
+         </action>
+      </objectContribution>
+      <objectContribution
+            objectClass="org.eclipse.core.resources.IFolder"
+            adaptable="false"
+            nameFilter="*Express files"
+            id="net.jsdai.express_compiler.popups">
+         <action
+               label="Compile Express"
+               icon="icons/compile_express.gif"
+               helpContextId="net.jsdai.express_compiler.express_compile_action_context"
+               class="jsdai.express_compiler.actions.ExpressCompilerProjectAction"
+               enablesFor="1"
+                id="net.jsdai.express_compiler.actions.ExpressCompilerProjectAction">
+         </action>
+      </objectContribution>
+      <objectContribution
+            objectClass="org.eclipse.core.resources.IFile"
+            adaptable="false"
+            nameFilter="*.exp"
+            id="net.jsdai.express_compiler.popups">
+         <action
+               label="Compile Express"
+               icon="icons/compile_express.gif"
+               helpContextId="net.jsdai.express_compiler.express_compile_action_context"
+               class="jsdai.express_compiler.actions.ExpressCompilerProjectAction"
+               enablesFor="1"
+                id="net.jsdai.express_compiler.actions.ExpressCompilerProjectAction">
+         </action>
+         <action
+               class="jsdai.express_compiler.actions.ExpressCompilerEditorAction"
+               enablesFor="1"
+               icon="icons/compile_express_single.gif"
+               id="net.jsdai.express_compiler.actions.ExpressCompilerEditorAction"
+               label="Check Express file for errors"
+               tooltip="Compile the current Express file to check for errors only">
+         </action>
+      </objectContribution>
+      <objectContribution
+            objectClass="org.eclipse.core.resources.IFile"
+            adaptable="false"
+            nameFilter="*.exl"
+            id="net.jsdai.express_compiler.popups">
+         <action
+               label="Compile Express schemas according to the list"
+               icon="icons/compile_express.gif"
+               helpContextId="net.jsdai.express_compiler.express_compile_action_context"
+               class="jsdai.express_compiler.actions.ExpressCompilerProjectAction"
+               enablesFor="1"
+                id="net.jsdai.express_compiler.actions.ExpressCompilerProjectAction">
+         </action>
+      </objectContribution>
+      <objectContribution
+            objectClass="org.eclipse.core.resources.IFile"
+            adaptable="false"
+            nameFilter="*.p21"
+            id="net.jsdai.express_compiler.popups">
+         <action
+               label="Run validation"
+               icon="icons/validate_p21.gif"
+               helpContextId="net.jsdai.xdt.build.ui.expressview.run_validation_action_context"
+               class="jsdai.express_compiler.actions.ValidateAction"
+               enablesFor="1"
+                id="net.jsdai.express_compiler.actions.ValidateAction">
+         </action>
+      </objectContribution>
+      <objectContribution
+            objectClass="org.eclipse.core.resources.IFile"
+            adaptable="false"
+            nameFilter="*.stp"
+            id="net.jsdai.express_compiler.popups">
+         <action
+               label="Run validation"
+               icon="icons/validate_p21.gif"
+               helpContextId="net.jsdai.xdt.build.ui.expressview.run_validation_action_context"
+               class="jsdai.express_compiler.actions.ValidateAction"
+               enablesFor="1"
+                id="net.jsdai.express_compiler.actions.ValidateAction">
+         </action>
+      </objectContribution>
+      <objectContribution
+            objectClass="org.eclipse.core.resources.IFile"
+            adaptable="false"
+            nameFilter="*.pf"
+            id="net.jsdai.express_compiler.popups">
+         <action
+               label="Run validation"
+               icon="icons/validate_p21.gif"
+               helpContextId="net.jsdai.xdt.build.ui.expressview.run_validation_action_context"
+               class="jsdai.express_compiler.actions.ValidateAction"
+               enablesFor="1"
+                id="net.jsdai.express_compiler.actions.ValidateAction">
+         </action>
+      </objectContribution>
+   </extension>
+
+
+   <extension
+         point="org.eclipse.ui.commands">
+
+      <command
+            name="Select Matching Pair Range"
+            description="selects everything between matching peers including the peers themselves"
+            categoryId="org.eclipse.ui.category.edit"
+            id="net.jsdai.express_compiler.editor.select.matching.peers">
+      </command>
+
+      <command
+            name="Go to Matching Peer"
+            description="Jumps to the matching parenthese or keyword"
+            categoryId="org.eclipse.ui.category.navigate"
+            id="net.jsdai.express_compiler.editor.goto.matching.peer">
+      </command>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.bindings">
+     
+      <key
+            sequence="M1+M2+N"
+            contextId="net.jsdai.express_editor.expressEditorScope"
+            commandId="net.jsdai.express_compiler.editor.select.matching.peers"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+
+      <key
+            sequence="M1+M2+P"
+            contextId="net.jsdai.express_editor.expressEditorScope"
+            commandId="net.jsdai.express_compiler.editor.goto.matching.peer"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+
+      
+   </extension>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup/>
+   </extension>
+
+
+<!-- =================================================================================== -->
+<!-- Extension: JSDAI Express Problem                                                    -->
+<!-- =================================================================================== -->
+<extension id="expressproblem" point="org.eclipse.core.resources.markers" name="JSDAI Express Problem">
+  <super type="org.eclipse.core.resources.problemmarker"/>
+  <super type="org.eclipse.core.resources.textmarker"/>
+  <persistent value="true"/>
+  <attribute name="project"/>
+</extension>   
+
+
+<!-- =================================================================================== -->
+<!-- Extension: JSDAI P21 Problem                                                    -->
+<!-- =================================================================================== -->
+<extension id="p21problem" point="org.eclipse.core.resources.markers" name="JSDAI P21 Problem">
+  <super type="org.eclipse.core.resources.problemmarker"/>
+  <super type="org.eclipse.core.resources.textmarker"/>
+   <persistent value="true"/>
+   <attribute name="project"/>
+</extension>
+
+
+
+
+
+</plugin>

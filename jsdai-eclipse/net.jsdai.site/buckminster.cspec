@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ */
+-->
+
+<cs:cspec xmlns:cs="http://www.eclipse.org/buckminster/CSpec-1.0"
+	 name="net.jsdai.site" componentType="buckminster" version="1.0.0.qualifier" versionType="OSGi">
+
+    <cs:dependencies>
+        <cs:dependency name="net.jsdai.express_compiler.feature" componentType="eclipse.feature" versionType="OSGi"/>
+        <cs:dependency name="net.jsdai.express_g.feature" componentType="eclipse.feature" versionType="OSGi"/>
+    </cs:dependencies>
+
+	<cs:artifacts>
+		<cs:private name="root.artifacts">
+			<cs:path path="index.html"/>
+			<cs:path path="site.properties"/>
+			<cs:path path="www_images/eclipse_logo_150.png"/>
+			<cs:path path="www_images/favicon.ico"/>
+			<cs:path path="www_images/jsdai_logo_150.png"/>
+		</cs:private>
+		<cs:private name="site.template" path="site.xml"/>
+	</cs:artifacts>
+
+	<cs:actions>
+	 	<cs:public name="build.site" actor="ant">
+			<cs:actorProperties>
+				<cs:property key="buildFileId" value="buckminster.pdetasks"/>
+				<cs:property key="targets" value="create.complex.site"/>
+			</cs:actorProperties>
+			<cs:properties>
+				<cs:property key="site.name" value="jsdai-developer"/>
+			</cs:properties>
+			<cs:prerequisites>
+				<cs:attribute name="bundle.jars" alias="plugins"/>
+				<cs:attribute name="feature.jars" alias="features"/>
+				<cs:attribute name="site.rootFiles" alias="rootFiles"/>
+				<cs:attribute name="site.template" alias="template"/>
+			</cs:prerequisites>
+			<cs:products alias="action.output" base="${buckminster.output.root}/archivedsite/" fileCount="1" upToDatePolicy="COUNT"/>
+		</cs:public>
+	 	<cs:public name="build.site.dir" actor="ant">
+			<cs:actorProperties>
+				<cs:property key="buildFileId" value="buckminster.pdetasks"/>
+				<cs:property key="targets" value="unzip"/>
+			</cs:actorProperties>
+			<cs:prerequisites alias="action.requirements">
+				<cs:attribute name="build.site"/>
+			</cs:prerequisites>
+			<cs:products alias="action.output" base="${buckminster.output.root}/site/" upToDatePolicy="NOT_EMPTY"/>
+		</cs:public>
+		<cs:public name="build.site.xml" actor="ant">
+			<cs:actorProperties>
+				<cs:property key="buildFileId" value="buckminster.pdetasks"/>
+				<cs:property key="targets" value="create.site.xml"/>
+			</cs:actorProperties>
+			<cs:prerequisites>
+				<cs:attribute name="site.features" alias="features"/>
+				<cs:attribute name="site.template" alias="template"/>
+			</cs:prerequisites>
+			<cs:products alias="action.output" base="generated/">
+				<cs:path path="site.xml"/>
+			</cs:products>
+		</cs:public>
+	</cs:actions>
+
+	<cs:groups>
+		<cs:public name="bundle.jars">
+			<cs:attribute name="bundle.jars" component="net.jsdai.express_compiler.feature"/>
+			<cs:attribute name="bundle.jars" component="net.jsdai.express_g.feature"/>
+		</cs:public>
+		<cs:public name="net.jsdai.express.category">
+			<cs:attribute name="feature.jars" component="net.jsdai.express_compiler.feature"/>
+		</cs:public>
+		<cs:public name="feature.jars">
+			<cs:attribute name="net.jsdai.express.category"/>
+			<cs:attribute name="net.jsdai.express_g.category"/>
+		</cs:public>
+		<cs:public name="net.jsdai.express_g.category">
+			<cs:attribute name="feature.jars" component="net.jsdai.express_g.feature"/>
+		</cs:public>
+		<cs:public name="site.features">
+			<cs:attribute name="net.jsdai.express.category"/>
+			<cs:attribute name="net.jsdai.express_g.category"/>
+		</cs:public>
+		<cs:public name="site.rootFiles">
+			<cs:attribute name="build.site.xml"/>
+			<cs:attribute name="root.artifacts"/>
+		</cs:public>
+	</cs:groups>
+</cs:cspec>

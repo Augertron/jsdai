@@ -1,0 +1,1055 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+	(** For V3.6,  version 3.17 2005-10-20 *)
+	(*
+	
+		added where rules:
+			
+			to entity extended_enumeration_type:
+			  WR1: 'EXTENDED_DICTIONARY_SCHEMA.EXTENSIBLE_ENUMERATION_TYPE' IN TYPEOF(is_based_on.domain);
+			
+			to entity extended_select_type:
+			  WR1: 'EXTENDED_DICTIONARY_SCHEMA.EXTENSIBLE_SELECT_TYPE' IN TYPEOF(is_based_on.domain);
+			
+			to entity select_type:		
+				WR1: (SIZEOF(local_selections) > 0)  OR  ( 'EXTENDED_DICTIONARY_SCHEMA.EXTENSIBLE_SELECT_TYPE' IN TYPEOF(SELF));
+
+			
+		changed (so that public methods return expected types consistently with part 11):
+			1. in entity extended_enumeration_type:
+				attribute is_based_on: type extensible_enumeration_type -> defined_type
+			2. in entity extended_select_type:
+				attribute is_based_on: type extensible_select_type -> defined_type
+
+
+	*)
+
+	(** For V3.6,  version 3.16 2005-10-10 *)
+	(*
+
+		NOTE: 3.16 was never used, it is internal intermediate version only, given to Gintaras only,
+		soon updated to 3.17
+		
+		added:
+		1. to entity entity_definition:
+			abstract_entity : BOOLEAN; -- to distinguish between ABSTRACT and ABSTRACT SUPERTYPE
+			connotational_subtype : BOOLEAN; -- proposed part 11 extension
+		2. to entity sub_supertype_constraint:
+			abstract_supertype : BOOLEAN; -- to fully support edition 2 SUBTYPE_CONSTRAINT
+		3. to entity function_definition: 
+			return_type_labels : OPTIONAL LIST [1:?] OF express_id; -- because return type also may be an aggregate with more than one label
+			 -- to replace return_type_label
+		4. to SELECT type documentation_object: 
+			parameter,                  -- for tagged remark
+			population_dependent_bound, -- to store expression string
+			sub_supertype_constraint,   -- for tagged remark
+			uniqueness_rule             -- for tagged remark
+		
+		new entity: 
+			documentation_with_element subtype of documentation -- for enumeration references and type label references
+		
+
+*)
+
+
+
+
+	(* For V3.6,  version 3.15 2003-11-03 *)
+
+-- added redeclared attributes in use_from_specification and reference_from_specification
+
+-- renamed subtype_constraint to sub_supertype_constraint
+
+-- -----------------
+	
+-- some more additions, total_over, declaration for subtypes_constraint, subtype_constraint_declaration,
+-- changes in declaration and declaration_type, also added a couple of OPTIONAL in subtypes_expression
+-- renamed subtype_constraint to subtypes_constraint
+	
+-- duplicated explicit attributes used instead of derived attributes to ensure compatibility
+
+
+
+(*
+
+ISSUES:
+
+
+
+base_type = concrete_types | generalized_types
+
+concrete_types = aggregation_types | simple_types | named_types
+
+generalized_types = aggregate_type | general_aggregation_type | generic_type | generic_entity_type 
+
+
+Points of interest:
+representation in the dictionary of generic types, generalized aggregates, 
+including their members, possibly generalised types as well.
+
+
+generic_type - parameter, with parameter_type attribute set to standard express type generic
+							 parameter name: _generic_	
+
+generic_entity_type - parameter, with parameter_type attribute set to standard express entity type
+                      parameter name: _generic_entity_
+
+aggregate_type - instance of aggregation_type, element_type - the value of parameter_type attribute of parameter (element type)
+                 if element type - generic,  AGGREGATE OF GENERIC is our standard express type, nothing created
+
+general_array_type - array_type, element_type - parameter parameter_type attribute value
+                     possible to distinguish - the name starts with _GENERALARRAY, bounds may be missing
+
+general_bag_type   - similar
+
+general_list_type  - similar
+
+general_set_type   - similar
+
+
+So, all general aggregation types are compatible with aggregation types,
+but looking deeper, additional problems may occur, element type compatibility
+No, no problems, because parameter_type always extracted from parameter in element_type of an aggregate
+
+
+Because our current implementation uses parameter instances,
+base_type select should be extended with parameter.
+Aggregate element types do not need that, data_type also covers generic and generic_entity. 
+
+*)
+
+
+SCHEMA extended_dictionary_schema;
+
+-- parameter added, for generic and for generic_entity
+TYPE base_type = SELECT
+	(simple_type,
+	 aggregation_type,
+	 named_type,
+	 parameter);
+END_TYPE;
+
+TYPE constructed_type = SELECT
+	(enumeration_type,
+	select_type);
+END_TYPE;
+
+-- from V.3.6
+TYPE declaration_scope_type = SELECT
+	(algorithm_definition, 
+	global_rule);
+END_TYPE;	
+
+TYPE declaration_type = SELECT 
+	(named_type, 
+	 global_rule, 
+	 algorithm_definition,
+	 constant_definition,
+	 map_definition,       --<-- new to V3.5
+	 sub_supertype_constraint); --<-- new to V3.5
+END_TYPE;
+
+TYPE documentation_object = SELECT
+	(schema_definition,
+	constant_definition,
+	named_type,
+	attribute,
+	algorithm_definition,
+	global_rule,
+	where_rule,
+	parameter,
+	population_dependent_bound,
+	sub_supertype_constraint,
+	uniqueness_rule);
+END_TYPE;
+
+TYPE entity_or_subtype_expression = SELECT (
+  entity_definition,
+  subtype_expression);
+END_TYPE;
+
+TYPE entity_or_view_or_subtype_expression = SELECT (
+  entity_or_view_definition,
+  subtype_expression);
+END_TYPE;
+
+TYPE explicit_or_derived = SELECT
+	(explicit_attribute,
+	 derived_attribute);
+END_TYPE;
+
+TYPE express_id = STRING;
+END_TYPE;
+
+TYPE info_object_id = STRING;
+END_TYPE;
+
+-- new in V3.5
+TYPE map_or_view_definition_select = SELECT 
+	(map_definition, 
+	view_definition);
+END_TYPE;
+
+-- new in V3.5
+TYPE schema_map_or_view_definition = SELECT
+	(schema_view_definition,
+	schema_map_definition);
+END_TYPE;
+
+-- new in V3.5
+TYPE entity_or_view_definition_or_simple_type = SELECT
+	(entity_or_view_definition,
+	simple_type);
+END_TYPE;
+ 
+TYPE type_or_rule = SELECT
+	(named_type,
+	 global_rule);
+END_TYPE;
+
+TYPE underlying_type = SELECT
+	(simple_type,
+	 aggregation_type,
+	 defined_type,
+	 constructed_type);
+END_TYPE;
+
+-- new in V3.5
+ENTITY aggregate_target_parameter
+	SUBTYPE OF (target_parameter);
+	lower_bound : OPTIONAL bound;
+	upper_bound : OPTIONAL bound;
+END_ENTITY;
+
+(* not abstract because of generic aggregates *)
+ENTITY aggregation_type
+	SUPERTYPE OF (ONEOF(variable_size_aggregation_type, array_type))
+	SUBTYPE OF (data_type);
+	element_type : data_type;
+END_ENTITY;
+
+ENTITY algorithm_declaration
+  ABSTRACT SUPERTYPE OF (ONEOF (function_declaration, procedure_declaration)) 
+	SUBTYPE OF (declaration);
+END_ENTITY;
+
+ENTITY algorithm_definition
+  ABSTRACT SUPERTYPE OF (ONEOF (function_definition, procedure_definition)); 
+  name : express_id; 
+  parameters : LIST[0:?] OF parameter;
+END_ENTITY; -- algorithm_definition
+
+ENTITY andor_subtype_expression
+	SUBTYPE OF (subtype_expression);
+END_ENTITY;
+
+ENTITY and_subtype_expression
+	SUBTYPE OF (subtype_expression);
+END_ENTITY;
+
+ENTITY annotation 
+	ABSTRACT SUPERTYPE OF (ONEOF (documentation, express_code));
+	target : documentation_object; 
+	values : LIST [1:?] OF STRING; 
+END_ENTITY; -- annotation
+
+(* OPTIONAL bounds only in the case of generic array *)
+ENTITY array_type
+	SUBTYPE OF (aggregation_type);
+	lower_index : OPTIONAL bound;
+	upper_index : OPTIONAL bound;
+	unique_flag : BOOLEAN;
+	optional_flag : BOOLEAN;
+END_ENTITY;
+
+(* maybe also to introduce alias_attribute for EXPRESS_2 ?*)
+ENTITY attribute
+--	ABSTRACT SUPERTYPE OF (ONEOF(derived_attribute,explicit_attribute,inverse_attribute));
+	ABSTRACT SUPERTYPE OF (ONEOF(derived_attribute, explicit_attribute, inverse_attribute, view_attribute));
+	name : express_id;
+  -- deprecated, left for backward compatibility
+  --parent_entity : entity_definition;
+	parent : entity_or_view_definition;
+	order : OPTIONAL INTEGER;
+ DERIVE
+	(* if parent typeof entity_definition otherwise unset *)
+	parent_entity : entity_definition := get_entity_definition(parent); 
+END_ENTITY;
+
+ENTITY bag_type
+	SUBTYPE OF (variable_size_aggregation_type);
+END_ENTITY;
+
+ENTITY binary_type
+	SUBTYPE OF (simple_type);
+	width : OPTIONAL bound;
+	fixed_width : BOOLEAN;
+END_ENTITY;
+
+ENTITY boolean_type
+	SUBTYPE OF (simple_type);
+END_ENTITY;
+
+ENTITY bound
+	ABSTRACT SUPERTYPE OF (ONEOF(integer_bound,population_dependent_bound));
+	bound_value : INTEGER;
+--	bound_value : NUMBER;
+END_ENTITY;
+
+ENTITY constant_declaration
+	SUBTYPE OF (declaration);
+END_ENTITY;
+
+ENTITY constant_definition;
+	name : express_id;
+	domain : base_type;
+	constant_value : base_type; -- should be ENTITY here
+END_ENTITY;
+
+(* not abstract since it can be used for GENERIC *)
+ENTITY data_type
+	SUPERTYPE OF 
+	(ONEOF(named_type, enumeration_type, select_type, simple_type, aggregation_type));
+	name : express_id;
+END_ENTITY;
+
+ENTITY data_type_declaration
+	SUPERTYPE OF 
+--	(ONEOF(entity_declaration, type_declaration))
+	(ONEOF(entity_declaration, type_declaration, view_declaration))
+	SUBTYPE OF (declaration);
+END_ENTITY;
+
+-- from V.3.6
+ENTITY inner_declaration SUBTYPE OF (declaration);
+	-- use it only for defined_types and entities. Constants?
+	scope : declaration_scope_type;
+END_ENTITY;	
+
+
+ENTITY declaration
+	ABSTRACT SUPERTYPE OF (ONEOF(inner_declaration, interfaced_declaration, local_declaration)
+		AND ONEOF(data_type_declaration, rule_declaration, 
+--		algorithm_declaration, constant_declaration));
+		algorithm_declaration, constant_declaration, map_declaration, subtype_constraint_declaration));
+	-- deprecated, present for backward compatibility
+	-- parent_schema : schema_definition;
+	parent : generic_schema_definition;
+	definition : declaration_type;
+DERIVE
+	-- 3.6 to be changed in 3.7 to renamed redeclared explicit attribute parent
+	parent_schema : schema_definition := get_schema_definition(parent); 
+END_ENTITY;
+
+ENTITY defined_type
+	SUBTYPE OF (named_type);
+	domain : underlying_type;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY dependent_map_definition
+	SUBTYPE OF (map_definition);
+END_ENTITY;
+
+-- new in V3.5
+-- inverse attribute source_parameters made redeclared
+ENTITY dependent_map_partition
+	SUBTYPE OF (map_or_view_partition);
+	SELF\map_or_view_partition.parent : dependent_map_definition;
+  INVERSE
+--	source_parameters : SET [0:?] OF dependent_source_parameter FOR parent;
+	SELF\map_or_view_partition.source_parameters : SET [0:?] OF dependent_source_parameter FOR parent;
+END_ENTITY;
+
+-- new in V3.5
+--  changed to be a subtype of source_parameter, to support redeclaring in dependent_map_partition
+ENTITY dependent_source_parameter
+--	SUBTYPE OF (map_or_view_input_parameter);
+	SUBTYPE OF (source_parameter);
+	SELF\map_or_view_input_parameter.name : express_id;
+	SELF\map_or_view_input_parameter.extent : entity_or_view_definition_or_simple_type;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY dependent_view_definition
+	SUBTYPE OF (view_definition);
+	domain : base_type;
+END_ENTITY;
+
+ENTITY derived_attribute
+	SUBTYPE OF (attribute);
+	domain : base_type;
+	redeclaring : OPTIONAL explicit_or_derived;
+	-- new in V3.5
+	--SELF\attribute.parent_entity : entity_definition;
+END_ENTITY;
+
+ENTITY documentation
+	SUBTYPE OF (annotation);
+END_ENTITY; -- documentation
+
+-- for enumeration ref and type label ref
+ENTITY documentation_with_element
+	SUBTYPE OF (documentation);
+  element: STRING;
+END_ENTITY; -- documentation_with_element
+
+ENTITY domain_equivalent_type;
+	external_type : named_type;
+	native_type : named_type;
+	owner : external_schema;
+END_ENTITY;
+
+ENTITY entity_declaration
+	SUBTYPE OF (data_type_declaration);
+	-- new in V3.5
+	-- SELF\declaration.parent_schema : schema_definition;
+	-- new in V3.5
+	SELF\declaration.definition : entity_definition;
+END_ENTITY;
+
+ENTITY entity_definition
+--	SUBTYPE OF (named_type);
+	SUBTYPE OF (entity_or_view_definition);
+	complex : BOOLEAN;
+	instantiable : BOOLEAN;
+	independent : BOOLEAN;
+	abstract_entity : BOOLEAN;
+	connotational_subtype : BOOLEAN;
+	-- deprecated
+	-- supertypes : LIST [0:?] OF UNIQUE entity_definition;
+-- also moved down from the first
+--	SELF\entity_or_view_definition.generic_supertypes : LIST [0:?] OF UNIQUE entity_definition;
+ DERIVE
+  -- this is for compatibility only. Will be moved into renamed redeclared explicit attribute generic_supertypes 
+  supertypes : LIST [0:?] OF UNIQUE entity_definition := get_list_of_entity_definition(generic_supertypes);
+ INVERSE
+--	attributes : SET[0:?] OF attribute FOR parent_entity; 
+	attributes : SET[0:?] OF attribute FOR parent; 
+	uniqueness_rules : SET[0:?] OF uniqueness_rule FOR parent_entity;
+	global_rules : SET[0:?] OF global_rule FOR entities;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY entity_or_view_definition
+	ABSTRACT SUPERTYPE OF (ONEOF (entity_definition, view_definition))
+	SUBTYPE OF (named_type);
+--	supertypes : LIST [0:?] OF UNIQUE entity_or_view_definition;
+	generic_supertypes : LIST [0:?] OF UNIQUE entity_or_view_definition;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY entity_select_type
+	SUBTYPE OF (select_type);
+END_ENTITY;
+
+(*
+	
+Old pre-V3.5 enumeration_type was only this:
+
+ENTITY enumeration_type
+	SUBTYPE OF (data_type);
+	elements : LIST [1:?] OF UNIQUE express_id;
+END_ENTITY;
+*)
+
+ENTITY enumeration_type 
+	SUPERTYPE OF (extensible_enumeration_type ANDOR extended_enumeration_type)
+	SUBTYPE OF (data_type);
+	(* have the complex extensible_enumeration_type&extended_enumeration_type *)
+--	elements : LIST [0:?] OF UNIQUE express_id; 
+	local_elements : OPTIONAL LIST [0:?] OF UNIQUE express_id; 
+DERIVE
+	(*
+		elements value to be calculated at run-time from the dictionary, 
+		depending on the current schema and what is interfaced into it 
+	*)
+	elements : LIST [0:?] OF UNIQUE express_id := local_elements;
+WHERE
+	(* rule: local_elements must have either at least one member OR is extensible_enumeration_type *)
+--	WR1: (SIZEOF(elements) > 0)  OR   ( 'extensible_enumeration_type' IN TYPEOF(SELF));
+	WR1: (SIZEOF(local_elements) > 0)  OR  ( 'EXTENDED_DICTIONARY_SCHEMA.EXTENSIBLE_ENUMERATION_TYPE' IN TYPEOF(SELF));
+END_ENTITY; 
+
+ENTITY explicit_attribute
+	SUBTYPE OF (attribute);
+	domain : base_type;
+	redeclaring : OPTIONAL explicit_attribute;
+	optional_flag : BOOLEAN;
+	-- new in V3.5
+	-- SELF\attribute.parent_entity : entity_definition;
+END_ENTITY;
+
+ENTITY express_code 
+	SUBTYPE OF (annotation);
+END_ENTITY; 
+
+-- new in V3.5
+ENTITY extended_enumeration_type
+	SUBTYPE OF (enumeration_type);
+-- changed so that public method returs defined type as it should, more consistent with part 11
+-- 	is_based_on : extensible_enumeration_type;
+ 	is_based_on : defined_type;
+WHERE
+  WR1: 'EXTENDED_DICTIONARY_SCHEMA.EXTENSIBLE_ENUMERATION_TYPE' IN TYPEOF(is_based_on.domain);
+END_ENTITY; --  extended_enumeration_type
+
+-- new in V3.5
+ENTITY extended_select_type
+	SUBTYPE OF (select_type);
+-- changed so that public method returs defined type as it should, more consistent with part 11
+--	is_based_on : extensible_select_type;
+	is_based_on : defined_type;
+WHERE
+  WR1: 'EXTENDED_DICTIONARY_SCHEMA.EXTENSIBLE_SELECT_TYPE' IN TYPEOF(is_based_on.domain);
+END_ENTITY; -- extended_select_type
+
+-- new in V3.5
+ENTITY extensible_enumeration_type
+	SUBTYPE OF (enumeration_type);
+END_ENTITY; 
+
+-- new in V3.5
+ENTITY extensible_select_type
+	SUBTYPE OF (select_type);
+END_ENTITY;
+
+ENTITY external_schema;
+	definition : schema_definition;
+	native_schema : schema_definition;
+ INVERSE
+	for_types : SET[1:?] OF domain_equivalent_type FOR owner;
+END_ENTITY;
+
+ENTITY function_declaration
+	SUBTYPE OF (algorithm_declaration);
+END_ENTITY;
+
+ENTITY function_definition 
+	SUBTYPE OF (algorithm_definition);
+  return_type : data_type;
+  -- to be removed, replaced by return_type_labels, stays here temporarily for backward compatibility
+  return_type_label : OPTIONAL express_id;
+	return_type_labels : OPTIONAL LIST [1:?] OF express_id;
+END_ENTITY; -- function_definition
+
+-- new to V3.5
+ENTITY generic_schema_definition
+	ABSTRACT SUPERTYPE OF (ONEOF(schema_definition, schema_view_definition, schema_map_definition));
+	name : express_id;
+	identification : OPTIONAL info_object_id;
+ UNIQUE
+	UR1:	identification;
+END_ENTITY;
+
+ENTITY global_rule;
+	name : express_id;
+	entities : LIST [1:?] OF entity_definition;
+ INVERSE
+	where_rules : SET [1:?] OF where_rule FOR parent_item;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY identified_by_parameter
+	SUBTYPE OF (map_or_view_input_parameter);
+END_ENTITY;
+
+ENTITY implicit_declaration
+	SUBTYPE OF (interfaced_declaration);
+END_ENTITY;
+
+-- new in V3.5
+ENTITY independent_view_definition
+	SUBTYPE OF (view_definition);
+END_ENTITY;
+
+ENTITY integer_bound
+	SUBTYPE OF (bound);
+END_ENTITY;
+
+ENTITY integer_type
+	SUBTYPE OF (simple_type);
+END_ENTITY;
+
+ENTITY interfaced_declaration
+	ABSTRACT SUPERTYPE OF
+	(ONEOF(implicit_declaration, used_declaration, referenced_declaration))
+	SUBTYPE OF (declaration);
+	alias_name : OPTIONAL express_id;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY interface_specification;
+	foreign_schema : generic_schema_definition;
+	current_schema : generic_schema_definition;
+	items : OPTIONAL SET[1:?] OF interfaced_declaration;
+END_ENTITY;
+
+ENTITY inverse_attribute
+	SUBTYPE OF (attribute);
+	domain : entity_definition;
+	redeclaring : OPTIONAL inverse_attribute;
+	inverted_attr : explicit_attribute;
+	min_cardinality : OPTIONAL bound;
+	max_cardinality : OPTIONAL bound;
+	duplicates : BOOLEAN;
+	-- new in V3.5
+	-- SELF\attribute.parent_entity : entity_definition;
+END_ENTITY;
+
+ENTITY list_type
+	SUBTYPE OF (variable_size_aggregation_type);
+	unique_flag : BOOLEAN;
+END_ENTITY;
+
+ENTITY local_declaration
+	SUBTYPE OF (declaration);
+END_ENTITY;
+
+ENTITY logical_type
+	SUBTYPE OF (simple_type);
+END_ENTITY;
+
+-- new in V3.5
+ENTITY map_declaration
+	SUBTYPE OF (data_type_declaration);
+-- forced by compatibility changes
+--	SELF\declaration.parent_schema : schema_map_definition;
+	SELF\declaration.parent : schema_map_definition;
+	SELF\declaration.definition : map_definition;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY map_definition;
+	name : express_id;
+--	supertypes : LIST [0:?] OF UNIQUE map_definition;
+	super_type : map_definition;
+  INVERSE
+	partitions : SET [1:?] OF map_partition FOR parent;
+	target_parameters : SET [0:?] OF target_parameter FOR parent;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY map_or_view_input_parameter
+	ABSTRACT SUPERTYPE OF (ONEOF (identified_by_parameter, source_parameter));
+	name : OPTIONAL express_id;
+	parent : map_or_view_partition;
+	extent : OPTIONAL data_type;
+	order : INTEGER;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY map_or_view_partition
+	ABSTRACT SUPERTYPE OF (ONEOF (map_partition, dependent_map_partition, view_partition));
+	parent : map_or_view_definition_select;
+	name : express_id;
+  INVERSE
+	source_parameters : SET [0:?] OF source_parameter FOR parent;
+END_ENTITY;
+
+-- new in V3.5
+-- inverse attribute source_parameters removed, it is inherited
+ENTITY map_partition
+	SUBTYPE OF (map_or_view_partition);
+	SELF\map_or_view_partition.parent : map_definition;
+--  INVERSE
+--	source_parameters : SET [0:?] OF source_parameter FOR parent;
+END_ENTITY;
+
+ENTITY named_type
+--	ABSTRACT SUPERTYPE OF (ONEOF(defined_type, entity_definition))
+	ABSTRACT SUPERTYPE OF (ONEOF(defined_type, entity_or_view_definition))
+	SUBTYPE OF (data_type);
+	short_name : OPTIONAL STRING;
+ INVERSE
+	where_rules : SET [0:?] OF where_rule FOR parent_item;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY non_extensible_select_type
+	SUBTYPE OF (select_type);
+	(* OPTIONAL attribute redeclared as mandatory *)
+	SELF\select_type.local_selections : SET [1:?] OF named_type;
+END_ENTITY;
+
+ENTITY number_type
+	SUBTYPE OF (simple_type);
+END_ENTITY;
+
+ENTITY oneof_subtype_expression
+	SUBTYPE OF (subtype_expression);
+END_ENTITY;
+
+ENTITY parameter;
+	name : express_id;
+	parameter_type : data_type;
+	var_type : BOOLEAN;
+	(* type labels may occur nested, e.g. X and Y in 'AGGREGATE:X OF GENERIC:Y' *)
+	type_labels: OPTIONAL LIST [1:?] OF express_id;
+END_ENTITY;
+
+ENTITY population_dependent_bound
+	SUBTYPE OF (bound);
+	schema_name : STRING;
+	entity_name : STRING;
+	method_name : STRING;
+DERIVE
+  SELF\bound.bound_value : INTEGER := 0;
+END_ENTITY;
+
+(*
+ENTITY procedure_declaration
+	SUBTYPE OF (declaration);
+END_ENTITY;
+
+ENTITY procedure_definition;
+	name : express_id;
+END_ENTITY;
+*)
+
+ENTITY procedure_declaration
+	SUBTYPE OF (algorithm_declaration);
+END_ENTITY;
+
+ENTITY procedure_definition 
+	SUBTYPE OF (algorithm_definition);
+END_ENTITY; -- procedure_definition
+
+ENTITY real_type
+	SUBTYPE OF (simple_type);
+	precision : OPTIONAL bound;
+END_ENTITY;
+
+ENTITY referenced_declaration
+	SUBTYPE OF (interfaced_declaration);
+END_ENTITY;
+
+-- new in V3.5
+ENTITY reference_from_specification 
+	SUBTYPE OF (interface_specification);
+	SELF\interface_specification.items : OPTIONAL SET[1:?] OF referenced_declaration;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY reference_from_specification_as 
+	ABSTRACT SUPERTYPE OF (ONEOF (reference_from_specification_as_source, reference_from_specification_as_target))
+	SUBTYPE OF (reference_from_specification); 
+	self\interface_specification.current_schema : schema_map_definition;
+	alias_name : OPTIONAL express_id; 
+END_ENTITY;
+
+-- new in V3.5
+ENTITY reference_from_specification_as_source 
+	SUBTYPE OF (reference_from_specification_as);
+END_ENTITY;
+
+-- new in V3.5
+ENTITY reference_from_specification_as_target 
+	SUBTYPE OF (reference_from_specification_as);
+END_ENTITY;
+
+ENTITY rule_declaration
+	SUBTYPE OF (declaration);
+END_ENTITY;
+
+ENTITY schema_definition
+-- new in V3.5
+	SUBTYPE OF (generic_schema_definition);
+--	name : express_id;
+--	identification : OPTIONAL info_object_id;
+ INVERSE
+--	entity_declarations : SET[0:?] OF entity_declaration FOR parent_schema;
+	entity_declarations : SET[0:?] OF entity_declaration FOR parent;
+--	type_declarations : SET[0:?] OF type_declaration FOR parent_schema;
+	type_declarations : SET[0:?] OF type_declaration FOR parent;
+--	rule_declarations : SET[0:?] OF rule_declaration FOR parent_schema;
+	rule_declarations : SET[0:?] OF rule_declaration FOR parent;
+--	algorithm_declarations : SET[0:?] OF algorithm_declaration FOR parent_schema;
+	algorithm_declarations : SET[0:?] OF algorithm_declaration FOR parent;
+	external_schemas : SET[1:?] OF external_schema FOR native_schema;
+-- UNIQUE
+--	UR1:	identification;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY schema_map_definition 
+	SUBTYPE OF (generic_schema_definition); 
+	INVERSE 
+--		view_declarations : SET[0:?] OF view_declaration FOR parent_schema; 
+--		map_declarations : SET[0:?] OF map_declaration FOR parent_schema; 
+-- because of changes for compatibility
+		view_declarations : SET[0:?] OF view_declaration FOR parent; 
+		map_declarations : SET[0:?] OF map_declaration FOR parent; 
+		source_schema_specifications : SET[1:?] OF reference_from_specification_as_source for current_schema;
+		target_schema_specifications : SET[1:?] OF reference_from_specification_as_target for current_schema;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY schema_view_definition
+	SUBTYPE OF (generic_schema_definition);
+ INVERSE
+--	view_declarations : SET[0:?] OF view_declaration FOR parent_schema;
+-- because of changes for compatibility
+	view_declarations : SET[0:?] OF view_declaration FOR parent;
+END_ENTITY;
+
+(*
+
+Old pre-V3.5 select type, only this, nothing else
+
+ENTITY select_type
+	SUBTYPE OF (data_type);
+	selections : SET [1:?] OF named_type;
+END_ENTITY;
+*)
+
+ENTITY select_type 
+	ABSTRACT SUPERTYPE OF (
+		ONEOF (non_extensible_select_type, extensible_select_type) ANDOR entity_select_type ANDOR extended_select_type)
+	SUBTYPE OF (data_type);
+	(* this attribute is OPTIONAL for extensible selects, mandatory for non-extensible selects *)
+	local_selections : OPTIONAL SET [1:?] OF named_type; 
+DERIVE
+	(*
+		selections value to be calculated at run-time from the dictionary, 
+		depending on the current schema and what is interfaced into it 
+	*)
+	selections : SET [1:?] OF named_type := local_selections; 
+WHERE
+	(* rule: local_elements must have either at least one member OR is extensible_select_type *)
+	WR1: (SIZEOF(local_selections) > 0)  OR  ( 'EXTENDED_DICTIONARY_SCHEMA.EXTENSIBLE_SELECT_TYPE' IN TYPEOF(SELF));
+END_ENTITY; 
+
+ENTITY set_type
+	SUBTYPE OF (variable_size_aggregation_type);
+END_ENTITY;
+
+ENTITY simple_type
+	ABSTRACT SUPERTYPE OF (ONEOF(integer_type,number_type,real_type,boolean_type,logical_type,binary_type,string_type))
+	SUBTYPE OF (data_type);
+END_ENTITY;
+
+-- new in V3.5
+ENTITY source_parameter
+	SUBTYPE OF (map_or_view_input_parameter);
+	SELF\map_or_view_input_parameter.name : express_id;
+	SELF\map_or_view_input_parameter.extent : entity_or_view_definition;
+END_ENTITY;
+
+ENTITY string_type
+	SUBTYPE OF (simple_type);
+	width : OPTIONAL bound;
+	fixed_width : BOOLEAN;
+END_ENTITY;
+
+-- the name subtype_constraint is express amendment keyword
+-- changed to 
+
+-- originally: subtype_constraint, no longer possible - keyword now
+-- proposed by Lothar: sub_supertype_constraint, entity_subtype_constraint
+ENTITY sub_supertype_constraint;
+	name : OPTIONAL express_id;
+	-- deprecated
+--	super_type : entity_definition;
+	generic_supertype : entity_or_view_definition;
+	total_cover : OPTIONAL SET of entity_definition;
+	-- supertype_expression in the grammar
+	constraint : OPTIONAL subtype_expression;
+	abstract_supertype : BOOLEAN;
+DERIVE
+	super_type : entity_definition := get_entity_definition(generic_supertype);
+END_ENTITY;
+
+(*
+	express amendment, used for implicit inheritance only, it seems.
+	so instances of local and implicit declarations are probably needed
+*)
+ENTITY subtype_constraint_declaration
+	SUBTYPE OF (declaration);
+END_ENTITY;
+
+ENTITY subtype_expression ABSTRACT SUPERTYPE OF 
+(ONEOF (andor_subtype_expression, and_subtype_expression, oneof_subtype_expression));
+	-- deprecated
+--  operands : SET [1:?] OF entity_or_subtype_expression;
+	generic_operands : SET [1:?] OF entity_or_view_or_subtype_expression;
+DERIVE
+ 	operands : SET [1:?] OF entity_or_subtype_expression := get_operands(generic_operands);
+END_ENTITY;
+
+
+
+-- new in V3.5
+ENTITY target_parameter;
+	name : express_id;
+	parent : map_definition;
+	extent : entity_definition;
+	order : INTEGER;
+END_ENTITY;
+
+ENTITY type_declaration
+	SUBTYPE OF (data_type_declaration);
+	-- new in V3.5
+	-- SELF\declaration.parent_schema : schema_definition;
+	-- new in V3.5
+	SELF\declaration.definition : defined_type;
+END_ENTITY;
+
+ENTITY uniqueness_rule;
+	label : OPTIONAL express_id;
+	attributes : LIST [1:?] OF attribute;
+	parent_entity : entity_definition;
+END_ENTITY;
+
+ENTITY used_declaration
+	SUBTYPE OF (interfaced_declaration);
+END_ENTITY;
+
+-- new in V3.5
+ENTITY use_from_specification 
+	SUBTYPE OF (interface_specification);
+	SELF\interface_specification.items : OPTIONAL SET[1:?] OF used_declaration;
+END_ENTITY;
+
+ENTITY variable_size_aggregation_type
+	ABSTRACT SUPERTYPE OF (ONEOF(bag_type,set_type,list_type))
+	SUBTYPE OF (aggregation_type);
+	lower_bound : OPTIONAL bound;
+	upper_bound : OPTIONAL bound;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY view_attribute
+	SUBTYPE OF (attribute);
+	(* base type has to be compatible with JSDAI base type *)
+	domain : base_type;
+	optional_flag : BOOLEAN;
+--	SELF\attribute.parent_entity : independent_view_definition;
+-- forced by the changes to achieve compatibility with legacy jsdai applications
+	SELF\attribute.parent : independent_view_definition;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY view_declaration
+	SUBTYPE OF (data_type_declaration);
+--	SELF\declaration.parent_schema : schema_map_or_view_definition;
+-- forced by the changes to achieve compatibility with legacy jsdai applications
+	SELF\declaration.parent : schema_map_or_view_definition;
+	SELF\declaration.definition : view_definition;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY view_definition
+	ABSTRACT SUPERTYPE OF (ONEOF(independent_view_definition, dependent_view_definition))
+	SUBTYPE OF (entity_or_view_definition);
+	SELF\entity_or_view_definition.generic_supertypes : LIST [0:?] OF UNIQUE view_definition;
+  INVERSE
+	partitions : SET [1:?] OF view_partition FOR parent;
+(*DERIVED
+	binding_extent : LIST [1:?] OF source_parameter;
+*)	
+END_ENTITY;
+
+-- new in V3.5
+ENTITY view_partition
+	SUBTYPE OF (map_or_view_partition);
+	SELF\map_or_view_partition.parent : view_definition;
+  INVERSE
+	attribute : SET [0:?] OF view_partition_attribute FOR related_partition;
+END_ENTITY;
+
+-- new in V3.5
+ENTITY view_partition_attribute;
+	parent_view_attribute :	view_attribute;
+	related_partition : view_partition;
+END_ENTITY;
+
+ENTITY where_rule;
+	label : OPTIONAL express_id;
+	parent_item : type_or_rule;
+	order : INTEGER;
+END_ENTITY;
+
+-- no longer needed, as derived attributes are again explicit. Deprecated but explicit.
+
+FUNCTION get_entity_definition(parent : entity_or_view_definition) : entity_definition;
+	LOCAL
+	  parent_entity : entity_definition;
+	END_LOCAL;
+	IF 'EXTENDED_DICTIONARY_SCHEMA.ENTITY_DEFINITION' IN TYPEOF(parent)
+	THEN
+		parent_entity := parent;
+	END_IF;
+	RETURN (parent_entity);	
+END_FUNCTION;
+
+FUNCTION get_schema_definition(parent : generic_schema_definition) : schema_definition;
+	LOCAL
+	  parent_schema : schema_definition;
+	END_LOCAL;
+	IF 'EXTENDED_DICTIONARY_SCHEMA.SCHEMA_DEFINITION' IN TYPEOF(parent)
+	THEN
+		parent_schema := parent;
+	END_IF;
+	RETURN (parent_schema);	
+END_FUNCTION;
+
+
+FUNCTION get_operands(operandz : SET OF entity_or_view_or_subtype_expression) : SET OF entity_or_subtype_expression;
+	LOCAL
+ 		operands : SET OF entity_or_subtype_expression := [];
+	END_LOCAL; 
+
+	REPEAT i := 1 TO SIZEOF(operandz);
+
+  	IF NOT ('EXTENDED_DICTIONARY_SCHEMA.VIEW_DEFINITION' IN TYPEOF (operandz[i]))
+    THEN
+     	operands := operands + operandz[i];
+    END_IF;
+  END_REPEAT;
+  
+  RETURN (operands);
+
+END_FUNCTION;
+
+FUNCTION get_list_of_entity_definition(generic_supertypes : LIST OF entity_or_view_definition) : LIST OF entity_definition;
+	LOCAL
+ 		supertypes : LIST OF entity_definition := [];
+	END_LOCAL; 
+
+	REPEAT i := 1 TO SIZEOF(generic_supertypes);
+
+  	IF 'EXTENDED_DICTIONARY_SCHEMA.ENTITY_DEFINITION' IN TYPEOF (generic_supertypes[i])
+    THEN
+     	supertypes := supertypes + generic_supertypes[i];
+    END_IF;
+  END_REPEAT;
+  
+  RETURN (supertypes);
+
+END_FUNCTION;
+
+
+
+END_SCHEMA;

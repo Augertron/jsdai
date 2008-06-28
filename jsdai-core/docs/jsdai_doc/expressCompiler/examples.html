@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+  <head>
+	<meta name="generator" content="HTML Tidy, see www.w3.org">
+	<title></title>
+  </head>
+  <body>
+	This simple <a href="Examples/">example</a> illustrates
+	how to use the express compiler,
+	including the following points: 
+	<p>
+	  - how to compile short form schemas<br>
+	  - how to create complex entities<br>
+	  - how to add short names<br>
+      - how to create index file for compiled schemas<br>
+      - how to compile and use java classes created by express compiler<br>
+	<p>
+	  The sample batch files <a href="Examples/compile_example.bat">compile_example.bat</a>
+      and <a href="Examples/run_sdaiedit.bat">run_sdaiedit.bat</a>
+	  included in this directory do all that. 
+	<p>&nbsp;</p>
+    <p>
+      <strong>compile_example.bat</strong>
+    <p>
+	  First, you see that
+	  a merged file examples.exp is built which contains both express
+	  schemas from example_1.exp and example_2.exp files. It is needed
+	  because these two schemas are in short form relationship: example_2
+	  schema has "USE FROM example_2;" interface specification. 
+	<p>
+	  Next,
+	  notice <tt>&nbsp;-Djava.ext.dirs=..\..\..\ext&nbsp;</tt> switch on the command line.
+      It tells to use necessary jars and the jsdai.properties file from the
+      <tt>&nbsp;{installation_top_directory}\JSDAI\ext&nbsp;</tt> directory.
+      In the jsdai.properties file, the location of the ExpressCompilerRepo
+	  repository, which is necessary for the express compiler to run, is
+	  specified. 
+	<p>
+	  Now, look at the command line switches of the express
+	  compiler itself. The order of the switches in not significant. 
+	<p>
+	  <strong>-is</strong>
+	  switch switches off a strict implementation of a feature of ISO
+	  10303-11 that does not have any effect with these simple schemas
+	  but that could really cause problems for JSDAI with some short form
+	  schemas with interfaced SELECT data types. One might say that -is
+	  switch just implements a more sensible and improved ISO 10303-11.
+	<p>
+	  <strong>-express examples.exp</strong> switch tells the express compiler to compile
+	  the express schemas inside examples.exp file. 
+	  <strong>-relax</strong> switch is a
+	  switch that hopefully again does nothing in this case. If there are
+	  some non-syntax errors or warning during parsing, without this
+	  switch the next passes and backend would not start. So it is safer
+	  not to use this switch, unless some insignificant error message
+	  cannot be avoided, then this switch allows to complete the job and
+	  you perhaps still may get correct output data. 
+	<p>
+	  <strong>-java</strong> switch tells
+	  to generate java packages for these two schemas. So two
+	  subdirectories containing the java packages will appear in the
+	  current directory:<br> 
+	  <tt>&nbsp;jsdai\SExample_1\&nbsp;<tt> and <tt>&nbsp;jsdai\SExample_2\&nbsp;</tt>
+	<p>
+	  <strong>-binaries</strong> switch makes the binary files with the sdai models with
+	  the dictionary data of the two schemas to be added to their java
+	  packages. So the files<br>
+	  EXAMPLE_1_DICTIONARY_DATA<br>
+	  and<br>
+	  EXAMPLE_2_DICTIONARY_DATA will appear in the corresponding
+	  subdirectories. 
+	<p>
+	  <strong>-complex examples.ce</strong> switch tells the express
+	  compiler to create complex entities that are defined in the
+	  examples.ce file. In this case, one complex entity will be created,
+	  i.e, the java entity class for it will be generate in SExample_2
+	  package and also the instance of its entity definition will be
+	  created in the dictionary model of that schema. 
+	<p>
+	  <strong>-short_names</strong> switch
+	  tells the express compiler to add to the dictionary optional short
+	  names for the entities. The short names are read from example_1.SN
+	  and example_2.SN files in SHORT_NAMES subdirectory of the current
+	  directory, as a different directory for short names is not
+	  specified with <strong>-short_name_dir</strong> switch. 
+	<p>
+	  <strong>-p21 examples.p21</strong> switch
+	  tells the express compiler to export the repository to ISO 10303-21
+	  format file with the name examples.p21. You can use this file to
+	  browse the dictionary if you do not feel like using SdaiEdit which
+	  you should use for that purpose, really.
+    <p>
+	  <strong>-compilation_sn 1000</strong> switch
+	  tells the express compiler to use persistent labels starting from 
+      1000 * 2<sup>48</sup>. You can use this switch to separate persistent labels
+      for separate compilations of schemas.
+    <p>
+	  <strong>-index_file</strong> switch
+	  tells the express compiler to create repository index file by default
+      the file is named repository.properties. It is used to verify schemas
+      versions between separate jars. The file will be created in
+      <tt>&nbsp;jsdai&nbsp;</tt> subdirectory.
+    <p>
+	  Line 3 in batch file is used to create subdirectory named <tt>&nbsp;jar</tt>.
+      Next two lines are used to compile java source created by express compiler.
+      Compiled class files are stored in <tt>&nbsp;jar\jsdai\&nbsp;</tt>
+      corresponding subdirectories. Then repository.properties file is moved from
+      <tt>&nbsp;jsdai\&nbsp;</tt> to <tt>&nbsp;jar\jsdai\&nbsp;</tt> subdirectory.
+    <p>
+	  Next, example.jar is created. Example.jar contains compiled schema classes
+      and repository.properties file.
+    <p>&nbsp;</p>
+    <p>
+      <strong>run_sdaiedit.bat</strong>
+    <p>
+	  To run SdaiEdit with newly compiled schemas, you must use run_sdaiedit.bat file.
+      Look inside of this file: first, class path variable is set to use necessary jars
+      from <tt>&nbsp;{installation_top_directory}\JSDAI\ext&nbsp;</tt> directory.
+	  Then <tt>&nbsp;-Djsdai.properties=..\..\..\ext\&nbsp;</tt> switch
+      on the command line tells to use the jsdai.properties file from 
+      <tt>&nbsp;{installation_top_directory}\JSDAI\ext&nbsp;</tt> directory.
+    <p>
+      When SdaiEdit starts you must find at least two repositories: SystemRepository
+      and ExpressCompilerRepo. If schemas compilation and jar creation process was successful
+      both repositories must contain models named:<br>
+      EXAMPLE_1_DICTIONARY_DATA<br>
+      and<br>
+      EXAMPLE_2_DICTIONARY_DATA.<br>
+      Now you can create your own repositories and models using newly compiled schemas.
+  </body>
+</html>
+

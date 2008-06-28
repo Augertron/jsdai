@@ -1,0 +1,206 @@
+<?xml version="1.0"?>
+<!-- ====================================================================== 
+     2007.10.02 18:51:10                                                        
+
+     integration
+     Integration build script for Eclipse based products
+     $Id$
+                   
+     vaidas                                                               
+
+     JSDAI(TM), a way to implement STEP, ISO 10303
+     Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+    
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU Affero General Public License
+     version 3 as published by the Free Software Foundation (AGPL v3).
+    
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+     See the GNU Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    
+     JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+     This software is also available under commercial licenses.
+     See also http://www.jsdai.net/
+ 
+     ====================================================================== -->
+<project name="integration" default="clean.and.build">
+    <description>
+    	Integration build script for Eclipse based products
+    </description>
+
+	<property file="buckminster.properties"/>
+	<property name="topProject" value="net.jsdai.site"/>
+	<property name="archivedSitePrefix" value="jsdai-developer"/>
+	<property name="cvsMethod" value="ext"/>
+	<property name="cvsUser" value=""/>
+	<property name="lksoftBuildBase" value="file:/home/jsdai/builds"/>
+	<property name="target.platform.loc" location="${user.home}/lib/eclipse"/>
+	<property name="buckminster.loc" location="${user.home}/lib/buckminster"/>
+    <property name="cquery.dir" location="."/>
+	<property name="cquery.loc" location="${cquery.dir}"/>
+	<property name="stage.dir" value="stage"/>
+	<property name="stage.loc" location="${stage.dir}"/>
+	<property name="workspace.dir" value="${stage.dir}/workspace"/>
+	<property name="workspace.loc" location="${workspace.dir}"/>
+	<property name="output.loc" location="${stage.loc}/output"/>
+	<property name="log.level" value="INFO"/>
+	<property name="stage.header.line" value="===================="/>
+	<property name="target.ws" value="gtk"/>
+	<property name="target.os" value="linux"/>
+	<property name="target.arch" value="x86"/>
+
+	<macrodef name="buckminster">
+		<attribute name="command" default="--scriptfile"/>
+		<attribute name="failonerror" default="true"/>
+		<element name="vmargs" optional="true"/>
+		<element name="args" optional="true"/>
+		<sequential>
+	    	<java dir="${buckminster.loc}" jar="${buckminster.loc}/startup.jar" fork="true" output="${stage.loc}/build.log" append="true" failonerror="@{failonerror}">
+	    		<jvmarg value="-Xmx256M"/>
+                <sysproperty key="cvsMethod" value="${cvsMethod}"/>
+                <sysproperty key="cvsUser" value="${cvsUser}"/>
+                <sysproperty key="lksoftBuildBase" value="${lksoftBuildBase}"/>
+				<vmargs/>
+	    		<arg value="-data"/>
+	    		<arg path="${workspace.loc}"/>
+	    		<arg value="-L"/>
+	    		<arg value="${log.level}"/>
+				<arg value="@{command}"/>
+				<args/>
+			</java>
+		</sequential>
+	</macrodef>
+
+    <!-- ================================= 
+          target: clean
+         ================================= -->
+    <target name="clean" description="--> Clean stage area">
+        <delete dir="${stage.loc}"/>
+    </target>
+
+	<!-- ================================= 
+          target: resolve.projects
+         ================================= -->
+    <target name="resolve.projects" description="--> Resolve projects">
+    	<mkdir dir="${stage.loc}"/>
+    	<property name="org.eclipse.core.runtime.settings"
+    		location="${workspace.loc}/.metadata/.plugins/org.eclipse.core.runtime/.settings"/>
+    	<mkdir dir="${org.eclipse.core.runtime.settings}"/>
+    	<echo file="${org.eclipse.core.runtime.settings}/org.eclipse.buckminster.runtime.prefs"
+>eclipse.preferences.version=1
+maxParallelMaterializationJobs=1
+</echo>
+    	<echo file="${stage.loc}/resolve.bmscript"
+>setpref complianceLevel=1.4 targetWS=${target.ws} targetOS=${target.os} targetArch=${target.arch} targetPlatformPath=${target.platform.loc}
+resolve -B ${stage.loc}/${topProject}.bom -N ${cquery.loc}/${topProject}.cquery
+</echo>
+		<echo file="${stage.loc}/build.log" message="${stage.header.line} invoke resolve.bmscript ${stage.header.line}${line.separator}"/>
+    	<buckminster>
+    		<args>
+        		<arg path="${stage.loc}/resolve.bmscript"/>
+    		</args>
+    	</buckminster>
+    </target>
+
+	<!-- ================================= 
+          target: materialize.projects
+         ================================= -->
+    <target name="materialize.projects" description="--> Materialize projects">
+    	<echo file="${stage.loc}/materialize.bmscript"
+>import ${stage.loc}/${topProject}.bom
+build
+</echo>
+
+    	<echo file="${stage.loc}/build.log" message="${stage.header.line} import ${topProject}.bom ${stage.header.line}${line.separator}" append="true"/>
+    	<buckminster failonerror="false">
+    		<args>
+        		<arg path="${stage.loc}/materialize.bmscript"/>
+    		</args>
+    	</buckminster>
+
+    </target>
+
+    	<!-- ================================= 
+              target: perform.actions
+             ================================= -->
+    <target name="perform.actions" description="--> Perform build actions">
+    	<property name="buckminster.properties" location="${stage.loc}/buckminster.properties"/>
+    	<propertyfile file="${buckminster.properties}">
+    		<entry key="qualifier.replacement.*" value="generator:lastModified"/>
+    		<entry key="buckminster.output.root" value="${output.loc}"/>
+    	</propertyfile>
+
+    	<echo file="${stage.loc}/build.log" message="${stage.header.line} invoke createproduct.bmscript${stage.header.line}${line.separator}" append="true"/>
+    	<buckminster command="perform" failonerror="true">
+    		<args>
+        		<arg value="-P"/>
+        		<arg file="${buckminster.properties}"/>
+        		<arg value="${topProject}#build.site.dir"/>
+    		</args>
+    	</buckminster>
+    </target>
+
+    <!-- ================================= 
+          target: site.optimizer
+         ================================= -->
+    <target name="site.optimizer" description="--> Perform site optimization and create .pack.gz files">
+    	<move file="${output.loc}/site/plugins" tofile="${output.loc}/site/plugins-jars"/>
+    	<echo file="${stage.loc}/build.log" message="${stage.header.line} invoke siteOptimizer ${stage.header.line}${line.separator}" append="true"/>
+    	<java dir="${buckminster.loc}" jar="${buckminster.loc}/startup.jar" fork="true" output="${stage.loc}/build.log" append="true" failonerror="true">
+    		<sysproperty key="org.eclipse.update.jarprocessor.pack200" value="${buckminster.loc}/packcmd"/>
+    		<arg value="-application"/>
+    		<arg value="org.eclipse.update.core.siteOptimizer"/>
+    		<arg value="-verbose"/>
+    		<arg value="-jarProcessor"/>
+    		<arg value="-processAll"/>
+    		<arg value="-pack"/>
+    		<arg value="-outputDir"/>
+    		<arg path="${output.loc}/site/plugins"/>
+    		<arg path="${output.loc}/site/plugins-jars"/>
+    	</java>
+		<copy todir="${output.loc}/site/plugins-jars" overwrite="true">
+			<fileset dir="${output.loc}/site/plugins">
+				<include name="*.jar"/>
+			</fileset>
+		</copy>
+    	<delete>
+    		<fileset dir="${output.loc}/site/plugins">
+    			<include name="*.pack.gz"/>
+    			<size value="0"/>
+    		</fileset>
+    	</delete>
+    </target>
+
+	<!-- ================================= 
+          target: update.archivedsite
+         ================================= -->
+    <target name="update.archivedsite" description="--> Update archived site with .pack.gz files">
+    	<echo file="${stage.loc}/build.log" message="${stage.header.line} update archived site with .pack.gz files ${stage.header.line}${line.separator}" append="true"/>
+    	<pathconvert property="archivedsite.zip">
+    		<path>
+    			<fileset dir="${output.loc}/archivedsite">
+    				<include name="${archivedSitePrefix}-*.zip"/>
+    			</fileset>
+    		</path>
+    	</pathconvert>
+    	<zip destfile="${archivedsite.zip}" update="true" basedir="${output.loc}/site">
+    		<include name="plugins/*.pack.gz"/>
+    	</zip>
+    </target>
+
+	<!-- ================================= 
+          target: integration.build
+         ================================= -->
+    <target name="integration.build" depends="resolve.projects, materialize.projects, perform.actions, site.optimizer, update.archivedsite" description="--> Do complete integration build"/>
+
+    <!-- ================================= 
+          target: clean.and.build
+         ================================= -->
+    <target name="clean.and.build" depends="clean, integration.build" description="--> Invoke clean first and then do integration build"/>
+
+</project>

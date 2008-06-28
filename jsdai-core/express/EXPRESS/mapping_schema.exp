@@ -1,0 +1,838 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(* Short form v31.3 2003-01-03 *)
+-- [n] changed to [1]
+(**
+The sdai_mapping_schema defines a model mapping between a source express-schema and a target express-schema.
+It is suitable for the ARM (source) to AIM (target) mapping used in STEP Application Protocolls.
+It includes schema to schema mapping
+entity to entity mapping
+attribute to attribute mapping
+constraints of various kinds and variations of the above.
+*)
+SCHEMA mapping_schema;
+
+(**
+	It references several entities from sdai_dictionary_schema which are restricted by constraints or used in restrictions.
+*)
+REFERENCE FROM extended_dictionary_schema;
+
+(** 
+	An attribute_mapping_path_select type specifies the elements that may be in attribute mapping path.
+*)
+TYPE attribute_mapping_path_select = SELECT
+	(path_constraint,
+	 inverse_attribute_constraint,
+	 select_constraint,
+	 entity_constraint,
+	 aggregate_member_constraint,
+	 intersection_constraint,
+	 attribute);
+END_TYPE;
+
+(**
+	An entity_or_attribute type defines selection between attribute or entity definitions. It is used as target for entity mapping.
+*)
+TYPE entity_or_attribute = SELECT
+	(entity_definition,
+	 attribute);
+END_TYPE;
+
+TYPE attribute_mapping_domain_select = SELECT
+	(named_type,
+	 entity_mapping);
+END_TYPE;
+
+(**
+Entity_mapping defines how a source entity is mapped to a target entity or target attribute.
+For one source entity there may be zero, one or several alternative entity_mappings.
+*)
+ENTITY entity_mapping;
+	(**
+	The source entity to be mapped.
+	*)
+	source : entity_definition;
+	(**
+	The target entity or attribute to which the source entity is mapped.
+	*)
+	target : entity_or_attribute;
+	(**
+	This entity_mapping may require additional constraints to be valid.
+	 The root of a constraint tree is given here.
+The constraints are restrictions that must be met for target to be a valid mapping.
+	*)
+	constraints : OPTIONAL constraint_select;
+	(**
+	Defines if the entity is an entry point for wave algorithm.
+	*)
+	entry_point : BOOLEAN;
+	(**
+	Defines if the entity mapping is valid only when there is at least one ARM user of this entity.
+	*)
+	strong_users : BOOLEAN;
+(* INVERSE
+	An entity_mapping shall participate in at least one uof_mapping.
+	uofs : SET[1:?] OF uof_mapping FOR mappings;
+*)
+END_ENTITY;
+
+(**
+A schema mapping relates a source EXPRESS schema with a target EXPRESS schema.
+*)
+ENTITY schema_mapping
+	SUPERTYPE OF (ONEOF(module_mapping,conformance_class_mapping,application_protocol_mapping));
+	(**
+	A source is a schema of source entities and attributes definitions.
+	*)
+	source : schema_definition;
+	(**
+	A target is a schema of target entities and attributes definitions.
+	*)
+	target : schema_definition;
+	(**
+	An uofs is a collection of mappings of units of functionality.
+	*)
+	uofs : SET [1:?] OF uof_mapping;
+	(**
+	An id is identifier of mapping. It may be used to store name, version number or any other useful information about mapping.
+	*)
+	id : string;
+	(**
+	The components is the set of schema mappings which are included into this schema.
+	Since v25.
+	*)
+	components : OPTIONAL SET [1:?] OF schema_mapping;
+END_ENTITY;
+
+
+(**
+An uof_mapping gropes mappings by units of functionality.
+Maybe to add short names of UOFs. e.g. "S1" = product_identification
+*)
+ENTITY uof_mapping;
+	(**
+	A name is name of unit of functionality.
+	*)
+	name : string;
+	(**
+	The mappings are a collection of mappings of source entities.
+	An entity_mapping may participate in more than one uof_mapping.
+	*)
+	mappings : SET [1:?] OF entity_mapping;
+	(* short_name : OPTIONAL string; *)
+END_ENTITY;
+
+
+(**
+An aggregate_member_consttraint_select type specifies elements that may be constrained by aggregate_member_constraint.
+*)
+TYPE aggregate_member_constraint_select = SELECT
+	(attribute,
+	 inverse_attribute_constraint,
+	 aggregate_member_constraint,
+	 entity_constraint,
+    select_constraint);
+END_TYPE;
+
+(**
+An attribute_select type specifies elements that may be of entity type.
+*)
+TYPE attribute_select = SELECT
+	(attribute,
+	 inverse_attribute_constraint,
+	 aggregate_member_constraint);
+END_TYPE;
+
+(**
+An attribute_value_constraint_select type specifies elements that may be constraint to some simple value (e.g. to some string value).
+*)
+TYPE attribute_value_constraint_select = SELECT
+	(attribute,
+	 aggregate_member_constraint,
+	 select_constraint);
+END_TYPE;
+
+(**
+The constraint_select is the top element to build higher level constraints from lower level concstraints, to represent the resulting constraints for a attribute_mapping_alternative or the constraint for an entity_mapping_alternative.
+*)
+TYPE constraint_select = SELECT
+	(constraint_attribute,
+	 constraint_relationship,
+	 inverse_attribute_constraint, (* there must be at least one inverse related instance. Could be non_optional_constraint instead *)
+	 attribute, (* this may indicate that this attribute must have a value *)
+	 end_of_path_constraint,
+	 intersection_constraint,
+	 type_constraint,
+	 negation_constraint);
+END_TYPE;
+
+(**
+An inverse_attribute_constraint specifies elements that may be as attribute in inverse_attribute_constraint. 
+*)
+TYPE inverse_attribute_constraint_select = SELECT
+	(attribute,
+	entity_constraint,
+	aggregate_member_constraint,
+	select_constraint);
+END_TYPE;
+
+(**
+A path_constraint_select type specifies elements that may be as element1 in path_constraint. They all defines how to make step from one entity instance to other.
+*)
+TYPE path_constraint_select = SELECT
+	(aggregate_member_constraint,
+	 inverse_attribute_constraint,
+	 entity_constraint,
+	 intersection_constraint,
+	 attribute);
+END_TYPE;
+
+(**
+A select_constraint_select type specifies elements that may be constrained to some defined type.
+*)
+TYPE select_constraint_select = SELECT
+	(attribute,
+	 aggregate_member_constraint);
+END_TYPE;
+
+(**
+An aggregate_member_constraint is a constraint that constraint aggregates. It selects one specific or arbitrary element from aggregate. The attribute must point to an attribute of type aggregate.
+*)
+ENTITY aggregate_member_constraint
+	SUBTYPE OF (constraint_attribute);
+	(**
+	If set, defines element in aggregate that must meet requirement, e.g. [1], only valid for LIST and ARRAY but misused by APs.
+	If unset, there shall be at least one member. Notation [i]
+	*)
+	member : OPTIONAL INTEGER;
+	(**
+	An attribute must be of aggregate type. One element of is this aggregate is selected using aggregate_member_constraint.
+	*)
+	attribute : aggregate_member_constraint_select;
+ UNIQUE
+	UR1:	attribute, member;
+END_ENTITY;
+
+(**
+An and_constraint_relationship is relationship of two constraints and both these constraints must be met to fulfil and_constraint_relationship.
+*)
+ENTITY and_constraint_relationship
+	SUBTYPE OF (instance_constraint);
+ UNIQUE
+	UR1:	element1, element2;
+END_ENTITY;
+
+(**
+An attirubute_value_constraint is constraint that is used to restrict attributes or elements of aggregates to some specific simple value.
+*)
+ENTITY attribute_value_constraint
+	SUPERTYPE OF (ONEOF(boolean_constraint,integer_constraint,non_optional_constraint,string_constraint,real_constraint,enumeration_constraint,logical_constraint))
+	SUBTYPE OF (constraint_attribute);
+	(**
+	An attribute is definition of attribute or aggregate that is constraint to some value.
+	*)
+	attribute : attribute_value_constraint_select;
+ UNIQUE
+	UR1:	attribute;
+END_ENTITY;
+
+(**
+A booleant_constraint specifies a constraint on boolean value. Attribute must point to attribute definition or aggregate or select element (in this case select element that is defined type) that is of type boolean.
+*)
+ENTITY boolean_constraint
+	SUBTYPE OF (attribute_value_constraint);
+	(**
+	A constraint_value is value to which the attribute is constraint.
+	*)
+	constraint_value : BOOLEAN;
+ UNIQUE
+	UR1:	attribute, constraint_value;
+END_ENTITY;
+
+(** Abstract supertype for all constraints except attribute because it is taken from dictionary *)
+ENTITY constraint
+	ABSTRACT 
+	SUPERTYPE OF 
+		(ONEOF 
+			(constraint_attribute, 
+			 constraint_relationship,
+			 inverse_attribute_constraint,
+			 type_constraint,
+			 intersection_constraint,
+			 negation_constraint,
+			 end_of_path_constraint));
+END_ENTITY;
+
+(**
+NEGATION_CONSTRAINT is used to specify that result of constraint has to be taken negated.
+It can be used only in the addition constraint but never in the main path.
+*)
+ENTITY negation_constraint
+	SUBTYPE OF (constraint);
+	(**
+	constraints result of whose has to negated.
+	*)
+	constraints : constraint_select;
+END_ENTITY;
+
+(**
+The constraint_attribute further constrains an Express-attribute, an inverse_attribute_constraint or another constraint_attribute.
+*)
+ENTITY constraint_attribute
+	ABSTRACT
+	SUPERTYPE OF (ONEOF 
+		(attribute_value_constraint,
+		 select_constraint,
+		 aggregate_member_constraint,
+		 entity_constraint))
+	SUBTYPE OF (constraint);
+END_ENTITY;
+
+(**
+A constraint_relationship defines pair of constraints. It does not specify the meaning of relationship nor a direction to go.
+*)
+ENTITY constraint_relationship
+	ABSTRACT
+	SUPERTYPE OF (ONEOF (path_constraint, instance_constraint))
+	SUBTYPE OF (constraint);
+	(**
+	An element2 is a second constraint that is related by this constraint relationship.
+	*)
+	element2 : constraint_select;
+END_ENTITY;
+
+(**
+An entity_constraint specifies a constraint on entity type. The attribute must point to an attribute or constraint definition that is of an entity type. This constraint restricts to subtypes or select types (maybe to complex types).
+*)
+ENTITY entity_constraint
+	SUPERTYPE OF (exact_entity_constraint)
+	SUBTYPE OF (constraint_attribute);
+	(**
+	A domain defines an entity type. The value of constraint attribute (it also may be element of aggregate) must by of this type.
+	*)
+	domain : entity_definition;
+	(**
+	An attribute is a definition of attribute that is constraint to some entity type.
+	*)
+	attribute : attribute_select;
+ UNIQUE
+	UR1:	attribute, domain;
+END_ENTITY;
+
+(**
+An enumeration_constraint specifies a constraint on enumeration value. Attribute must point to attribute that is of type enumeration.
+*)
+ENTITY enumeration_constraint
+	SUBTYPE OF (attribute_value_constraint);
+	(**
+	A constraint_value defines a constant to which constraint attribute must be equal.
+	*)
+	constraint_value : express_id;
+ UNIQUE
+	UR1:	attribute, constraint_value;
+END_ENTITY;
+
+(**
+An exact_entity_constraint is entity constraint that constraints the attribute to be of some specific entity type, excluding subtypes of it.
+*)
+ENTITY exact_entity_constraint
+	SUBTYPE OF (entity_constraint);
+END_ENTITY;
+
+(**
+An instance_equal is instance_constraint that requires to constraints to end with the same instance.
+*)
+ENTITY instance_equal
+	SUBTYPE OF (instance_constraint);
+END_ENTITY;
+
+(* * OBSOLETE AND NOWHERE USED. Use NEGATION_CONSTRAINT instead.
+An instance_not_equal is instance_constraint that requires to constraints to end not with the same instance.
+* )
+ENTITY instances_not_equal
+	SUBTYPE OF (instance_constraint);
+END_ENTITY;
+*)
+
+(**
+An integer_constraint specifies a constraint on integer value. Attribute must point to attribute that is of type integer.
+*)
+ENTITY integer_constraint
+	SUBTYPE OF (attribute_value_constraint);
+	(**
+	A constraint_value defines a constant to which constraint attribute must be equal.
+	*)
+	constraint_value : INTEGER;
+ UNIQUE
+	UR1:	attribute, constraint_value;
+END_ENTITY;
+
+(**
+An inverse_attribute_constraint defines a needed inverse attribute that is missing in the target schema.
+This is needed to travel reverse to attribute definition.
+
+	NOTE 1 - In the case that the AIM express already contains the proper inverse attribute this should be used.
+*)
+ENTITY inverse_attribute_constraint
+	SUBTYPE OF (constraint);
+	(**
+	An inverted_attribute is a definition of attribute that is inverted.
+	*)
+	inverted_attribute : inverse_attribute_constraint_select;
+ UNIQUE
+	UR1:	inverted_attribute;
+END_ENTITY;
+
+(**
+A logical_constraint specifies a constraint on logical value. Attribute must point to attribute that is of type logical.
+*)
+ENTITY logical_constraint
+	SUBTYPE OF (attribute_value_constraint);
+	(**
+	A constraint_value defines a constant to which constraint attribute must be equal.
+	*)
+	constraint_value : LOGICAL;
+ UNIQUE
+	UR1:	attribute, constraint_value;
+END_ENTITY;
+
+(**
+A non_optional_constraint restricts optional attribute of entity to be non-optional.
+*)
+ENTITY non_optional_constraint
+	SUBTYPE OF (attribute_value_constraint);
+END_ENTITY;
+
+(**
+An instances_constraint is a consraint_relationship that defined constraints on instances of one type.
+*)
+ENTITY instance_constraint
+	ABSTRACT SUPERTYPE OF (ONEOF(and_constraint_relationship,or_constraint_relationship,instance_equal))
+	SUBTYPE OF (constraint_relationship);
+	(**
+	An element1 is first constraint that is related by this constraint relationship.
+	*)
+	element1 : constraint_select;
+END_ENTITY;
+
+(**
+An or_constraint_relationship is an instance_constraint where it is enough, that requirements of at least one constraint are meet.
+*)
+ENTITY or_constraint_relationship
+	SUBTYPE OF (instance_constraint);
+ UNIQUE
+	UR1:	element1, element2;
+END_ENTITY;
+
+(**
+A path_constraint is a constraint_relationship that does following: requires make step using element1 and meet requirements of element2. The element1 shall be a constraint on an attribute of an entity-type. The element2 defines a constraint on the entity reached by following element1.
+*)
+ENTITY path_constraint
+	SUBTYPE OF (constraint_relationship);
+	(**
+	An element1 is attribute or other element that allows to make step from one entity instance to instance of other entity.
+	*)
+	element1 : path_constraint_select;
+ UNIQUE
+	UR1:	element1, element2;
+END_ENTITY;
+
+(**
+End_of_path_constraint is intended as a replacement for
+attribute_constraint.path list. It allows to identify end of the main path
+condition. See comments at attribute_constraint.path<br>
+End_of_path_constraint is used as value of path_constraint.element2 or at the top of
+constraint tree.<br>
+Introduced in version 31.1.
+*)
+ENTITY end_of_path_constraint
+	SUBTYPE OF (constraint);
+	(**
+	The remaining part of constraint tree which doesn't belong to the main path.
+	*)
+	constraints : constraint_select;
+END_ENTITY;
+
+(**
+A real_constraint specifies a constraint on real value. Attribute must point to attribute that is of type real.
+*)
+ENTITY real_constraint
+	SUBTYPE OF (attribute_value_constraint);
+	(**
+	A constraint_value defines a constant to which constraint attribute must be equal.
+	*)
+	constraint_value : REAL;
+ UNIQUE
+	UR1:	attribute, constraint_value;
+END_ENTITY;
+
+(**
+A select_constraint specifies a constraint on select type. Attribute must point to attribute that is of select type.
+
+Complex instances may exist with logical_, boolean_, string_, enumeration_, integer_ and real_constraint.
+*)
+ENTITY select_constraint
+	SUBTYPE OF (constraint_attribute);
+	(**
+	A data_type defines a path to go throw select.
+	*)
+	data_type : LIST [1:?] OF defined_type;
+	(**
+	An attribute is definition of attribute or other element that is of select type and is constraint to some specific selection.
+	*)
+	attribute : select_constraint_select;
+ UNIQUE
+	UR1:	attribute, data_type;
+END_ENTITY;
+
+(**
+A String_constraint specifies a constraint on string value. Attribute must point to attribute that is of type string.
+*)
+ENTITY string_constraint
+	SUBTYPE OF (attribute_value_constraint);
+	(**
+	A constraint_value defines a constant to which constraint attribute must be equal.
+	*)
+	constraint_value : STRING;
+ UNIQUE
+	UR1:	attribute, constraint_value;
+END_ENTITY;
+
+(** It is not used anywhere V.N.
+A constraint_path defines element that requires applying the constraint and if it is satisfied to follow path. It may be consider having end value same as the end value of the path.
+* )
+ENTITY constraint_path;
+	( **
+	A constraint specifies constraint that must me meet.
+	* )
+	constraint : constraint_select;
+	( **
+	A path specifies path to follow if the constraint is satisfied.
+	* )
+	path : path_constraint_select;
+END_ENTITY;
+*)
+
+(**
+An aggregate_member_constraint is a constraint that constraint how many elements may be in aggregate. It selects one specific or arbitrary element from aggregate. The attribute must point to an attribute of type aggregate.
+Since v25.
+This constraint may introduce some changes in selects where valind constraints for other constraints are listed.
+*)
+ENTITY aggregate_size_constraint
+	SUBTYPE OF (constraint_attribute);
+	(**
+	Defines size of aggregate.
+	*)
+	size : INTEGER;
+	(**
+	An attribute must be of aggregate type. One element of is this aggregate is selected using aggregate_member_constraint.
+	*)
+	attribute : aggregate_member_constraint_select;
+ UNIQUE
+	UR1:	attribute, size;
+END_ENTITY;
+
+(**
+A conformance_class_mapping is a schema_mapping that defines only the mappings of entities that are required by some conformance class.
+*)
+ENTITY conformance_class_mapping
+	SUBTYPE OF (schema_mapping);
+END_ENTITY;
+
+(**
+A module_mapping is a schema_mapping that defines only the mappings of entities that are defined in some module.
+*)
+ENTITY module_mapping
+	SUBTYPE OF (schema_mapping);
+END_ENTITY;
+
+(**
+A application_protocol_mapping is a schema_mapping that defines all the mappings of entities that are defined by this application protocol.
+*)
+ENTITY application_protocol_mapping
+	SUBTYPE OF (schema_mapping);
+END_ENTITY;
+
+(**
+An attribute_mapping is a generic_attribute_mapping for the case when the target is an EXPRESS data type.
+*)
+ENTITY attribute_mapping
+	SUBTYPE OF (generic_attribute_mapping);
+	(**
+	<i>This attribute is deprecated and retained for backward compatibility only.</i>
+	*)
+	(* IT IS OBSOLETE SINCE VERSION 30.1.
+	This attribute is retained only for compatibility reasons.<br><br>
+	New design says that path follows element1 of and_constraint_relationship, and
+	path splits on or_constraint_relationship. All other constraints mean linear follow
+	along the path. Path can be cut shorter using end_of_path_constraint.
+	*)
+	path : OPTIONAL LIST [1:?] OF attribute_mapping_path_select;
+	(**
+	A domain identifies the data type of the source attribute in the case it is a named_type. 
+	If the source attribute leads to entity data types the corresponding entity_mapping is given here.
+	If the source attribute is a select type of one or several defined types, 
+	the particular defined type this attribute mapping belongs to is specified here.
+	In other cases this attribute is UNSET.
+	*)
+	domain : OPTIONAL attribute_mapping_domain_select;
+ DERIVE
+	(**
+	<i>This attribute is deprecated and retained for backward compatibility only.</i>
+	*)
+	(*
+	A target is definition of target of attribute mapping. It can be entity on attribute.
+	NOTE 1 - It is derived attribute. Last element in mapping path.<br>
+	OBSOLETE SINCE VERSION 31.1 - needs to be changed or removed.
+	*)
+--	target : base_type := path[n];
+-- n unknown, just changing to anything
+	target : base_type := path[1];
+END_ENTITY;
+
+(**
+A generic_attribute_mapping specifies one of possible more alternatives
+how an entity attribute on the source side maps to the target side.
+A generic_attribute_mapping is either a attribute_mapping_value if it
+maps to a specific value or an attribute_mapping if it maps to some
+EXPRESS data type.
+
+For each source attribute one or several alternative
+generic_attribute_mapping for a given entity_mapping shall be available.
+In the case that the source entity of the parent_entity is a subtype
+of one or several entities, generic_attribute_mapping shall be available
+for all inherited attributes. If an inherited attribute is redeclared in
+the subtype generic_attribute_mapping shall reflect changes in the mapping.
+
+Generic_attribute_mappings shall be available for explicit source
+attributes. For derived and inverse attributes it is optional and depends
+on specific application.
+*)
+ENTITY generic_attribute_mapping  
+	ABSTRACT SUPERTYPE OF (ONEOF(attribute_mapping,attribute_mapping_value));
+	(**
+	Specifies for which alternative entity_mapping this mapping of attribute exist.
+	source:  The entity attribute of the source side.
+	*)
+	parent_entity : entity_mapping;
+	(**
+	A source is a definition of source attribute.
+	*)
+	source : attribute;
+	(**
+	If the attribute mapping is restricted in some way, the root constraint is defined here.
+	In addition the constraints includes the REFERENCE PATH as well as the target data type.
+	It can be unset only in case of IDENTICAL MAPPING if there are no further constraints.
+	(See guidelines for the development of mapping specifications, ISO TC 184/SC4 N1029)
+	*)
+	constraints : OPTIONAL constraint_select;
+
+	(**
+	In the case that the target is of a select data type and the target value is not an entity
+	the select path is defined here.
+	The select path lists all defined types which are not select types,
+	needed to characterize a simple type.
+	The usage is the same as for select_type in dictionary schema (ISO 10303-22)
+	and correspond to the encoding of values of select data types in ISO
+	10303-21 and -27 (late and early binding attribute access).
+	*)
+	data_type : OPTIONAL LIST [1:?] OF named_type;
+	(* data_type : OPTIONAL LIST [1:?] OF defined_type; *)
+	(**
+	If TRUE the constraints of this generic_attribute_mapping
+	shall be fulfilled in addition to the constraints of the parent
+	entity_mapping.
+	*)
+	strong : BOOLEAN;
+END_ENTITY;
+
+(**
+	An attribute mapping to specify the mapping for the specific value of attribute.
+*)
+ENTITY attribute_mapping_boolean_value
+	SUBTYPE OF (attribute_mapping_value);
+	(**
+		The value of source attribute for which the mapping is specified.
+	*)
+	mapped_value : BOOLEAN;
+END_ENTITY;
+
+(**
+	An attribute mapping to specify the mapping for the specific value of attribute.
+*)
+ENTITY attribute_mapping_enumeration_value
+	SUBTYPE OF (attribute_mapping_value);
+	(**
+		The value of source attribute for which the mapping is specified. 
+		It is an Express id of enumeration item.
+	*)
+	mapped_value : STRING;
+END_ENTITY;
+
+(**
+	An attribute mapping to specify the mapping for the specific value of attribute.
+*)
+ENTITY attribute_mapping_int_value
+	SUBTYPE OF (attribute_mapping_value);
+	(**
+		The value of source attribute for which the mapping is specified.
+	*)
+	mapped_value : INTEGER;
+END_ENTITY;
+
+(**
+	An attribute mapping to specify the mapping for the specific value of attribute.
+*)
+ENTITY attribute_mapping_logical_value
+	SUBTYPE OF (attribute_mapping_value);
+	(**
+		The value of source attribute for which the mapping is specified.
+	*)
+	mapped_value : LOGICAL;
+END_ENTITY;
+
+(**
+	An attribute mapping to specify the mapping for the specific value of attribute.
+*)
+ENTITY attribute_mapping_real_value
+	SUBTYPE OF (attribute_mapping_value);
+	(**
+		The value of source attribute for which the mapping is specified.
+	*)
+	mapped_value : REAL;
+END_ENTITY;
+
+(**
+	An attribute mapping to specify the mapping for the specific value of attribute.
+*)
+ENTITY attribute_mapping_string_value
+	SUBTYPE OF (attribute_mapping_value);
+	(**
+		The value of source attribute for which the mapping is specified.
+	*)
+	mapped_value : STRING;
+END_ENTITY;
+
+(**
+A mapping of attribute to some specific simple value.
+*)
+ENTITY attribute_mapping_value
+	ABSTRACT SUPERTYPE OF (ONEOF(attribute_mapping_real_value,attribute_mapping_enumeration_value,attribute_mapping_logical_value,attribute_mapping_int_value,attribute_mapping_boolean_value,attribute_mapping_string_value))
+	SUBTYPE OF (generic_attribute_mapping);
+	(* data_type : OPTIONAL LIST [1:?] OF defined_type; *)
+END_ENTITY;
+
+(**
+Defines relationships between entity mappings.
+*)
+ENTITY entity_mapping_relationship
+	ABSTRACT SUPERTYPE OF (ONEOF(sub_supertype_mapping, derived_variant_entity_mapping));
+	(**
+	Master entity mapping.
+	*)
+	relating: entity_mapping; 
+
+	(**
+	Dependant entity mapping.
+	*)
+	related: entity_mapping;
+
+	(**
+	Optional constraints can define the path to walk from relating mapping to related mapping.
+	*)
+	constraints : OPTIONAL constraint_select;
+
+	(**
+	Optional path to walk from relating mapping to related mapping.<br>
+	OBSOLETE SINCE VERSION 30.1 - will be removed soon
+	*)
+	path: OPTIONAL LIST [1:?] OF attribute_mapping_path_select; 
+
+END_ENTITY; -- entity_mapping_relationship
+
+(**
+Relationship between two entity mappings.
+These entities must have the same sub-supertype relationship in source schema.
+If path defined in constraints is empty, then subtype mapping constraints must include 
+all constraints from supertype mapping (i.e. to be the same or more restrictive).
+<br>
+Relating is supertype (more restrictive mapping), related is subtype (mapping of more general entity).
+*)
+ENTITY sub_supertype_mapping
+	SUBTYPE OF (entity_mapping_relationship);
+	(* where rule should be added which restricts relating.source to be equal to related.source *)
+END_ENTITY;
+
+(**
+Defines path from one entity mapping (relating) to other entity mapping (related).
+The latter is considered to be derived variant of relating entity mapping.
+It is used in attribute mappings when attribute mapping path points only to relating entity mapping.
+*)
+ENTITY derived_variant_entity_mapping
+	SUBTYPE OF (entity_mapping_relationship);
+	(* where rule should be added which restricts relating.source to supertype of related.source *)
+
+END_ENTITY;
+
+(**
+TYPE_CONSTRAINT requires that starting AIM instance is of type defined in domain attribute.
+*)
+ENTITY type_constraint
+	SUPERTYPE OF (exact_type_constraint)
+	SUBTYPE OF (constraint);
+
+	(** Required type of AIM instance. *)
+	domain : entity_definition;
+	(** The remaining constraints in a similar way as path.element2 attribute. *)
+	constraints : OPTIONAL constraint_select;
+END_ENTITY;
+
+(**
+EXACT_TYPE_CONSTRAINT requires that starting AIM instance is of specific type but not it's subtype.
+*)
+ENTITY exact_type_constraint
+	SUBTYPE OF (type_constraint);
+END_ENTITY;
+
+(**
+INTERSECTION_CONSTRAINT allows to get only common (intersecting) instances 
+from subpaths specified by this instance. This can be used in particularly when
+several AND paths point to same instance. It effectively outdates 
+instance_equal entity.
+Introduced in version 31.0.
+*)
+ENTITY intersection_constraint
+	SUBTYPE OF (constraint);
+	(**
+	Subpaths to be intersected.
+	*)
+	subpaths : SET [2:?] OF constraint_select;
+END_ENTITY;
+
+END_SCHEMA;
+
+--** Local Variables:
+--** mode: fundamental
+--** tab-width: 4
+--** End:

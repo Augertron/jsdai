@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ */
+-->
+
+<cs:cspecExtension
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:com="http://www.eclipse.org/buckminster/Common-1.0"
+    xmlns:cs="http://www.eclipse.org/buckminster/CSpec-1.0">
+    <cs:dependencies>
+		<cs:dependency name="SExtended_dictionary_schema.zip"/>
+		<cs:dependency name="lib.zip"/>
+    	<cs:dependency name="jsdai_express.jar"/>
+		<cs:dependency name="jsdai_runtime.jar#I2008-05-30_17-13-23"/>
+        <cs:dependency name="commons-collections.jar#I2008-02-20_16-50-39"/>
+        <cs:dependency name="commons-lang-1.0.1.jar#I2008-02-20_16-50-39"/>
+     </cs:dependencies>
+
+    <cs:artifacts>
+    	<cs:private name="express.dir" path="express"/>
+    	<cs:private name="project.dir" path="."/>
+    </cs:artifacts>
+
+    <cs:actions>
+        <cs:private name="buckminster.prebind.jars" actor="ant">
+        	<cs:actorProperties>
+				<cs:property key="buildFile" value="make/buckminster.xml"/>
+        	</cs:actorProperties>
+
+			<cs:prerequisites alias="input">
+				<cs:attribute component="SExtended_dictionary_schema.zip" name="java.binaries"/>
+			</cs:prerequisites>
+
+			<cs:products alias="output" upToDatePolicy="MAPPER" base="${buckminster.home}"/>
+        </cs:private>
+        <cs:private name="buckminster.prebind.express-g-schema" actor="ant">
+        	<cs:actorProperties>
+				<cs:property key="buildFile" value="express/build.xml"/>
+        	</cs:actorProperties>
+
+			<cs:properties>
+				<cs:property key="express.jar" value="express_g_schema.jar"/>
+			</cs:properties>
+
+			<cs:prerequisites>
+				<cs:attribute name="express.dir" alias="express-dir"/>
+				<cs:attribute name="project.dir" alias="project-dir"/>
+				<cs:attribute component="lib.zip" name="java.binaries" alias="lib-zip"/>
+				<cs:attribute name="express.compiler.classpath" alias="express.compiler.classpath"/>
+			</cs:prerequisites>
+
+			<cs:products>
+				<cs:private name="express-g-schema-jar" base="${buckminster.home}" path="express_g_schema.jar"/>
+				<cs:private name="ExpressCompilerRepo-sdai" base="${buckminster.home}" path="ExpressCompilerRepo.sdai"/>
+			</cs:products>
+        </cs:private>
+        <cs:private name="buckminster.refresh.jars" actor="ant">
+        	<cs:actorProperties>
+				<cs:property key="buildFile" value="make/buckminster.xml"/>
+        	</cs:actorProperties>
+
+			<cs:prerequisites alias="input">
+				<cs:attribute component="SExtended_dictionary_schema.zip" name="SExtended_dictionary_schema.zip"/>
+				<cs:attribute name="buckminster.prebind.express-g-schema"/>
+			</cs:prerequisites>
+        </cs:private>
+        <cs:private name="buckminster.refresh.express" actor="ant">
+        	<cs:actorProperties>
+				<cs:property key="buildFile" value="make/buckminster.xml"/>
+        	</cs:actorProperties>
+
+			<cs:prerequisites alias="input">
+				<cs:attribute component="SExtended_dictionary_schema.zip" name="SExtended_dictionary_schema.zip"/>
+				<cs:attribute name="express.dir" alias="express-dir"/>
+			</cs:prerequisites>
+        </cs:private>
+    </cs:actions>
+
+    <cs:groups>
+        <cs:public name="buckminster.prebind">
+            <cs:attribute name="buckminster.prebind.jars"/>
+            <cs:attribute name="buckminster.prebind.express-g-schema"/>
+        </cs:public>
+        <cs:public name="buckminster.refresh">
+        	<cs:attribute name="buckminster.refresh.jars"/>
+        	<cs:attribute name="buckminster.refresh.express"/>
+        </cs:public>
+        <cs:private name="express.compiler.classpath">
+        	<cs:attribute component="SExtended_dictionary_schema.zip" name="java.binaries"/>
+	    	<cs:attribute component="jsdai_express.jar" name="java.binaries"/>
+			<cs:attribute component="jsdai_runtime.jar#I2008-05-30_17-13-23" name="java.binaries"/>
+            <cs:attribute component="commons-collections.jar#I2008-02-20_16-50-39" name="java.binaries"/>
+            <cs:attribute component="commons-lang-1.0.1.jar#I2008-02-20_16-50-39" name="java.binaries"/>
+        </cs:private>
+    </cs:groups>
+</cs:cspecExtension>
