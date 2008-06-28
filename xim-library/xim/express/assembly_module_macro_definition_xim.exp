@@ -1,0 +1,65 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Assembly module macro definition - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Assembly_module_macro_definition_xim;
+
+USE FROM Interconnect_module_with_macros_xim;
+
+USE FROM Assembly_module_macro_definition_mim;
+
+	SUBTYPE_CONSTRAINT assembly_module_terminal_armx_subtypes FOR Assembly_module_terminal_armx; 
+	((ONEOF (Assembly_module_interface_terminal_armx,
+	 Assembly_module_macro_terminal_armx)) ANDOR
+	 (Pca_terminal));
+	END_SUBTYPE_CONSTRAINT;
+
+  ENTITY Assembly_module_macro_terminal_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Assembly_module_terminal_armx, assembly_module_macro_terminal);
+    INVERSE
+      defining_terminal : component_feature_to_physical_usage_view_assignment FOR defined_part_feature;
+    WHERE
+      WR1 : 'LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.INTERCONNECT_MODULE_MACRO_TERMINAL_ARMX' IN TYPEOF(defining_terminal.assigned_terminal);      
+      WR2 : 'ASSEMBLY_MODULE_MACRO_DEFINITION_xim.' + 'COMPONENT_TERMINAL_TO_ASSEMBLY_MODULE_MACRO_TERMINAL_ASSIGNMENT' IN TYPEOF(defining_terminal);
+      WR3 : NOT (SIZEOF(USEDIN(SELF,
+ '')) > 0) OR (SIZEOF(QUERY(ct <* USEDIN(SELF,
+ '') | NOT ('ASSEMBLY_MODULE_WITH_MACRO_COMPONENT_XIM.ASSEMBLY_MODULE_MACRO_COMPONENT_JOIN_TERMINAL_ARMX' IN TYPEOF(ct)))) = 0);
+  END_ENTITY;
+
+  ENTITY Component_terminal_to_assembly_module_macro_terminal_assignment
+    (* CONNOTATIONAL *) SUBTYPE OF (Component_feature_to_physical_usage_view_assignment);
+		SELF\Component_feature_to_physical_usage_view_assignment.defined_part_feature RENAMED usage_view_terminal : Assembly_module_macro_terminal_armx;
+		SELF\Component_feature_to_physical_usage_view_assignment.assigned_design_object RENAMED assigned_terminal : Interconnect_module_macro_component_join_terminal_armx;
+    UNIQUE
+      UR1 : usage_view_terminal;
+  END_ENTITY;
+
+END_SCHEMA;
+
+
+
+

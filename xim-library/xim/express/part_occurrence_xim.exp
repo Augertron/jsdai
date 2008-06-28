@@ -1,0 +1,66 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(* Based on ARM - some types might need to be changed to be subtypes of AIM entities later *)
+
+SCHEMA Part_occurrence_xim;
+
+USE FROM Part_view_definition_xim;	-- ISO/TS 10303-1023
+USE FROM Assembly_structure_xim;	-- ISO/TS 10303-1026
+USE FROM Generic_product_occurrence_xim;	-- ISO/CD-TS 10303-1762
+		
+
+ENTITY Definition_based_part_occurrence
+  SUBTYPE OF (Definition_based_product_occurrence, Part_occurrence);
+   SELF\Definition_based_product_occurrence.derived_from : Part_view_definition;
+END_ENTITY;
+
+-- this is introduced to replace part_occurrence_select and avoid having specification here
+ENTITY Part_occurrence
+  ABSTRACT SUPERTYPE
+  SUBTYPE OF (Product_occurrence);
+  SELF\Product_view_definition.defined_version : Part_version;
+END_ENTITY;
+
+
+(** This entity is MAYBE made ABSTRACT, because intention is not to use it directly, only its subtypes
+It is recommended to use in complex with Next_assembly_usage_occurrence_relationship_armx
+*)
+ENTITY Part_occurrence_definition_relationship 
+     ABSTRACT SUPERTYPE
+     SUBTYPE OF (assembly_component_usage); 
+       SELF\product_definition_relationship.relating_product_definition : Part_view_definition; 
+-- We can't reach this unambigously (in the mapping) on this level - so better hide it at all
+-- try it once more...
+       SELF\product_definition_relationship.related_product_definition : Part_occurrence;
+  DERIVE 
+    SELF\product_definition_relationship.id : STRING := 
+      SELF\Product_definition_relationship.related_product_definition\Product_view_definition.id;
+  END_ENTITY; 
+
+ENTITY Specification_based_part_occurrence
+  SUBTYPE OF (Specification_based_product_occurrence, Part_occurrence);
+END_ENTITY;
+
+END_SCHEMA; 
+

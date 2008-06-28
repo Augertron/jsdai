@@ -1,0 +1,302 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping experience(Experience_arm, Experience_mim);*)
+
+uof_mapping Experience(Experience);
+
+entity_mapping Experience_type_armx(Experience_type_armx, experience_type);
+
+attribute_mapping name(name, experience_type.name);
+
+					experience_type
+					experience_type.name
+				
+end_attribute_mapping;
+
+attribute_mapping description(description, experience_type.name);
+
+					experience_type
+					experience_type.description
+				
+end_attribute_mapping;
+
+attribute_mapping consists_of(consists_of, $PATH, defined_methods);
+
+                            experience_type <-
+                            experience_type_assignment.assigned_experience_type
+                            experience_type_assignment =>
+                            applied_experience_type_assignment
+                            applied_experience_type_assignment.items[1] ->
+                            experience_type_item
+                          
+end_attribute_mapping;
+
+attribute_mapping consists_of(consists_of, $PATH, Activity);
+
+					experience_type <-
+					experience_type_assignment.assigned_experience_type
+					experience_type_assignment =>
+					applied_experience_type_assignment
+					applied_experience_type_assignment.items[1] ->
+					experience_type_item
+					experience_type_item =
+					executed_action
+				
+end_attribute_mapping;
+
+attribute_mapping consists_of(consists_of, $PATH, Action_method);
+
+					experience_type <-
+					experience_type_assignment.assigned_experience_type
+					experience_type_assignment =>
+					applied_experience_type_assignment
+					applied_experience_type_assignment.items[1] ->
+					experience_type_item
+					experience_type_item =
+					action_method
+				
+end_attribute_mapping;
+
+attribute_mapping consists_of(consists_of, $PATH, Required_resource);
+
+					experience_type <-
+					experience_type_assignment.assigned_experience_type
+					experience_type_assignment =>
+					applied_experience_type_assignment
+					applied_experience_type_assignment.items[1] ->
+					experience_type_item
+					experience_type_item =
+					action_resource_requirement
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+(* Buggy entity - can't be implemented right now
+entity_mapping Experience_gained(Experience_gained, applied_experience_assignment);
+
+mapping_constraints;
+
+				experience_assignment =>
+				applied_experience_assignment
+			
+end_mapping_constraints;
+
+attribute_mapping role(role, experience_role.name);
+
+					applied_experience_assignment <=
+					experience_assignment
+					experience_assignment.role ->
+					experience_role
+					experience_role.name
+				
+end_attribute_mapping;
+
+attribute_mapping experience_of(experience_of, $PATH, Experience_type);
+
+					applied_experience_assignment <=
+					experience_assignment
+					experience_assignment.assigned_experience ->
+					experience
+				
+end_attribute_mapping;
+
+attribute_mapping gained_by(gained_by, $PATH, person_or_organization_or_person_in_organization_select);
+
+                            applied_experience_type_assignment
+                            applied_experience_type_assignment.items[1] ->
+                            experience_type_item
+                          
+end_attribute_mapping;
+
+attribute_mapping gained_by(gained_by, $PATH, Person);
+
+					applied_experience_type_assignment
+					applied_experience_type_assignment.items[1] ->
+					experience_type_item
+					experience_type_item =
+					person
+				
+end_attribute_mapping;
+
+attribute_mapping gained_by(gained_by, $PATH, Organization);
+
+					applied_experience_type_assignment
+					applied_experience_type_assignment.items[1] ->
+					experience_type_item
+					experience_type_item =
+					organization
+				
+end_attribute_mapping;
+
+attribute_mapping gained_by(gained_by, $PATH, person_and_organization);
+
+					applied_experience_type_assignment
+					applied_experience_type_assignment.items[1] ->
+					experience_type_item
+					experience_type_item =
+					person_and_organization
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Experience_instance(Experience_instance, experience);
+
+attribute_mapping description(description, experience.name);
+
+					experience
+					experience.description
+				
+end_attribute_mapping;
+
+attribute_mapping is_defined_by(is_defined_by, $PATH, Experience_type);
+
+					experience <-
+					experience_assignment.assigned_experience
+					experience_assignment =>
+					applied_experience_assignment
+					applied_experience_assignment.items[1] ->
+					experience_item
+					experience_item =
+					experience_type
+				
+end_attribute_mapping;
+
+attribute_mapping consists_of(consists_of, $PATH, defined_activities);
+
+                            experience <-
+                            experience_assignment.assigned_experience
+                            experience_assignment =>
+                            applied_experience_assignment
+                            applied_experience_assignment.items[1] ->
+                            experience_item
+                          
+end_attribute_mapping;
+
+attribute_mapping consists_of(consists_of, $PATH, Resource_as_realized);
+
+					experience <-
+					experience_assignment.assigned_experience
+					experience_assignment =>
+					applied_experience_assignment
+					applied_experience_assignment.items[1] ->
+					experience_item
+					experience_item =
+					action_resource
+				
+end_attribute_mapping;
+
+attribute_mapping consists_of(consists_of, $PATH, Activity_actual);
+
+					experience <-
+					experience_assignment.assigned_experience
+					experience_assignment =>
+					applied_experience_assignment
+					applied_experience_assignment.items[1] ->
+					experience_item
+					experience_item =
+					executed_action
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(* entity with the same name is taken from AIM instead
+entity_mapping Experience_type_relationship(Experience_type_relationship, experience_type_relationship);
+
+attribute_mapping compound_experience(compound_experience, $PATH, Experience_type);
+
+					experience_type_relationship
+					experience_type_relationship.relating_experience_type ->
+					experience_type				
+				
+end_attribute_mapping;
+
+attribute_mapping component_experience(component_experience, $PATH, Experience_type);
+
+					experience_type_relationship
+					experience_type_relationship.related_experience_type ->
+					experience_type				
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+(* AIM entities are taken instead
+entity_mapping Classification_assignment(Classification_assignment, applied_classification_assignment)
+extended;
+
+attribute_mapping items(items, $PATH, Experience_type);
+
+					applied_classification_assignment.items[i] ->
+					classification_item *>
+					experience_type_classification_item =
+					experience_type
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Date_or_date_time_assignment(Date_or_date_time_assignment, ((date_assignment))((date_and_time_assignment)))
+extended;
+
+attribute_mapping items(items, ($PATH)($PATH), Experience_instance);
+(
+						(date_assignment=>
+						 applied_date_assignment
+						 applied_date_assignment.items[i] -> date_item
+						experience_date_item
+						experience_date_item =
+						experience)
+					)(
+						(date_and_time_assignment=>
+				 		 applied_date_and_time_assignment
+						 applied_date_and_time_assignment.items[i] -> date_and_time_item
+						date_and_time_item *>
+						experience_date_and_time_item
+						experience_date_and_time_item =
+						experience)
+					)
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Assigned_property(Assigned_property, property_definition)
+extended;
+
+attribute_mapping described_element(described_element, $PATH, Experience_instance);
+
+				property_definition
+				property_definition.definition ->
+				characterized_definition = 
+				characterized_object =>
+				characterized_experience
+				characterized_experience <=
+				experience
+			
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

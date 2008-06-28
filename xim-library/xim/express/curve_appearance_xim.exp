@@ -1,0 +1,100 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+Derived from ISO TC184/SC4/WG12 N672 - ISO/TS 10303-1003 Curve appearance - EXPRESS ARM
+by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+
+SCHEMA Curve_appearance_xim; 
+
+USE FROM Styled_curve_xim;
+
+USE FROM curve_appearance_mim;
+
+(* EX USE FROMS
+USE FROM external_reference_schema(external_source);
+
+USE FROM curve_appearance_mim
+(
+	externally_defined_terminator_symbol,
+	pre_defined_terminator_symbol,
+	terminator,
+	user_defined_curve_font,
+	user_defined_marker,
+	user_defined_terminator_symbol,
+	vector_style);
+
+USE FROM presentation_appearance_schema(
+	curve_style,
+	curve_style_font,
+	curve_style_font_pattern,
+	externally_defined_curve_font,
+	marker_select,
+	point_style);
+	
+USE FROM representation_schema(
+	mapped_item,
+	representation_map);
+*)
+
+USE FROM representation_schema(
+	representation_map);
+
+TYPE  curve_appearance_select = SELECT
+   (Curve_appearance, 
+    Point_appearance, 
+    Vector_appearance);
+END_TYPE; 
+
+ENTITY Externally_defined_terminator
+  (* CONNOTATIONAL *) SUBTYPE OF (externally_defined_terminator_symbol);
+  terminator_reference : STRING;
+END_ENTITY;
+
+ENTITY Point_appearance
+  (* CONNOTATIONAL *) SUBTYPE OF (point_style);
+  SELF\point_style.marker_colour RENAMED colour : colour;
+  SELF\point_style.marker_size RENAMED size : positive_length_measure;
+END_ENTITY;
+
+ENTITY User_defined_marker_armx
+  (* CONNOTATIONAL *) SUBTYPE OF (user_defined_marker);
+  symbol : shape_representation;
+  (* this attribute overlaps with symbol attribute *)
+  DERIVE 
+  	SELF\mapped_item.mapping_source : representation_map := ?;
+END_ENTITY;
+
+ENTITY User_defined_terminator
+  (* CONNOTATIONAL *) SUBTYPE OF (user_defined_terminator_symbol);
+  symbol : shape_representation;
+END_ENTITY;
+
+ENTITY Vector_appearance
+  (* CONNOTATIONAL *) SUBTYPE OF (Curve_appearance, vector_style);
+  terminator_type : Terminator;
+END_ENTITY;
+
+END_SCHEMA;  -- Curve_appearance_arm

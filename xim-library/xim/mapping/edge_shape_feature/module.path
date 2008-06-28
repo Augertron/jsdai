@@ -1,0 +1,147 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping form_features(Form_features_arm, Form_features_mim);*)
+
+
+entity_mapping Bevel_edge_feature_shape_model(Bevel_edge_feature_shape_model, shape_representation);
+
+mapping_constraints;
+{shape_representation <=
+representation
+representation.name = 'bevel edge feature shape model'}
+
+end_mapping_constraints;
+
+attribute_mapping bevel_width(bevel_width, $PATH, Length_tolerance_characteristic);
+shape_representation <=
+representation <-
+representation_relationship.rep_2
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'bevel width'}
+representation_relationship.rep_1 ->
+representation
+
+end_attribute_mapping;
+
+attribute_mapping bevel_angle(bevel_angle, $PATH, Tolerance_characteristic);
+shape_representation <=
+representation <-
+representation_relationship.rep_2
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'bevel angle'}
+representation_relationship.rep_1 ->
+representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Edge_shape_model(Edge_shape_model, shape_representation);
+
+mapping_constraints;
+{shape_representation <=
+representation				
+representation.context_of_items ->
+representation_context =>
+geometric_representation_context
+geometric_representation_context.coordinate_space_dimension = 2}
+
+end_mapping_constraints;
+
+attribute_mapping applied_surface(applied_surface, $PATH, board_side);
+shape_representation <=
+representation
+representation.items[i] ->
+representation_item
+{representation_item.name = 'applied surface'}
+representation_item =>
+descriptive_representation_item
+{(descriptive_representation_item.description = 'primary')
+(descriptive_representation_item.description = 'secondary')}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Radius_edge_feature_shape_model(Radius_edge_feature_shape_model, shape_representation);
+
+mapping_constraints;
+{shape_representation <=
+representation
+representation.name = 'radius edge feature shape model'}
+
+end_mapping_constraints;
+
+attribute_mapping radius_length(radius_length, $PATH, Length_tolerance_characteristic);
+shape_representation <=
+representation <-
+representation_relationship.rep_2
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'radius length'}
+representation_relationship.rep_1 ->
+representation
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Step_edge_feature_shape_model(Step_edge_feature_shape_model, shape_representation);
+
+mapping_constraints;
+{shape_representation <=
+representation
+representation.name = 'step edge feature shape model'}
+
+end_mapping_constraints;
+
+attribute_mapping step_depth(step_depth, $PATH, Length_tolerance_characteristic);
+shape_representation <=
+representation <-
+representation_relationship.rep_2
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'step depth'}
+representation_relationship.rep_1 ->
+representation
+
+end_attribute_mapping;
+
+attribute_mapping step_width(step_width, $PATH, Length_tolerance_characteristic);
+shape_representation <=
+representation <-
+representation_relationship.rep_2
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'step width'}
+representation_relationship.rep_1 ->
+representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

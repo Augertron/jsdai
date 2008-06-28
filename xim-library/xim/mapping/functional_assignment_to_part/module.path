@@ -1,0 +1,108 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping functional_assignment_to_part(Functional_assignment_to_part_arm, Functional_assignment_to_part_mim);*)
+
+
+entity_mapping Functional_usage_view_to_part_terminal_assignment(Functional_usage_view_to_part_terminal_assignment, shape_aspect_relationship);
+
+mapping_constraints;
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'functional terminal allocation'}
+
+end_mapping_constraints;
+
+attribute_mapping physical_usage_view_terminal(physical_usage_view_terminal, $PATH, Part_terminal);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+
+end_attribute_mapping;
+
+attribute_mapping functional_usage_view_terminal(functional_usage_view_terminal, $PATH, Scalar_terminal_definition);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+{shape_aspect
+shape_aspect.description = 'scalar terminal'}
+shape_aspect =>
+functional_unit_terminal_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Part_connected_terminals_definition_armx(Part_connected_terminals_definition_armx, part_connected_terminals_definition);
+
+mapping_constraints;
+part_connected_terminals_definition <=
+shape_aspect
+
+end_mapping_constraints;
+
+attribute_mapping name(name, shape_aspect.name);
+part_connected_terminals_definition <=
+shape_aspect
+shape_aspect.name
+
+end_attribute_mapping;
+
+attribute_mapping connected_terminals(connected_terminals, $PATH, Part_terminal);
+part_connected_terminals_definition <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name  = 'member connected terminal'}
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+
+end_attribute_mapping;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Part_usage_view);
+part_connected_terminals_definition <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+physical_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Part_feature(Part_feature, 
+			(/SUBTYPE(Part_terminal)/)
+		)
+extended;
+
+end_entity_mapping;
+
+entity_mapping Part_terminal(Part_terminal, shape_aspect);
+
+mapping_constraints;
+
+shape_aspect
+
+end_mapping_constraints;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

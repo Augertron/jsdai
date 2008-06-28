@@ -1,0 +1,51 @@
+(*
+ $Id$
+ ISO TC184/SC4/WG12 N4817 - ISO/CD-TS 10303-1104 Specified product - EXPRESS MIM
+ Supersedes ISO TC184/SC4/WG12 N2590
+*)
+
+SCHEMA Specified_product_mim;
+
+USE FROM Configuration_item_mim; -- ISO/TS 10303-1056
+
+USE FROM Product_class_mim; -- ISO/TS 10303-1103
+
+USE FROM configuration_management_schema(
+	configurable_item);
+
+USE FROM product_property_definition_schema(
+	characterized_object);
+
+
+  TYPE id_for_product_identification = SELECT BASED_ON identification_item WITH (product_identification);
+  END_TYPE;
+
+  TYPE version_for_product_identification = SELECT BASED_ON versionable_item WITH (product_identification);
+  END_TYPE;
+
+  ENTITY product_identification
+    SUBTYPE OF (configuration_item, characterized_object);
+	  SELF\configuration_item.item_concept : product_class;
+    WHERE
+	  WR1 : SIZEOF(QUERY 
+		( cd <* USEDIN ( SELF ,'CONFIGURATION_MANAGEMENT_SCHEMA.CONFIGURATION_DESIGN.CONFIGURATION' ) 
+		|
+     	( 'PRODUCT_DEFINITION_SCHEMA.'+ 'PRODUCT_DEFINITION_FORMATION' IN TYPEOF ( cd. design ) ) 
+     	AND 
+    	( SIZEOF ( QUERY 
+    	( 
+    	prpc <* USEDIN ( cd. design\product_definition_formation.of_product , 'PRODUCT_DEFINITION_SCHEMA.PRODUCT_RELATED_PRODUCT_CATEGORY.PRODUCTS') 
+    	| 
+        prpc. name IN ['part' , 'raw material' , 'tool'] ) ) >0
+     	) 
+     	) 
+     	) <=1;
+	  WR2 : NOT ( 'CONFIGURATION_MANAGEMENT_SCHEMA.'+ 'CONFIGURABLE_ITEM' IN TYPEOF( SELF ) ) 
+			XOR ( 'SPECIFIED_PRODUCT_MIM.'+ 'PRODUCT_SPECIFICATION' IN TYPEOF ( SELF ) ) ;
+  END_ENTITY;
+
+  ENTITY product_specification
+    SUBTYPE OF (product_identification, configurable_item);
+  END_ENTITY;
+
+END_SCHEMA;

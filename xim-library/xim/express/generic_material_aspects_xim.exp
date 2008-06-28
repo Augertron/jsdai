@@ -1,0 +1,98 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N3990 - ISO/TS 10303-1681 Generic material aspects - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+(* Mixture of AIM and ARM *)
+
+SCHEMA Generic_material_aspects_xim;
+
+USE FROM Independent_property_representation_xim;
+
+USE FROM Material_property_representation_schema(Data_environment);
+
+USE FROM Material_property_definition_schema(
+	Material_designation_characterization,
+	material_designation);
+
+USE FROM Generic_material_aspects_mim;
+
+USE FROM support_resource_schema(
+  label,
+  text);
+
+USE FROM material_property_definition_schema(characterized_material_property);
+
+TYPE material_item_select = EXTENSIBLE GENERIC_ENTITY SELECT;
+END_TYPE;
+
+TYPE material_property_select = SELECT (Material_property_armx, general_material_property);
+END_TYPE;
+
+TYPE dependent_or_independent_property_representation = SELECT(
+  Independent_property_representation,
+  Material_property_value_representation); -- XIM specific change in order to avoid too generic and weak model
+END_TYPE;
+
+  ENTITY Applied_independent_material_property SUBTYPE OF
+    (Material_property, Applied_independent_property);
+     SELF\Applied_independent_property.base_independent_property: general_material_property;
+  END_ENTITY;
+
+ ENTITY Material_property_armx
+  SUBTYPE OF (Assigned_property, material_property);
+  (** GL - added because here we must anyway go route:
+   Material_property_armx <- Material_property_value_representation -> Representation -> Representaiton_item 
+   Ideally we could derive this attribute this way *)
+  DERIVE
+    SELF\Assigned_property.representation: property_value_select :=?;
+ END_ENTITY;
+   
+ ENTITY Data_environment_armx
+ 	(* CONNOTATIONAL *) SUBTYPE OF (Data_environment);
+ 	SELF\data_environment.name RENAMED environment_name : STRING;
+    SELF\data_environment.elements RENAMED environment_characterization: SET[1:?] OF dependent_or_independent_property_representation;
+ END_ENTITY;
+
+ ENTITY Material_property_association
+(* CONNOTATIONAL *) SUBTYPE OF (material_designation_characterization); 
+	SELF\material_designation_characterization.designation RENAMED described_material : material_designation;
+  associated_property_value                                                         : Material_property_value_representation;
+  definitional                                                                      : OPTIONAL BOOLEAN;
+ DERIVE
+  SELF\material_designation_characterization.property : characterized_material_property := ?;
+  SELF\material_designation_characterization.description : text := ?;
+  SELF\material_designation_characterization.name : label := ?;
+ END_ENTITY;
+
+ ENTITY Material_property_value_representation
+  (* CONNOTATIONAL *) SUBTYPE OF (material_property_representation);
+    SELF\material_property_representation.dependent_environment RENAMED environment_condition : Data_environment_armx;
+    SELF\property_definition_representation.definition RENAMED property                       : material_property_select;
+END_ENTITY;
+
+END_SCHEMA;
+

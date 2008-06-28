@@ -1,0 +1,109 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Device marking - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Device_marking_xim;
+
+USE FROM Part_template_2d_shape_xim;
+
+USE FROM Part_template_non_planar_shape_xim;
+
+USE FROM support_resource_schema(label);
+
+REFERENCE FROM Specification_document_xim(get_document_definition);
+
+	TYPE dm_material_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON material_item_select WITH
+		(Marking);
+	END_TYPE;
+
+	TYPE dm_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
+	   (Marking);
+	END_TYPE; 
+
+  TYPE marked_message_select = SELECT
+    (Configuration_controlled_message,
+     Text_representation_item);
+  END_TYPE;
+
+TYPE marking_shape_select = SELECT
+    (Part_template_3d_shape_model,
+     Physical_unit_3d_shape_model,
+     Part_template_non_planar_2d_shape_model,
+     Part_template_planar_shape_model,
+     Physical_unit_planar_shape_model);
+END_TYPE;
+
+  	TYPE message_source_select = SELECT
+      	(Organization,
+		Approval,
+     	product_definition_formation);
+	END_TYPE;
+
+  TYPE message_type = ENUMERATION OF
+    (part_number,
+     manufacturer_code,
+     revision_identifier,
+     approval_date);
+  END_TYPE;
+    
+  ENTITY Configuration_controlled_message
+  	(* CONNOTATIONAL *) SUBTYPE OF (descriptive_representation_item);
+      message_source             																								: message_source_select;
+      SELF\descriptive_representation_item.description RENAMED message_content	: STRING;
+      message_type_specification 					: message_type;
+    (* overlaps with message_type_specification *)
+    DERIVE  
+      SELF\representation_item.name : label :=?;
+  END_ENTITY;
+
+  ENTITY Marking
+  	(* CONNOTATIONAL *) SUBTYPE OF (representation);
+      marked_message              : marked_message_select;
+      marked_device_shape         : marking_shape_select;
+      placement                   : axis2_placement;
+      message_representation      : Shape_representation;
+      message_representation_text : text_literal;
+      marking_material 						: material_designation; -- in the ARM it is INVERSE, but since it is kind of representation in XIM, it can be only this way.
+	DERIVE
+		marking_specification: SET[0:?] OF Document_definition :=
+  			get_document_definition(SELF, 'marking specification', 
+  			'SPECIFICATION_DOCUMENT_ARM.SPECIFICATION_DEFINITION_ARMX');
+        SELF\representation.items : SET [1:?] OF value_qualifier := ?;
+        SELF\representation.context_of_items : representation_context := ?;
+        SELF\representation.name : label := ?;
+    WHERE
+      WR1 : SIZEOF(QUERY(st <* message_representation\Representation.items | (st = message_representation_text))) = 1;
+      WR2 : SIZEOF(QUERY(ap <* marked_device_shape\Representation.items | (ap = placement))) = 1;
+      WR3 : SIZEOF(TYPEOF(marked_device_shape) * ['DEVICE_MARKING_ARM.PHYSICAL_UNIT_3D_SHAPE_MODEL',
+ 'DEVICE_MARKING_XIM.PHYSICAL_UNIT_PLANAR_SHAPE_MODEL']) = 1;
+      WR4 : 'CONDUCTIVITY_MATERIAL_ASPECTS_XIM.'+ 'MATERIAL_IDENTIFICATION_WITH_CONDUCTIVITY_CLASSIFICATION' IN TYPEOF (marking_material);
+   	  WR5 : EXISTS (marking_specification) AND SIZEOF(marking_specification) = 1;
+  END_ENTITY;
+
+END_SCHEMA;
+
+

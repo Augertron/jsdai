@@ -1,0 +1,154 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping tagged_text_representation(Tagged_text_representation_arm, Tagged_text_representation_mim);*)
+
+
+entity_mapping Tagged_text_item_armx(Tagged_text_item_armx, tagged_text_item);
+
+mapping_constraints;
+{tagged_text_item <= descriptive_representation_item}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Included_text_block_armx(Included_text_block_armx, Included_text_block);
+
+mapping_constraints;
+{included_text_block <= representation_item}
+
+end_mapping_constraints;
+
+attribute_mapping source(source, $PATH, Structured_text_representation_armx);
+included_text_block <= 
+representation_item <-
+representation.items[i]
+representation =>
+structured_text_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Structured_text_composition_armx(Structured_text_composition_armx, structured_text_composition);
+
+mapping_constraints;
+{structured_text_composition <= 
+compound_representation_item <= 
+representation_item}
+
+end_mapping_constraints;
+(* XIM is simplified towards AIM
+attribute_mapping content(content, $PATH, compound_item_definition);
+structured_text_composition <= 
+compound_representation_item
+compound_representation_item.item_element ->
+compound_item_definition = set_representation_item
+set_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping content(content, $PATH, string_representation_item_list);
+structured_text_composition <= 
+compound_representation_item
+compound_representation_item.item_element ->
+compound_item_definition = list_representation_item
+list_representation_item
+
+end_attribute_mapping;
+*)
+attribute_mapping content(content, $PATH, compound_item_definition);
+structured_text_composition <= 
+compound_representation_item
+compound_representation_item.item_element ->
+compound_item_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Structured_text_representation_armx(Structured_text_representation_armx, structured_text_representation);
+
+mapping_constraints;
+{structured_text_representation <= representation}
+
+end_mapping_constraints;
+
+attribute_mapping items(items, $PATH, descriptive_representation_item);
+structured_text_representation <= 
+representation
+representation.items[i] ->
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, Included_text_block_armx);
+structured_text_representation <= 
+representation
+representation.items[i] ->
+representation_item =>
+mapped_item =>
+included_text_block
+
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, Structured_text_composition_armx);
+structured_text_representation <= 
+representation
+representation.items[i] ->
+representation_item =>
+compound_representation_item =>
+structured_text_composition
+
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, string_representation_item_select);
+structured_text_representation <= 
+representation
+representation.items[i] ->
+representation_item
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Tagged_text_format_armx(Tagged_text_format_armx, tagged_text_format);
+
+mapping_constraints;
+{tagged_text_format <= representation_context}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Uniform_resource_identifier_armx(Uniform_resource_identifier_armx, uniform_resource_identifier);
+
+mapping_constraints;
+{uniform_resource_identifier <= descriptive_representation_item}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

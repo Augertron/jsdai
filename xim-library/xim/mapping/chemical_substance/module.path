@@ -1,0 +1,249 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping chemical_substance(Chemical_substance_arm, Chemical_substance_mim);*)
+
+
+entity_mapping Chemical_compound(Chemical_compound, product);
+
+mapping_constraints;
+product
+{product <-
+product_related_product_category.products
+product_related_product_category <=
+product_category
+product_category.name='chemical compound'}
+   
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Chemical_element(Chemical_element, product);
+
+mapping_constraints;
+product
+{product <-
+product_related_product_category.products
+product_related_product_category <=
+product_category
+product_category.name='chemical element'}
+   
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Physical_particle(Physical_particle, product);
+
+mapping_constraints;
+product
+{product <-
+product_related_product_category.products
+product_related_product_category <=
+product_category
+product_category.name='physical particle'}
+   
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Raw_material_definition_relationship(Raw_material_definition_relationship, make_from_usage_option);
+
+mapping_constraints;
+make_from_usage_option
+{make_from_usage_option <=
+product_definition_usage <=
+product_definition_relationship
+product_definition_relationship.name = 'raw material definition'}
+
+end_mapping_constraints;
+
+attribute_mapping definition(definition, product_definition_relationship.related_product_definition, Substance_view_definition);
+
+			    product_definition_relationship
+				product_definition_relationship.related_product_definition -> 
+				product_definition
+				{product_definition.formation ->
+				product_definition_formation.of_product ->
+				product
+				product <-
+				product_related_product_category.products
+				product_related_product_category <=
+				product_category
+				product_category.name='substance'}
+			
+end_attribute_mapping;
+
+attribute_mapping application(application, product_definition_relationship.relating_product_definition, Part_view_definition);
+
+				product_definition_relationship
+				product_definition_relationship.relating_product_definition -> 
+				product_definition
+				{product_definition.frame_of_reference -> 
+				product_definition_context <=
+				application_context_element
+				application_context_element.name = 'part definition'}				
+			
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Substance(Substance, product);
+
+mapping_constraints;
+product
+{product <-
+product_related_product_category.products
+product_related_product_category <=
+product_category
+product_category.name='substance'}
+   
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Substance_composition_relationship(Substance_composition_relationship, product_material_composition_relationship);
+
+mapping_constraints;
+{product_material_composition_relationship <=
+product_definition_relationship
+product_definition_relationship.name = 'assembly material composition'}
+
+end_mapping_constraints;
+
+attribute_mapping amount(amount, $PATH, measure_with_unit);
+product_material_composition_relationship
+product_material_composition_relationship.constituent_amount ->
+measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping determination_method(determination_method, $PATH);
+product_material_composition_relationship
+product_material_composition_relationship.determination_method ->
+text
+
+end_attribute_mapping;
+
+attribute_mapping composition_basis_x(composition_basis_x, product_definition_relationship.description);
+product_material_composition_relationship
+product_material_composition_relationship.composition_basis
+{(product_material_composition_relationship.composition_basis = 'volume')
+(product_material_composition_relationship.composition_basis = 'mass')
+(product_material_composition_relationship.composition_basis = 'moles')
+(product_material_composition_relationship.composition_basis = 'atoms')}
+
+end_attribute_mapping;
+
+attribute_mapping whole(whole, product_definition_relationship.relating_product_definition, Substance_view_definition);
+product_material_composition_relationship <=
+			    product_definition_relationship
+				product_definition_relationship.relating_product_definition -> 
+				product_definition
+				{product_definition.formation ->
+				product_definition_formation.of_product ->
+				product
+				product <-
+				product_related_product_category.products
+				product_related_product_category <=
+				product_category
+				product_category.name='substance'}
+			
+end_attribute_mapping;
+
+attribute_mapping constituent(constituent, product_definition_relationship.related_product_definition, Substance_view_definition);
+
+				product_material_composition_relationship <=
+				product_definition_relationship
+				product_definition_relationship.related_product_definition -> 
+				product_definition
+				{product_definition.formation ->
+				product_definition_formation.of_product ->
+				product
+				product <-
+				product_related_product_category.products
+				product_related_product_category <=
+				product_category
+				product_category.name='substance'}
+			
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Substance_version(Substance_version, product_definition_formation);
+
+mapping_constraints;
+product_definition_formation
+{product_definition_formation.of_product ->
+product
+product <-
+product_related_product_category.products
+product_related_product_category <=
+product_category
+product_category.name='substance'}
+   			
+end_mapping_constraints;
+
+attribute_mapping of_product(of_product, $PATH, Substance);
+product_definition_formation
+product_definition_formation.of_product -> 
+product
+{product <- 
+product_related_product_category.products[i] 
+product_related_product_category <= 
+product_category 
+product_category.name = 'substance'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Substance_view_definition(Substance_view_definition, product_definition);
+
+mapping_constraints;
+product_definition
+{product_definition.formation ->
+product_definition_formation.of_product ->
+product <-
+product_related_product_category.products
+product_related_product_category <=
+product_category
+product_category.name='substance'}
+   			
+end_mapping_constraints;
+
+attribute_mapping defined_version(defined_version, $PATH, Substance_version);
+product_definition
+product_definition.formation ->
+product_definition_formation
+{product_definition_formation.of_product ->
+product
+product <-
+product_related_product_category.products
+product_related_product_category <=
+product_category
+product_category.name='substance'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

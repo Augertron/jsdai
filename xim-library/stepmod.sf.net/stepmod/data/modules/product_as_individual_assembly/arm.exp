@@ -1,0 +1,33 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4795 - ISO/CD-TS 10303-1328 Product as individual assembly - EXPRESS ARM
+*)
+(* UNDER DEVELOPMENT *)
+SCHEMA Product_as_individual_assembly_arm;
+
+USE FROM Part_occurrence_arm;
+USE FROM Product_as_individual_arm;
+
+  TYPE part_view_definition_or_product_configuration = SELECT
+    (Part_view_definition, Product_configuration);
+  END_TYPE;
+
+  ENTITY Physical_assembly_relationship;
+    physical_component : Product_as_individual_view;
+    physical_assembly : Product_as_individual_view; 
+    is_realization_of : Product_occurrence; --item_instance;
+  END_ENTITY;
+
+  ENTITY Product_as_individual_view_realization;
+    product_design : part_view_definition_or_product_configuration;
+    individual_product : Product_as_individual_view;
+  DERIVE
+    individual_product_version : Product_version := individual_product\Product_view_definition.defined_version;  
+  UNIQUE
+    UR1 : individual_product;
+  WHERE
+    WR1 : NOT('PRODUCT_AS_INDIVIDUAL_ARM.PRODUCT_DESIGN_VERSION_TO_INDIVIDUAL' IN TYPEOF(individual_product_version))
+      AND NOT('PRODUCT_AS_INDIVIDUAL_ARM.PRODUCT_DESIGN_TO_INDIVIDUAL' IN TYPEOF(individual_product_version\Product_version.of_product));
+  END_ENTITY;
+
+END_SCHEMA;

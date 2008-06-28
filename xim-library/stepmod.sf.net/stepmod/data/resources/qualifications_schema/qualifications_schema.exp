@@ -1,0 +1,79 @@
+(*
+  $Id$
+  ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+*) 
+
+
+SCHEMA qualifications_schema;
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set,
+   identifier,
+   label,
+   text); 
+
+
+ENTITY qualification;
+  id : identifier;
+  name : label;
+  description : OPTIONAL text;
+END_ENTITY;
+
+ENTITY qualification_relationship;
+  id : identifier;
+  name : label;
+  description : OPTIONAL text;
+  relating_qualification : qualification;
+  related_qualification : qualification;
+END_ENTITY;
+
+ENTITY qualification_type;
+  id : identifier;
+  name : label;
+  description : OPTIONAL text;
+END_ENTITY;
+
+ENTITY qualification_type_relationship;
+  id : identifier;
+  name : label;
+  description : OPTIONAL text;
+  relating_qualification_type : qualification_type;
+  related_qualification_type : qualification_type;
+END_ENTITY;
+
+FUNCTION acyclic_qualification_relationship (relation : qualification_relationship; relatives : SET OF qualification; specific_relation : STRING):BOOLEAN;
+    LOCAL
+      x : SET OF qualification_relationship;
+    END_LOCAL;
+
+    IF relation.relating_qualification IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(qual <* bag_to_set(USEDIN(relation.relating_qualification, 'QUALIFICATIONS_SCHEMA.' + 'QUALIFICATION_RELATIONSHIP.' + 'RELATED_QUALIFICATION')) | specific_relation IN TYPEOF(qual));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_qualification_relationship(x[i], relatives + relation.relating_qualification, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION;
+
+  FUNCTION acyclic_qualification_type_relationship (relation : qualification_type_relationship; relatives : SET OF qualification_type; specific_relation : STRING):BOOLEAN;
+    LOCAL
+      x : SET OF qualification_type_relationship;
+    END_LOCAL;
+
+    IF relation.relating_qualification_type IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(qultyp <* bag_to_set(USEDIN(relation.relating_qualification_type, 'QUALIFICATIONS_SCHEMA.' + 'QUALIFICATION_TYPE_RELATIONSHIP.' + 'RELATED_QUALIFICATION_TYPE')) | specific_relation IN TYPEOF(qultyp));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_qualification_type_relationship(x[i], relatives + relation.relating_qualification_type, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION;
+
+END_SCHEMA;  -- qualifications_schema
+

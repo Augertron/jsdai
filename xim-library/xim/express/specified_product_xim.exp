@@ -1,0 +1,53 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*  
+   Derived from ISO/TC184/SC4 WG12N2589 - ISO/TS 10303-1104 Specified product - Express ARM 
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Specified_product_xim;
+
+USE FROM Configuration_item_xim;
+
+USE FROM Product_class_xim;
+
+USE FROM product_version_xim;
+
+USE FROM specified_product_mim;
+
+ENTITY Product_specification_armx
+(* CONNOTATIONAL *) SUBTYPE OF (product_identification);
+  version_id                                                : OPTIONAL STRING;
+  SELF\configuration_item.item_concept RENAMED item_context : Product_class;
+  defining_specifications                                   : SET [0:?] OF Specification;
+END_ENTITY;
+
+ENTITY Specification_based_product_version
+(* CONNOTATIONAL *) SUBTYPE OF (product_definition_formation);
+INVERSE
+  specification_source: configuration_design FOR design;
+WHERE
+WR1 : 'SPECIFIED_PRODUCT_XIM.PRODUCT_SPECIFICATION_ARMX' IN TYPEOF(specification_source.configuration);
+END_ENTITY;
+END_SCHEMA;

@@ -1,0 +1,203 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4976 - ISO/CD-TS 10303-1753 Value with unit extension - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4206
+*)
+
+SCHEMA Value_with_unit_extension_arm;
+
+	USE FROM Value_with_unit_arm;	-- ISO/TS 10303-1054
+	
+ENTITY Absorbed_dose_data_element
+  SUBTYPE OF (Value_with_unit);
+END_ENTITY;
+
+  ENTITY Radioactivity_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Acceleration_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Amount_of_substance_data_element
+    SUBTYPE OF (Value_with_unit);
+    WHERE
+		WR1 : 'VALUE_WITH_UNIT_ARM.AMOUNT_OF_SUBSTANCE_UNIT' IN TYPEOF(SELF\Value_with_unit.Unit);
+  END_ENTITY;
+
+  ENTITY Angle_data_element
+    SUBTYPE OF (Value_with_unit);
+    WHERE
+		WR1 : 'VALUE_WITH_UNIT_ARM.PLANE_ANGLE_UNIT' IN TYPEOF(SELF\Value_with_unit.Unit);
+  END_ENTITY;
+
+  ENTITY Area_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Capacitance_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Celsius_temperature_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Conductance_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Dose_equivalent_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Electric_charge_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Electric_current_data_element
+    SUBTYPE OF (Value_with_unit);
+    WHERE
+		WR1 : 'VALUE_WITH_UNIT_ARM.ELECTRIC_CURRENT_UNIT' IN TYPEOF(SELF\Value_with_unit.Unit);
+  END_ENTITY;
+
+  ENTITY Electric_potential_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Energy_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Force_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Frequency_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Illuminance_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Inductance_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Length_data_element
+    SUBTYPE OF (Value_with_unit);
+    WHERE
+      WR1 : SELF\Value_with_unit.value_component >= 0.0;
+	  WR2 : 'VALUE_WITH_UNIT_ARM.LENGTH_UNIT' IN TYPEOF(SELF\Value_with_unit.Unit);
+  END_ENTITY;
+
+  ENTITY Luminous_flux_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Luminous_intensity_data_element
+    SUBTYPE OF (Value_with_unit);
+    WHERE
+		WR1 : 'VALUE_WITH_UNIT_ARM.LUMINOUS_INTENSITY_UNIT' IN TYPEOF(SELF\Value_with_unit.Unit);
+  END_ENTITY;
+
+  ENTITY Magnetic_flux_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Magnetic_flux_density_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Mass_data_element
+    SUBTYPE OF (Value_with_unit);
+    WHERE
+		WR1 : 'VALUE_WITH_UNIT_ARM.MASS_UNIT' IN TYPEOF(SELF\Value_with_unit.Unit);
+  END_ENTITY;
+
+  ENTITY Power_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Pressure_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Ratio_data_element
+    SUBTYPE OF (Value_with_unit);
+    WHERE
+		WR1 : 'VALUE_WITH_UNIT_ARM.RATIO_UNIT' IN TYPEOF(SELF\Value_with_unit.Unit);
+  END_ENTITY;
+
+  ENTITY Resistance_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Scattering_parameter_data_element
+    SUBTYPE OF (Value_with_unit);
+      angle : REAL;
+      SELF\Value_with_unit.value_component RENAMED radius : any_number_value;
+    WHERE
+      WR1 : radius >= 0;
+      WR2 : {0 <= angle < 2*PI};
+  END_ENTITY;
+
+  ENTITY Solid_angle_data_element
+    SUBTYPE OF (Value_with_unit);
+    WHERE
+		WR1 : 'VALUE_WITH_UNIT_ARM.SOLID_ANGLE_UNIT' IN TYPEOF(SELF\Value_with_unit.Unit);
+  END_ENTITY;
+
+  ENTITY Thermodynamic_temperature_data_element
+    SUBTYPE OF (Value_with_unit);
+    WHERE
+		WR1 : 'VALUE_WITH_UNIT_ARM.THERMODYNAMIC_TEMPERATURE_UNIT' IN TYPEOF(SELF\Value_with_unit.Unit);
+  END_ENTITY;
+
+  ENTITY Velocity_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+  ENTITY Volume_data_element
+    SUBTYPE OF (Value_with_unit);
+  END_ENTITY;
+
+SUBTYPE_CONSTRAINT value_with_unit_subtypes FOR Value_with_unit; 
+  ONEOF (Acceleration_data_element,
+ Absorbed_dose_data_element,
+ Radioactivity_data_element,
+ Amount_of_substance_data_element,
+ Angle_data_element,
+ Area_data_element,
+ Capacitance_data_element,
+ Celsius_temperature_data_element,
+ Conductance_data_element,
+ Dose_equivalent_data_element,
+ Electric_charge_data_element,
+ Electric_current_data_element,
+ Electric_potential_data_element,
+ Energy_data_element,
+ Force_data_element,
+ Frequency_data_element,
+ Illuminance_data_element,
+ Inductance_data_element,
+ Length_data_element,
+ Luminous_flux_data_element,
+ Luminous_intensity_data_element,
+ Magnetic_flux_data_element,
+ Magnetic_flux_density_data_element,
+ Mass_data_element,
+ Power_data_element,
+ Pressure_data_element,
+ Ratio_data_element,
+ Resistance_data_element,
+ Scattering_parameter_data_element,
+ Solid_angle_data_element,
+ Thermodynamic_temperature_data_element,
+ Velocity_data_element,
+ Volume_data_element); 
+END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA;

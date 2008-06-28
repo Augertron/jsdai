@@ -1,0 +1,162 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4059 - ISO/TS 10303-1704 Network functional design view - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3339
+*)
+
+SCHEMA Network_functional_design_view_arm;
+
+	USE FROM Assembly_structure_arm;	-- ISO/TS 10303-xxxx
+	USE FROM Functional_usage_view_arm;	-- ISO/TS 10303-1705
+	USE FROM Generic_product_occurrence_arm;	-- ISO/CD-TS 10303-1762	
+	USE FROM Requirement_assignment_arm;	-- ISO/TS 10303-1233
+
+	SUBTYPE_CONSTRAINT functional_unit_definition_subtypes FOR Functional_unit_definition;     
+		(ONEOF (Functional_unit_network_definition,
+		Functional_unit_usage_view));
+	END_SUBTYPE_CONSTRAINT; 
+
+  TYPE bus_structural_definition_or_node = SELECT
+    (Functional_unit_network_node_definition,
+     Bus_structural_definition);
+  END_TYPE;
+
+TYPE nfdw_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
+    (Functional_unit);
+END_TYPE; 
+
+  ENTITY Bus_element_link;
+      precedent_element  : bus_structural_definition_or_node;
+      subsequent_element : bus_structural_definition_or_node;
+    UNIQUE
+      UR1 : precedent_element,
+ subsequent_element;
+    WHERE
+      WR1 : precedent_element <> subsequent_element;
+  END_ENTITY;
+
+  ENTITY Bus_structural_definition;
+      bus_name    : STRING; 
+      composition : SET[1:?] OF Bus_element_link;
+    INVERSE
+      external_bus_access : SET[0:1] OF Functional_unit_network_terminal_definition_bus_assignment FOR connected_bus;
+    UNIQUE
+      UR1 : bus_name;
+    WHERE
+      WR1 : consistent_bus_structural_definition(composition);
+  END_ENTITY;
+
+  ENTITY Functional_unit
+  	SUBTYPE OF(Definition_based_product_occurrence);
+      SELF\Definition_based_product_occurrence.derived_from RENAMED definition   : Functional_unit_definition;
+      SELF\Product_view_definition.id RENAMED reference_designation : STRING; 
+      functional_property   : OPTIONAL SET[1:?] OF Parameter_assignment_override;
+    DERIVE  
+		composed_network    : Functional_unit_network_definition := SELF\Product_occurrence.occurrence_contexts[1].relating_view;    
+		SELF\Product_view_definition.defined_version : Product_version := SELF\Definition_based_product_occurrence.derived_from.defined_version;
+    INVERSE
+      access_mechanisms : SET[1:?] OF functional_unit_terminal FOR accessed_functional_unit;
+    UNIQUE
+      UR1 : reference_designation, composed_network;
+    WHERE
+      WR1 : SIZEOF(SELF\Product_occurrence.occurrence_contexts) = 1;
+      WR2 : EXISTS(composed_network);
+  END_ENTITY;
+
+  ENTITY Functional_unit_network_definition
+    SUBTYPE OF (Functional_unit_definition);
+      usage_view : Functional_unit_usage_view;
+  END_ENTITY;
+
+  ENTITY Functional_unit_network_node_definition
+    SUBTYPE OF (Product_view_definition);
+      associated_functional_unit_definition                                                              : Functional_unit_network_definition;
+      SELF\Product_view_definition.additional_characterization RENAMED functional_unit_network_node_name : STRING; 
+    DERIVE
+      SELF\Product_view_definition.defined_version : Functional_version := associated_functional_unit_definition.defined_version;
+      valid_conservative_node : LOGICAL := ( ( SIZEOF (USEDIN ( SELF ,
+        'NETWORK_FUNCTIONAL_DESIGN_VIEW_ARM.BUS_ELEMENT_LINK.PRECEDENT_ELEMENT' ) )
+        + SIZEOF ( USEDIN ( SELF ,
+        'NETWORK_FUNCTIONAL_DESIGN_VIEW_ARM.BUS_ELEMENT_LINK.SUBSEQUENT_ELEMENT' )
+        ) + SIZEOF (USEDIN ( SELF ,
+        'NETWORK_FUNCTIONAL_DESIGN_VIEW_ARM.FUNCTIONAL_UNIT_TERMINAL_NODE_ASSIGNMENT.COMPOSED_NODE'
+        )) + SIZEOF ( external_node_access ) ) > 1 );
+    INVERSE
+      external_node_access : SET[0:1] OF functional_unit_network_terminal_definition_node_assignment FOR composed_node;
+    UNIQUE
+      UR1 : functional_unit_network_node_name,
+ associated_functional_unit_definition;
+    WHERE
+      WR1 : EXISTS(valid_conservative_node);
+  END_ENTITY;
+
+  ENTITY Functional_unit_network_terminal_definition_bus_assignment;
+      connected_bus      : Bus_structural_definition;
+      connected_terminal : Functional_unit_usage_view_terminal_definition;
+    UNIQUE
+      UR1 : connected_bus, connected_terminal;
+  END_ENTITY;
+
+  ENTITY Functional_unit_network_terminal_definition_node_assignment;
+      composed_node      : Functional_unit_network_node_definition;
+      connected_terminal : Functional_unit_usage_view_terminal_definition;
+    UNIQUE
+      UR1 : composed_node, connected_terminal;
+  END_ENTITY;
+
+  ENTITY Functional_unit_terminal;
+      accessed_functional_unit : Functional_unit;
+      definition               : Functional_unit_usage_view_terminal_definition;
+    INVERSE
+      bus_assignment  : SET[0:1] OF functional_unit_terminal_bus_assignment FOR connected_terminal;
+      node_assignment : SET[0:1] OF functional_unit_terminal_node_assignment FOR connected_terminal;
+  END_ENTITY;
+
+  ENTITY Functional_unit_terminal_bus_assignment;
+      connected_bus      : Bus_structural_definition;
+      connected_terminal : Functional_unit_terminal;
+  END_ENTITY;
+
+  ENTITY Functional_unit_terminal_node_assignment;
+      composed_node      : Functional_unit_network_node_definition;
+      connected_terminal : Functional_unit_terminal;
+  END_ENTITY;
+
+  FUNCTION consistent_bus_structural_definition(
+    input : SET OF Bus_element_link
+  ) : BOOLEAN;
+
+    LOCAL
+      vertex        : SET OF bus_structural_definition_or_node := [];
+      edge          : INTEGER := SIZEOF(input);
+      vc            : INTEGER := 0;
+      vertex_degree : INTEGER := 0;
+    END_LOCAL;
+
+    REPEAT i := 1 TO SIZEOF(input) BY 1;
+      vertex := vertex + input[i].precedent_element;
+      vertex := vertex + input[i].subsequent_element;
+    END_REPEAT;
+    vc := SIZEOF(vertex);
+    IF (vc <> (edge + 1)) THEN
+      RETURN(FALSE);
+    END_IF;
+    REPEAT i := 1 TO vc BY 1;
+      vertex_degree := 0;
+      REPEAT j := 1 TO SIZEOF(input) BY 1;
+        IF input[j].precedent_element = vertex[i] THEN
+          vertex_degree := vertex_degree + 1;
+        END_IF;
+        IF input[j].subsequent_element = vertex[i] THEN
+          vertex_degree := vertex_degree + 1;
+        END_IF;
+      END_REPEAT;
+      IF (vertex_degree > 2) THEN
+        RETURN(FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN(TRUE);
+  END_FUNCTION;
+
+
+END_SCHEMA;

@@ -1,0 +1,243 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping resource_as_realized(Resource_as_realized_arm, Resource_as_realized_mim);*)
+
+uof_mapping Resource_as_realized(Resource_as_realized);
+
+entity_mapping Resource_as_realized(Resource_as_realized, action_resource);
+
+mapping_constraints;
+action_resource
+	[{action_resource.usage[1] ->
+        supported_item
+	supported_item = action_method
+	action_method
+	action_method.name = 'resource management'}
+	{action_resource.kind ->
+	action_resource_type
+	action_resource_type.name = 'resource as realized'}] 
+    
+end_mapping_constraints;
+
+attribute_mapping name(name, action_resource.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, action_resource.description);
+
+end_attribute_mapping;
+
+attribute_mapping quantity(quantity, $PATH, measure_with_unit);
+action_resource
+	characterized_resource_definition = action_resource
+	characterized_resource_definition
+	characterized_resource_definition <-
+	resource_property.resource
+	resource_property
+	{resource_property.name = 'quantity'}
+	resource_property <-
+	resource_property_representation.property 
+	resource_property_representation
+	{resource_property_representation.name = 'quantity'}
+	resource_property_representation.representation ->
+	representation
+	[{representation.context_of_items ->
+	representation_context
+	representation_context.context_identifier = ''}
+	{representation.context_of_items ->
+	representation_context
+	representation_context.context_type = 'resource as realized'}]
+	representation.items[i] ->
+	representation_item
+	representation_item => 
+	value_representation_item
+	value_representation_item.value_component ->
+	measure_value 
+	measure_value <-
+	measure_with_unit.value_component
+	measure_with_unit
+      
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Resource_as_realized_assignment(Resource_as_realized_assignment, action_method);
+
+mapping_constraints;
+[{action_method.name = 'resource management'}
+	 {action_method.consequence = 'resource as realized assignment'}
+	 {action_method.purpose = 'standard action method'}]
+    
+end_mapping_constraints;
+
+attribute_mapping assigned_resource(assigned_resource, $PATH, Resource_as_realized);
+action_method
+	supported_item = action_method
+	supported_item
+	supported_item <- action_resource.usage[i]
+	action_resource
+      
+end_attribute_mapping;
+
+attribute_mapping item(item, $PATH, resource_as_realized_item);
+	action_method <- action_method_assignment.assigned_action_method
+	action_method_assignment
+	{action_method_assignment.role -> action_method_role
+	action_method_role
+	action_method_role.name = 'realized resource'}
+	action_method_assignment => applied_action_method_assignment
+	applied_action_method_assignment
+	applied_action_method_assignment.items[i] -> action_method_items
+      
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Resource_as_realized_relationship(Resource_as_realized_relationship, action_resource_relationship);
+
+mapping_constraints;
+action_resource_relationship.name = 'resource as realized relationship'
+    
+end_mapping_constraints;
+
+attribute_mapping name(name, action_resource_relationship.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, action_resource_relationship.description);
+
+end_attribute_mapping;
+
+attribute_mapping relating(relating, $PATH, Resource_as_realized);
+action_resource_relationship.relating_resource ->
+	action_resource
+   	
+end_attribute_mapping;
+
+attribute_mapping related(related, $PATH, Required_resource);
+action_resource_relationship.related_resource ->
+		action_resource
+		[{action_resource.usage[1] ->
+        	supported_item
+		supported_item = action_method
+		action_method
+		action_method.name = 'resource management'}
+		{action_resource.kind ->
+		action_resource_type
+		action_resource_type.name = 'resource as realized relationship req res by res item'}]
+		action_resource <-
+		requirement_for_action_resource.resources[i]
+		requirement_for_action_resource
+		requirement_for_action_resource <=
+		action_resource_requirement
+	
+end_attribute_mapping;
+
+attribute_mapping related(related, ($PATH)($PATH), Resource_event);
+(action_resource_relationship.related_resource ->
+		action_resource
+		[{action_resource.usage[1] ->
+        	supported_item
+		supported_item = action_method
+		action_method
+		action_method.name = 'resource management'}
+		{action_resource.kind ->
+		action_resource_type
+		action_resource_type.name = 'resource as realized relationship req res by spec'}]
+		action_resource <-
+		requirement_for_action_resource.resources[i]
+		requirement_for_action_resource
+	    )(action_resource_relationship.related_resource ->
+		action_resource
+		{action_resource.kind ->
+		action_resource_type
+		action_resource_type.name = 'resource as realized relationship res event'}
+		action_resource.usage[1] ->
+		supported_item
+		supported_item = action
+	    )
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(* AIM entity is taken instead
+entity_mapping Classification_assignment(Classification_assignment, applied_classification_assignment)
+extended;
+
+attribute_mapping items(items, , Resource_as_realized);
+
+         classification_item
+         classification_item *> resource_as_realized_classification_item
+	 resource_as_realized_classification_item
+	 resource_as_realized_classification_item = action_resource
+       
+end_attribute_mapping;
+
+attribute_mapping items(items, , Resource_as_realized_assignment);
+
+         classification_item
+         classification_item *> resource_as_realized_classification_item
+	 resource_as_realized_classification_item
+	 resource_as_realized_classification_item = action_method
+       
+end_attribute_mapping;
+
+attribute_mapping items(items, , Resource_as_realized_relationship);
+
+         classification_item
+         classification_item *> resource_as_realized_classification_item
+	 resource_as_realized_classification_item
+	 resource_as_realized_classification_item = action_resource_relationship
+       
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Resource_as_realized_resource_item(Resource_as_realized_resource_item, action_resource);
+
+mapping_constraints;
+action_resource
+	{[action_resource.usage[1] ->
+        supported_item
+	supported_item = action_method
+	action_method.name = 'resource management']
+	[action_resource.kind ->
+	action_resource_type
+	action_resource_type.name = 'resource as realized resource item']}
+    
+end_mapping_constraints;
+
+attribute_mapping resource_item(resource_item, $PATH, Resource_item);
+action_resource <-
+	action_resource_relationship.relating_resource
+	action_resource_relationship
+	{action_resource_relationship.name = 'resource as realized resource item'}
+	action_resource_relationship.related_resource ->
+	action_resource
+      
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

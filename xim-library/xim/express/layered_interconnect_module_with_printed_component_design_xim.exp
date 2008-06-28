@@ -1,0 +1,340 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Layered interconnect module with printed component design - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+
+SCHEMA Layered_interconnect_module_with_printed_component_design_xim;   
+
+USE FROM Layered_interconnect_module_design_xim;
+USE FROM Printed_physical_layout_template_xim;	-- ISO/TS 10303-1737
+
+USE FROM Layered_interconnect_module_with_printed_component_design_mim;
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+
+-- The same extension is available via mim
+-- 	TYPE limwpcd_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH  
+--		(Printed_component_armx);
+--	END_TYPE;
+
+	TYPE conductor_or_conductive_filled_area = SELECT
+		(Conductor, 
+		 Conductive_filled_area);
+	END_TYPE;
+	
+	SUBTYPE_CONSTRAINT limwpcd_assembly_component_subtypes FOR Assembly_component_armx; 
+	    (ONEOF (Physical_component_armx,
+		 Printed_component_armx,
+	 	Laminate_component_armx));
+	END_SUBTYPE_CONSTRAINT;
+
+	SUBTYPE_CONSTRAINT limwpcd_structured_layout_component_armx_subtypes FOR Structured_layout_component_armx; 
+		(ONEOF (Footprint_occurrence_armx,
+			Material_removal_structured_component_armx,
+            Multi_stratum_printed_component_armx, 
+			Multi_stratum_special_symbol_component_armx,
+			Padstack_occurrence_armx,
+			Single_stratum_printed_component_armx,
+			Single_stratum_special_symbol_component_armx));
+	END_SUBTYPE_CONSTRAINT; 
+
+  ENTITY Basic_multi_stratum_printed_component_armx 
+    SUBTYPE OF (Printed_component_armx, basic_multi_stratum_printed_component);
+      material_stack : Stratum_feature_based_derived_pattern_armx;
+      SELF\Printed_component_armx.derived_from : Basic_multi_stratum_printed_part_template_armx;
+    DERIVE
+      stratum_feature_implementation : Stratum_feature_armx := material_stack.reference_stratum_feature;      
+  END_ENTITY;
+
+  ENTITY Multi_stratum_printed_component_armx
+    SUBTYPE OF (Printed_component_armx, Structured_layout_component_armx, multi_stratum_printed_component);
+      SELF\Printed_component_armx.derived_from : Multi_stratum_printed_part_template_armx;
+  END_ENTITY;
+
+  ENTITY Single_stratum_printed_component_armx
+    SUBTYPE OF (Printed_component_armx, Structured_layout_component_armx, single_stratum_printed_component);
+      SELF\Printed_component_armx.derived_from : Single_stratum_printed_part_template_armx;
+      stratum_feature_implementation : SET [1:?] OF Stratum_feature_armx;
+   WHERE
+    WR1 : SIZEOF(QUERY(sfi <* stratum_feature_implementation |
+         NOT(sfi.resident_stratum = stratum_feature_implementation[1].resident_stratum)
+               )) = 0;
+  END_ENTITY;
+
+  ENTITY Printed_component_armx
+    ABSTRACT SUPERTYPE OF (ONEOF (Single_stratum_printed_component_armx, 
+    Basic_multi_stratum_printed_component_armx,
+   Multi_stratum_printed_component_armx))
+    SUBTYPE OF (Assembly_component_armx, Single_instance, printed_component);
+      SELF\Definition_based_product_occurrence.derived_from : Printed_part_template_armx;
+    DERIVE
+      SELF\Product_view_definition.name_x : STRING := '';
+    INVERSE
+      access_mechanism : SET[1:?] OF printed_component_join_terminal FOR associated_component;    
+      cad_layer        : SET[0:1] OF External_source_identification FOR items;
+  END_ENTITY;
+
+  ENTITY Printed_component_join_terminal
+    (* CONNOTATIONAL *) SUBTYPE OF (Laminate_component_join_terminal_armx);
+      SELF\Component_feature_armx.definition           	: Printed_part_template_join_terminal;
+      SELF\Component_feature_armx.associated_component(* TEMP-CF *) 	: Printed_component_armx;
+      stratum_concept_implementation              			: Stratum_feature_template_component_armx;
+    DERIVE
+      SELF\shape_aspect.description : text := 'printed component join terminal';
+    WHERE
+      WR1 : associated_component.derived_from :=: definition\Printed_part_template_terminal.associated_definition;
+  END_ENTITY;
+
+  ENTITY Printed_connector_component_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Printed_component_armx, printed_connector_component);
+      SELF\Definition_based_product_occurrence.derived_from : Printed_connector_template_armx;
+    INVERSE
+      interface_access_mechanism : SET[1:?] OF Printed_connector_component_interface_terminal FOR associated_component;
+  END_ENTITY;
+
+  ENTITY Printed_connector_component_interface_terminal
+    (* CONNOTATIONAL *) SUBTYPE OF (Laminate_component_interface_terminal_armx);
+      SELF\Component_feature_armx.definition           	: Printed_part_template_interface_terminal;
+      SELF\Component_feature_armx.associated_component(* TEMP-CF *) 	: Printed_connector_component_armx;
+      stratum_concept_implementation              			: Stratum_feature_template_component_armx;
+    DERIVE
+      SELF\shape_aspect.description : text := 'printed connector component interface terminal';
+  END_ENTITY;
+
+  ENTITY Routed_transmission_line_armx
+    SUBTYPE OF (Assembly_component_armx, Single_instance, routed_transmission_line);
+      routed_centreline_shape                  				: Curve;
+      SELF\Definition_based_product_occurrence.derived_from : Printed_part_cross_section_template_armx;
+      component_extent                         				: Inter_stratum_extent;
+      curve_parameters                                      : Curve_style_parameters;
+  END_ENTITY;
+
+  ENTITY Tiebar_printed_component_armx 
+    SUBTYPE OF (Printed_component_armx, Structured_layout_component_armx, tiebar_printed_component);
+      SELF\Printed_component_armx.derived_from : Printed_tiebar_template_armx;
+    DERIVE
+      joined_networks : SET OF Generic_physical_network := get_gpn(SELF\Printed_component_armx.access_mechanism);
+      tiebar_component : SET OF Area_component_armx := limdwpcd_get_ac(components);
+      padstack_component : SET OF Laminate_component_armx := limdwpcd_get_lc(components);
+      passage_component : SET OF Plated_passage_armx := QUERY(pc <* padstack_component | ('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.PLATED_PASSAGE_ARMX' IN TYPEOF(pc)));
+      tiebar_resident_stratum : SET OF Stratum_armx := limdwpcd_get_tbrs(tiebar_component);
+      passage_resident_stratum : SET OF Stratum_armx := limdwpcd_get_prs(passage_component, SELF\Assembly_component_armx.assemblies);
+      passage_dependent_land_component : SET OF Plated_passage_dependent_land_armx := limdwpcd_get_ppdl(passage_component);  
+    INVERSE
+      SELF\Assembly_group_component_armx.components  : 
+        SET [1:?] OF Structured_layout_component_sub_assembly_relationship FOR relating_product_definition;
+    WHERE
+     WR1 : (SIZEOF(tiebar_component) + SIZEOF(passage_component)) > 0;
+     WR2 : SIZEOF(components) = (SIZEOF(tiebar_component) + SIZEOF(padstack_component));             
+     WR3 : SIZEOF(padstack_component) > SIZEOF(passage_component);             
+     WR4 : SIZEOF(QUERY(tc <* tiebar_component |
+                  NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.STRATUM_FEATURE_ARMX' IN TYPEOF
+                      (tc\Stratum_feature_template_component_armx.implementation_or_resident_stratum))
+                 )) = 0;       
+     WR5 : SIZEOF(tiebar_component) = SIZEOF(tiebar_resident_stratum);       
+     WR6 : SIZEOF(joined_networks) > 1;
+     WR7 : SIZEOF(QUERY(jn <* joined_networks |
+                 NOT(SIZEOF(SELF\Printed_component_armx.access_mechanism * jn\Generic_physical_network.connectivity_requirement_element) = 1 )
+                 )) = 0;               
+     WR8 : SIZEOF(QUERY(tc <* tiebar_component |
+           NOT(SIZEOF(USEDIN(tc,'COMPONENT_FEATURE_XIM.COMPONENT_FEATURE_ARMX.ASSOCIATED_COMPONENT')) = 0)
+              )) = 0;
+    WR9 : NOT(SIZEOF(passage_component) = 1) OR
+             (SIZEOF(QUERY(pc <* passage_component | NOT((SIZEOF(tiebar_component) = 0) OR
+                (SIZEOF(tiebar_resident_stratum * passage_resident_stratum) = SIZEOF(tiebar_resident_stratum))
+                )
+               )) = 0);
+    WR10 : NOT(SIZEOF(passage_component) >= 1) OR
+              (SIZEOF(QUERY(pc <* passage_component | NOT
+                (SIZEOF(tiebar_resident_stratum * passage_resident_stratum) = SIZEOF(tiebar_resident_stratum))
+               )) = 0);
+   WR11 : SIZEOF(QUERY(am <* SELF\Printed_component_armx.access_mechanism |
+           NOT('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.STRUCTURED_PRINTED_PART_TEMPLATE_TERMINAL' IN TYPEOF(am.definition))
+            )) = 0;
+  END_ENTITY;
+    
+FUNCTION get_gpn(
+	input : SET OF printed_component_join_terminal) : SET OF Generic_physical_network; 
+LOCAL
+	gpn : SET[0:?] OF Generic_physical_network := [];  --this gives us access to the information base
+END_LOCAL;
+
+	REPEAT i := 1 to SIZEOF(input) by 1;
+		gpn := gpn + bag_to_set(USEDIN(input[i],'LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.GENERIC_PHYSICAL_NETWORK.CONNECTIVITY_REQUIREMENT_ELEMENT'));
+	END_REPEAT;
+
+	RETURN(gpn);
+END_FUNCTION;
+
+  FUNCTION limdwpcd_get_sspc(
+	input : SET OF Structured_layout_component_sub_assembly_relationship) : 
+      SET OF Single_stratum_printed_component_armx; 
+    LOCAL
+	  sspc : SET[0:?] OF Single_stratum_printed_component_armx := [];  --this gives us access to the information base
+    END_LOCAL;
+	REPEAT i := 1 to SIZEOF(input) by 1;
+	      sspc := sspc + input[i]\Structured_layout_component_sub_assembly_relationship.related_product_definition;
+	END_REPEAT;
+
+	RETURN(sspc);
+  END_FUNCTION;
+
+  FUNCTION limdwpcd_get_s(
+	input : SET OF Single_stratum_printed_component_armx) : SET OF Stratum_armx; 
+    LOCAL
+	  s : SET[0:?] OF Stratum_armx := [];  --this gives us access to the information base
+    END_LOCAL;
+
+	REPEAT i := 1 to SIZEOF(input) by 1;
+	      s := s + input[i]\Single_stratum_printed_component_armx.stratum_feature_implementation[1]\Stratum_feature_armx.resident_stratum;
+	END_REPEAT;
+
+	RETURN(s);
+  END_FUNCTION;
+
+FUNCTION limdwpcd_get_ac(input : SET OF Structured_layout_component_sub_assembly_relationship) : SET OF Area_component_armx; 
+LOCAL
+	sspc : SET OF Stratum_feature_template_component_armx := [];  --this gives us access to the information base
+	slcsar : SET OF Structured_layout_component_sub_assembly_relationship :=
+                 (QUERY(inp <* input |
+                 ('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.AREA_COMPONENT_ARMX' IN TYPEOF(inp.related_view)) AND NOT
+                 ('LAND_XIM.LAND_ARMX' IN TYPEOF(inp.related_view)) AND NOT
+  ('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.CONDUCTIVE_INTERCONNECT_ELEMENT_WITH_PRE_DEFINED_TRANSITIONS_ARMX' IN TYPEOF(inp.related_product_definition)) AND NOT
+  ('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.INTERFACE_ACCESS_STRATUM_FEATURE_TEMPLATE_COMPONENT_ARMX' IN TYPEOF(inp.related_product_definition))
+                 ));
+END_LOCAL;
+
+	REPEAT i := 1 to SIZEOF(slcsar) by 1;
+	      sspc := sspc + slcsar[i]\Structured_layout_component_sub_assembly_relationship.related_product_definition;
+	END_REPEAT;
+
+	RETURN(sspc);
+END_FUNCTION;
+
+FUNCTION limdwpcd_get_lc(input : SET OF Structured_layout_component_sub_assembly_relationship) : SET OF Laminate_component_armx; 
+LOCAL
+	sspc : SET OF Laminate_component_armx := [];  --this gives us access to the information base
+	slcsar : SET OF Structured_layout_component_sub_assembly_relationship :=
+                 (QUERY(inp <* input |
+                 ('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.PADSTACK_DEFINITION_ARMX' IN TYPEOF
+(inp\Structured_layout_component_sub_assembly_relationship.second_location\Template_location_in_structured_template.assembly))
+                 ));
+END_LOCAL;
+
+	REPEAT i := 1 to SIZEOF(slcsar) by 1;
+	      sspc := sspc + slcsar[i]\Structured_layout_component_sub_assembly_relationship.related_product_definition;
+	END_REPEAT;
+
+	RETURN(sspc);
+END_FUNCTION;
+
+FUNCTION limdwpcd_get_tbrs(input : SET OF Stratum_feature_template_component_armx) : SET OF Stratum_armx; 
+LOCAL
+	s : SET OF Stratum_armx := [];  --this gives us access to the information base
+END_LOCAL;
+
+	REPEAT i := 1 to SIZEOF(input) by 1;
+	      s := s + input[i]\Stratum_feature_template_component_armx.resident_stratum;
+	END_REPEAT;
+
+	RETURN(s);
+END_FUNCTION;
+
+FUNCTION limdwpcd_get_prs(input1 : SET OF Plated_passage_armx;
+                          input2 : SET OF Product_view_definition) : SET OF Stratum_armx; 
+LOCAL
+	s : SET OF Stratum_armx := [];  --this gives us access to the information base
+	stol : SET OF Stratum_technology_occurrence_link_armx := [];  --this gives us access to the information base
+	ptatsm : SET OF Passage_technology_allocation_to_stack_model_armx := [];  --this gives us access to the information base
+END_LOCAL;
+
+	REPEAT i := 1 to SIZEOF(input1) by 1;
+             ptatsm := ptatsm + input1[i]\Inter_stratum_feature_armx.vertical_extent;
+             
+             
+	END_REPEAT;
+
+	REPEAT i := 1 to SIZEOF(ptatsm) by 1;
+             stol := stol + ptatsm[i]\Passage_technology_allocation_to_stack_model_armx.stratum_technology_sequence;
+	END_REPEAT;
+
+             s := limdwpcd_get_stolrs(stol, input2);             
+	RETURN(s);
+END_FUNCTION;
+
+FUNCTION limdwpcd_get_ppdl(input : SET OF Plated_passage_armx) : SET OF Plated_passage_dependent_land_armx; 
+LOCAL
+	sspc : SET OF Plated_passage_dependent_land_armx := [];  --this gives us access to the information base
+END_LOCAL;
+
+	REPEAT i := 1 to SIZEOF(input) by 1;
+	      sspc := sspc + bag_to_set(USEDIN(input[i],'LAND_XIM.PLATED_PASSAGE_DEPENDENT_LAND_ARMX.REFERENCE_PLATED_PASSAGE'));
+	END_REPEAT;
+
+	RETURN(sspc);
+END_FUNCTION;
+
+FUNCTION limdwpcd_get_stolrs(input1 : SET OF Stratum_technology_occurrence_link_armx;
+                             input2 : SET OF Product_view_definition) : SET OF Stratum_armx; 
+LOCAL
+	s0 : SET OF Stratum_armx := [];  --this gives us access to the information base for stratum that reference sto
+	sto : SET OF Stratum_technology_occurrence_armx := [];  --this gives us access to the information base
+	imsar : SET OF Interconnect_module_stratum_assembly_relationship := [];
+	s1 : SET OF Stratum_armx := [];  --this gives us access to the information base for stratum that are referenced by the assembly relationship to the input2
+	s2 : SET OF Stratum_armx := [];  --this gives us access to the information base for stratum that are related to both input1 and input2
+	i : INTEGER := 0; -- variable representing the member of input2 that is the context for the function
+END_LOCAL;
+(* initial implementation only supports examining the first Product_view_definition as the stratum stack is not expected to change over the design cycle. *)
+(* depends on the unique constraint on stratum.definition in an assembly context *)
+
+REPEAT i := 1 to 1 by 1;
+	REPEAT j := 1 to SIZEOF(input1) by 1;
+	      sto := sto + input1\Stratum_technology_occurrence_relationship_armx.sto_1 +
+	                   input1\Stratum_technology_occurrence_relationship_armx.sto_2;
+	END_REPEAT;
+	
+	REPEAT j := 1 to SIZEOF(sto) by 1;
+      	     s0 := s0 + bag_to_set(USEDIN(sto[j], 'LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.STRATUM_ARMX.DEFINITION'));
+    END_REPEAT;
+
+    imsar := imsar + bag_to_set(USEDIN(input2[i], 'LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.INTERCONNECT_MODULE_STRATUM_ASSEMBLY_RELATIONSHIP.ASSEMBLY'));
+
+    REPEAT j := 1 to SIZEOF(imsar) by 1;
+     s1 := s1 + imsar[j]\Interconnect_module_stratum_assembly_relationship.component;
+    END_REPEAT;
+
+    s2 := s0 * s1; -- The intersection of the Stratum that reference the sto and the stratum that are part of the pcb.
+END_REPEAT;
+
+	RETURN(s2);
+END_FUNCTION;
+
+END_SCHEMA; 
+
+
+

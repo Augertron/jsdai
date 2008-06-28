@@ -1,0 +1,31 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4593 - ISO/CD-TS 10303-1490 Issue - EXPRESS MIM
+*) 
+
+SCHEMA Issue_mim;
+
+USE FROM Observation_mim;    -- ISO/TS 10303-1258
+
+USE FROM representation_schema   -- ISO 10303-43
+  (representation,
+   representation_context); 
+
+
+TYPE issue_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT;
+END_TYPE; 
+
+ENTITY issue
+  SUBTYPE OF (observation);
+END_ENTITY;
+
+ENTITY issue_consequence
+  SUBTYPE OF (observation_consequence);
+END_ENTITY;
+
+ENTITY issue_reference_mapping;
+  issue_referenced : representation;
+  items : SET[0:?] OF issue_reference_item;
+END_ENTITY;
+
+END_SCHEMA;  -- Issue_mim

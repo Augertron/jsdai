@@ -1,0 +1,32 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4632- ISO/CD-TS 10303-1488 Verification and validation - EXPRESS MIM
+*) 
+
+SCHEMA Verification_and_validation_mim;
+
+USE FROM group_schema;
+
+USE FROM Requirement_assignment_mim;
+
+TYPE verification_evidence_item = EXTENSIBLE GENERIC_ENTITY SELECT ;
+END_TYPE;
+
+ENTITY verification
+SUBTYPE OF (group);
+END_ENTITY;
+
+ENTITY verification_evidence
+SUBTYPE OF (group_assignment);
+  SELF\group_assignment.assigned_group : verification;
+  items : SET [1 : ?] OF verification_evidence_item;
+END_ENTITY;
+
+ENTITY verification_relationship
+SUBTYPE OF (group_relationship);
+  SELF\group_relationship.relating_group : verification;
+  SELF\group_relationship.related_group : verification;
+END_ENTITY;
+
+END_SCHEMA;
+

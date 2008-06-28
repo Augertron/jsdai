@@ -1,0 +1,262 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping assembly_module_usage_view(Assembly_module_usage_view_arm, Assembly_module_usage_view_mim);*)
+
+
+entity_mapping Assembly_module_interface_terminal_armx(Assembly_module_interface_terminal_armx, assembly_module_interface_terminal);
+
+mapping_constraints;
+assembly_module_interface_terminal <=
+assembly_module_terminal <=
+shape_aspect
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Assembly_module_terminal_armx(Assembly_module_terminal_armx, assembly_module_terminal);
+
+mapping_constraints;
+assembly_module_terminal <=
+shape_aspect
+{shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape <=
+property_definition
+{property_definition.name = 'assembly module'}}
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Assembly_module_usage_view);
+assembly_module_terminal <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape
+{product_definition_shape <=
+property_definition
+{property_definition.name = 'assembly module'}}
+product_definition_shape =>
+physical_unit
+
+end_attribute_mapping;
+
+attribute_mapping connection_area(connection_area, $PATH, Connection_zone_in_usage_view);
+assembly_module_terminal <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'connection area'}
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+
+end_attribute_mapping;
+
+attribute_mapping reference_terminal(reference_terminal, $PATH, Packaged_part_interface_terminal);
+assembly_module_terminal <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'reference terminal'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'interface terminal'}
+shape_aspect =>
+packaged_part_terminal
+
+end_attribute_mapping;
+
+attribute_mapping related_connector(related_connector, $PATH, next_assembly_usage_occurrence);
+assembly_module_terminal <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'related connector'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect.of_shape ->
+product_definition_shape <=
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition_relationship
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+physical_unit}
+product_definition_relationship =>
+product_definition_usage =>
+assembly_component_usage
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Assembly_module_usage_view(Assembly_module_usage_view, physical_unit);
+
+mapping_constraints;
+{[physical_unit <=
+product_definition_shape <=
+property_definition
+{property_definition.name = 'assembly module'}]
+[physical_unit <=
+product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'physical design usage']}
+
+end_mapping_constraints;
+
+attribute_mapping implemented_function(implemented_function, $PATH, Functional_unit_usage_view);
+physical_unit <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'implemented function'}
+product_definition_relationship.relating_product_definition ->
+{product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'functional design usage'}
+product_definition =>
+functional_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Part_terminal(Part_terminal, 
+			(/SUBTYPE(Assembly_module_terminal_armx)/)
+		)
+extended;
+
+end_entity_mapping;
+
+entity_mapping Pca_terminal(Pca_terminal, assembly_module_terminal);
+
+mapping_constraints;
+assembly_module_terminal <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'pca terminal'}
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Pca_usage_view);
+assembly_module_terminal <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape
+{product_definition_shape <=
+property_definition
+{property_definition.name = 'assembly module'}}
+product_definition_shape =>
+physical_unit =>
+assembly_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Pca_usage_view(Pca_usage_view, assembly_definition);
+
+mapping_constraints;
+{[assembly_definition <=
+physical_unit <=
+product_definition_shape <=
+property_definition
+{property_definition.name = 'assembly module'}]
+[assembly_definition <=
+physical_unit <=
+product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'physical design usage']}
+
+end_mapping_constraints;
+
+attribute_mapping maximum_negative_component_height(maximum_negative_component_height, $PATH, Datum_based_length_measure);
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition.name = 'maximum negative component height'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+
+end_attribute_mapping;
+
+attribute_mapping maximum_positive_component_height(maximum_positive_component_height, $PATH, Datum_based_length_measure);
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition.name = 'maximum positive component height'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

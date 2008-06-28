@@ -1,0 +1,363 @@
+(******************************************************************************)
+(*                                                                            *)
+(*        This file was produced by Eurostep GraphicalEXPRESS V1.3.19        *)
+(*                                                                            *)
+(******************************************************************************)
+
+(*
+2007-11-30
+ISO TC184/SC4/WG12 N3267 - ISO/IS 10303-58 Risk Schema -EXPRESS
+*)
+
+(* Original model: Risk_schema_v025.4.vsd *)
+(* Title: Risk_schema_v022.4 *)
+(* Author: Hartvigsen *)
+(* Comments:  *)
+
+SCHEMA risk_schema;
+
+REFERENCE FROM action_schema
+  (action,
+   action_method,
+   action_resource);
+
+REFERENCE FROM application_context_schema
+  (product_context,
+   product_definition_context);
+
+REFERENCE FROM document_schema
+  (document_product_association);
+
+REFERENCE FROM management_resources_schema
+  (event_occurrence_assignment,
+   organization_assignment,
+   person_and_organization_assignment,
+   person_assignment);
+
+REFERENCE FROM person_organization_schema
+  (organization,
+   person,
+   person_and_organization);
+
+REFERENCE FROM product_definition_schema
+  (product,
+   product_definition,
+   product_definition_formation,
+   product_definition_relationship,
+   product_relationship);
+
+REFERENCE FROM qualified_measure_schema
+  (descriptive_representation_item);
+
+REFERENCE FROM representation_schema
+  (representation,
+   value_representation_item);
+
+REFERENCE FROM state_observed_schema
+  (state_observed,
+   state_observed_assignment);
+
+TYPE mitigation_select = SELECT 
+  (risk,
+   risk_consequence,
+   risk_impact_assignment,
+   risk_perception,
+   risk_perception_relationship,
+   risk_probability_assignment,
+   risk_relationship,
+   risk_source_assignment);
+END_TYPE;
+
+TYPE probable_item = EXTENSIBLE SELECT ;
+END_TYPE;
+
+TYPE risk_communication_select = EXTENSIBLE SELECT 
+  (lessons_learned,
+   risk,
+   risk_analysis,
+   risk_assessment,
+   risk_consequence,
+   risk_context,
+   risk_control,
+   risk_estimation,
+   risk_evaluation,
+   risk_identification,
+   risk_impact_assignment,
+   risk_perception,
+   risk_perception_context,
+   risk_perception_relationship,
+   risk_probability,
+   risk_probability_assignment,
+   risk_reduction,
+   risk_relationship,
+   risk_resource,
+   risk_treatment);
+END_TYPE;
+
+TYPE risk_estimation_select = SELECT 
+  (qualitative_consequence_estimate,
+   qualitative_probability_estimate,
+   quantitative_consequence_estimate,
+   quantitative_probability_distribution,
+   quantitative_probability_estimate);
+END_TYPE;
+
+TYPE risk_identification_select = SELECT 
+  (risk_consequence,
+   risk_impact_assignment,
+   risk_perception,
+   risk_probability_assignment,
+   risk_source_assignment);
+END_TYPE;
+
+TYPE risk_impact_item = EXTENSIBLE SELECT ;
+END_TYPE;
+
+TYPE risk_source_item = EXTENSIBLE SELECT ;
+END_TYPE;
+
+TYPE risk_status_select = SELECT 
+  (risk,
+   risk_perception);
+END_TYPE;
+
+ENTITY lessons_learned
+SUBTYPE OF (document_product_association);
+END_ENTITY;
+
+ENTITY qualitative_consequence
+SUBTYPE OF (risk_consequence);
+  SELF\representation.items RENAMED estimate : SET [1 : ?] OF qualitative_consequence_estimate;
+END_ENTITY;
+
+ENTITY qualitative_consequence_estimate
+SUBTYPE OF (descriptive_representation_item);
+END_ENTITY;
+
+ENTITY qualitative_probability
+SUBTYPE OF (risk_probability);
+  SELF\representation.items RENAMED estimate : SET [1 : ?] OF qualitative_probability_estimate;
+END_ENTITY;
+
+ENTITY qualitative_probability_estimate
+SUBTYPE OF (descriptive_representation_item);
+END_ENTITY;
+
+ENTITY quantitative_consequence
+SUBTYPE OF (risk_consequence);
+  SELF\representation.items RENAMED estimate : SET [1 : ?] OF quantitative_consequence_estimate;
+END_ENTITY;
+
+ENTITY quantitative_consequence_estimate
+SUBTYPE OF (value_representation_item);
+END_ENTITY;
+
+ENTITY quantitative_probability
+SUBTYPE OF (risk_probability);
+  SELF\representation.items RENAMED estimate : SET [1 : ?] OF quantitative_probability_estimate;
+END_ENTITY;
+
+ENTITY quantitative_probability_distribution
+SUBTYPE OF (quantitative_probability);
+  mean : REAL;
+  variance : REAL;
+END_ENTITY;
+
+ENTITY quantitative_probability_estimate
+SUBTYPE OF (value_representation_item);
+END_ENTITY;
+
+ENTITY risk
+SUBTYPE OF (product);
+  risk_context : SET [1 : ?] OF risk_context;
+END_ENTITY;
+
+ENTITY risk_analysis
+SUBTYPE OF (action);
+  risk_estimate : SET [1 : ?] OF risk_estimation;
+  risk_identification : risk_identification;
+END_ENTITY;
+
+ENTITY risk_assessment
+SUBTYPE OF (action);
+  risk_analysis : SET [1 : ?] OF risk_analysis;
+  risk_evaluation : SET [1 : ?] OF risk_evaluation;
+END_ENTITY;
+
+ENTITY risk_attitude;
+  criticality_factor : NUMBER;
+END_ENTITY;
+
+ENTITY risk_communication
+SUBTYPE OF (action);
+  communicatee : SET [1 : ?] OF risk_stakeholder;
+  communicator : risk_stakeholder;
+  inputs : SET [1 : ?] OF risk_communication_select;
+END_ENTITY;
+
+ENTITY risk_consequence
+SUBTYPE OF (representation);
+END_ENTITY;
+
+ENTITY risk_context
+SUBTYPE OF (product_context);
+END_ENTITY;
+
+ENTITY risk_control
+SUBTYPE OF (action);
+  monitor : SET [1 : ?] OF risk_assessment;
+END_ENTITY;
+
+ENTITY risk_criteria
+SUBTYPE OF (risk_perception);
+END_ENTITY;
+
+ENTITY risk_estimation
+SUBTYPE OF (action);
+  inputs : SET [0 : ?] OF risk_perception_context;
+  outputs : SET [1 : ?] OF risk_estimation_select;
+END_ENTITY;
+
+ENTITY risk_evaluation
+SUBTYPE OF (action);
+  risk_criteria : SET [1 : ?] OF risk_criteria;
+  risk_perception : SET [1 : ?] OF risk_perception;
+  SELF\action.chosen_method RENAMED risk_treatment : risk_treatment;
+END_ENTITY;
+
+ENTITY risk_identification
+SUBTYPE OF (action);
+  inputs : SET [1 : ?] OF risk_identification_select;
+  risk_stakeholder : OPTIONAL risk_stakeholder;
+END_ENTITY;
+
+ENTITY risk_impact
+SUBTYPE OF (risk_consequence);
+  causal_consequence : OPTIONAL risk_consequence;
+END_ENTITY;
+
+ENTITY risk_impact_assignment ABSTRACT SUPERTYPE;
+  assigned_risk_impact : risk_impact;
+  items : SET [1 : ?] OF risk_impact_item;
+END_ENTITY;
+
+ENTITY risk_level
+SUBTYPE OF (risk_perception);
+  risk_attitude : risk_attitude;
+  risk_objective : risk_objective;
+END_ENTITY;
+
+ENTITY risk_objective
+SUBTYPE OF (risk_context);
+END_ENTITY;
+
+ENTITY risk_organization_stakeholder
+SUBTYPE OF (organization, risk_stakeholder);
+END_ENTITY;
+
+ENTITY risk_owner_organization_assignment
+SUBTYPE OF (organization_assignment);
+  SELF\organization_assignment.assigned_organization : risk_organization_stakeholder;
+  risk : SET [1 : ?] OF risk;
+END_ENTITY;
+
+ENTITY risk_owner_person_and_organization_assignment
+SUBTYPE OF (person_and_organization_assignment);
+  SELF\person_and_organization_assignment.assigned_person_and_organization : risk_person_and_organization_stakeholder;
+  risk : SET [1 : ?] OF risk;
+END_ENTITY;
+
+ENTITY risk_owner_person_assignment
+SUBTYPE OF (person_assignment);
+  SELF\person_assignment.assigned_person : risk_person_stakeholder;
+  risk : SET [1 : ?] OF risk;
+END_ENTITY;
+
+ENTITY risk_perception
+SUBTYPE OF (product_definition);
+  SELF\product_definition.formation : risk_perception_formation;
+  SELF\product_definition.frame_of_reference RENAMED risk_perception_context : risk_perception_context;
+  probability : risk_probability_assignment;
+  risk_consequence : SET [1 : ?] OF risk_consequence;
+  risk_impact : risk_impact;
+  risk_status : risk_status;
+END_ENTITY;
+
+ENTITY risk_perception_context
+SUBTYPE OF (product_definition_context);
+END_ENTITY;
+
+ENTITY risk_perception_formation
+SUBTYPE OF (product_definition_formation);
+  SELF\product_definition_formation.of_product RENAMED of_risk : risk;
+END_ENTITY;
+
+ENTITY risk_perception_relationship
+SUBTYPE OF (product_definition_relationship);
+  SELF\product_definition_relationship.relating_product_definition RENAMED relating_risk_perception : risk_perception;
+  SELF\product_definition_relationship.related_product_definition RENAMED related_risk_perception : risk_perception;
+END_ENTITY;
+
+ENTITY risk_person_and_organization_stakeholder
+SUBTYPE OF (person_and_organization, risk_stakeholder);
+END_ENTITY;
+
+ENTITY risk_person_stakeholder
+SUBTYPE OF (person, risk_stakeholder);
+END_ENTITY;
+
+ENTITY risk_probability
+SUBTYPE OF (representation);
+END_ENTITY;
+
+ENTITY risk_probability_assignment
+SUBTYPE OF (event_occurrence_assignment);
+  assigned_risk_probability : risk_probability;
+  items : SET [1 : ?] OF probable_item;
+END_ENTITY;
+
+ENTITY risk_reduction
+SUBTYPE OF (action);
+  SELF\action.chosen_method RENAMED approach : risk_treatment;
+  resolves : SET [1 : ?] OF mitigation_select;
+  risk_evaluation : OPTIONAL risk_evaluation;
+END_ENTITY;
+
+ENTITY risk_relationship
+SUBTYPE OF (product_relationship);
+  SELF\product_relationship.relating_product RENAMED relating_risk : risk;
+  SELF\product_relationship.related_product RENAMED related_risk : risk;
+END_ENTITY;
+
+ENTITY risk_resource
+SUBTYPE OF (action_resource);
+END_ENTITY;
+
+ENTITY risk_source_assignment ABSTRACT SUPERTYPE;
+  assigned_risk : risk;
+  items : SET [1 : ?] OF risk_source_item;
+  risk_context : risk_context;
+END_ENTITY;
+
+ENTITY risk_stakeholder ABSTRACT SUPERTYPE;
+END_ENTITY;
+
+ENTITY risk_status
+SUBTYPE OF (state_observed);
+END_ENTITY;
+
+ENTITY risk_status_assignment
+SUBTYPE OF (state_observed_assignment);
+  items : SET [1 : ?] OF risk_status_select;
+  SELF\state_observed_assignment.assigned_state_observed RENAMED risk_status : risk_status;
+END_ENTITY;
+
+ENTITY risk_treatment
+SUBTYPE OF (action_method);
+  risk_analysis : risk_analysis;
+  primary_objective : mitigation_select;
+  secondary_objectives : SET [0 : ?] OF mitigation_select;
+END_ENTITY;
+
+END_SCHEMA;
+

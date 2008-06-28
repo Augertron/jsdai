@@ -1,0 +1,43 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4171 - ISO/TS 10303-1741 Sequential laminate assembly design - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3595
+*)
+
+
+SCHEMA Sequential_laminate_assembly_design_mim;
+USE FROM Layered_interconnect_module_design_mim;	-- ISO/TS 10303-1698
+
+
+  TYPE slad_groupable_item = SELECT BASED_ON groupable_item WITH 
+	(group_relationship,
+	assembly_component_usage);
+  END_TYPE; 
+	
+  TYPE slad_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH 
+    (derived_laminate_assignment,
+    assembly_component_usage);
+  END_TYPE; 
+
+  ENTITY derived_laminate_assignment
+    SUBTYPE OF (property_definition_relationship);
+  END_ENTITY;
+
+  ENTITY interconnect_module_stratum_based_terminal
+    SUBTYPE OF (interconnect_module_terminal);
+  END_ENTITY;
+
+  ENTITY sequential_laminate_passage_based_fabrication_joint
+    SUBTYPE OF (shape_aspect);
+  END_ENTITY;
+
+  ENTITY sequential_laminate_stackup_component 
+    SUBTYPE OF(physical_component);
+  END_ENTITY;
+
+  ENTITY sequential_laminate_stackup_definition
+    SUBTYPE OF(product_definition);
+  END_ENTITY;
+	
+END_SCHEMA;
+

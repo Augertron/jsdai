@@ -1,0 +1,30 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4631- ISO/CD-TS 10303-1488 Verification and validation - EXPRESS ARM
+*) 
+
+SCHEMA Verification_and_validation_arm;
+
+USE FROM Requirement_assignment_arm;
+
+TYPE verification_evidence_item = EXTENSIBLE GENERIC_ENTITY SELECT ;
+END_TYPE;
+
+ENTITY Verification;
+  verifies : Requirement_assignment;
+INVERSE
+  verified_by : SET [1 : ?] OF Verification_evidence FOR for_verification;
+END_ENTITY;
+
+ENTITY Verification_evidence;
+  for_verification : Verification;
+  items : SET [1 : ?] OF verification_evidence_item;
+END_ENTITY;
+
+ENTITY Verification_relationship;
+  relating : Verification;
+  related : Verification;
+END_ENTITY;
+
+END_SCHEMA;
+

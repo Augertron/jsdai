@@ -1,0 +1,159 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping styled_curve(Styled_curve_arm, Styled_curve_mim);*)
+
+
+entity_mapping Curve_appearance(Curve_appearance, curve_style);
+
+attribute_mapping colour(colour, $PATH, Colour);
+curve_style
+curve_style.curve_colour ->
+colour
+end_attribute_mapping;
+
+attribute_mapping width(width, curve_style.curve_width, positive_length_measure);
+
+end_attribute_mapping;
+
+attribute_mapping font(font, $PATH, Curve_font);
+curve_style
+curve_style.curve_font -> curve_font_or_scaled_curve_font_select
+curve_font_or_scaled_curve_font_select = curve_style_font_select
+curve_style_font_select = curve_style_font
+curve_style_font
+end_attribute_mapping;
+
+attribute_mapping font(font, $PATH, User_defined_curve_font_armx);
+curve_style
+curve_style.curve_font -> curve_font_or_scaled_curve_font_select
+curve_font_or_scaled_curve_font_select = curve_style_font_select
+curve_style_font_select = curve_style_font
+curve_style_font => user_defined_curve_font
+end_attribute_mapping;
+
+attribute_mapping font(font, $PATH, Predefined_curve_font);
+curve_style 
+curve_style.curve_font -> curve_font_or_scaled_curve_font_select
+curve_font_or_scaled_curve_font_select = curve_style_font_select
+curve_style_font_select = pre_defined_curve_font
+pre_defined_curve_font => draughting_pre_defined_curve_font
+end_attribute_mapping;
+
+attribute_mapping font(font, $PATH, Externally_defined_curve_font_armx);
+curve_style 
+curve_style.curve_font -> curve_font_or_scaled_curve_font_select
+curve_font_or_scaled_curve_font_select = curve_style_font_select
+curve_style_font_select = externally_defined_curve_font
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Curve_font(Curve_font, curve_style_font);
+
+attribute_mapping curve_font_name(curve_font_name, curve_style_font.name);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Curve_font_pattern(Curve_font_pattern, curve_style_font_pattern);
+
+attribute_mapping on_segment(on_segment, curve_style_font_pattern.visible_segment_length);
+
+end_attribute_mapping;
+
+attribute_mapping off_segment(off_segment, curve_style_font_pattern.invisible_segment_length);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Externally_defined_curve_font_armx(Externally_defined_curve_font_armx, externally_defined_curve_font);
+
+attribute_mapping curve_font_name(curve_font_name, $PATH);
+externally_defined_curve_font <=
+externally_defined_item
+externally_defined_item.item_id ->
+source_item = identifier
+identifier
+end_attribute_mapping;
+
+attribute_mapping curve_font_reference(curve_font_reference, external_source.source_id);
+externally_defined_curve_font <=
+externally_defined_item
+externally_defined_item.source ->
+external_source
+external_source.source_id
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Predefined_curve_font(Predefined_curve_font, draughting_pre_defined_curve_font);
+
+attribute_mapping curve_font_name(curve_font_name, pre_defined_item.name);
+draughting_pre_defined_curve_font <=
+pre_defined_curve_font <=
+pre_defined_item
+pre_defined_item.name
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Solid_curve_font(Solid_curve_font, solid_curve_font);
+
+mapping_constraints;
+solid_curve_font <=
+pre_defined_curve_font
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping User_defined_curve_font_armx(User_defined_curve_font_armx, user_defined_curve_font);
+
+mapping_constraints;
+user_defined_curve_font <=
+[curve_style_font]
+[mapped_item]
+
+end_mapping_constraints;
+
+attribute_mapping pattern(pattern, $PATH, Curve_font_pattern);
+user_defined_curve_font <=
+curve_style_font
+curve_style_font.pattern_list ->
+curve_style_font_pattern
+end_attribute_mapping;
+
+attribute_mapping segment_symbol(segment_symbol, $PATH, Shape_representation);
+user_defined_curve_font <=
+mapped_item
+mapped_item.mapping_source ->
+representation_map.mapped_representation ->
+representation =>
+shape_representation
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

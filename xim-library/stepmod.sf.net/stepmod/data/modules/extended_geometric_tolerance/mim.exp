@@ -1,0 +1,135 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3946 - ISO/TS 10303-1666 Extended geometric tolerance - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3400
+*)
+
+
+SCHEMA Extended_geometric_tolerance_mim;
+USE FROM Requirement_decomposition_mim;	-- ISO/TS 10303-1740
+USE FROM Default_tolerance_mim;	-- ISO/TS 10303-1052
+USE FROM Geometric_tolerance_mim;	-- ISO/TS 10303-1051
+USE FROM Non_feature_shape_element_mim;	-- ISO/TS 10303-1706
+	
+USE FROM application_context_schema(application_context_element);
+USE FROM material_property_definition_schema(property_definition_relationship);
+USE FROM shape_tolerance_schema
+		(runout_zone_orientation,
+		tolerance_zone_form);
+
+  SUBTYPE_CONSTRAINT egt_non_feature_shape_element_subtypes FOR shape_aspect; 
+    (ONEOF (derived_shape_aspect,
+     positional_boundary,
+     positional_boundary_member,
+     tolerance_zone_boundary,
+     viewing_plane,
+     seating_plane,
+     reference_graphic_registration_mark));
+  END_SUBTYPE_CONSTRAINT;
+
+  TYPE egt_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH 
+    (statistical_geometric_tolerance,
+     statistical_dimensional_size,
+     statistical_dimensional_location,
+     property_definition);
+  END_TYPE; 
+
+  TYPE egt_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH 
+    (shape_dimension_representation);
+  END_TYPE; 
+	
+  TYPE egt_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH 
+    (representation);
+  END_TYPE; 
+	
+  ENTITY auxiliary_characteristic_dimension_representation
+    SUBTYPE OF (dimensional_characteristic_representation);
+  END_ENTITY;
+
+  ENTITY datum_difference
+    SUBTYPE OF (shape_aspect,shape_aspect_relationship);
+      SELF\shape_aspect_relationship.related_shape_aspect : datum;
+      SELF\shape_aspect_relationship.relating_shape_aspect : datum;    
+    WHERE
+      WR1: SELF\shape_aspect_relationship.relating_shape_aspect :<>:
+        SELF\shape_aspect_relationship.related_shape_aspect;
+  END_ENTITY;
+
+  ENTITY datum_difference_based_characteristic
+    SUBTYPE OF (representation_item);
+  END_ENTITY;
+
+  (** Questionable entity - nothing directly mapps to it from ARM *)
+  ENTITY dimensional_size_property
+    SUBTYPE OF (dimensional_size, property_definition);
+  END_ENTITY;
+
+  ENTITY edge_segment_vertex
+    SUBTYPE OF (datum);
+  END_ENTITY;
+
+  ENTITY geometric_tolerance_group
+    SUBTYPE OF (property_definition);
+  END_ENTITY;
+
+  ENTITY linear_profile_tolerance
+    SUBTYPE OF (physical_unit_geometric_tolerance);
+  END_ENTITY;
+
+  ENTITY opposing_boundary_dimensional_size
+    SUBTYPE OF (dimensional_size);
+  END_ENTITY;
+
+  ENTITY physical_unit_datum_feature
+    SUBTYPE OF (shape_aspect);
+  END_ENTITY;
+
+  ENTITY physical_unit_geometric_tolerance
+    SUBTYPE OF (geometric_tolerance, property_definition);
+  END_ENTITY;
+
+  ENTITY positional_boundary
+    SUBTYPE OF (shape_aspect);
+    WHERE
+      WR2: SELF\shape_aspect.product_definitional = False;
+  END_ENTITY;
+
+  ENTITY positional_boundary_member
+    SUBTYPE OF (shape_aspect);
+    WHERE
+      WR1: SELF\shape_aspect.product_definitional = False;
+  END_ENTITY;
+
+  ENTITY statistical_dimensional_location
+    SUBTYPE OF (dimensional_location);
+  END_ENTITY;
+
+  ENTITY statistical_dimensional_size
+    SUBTYPE OF (dimensional_size_property);
+  END_ENTITY;
+
+  ENTITY statistical_geometric_tolerance
+    SUBTYPE OF (physical_unit_geometric_tolerance);
+  END_ENTITY;
+
+  ENTITY tolerance_zone_boundary
+    SUBTYPE OF (shape_aspect);
+    WHERE
+      WR1: SELF\shape_aspect.product_definitional = False;
+  END_ENTITY;
+
+  ENTITY tolerance_zone_explicit_opposing_boundary_set
+    SUBTYPE OF (tolerance_zone_boundary);
+  END_ENTITY;
+
+  ENTITY tolerance_zone_implicit_opposing_boundary_set
+    SUBTYPE OF (tolerance_zone_boundary);
+  END_ENTITY;
+
+  ENTITY viewing_plane
+    SUBTYPE OF (shape_aspect);
+  END_ENTITY;
+
+END_SCHEMA;
+
+

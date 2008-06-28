@@ -1,0 +1,222 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping construction_geometry(Construction_geometry_arm, Construction_geometry_mim);*)
+
+(*
+entity_mapping Constructive_geometry(Constructive_geometry, constructive_geometry_representation
+);
+
+mapping_constraints;
+
+constructive_geometry_representation <= representation
+{representation.items[i] -> representation_item
+representation_item => geometric_representation_item
+geometric_representation_item =>
+(placement => 
+(axis2_placement_2d)
+(axis2_placement_3d))
+(point =>
+(cartesian_point)
+(point_on_curve)
+(point_on_surface)
+(point_replica)
+(degenerate_pcurve))
+(vertex_point)
+(curve =>
+(line) 
+(conic =>
+(circle)
+(ellipse)
+(hyperbola) 
+(parabola)) 
+(pcurve) 
+(surface_curve)
+(offset_curve_2d) 
+(offset_curve_3d) 
+(curve_replica))
+(edge_curve)
+(surface =>
+(elementary_surface =>
+(plane)
+(cylindrical_surface)
+(conical_surface)
+(spherical_surface)
+(toroidal_surface))
+(swept_surface =>
+(surface_of_linear_extrusion)
+(surface_of_revolution)) 
+(bounded_surface =>
+(b_spline_surface)
+(rectangular_trimmed_surface)
+(curve_bounded_surface)
+(rectangular_composite_surface))
+(offset_surface) 
+(surface_replica))
+(face_surface)
+(advanced_face)}
+
+end_mapping_constraints;
+
+attribute_mapping context_of_items(context_of_items, $PATH, geometric_representation_context);
+
+constructive_geometry_representation <= representation
+representation.context_of_items ->
+representation_context =>
+geometric_representation_context
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Constructive_geometry_association(Constructive_geometry_association, constructive_geometry_representation_relationship);
+
+mapping_constraints;
+constructive_geometry_representation_relationship <=
+representation_relationship
+end_mapping_constraints;
+
+attribute_mapping auxiliary_geometry(auxiliary_geometry, $PATH, constructive_geometry_representation);
+ constructive_geometry_representation_relationship <=
+representation_relationship
+representation_relationship.rep_2 ->
+constructive_geometry_representation
+end_attribute_mapping;
+
+attribute_mapping base_geometry(base_geometry, $PATH, constructive_geometry_select);
+constructive_geometry_representation_relationship <=
+representation_relationship
+representation_relationship.rep_1 ->
+representation
+end_attribute_mapping;
+
+attribute_mapping base_geometry(base_geometry, $PATH, constructive_geometry_representation);
+constructive_geometry_representation_relationship <=
+representation_relationship
+representation_relationship.rep_1 ->
+representation =>
+constructive_geometry_representation
+end_attribute_mapping;
+
+attribute_mapping base_geometry(base_geometry, $PATH, Shape_representation);
+constructive_geometry_representation_relationship <=
+representation_relationship
+representation_relationship.rep_1 ->
+representation =>
+shape_representation
+end_attribute_mapping;
+
+attribute_mapping description(description, representation_relationship.description);
+constructive_geometry_representation_relationship <=
+representation_relationship
+representation_relationship.description
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(* Everything below is taken from AIM
+entity_mapping Curve(Curve, curve);
+
+mapping_constraints;
+
+curve <= geometric_representation_item
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Line(Line, line);
+
+mapping_constraints;
+
+line <= curve
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Measurement_path(Measurement_path, representation);
+
+mapping_constraints;
+{representation.name = 'measuring direction'}
+end_mapping_constraints;
+
+attribute_mapping defined_by(defined_by, $PATH, Curve);
+{representation
+representation.items[i] ->
+representation_item =>
+geometric_representation_item =>
+curve 
+(curve => pcurve)
+(curve => surface_curve)}
+
+end_attribute_mapping;
+
+attribute_mapping defined_in(defined_in, $PATH, geometric_representation_context);
+representation
+representation.context_of_items ->
+representation_context =>
+geometric_representation_context
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Plane(Plane, plane);
+
+end_entity_mapping;
+
+entity_mapping Point_on_curve(Point_on_curve, point_on_curve
+);
+
+attribute_mapping supporting_curve(supporting_curve, $PATH, Curve);
+
+point_on_curve.basis_curve -> curve
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Point_on_surface(Point_on_surface, ((point_on_surface))((degenerate_pcurve)));
+
+attribute_mapping supporting_surface(supporting_surface, ($PATH)($PATH), Surface);
+(
+point_on_surface.basis_surface -> surface
+)(
+degenerate_pcurve.basis_surface -> surface)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Surface(Surface, (surface)(oriented_surface));
+
+mapping_constraints;
+(
+surface <= geometric_representation_item
+)(
+oriented_surface <= surface
+surface <= geometric_representation_item
+)
+end_mapping_constraints;
+
+end_entity_mapping;
+*)
+(*end_schema_mapping;*)

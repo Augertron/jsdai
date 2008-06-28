@@ -1,0 +1,927 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping geometric_tolerance(Geometric_tolerance_arm, Geometric_tolerance_mim);*)
+
+
+entity_mapping Angularity_tolerance_armx(Angularity_tolerance_armx, angularity_tolerance);
+
+mapping_constraints;
+angularity_tolerance <= 
+geometric_tolerance_with_datum_reference
+end_mapping_constraints;
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_reference);
+angularity_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] ->
+datum_reference
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Circular_runout_tolerance_armx(Circular_runout_tolerance_armx, circular_runout_tolerance);
+
+mapping_constraints;
+circular_runout_tolerance <= 
+geometric_tolerance_with_datum_reference
+end_mapping_constraints;
+
+attribute_mapping angle(angle, measure_with_unit.value_component);
+circular_runout_tolerance <= 
+geometric_tolerance_with_datum_reference <= 
+geometric_tolerance <- 
+tolerance_zone.defining_tolerance[i] 
+tolerance_zone <- 
+tolerance_zone_definition.zone 
+tolerance_zone_definition => 
+runout_zone_definition 
+runout_zone_definition.orientation -> 
+runout_zone_orientation 
+runout_zone_orientation.angle -> 
+measure_with_unit
+measure_with_unit.value_component
+(*[measure_with_unit.value_component]
+[measure_with_unit.unit_component] *)
+end_attribute_mapping;
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_reference);
+circular_runout_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_reference
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Coaxiality_tolerance_armx(Coaxiality_tolerance_armx, coaxiality_tolerance);
+
+mapping_constraints;
+coaxiality_tolerance <= 
+geometric_tolerance_with_datum_reference
+end_mapping_constraints;
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_reference);
+coaxiality_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_reference
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Common_datum_armx(Common_datum_armx, common_datum);
+
+attribute_mapping made_up_by(made_up_by, $PATH, Single_datum);
+common_datum <= 
+composite_shape_aspect
+composite_shape_aspect.component_relationships[i] -> 
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect =>
+datum
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Concentricity_tolerance_armx(Concentricity_tolerance_armx, concentricity_tolerance);
+
+mapping_constraints;
+concentricity_tolerance <= 
+geometric_tolerance_with_datum_reference
+end_mapping_constraints;
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_reference);
+concentricity_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_reference
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Cylindricity_tolerance_armx(Cylindricity_tolerance_armx, cylindricity_tolerance
+);
+
+mapping_constraints;
+cylindricity_tolerance <=
+geometric_tolerance
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Datum(Datum, datum);
+
+end_entity_mapping;
+
+entity_mapping Datum_defined_by_derived_shape(Datum_defined_by_derived_shape, datum);
+
+mapping_constraints;
+{datum <= 
+shape_aspect =>
+derived_shape_aspect}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Datum_defined_by_feature(Datum_defined_by_feature, datum);
+
+attribute_mapping defined_by(defined_by, $PATH, Shape_element);
+datum <= 
+shape_aspect <- 
+shape_aspect_relationship.related_shape_aspect 
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+{shape_aspect => 
+datum_feature}
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Datum_defined_by_targets(Datum_defined_by_targets, datum);
+
+attribute_mapping rule_description(rule_description, shape_aspect.description);
+datum <= 
+shape_aspect 
+shape_aspect.description
+end_attribute_mapping;
+
+attribute_mapping defined_by(defined_by, $PATH, Datum_target);
+datum <= 
+shape_aspect <- 
+shape_aspect_relationship.related_shape_aspect 
+shape_aspect_relationship 
+shape_aspect_relationship.relating_shape_aspect -> 
+shape_aspect => 
+datum_target
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Datum_reference(Datum_reference, datum_reference);
+
+attribute_mapping precedence(precedence, datum_reference.precedence);
+
+end_attribute_mapping;
+
+attribute_mapping referenced_datum(referenced_datum, $PATH, Datum);
+datum_reference
+datum_reference.referenced_datum -> 
+datum
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Datum_target(Datum_target, datum_target);
+
+attribute_mapping id(id, datum_target.target_id);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Flatness_tolerance_armx(Flatness_tolerance_armx, flatness_tolerance);
+
+mapping_constraints;
+flatness_tolerance <= 
+geometric_tolerance
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Geometric_tolerance_armx(Geometric_tolerance_armx, geometric_tolerance);
+
+attribute_mapping applied_to(applied_to, $PATH, Shape_element);
+geometric_tolerance 
+geometric_tolerance.toleranced_shape_aspect -> 
+shape_aspect
+end_attribute_mapping;
+
+attribute_mapping modification(modification, $PATH, limit_condition);
+geometric_tolerance => 
+modified_geometric_tolerance 
+modified_geometric_tolerance.modifier ->
+limit_condition
+(limit_condition = .MAXIMUM_MATERIAL_CONDITION.)
+(limit_condition = .LEAST_MATERIAL_CONDITION.)
+(limit_condition = .REGARDLESS_OF_FEATURE_SIZE.)
+end_attribute_mapping;
+
+attribute_mapping name(name, geometric_tolerance.name);
+
+end_attribute_mapping;
+
+attribute_mapping qualifying_note(qualifying_note, geometric_tolerance.description);
+
+end_attribute_mapping;
+
+attribute_mapping segment_size(segment_size, $PATH, measure_with_unit);
+geometric_tolerance => 
+geometric_tolerance_with_defined_unit 
+geometric_tolerance_with_defined_unit.unit_size -> 
+measure_with_unit =>
+length_measure_with_unit
+end_attribute_mapping;
+
+attribute_mapping significant_digits(significant_digits, precision_qualifier.precision_value);
+geometric_tolerance 
+geometric_tolerance.magnitude -> 
+measure_with_unit <- 
+measure_qualification.qualified_measure 
+measure_qualification 
+measure_qualification.qualifiers[i] -> 
+value_qualifier 
+value_qualifier = precision_qualifier 
+precision_qualifier 
+precision_qualifier.precision_value
+end_attribute_mapping;
+
+attribute_mapping tolerance_value(tolerance_value, $PATH, measure_with_unit);
+geometric_tolerance 
+geometric_tolerance.magnitude -> 
+measure_with_unit =>
+length_measure_with_unit
+end_attribute_mapping;
+
+attribute_mapping value_determination(value_determination, type_qualifier.name);
+geometric_tolerance 
+geometric_tolerance.magnitude -> 
+measure_with_unit <- 
+measure_qualification.qualified_measure 
+measure_qualification 
+measure_qualification.qualifiers[i] -> 
+value_qualifier 
+value_qualifier = type_qualifier 
+type_qualifier 
+type_qualifier.name
+end_attribute_mapping;
+
+end_entity_mapping;
+(* Entity with the same name is taken from AIM
+entity_mapping Geometric_tolerance_relationship(Geometric_tolerance_relationship, geometric_tolerance_relationship);
+
+mapping_constraints;
+geometric_tolerance_relationship
+geometric_tolerance_relationship.name
+end_mapping_constraints;
+
+attribute_mapping related(related, $PATH, Geometric_tolerance);
+geometric_tolerance_relationship 
+geometric_tolerance_relationship.related_geometric_tolerance -> 
+geometric_tolerance
+end_attribute_mapping;
+
+attribute_mapping relating(relating, $PATH, Geometric_tolerance);
+geometric_tolerance_relationship 
+geometric_tolerance_relationship.relating_geometric_tolerance -> 
+geometric_tolerance
+end_attribute_mapping;
+
+attribute_mapping relation_type(relation_type, geometric_tolerance_relationship.name
+);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Line_profile_tolerance_armx(Line_profile_tolerance_armx, line_profile_tolerance);
+
+mapping_constraints;
+line_profile_tolerance <= 
+geometric_tolerance
+end_mapping_constraints;
+
+attribute_mapping affected_plane(affected_plane, $PATH, axis2_placement);
+line_profile_tolerance <= 
+geometric_tolerance <-
+tolerance_zone.defining_tolerance[i]
+tolerance_zone <=
+shape_aspect <- 
+shape_aspect_relationship.relating_shape_aspect 
+shape_aspect_relationship 
+{shape_aspect_relationship.name = 'affected plane association'} 
+shape_aspect_relationship.related_shape_aspect -> 
+shape_aspect 
+shape_definition = shape_aspect
+shape_definition characterized_definition = shape_definition 
+characterized_definition <- 
+property_definition.definition
+property_definition 
+represented_definition = property_definition 
+represented_definition <- 
+property_definition_representation.definition 
+property_definition_representation 
+property_definition_representation.used_representation -> 
+representation
+{representation =>
+shape_representation}
+representation.items[i] ->
+representation_item
+representation_item =>
+geometric_representation_item
+geometric_representation_item =>
+placement => 
+(axis2_placement_3d)
+end_attribute_mapping;
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_reference);
+line_profile_tolerance <=
+geometric_tolerance =>
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_reference
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Parallelism_tolerance_armx(Parallelism_tolerance_armx, parallelism_tolerance);
+
+mapping_constraints;
+parallelism_tolerance <= 
+geometric_tolerance_with_datum_reference
+end_mapping_constraints;
+
+attribute_mapping affected_plane(affected_plane, $PATH, axis2_placement);
+parallelism_tolerance <= 
+geometric_tolerance_with_datum_reference <= 
+geometric_tolerance <-
+tolerance_zone.defining_tolerance[i]
+tolerance_zone <=
+shape_aspect <- 
+shape_aspect_relationship.relating_shape_aspect 
+shape_aspect_relationship 
+{shape_aspect_relationship.name = 'affected plane association'} 
+shape_aspect_relationship.related_shape_aspect -> 
+shape_aspect 
+shape_definition = shape_aspect
+shape_definition 
+characterized_definition = shape_definition 
+characterized_definition <- 
+property_definition.definition 
+property_definition 
+represented_definition = property_definition 
+represented_definition <- 
+property_definition_representation.definition 
+property_definition_representation 
+property_definition_representation.used_representation -> 
+representation
+{representation =>
+shape_representation}
+representation.items[i] ->
+representation_item
+representation_item =>
+geometric_representation_item
+geometric_representation_item =>
+placement => 
+(axis2_placement_3d)
+end_attribute_mapping;
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_reference);
+parallelism_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_reference
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Perpendicularity_tolerance_armx(Perpendicularity_tolerance_armx, perpendicularity_tolerance);
+
+mapping_constraints;
+perpendicularity_tolerance <= 
+geometric_tolerance_with_datum_reference
+end_mapping_constraints;
+
+attribute_mapping affected_plane(affected_plane, $PATH, axis2_placement);
+perpendicularity_tolerance <= 
+geometric_tolerance_with_datum_reference <= 
+geometric_tolerance <-
+tolerance_zone.defining_tolerance[i]
+tolerance_zone <=
+shape_aspect <- 
+shape_aspect_relationship.relating_shape_aspect 
+shape_aspect_relationship 
+{shape_aspect_relationship.name = 'affected plane association'} 
+shape_aspect_relationship.related_shape_aspect -> 
+shape_aspect 
+shape_definition = shape_aspect
+shape_definition 
+characterized_definition = shape_definition 
+characterized_definition <- 
+property_definition.definition 
+property_definition 
+represented_definition = property_definition 
+represented_definition <- 
+property_definition_representation.definition 
+property_definition_representation 
+property_definition_representation.used_representation -> 
+representation
+{representation =>
+shape_representation}
+representation.items[i] ->
+representation_item
+representation_item =>
+geometric_representation_item
+geometric_representation_item =>
+placement => 
+(axis2_placement_3d)
+end_attribute_mapping;
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_reference);
+perpendicularity_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] ->
+datum_reference
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Placed_target(Placed_target, placed_datum_target_feature);
+
+mapping_constraints;
+placed_datum_target_feature <= 
+datum_target
+end_mapping_constraints;
+
+attribute_mapping defined_in(defined_in, $PATH, geometric_representation_context);
+placed_datum_target_feature <= 
+datum_target <= 
+shape_aspect 
+shape_definition = shape_aspect 
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <- 
+property_definition.definition 
+property_definition 
+represented_definition = property_definition
+represented_definition <- 
+property_definition_representation.definition
+{property_definition_representation => 
+shape_definition_representation} 
+property_definition_representation
+property_definition_representation.used_representation ->
+{representation => 
+shape_representation => 
+shape_representation_with_parameters} 
+representation
+representation.context_of_items -> 
+representation_context => 
+geometric_representation_context
+end_attribute_mapping;
+
+attribute_mapping parameter_reference(parameter_reference, $PATH, axis2_placement);
+placed_datum_target_feature <= 
+datum_target <= 
+shape_aspect 
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <- 
+property_definition.definition property_definition
+represented_definition = property_definition
+represented_definition <- 
+property_definition_representation.definition
+{property_definition_representation => 
+shape_definition_representation}
+property_definition_representation
+property_definition_representation.used_representation ->
+{representation => 
+shape_representation => 
+shape_representation_with_parameters}
+representation 
+representation.items[i] -> 
+representation_item
+{representation_item.name = 'orientation'}
+representation_item => geometric_representation_item
+geometric_representation_item => placement
+placement
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Position_tolerance_armx(Position_tolerance_armx, position_tolerance);
+
+mapping_constraints;
+position_tolerance <= 
+geometric_tolerance
+end_mapping_constraints;
+
+attribute_mapping affected_plane(affected_plane, $PATH, axis2_placement);
+position_tolerance <= 
+geometric_tolerance <-
+tolerance_zone.defining_tolerance[i]
+tolerance_zone <=
+shape_aspect <- 
+shape_aspect_relationship.relating_shape_aspect 
+shape_aspect_relationship 
+{shape_aspect_relationship.name = 'affected plane association'} 
+shape_aspect_relationship.related_shape_aspect -> 
+shape_aspect 
+shape_definition = shape_aspect
+shape_definition 
+characterized_definition = shape_definition 
+characterized_definition <- 
+property_definition.definition 
+property_definition 
+represented_definition = property_definition 
+represented_definition <- 
+property_definition_representation.definition 
+property_definition_representation 
+property_definition_representation.used_representation -> 
+representation
+{representation =>
+shape_representation}
+representation.items[i] ->
+representation_item
+representation_item =>
+geometric_representation_item
+geometric_representation_item =>
+placement => 
+(axis2_placement_3d)
+end_attribute_mapping;
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_reference);
+position_tolerance <= 
+geometric_tolerance => 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_reference
+end_attribute_mapping;
+
+end_entity_mapping;
+(* projected_zone_definition is taken from AIM instead
+entity_mapping Projection(Projection, projected_zone_definition);
+
+attribute_mapping projection_end(projection_end, $PATH, Shape_element);
+projected_zone_definition 
+projected_zone_definition.projection_end -> 
+shape_aspect
+end_attribute_mapping;
+
+attribute_mapping projection_length(projection_length, $PATH, measure_with_unit);
+projected_zone_definition 
+projected_zone_definition.projected_length ->
+measure_with_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Roundness_tolerance_armx(Roundness_tolerance_armx, roundness_tolerance);
+
+mapping_constraints;
+roundness_tolerance <= 
+geometric_tolerance
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Single_datum(Single_datum, datum);
+
+attribute_mapping datum_name(datum_name, datum.identification);
+
+end_attribute_mapping;
+
+attribute_mapping modification(modification, $PATH, limit_condition);
+datum <- 
+datum_reference.referenced_datum 
+datum_reference datum_reference => 
+referenced_modified_datum 
+referenced_modified_datum.modifier ->
+limit_condition
+(limit_condition = .MAXIMUM_MATERIAL_CONDITION.)
+(limit_condition = .LEAST_MATERIAL_CONDITION.)
+(limit_condition = .REGARDLESS_OF_FEATURE_SIZE.)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Straightness_tolerance_armx(Straightness_tolerance_armx, straightness_tolerance);
+
+attribute_mapping affected_plane(affected_plane, $PATH, axis2_placement);
+straightness_tolerance <= 
+geometric_tolerance <-
+tolerance_zone.defining_tolerance[i]
+tolerance_zone <=
+shape_aspect <- 
+shape_aspect_relationship.relating_shape_aspect 
+shape_aspect_relationship 
+{shape_aspect_relationship.name = 'affected plane association'} 
+shape_aspect_relationship.related_shape_aspect -> 
+shape_aspect 
+shape_definition = shape_aspect
+shape_definition 
+characterized_definition = shape_definition 
+characterized_definition <- 
+property_definition.definition 
+property_definition 
+represented_definition = property_definition 
+represented_definition <- 
+property_definition_representation.definition 
+property_definition_representation 
+property_definition_representation.used_representation -> 
+representation
+{representation =>
+shape_representation}
+representation.items[i] ->
+representation_item
+representation_item =>
+geometric_representation_item
+geometric_representation_item =>
+placement => 
+(axis2_placement_3d)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Surface_profile_tolerance_armx(Surface_profile_tolerance_armx, surface_profile_tolerance);
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_reference);
+surface_profile_tolerance <=
+geometric_tolerance =>
+geometric_tolerance_with_datum_reference
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_reference
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Symmetry_tolerance_armx(Symmetry_tolerance_armx, symmetry_tolerance);
+
+mapping_constraints;
+symmetry_tolerance <= 
+geometric_tolerance_with_datum_reference
+end_mapping_constraints;
+
+attribute_mapping affected_plane(affected_plane, $PATH, axis2_placement);
+symmetry_tolerance <= 
+geometric_tolerance_with_datum_reference <= 
+geometric_tolerance <-
+tolerance_zone.defining_tolerance[i]
+tolerance_zone <=
+shape_aspect <- 
+shape_aspect_relationship.relating_shape_aspect 
+shape_aspect_relationship 
+{shape_aspect_relationship.name = 'affected plane association'} 
+shape_aspect_relationship.related_shape_aspect -> 
+shape_aspect 
+shape_definition = shape_aspect
+shape_definition 
+characterized_definition = shape_definition 
+characterized_definition <- 
+property_definition.definition 
+property_definition 
+represented_definition = property_definition 
+represented_definition <- 
+property_definition_representation.definition 
+property_definition_representation 
+property_definition_representation.used_representation -> 
+representation
+{representation => 
+shape_representation}
+representation.items[i] ->
+representation_item => 
+geometric_representation_item =>
+placement => 
+(axis2_placement_3d)
+end_attribute_mapping;
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_reference);
+symmetry_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_reference
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Target_area(Target_area, datum_target);
+
+end_entity_mapping;
+
+entity_mapping Target_circle(Target_circle, placed_datum_target_feature);
+
+mapping_constraints;
+placed_datum_target_feature <= 
+datum_target
+{datum_target <= 
+shape_aspect 
+shape_aspect.description = 'circle'}
+end_mapping_constraints;
+
+attribute_mapping diameter(diameter, $PATH, measure_representation_item);
+placed_datum_target_feature <= 
+datum_target <= 
+shape_aspect 
+shape_definition = shape_aspect
+shape_definition 
+characterized_definition = shape_definition 
+characterized_definition <-
+property_definition.definition property_definition
+represented_definition = property_definition
+represented_definition <-
+property_definition_representation.definition
+{property_definition_representation => 
+shape_definition_representation} 
+property_definition_representation
+property_definition_representation.used_representation ->
+{representation => 
+shape_representation => 
+shape_representation_with_parameters} 
+representation representation.items[i] -> 
+representation_item
+{representation_item.name = 'target diameter'} 
+representation_item => measure_representation_item
+{measure_representation_item <= 
+measure_with_unit => 
+length_measure_with_unit}
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Target_point(Target_point, placed_datum_target_feature);
+
+end_entity_mapping;
+
+entity_mapping Target_rectangle(Target_rectangle, placed_datum_target_feature);
+
+mapping_constraints;
+placed_datum_target_feature
+{placed_datum_target_feature <= 
+datum_target <= 
+shape_aspect 
+shape_aspect.description = 'rectangle'}
+end_mapping_constraints;
+
+attribute_mapping target_length(target_length, $PATH, measure_representation_item);
+placed_datum_target_feature <= 
+datum_target <= 
+shape_aspect 
+shape_definition = shape_aspect
+shape_definition characterized_definition = shape_definition 
+characterized_definition <-
+property_definition.definition property_definition
+represented_definition = property_definition
+represented_definition <-
+property_definition_representation.definition
+{property_definition_representation => 
+shape_definition_representation} 
+property_definition_representation
+property_definition_representation.used_representation ->
+{representation => 
+shape_representation => 
+shape_representation_with_parameters} 
+representation representation.items[i] -> 
+representation_item
+{representation_item.name = 'target length'} 
+representation_item => measure_representation_item
+measure_representation_item
+{measure_representation_item <= 
+measure_with_unit => 
+length_measure_with_unit}
+end_attribute_mapping;
+
+attribute_mapping target_width(target_width, $PATH, measure_representation_item);
+placed_datum_target_feature <= 
+datum_target <= 
+shape_aspect 
+shape_definition = shape_aspect
+shape_definition 
+characterized_definition = shape_definition 
+characterized_definition <-
+property_definition.definition property_definition
+represented_definition = property_definition
+represented_definition <-
+property_definition_representation.definition
+{property_definition_representation => 
+shape_definition_representation} 
+property_definition_representation
+property_definition_representation.used_representation ->
+{representation => 
+shape_representation => 
+shape_representation_with_parameters} 
+representation 
+representation.items[i] -> 
+representation_item
+{representation_item.name = 'target width' } 
+representation_item => measure_representation_item
+{measure_representation_item <= 
+measure_with_unit => 
+length_measure_with_unit}
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Target_straight_line(Target_straight_line, placed_datum_target_feature);
+
+mapping_constraints;
+placed_datum_target_feature <= 
+datum_target
+{datum_target <= 
+shape_aspect 
+shape_aspect.description = 'line'}
+end_mapping_constraints;
+
+end_entity_mapping;
+(* It is changed to ENUMERATION
+entity_mapping Tolerance_condition(Tolerance_condition, ((modified_geometric_tolerance.modifier))((referenced_modified_datum.modifier)));
+
+attribute_mapping condition(condition, limit_condition);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+(* Entity with the same name is taken from AIM
+entity_mapping Tolerance_zone(Tolerance_zone, tolerance_zone);
+
+attribute_mapping form_type(form_type, tolerance_zone_form.name);
+
+end_attribute_mapping;
+
+attribute_mapping zone_for(zone_for, $PATH, Geometric_tolerance);
+tolerance_zone 
+tolerance_zone.defining_tolerance[i] -> 
+geometric_tolerance
+end_attribute_mapping;
+
+end_entity_mapping; 
+*)
+(* Entity with the same name is taken from AIM
+entity_mapping Tolerance_zone_definition(Tolerance_zone_definition, tolerance_zone_definition);
+
+attribute_mapping defining(defining, $PATH, Tolerance_zone);
+tolerance_zone_definition 
+tolerance_zone_definition.zone -> 
+tolerance_zone
+end_attribute_mapping;
+
+attribute_mapping first_element(first_element, $PATH, Shape_element);
+tolerance_zone_definition 
+tolerance_zone_definition.boundaries[i] -> 
+shape_aspect
+end_attribute_mapping;
+
+attribute_mapping second_element(second_element, $PATH, Shape_element);
+tolerance_zone_definition 
+tolerance_zone_definition.boundaries[i] -> 
+shape_aspect
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Total_runout_tolerance_armx(Total_runout_tolerance_armx, total_runout_tolerance);
+
+mapping_constraints;
+total_runout_tolerance <= 
+geometric_tolerance_with_datum_reference
+end_mapping_constraints;
+
+attribute_mapping angle(angle, );
+total_runout_tolerance <= 
+geometric_tolerance_with_datum_reference <= 
+geometric_tolerance <- 
+tolerance_zone.defining_tolerance[i] 
+tolerance_zone <- 
+tolerance_zone_definition.zone 
+tolerance_zone_definition => 
+runout_zone_definition 
+runout_zone_definition.orientation -> 
+runout_zone_orientation 
+runout_zone_orientation.angle -> 
+measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_reference);
+total_runout_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_reference
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

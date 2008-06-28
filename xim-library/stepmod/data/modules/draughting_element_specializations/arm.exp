@@ -1,0 +1,52 @@
+--=============================================
+-- Draughting_elements for
+--  aic_draughting_elements; --  ISO 10303-506
+SCHEMA Draughting_element_specializations_arm; -- 506
+
+USE FROM Draughting_element_arm; -- ~101, schema 2
+-- Associated_leader, Associated_projection_curve, Associated_fill_area - delete or move to Dimension_and_tolerance_callout
+
+-- TODiscuss - check this deletion - not possible used by Item_text_association
+USE FROM Shape_property_assignment_arm;
+
+ENTITY Datum_feature_callout -- From Dimension_and_tolerance_callouts_arm
+  SUBTYPE OF (Draughting_callout);
+END_ENTITY;
+
+ENTITY Datum_target_callout -- From Dimension_and_tolerance_callouts_arm
+  SUBTYPE OF (Draughting_callout);
+END_ENTITY;
+
+ENTITY Geometric_tolerance_callout -- AIM is geometrical_tolerance_callout / Taken from Dimension_and_tolerance_callouts_arm
+    SUBTYPE OF (Draughting_callout);
+END_ENTITY;
+
+(*
+Another obvious bug - in Dimension_and_tolerance_callouts module:
+Surface_condition_callout maps to pre_defined_surface_condition_symbol.
+But in AP214 and if doing it correct it should map to Surface_condition_callout in the mim (need to create such entity in the modules)
+*)
+ENTITY Surface_condition_callout -- maps to pre_defined_surface_condition_symbol from Annotated_presentation_mim 
+  SUBTYPE OF (Draughting_callout);
+END_ENTITY;
+
+ENTITY Item_text_association -- maps to draughting_elements from 506 / taken from associative_text
+  SUBTYPE OF (Draughting_callout);
+  target_geometry : Detailed_geometric_model_element;
+  target_item : Shape_element;
+  text_occurrence : Text;
+END_ENTITY;
+
+-- TODO review mapping (new attribute text)
+ENTITY Text_with_leader -- maps to draughting_elements from 506 / taken from associative_text
+  SUBTYPE OF (Draughting_callout);
+  leader : Leader;
+  text   : Text;
+END_ENTITY;
+
+SUBTYPE_CONSTRAINT draughting_callout_subtypes FOR Draughting_callout;
+  ONEOF(Datum_feature_callout, Datum_target_callout,
+  Geometric_tolerance_callout, Surface_condition_callout);
+END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA;

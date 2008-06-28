@@ -1,0 +1,111 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Packaged part black box model - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Packaged_part_black_box_model_xim;
+
+USE FROM Part_external_reference_xim;
+
+USE FROM Functional_assignment_to_part_xim;
+
+USE FROM Package_xim;
+
+USE FROM Functional_usage_view_xim;
+
+USE FROM Packaged_part_black_box_model_mim;
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+
+	TYPE ppbbm_material_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON material_item_select WITH
+		(Packaged_part_armx);
+	END_TYPE;
+
+	TYPE package_or_package_external_reference = SELECT
+  		(Package_armx,
+   	package_external_reference);
+	END_TYPE; -- package_or_package_external_reference
+
+  ENTITY Packaged_part_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_usage_view, packaged_part);
+      used_package         : SET[1:?] OF package_or_package_external_reference;
+      implemented_function : OPTIONAL Functional_unit_usage_view;
+    DERIVE
+		potting_compound : SET [0:1] OF Material_designation := 
+		bag_to_set(QUERY( temp <* USEDIN(SELF,
+		     'GENERIC_MATERIAL_ASPECTS_XIM.MATERIAL_DESIGNATION.DEFINITION') | 
+		     (SIZEOF( QUERY( cla <* USEDIN(temp,'CLASSIFICATION_ASSIGNMENT_MIM.' + 
+		 	'APPLIED_CLASSIFICATION_ASSIGNMENT.' + 'ITEMS') | cla.role = 'potting compound')) = 1)));
+		base_package : SET [1:?] OF Package_armx := bag_to_set(QUERY(up <* used_package | 
+		                                       (SIZEOF(['ALTERED_PACKAGE_XIM.ALTERED_PACKAGE_ARMX',
+		                                          'PART_EXTERNAL_REFERENCE_XIM.PACKAGE_EXTERNAL_REFERENCE'] * TYPEOF(up)) = 0)
+		                                          ));
+    INVERSE
+      access_mechanisms : SET[0:?] OF packaged_part_terminal_armx FOR containing_shape(* TEMP-AD! *);
+    WHERE
+      WR1 : NOT (EXISTS(implemented_function) XOR (SIZEOF(access_mechanisms) > 0));
+      WR2 : SIZEOF(base_package) = 1;
+      WR3 : single_package_product(base_package, used_package);
+  END_ENTITY;
+
+  ENTITY Packaged_part_join_terminal
+    (* CONNOTATIONAL *) SUBTYPE OF (Packaged_part_terminal_armx);
+  END_ENTITY;
+
+  ENTITY Packaged_part_terminal_armx
+  	ABSTRACT SUPERTYPE
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_terminal, packaged_part_terminal);
+      terminal_of_package                     : SET[1:?] OF Package_terminal_armx;
+      SELF\Shape_element.containing_shape(* TEMP-PF! *) : Packaged_part_armx;
+    WHERE
+      WR1 : disjoint_package_terminals(terminal_of_package);      
+      WR2 : NOT EXISTS(SELF\Part_feature.precedent_feature);
+  END_ENTITY;
+
+  FUNCTION disjoint_package_terminals(
+    input : SET OF Package_terminal_armx
+  ) : BOOLEAN;
+  LOCAL
+   pk : SET OF Package_armx := []; -- get access to information base
+  END_LOCAL;
+  
+  REPEAT i := 1 to HIINDEX( input);
+  pk := pk + input[i].associated_definition;
+  END_REPEAT;
+  
+    RETURN(SIZEOF(input) = SIZEOF(pk));
+  END_FUNCTION;
+
+  FUNCTION single_package_product(
+    input1 : SET OF Package_armx;
+    input2 : SET OF package_or_package_external_reference
+  ) : BOOLEAN;
+    RETURN(TRUE);
+  END_FUNCTION;
+
+END_SCHEMA;
+

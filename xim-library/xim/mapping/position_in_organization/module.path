@@ -1,0 +1,666 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping position_in_organization(Position_in_organization_arm, Position_in_organization_mim);*)
+
+uof_mapping Position_in_organization(Position_in_organization);
+
+entity_mapping Position(Position, position_in_organization);
+
+attribute_mapping name(name, position_in_organization.name);
+
+					position_in_organization
+					position_in_organization.name
+				
+end_attribute_mapping;
+
+attribute_mapping description(description, position_in_organization.description);
+
+					position_in_organization
+					position_in_organization.description
+				
+end_attribute_mapping;
+
+attribute_mapping position_context(position_context, $PATH, position_context_item);
+
+                            position_in_organization <-
+                            position_in_organization_assignment.assigned_position_in_organization
+                            position_in_organization_assignment =>
+                            applied_position_in_organization_assignment
+                            applied_position_in_organization_assignment.items[i] ->
+                            position_in_organization_item
+                            position_in_organization_item 
+                          
+end_attribute_mapping;
+
+attribute_mapping position_context(position_context, $PATH, Organization);
+
+					position_in_organization <-
+					position_in_organization_assignment.assigned_position_in_organization
+					position_in_organization_assignment =>
+					applied_position_in_organization_assignment
+					applied_position_in_organization_assignment.items[i] ->
+					position_in_organization_item
+					position_in_organization_item =
+					organization
+				
+end_attribute_mapping;
+
+attribute_mapping position_context(position_context, $PATH, Project);
+
+					position_in_organization <-
+					position_in_organization_assignment.assigned_position_in_organization
+					position_in_organization_assignment =>
+					applied_position_in_organization_assignment
+					applied_position_in_organization_assignment.items[i] ->
+					position_in_organization_item
+					position_in_organization_item =
+					organizational_project
+				
+end_attribute_mapping;
+
+attribute_mapping position_context(position_context, $PATH, Position_group);
+
+					position_in_organization <-
+					position_in_organization_assignment.assigned_position_in_organization
+					position_in_organization_assignment
+					{position_in_organization_assignment.name='position in organization context'}
+					position_in_organization_assignment =>
+					applied_position_in_organization_assignment
+					applied_position_in_organization_assignment.items[i] ->
+					position_in_organization_item
+					position_in_organization_item =
+					group
+					{group.description='position group'}
+				
+end_attribute_mapping;
+
+attribute_mapping address(address, $PATH, Address);
+
+					position_in_organization <-
+					position_in_organization_assignment.assigned_position_in_organization
+					position_in_organization_assignment =>
+					applied_position_in_organization_assignment
+					applied_position_in_organization_assignment.items[i] ->
+					position_in_organization_item
+					position_in_organization_item =
+					address
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Position_type(Position_type, position_in_organization_type);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping name(name, position_in_organization_type.name);
+
+					position_in_organization_type
+					position_in_organization_type.name
+				
+end_attribute_mapping;
+
+attribute_mapping description(description, position_in_organization_type.description);
+
+					position_in_organization_type
+					position_in_organization_type.description
+				
+end_attribute_mapping;
+
+attribute_mapping defined_by(defined_by, $PATH, Type_of_person);
+
+					position_in_organization_type <-
+					position_in_organization_type_assignment.assigned_position_in_organization_type
+					position_in_organization_type_assignment
+					{position_in_organization_type_assignment
+					position_in_organization_type_assignment.role ->
+					position_in_organization_type_role
+					position_in_organization_type_role.name = 'defines'}
+					position_in_organization_type_assignment =>
+					applied_position_in_organization_type_assignment
+					applied_position_in_organization_type_assignment.items [1] ->
+					person_type
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Position_position_type_assignment(Position_position_type_assignment, applied_position_in_organization_type_assignment);
+
+mapping_constraints;
+
+				{position_in_organization_type_assignment.description = 'Position position type assigment'}
+				position_in_organization_type_assignment =>
+				applied_position_in_organization_type_assignment
+			
+end_mapping_constraints;
+
+attribute_mapping assigned_position_type(assigned_position_type, $PATH, Position_type);
+
+					applied_position_in_organization_type_assignment <=
+        				position_in_organization_type_assignment
+					position_in_organization_type_assignment.assigned_position_in_organization_type ->
+					position_in_organization_type
+				
+end_attribute_mapping;
+
+attribute_mapping assigned_to(assigned_to, $PATH, Position);
+
+					applied_position_in_organization_type_assignment
+					applied_position_in_organization_type_assignment.items[1] ->
+					position_in_organization_type_item =
+					position_in_organization
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Person_or_organization_or_person_in_organization_in_position(Person_or_organization_or_person_in_organization_in_position, applied_position_in_organization_assignment);
+
+mapping_constraints;
+
+				position_in_organization_assignment
+				{position_in_organization_assignment.name='person or organization or person in organization in position'}
+				position_in_organization_assignment =>
+				applied_position_in_organization_assignment
+			
+end_mapping_constraints;
+
+attribute_mapping name(name, position_in_organization_assignment.id);
+
+					applied_position_in_organization_assignment <=
+					position_in_organization_assignment
+					position_in_organization_assignment.id
+					{position_in_organization_assignment.name='person or organization or person in organization in position'}
+				
+end_attribute_mapping;
+
+attribute_mapping description(description, position_in_organization_assignment.description);
+
+					applied_position_in_organization_assignment <=
+					position_in_organization_assignment
+					position_in_organization_assignment.description
+					{position_in_organization_assignment.name='person or organization or person in organization in position'}
+				
+end_attribute_mapping;
+
+attribute_mapping position(position, $PATH, Position);
+
+					applied_position_in_organization_assignment <=
+					position_in_organization_assignment
+					{position_in_organization_assignment.name='person or organization or person in organization in position'}
+					position_in_organization_assignment
+					position_in_organization_assignment.assigned_position_in_organization ->
+					position_in_organization
+				
+end_attribute_mapping;
+
+attribute_mapping person_or_organization(person_or_organization, $PATH, position_person_or_organization_or_person_in_organization_select);
+
+                            applied_position_in_organization_assignment
+                            {applied_position_in_organization_assignment <=
+                            position_in_organization_assignment
+                            position_in_organization_assignment.name='person or organization or person in organization in position'}
+                            applied_position_in_organization_assignment
+                            applied_position_in_organization_assignment.items[1] ->
+                            position_in_organization_item
+                          
+end_attribute_mapping;
+
+attribute_mapping person_or_organization(person_or_organization, $PATH, Person);
+
+					applied_position_in_organization_assignment
+					{applied_position_in_organization_assignment <=
+					position_in_organization_assignment
+					position_in_organization_assignment.name='person or organization or person in organization in position'}
+					applied_position_in_organization_assignment
+					applied_position_in_organization_assignment.items[1] ->
+					position_in_organization_item =
+					person
+				
+end_attribute_mapping;
+
+attribute_mapping person_or_organization(person_or_organization, $PATH, Organization);
+
+					applied_position_in_organization_assignment
+					{applied_position_in_organization_assignment <=
+					position_in_organization_assignment
+					position_in_organization_assignment.name='person or organization or person in organization in position'}
+					applied_position_in_organization_assignment
+					applied_position_in_organization_assignment.items[1] ->
+					position_in_organization_item =
+					organization
+				
+end_attribute_mapping;
+
+attribute_mapping person_or_organization(person_or_organization, $PATH, person_and_organization);
+
+					applied_position_in_organization_assignment
+					{applied_position_in_organization_assignment <=
+					position_in_organization_assignment
+					position_in_organization_assignment.name='person or organization or person in organization in position'}
+					applied_position_in_organization_assignment
+					applied_position_in_organization_assignment.items[1] ->
+					position_in_organization_item =
+					person_and_organization
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Position_group_relationship(Position_group_relationship, applied_position_in_organization_assignment);
+
+mapping_constraints;
+
+				position_in_organization_assignment
+				{position_in_organization_assignment.name='position group relationship'}
+				position_in_organization_assignment =>
+				applied_position_in_organization_assignment
+			
+end_mapping_constraints;
+
+attribute_mapping position(position, $PATH, Position);
+
+					applied_position_in_organization_assignment <=
+					position_in_organization_assignment
+					{position_in_organization_assignment.name='position group relationship'}
+					position_in_organization_assignment
+					position_in_organization_assignment.assigned_position_in_organization ->
+					position_in_organization				
+				
+end_attribute_mapping;
+
+attribute_mapping group(group, $PATH, Position_group);
+
+					applied_position_in_organization_assignment
+					{applied_position_in_organization_assignment <=
+					position_in_organization_assignment
+					position_in_organization_assignment.name='position group relationship'}
+					applied_position_in_organization_assignment
+					applied_position_in_organization_assignment.items[1] ->
+					position_in_organization_item =
+					group
+					{group.description = 'position group'}
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Position_group(Position_group, group);
+
+mapping_constraints;
+
+				group
+				{group.name = 'position group'}
+			
+end_mapping_constraints;
+
+attribute_mapping name(name, group.id);
+
+					group
+					{group.name = 'position group'}
+					group.id
+				
+end_attribute_mapping;
+
+attribute_mapping description(description, group.description);
+
+					group
+					{group.name = 'position group'}
+					group.description
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Position_relationship(Position_relationship, position_in_organization_relationship);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping name(name, position_in_organization_relationship.name);
+
+					position_in_organization_relationship
+					position_in_organization_relationship.name
+				
+end_attribute_mapping;
+
+attribute_mapping description(description, position_in_organization_relationship.description);
+
+					position_in_organization_relationship
+					position_in_organization_relationship.description
+				
+end_attribute_mapping;
+
+attribute_mapping related_position(related_position, $PATH, Position);
+
+					position_in_organization_relationship
+					position_in_organization_relationship.related_position_in_organization ->
+					position_in_organization
+				
+end_attribute_mapping;
+
+attribute_mapping relating_position(relating_position, $PATH, Position);
+
+					position_in_organization_relationship
+					position_in_organization_relationship.relating_position_in_organization ->
+					position_in_organization
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(* applied_classification_assignment is used instead from AIM
+entity_mapping Classification_assignment(Classification_assignment, applied_classification_assignment)
+extended;
+
+attribute_mapping items(items, $PATH, Position);
+
+					classification_item *>
+					position_in_organization_classification_item
+					position_in_organization_classification_item =
+					position_in_organization
+				
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, Position_type);
+
+					classification_item *>
+					position_in_organization_classification_item
+					position_in_organization_classification_item =
+					position_in_organization_type
+				
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, Position_relationship);
+
+					classification_item *>
+					position_in_organization_classification_item
+					position_in_organization_classification_item =
+					position_in_organization_relationship
+				
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, Person_or_organization_or_person_in_organization_in_position_relationship);
+
+					classification_item *>
+					position_in_organization_classification_item
+					position_in_organization_classification_item =
+					group
+					{group
+					group_assignment.assigned_group
+					group_assignment =>
+					applied_position_in_organization_assignment_group_assignment}
+				
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, Position_position_type_assignment);
+
+					classification_item *>
+					position_in_organization_classification_item
+					position_in_organization_classification_item =
+					applied_position_in_organization_type_assignment
+				
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, Position_group);
+
+					classification_item *>
+					position_in_organization_classification_item
+					position_in_organization_classification_item =
+					group
+					{group
+					group.name = 'position group'}
+				
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, Position_group_relationship);
+
+					classification_item *>
+					position_in_organization_classification_item
+					position_in_organization_classification_item =
+					applied_position_in_organization_assignment
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Person_or_organization_or_person_in_organization_in_position_relationship(Person_or_organization_or_person_in_organization_in_position_relationship, group);
+
+attribute_mapping name(name, group.name);
+
+					group
+					group.name				
+				
+end_attribute_mapping;
+
+attribute_mapping description(description, group.description);
+
+					group
+					group.description
+				
+end_attribute_mapping;
+
+attribute_mapping related(related, $PATH, Person_or_organization_or_person_in_organization_in_position);
+
+					group <-
+					group_assignment.assigned_group
+					group_assignment
+					{group_assignment
+					group_assignment.role ->
+					object_role
+					object_role.name = 'related person or organization or person in organization in position'}
+					group_assignment
+					group_assignment =>
+					applied_position_in_organization_assignment_group_assignment
+					applied_position_in_organization_assignment_group_assignment.items[1] ->
+					position_in_organization_group_assignment_item =
+					position_in_organization_assignment
+				
+end_attribute_mapping;
+
+attribute_mapping relating(relating, $PATH, Person_or_organization_or_person_in_organization_in_position);
+
+					group <-
+					group_assignment.assigned_group
+					group_assignment
+					{group_assignment
+					group_assignment.role ->
+					object_role
+					object_role.name = 'relating person or organization or person in organization in position'}
+					group_assignment
+					group_assignment =>
+					applied_position_in_organization_assignment_group_assignment
+					applied_position_in_organization_assignment_group_assignment.items[1] ->
+					position_in_organization_group_assignment_item =
+					position_in_organization_assignment
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Position_assignment(Position_assignment, applied_position_in_organization_assignment);
+
+mapping_constraints;
+				applied_position_in_organization_assignment <=
+				position_in_organization_assignment
+				{position_in_organization_assignment.name != 'person or organization or person in organization in position'}         		
+end_mapping_constraints;
+
+attribute_mapping items(items, $PATH, position_item);
+
+					applied_position_in_organization_assignment.items[i] ->
+					position_in_organization_item
+				
+end_attribute_mapping;
+
+attribute_mapping position(position, $PATH, Position);
+
+					applied_position_in_organization_assignment <=
+					position_in_organization_assignment
+        				position_in_organization_assignment.assigned_position_in_organization ->
+					position_in_organization
+				
+end_attribute_mapping;
+(* It is derived
+attribute_mapping role_x(role_x, $IDENTICAL_MAPPING, position_in_organization_assignment);
+
+end_attribute_mapping;
+*)
+end_entity_mapping;
+
+entity_mapping Position_group_assignment(Position_group_assignment, applied_position_in_organization_group_assignment);
+
+mapping_constraints;
+
+				group_assignment =>
+				applied_position_in_organization_group_assignment
+			
+end_mapping_constraints;
+
+attribute_mapping items(items, $PATH, position_group_item);
+
+					applied_position_in_organization_group_assignment.items[i] ->
+					position_in_organization_group_item
+				
+end_attribute_mapping;
+
+attribute_mapping position_group(position_group, $PATH, Position_group);
+
+					applied_position_in_organization_group_assignment <=
+					group_assignment
+					group_assignment.assigned_group ->
+					group
+					{group.name='position group'}
+				
+end_attribute_mapping;
+
+attribute_mapping role(role, $IDENTICAL_MAPPING, Position_group_role);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Position_group_role(Position_group_role, applied_position_in_organization_group_assignment);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping name(name, name_assignment.assigned_name);
+
+					applied_position_in_organization_group_assignment
+					project_group_name_item = applied_position_in_organization_group_assignment (* Changed line *)
+					project_group_name_item <-                                                  (* Changed line *)
+					applied_project_group_name_assignment.items[1]
+					applied_project_group_name_assignment <=
+					name_assignment
+					name_assignment.assigned_name
+				
+end_attribute_mapping;
+
+attribute_mapping description(description, group_assignment.role);
+
+					applied_position_in_organization_group_assignment <=
+					group_assignment
+					group_assignment.role
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+(* position_in_organization_assignment from AIM is used instead
+entity_mapping Position_role(Position_role, position_in_organization_assignment);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping name(name, position_in_organization_assignment.name);
+
+					position_in_organization_assignment
+					position_in_organization_assignment.name
+				
+end_attribute_mapping;
+
+attribute_mapping description(description, position_in_organization_assignment.description);
+
+					position_in_organization_assignment
+					position_in_organization_assignment.description
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Position_type_assignment(Position_type_assignment, applied_position_in_organization_type_assignment);
+
+mapping_constraints;
+
+				applied_position_in_organization_type_assignment <=
+				position_in_organization_type_assignment
+				{position_in_organization_type_assignment.description = 'Position type assigment'}         		
+end_mapping_constraints;
+
+attribute_mapping items(items, $PATH, position_type_item);
+
+					applied_position_in_organization_type_assignment.items[i] ->
+					position_in_organization_type_item
+				
+end_attribute_mapping;
+
+attribute_mapping position_type(position_type, $PATH, Position_type);
+
+					applied_position_in_organization_type_assignment <=
+					position_in_organization_type_assignment
+        				position_in_organization_type_assignment.assigned_position_in_organization_type ->
+					position_in_organization_type
+				
+end_attribute_mapping;
+
+attribute_mapping role(role, $IDENTICAL_MAPPING, position_in_organization_type_assignment);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(* position_in_organization_type_assignment is taken from AIM instead
+entity_mapping Position_type_role(Position_type_role, position_in_organization_type_assignment);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping name(name, position_in_organization_type_assignment.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, position_in_organization_type_assignment.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+(*end_schema_mapping;*)

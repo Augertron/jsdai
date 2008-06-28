@@ -1,0 +1,346 @@
+(*
+ $Id$
+ ISO TC184/SC4/WG12 N4772 - ISO/CD-TS 10303-1770 Part and zone laminate tables - EXPRESS MIM
+ Supersedes ISO TC184/SC4/WG12 N4380
+*)
+
+SCHEMA Part_and_zone_laminate_tables_mim;
+
+USE FROM Composite_constituent_shape_mim; -- ISO/CD-TS 10303-1767
+
+USE FROM Ply_orientation_specification_mim; -- ISO/CD-TS 10303-1772
+
+USE FROM Shape_property_assignment_mim; -- ISO/CD-TS 10303-1032
+
+USE FROM Stock_material_mim; -- ISO/CD-TS 10303-1771
+
+USE FROM product_structure_schema (next_assembly_usage_occurrence);
+
+  ENTITY composite_assembly_definition
+    SUBTYPE OF (product_definition);
+    WHERE
+      WR1: SIZEOF (QUERY (pdr <* USEDIN (SELF, 
+                             'PRODUCT_DEFINITION_SCHEMA.' +
+                             'PRODUCT_DEFINITION_RELATIONSHIP.' +
+                             'RELATING_PRODUCT_DEFINITION') |
+                             'PRODUCT_STRUCTURE_SCHEMA.' +
+                             'NEXT_ASSEMBLY_USAGE_OCCURRENCE' IN
+                             TYPEOF (pdr))) = 1;
+  END_ENTITY;
+
+  ENTITY composite_assembly_sequence_definition
+    SUBTYPE OF (product_definition);
+    WHERE
+      WR1: SIZEOF (QUERY (pdr <* USEDIN (SELF, 
+                             'PRODUCT_DEFINITION_SCHEMA.' +
+                             'PRODUCT_DEFINITION_RELATIONSHIP.' +
+                             'RELATING_PRODUCT_DEFINITION') |
+                             'PRODUCT_STRUCTURE_SCHEMA.' +
+                             'NEXT_ASSEMBLY_USAGE_OCCURRENCE' IN
+                             TYPEOF (pdr))) > 0;
+  END_ENTITY;
+
+  ENTITY composite_assembly_table
+    SUBTYPE OF (part_laminate_table);
+  END_ENTITY;
+
+  ENTITY laminate_table
+    SUPERTYPE OF (ONEOF(part_laminate_table, zone_structural_makeup))
+    SUBTYPE OF (product_definition);
+  END_ENTITY;
+
+  ENTITY part_laminate_table
+    SUPERTYPE OF (ONEOF(composite_assembly_table, ply_laminate_table))
+    SUBTYPE OF (laminate_table);
+  END_ENTITY;
+
+  ENTITY percentage_laminate_definition
+    SUBTYPE OF (product_definition);
+    WHERE
+      WR1: SIZEOF (QUERY (pdr <* USEDIN (SELF, 
+                             'PRODUCT_DEFINITION_SCHEMA.' +
+                             'PRODUCT_DEFINITION_RELATIONSHIP.' +
+                             'RELATING_PRODUCT_DEFINITION') |
+                             'PRODUCT_STRUCTURE_SCHEMA.' +
+                             'NEXT_ASSEMBLY_USAGE_OCCURRENCE' IN
+                             TYPEOF (pdr))) > 0;
+  END_ENTITY;
+
+  ENTITY percentage_laminate_table
+    SUBTYPE OF (zone_structural_makeup);
+  END_ENTITY;
+
+  ENTITY percentage_ply_definition
+    SUBTYPE OF (product_definition);
+    WHERE
+      WR1: SIZEOF (QUERY (pdr <* USEDIN (SELF, 'PRODUCT_DEFINITION_SCHEMA.' +
+        'PRODUCT_DEFINITION_RELATIONSHIP.RELATING_PRODUCT_DEFINITION') |
+        ('STRUCTURAL_ANALYSIS_DESIGN.PERCENTAGE_LAMINATE_DEFINITION' 
+        IN TYPEOF (pdr.related_product_definition)) AND
+        (pdr.name = 'makeup and properties'))) = 0;
+  END_ENTITY;
+
+  ENTITY ply_laminate_definition
+    SUBTYPE OF (product_definition);
+    WHERE
+      WR1: SIZEOF (QUERY (pdr <* USEDIN (SELF, 
+                             'PRODUCT_DEFINITION_SCHEMA.' +
+                             'PRODUCT_DEFINITION_RELATIONSHIP.' +
+                             'RELATING_PRODUCT_DEFINITION') |
+                             'PRODUCT_STRUCTURE_SCHEMA.' +
+                             'NEXT_ASSEMBLY_USAGE_OCCURRENCE' IN
+                             TYPEOF (pdr))) = 1;
+  END_ENTITY;
+
+  ENTITY ply_laminate_sequence_definition
+    SUBTYPE OF (product_definition);
+    WHERE
+      WR1: SIZEOF (QUERY (pdr <* USEDIN (SELF, 
+                             'PRODUCT_DEFINITION_SCHEMA.' +
+                             'PRODUCT_DEFINITION_RELATIONSHIP.' +
+                             'RELATING_PRODUCT_DEFINITION') |
+                             'PRODUCT_STRUCTURE_SCHEMA.' +
+                             'NEXT_ASSEMBLY_USAGE_OCCURRENCE' IN
+                             TYPEOF (pdr))) > 0;
+  END_ENTITY;
+
+  ENTITY ply_laminate_table
+    SUBTYPE OF (part_laminate_table);
+  END_ENTITY;
+
+  ENTITY smeared_material_definition
+    SUBTYPE OF (zone_structural_makeup);
+  END_ENTITY;
+
+  ENTITY thickness_laminate_definition
+    SUBTYPE OF (product_definition);
+    WHERE
+      WR1: SIZEOF (QUERY (pdr <* USEDIN (SELF, 
+                             'PRODUCT_DEFINITION_SCHEMA.' +
+                             'PRODUCT_DEFINITION_RELATIONSHIP.' +
+                             'RELATING_PRODUCT_DEFINITION') |
+                             'PRODUCT_STRUCTURE_SCHEMA.' +
+                             'NEXT_ASSEMBLY_USAGE_OCCURRENCE' IN
+                             TYPEOF (pdr))) = 1;
+  END_ENTITY;
+
+  ENTITY thickness_laminate_table
+    SUBTYPE OF (zone_structural_makeup);
+  END_ENTITY;
+
+  ENTITY zone_structural_makeup
+    SUPERTYPE OF (ONEOF((thickness_laminate_table AND smeared_material_definition), (percentage_laminate_table AND smeared_material_definition), thickness_laminate_table, percentage_laminate_table, smeared_material_definition))
+    SUBTYPE OF (laminate_table);
+  END_ENTITY;
+
+  SUBTYPE_CONSTRAINT pos_product_definition_subtypes FOR product_definition;
+    ONEOF (composite_assembly_definition,
+           composite_assembly_sequence_definition,
+           laminate_table,
+           percentage_laminate_definition,
+           percentage_ply_definition,
+           ply_laminate_definition,
+           ply_laminate_sequence_definition,
+           thickness_laminate_definition);
+  END_SUBTYPE_CONSTRAINT;
+
+  RULE component_class_for_assembly_select FOR
+     (composite_assembly_sequence_definition,
+      next_assembly_usage_occurrence,
+      product_related_product_category);
+    LOCAL
+      i,j,k :  INTEGER :=0;
+      dkuhr :  LOGICAL :=TRUE;
+      nnauo :  INTEGER :=0;
+      nprpc :  INTEGER :=0;
+      rp    :  product;
+    END_LOCAL;
+    REPEAT i:= LOINDEX (composite_assembly_sequence_definition) TO
+               HIINDEX (composite_assembly_sequence_definition);
+      nnauo := 0;  
+      REPEAT j:= LOINDEX (next_assembly_usage_occurrence) TO
+                 HIINDEX (next_assembly_usage_occurrence);
+        IF (composite_assembly_sequence_definition[i] = 
+          next_assembly_usage_occurrence[j].relating_product_definition) THEN
+          rp := next_assembly_usage_occurrence[j].related_product_definition.
+                formation.of_product;
+          nprpc := 0;
+          REPEAT k:= LOINDEX (product_related_product_category) TO
+                     HIINDEX (product_related_product_category);
+            IF ((rp IN product_related_product_category[k].products) AND
+                (product_related_product_category[k].name IN ['ply',
+                 'ply laminate', 'filament laminate', 'processed core',
+                 'composite assembly'])) THEN
+                nprpc := nprpc + 1;
+            END_IF;
+          END_REPEAT;
+          IF (nprpc = 1) THEN
+            nnauo := nnauo + 1;
+          ELSE
+            dkuhr := FALSE;
+            ESCAPE;
+          END_IF;
+        END_IF;
+      END_REPEAT;
+      IF (dkuhr = FALSE) THEN
+        ESCAPE; 
+      END_IF;
+      IF(nnauo = 0) THEN
+        dkuhr := FALSE;
+        ESCAPE;
+      END_IF;
+    END_REPEAT;
+    WHERE
+      WR1:  dkuhr;
+  END_RULE;
+
+  RULE ply_reference FOR
+     (ply_laminate_sequence_definition,
+      next_assembly_usage_occurrence,
+      product_related_product_category);
+    LOCAL
+      i,j,k :  INTEGER;
+      dkuhr :  LOGICAL := TRUE;
+      nnauo :  INTEGER;
+      nprpc :  INTEGER := 0;
+      rp    :  product;
+    END_LOCAL;
+    REPEAT i:= LOINDEX (ply_laminate_sequence_definition) TO
+               HIINDEX (ply_laminate_sequence_definition);
+      nnauo := 0;  
+      REPEAT j:= LOINDEX (next_assembly_usage_occurrence) TO 
+                 HIINDEX (next_assembly_usage_occurrence);
+        IF (ply_laminate_sequence_definition[i] = 
+          next_assembly_usage_occurrence[j].relating_product_definition) THEN
+          rp := next_assembly_usage_occurrence[j].related_product_definition.
+                formation.of_product;
+          nprpc := 0;
+          REPEAT k:= LOINDEX (product_related_product_category) TO
+                     HIINDEX (product_related_product_category);
+            IF ((product_related_product_category[k].name = 'ply') AND
+                (rp IN product_related_product_category[k].products)) THEN
+                nprpc := nprpc + 1;
+            END_IF;
+          END_REPEAT;
+          IF (nprpc = 1) THEN
+            nnauo := nnauo + 1;
+          ELSE
+            dkuhr := FALSE;
+            ESCAPE;
+          END_IF;
+        END_IF;
+      END_REPEAT;
+      IF (dkuhr = FALSE) THEN
+        ESCAPE; 
+      END_IF;
+      IF(nnauo = 0) THEN
+        dkuhr := FALSE;
+        ESCAPE;
+      END_IF;
+    END_REPEAT;
+    WHERE
+      WR1:  dkuhr;
+  END_RULE;
+
+  RULE stock_material_reference FOR
+     (percentage_ply_definition,
+      make_from_usage_option,
+      product_related_product_category);
+    LOCAL
+      i,j,k :  INTEGER;
+      dkuhr :  LOGICAL;
+      nmfuo :  INTEGER;
+      nprpc :  INTEGER;
+      rp     :  product;
+    END_LOCAL;
+    dkuhr := TRUE;
+    REPEAT i:= LOINDEX (percentage_ply_definition) TO
+               HIINDEX (percentage_ply_definition);
+      nmfuo := 0;  
+      REPEAT j:= LOINDEX (make_from_usage_option) TO 
+                 HIINDEX (make_from_usage_option);
+        IF (percentage_ply_definition[i] = 
+          make_from_usage_option[j].relating_product_definition) THEN
+          rp := make_from_usage_option[j].related_product_definition.
+                formation.of_product;
+          nprpc := 0;
+          REPEAT k:= LOINDEX (product_related_product_category) TO
+                     HIINDEX (product_related_product_category);
+            IF ((rp IN product_related_product_category[k].products) AND
+                (product_related_product_category[k].name IN 
+                ['anisotropic material', 'isotropic material', 'stock core',
+                 'filament assembly', 'discontinuous fiber assembly'])) THEN
+                nprpc := nprpc + 1;
+            END_IF;
+          END_REPEAT;
+          IF (nprpc = 1) THEN
+            nmfuo := nmfuo + 1;
+          ELSE
+            dkuhr := FALSE;
+            ESCAPE;
+          END_IF;
+        END_IF;
+      END_REPEAT;
+      IF (dkuhr = FALSE) THEN
+        ESCAPE; 
+      END_IF;
+      IF(nmfuo = 0) THEN
+        dkuhr := FALSE;
+        ESCAPE;
+      END_IF;
+    END_REPEAT;
+    WHERE
+      WR1:  dkuhr;
+  END_RULE;
+
+  RULE thickness_laminate_table_component_select FOR
+     (thickness_laminate_definition,
+      next_assembly_usage_occurrence,
+      product_related_product_category);
+    LOCAL
+      i,j,k :  INTEGER;
+      dkuhr :  LOGICAL;
+      nnauo :  INTEGER;
+      nprpc :  INTEGER;
+      rp    :  product;
+    END_LOCAL;
+    dkuhr := TRUE;
+    REPEAT i:= LOINDEX (thickness_laminate_definition) TO
+               HIINDEX (thickness_laminate_definition);
+      nnauo := 0;  
+      REPEAT j:= LOINDEX (next_assembly_usage_occurrence) TO 
+                 HIINDEX (next_assembly_usage_occurrence);
+        IF (thickness_laminate_definition[i] = 
+          next_assembly_usage_occurrence[j].relating_product_definition) THEN
+          rp := next_assembly_usage_occurrence[j].related_product_definition.
+                formation.of_product;
+          nprpc := 0;
+          REPEAT k:= LOINDEX (product_related_product_category) TO
+                     HIINDEX (product_related_product_category);
+            IF ((rp IN product_related_product_category[k].products) AND
+                (product_related_product_category[k].name IN 
+                 ['ply', 'filament laminate', 'processed core'])) THEN
+                nprpc := nprpc + 1;
+            END_IF;
+          END_REPEAT;
+          IF (nprpc = 1) THEN
+            nnauo := nnauo + 1;
+          ELSE
+            dkuhr := FALSE;
+            ESCAPE;
+          END_IF;
+        END_IF;
+      END_REPEAT;
+      IF (dkuhr = FALSE) THEN
+        ESCAPE;
+      END_IF;
+      IF (nnauo <> 1) THEN
+        dkuhr := FALSE;
+        ESCAPE;
+      END_IF;
+    END_REPEAT;
+    WHERE
+      WR1:  dkuhr;
+  END_RULE;
+
+END_SCHEMA;

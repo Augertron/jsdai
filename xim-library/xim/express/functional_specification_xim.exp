@@ -1,0 +1,87 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Functional specification - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Functional_specification_xim;
+
+USE FROM Functional_usage_view_xim;
+
+USE FROM Signal_xim;
+
+USE FROM Functional_specification_mim;
+
+REFERENCE FROM Specification_document_xim(get_document_definition);	-- ISO/TS 10303-1747
+
+	TYPE fs_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
+	   (Signal_specification);
+	END_TYPE; 
+
+-- The same extension is available via mim - just there AIM supertype of functional_specification_armx is added
+-- 	TYPE fs_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH  
+--		(Functional_specification_armx);
+--	END_TYPE;
+
+  ENTITY Functional_specification_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (functional_specification);
+      associated_definition          	: Functional_specification_definition;
+      reference_signal               	: Signal_specification;
+      characterizing_functional_unit 	: Functional_unit_armx;
+      characterizing_signal          	: Signal_specification;
+    DERIVE
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+      SELF\representation.name : label := ?;
+    INVERSE
+      characteristic_category					: External_source_identification FOR items;
+    WHERE
+      WR1 : characterizing_functional_unit.composed_network = associated_definition;
+  END_ENTITY;
+
+  ENTITY Functional_specification_definition_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Functional_unit_network_definition, functional_specification_definition);
+    INVERSE
+      composing_specification : SET[1:?] OF functional_specification_armx FOR associated_definition;
+  END_ENTITY;
+
+  ENTITY Signal_specification
+  	(* CONNOTATIONAL *) SUBTYPE OF (representation);
+      measurement_access_mechanism : Functional_unit_terminal;
+      reference_access_mechanism   : OPTIONAL Functional_unit_terminal;
+      minimum_characteristic       : Signal_property;
+      maximum_characteristic       : Signal_property;
+      characterization_network     : Functional_unit_network_definition;
+    DERIVE
+	  measurement_condition: SET[1:1] OF Document_definition :=
+  			get_document_definition(SELF, 'measurement condition', 
+  			'SPECIFICATION_DOCUMENT_XIM.TEST_SPECIFICATION');
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+      SELF\representation.name : label := ?;
+  END_ENTITY;
+
+END_SCHEMA;
+

@@ -1,0 +1,1829 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping fabrication_technology(Fabrication_technology_arm, Fabrication_technology_mim);*)
+
+entity_mapping Assigned_property(Assigned_property, property_definition)
+extended;
+
+attribute_mapping described_element(described_element, $PATH, Stratum_technology_armx);
+
+				characterized_definition
+				characterized_definition = characterized_object
+				characterized_object =>
+				stratum_technology
+			
+end_attribute_mapping;
+
+attribute_mapping described_element(described_element, $PATH, Passage_technology_armx);
+
+				characterized_definition
+				characterized_definition = characterized_object
+				characterized_object =>
+				passage_technology
+			
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Blind_passage_template_armx(Blind_passage_template_armx, blind_passage_template);
+
+mapping_constraints;
+blind_passage_template <=
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_measure_orientation(of_measure_orientation, descriptive_representation_item);
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'blind passage template measure orientation'}
+representation_item =>
+descriptive_representation_item
+{descriptive_representation_item
+(descriptive_representation_item.description = 'normal')
+(descriptive_representation_item.description = 'reversed')}
+
+end_attribute_mapping;
+
+attribute_mapping datum_reference_layer(datum_reference_layer, $PATH, Stratum_technology_occurrence_armx);
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'datum reference layer'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+stratum_technology_occurrence
+end_attribute_mapping;
+
+attribute_mapping datum_reference_side(datum_reference_side, $PATH, Stratum_technology_occurrence_link_armx);
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'datum reference side'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+stratum_technology_occurrence_relationship =>
+stratum_technology_occurrence_link
+end_attribute_mapping;
+
+attribute_mapping bottom_distance_from_datum_reference(bottom_distance_from_datum_reference, $PATH, Shape_dimension_representation);
+part_template_definition <=
+product_definition_shape <-
+shape_aspect.of_shape					
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+shape_aspect_relationship =>
+dimensional_location
+dimensional_characteristic = dimensional_location
+dimensional_characteristic
+dimensional_characteristic <-
+dimensional_characteristic_representation.dimension
+dimensional_characteristic_representation
+dimensional_characteristic_representation.representation ->
+shape_dimension_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Component_termination_passage_template_armx(Component_termination_passage_template_armx, component_termination_passage_template);
+
+mapping_constraints;
+component_termination_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_passage_technology(of_passage_technology, $PATH, Default_component_termination_passage_definition);
+component_termination_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'technology usage'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+passage_technology
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Component_termination_passage_template_interface_terminal(Component_termination_passage_template_interface_terminal, shape_aspect);
+
+mapping_constraints;
+{shape_aspect
+shape_aspect.description =  'component termination passage template interface terminal'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Component_termination_passage_template_join_terminal(Component_termination_passage_template_join_terminal, shape_aspect);
+
+mapping_constraints;
+{shape_aspect
+shape_aspect.description = 'component termination passage template join terminal'}
+
+end_mapping_constraints;
+
+attribute_mapping disallowed_inter_stratum_extent(disallowed_inter_stratum_extent, $PATH, Stratum_technology_occurrence_link_armx);
+shape_aspect
+shape_definition = shape_aspect
+shape_definition 
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'disallowed inter stratum extent'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+stratum_technology_occurrence_relationship =>
+stratum_technology_occurrence_link
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Component_termination_passage_template_terminal(Component_termination_passage_template_terminal, shape_aspect);
+
+mapping_constraints;
+{shape_aspect
+(shape_aspect.description =  'component termination passage template interface terminal')
+(shape_aspect.description =  'component termination passage template join terminal')}
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Component_termination_passage_template_armx);
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+geometric_template =>
+inter_stratum_feature_template =>
+component_termination_passage_template
+
+
+end_attribute_mapping;
+
+attribute_mapping connection_area(connection_area, $PATH, Connection_zone_in_layout_template);
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'connection area'}
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+shape_aspect =>
+instanced_feature
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Continuous_template_armx(Continuous_template_armx, continuous_template);
+
+mapping_constraints;
+continuous_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Copy_stratum_technology_occurrence_relationship_armx(Copy_stratum_technology_occurrence_relationship_armx, copy_stratum_technology_occurrence_relationship);
+
+mapping_constraints;
+				{copy_stratum_technology_occurrence_relationship <=
+        derived_stratum_technology_occurrence_relationship <=
+	      stratum_technology_occurrence_relationship
+    	  [stratum_technology_occurrence_relationship <=
+				property_definition_relationship]
+				[stratum_technology_occurrence_relationship <=
+				property_definition]}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Counterbore_passage_template_armx(Counterbore_passage_template_armx, counterbore_passage_template);
+
+mapping_constraints;
+counterbore_passage_template <=
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping smaller_passage(smaller_passage, $PATH, Unsupported_passage_template_armx);
+counterbore_passage_template <=
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition <-
+product_definition_relationship.relating_product_definition
+product_definition_relationship
+{product_definition_relationship.description = 'smaller passage'}
+product_definition_relationship.related_product_definition ->
+product_definition =>
+part_template_definition =>
+geometric_template =>
+inter_stratum_feature_template =>
+unsupported_passage_template
+
+end_attribute_mapping;
+
+attribute_mapping larger_passage(larger_passage, $PATH, Blind_passage_template_armx);
+counterbore_passage_template <=
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition <-
+product_definition_relationship.relating_product_definition
+product_definition_relationship
+{product_definition_relationship.description = 'larger passage'}
+product_definition_relationship.related_product_definition ->
+product_definition =>
+part_template_definition =>
+geometric_template =>
+inter_stratum_feature_template =>
+unsupported_passage_template =>
+blind_passage_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Countersunk_passage_template_armx(Countersunk_passage_template_armx, countersunk_passage_template);
+
+mapping_constraints;
+countersunk_passage_template <=
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping constant_diameter_passage(constant_diameter_passage, $PATH, Unsupported_passage_template_armx);
+countersunk_passage_template <=
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition <-
+product_definition_relationship.relating_product_definition
+product_definition_relationship
+{product_definition_relationship.description = 'constant diameter passage'}
+product_definition_relationship.related_product_definition ->
+product_definition =>
+part_template_definition =>
+geometric_template =>
+inter_stratum_feature_template =>
+unsupported_passage_template
+
+end_attribute_mapping;
+
+attribute_mapping tapered_passage(tapered_passage, $PATH, Blind_passage_template_armx);
+countersunk_passage_template <=
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition <-
+product_definition_relationship.relating_product_definition
+product_definition_relationship
+{product_definition_relationship.description = 'larger passage'}
+product_definition_relationship.related_product_definition ->
+product_definition =>
+part_template_definition =>
+geometric_template =>
+inter_stratum_feature_template =>
+unsupported_passage_template =>
+blind_passage_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Default_attachment_size_based_land_physical_template_armx(Default_attachment_size_based_land_physical_template_armx, default_attachment_size_based_land_physical_template);
+
+mapping_constraints;
+default_attachment_size_based_land_physical_template <=
+land_physical_template <=
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Default_component_termination_passage_definition(Default_component_termination_passage_definition, passage_technology);
+
+mapping_constraints;
+passage_technology <=
+characterized_object
+{characterized_object
+characterized_object.description = 'default component termination passage definition'}
+
+end_mapping_constraints;
+
+attribute_mapping allowed_component_terminal_extent(allowed_component_terminal_extent, $PATH, Length_tolerance_characteristic);
+passage_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'allowed component terminal extent'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+
+end_attribute_mapping;
+
+attribute_mapping as_finished_passage_extent(as_finished_passage_extent, $PATH, Length_tolerance_characteristic);
+passage_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'as finished passage extent'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+				
+end_attribute_mapping;
+
+attribute_mapping as_finished_deposition_thickness(as_finished_deposition_thickness, $PATH, Length_tolerance_characteristic);
+passage_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'as finished deposition thickness'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Default_passage_based_land_physical_template_armx(Default_passage_based_land_physical_template_armx, default_passage_based_land_physical_template);
+
+mapping_constraints;
+default_passage_based_land_physical_template <=
+land_physical_template <=
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_passage_technology(of_passage_technology, $PATH, Passage_technology_armx);
+default_passage_based_land_physical_template <=
+land_physical_template <=
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'technology usage'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+passage_technology
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Default_plated_passage_based_land_physical_template_armx(Default_plated_passage_based_land_physical_template_armx, default_plated_passage_based_land_physical_template);
+
+mapping_constraints;
+default_plated_passage_based_land_physical_template <=
+default_passage_based_land_physical_template <=
+land_physical_template <=
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Default_unsupported_passage_based_land_physical_template_armx(Default_unsupported_passage_based_land_physical_template_armx, default_unsupported_passage_based_land_physical_template);
+
+mapping_constraints;
+default_unsupported_passage_based_land_physical_template <=
+default_passage_based_land_physical_template <=
+land_physical_template <=
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_passage_technology(of_passage_technology, $PATH, Default_unsupported_passage_definition);
+default_unsupported_passage_based_land_physical_template <=
+default_passage_based_land_physical_template <=
+land_physical_template <=
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'technology usage'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+passage_technology
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Default_unsupported_passage_definition(Default_unsupported_passage_definition, passage_technology);
+
+mapping_constraints;
+passage_technology <=
+characterized_object
+{characterized_object
+characterized_object.description = 'default unsupported passage definition'}
+
+end_mapping_constraints;
+
+attribute_mapping as_finished_passage_extent(as_finished_passage_extent, $PATH, Length_tolerance_characteristic);
+passage_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'as finished passage extent'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Default_tapered_blind_via_definition(Default_tapered_blind_via_definition, passage_technology);
+
+mapping_constraints;
+passage_technology <=
+characterized_object
+{characterized_object
+characterized_object.description = 'default tapered blind via definition'}
+
+end_mapping_constraints;
+
+attribute_mapping as_finished_interior_passage_extent(as_finished_interior_passage_extent, $PATH, Length_tolerance_characteristic);
+passage_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'as finished interior passage extent'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Default_via_definition(Default_via_definition, passage_technology);
+
+mapping_constraints;
+passage_technology <=
+characterized_object
+{characterized_object
+(characterized_object.description = 'default via definition')
+(characterized_object.description = 'default tapered blind via definition')}
+
+end_mapping_constraints;
+
+attribute_mapping as_finished_passage_extent(as_finished_passage_extent, $PATH, Length_tolerance_characteristic);
+passage_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'as finished passage extent'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+				
+end_attribute_mapping;
+
+attribute_mapping as_finished_deposition_thickness(as_finished_deposition_thickness, $PATH, Length_tolerance_characteristic);
+passage_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'as finished deposition thickness'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Derived_stratum_technology_occurrence_relationship_armx(Derived_stratum_technology_occurrence_relationship_armx, derived_stratum_technology_occurrence_relationship);
+
+mapping_constraints;
+				{derived_stratum_technology_occurrence_relationship <=
+	      stratum_technology_occurrence_relationship
+    	  [stratum_technology_occurrence_relationship <=
+				property_definition_relationship]
+				[stratum_technology_occurrence_relationship <=
+				property_definition]}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Design_layer_technology(Design_layer_technology, stratum_technology);
+
+mapping_constraints;
+stratum_technology <=
+characterized_object
+{characterized_object
+characterized_object.description = 'design layer'}
+
+end_mapping_constraints;
+
+attribute_mapping design_layer_purpose(design_layer_purpose, descriptive_representation_item);
+stratum_technology <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.name = 'physical characteristics representation'}
+representation.items[i] ->
+{representation_item
+representation_item.name = 'layer purpose'}
+representation_item =>
+descriptive_representation_item
+{descriptive_representation_item
+(descriptive_representation_item.description = 'power or ground')
+(descriptive_representation_item.description = 'other signal')
+(descriptive_representation_item.description = 'lands only')}
+
+end_attribute_mapping;
+
+attribute_mapping minimum_finished_feature_size(minimum_finished_feature_size, $PATH, length_measure_with_unit);
+stratum_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'minimum finished feature size'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.name = 'physical characteristics representation'}
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping minimum_finished_feature_spacing(minimum_finished_feature_spacing, $PATH, length_measure_with_unit);
+stratum_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'minimum finished feature spacing'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.name = 'physical characteristics representation'}
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Documentation_layer_technology(Documentation_layer_technology, stratum_technology);
+
+mapping_constraints;
+stratum_technology <=
+characterized_object
+{characterized_object
+characterized_object.description = 'documentation layer'}
+
+end_mapping_constraints;
+
+attribute_mapping pre_defined_documentation_layer_purpose(pre_defined_documentation_layer_purpose, $PATH, Predefined_documentation_layer_purpose);
+stratum_technology <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.name = 'physical characteristics representation'}
+representation.items[i] ->
+{representation_item
+representation_item.name = 'layer purpose'}
+representation_item =>
+descriptive_representation_item
+{descriptive_representation_item
+(descriptive_representation_item.description = 'soldermask')
+(descriptive_representation_item.description = 'solderpaste')
+(descriptive_representation_item.description = 'silkscreen')
+(descriptive_representation_item.description = 'generic layer')
+(descriptive_representation_item.description = 'glue')
+(descriptive_representation_item.description = 'gluemask')
+(descriptive_representation_item.description = 'pastemask')
+(descriptive_representation_item.description = 'finish coating')}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping External_source_identification(External_source_identification, applied_external_identification_assignment)
+extended;
+
+attribute_mapping item(item, , Documentation_layer_technology);
+
+				external_identification_item *> ft_external_identification_item
+				ft_external_identification_item = stratum_technology 
+				{stratum_technology <=
+				characterized_object
+				{characterized_object
+				characterized_object.description = 'documentation layer'}}
+end_attribute_mapping;
+
+attribute_mapping item(item, , Design_layer_technology);
+
+				external_identification_item *> ft_external_identification_item
+				ft_external_identification_item = stratum_technology 
+				{stratum_technology <=
+				characterized_object
+				{characterized_object
+				characterized_object.description = 'design layer'}}
+end_attribute_mapping;
+
+attribute_mapping item(item, , Land_physical_template_armx);
+
+				external_identification_item *> ft_external_identification_item
+				ft_external_identification_item = land_physical_template
+			
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Filled_unsupported_passage_template_armx(Filled_unsupported_passage_template_armx, filled_unsupported_passage_template);
+
+mapping_constraints;
+filled_unsupported_passage_template <=
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Inter_stratum_feature_template_armx(Inter_stratum_feature_template_armx, inter_stratum_feature_template);
+
+mapping_constraints;
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_passage_technology(of_passage_technology, $PATH, Passage_technology_armx);
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'technology usage'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+passage_technology
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Inverse_copy_stratum_technology_occurrence_relationship_armx(Inverse_copy_stratum_technology_occurrence_relationship_armx, inverse_copy_stratum_technology_occurrence_relationship);
+
+mapping_constraints;
+			{inverse_copy_stratum_technology_occurrence_relationship <=
+       	derived_stratum_technology_occurrence_relationship <=
+	      stratum_technology_occurrence_relationship
+    	 [stratum_technology_occurrence_relationship <=
+				property_definition_relationship]
+				[stratum_technology_occurrence_relationship <=
+				property_definition]}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Land_physical_template_armx(Land_physical_template_armx, land_physical_template);
+
+mapping_constraints;
+land_physical_template <=
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Land_template_interface_terminal(Land_template_interface_terminal, land_template_terminal);
+
+mapping_constraints;
+land_template_terminal <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'interface terminal'}
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Default_attachment_size_based_land_physical_template_armx);
+land_template_terminal <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+land_physical_template =>
+default_attachment_size_based_land_physical_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Land_template_join_terminal(Land_template_join_terminal, land_template_terminal);
+
+mapping_constraints;
+land_template_terminal <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'join terminal'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Land_template_terminal_armx(Land_template_terminal_armx, land_template_terminal);
+
+mapping_constraints;
+land_template_terminal <=
+shape_aspect
+{shape_aspect
+(shape_aspect.description = 'interface terminal')
+(shape_aspect.description = 'join terminal')}
+
+end_mapping_constraints;
+
+attribute_mapping connection_zone_category(connection_zone_category, shape_aspect_relationship.description);
+land_template_terminal <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'terminal connection zone'}
+shape_aspect_relationship
+shape_aspect_relationship.description
+{(shape_aspect_relationship.description = 'edge curve class')
+(shape_aspect_relationship.description = 'edge point class')
+(shape_aspect_relationship.description =  'surface area class')
+(shape_aspect_relationship.description = 'surface point class')}
+
+end_attribute_mapping;
+
+attribute_mapping connection_area(connection_area, $PATH, Connection_zone_in_layout_template);
+land_template_terminal <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'connection area'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+shape_aspect =>
+instanced_feature
+
+end_attribute_mapping;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Land_physical_template_armx);
+land_template_terminal <=
+shape_aspect					
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+land_physical_template
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Document_assignment(Document_assignment, (applied_document_reference)(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment) *))
+extended;
+
+attribute_mapping is_assigned_to(is_assigned_to, , Stratum_technology_armx);
+(
+						document_reference_item *> ft_document_reference_item
+						ft_document_reference_item = stratum_technology
+					)(
+						document_reference_item *> ft_document_reference_item
+						ft_document_reference_item = stratum_technology
+					)
+end_attribute_mapping;
+
+attribute_mapping is_assigned_to(is_assigned_to, , Passage_technology_armx);
+(
+						document_reference_item *> ft_document_reference_item
+						ft_document_reference_item = passage_technology
+					)(
+						document_reference_item *> ft_document_reference_item
+						ft_document_reference_item = passage_technology
+					)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+(*
+entity_mapping Material_identification(Material_identification, material_designation)
+extended;
+
+attribute_mapping items(items, $PATH, Stratum_technology);
+
+				characterized_definition
+				characterized_definition = characterized_object
+				characterized_object =>
+				stratum_technology
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Material_removal_feature_template_armx(Material_removal_feature_template_armx, material_removal_feature_template);
+
+mapping_constraints;
+material_removal_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Passage_deposition_material_identification_armx(Passage_deposition_material_identification_armx, passage_deposition_material_identification);
+
+mapping_constraints;
+	passage_deposition_material_identification <=
+	material_designation
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Passage_filling_material_identification_armx(Passage_filling_material_identification_armx, passage_filling_material_identification);
+
+mapping_constraints;
+	passage_filling_material_identification <=
+	material_designation
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Passage_technology_armx(Passage_technology_armx, passage_technology);
+
+mapping_constraints;
+passage_technology <=
+characterized_object
+
+end_mapping_constraints;
+
+attribute_mapping plated_passage(plated_passage, $PATH);
+passage_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition.name = 'plated passage'}
+{(property_definition.description = 'true')
+(property_definition.description = 'false')}
+				
+end_attribute_mapping;
+
+attribute_mapping as_finished_passage_extent(as_finished_passage_extent, $PATH, Length_tolerance_characteristic);
+passage_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'as finished passage extent'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+				
+end_attribute_mapping;
+
+attribute_mapping as_finished_deposition_thickness(as_finished_deposition_thickness, $PATH, Length_tolerance_characteristic);
+passage_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'as finished deposition thickness'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+				
+end_attribute_mapping;
+
+attribute_mapping maximum_aspect_ratio(maximum_aspect_ratio, $PATH);
+passage_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'maximum aspect ratio'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item => 
+measure_representation_item <= 
+measure_with_unit => 
+ratio_measure_with_unit <= 
+measure_with_unit
+measure_with_unit.value_component ->
+measure_value 
+measure_value = positive_ratio_measure 
+positive_ratio_measure
+				
+end_attribute_mapping;
+
+attribute_mapping minimum_finished_size(minimum_finished_size, $PATH, length_measure_with_unit);
+passage_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'minimum finished size'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item => 
+measure_representation_item <= 
+measure_with_unit => 
+length_measure_with_unit
+				
+end_attribute_mapping;
+
+attribute_mapping minimum_fabrication_allowance(minimum_fabrication_allowance, $PATH, length_measure_with_unit);
+passage_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'minimum fabrication allowance'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] -> 
+representation_item => 
+measure_representation_item <= 
+measure_with_unit => 
+length_measure_with_unit
+				
+end_attribute_mapping;
+
+(* MADE DERIVED
+attribute_mapping specification(specification, $PATH, Process_specification);
+representation
+document_reference_item = representation
+document_reference_item <-
+applied_document_reference.items[i]
+applied_document_reference
+applied_document_reference <=
+document_reference
+document_reference.assigned_document ->
+document <-
+document_product_association.relating_document
+{document_product_association.name = 'equivalence'}
+document_product_association.related_product ->
+product_or_formation_or_definition = product_definition
+product_definition
+{product_definition.name = 'process specification'}					
+				
+end_attribute_mapping;
+*)
+
+attribute_mapping passage_terminus_condition(passage_terminus_condition, $PATH);
+passage_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition.name = 'passage terminus condition'}
+{(property_definition.description = 'bilateral complete removal')
+(property_definition.description = 'bilateral bond')
+(property_definition.description = 'unilateral bond')}
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping requirement_assignment_armx(requirement_assignment_armx, requirement_assignment)
+extended;
+
+attribute_mapping assigned_to(assigned_to, , Passage_technology_armx);
+
+					requirement_assigned_item *> ft_requirement_assigned_item
+					ft_requirement_assigned_item = passage_technology
+				
+end_attribute_mapping;
+
+attribute_mapping assigned_to(assigned_to, , Stratum_technology_armx);
+
+					requirement_assigned_item *> ft_requirement_assigned_item
+					ft_requirement_assigned_item = stratum_technology
+				
+end_attribute_mapping;
+
+attribute_mapping assigned_to(assigned_to, , Stratum_technology_occurrence_armx);
+
+					requirement_assigned_item *> ft_requirement_assigned_item
+					ft_requirement_assigned_item = stratum_technology_occurrence
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Single_stratum_continuous_template_armx(Single_stratum_continuous_template_armx, single_stratum_continuous_template);
+
+mapping_constraints;
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Single_stratum_template_armx(Single_stratum_template_armx, single_stratum_template);
+
+mapping_constraints;
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Stratum_feature_template_armx(Stratum_feature_template_armx, stratum_feature_template);
+
+mapping_constraints;
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Stratum_surface_technology_armx(Stratum_surface_technology_armx, stratum_surface_technology);
+
+mapping_constraints;
+stratum_surface_technology <=
+shape_aspect
+end_mapping_constraints;
+
+attribute_mapping associated_technology(associated_technology, $PATH, Stratum_technology_armx);
+stratum_surface_technology <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+stratum_technology
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Stratum_technology_armx(Stratum_technology_armx, stratum_technology);
+
+mapping_constraints;
+[stratum_technology <=
+characterized_object]
+[stratum_technology <=
+product_definition_shape]
+
+end_mapping_constraints;
+
+attribute_mapping minimum_aspect_ratio(minimum_aspect_ratio, $PATH);
+stratum_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'minimum aspect ratio'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item => 
+measure_representation_item <= 
+measure_with_unit => 
+ratio_measure_with_unit <= 
+measure_with_unit
+measure_with_unit.value_component ->
+measure_value 
+measure_value = positive_ratio_measure 
+positive_ratio_measure
+				
+end_attribute_mapping;
+
+attribute_mapping laminate_stiffness_class(laminate_stiffness_class, descriptive_representation_item);
+stratum_technology <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.name = 'physical characteristics representation'}
+representation.items[i] ->
+{representation_item
+representation_item.name = 'laminate stiffness class'}
+representation_item =>
+descriptive_representation_item
+{descriptive_representation_item
+(descriptive_representation_item.description = 'fluid like with constant thickness')
+(descriptive_representation_item.description = 'fluid like with varying thickness')
+(descriptive_representation_item.description = 'stiff laminate')}
+
+end_attribute_mapping;
+
+attribute_mapping name(name, characterized_object.name);
+stratum_technology <=
+characterized_object
+characterized_object.name
+
+end_attribute_mapping;
+
+attribute_mapping layer_position(layer_position, descriptive_representation_item);
+stratum_technology <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.name = 'physical characteristics representation'}
+representation.items[i] ->
+{representation_item
+representation_item.name = 'layer position'}
+representation_item =>
+descriptive_representation_item
+{descriptive_representation_item
+(descriptive_representation_item.description = 'secondary')
+(descriptive_representation_item.description = 'all')
+(descriptive_representation_item.description = 'external')
+(descriptive_representation_item.description = 'primary')
+(descriptive_representation_item.description = 'internal')}
+
+end_attribute_mapping;
+
+attribute_mapping maximum_feature_size_requirement(maximum_feature_size_requirement, $PATH, length_measure_with_unit);
+stratum_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'maximum feature size requirement'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.name = 'physical characteristics representation'}
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping stratum_thickness(stratum_thickness, $PATH, Length_tolerance_characteristic);
+stratum_technology <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.description = 'length tolerance'}
+
+end_attribute_mapping;
+
+attribute_mapping minimum_finished_feature_size(minimum_finished_feature_size, $PATH, length_measure_with_unit);
+stratum_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'minimum finished feature size'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.name = 'physical characteristics representation'}
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping minimum_finished_feature_spacing(minimum_finished_feature_spacing, $PATH, length_measure_with_unit);
+stratum_technology <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'minimum finished feature spacing'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.name = 'physical characteristics representation'}
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+(* MADE DERIVED
+attribute_mapping specification(specification, $PATH, Process_specification);
+stratum_technology <=
+characterized_object
+document_reference_item = characterized_object
+document_reference_item <-
+applied_document_reference.items[i]
+applied_document_reference
+applied_document_reference <=
+document_reference
+document_reference.assigned_document ->
+document <-
+document_product_association.relating_document
+{document_product_association.name = 'equivalence'}
+document_product_association.related_product ->
+product_or_formation_or_definition = product_definition
+product_definition
+{product_definition.name = 'process specification'}
+
+end_attribute_mapping;
+
+attribute_mapping surface_specification(surface_specification, $PATH, Surface_finish_specification);
+stratum_technology <=
+characterized_object
+document_reference_item = characterized_object
+document_reference_item <-
+applied_document_reference.items[i]
+applied_document_reference
+applied_document_reference <=
+document_reference
+document_reference.assigned_document ->
+document <-
+document_product_association.relating_document
+{document_product_association.name = 'equivalence'}
+document_product_association.related_product ->
+product_or_formation_or_definition = product_definition
+product_definition
+{product_definition.name = 'surface finish specification'}
+
+end_attribute_mapping;
+*)
+end_entity_mapping;
+
+entity_mapping Stratum_technology_occurrence_armx(Stratum_technology_occurrence_armx, stratum_technology_occurrence);
+
+mapping_constraints;
+{stratum_technology_occurrence <=
+property_definition}
+
+end_mapping_constraints;
+
+attribute_mapping name(name, property_definition.name);
+stratum_technology_occurrence <=
+property_definition
+property_definition.name
+
+end_attribute_mapping;
+(* It comes from AIM
+attribute_mapping definition(definition, $PATH, Stratum_technology_armx);
+stratum_technology_occurrence <=
+property_definition_relationship
+property_definition_relationship.related_property_definition ->
+property_definition =>
+product_definition_shape =>
+stratum_technology
+
+end_attribute_mapping;
+*)
+
+attribute_mapping primary(primary, $PATH, Stratum_surface_technology_armx);
+stratum_technology_occurrence <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'primary'}
+property_definition_relationship.relating_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition = shape_aspect
+shape_aspect =>
+stratum_surface_technology
+
+end_attribute_mapping;
+
+attribute_mapping rotation(rotation, $PATH, plane_angle_measure_with_unit);
+stratum_technology_occurrence <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+plane_angle_measure_with_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Stratum_technology_occurrence_link_armx(Stratum_technology_occurrence_link_armx, stratum_technology_occurrence_link);
+
+mapping_constraints;
+			{stratum_technology_occurrence_link <=
+	      stratum_technology_occurrence_relationship
+    	 [stratum_technology_occurrence_relationship <=
+				property_definition_relationship]
+				[stratum_technology_occurrence_relationship <=
+				property_definition]}
+end_mapping_constraints;
+
+attribute_mapping base_stratum_technology_occurrence(base_stratum_technology_occurrence, $PATH);
+stratum_technology_occurrence_link <=
+stratum_technology_occurrence_relationship <=
+property_definition
+property_definition.name
+{(property_definition.name = 'independent')
+(property_definition.name = 'precedent')
+(property_definition.name = 'subsequent')}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Stratum_technology_occurrence_relationship_armx(Stratum_technology_occurrence_relationship_armx, stratum_technology_occurrence_relationship);
+
+mapping_constraints;
+			{[stratum_technology_occurrence_relationship <=
+				property_definition_relationship]
+				[stratum_technology_occurrence_relationship <=
+				property_definition]}
+end_mapping_constraints;
+
+attribute_mapping sto_1(sto_1, $PATH, Stratum_technology_occurrence_armx);
+stratum_technology_occurrence_relationship <=
+property_definition_relationship
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+stratum_technology_occurrence
+
+end_attribute_mapping;
+
+attribute_mapping sto_2(sto_2, $PATH, Stratum_technology_occurrence_armx);
+stratum_technology_occurrence_relationship <=
+property_definition_relationship
+property_definition_relationship.related_property_definition ->
+property_definition =>
+stratum_technology_occurrence
+
+end_attribute_mapping;
+
+attribute_mapping scope(scope, $PATH, Stratum_stack_model_armx);
+stratum_technology_occurrence_relationship <=
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition = product_definition
+product_definition =>
+part_template_definition =>
+stratum_stack_model
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*
+entity_mapping Stratum_technology_occurrence_feature_constraint_armx(Stratum_technology_occurrence_feature_constraint_armx, stratum_technology_occurrence_feature_constraint);
+
+mapping_constraints;
+{stratum_technology_occurrence_feature_constraint <=
+stratum_technology_occurrence_relationship <=
+property_definition_relationship}
+end_mapping_constraints;
+
+attribute_mapping difference_distance(difference_distance, $PATH, length_measure_with_unit);
+stratum_technology_occurrence_feature_constraint <=
+stratum_technology_occurrence_relationship <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.name = 'difference distance'}
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping intersection_distance(intersection_distance, $PATH, length_measure_with_unit);
+stratum_technology_occurrence_feature_constraint <=
+stratum_technology_occurrence_relationship <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.name = 'intersection distance'}
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Stratum_technology_occurrence_swap_relationship_armx(Stratum_technology_occurrence_swap_relationship_armx, stratum_technology_occurrence_swap_relationship);
+
+mapping_constraints;
+{stratum_technology_occurrence_swap_relationship <=
+stratum_technology_occurrence_relationship <=
+property_definition_relationship}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Stratum_technology_swap_relationship_armx(Stratum_technology_swap_relationship_armx, stratum_technology_swap_relationship);
+
+mapping_constraints;
+{stratum_technology_swap_relationship <=
+property_definition_relationship}
+end_mapping_constraints;
+
+attribute_mapping primary_stratum_technology(primary_stratum_technology, $PATH, Stratum_technology_armx);
+stratum_technology_swap_relationship <=
+property_definition_relationship
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+stratum_technology
+
+end_attribute_mapping;
+
+attribute_mapping secondary_stratum_technology(secondary_stratum_technology, $PATH, Stratum_technology_armx);
+stratum_technology_swap_relationship <=
+property_definition_relationship
+property_definition_relationship.related_property_definition ->
+property_definition =>
+product_definition_shape =>
+stratum_technology
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Stratum_stack_model_armx(Stratum_stack_model_armx, stratum_stack_model);
+
+mapping_constraints;
+{stratum_stack_model <=
+part_template_definition <=
+product_definition}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Unsupported_passage_template_armx(Unsupported_passage_template_armx, unsupported_passage_template);
+
+mapping_constraints;
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_passage_technology(of_passage_technology, $PATH, Default_unsupported_passage_definition);
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'technology usage'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+passage_technology
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Usage_concept_usage_relationship_armx(Usage_concept_usage_relationship_armx, usage_concept_usage_relationship)
+extended;
+
+attribute_mapping associated_usage(associated_usage, $PATH, Land_template_terminal_armx);
+
+usage_concept_usage_relationship <=
+item_identified_representation_usage
+item_identified_representation_usage.definition ->
+represented_definition 
+represented_definition = shape_aspect                
+shape_aspect
+shape_aspect => 
+land_template_terminal
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Via_template_armx(Via_template_armx, via_template);
+
+mapping_constraints;
+via_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_passage_technology(of_passage_technology, $PATH, Default_via_definition);
+via_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'technology usage'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+passage_technology
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Via_template_terminal(Via_template_terminal, shape_aspect);
+
+mapping_constraints;
+{shape_aspect
+shape_aspect.description = 'via template terminal'}
+
+end_mapping_constraints;
+
+attribute_mapping connection_area(connection_area, $PATH, Connection_zone_in_layout_template);
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'connection area'}
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+shape_aspect =>
+instanced_feature
+
+
+end_attribute_mapping;
+
+attribute_mapping disallowed_inter_stratum_extent(disallowed_inter_stratum_extent, $PATH, Stratum_technology_occurrence_link_armx);
+shape_aspect
+shape_definition = shape_aspect
+shape_definition 
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'disallowed inter stratum extent'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+stratum_technology_occurrence_relationship =>
+stratum_technology_occurrence_link
+
+
+end_attribute_mapping;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Via_template_armx);
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+geometric_template =>
+inter_stratum_feature_template =>
+via_template
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+(*end_schema_mapping;*)

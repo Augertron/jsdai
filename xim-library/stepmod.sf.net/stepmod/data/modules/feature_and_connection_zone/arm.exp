@@ -1,0 +1,49 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3960 - ISO/TS 10303-1671 Feature and connection zone - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3408
+*)
+
+SCHEMA Feature_and_connection_zone_arm; 
+    USE FROM Shape_feature_arm; -- new
+	USE FROM Surface_conditions_arm; -- new
+	
+REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
+
+  ENTITY Connection_zone
+  	ABSTRACT SUPERTYPE
+  	SUBTYPE OF (Shape_feature_occurrence);
+   DERIVE
+      surface_conditions : SET OF Surface_condition := 
+	       bag_to_set(USEDIN(SELF,'SURFACE_CONDITIONS_ARM.SURFACE_CONDITION_ASSOCIATION.DESCRIBED_ELEMENT'));
+    WHERE
+      WR1 : (SIZEOF(USEDIN(SELF, 'FEATURE_AND_CONNECTION_ZONE_ARM.FEATURE_DEFINITION_WITH_CONNECTION_AREA.CONNECTION_AREA')) +
+             SIZEOF(USEDIN(SELF, 'FEATURE_AND_CONNECTION_ZONE_ARM.SHAPE_FEATURE.CONNECTION_AREA')))
+            = 1;
+      WR2 : NOT EXISTS (SELF\Shape_element.description);
+      WR3 : NOT EXISTS (SELF\Shape_element.element_name);
+  END_ENTITY;
+
+  ENTITY Feature_definition_with_connection_area
+    SUBTYPE OF (Shape_feature_definition);
+    connection_area : SET [1:?] OF Connection_zone;
+  END_ENTITY;
+
+  ENTITY Location_shape_model
+    SUBTYPE OF (Geometric_model);
+  END_ENTITY;
+  
+  ENTITY Shape_feature
+  	ABSTRACT SUPERTYPE
+       SUBTYPE OF (Shape_element);
+   		connection_area : OPTIONAL SET[1:?] OF Connection_zone;
+   		SELF\Shape_element.element_name : STRING;
+   DERIVE
+      surface_conditions : SET OF Surface_condition := 
+	         bag_to_set(USEDIN(SELF,'SURFACE_CONDITIONS_ARM.SURFACE_CONDITION_ASSOCIATION.DESCRIBED_ELEMENT'));		
+    UNIQUE
+      UR1 : SELF\Shape_element.element_name, 
+      SELF\shape_element.containing_shape;
+  END_ENTITY;
+
+END_SCHEMA;

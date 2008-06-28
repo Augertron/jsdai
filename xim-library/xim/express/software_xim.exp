@@ -1,0 +1,73 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Software - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+
+
+SCHEMA Software_xim;
+
+USE FROM Document_definition_xim;
+USE FROM Information_product_xim;
+
+REFERENCE FROM product_identification_xim(          -- ISO/TS 10303-1017 
+        types_of_product 
+); 
+
+  ENTITY Software 
+    (* CONNOTATIONAL *) SUBTYPE OF (Information_product);
+    UNIQUE 
+      UR1: SELF\product.id;
+    WHERE 
+      WR1 : SIZEOF(['software', 'information'] IN types_of_product(SELF)) = 2;
+  END_ENTITY;
+
+  ENTITY Software_definition 
+    (* CONNOTATIONAL *) SUBTYPE OF (Information_definition);
+    SELF\Product_definition.formation : Software_version;
+  END_ENTITY;
+
+  ENTITY Software_version
+    (* CONNOTATIONAL *) SUBTYPE OF (Information_version);
+    SELF\product_definition_formation.of_product : Software;
+  END_ENTITY;
+
+RULE software_version_constraint FOR 
+(product_definition_formation);
+WHERE
+  WR1: SIZEOF ( QUERY ( pv <* Software_version | ( NOT ( 'SOFTWARE_XIM.' + 'SOFTWARE_VERSION' IN TYPEOF ( pv) ) ) AND ( 'SOFTWARE_xim.' + 'SOFTWARE' IN TYPEOF ( pv.of_product) ) ) ) =0 ;
+END_RULE; 
+
+
+RULE software_definition_constraint FOR 
+(Product_definition);
+WHERE
+  WR1: SIZEOF ( QUERY ( pvd <* Product_definition | ( NOT ( 'SOFTWARE_XIM.' + 'SOFTWARE_DEFINITION' IN TYPEOF (pvd) ) ) AND ( 'SOFTWARE_xim.' + 'SOFTWARE_VERSION' IN TYPEOF ( pvd.formation) ) ) ) =0 ;
+END_RULE; 
+
+END_SCHEMA;
+
+

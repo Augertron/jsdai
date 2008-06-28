@@ -1,0 +1,66 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3825 - ISO/TS 10303-1601 Altered package - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3282
+*)
+
+SCHEMA Altered_package_arm;
+
+	USE FROM Package_arm;	-- ISO/TS 10303-1707
+
+	REFERENCE FROM Specification_document_arm(get_document_definition);	-- ISO/TS 10303-1747
+
+	TYPE ap_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
+	   (Surface_prepped_terminal);
+	END_TYPE; 
+
+ 	TYPE ap_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH  
+		(Altered_package);
+	END_TYPE;
+
+  TYPE predefined_geometric_status = ENUMERATION OF
+    (undefined,
+     standard_datum_condition,
+     perpendicular_primary_datum_axis,
+     perpendicular_primary_datum_plane);
+  END_TYPE;
+
+  ENTITY Altered_package
+    SUBTYPE OF (Package);
+      of_geometric_status          : OPTIONAL predefined_geometric_status;
+      modified_terminal_separation : OPTIONAL Length_data_element;
+      package_to_be_altered        : Package;
+    INVERSE
+	  of_external_geometric_status : SET [0:1] OF External_source_identification FOR item;      
+	WHERE
+	  WR1: (EXISTS (of_geometric_status)) XOR ((SIZEOF(of_external_geometric_status)) = 1);
+	  WR2: NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+  ENTITY Altered_package_terminal
+    ABSTRACT SUPERTYPE OF ((shape_formed_terminal ANDOR
+ Surface_prepped_terminal) ANDOR
+ Length_trimmed_terminal)
+    SUBTYPE OF (Package_terminal);
+      terminal_to_be_altered                  : Package_terminal;
+      SELF\Part_feature.associated_definition : Altered_package;
+  END_ENTITY;
+
+  ENTITY Length_trimmed_terminal
+    SUBTYPE OF (Altered_package_terminal);
+      trimmed_length : Length_tolerance_characteristic;
+  END_ENTITY;
+
+  ENTITY Shape_formed_terminal
+    SUBTYPE OF (Altered_package_terminal);
+  END_ENTITY;
+
+  ENTITY Surface_prepped_terminal
+    SUBTYPE OF (Altered_package_terminal);
+	DERIVE
+	  surface_preparation: SET[1:1] OF Document_definition :=
+  			get_document_definition(SELF, 'surface preparation', 
+  			'SPECIFICATION_DOCUMENT_ARM.SURFACE_FINISH_SPECIFICATION');
+  END_ENTITY;
+
+END_SCHEMA;

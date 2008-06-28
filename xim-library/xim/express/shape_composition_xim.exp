@@ -1,0 +1,88 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Shape composition - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Shape_composition_xim; 
+
+USE FROM Shape_property_assignment_xim; 
+
+USE FROM Shape_composition_mim;
+	
+USE FROM shape_aspect_definition_schema(composite_shape_aspect);
+
+USE FROM shape_dimension_schema(dimensional_location);
+
+  ENTITY Composite_group_shape_element
+    (* CONNOTATIONAL *) SUBTYPE OF (Composite_shape_element, composite_group_shape_aspect);
+  END_ENTITY;
+
+  ENTITY Composite_shape_element
+    ABSTRACT SUPERTYPE OF (ONEOF (Composite_group_shape_element,
+ Composite_unit_shape_element))
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element, composite_shape_aspect);
+    INVERSE
+      composing_relationships : SET[2:?] OF shape_element_composing_relationship FOR relating;
+  END_ENTITY;
+
+  ENTITY Composite_unit_shape_element
+    (* CONNOTATIONAL *) SUBTYPE OF (Composite_shape_element, composite_unit_shape_aspect);
+  END_ENTITY;
+
+  ENTITY Shape_element_boundary_relationship
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_relationship);
+    DERIVE
+      SELF\Shape_element_relationship.relation_type : STRING := '';
+  END_ENTITY;
+
+  ENTITY Shape_element_composing_relationship
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_constituent_relationship);
+      SELF\Shape_element_relationship.relating : Composite_shape_element;
+  END_ENTITY;
+
+  ENTITY Shape_element_constituent_relationship
+    SUPERTYPE OF (Shape_element_composing_relationship)
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_relationship);
+    DERIVE
+      SELF\Shape_element_relationship.relation_type : STRING := '';
+    UNIQUE
+      UR1 : related, relating;
+    WHERE
+      WR1 : SELF\Shape_element_relationship.related <> SELF\Shape_element_relationship.relating;
+  END_ENTITY;
+
+  ENTITY Shape_element_locating_relationship
+		(* CONNOTATIONAL *) SUBTYPE OF (Shape_element_constituent_relationship, dimensional_location);
+      SELF\Shape_element_relationship.relating RENAMED locating_shape_element	: Shape_element;
+      SELF\Shape_element_relationship.related RENAMED located_shape_element		: Shape_element;
+    UNIQUE
+      UR1 : located_shape_element,
+ locating_shape_element;
+  END_ENTITY;
+
+END_SCHEMA;
+
+

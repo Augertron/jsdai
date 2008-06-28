@@ -1,0 +1,30 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4296 - ISO/TS 10303-1765 Characterizable object - EXPRESS ARM
+*)
+
+SCHEMA Characterizable_object_arm;
+
+ENTITY Characterizable_object;
+  name : STRING;
+  description : OPTIONAL STRING;
+END_ENTITY;
+
+  FUNCTION bag_to_set(
+    the_bag : BAG OF GENERIC : intype
+  ) : SET OF GENERIC : intype;
+
+    LOCAL
+      the_set : SET OF GENERIC : intype := [];
+      i       : INTEGER;
+    END_LOCAL;
+
+    IF SIZEOF(the_bag) > 0 THEN
+      REPEAT i := 1 TO HIINDEX(the_bag);
+        the_set := the_set + the_bag[i];
+      END_REPEAT;
+    END_IF;
+    RETURN(the_set);
+  END_FUNCTION;
+
+END_SCHEMA;

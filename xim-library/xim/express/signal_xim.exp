@@ -1,0 +1,83 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Signal - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Signal_xim;
+
+USE FROM Characteristic_xim;
+
+USE FROM Signal_mim;
+
+USE FROM material_property_definition_schema(property_definition_relationship);
+
+USE FROM product_property_definition_schema(
+  property_definition,
+  characterized_definition);
+
+USE FROM presentation_appearance_schema(styled_item);
+
+USE FROM external_reference_schema(externally_defined_item);
+
+-- the same extension is available via mim
+-- 	TYPE s_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH  
+--		(Composite_signal_property_relationship_armx,
+--		Signal_property,
+--		Signal);
+--	END_TYPE;
+
+  ENTITY Composite_signal_property
+    (* CONNOTATIONAL *) SUBTYPE OF (Signal_property);
+    INVERSE
+      signal_property_structure : SET[1:?] OF composite_signal_property_relationship_armx FOR composition;
+  END_ENTITY;
+
+  ENTITY Composite_signal_property_relationship_armx
+      (* CONNOTATIONAL *) SUBTYPE OF (composite_signal_property_relationship);
+      SELF\property_definition_relationship.relating_property_definition RENAMED composition												: Composite_signal_property;
+      SELF\property_definition_relationship.related_property_definition RENAMED signal_property_structural_element 	: Signal_property;
+    DERIVE
+      SELF\property_definition.description : text := ?;
+      SELF\property_definition.definition : characterized_definition := ?;
+      SELF\property_definition.name : label := ?;
+    INVERSE
+      aggregation_operation								: External_source_identification FOR items;
+  END_ENTITY;
+
+  ENTITY Signal_property
+    SUPERTYPE OF (Composite_signal_property)
+    (* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      signal_property_representation 																		: Characteristic_data_table;
+      SELF\property_definition.definition RENAMED characterized_signal  : Signal;
+    DERIVE
+      SELF\property_definition.description : text := ?;
+      SELF\property_definition.name : label := ?;
+    INVERSE
+      signal_property_category				: External_source_identification FOR items;
+  END_ENTITY;
+
+END_SCHEMA;
+

@@ -1,0 +1,52 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N2970 - ISO/TS 10303-1040 Process property assignment - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Process_property_assignment_xim; 
+
+USE FROM Activity_xim;    -- ISO/TS 10303-1047
+
+USE FROM Foundation_representation_xim;    -- ISO/TS 10303-1006
+
+USE FROM Independent_property_xim;    -- ISO/TS 10303-1036
+
+USE FROM process_property_assignment_mim;   -- ISO 10303-49
+
+(* XIM specific USE FROM - that it is why selective **)
+USE FROM Property_assignment_xim(property_value_select);
+
+ENTITY Applied_independent_activity_property
+  SUBTYPE OF (action_property);
+  base_element_property : general_property;
+  (** Added in XIMs only in order to simplify model and avoid Activity_property_representation, representation, etc. **)
+  representation : OPTIONAL property_value_select;
+DERIVE
+  SELF\action_property.name : STRING := base_element_property.name;
+END_ENTITY;
+
+END_SCHEMA;  -- Process_property_assignment_xim
+

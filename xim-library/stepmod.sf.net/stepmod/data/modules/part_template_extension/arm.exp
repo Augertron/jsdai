@@ -1,0 +1,192 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4101 - ISO/TS 10303-1718 Part template extension - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3525
+*)
+
+SCHEMA Part_template_extension_arm;
+
+    USE FROM Layered_2d_shape_arm;	-- ISO/TS 10303-1693
+    USE FROM Fill_area_style_arm; -- ISO/TS 10303-1672
+	USE FROM Fabrication_technology_arm;	-- ISO/TS 10303-1670
+	USE FROM Text_representation_arm;	-- ISO/TS 10303-1750
+
+  TYPE extend_or_chord_2_extend_or_truncate_or_round = ENUMERATION OF
+    (truncate,
+     chord_2_extend,
+     round,
+     extend);
+  END_TYPE;
+
+  TYPE extend_or_truncate = ENUMERATION OF
+    (truncate,
+     extend);
+  END_TYPE;
+
+	SUBTYPE_CONSTRAINT inter_stratum_feature_template_subtypes FOR Inter_stratum_feature_template;         
+	    (ONEOF (Component_termination_passage_template,
+		 Via_template,
+		 Unsupported_passage_template,
+		 Inter_stratum_feature_edge_segment_template,
+		 Inter_stratum_feature_edge_template));
+	END_SUBTYPE_CONSTRAINT;        
+
+  TYPE square_or_round = ENUMERATION OF
+    (square,
+     round);
+  END_TYPE;
+
+ SUBTYPE_CONSTRAINT pte_template_definition_subtypes FOR Template_definition;   
+ 	(ONEOF (Parametric_template,
+ 	Part_string_template,
+    Part_text_template));
+ END_SUBTYPE_CONSTRAINT;  
+
+  ENTITY Curve_style_parameters
+  	ABSTRACT SUPERTYPE OF(ONEOF(Closed_curve_style_parameters, Curve_style_parameters_with_ends));
+      name              : STRING;
+      corner_style      : extend_or_chord_2_extend_or_truncate_or_round;
+      curve_width       : Length_data_element;
+      width_uncertainty : Length_data_element;
+    UNIQUE
+      UR1 : name;
+  END_ENTITY;
+
+  ENTITY Closed_curve_style_parameters
+    SUBTYPE OF (Curve_style_parameters);
+  END_ENTITY;
+
+  ENTITY Curve_style_parameters_with_ends
+    SUBTYPE OF (Curve_style_parameters);
+      end_extension     : extend_or_truncate;
+      end_style         : square_or_round;
+  END_ENTITY;
+
+  ENTITY Default_trace_template
+    SUBTYPE OF (Trace_template);
+      of_stratum_technology : Stratum_technology;
+  END_ENTITY;
+
+  ENTITY Fill_area_template
+   SUBTYPE OF (Parametric_template);
+    fill_area_style : OPTIONAL fill_area_style_select;
+    outer_boundary_style : Closed_curve_style_parameters;
+    inner_boundary_style : Closed_curve_style_parameters;
+  END_ENTITY;
+
+  ENTITY Inter_stratum_feature_edge_segment_template
+    SUBTYPE OF (Inter_stratum_feature_template);
+      composed_edge  : Inter_stratum_feature_edge_template;
+      start_vertex   : Edge_segment_vertex;
+      end_vertex     : Edge_segment_vertex;
+      reference_path : Trimmed_curve;
+    WHERE
+      WR1 : EXISTS(reference_path.start_point) AND 
+            EXISTS(reference_path.end_point);
+      WR2 : start_vertex :<>: end_vertex;
+  END_ENTITY;
+
+  ENTITY Inter_stratum_feature_edge_template
+    SUBTYPE OF (Inter_stratum_feature_template);
+    INVERSE
+      edges : SET[2:?] OF inter_stratum_feature_edge_segment_template FOR composed_edge;
+  END_ENTITY;
+  
+  ENTITY Parametric_template
+    ABSTRACT SUPERTYPE OF (ONEOF (Fill_area_template,
+      Teardrop_template,
+      Trace_template))
+    SUBTYPE OF (Template_definition);
+  END_ENTITY;
+
+  ENTITY Part_string_template
+    SUBTYPE OF (Template_definition);
+      string_alignment : text_alignment;
+  END_ENTITY;
+
+  ENTITY Part_text_template
+    SUBTYPE OF (Template_definition);
+      of_character                            : Character_glyph_symbol;    
+  END_ENTITY;
+
+  ENTITY Planar_path_shape_model_with_parameters
+    SUBTYPE OF (Single_area_csg_2d_model);
+      centreline : Curve;
+      parameters : Curve_style_parameters;
+    WHERE
+      WR1: SIZEOF(QUERY(it <* SELF\Representation.items |
+      ('EXTENDED_BASIC_GEOMETRY_ARM.AXIS_PLACEMENT_2D' IN TYPEOF(it))
+                )) = 1;
+      WR2: SIZEOF(QUERY(it <* SELF\Representation.items |   
+      ('EXTENDED_BASIC_GEOMETRY_ARM.AXIS_PLACEMENT_2D' IN TYPEOF(it)) AND
+      NOT
+      ((it\Axis_placement.origin\Cartesian_point.coordinates[1] = 0.0) AND
+      (it\Axis_placement.origin\Cartesian_point.coordinates[2] = 0.0) AND
+      (it\Axis_placement.x_axis\Direction.coordinates[1] = 1.0) AND
+      (it\Axis_placement.x_axis\Direction.coordinates[2] = 0.0))
+                )) = 0;                
+  END_ENTITY;
+
+  ENTITY Planar_closed_path_shape_model_with_parameters
+    SUBTYPE OF (Planar_path_shape_model_with_parameters);
+      SELF\Planar_path_shape_model_with_parameters.centreline : Closed_curve;
+      SELF\Planar_path_shape_model_with_parameters.parameters : Closed_curve_style_parameters;
+  END_ENTITY;
+
+  ENTITY Solid_character_glyph_2d_symbol
+    SUBTYPE OF (Character_glyph_symbol, Csg_2d_model);
+  END_ENTITY;
+  
+  ENTITY Snowball_template
+    SUBTYPE OF (Teardrop_template);
+      snowball_start_distance     : Length_data_element;
+      snowball_end_distance       : OPTIONAL Length_data_element;
+      snowball_initial_spacing    : OPTIONAL Length_data_element;
+      snowball_end_spacing        : OPTIONAL Length_data_element;
+      snowball_initial_radius     : Length_data_element;
+      snowball_end_radius         : OPTIONAL Length_data_element;
+      snowball_quantity_per_trace : INTEGER; -- positive_integer;
+    WHERE
+      WR1 : NOT (snowball_quantity_per_trace > 1) OR (EXISTS(snowball_initial_spacing) AND EXISTS(snowball_end_spacing) AND EXISTS(snowball_end_distance) AND EXISTS(snowball_end_radius));
+      WR2 : (SIZEOF(USEDIN(SELF,'PART_TEMPLATE_SHAPE_WITH_PARAMETERS_ARM.PART_TEMPLATE_SHAPE_MODEL.' + 'SHAPE_CHARACTERIZED_DEFINITION')) = 0);
+      WR3 : NOT EXISTS(SELF\Product_view_definition.additional_characterization);
+  END_ENTITY;
+
+  ENTITY Teardrop_by_angle_template
+    SUBTYPE OF (Teardrop_template);
+      teardrop_angle : Angle_data_element;
+    WHERE
+      WR1 : (SIZEOF(USEDIN(SELF,'PART_TEMPLATE_SHAPE_WITH_PARAMETERS_ARM.PART_TEMPLATE_SHAPE_MODEL.' + 'SHAPE_CHARACTERIZED_DEFINITION')) = 0);
+      WR2 : NOT EXISTS(SELF\Product_view_definition.additional_characterization);
+  END_ENTITY;
+
+  ENTITY Teardrop_by_length_template
+    SUBTYPE OF (Teardrop_template);
+      teardrop_taper_start_distance : Length_data_element;
+      teardrop_taper_end_distance   : Length_data_element;
+   WHERE
+      WR1 : (SIZEOF(USEDIN(SELF,'PART_TEMPLATE_SHAPE_WITH_PARAMETERS_ARM.PART_TEMPLATE_SHAPE_MODEL.' + 'SHAPE_CHARACTERIZED_DEFINITION')) = 0);
+      WR2 : NOT EXISTS(SELF\Product_view_definition.additional_characterization);
+  END_ENTITY;
+
+  ENTITY Teardrop_template
+    SUPERTYPE OF (ONEOF (Snowball_template,
+      Teardrop_by_angle_template,
+      Teardrop_by_length_template))
+    SUBTYPE OF (Parametric_template, Single_stratum_template);
+    WHERE
+      WR1 : (SIZEOF(['PART_TEMPLATE_EXTENSION_ARM.SNOWBALL_TEMPLATE',
+            'PART_TEMPLATE_EXTENSION_ARM.TEARDROP_BY_ANGLE_TEMPLATE',
+            'PART_TEMPLATE_EXTENSION_ARM.TEARDROP_BY_LENGTH_TEMPLATE'] * TYPEOF(SELF)) = 1) XOR
+            ('PRODUCT_IDENTIFICATION_EXTENSION_ARM.EXTERNALLY_DEFINED_VIEW_DEFINITION' IN TYPEOF(SELF));
+  END_ENTITY;
+
+  ENTITY Trace_template
+    SUPERTYPE OF (Default_trace_template)
+    SUBTYPE OF (Parametric_template);
+      trace_style : Curve_style_parameters;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+END_SCHEMA;

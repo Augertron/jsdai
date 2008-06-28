@@ -1,0 +1,512 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping functional_decomposition_to_design(Functional_decomposition_to_design_arm, Functional_decomposition_to_design_mim);*)
+
+
+entity_mapping Component_swap_specification(Component_swap_specification, design_object_management_relationship_action);
+
+mapping_constraints;
+design_object_management_relationship_action <= 
+action
+{action.name = 'change'}
+
+end_mapping_constraints;
+
+attribute_mapping current_design_object(current_design_object, $PATH, Design_functional_unit_allocation_to_assembly_component);
+design_object_management_relationship_action <= 
+action <-
+action_assignment.assigned_action
+action_assignment => design_object_management_assignment 
+{design_object_management_assignment =>
+current_design_object_assignment}
+design_object_management_assignment.items ->
+managed_design_object
+managed_design_object = product_definition_relationship
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name =  'design functional unit allocation to assembly component'}
+
+end_attribute_mapping;
+
+attribute_mapping previous_design_object(previous_design_object, $PATH, Design_functional_unit_allocation_to_assembly_component);
+design_object_management_relationship_action <= 
+action <-
+action_assignment.assigned_action
+action_assignment => design_object_management_assignment 
+{design_object_management_assignment =>
+previous_design_object_assignment}
+design_object_management_assignment.items ->
+managed_design_object
+managed_design_object = product_definition_relationship
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name =  'design functional unit allocation to assembly component'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Design_composition_path_armx(Design_composition_path_armx, design_composition_path);
+
+mapping_constraints;
+[design_composition_path <=
+product_definition]
+[design_composition_path <=
+applied_group_assignment]
+
+end_mapping_constraints;
+
+attribute_mapping design_functional_unit(design_functional_unit, $PATH, Functional_unit);
+design_composition_path <=
+product_definition
+product_definition <-
+product_definition_relationship.relating_product_definition
+product_definition_relationship
+{product_definition_relationship.name = 'design functional unit'}
+product_definition_relationship.related_product_definition ->
+product_definition
+{product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+[product_definition_relationship.name = 'instantiated functional unit']
+[product_definition_relationship.relating_product_definition ->
+product_definition
+[product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+(application_context_element.name = 'functional network design')
+(application_context_element.name = 'functional design usage')]
+[product_definition =>
+functional_unit]]}
+product_definition =>
+component_functional_unit
+
+end_attribute_mapping;
+
+attribute_mapping path_element(path_element, $PATH, Functional_unit);
+design_composition_path <=
+applied_group_assignment
+applied_group_assignment.items ->
+groupable_item = component_functional_unit
+component_functional_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Design_functional_unit_allocation_to_assembly_component(Design_functional_unit_allocation_to_assembly_component, product_definition_relationship);
+
+mapping_constraints;
+{product_definition_relationship
+product_definition_relationship.name =  'design functional unit allocation to assembly component'}
+
+end_mapping_constraints;
+
+attribute_mapping global_swappable(global_swappable, descriptive_representation_item);
+product_definition_relationship
+characterized_product_definition = product_definition_relationship
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'global swappable'}
+representation_item =>
+{descriptive_representation_item
+(descriptive_representation_item.description = 'false')
+(descriptive_representation_item.description = 'true')}
+descriptive_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping local_swappable(local_swappable, descriptive_representation_item);
+product_definition_relationship
+characterized_product_definition = product_definition_relationship
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'local swappable'}
+representation_item =>
+{descriptive_representation_item
+(descriptive_representation_item.description = 'false')
+(descriptive_representation_item.description = 'true')}
+descriptive_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping of_property(of_property, $PATH, Property_value_representation);
+product_definition_relationship
+				characterized_product_definition = product_definition_relationship
+				characterized_definition = characterized_product_definition
+				characterized_definition <-
+				property_definition.definition
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				
+end_attribute_mapping;
+
+attribute_mapping path_alias(path_alias, product_definition_relationship.id);
+
+end_attribute_mapping;
+
+attribute_mapping swap_code(swap_code, product_definition_relationship.description);
+
+end_attribute_mapping;
+
+attribute_mapping implementation(implementation, $PATH, Assembly_component_armx);
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition =>
+component_definition =>
+assembly_component
+
+end_attribute_mapping;
+
+attribute_mapping functional_design_definition_path(functional_design_definition_path, $PATH, Design_composition_path_armx);
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.description = 'design definition path'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+design_composition_path
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Design_functional_unit_allocation_to_reference_functional_unit(Design_functional_unit_allocation_to_reference_functional_unit, product_definition_relationship);
+
+mapping_constraints;
+{product_definition_relationship
+product_definition_relationship.name =  'design functional unit allocation to reference functional unit'}
+
+end_mapping_constraints;
+
+attribute_mapping design_definition_path(design_definition_path, $PATH, Design_composition_path_armx);
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+design_composition_path
+
+end_attribute_mapping;
+
+attribute_mapping reference_definition_path(reference_definition_path, $PATH, Reference_composition_path_armx);
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition =>
+reference_composition_path
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Gate_path_swap_specification(Gate_path_swap_specification, design_object_management_relationship_action);
+
+mapping_constraints;
+design_object_management_relationship_action <= 
+action
+{action.name = 'change'}
+
+end_mapping_constraints;
+
+attribute_mapping current_design_object(current_design_object, $PATH, Design_functional_unit_allocation_to_reference_functional_unit);
+design_object_management_relationship_action <= 
+action <-
+action_assignment.assigned_action
+action_assignment => design_object_management_assignment 
+{design_object_management_assignment =>
+current_design_object_assignment}
+design_object_management_assignment.items ->
+managed_design_object
+managed_design_object = product_definition_relationship
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name =  'design functional unit allocation to reference functional unit'}
+
+end_attribute_mapping;
+
+attribute_mapping previous_design_object(previous_design_object, $PATH, Design_functional_unit_allocation_to_reference_functional_unit);
+design_object_management_relationship_action <= 
+action <-
+action_assignment.assigned_action
+action_assignment => design_object_management_assignment 
+{design_object_management_assignment =>
+previous_design_object_assignment}
+design_object_management_assignment.items ->
+managed_design_object
+managed_design_object = product_definition_relationship
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name =  'design functional unit allocation to reference functional unit'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Reference_composition_path_armx(Reference_composition_path_armx, reference_composition_path);
+
+mapping_constraints;
+[reference_composition_path <=
+product_definition]
+[reference_composition_path <=
+applied_group_assignment]
+
+end_mapping_constraints;
+
+attribute_mapping reference_functional_unit(reference_functional_unit, $PATH, Functional_unit);
+reference_composition_path <=
+product_definition
+product_definition <-
+product_definition_relationship.relating_product_definition
+product_definition_relationship
+{product_definition_relationship.name = 'reference functional unit'}
+product_definition_relationship.related_product_definition ->
+product_definition
+{product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+[product_definition_relationship.name = 'instantiated functional unit']
+[product_definition_relationship.relating_product_definition ->
+product_definition
+[product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+(application_context_element.name = 'functional network design')
+(application_context_element.name = 'functional design usage')]
+[product_definition =>
+functional_unit
+]]}
+product_definition =>
+component_functional_unit
+
+end_attribute_mapping;
+
+attribute_mapping path_element(path_element, $PATH, Functional_unit);
+reference_composition_path <=
+applied_group_assignment
+applied_group_assignment.items ->
+groupable_item = component_functional_unit
+component_functional_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Reference_functional_unit_assignment_to_part(Reference_functional_unit_assignment_to_part, product_definition_relationship);
+
+mapping_constraints;
+{product_definition_relationship
+product_definition_relationship.name =  'reference functional unit assignment to part'}
+
+end_mapping_constraints;
+
+attribute_mapping path_alias(path_alias, product_definition_relationship.description);
+
+end_attribute_mapping;
+
+attribute_mapping swap_code(swap_code, $PATH);
+product_definition_relationship
+characterized_product_definition = product_definition_relationship
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition
+property_definition.name = 'swap code'}
+property_definition.description
+
+end_attribute_mapping;
+
+attribute_mapping implementation(implementation, $PATH, Template_definition);
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition
+product_definition =>
+part_template_definition
+
+end_attribute_mapping;
+
+attribute_mapping implementation(implementation, $PATH, Part_view_definition);
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition =>
+physical_unit
+
+end_attribute_mapping;
+
+attribute_mapping functional_design_definition_path(functional_design_definition_path, $PATH, Reference_composition_path_armx);
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.description = 'design definition path'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+reference_composition_path
+
+end_attribute_mapping;
+
+attribute_mapping of_property(of_property, $PATH, Property_value_representation);
+product_definition_relationship
+				characterized_product_definition = product_definition_relationship
+				characterized_definition = characterized_product_definition
+				characterized_definition <-
+				property_definition.definition
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Reference_functional_unit_assignment_to_template(Reference_functional_unit_assignment_to_template, product_definition_relationship);
+
+mapping_constraints;
+{product_definition_relationship
+product_definition_relationship.name =  'reference functional unit assignment to template'}
+
+end_mapping_constraints;
+
+attribute_mapping path_alias(path_alias, product_definition_relationship.description);
+
+end_attribute_mapping;
+
+attribute_mapping swap_code(swap_code, $PATH);
+product_definition_relationship
+characterized_product_definition = product_definition_relationship
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition
+property_definition.name = 'swap code'}
+property_definition.description
+
+end_attribute_mapping;
+
+attribute_mapping implementation(implementation, $PATH, Template_definition);
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition =>
+part_template_definition
+
+end_attribute_mapping;
+
+attribute_mapping functional_design_definition_path(functional_design_definition_path, $PATH, Reference_composition_path_armx);
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.description = 'design definition path'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+reference_composition_path
+
+end_attribute_mapping;
+
+attribute_mapping of_property(of_property, $PATH, Property_value_representation);
+product_definition_relationship
+				characterized_product_definition = product_definition_relationship
+				characterized_definition = characterized_product_definition
+				characterized_definition <-
+				property_definition.definition
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Terminal_swap_specification(Terminal_swap_specification, design_object_management_relationship_action);
+
+mapping_constraints;
+design_object_management_relationship_action <= 
+action
+{action.name = 'change'}
+
+end_mapping_constraints;
+
+attribute_mapping current_design_object(current_design_object, $PATH, Functional_unit_terminal_node_assignment);
+design_object_management_relationship_action <= 
+action <-
+action_assignment.assigned_action
+action_assignment => design_object_management_assignment 
+{design_object_management_assignment =>
+current_design_object_assignment}
+design_object_management_assignment.items ->
+managed_design_object
+managed_design_object = property_definition_relationship
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'functional unit terminal node assignment'}
+
+end_attribute_mapping;
+
+attribute_mapping previous_design_object(previous_design_object, $PATH, Functional_unit_terminal_node_assignment);
+design_object_management_relationship_action <= 
+action <-
+action_assignment.assigned_action
+action_assignment => design_object_management_assignment 
+{design_object_management_assignment =>
+previous_design_object_assignment}
+design_object_management_assignment.items ->
+managed_design_object
+managed_design_object = property_definition_relationship
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'functional unit terminal node assignment'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

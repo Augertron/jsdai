@@ -1,0 +1,42 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4149 - ISO/TS 10303-1734 Pre defined datum symbol - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3552
+*)
+
+SCHEMA Pre_defined_datum_symbol_arm;
+
+	USE FROM Layered_3d_shape_arm;	-- ISO/TS 10303-1694
+	USE FROM Pre_defined_datum_2d_symbol_arm;	-- ISO/TS 10303-1735
+	USE FROM Pre_defined_datum_3d_symbol_arm;	-- ISO/TS 10303-1736
+
+  SUBTYPE_CONSTRAINT pdds_non_feature_shape_model_subtypes FOR Non_feature_shape_model; 
+    (ONEOF (Design_view_level_non_feature_shape_model,
+      Usage_view_level_non_feature_shape_model));
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT pdds_shape_definition_3d_intersection_subtypes FOR Shape_definition_3d_intersection;  
+    (ONEOF (Pre_defined_perpendicular_datum_plane_symbol_3d_2d_relationship,
+      Pre_defined_perpendicular_datum_axis_symbol_3d_2d_relationship,
+      Pre_defined_parallel_datum_axis_symbol_3d_2d_relationship));
+  END_SUBTYPE_CONSTRAINT;  
+
+  ENTITY Pre_defined_parallel_datum_axis_symbol_3d_2d_relationship
+    SUBTYPE OF (Shape_definition_3d_intersection);
+		SELF\Shape_definition_3d_intersection.surface_intersection_result : Pre_defined_parallel_datum_axis_2d_symbol;
+		SELF\Shape_definition_3d_intersection.projected_volume            : Pre_defined_datum_axis_3d_symbol;
+  END_ENTITY;
+
+  ENTITY Pre_defined_perpendicular_datum_axis_symbol_3d_2d_relationship
+    SUBTYPE OF (Shape_definition_3d_intersection);
+      SELF\Shape_definition_3d_intersection.surface_intersection_result : Pre_defined_perpendicular_datum_axis_2d_symbol;
+      SELF\Shape_definition_3d_intersection.projected_volume            : Pre_defined_datum_axis_3d_symbol;
+  END_ENTITY;
+
+  ENTITY Pre_defined_perpendicular_datum_plane_symbol_3d_2d_relationship
+    SUBTYPE OF (Shape_definition_3d_intersection);
+      SELF\Shape_definition_3d_intersection.surface_intersection_result : Pre_defined_perpendicular_datum_plane_2d_symbol;
+      SELF\Shape_definition_3d_intersection.projected_volume            : Pre_defined_datum_plane_3d_symbol;
+  END_ENTITY;
+
+END_SCHEMA;

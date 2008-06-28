@@ -1,0 +1,319 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Physical unit design view - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Physical_unit_design_view_xim;
+
+USE FROM Physical_unit_usage_view_xim;
+
+USE FROM Physical_layout_template_xim; -- ISO/TS 10303-1722
+
+USE FROM Physical_unit_design_view_mim;
+
+USE FROM Component_grouping_xim; -- ISO/TS 10303-1656
+
+USE FROM Specification_document_xim;	-- ISO/TS 10303-1747
+	
+REFERENCE FROM Layered_interconnect_module_design_xim(get_assemblies); -- ISO/TS 10303-1698
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+
+	SUBTYPE_CONSTRAINT pudv_connection_zone_subtypes FOR Connection_zone;     
+		 ONEOF (Connection_zone_in_usage_view,
+		 Connection_zone_in_design_view,
+		 Connection_zone_in_layout_template);
+	END_SUBTYPE_CONSTRAINT;
+
+	SUBTYPE_CONSTRAINT pudv_part_view_definition_subtypes FOR Part_view_definition ; 
+		(ONEOF (Part_usage_view,
+		Part_design_view));
+	END_SUBTYPE_CONSTRAINT; 
+
+	TYPE assembly_component_or_item_number = SELECT
+    	(Assembly_item_number_armx,
+    	 assembly_component_usage);
+	END_TYPE;
+	
+	TYPE assembly_item_number_or_process_specification = SELECT
+    	(Assembly_item_number_armx,
+    	 Process_specification);
+	END_TYPE;
+
+    TYPE bonding_or_coating = ENUMERATION OF
+      (bonding, coating);
+    END_TYPE;    
+
+	TYPE pudv_extended_value_with_unit = EXTENSIBLE SELECT BASED_ON extended_value_with_unit WITH 
+	   (textual_quantity_specification);
+	END_TYPE; 
+
+	TYPE pudv_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
+    	(Assembly_item_number_armx,
+    	Assembly_component_usage,
+    	Component_material_relationship_armx);
+	END_TYPE;
+	
+	TYPE textual_quantity_specification = STRING;
+	END_TYPE;
+	
+  ENTITY Assembly_alternate_product
+    (* CONNOTATIONAL *) SUBTYPE OF (Alternate_product_relationship);
+      basis_context : Part_design_view;
+      SELF\alternate_product_relationship.definition RENAMED description : STRING;
+      SELF\alternate_product_relationship.alternate RENAMED alternate_product : Product_armx;
+      SELF\alternate_product_relationship.base RENAMED base_product : Product_armx;
+    DERIVE
+      SELF\alternate_product_relationship.basis : text := 'assembly alternate product';
+  END_ENTITY;
+
+  ENTITY Assembly_component_armx
+    ABSTRACT SUPERTYPE
+   (* CONNOTATIONAL *) SUBTYPE OF (Definition_based_product_occurrence, Item_shape, assembly_component);
+	SELF\Definition_based_product_occurrence.derived_from : physical_unit_or_part_template;
+    DERIVE
+		assemblies : SET OF Product_view_definition := pudv_get_assemblies(SELF);
+		groups : SET OF Assembly_group_component_armx := pudv_get_groups(SELF);
+		versions : SET OF product_definition_formation := pudv_get_versions(assemblies);
+		product : SET OF Product_armx := pudv_get_products(versions);
+    	SELF\Item_shape.described_element : shapeable_item := SELF;
+        SELF\product_definition_relationship.id : identifier := SELF\product_definition.id;
+    	SELF\product_definition_relationship.name : label := ?;
+    	SELF\product_definition_relationship.description : text := ?;
+    	SELF\product_definition_relationship.relating_product_definition : product_definition := SELF\Definition_based_product_occurrence.derived_from;
+    INVERSE
+      SELF\Product_occurrence.occurrence_contexts : SET[1:?] OF assembly_component_usage FOR related_product_definition;
+(** Need to encode it as Global rules TODO for Tom
+      component_2d_shape         : SET[0:1] OF assembly_component_2d_shape FOR shape_characterized_component;
+      component_3d_shape         : SET[0:1] OF assembly_component_3d_shape FOR shape_characterized_component;
+      component_non_planar_shape : SET[0:1] OF assembly_component_non_planar_shape FOR shape_characterized_component;
+*)      
+    WHERE
+      WR1 : NOT(('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.FOOTPRINT_OCCURRENCE_ARMX' IN TYPEOF(SELF)) XOR ('FOOTPRINT_DEFINITION_XIM.FOOTPRINT_DEFINITION_ARMX' IN TYPEOF(derived_from))) OR 
+            NOT(('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.PADSTACK_OCCURRENCE_ARMX' IN TYPEOF(SELF)) XOR ('PART_TEMPLATE_2D_SHAPE_XIM.PADSTACK_DEFINITION_ARMX' IN TYPEOF(SELF\Definition_based_product_occurrence.derived_from)));      
+      WR2 : SELF\Product_view_definition.defined_version :=: SELF\Definition_based_product_occurrence.derived_from.defined_version;
+	  WR3 : SIZEOF(assemblies) = SIZEOF(versions);
+	  WR4 : SIZEOF(product) = 1;
+      WR5 : (('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.STRUCTURED_LAYOUT_COMPONENT_SUB_ASSEMBLY_RELATIONSHIP_ARMX' IN TYPEOF(SELF\Assembly_component_armx.occurrence_contexts[1])) OR
+            (SIZEOF(groups) = 0) OR 
+            (pudv_get_group_assemblies(groups) = assemblies));
+  END_ENTITY;
+
+  ENTITY Assembly_item_number_armx 
+  	(* CONNOTATIONAL *) SUBTYPE OF (assembly_item_number);
+      SELF\assembly_item_number.items RENAMED assembly_usage : SET[1:?] OF assembly_component_usage; 
+      SELF\group.name RENAMED item_number	                 : STRING;  	
+    DERIVE
+      assembly : part_design_view := assembly_usage[1].relating_product_definition;
+      part     : product:= assembly_usage[1].related_product_definition\Definition_based_product_occurrence.derived_from\Product_definition.formation.of_product;
+      SELF\group.description : text :=?;
+    UNIQUE
+      UR1 : assembly, item_number;
+    WHERE
+      WR1 : SIZEOF(QUERY(au <* assembly_usage | NOT (au.relating_product_definition\Definition_based_product_occurrence.derived_from\Product_definition.formation.of_product = Part))) = 0;
+      WR2 : SIZEOF(QUERY(au <* assembly_usage | NOT (au.relating_view = assembly))) = 0;
+  END_ENTITY;
+
+  ENTITY Component_material_relationship_armx
+	(* CONNOTATIONAL *) SUBTYPE OF (component_material_relationship);  
+      SELF\property_definition.definition RENAMED associated_design : Part_design_view;  
+      component_1   : assembly_component_or_item_number;
+      component_2   : OPTIONAL assembly_component_or_item_number;
+      material      : OPTIONAL assembly_component_or_item_number;
+      role          : bonding_or_coating;
+      specification : OPTIONAL assembly_item_number_or_process_specification;
+    DERIVE
+      SELF\group.name : label := ?; -- bonding or coating
+      SELF\property_definition.name : label := ?;
+    WHERE
+      WR1 : component_1 <> component_2;
+      WR2 : component_1 <> material;
+      WR3 : component_1 <> specification;
+      WR4 : component_2 <> material;
+      WR5 : component_2 <> specification;
+      WR6 : material <> specification;
+      WR7 : valid_assembly_context_for_bond(associated_design, component_1);
+      WR8 : valid_assembly_context_for_bond(associated_design, component_2);
+      WR9 : valid_assembly_context_for_bond(associated_design, material);
+     WR10 : valid_assembly_context_for_bond(associated_design, specification);
+  END_ENTITY;
+  
+  ENTITY Component_make_from_relationship
+		(* CONNOTATIONAL *) SUBTYPE OF (make_from_usage_option);  
+      SELF\Product_definition_relationship.relating_product_definition RENAMED reusable_component	: Assembly_component_armx;
+      SELF\Product_definition_relationship.related_product_definition RENAMED resultant_component	: Assembly_component_armx;
+    DERIVE
+      SELF\make_from_usage_option.ranking_rationale : text := ?;
+      SELF\make_from_usage_option.quantity : measure_with_unit := ?;
+      SELF\make_from_usage_option.ranking : INTEGER := ?;
+    WHERE
+      WR1 : resultant_component <> reusable_component;
+  END_ENTITY;
+
+  ENTITY Component_to_physical_usage_view_assignment
+  	(* CONNOTATIONAL *) SUBTYPE OF (Product_definition_relationship);
+      SELF\Product_definition_relationship.relating_product_definition RENAMED design_view_component : Assembly_component_armx;  	
+      SELF\Product_definition_relationship.related_product_definition RENAMED usage_view_component  	: Assembly_component_armx;
+    DERIVE
+      SELF\product_definition_relationship.name : label := 'component to physical usage view assignment';
+    WHERE
+      WR1 : design_view_component <> usage_view_component;
+  END_ENTITY;
+
+  ENTITY Connection_zone_in_design_view
+  	(* CONNOTATIONAL *) SUBTYPE OF (Connection_zone);
+  	DERIVE
+  		associated_definition : Part_design_view := containing_shape.described_element;
+  		SELF\Shape_element.element_name : STRING := '';
+  END_ENTITY; 
+
+  ENTITY Next_assembly_usage_occurrence_relationship_armx
+    SUBTYPE OF (next_assembly_usage_occurrence_relationship);
+  DERIVE
+    SELF\product_definition_occurrence_relationship.description : text := ?;
+    SELF\product_definition_occurrence_relationship.name : label := ?;
+    -- Make life easier for the tools
+    SELF\product_definition_occurrence_relationship.occurrence : product_definition := ?; --SELF\product_definition_relationship.related_product_definition;
+  UNIQUE
+    UR1 : SELF\product_definition_relationship.relating_product_definition, 
+          SELF\assembly_component_usage.reference_designator;
+  END_ENTITY;
+
+  ENTITY Part_design_view
+    (* CONNOTATIONAL *) SUBTYPE OF (Item_shape, Part_view_definition, physical_unit);
+      usage_view : OPTIONAL Part_usage_view;
+    DERIVE
+    	SELF\Item_shape.described_element : shapeable_item := SELF;
+    WHERE
+      WR1 : ('LAYOUT_MACRO_DEFINITION_XIM.LAYOUT_MACRO_DEFINITION_ARMX' IN TYPEOF(SELF)) 
+      OR EXISTS(usage_view);
+      WR2 : SIZEOF(QUERY(nauo <* USEDIN(SELF, 'PRODUCT_VIEW_DEFINITION_RELATIONSHIP_XIM.PRODUCT_DEFINITION_RELATIONSHIP.RELATING_PRODUCT_DEFINITION') |
+                 (('PHYSICAL_UNIT_DESIGN_VIEW_XIM.NEXT_ASSEMBLY_USAGE_OCCURRENCE_RELATIONSHIP' IN TYPEOF(nauo)) XOR
+                  ('ASSEMBLY_STRUCTURE_XIM.NEXT_ASSEMBLY_USAGE_OCCURRENCE' IN TYPEOF(nauo)))                 
+                 )) = 0;      
+  END_ENTITY;
+
+  ENTITY Physical_component_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Assembly_component_armx, Definition_based_part_occurrence, physical_component);
+  END_ENTITY;
+
+  ENTITY Thermal_component_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Assembly_component_armx, thermal_component);
+  END_ENTITY;
+
+  RULE unique_assembly_item_number FOR (Assembly_item_number_armx);
+   LOCAL
+     acr : BAG OF assembly_component_usage := [];
+   END_LOCAL;
+   REPEAT i := 1 to SIZEOF(Assembly_item_number_armx) by 1;
+     acr  := acr + Assembly_item_number_armx[i].assembly_usage;
+   END_REPEAT;  
+  WHERE
+   WR1 : SIZEOF(acr) = SIZEOF(bag_to_set(acr));
+  END_RULE;
+
+FUNCTION pudv_get_versions(input : SET OF Product_view_definition) : SET OF product_definition_formation;
+LOCAL
+  pv : SET OF product_definition_formation := [];
+END_LOCAL;
+
+REPEAT i := 1 TO HIINDEX(input) BY 1;
+  pv := pv + input[i]\Product_view_definition.defined_version; 
+END_REPEAT;
+RETURN (pv);
+END_FUNCTION;
+
+FUNCTION pudv_get_products(input : SET OF product_definition_formation) : SET OF Product_armx;
+LOCAL
+  p : SET OF Product_armx := [];
+END_LOCAL;
+
+REPEAT i := 1 TO HIINDEX(input) BY 1;
+  p := p + input[i]\product_definition_formation.of_product; 
+END_REPEAT;
+RETURN (p);
+END_FUNCTION;
+
+FUNCTION pudv_get_assemblies(input : Assembly_component_armx) : SET OF Product_view_definition;
+LOCAL
+  acr : SET OF assembly_component_usage := input\Assembly_component_armx.occurrence_contexts;
+  pvd : SET OF Product_view_definition := [];
+END_LOCAL;
+REPEAT i := 1 TO HIINDEX(acr) BY 1;
+  IF NOT('COMPONENT_GROUPING_XIM.' + 'ASSEMBLY_GROUP_COMPONENT_ARMX' IN TYPEOF(acr[i]\Product_definition_relationship.relating_product_definition))
+  THEN
+  pvd := pvd + acr[i]\Product_definition_relationship.relating_product_definition; 
+  ELSE
+  pvd := pvd + get_assemblies(acr[i]\Product_definition_relationship.relating_product_definition);
+  END_IF;
+END_REPEAT;
+RETURN (pvd);
+END_FUNCTION;
+
+FUNCTION pudv_get_groups(input : Assembly_component_armx) : SET OF Assembly_group_component_armx;
+LOCAL
+  acr : SET OF assembly_component_usage := input\Assembly_component.occurrence_contexts;
+  agc : SET OF Assembly_group_component_armx := [];
+END_LOCAL;
+REPEAT i := 1 TO HIINDEX(acr) BY 1;
+  IF ('COMPONENT_GROUPING_ARM.' + 'ASSEMBLY_GROUP_COMPONENT_ARMX' IN TYPEOF(acr[i]\Product_definition_relationship.relating_product_definition))
+  THEN
+  agc := agc + acr[i]\Product_definition_relationship.relating_product_definition; 
+  END_IF;
+END_REPEAT;
+RETURN (agc);
+END_FUNCTION;
+
+FUNCTION pudv_get_group_assemblies(input : SET OF Assembly_group_component_armx) : SET OF Product_view_definition;
+LOCAL
+  acr : SET OF assembly_component_usage := [];
+  pvd : SET OF Product_view_definition := [];
+END_LOCAL;
+
+REPEAT i := 1 TO HIINDEX(input) BY 1;
+  acr := input[i]\Assembly_component_armx.occurrence_contexts;
+END_REPEAT;
+
+REPEAT i := 1 TO HIINDEX(acr) BY 1;
+  IF NOT('COMPONENT_GROUPING_ARM.' + 'ASSEMBLY_GROUP_COMPONENT_ARMX' IN TYPEOF(acr[i]\Product_definition_relationship.relating_product_definition))
+  THEN
+  pvd := pvd + acr[i]\Product_definition_relationship.relating_product_definition; 
+  ELSE
+  pvd := pvd + get_assemblies(acr[i]\Product_definition_relationship.relating_product_definition);
+  END_IF;
+END_REPEAT;
+RETURN (pvd);
+END_FUNCTION;
+
+FUNCTION valid_assembly_context_for_bond(input1 : Part_design_view;
+                                         input2 : GENERIC_ENTITY) : BOOLEAN;
+RETURN(TRUE);
+END_FUNCTION;                       
+
+END_SCHEMA;
+
+

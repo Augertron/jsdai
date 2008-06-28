@@ -1,0 +1,59 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4628 - ISO/CD-TS 10303-1367 Textual expression representation - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3761
+*) 
+
+SCHEMA Textual_expression_representation_arm;
+
+USE FROM Classification_assignment_arm;
+
+USE FROM Foundation_representation_arm;
+
+TYPE list_of_text_based_item = LIST [1 : ?] OF Textual_expression_representation_item;
+END_TYPE;
+
+TYPE list_or_set_of_text_based_item = SELECT 
+  (list_of_text_based_item,
+   set_of_text_based_item);
+END_TYPE;
+
+TYPE set_of_text_based_item = SET [1 : ?] OF Textual_expression_representation_item;
+END_TYPE;
+
+TYPE ter_classification_item = SELECT BASED_ON classification_item WITH
+  (Representation_context,
+   Text_based_representation);
+END_TYPE;
+
+TYPE text_based_item_select = SELECT 
+  (Included_text_based_representation,
+   Textual_expression_composition,
+   Textual_expression_representation_item);
+END_TYPE;
+
+ENTITY Included_text_based_representation
+SUBTYPE OF (Representation_item);
+  source : Text_based_representation;
+END_ENTITY;
+
+ENTITY Text_based_representation
+SUBTYPE OF (Representation);
+  SELF\Representation.context_of_items : Text_based_representation_context;
+  SELF\Representation.items : SET [1 : 1] OF text_based_item_select;
+END_ENTITY;
+
+ENTITY Text_based_representation_context
+SUBTYPE OF (Representation_context);
+END_ENTITY;
+
+ENTITY Textual_expression_composition
+SUBTYPE OF (Representation_item);
+  content : list_or_set_of_text_based_item;
+END_ENTITY;
+
+ENTITY Textual_expression_representation_item
+SUBTYPE OF (String_representation_item);
+END_ENTITY;
+
+END_SCHEMA;

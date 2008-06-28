@@ -1,0 +1,23 @@
+--=============================================
+-- Draughting_elements for
+--  aic_draughting_elements; --  ISO 10303-506
+SCHEMA Draughting_element_specializations_mim; -- 506
+
+USE FROM Draughting_element_mim; -- ~101
+
+USE FROM Shape_property_assignment_mim;
+
+USE FROM aic_draughting_elements; --  ISO 10303-506
+
+(* Taken from automotive_design/IDA_STEP *)
+ENTITY surface_condition_callout
+  SUBTYPE OF (draughting_callout);
+WHERE
+ WR1: SIZEOF ( QUERY ( c <* SELF.contents | SIZEOF (
+     ['DRAUGHTING_ELEMENT_SPECIALIZATIONS_MIM.'+ 'ANNOTATION_CURVE_OCCURRENCE' ,
+     'DRAUGHTING_ELEMENT_SPECIALIZATIONS_MIM.'+ 'ANNOTATION_SYMBOL_OCCURRENCE' ,
+     'DRAUGHTING_ELEMENT_SPECIALIZATIONS_MIM.'+ 'ANNOTATION_TEXT_OCCURRENCE']* TYPEOF
+     ( c ) ) <>1 ) ) =0;
+END_ENTITY;
+
+END_SCHEMA;

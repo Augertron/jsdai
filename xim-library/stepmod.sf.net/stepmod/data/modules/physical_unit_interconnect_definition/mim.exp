@@ -1,0 +1,34 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4135 - ISO/TS 10303-1729 Physical unit interconnect definition - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3571
+*)
+
+
+SCHEMA Physical_unit_interconnect_definition_mim;
+	USE FROM Part_occurrence_mim;	-- ISO/TS 10303-1715
+
+	USE FROM Date_time_schema
+		(date_time_role,
+		date_role);
+	USE FROM Document_schema(document_type);
+	USE FROM Person_organization_schema
+		(person_and_organization_role,
+		organization_role);	
+	USE FROM Product_definition_schema(product_definition_with_associated_documents);	
+	USE FROM Product_property_definition_schema(property_definition);
+			
+ENTITY connector_based_interconnect_definition
+  SUBTYPE OF (property_definition);
+    SELF\property_definition.definition : physical_unit_interconnect_definition;
+UNIQUE
+  UR1: SELF\property_definition.name,SELF\property_definition.definition;
+END_ENTITY;
+
+ENTITY physical_unit_interconnect_definition
+ SUBTYPE OF (product_definition);
+END_ENTITY;
+	
+END_SCHEMA;
+
+

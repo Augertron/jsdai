@@ -1,0 +1,127 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4711 - ISO/CD-TS 10303-1312 Draughting element specialisations - EXPRESS ARM
+*)
+
+SCHEMA Draughting_element_specialisations_arm;
+
+USE FROM Draughting_element_arm; -- ISO/CD-TS 10303-1310
+
+  TYPE chained_or_parallel = ENUMERATION OF
+    (chained,
+     parallel);
+  END_TYPE;
+
+  TYPE dimension_callout_select = EXTENSIBLE GENERIC_ENTITY SELECT
+    (Text);
+  END_TYPE;   
+  
+  TYPE dimension_type = ENUMERATION OF 
+    (angular,
+     curve,
+     diameter,
+     leader_directed,
+     linear,
+     ordinate,
+     radius);
+  END_TYPE;
+
+  TYPE primary_or_secondary = ENUMERATION OF
+    (primary,
+     secondary);
+  END_TYPE;
+
+  ENTITY Datum_feature_callout 
+    SUBTYPE OF (Draughting_element);
+  END_ENTITY;
+
+  ENTITY Datum_target_callout 
+    SUBTYPE OF (Draughting_element);
+  END_ENTITY;
+
+  ENTITY Dimension
+    ABSTRACT SUPERTYPE OF(Dimension_callout ANDOR Dimension_value)
+    SUBTYPE OF (Draughting_element);
+      id                : STRING;
+  END_ENTITY;
+
+  ENTITY Dimension_callout 
+    SUBTYPE OF (Dimension);
+    callout_element : SET [1:?] OF dimension_callout_select;
+    dimension_type  : SET [1:?] OF dimension_type;
+  END_ENTITY;
+
+  ENTITY Dimension_callout_relationship;
+      relating_draughting_callout : Dimension_callout;  
+      related_draughting_callout  : Dimension_value;
+      relation_type               : primary_or_secondary;
+  END_ENTITY;
+
+  ENTITY Dimension_prefix
+    SUBTYPE OF (Draughting_element);
+      prefix : Dimension_text;
+    INVERSE
+      parent : Structured_dimension_callout FOR prefix;
+    WHERE
+      WR1: prefix IN SELF\Draughting_callout.contents;
+      WR2: prefix\Representation_item.name = 'prefix text';            
+  END_ENTITY;    
+
+  ENTITY Dimension_sequence_pair; 
+    allignment  : chained_or_parallel;
+	predecessor : Dimension_callout;
+	successor   : Dimension_callout;
+  END_ENTITY;
+
+  ENTITY Dimension_suffix
+    SUBTYPE OF (Draughting_element);
+      suffix : Dimension_text;
+    INVERSE
+      parent : Structured_dimension_callout FOR suffix;
+    WHERE
+      WR1: suffix IN SELF\Draughting_callout.contents;
+      WR2: suffix\Representation_item.name = 'suffix text';      
+  END_ENTITY;    
+
+  ENTITY Dimension_value
+    SUBTYPE OF (Dimension);
+      dimension_value : Dimension_text;
+    WHERE
+      WR1: dimension_value IN SELF\Draughting_callout.contents;
+      WR2: dimension_value\Representation_item.name = 'dimension value';
+  END_ENTITY;
+
+  ENTITY Draughting_element
+    SUPERTYPE OF(ONEOF(
+      Datum_feature_callout,
+      Datum_target_callout, 
+      Dimension,
+      Dimension_prefix,
+      Dimension_suffix,
+      Geometric_tolerance_callout,
+      Surface_condition_callout))
+    SUBTYPE OF(Draughting_callout);
+  END_ENTITY;
+
+  ENTITY Geometric_tolerance_callout 
+    SUBTYPE OF (Draughting_element);
+  END_ENTITY;
+
+  ENTITY Structured_dimension_callout
+    SUBTYPE OF (Dimension_value);
+      prefix          : OPTIONAL Dimension_prefix;
+      suffix          : OPTIONAL Dimension_suffix;
+      tolerance_value : OPTIONAL Dimension_text;
+      unit_text       : OPTIONAL Dimension_text;
+    WHERE
+      WR1: tolerance_value IN SELF\Draughting_callout.contents;
+      WR2: NOT EXISTS(tolerance_value) OR (tolerance_value\Representation_item.name = 'tolerance value');
+      WR3: unit_text IN SELF\Draughting_callout.contents;
+      WR4: NOT EXISTS(unit_text) OR (unit_text\Representation_item.name = 'unit text');
+  END_ENTITY;
+
+  ENTITY Surface_condition_callout 
+    SUBTYPE OF (Draughting_element);
+  END_ENTITY;
+
+END_SCHEMA;

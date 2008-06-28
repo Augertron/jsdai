@@ -1,0 +1,319 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Characteristic - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Characteristic_xim;
+
+USE FROM Basic_data_representation_xim;  -- ISO/CD-TS 10303-1773
+USE FROM Document_assignment_xim;	-- ISO/TS 10303-1122
+USE FROM Extended_measure_representation_xim;	-- ISO/TS 10303-1106
+USE FROM Value_with_unit_extension_xim;	-- ISO/TS 10303-1753
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+  
+REFERENCE FROM Qualified_measure_xim(pre_defined_type_qualifiers); -- ISO/CD-TS 10303-1782  
+
+USE FROM Characteristic_mim;
+
+  TYPE characteristic = SELECT
+    (descriptive_representation_item,
+    measure_representation_item,
+    Value_list,
+    Value_set);
+  END_TYPE;
+
+	TYPE c_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
+	   (Property_value_representation);
+	END_TYPE; 
+  
+  TYPE range_class = ENUMERATION OF
+    (closed,
+     lower_open,
+     upper_open,
+     open);
+  END_TYPE;
+
+  TYPE scalar_or_coordinated_characteristics = SELECT
+    (Property_value_representation,
+     characteristic);
+  END_TYPE;
+
+  ENTITY Characteristic_data_table_header_armx
+    SUBTYPE OF (characteristic_data_table_header);
+    DERIVE
+      column : LIST [1:?] OF general_property := get_characterized_column_headers(SELF);
+    WHERE
+      WR1: EXISTS(column) AND (SIZEOF(column) > 1);
+  END_ENTITY;
+
+  ENTITY Characteristic_data_table_header_link_armx
+    SUBTYPE OF (characteristic_data_table_header_link);
+      SELF\general_property_relationship.relating_property RENAMED precedent : general_property;
+      SELF\general_property_relationship.related_property RENAMED subsequent : general_property;
+    DERIVE
+      SELF\general_property_relationship.name : STRING := 'sequence';
+      table : Characteristic_data_table_header_armx := get_table(SELF);            
+    UNIQUE
+      UR1: precedent, table;  
+      UR2: subsequent, table;        
+    WHERE
+      WR1: EXISTS(table);
+  END_ENTITY;
+
+  ENTITY Characteristic_data_table_representation
+    SUBTYPE OF (Property_value_representation);
+      SELF\representation.items : SET[1:1] OF Characteristic_data_table;
+  END_ENTITY;
+
+	ENTITY Characteristic_data_table
+  	  SUBTYPE OF (table_representation_item); 
+        property_value : LIST[1:?] OF Characteristic_data_table_row;
+      DERIVE
+        SELF\compound_representation_item.item_element : compound_item_definition := ?;
+      WHERE
+        WR1: SIZEOF(QUERY( pv <* property_value |
+                  NOT (SIZEOF(pv.cell) = SIZEOF(property_value[1].cell))
+                  )) = 0;
+      
+        WR3: SIZEOF(USEDIN
+          (SELF,'PROPERTY_ASSIGNMENT_XIM.ASSIGNED_PROPERTY.DESCRIBED_ELEMENT')) = 0;
+	END_ENTITY;
+
+  ENTITY Characteristic_data_table_row
+    SUBTYPE OF (row_representation_item);
+      SELF\compound_representation_item.item_element RENAMED cell : LIST [1:?] OF characteristic;
+  END_ENTITY;
+
+  ENTITY Externally_defined_type_qualifier
+    SUBTYPE OF (type_qualifier);
+      external_source: External_source;--External_library;
+    WHERE
+      WR1: NOT(name IN pre_defined_type_qualifiers);
+  END_ENTITY;
+
+  ENTITY Length_tolerance_characteristic
+    SUBTYPE OF(Tolerance_characteristic);
+    DERIVE
+      SELF\representation.description : text := 'length tolerance';
+    WHERE
+      WR1 : ('CHARACTERISTIC_XIM.STATISTICAL_TOLERANCE_CHARACTERISTIC' IN TYPEOF(SELF)) OR
+        ('CHARACTERISTIC_XIM.SYMMETRICAL_TOLERANCE_CHARACTERISTIC' IN TYPEOF(SELF)) OR
+        ('CHARACTERISTIC_XIM.PLUS_MINUS_TOLERANCE_CHARACTERISTIC' IN TYPEOF(SELF)) OR
+        (SIZEOF(QUERY(it <* SELF\Representation.items |
+          NOT('VALUE_WITH_UNIT_EXTENSION_XIM.LENGTH_MEASURE_WITH_UNIT' IN TYPEOF(it))
+         )) = 0);
+      WR2 : NOT('CHARACTERISTIC_XIM.SYMMETRICAL_TOLERANCE_CHARACTERISTIC' IN TYPEOF(SELF)) OR
+        (SIZEOF(QUERY(it <* SELF\Representation.items |
+        ('VALUE_WITH_UNIT_EXTENSION_XIM.LENGTH_MEASURE_WITH_UNIT' IN TYPEOF(it))
+           )) = 1);
+      WR3 : NOT('CHARACTERISTIC_XIM.STATISTICAL_TOLERANCE_CHARACTERISTIC' IN TYPEOF(SELF)) OR
+        (SIZEOF(QUERY(it <* SELF\Representation.items |
+        ('VALUE_WITH_UNIT_EXTENSION_XIM.LENGTH_MEASURE_WITH_UNIT' IN TYPEOF(it))
+           )) = 1);
+      WR4 : NOT('CHARACTERISTIC_XIM.PLUS_MINUS_TOLERANCE_CHARACTERISTIC' IN TYPEOF(SELF)) OR
+        (SIZEOF(QUERY(it <* SELF\Representation.items |
+          NOT(('EXTENDED_MEASURE_REPRESENTATION_XIM.VALUE_WITH_TOLERANCES' IN TYPEOF(it)) AND
+             ('VALUE_WITH_UNIT_EXTENSION_XIM.LENGTH_DATA_ELEMENT' IN TYPEOF(it\Value_with_tolerances.item_value)))
+         )) = 0);           
+  END_ENTITY;
+
+  ENTITY Maximum_tolerance_characteristic
+    (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_characteristic);
+     SELF\Representation.items : SET [1:1] OF Value_limit;
+    WHERE
+      WR1: SELF\Representation.items[1]\qualified_representation_item.qualifiers[1]\type_qualifier.name = 'maximum';      
+  END_ENTITY;
+
+
+  ENTITY Minimum_tolerance_characteristic
+    (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_characteristic);
+      SELF\Representation.items : SET [1:1] OF Value_limit;
+    WHERE
+      WR1: SELF\Representation.items[1]\qualified_representation_item.qualifiers[1]\type_qualifier.name = 'minimum';      
+  END_ENTITY;
+
+  ENTITY Nominal_tolerance_characteristic
+    (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_characteristic);
+      SELF\Representation.items : SET[1:1] OF Qualified_numerical_item_with_unit;
+    WHERE
+      WR1: SELF\Representation.items[1]\qualified_representation_item.qualifiers[1]\type_qualifier.name = 'nominal';
+  END_ENTITY;
+
+  ENTITY Plus_minus_tolerance_characteristic
+    (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_characteristic);
+      SELF\Representation.items : SET [1:1] OF Value_with_tolerances;
+  END_ENTITY;
+
+  ENTITY Range_characteristic_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Property_value_representation, range_characteristic);
+      SELF\Representation.items	: SET[2:2] OF measure_representation_item;
+      range_type				: range_class;
+  DERIVE
+    SELF\representation.name : label := 'range characteristic';
+    (* Overlaps with range_type *)
+    SELF\descriptive_representation_item.description : text := ?;
+  WHERE
+    WR1 : TYPEOF(SELF\Representation.items[1]) =
+          TYPEOF(SELF\Representation.items[2]);
+    WR2 : TYPEOF(SELF\Representation.items[1]\measure_with_unit.unit) =
+          TYPEOF(SELF\Representation.items[2]\measure_with_unit.unit);
+    WR3 : valid_range(SELF\Representation.items[1],
+                      SELF\Representation.items[2]);     
+  END_ENTITY;
+
+  ENTITY Statistical_tolerance_characteristic
+    (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_characteristic);
+    SELF\Representation.items : SET[1:?] OF measure_representation_item;    
+  END_ENTITY;
+
+  ENTITY Symmetrical_tolerance_characteristic
+    (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_characteristic);
+      SELF\Representation.items : SET[2:2] OF measure_representation_item;
+    WHERE
+      WR1: SIZEOF(QUERY( ri <* 
+         SELF\representation.items |
+        'VALUE_WITH_UNIT_EXTENSION_XIM.RATIO_MEASURE_WITH_UNIT' IN TYPEOF(ri))) = 1;      
+  END_ENTITY;
+
+  ENTITY Text_representation_item
+  	(* CONNOTATIONAL *) SUBTYPE OF (descriptive_representation_item);
+  	DERIVE
+  	  SELF\representation_item.name : label := 'text';
+  END_ENTITY;
+
+  ENTITY Tolerance_characteristic
+    (* CONNOTATIONAL *)ABSTRACT SUPERTYPE OF ((ONEOF (Minimum_tolerance_characteristic,
+ Statistical_tolerance_characteristic,
+ Symmetrical_tolerance_characteristic,
+ Maximum_tolerance_characteristic,
+ Plus_minus_tolerance_characteristic,
+ Nominal_tolerance_characteristic))ANDOR Length_tolerance_characteristic)
+    SUBTYPE OF (Property_value_representation);
+    DERIVE
+      SELF\Representation.name : label := ?;
+    WHERE
+      WR1: SELF\Representation.context_of_items\Representation_context.context_identifier = 'tolerance values';
+  END_ENTITY;
+
+SUBTYPE_CONSTRAINT exclusive_property_value_representation_characteristic FOR
+Property_value_representation;
+          ONEOF (Range_characteristic_armx, Tolerance_characteristic);
+END_SUBTYPE_CONSTRAINT;
+
+ SUBTYPE_CONSTRAINT type_qualifier_subtypes FOR Type_qualifier;
+    ONEOF(Externally_defined_type_qualifier, Pre_defined_type_qualifier);
+  END_SUBTYPE_CONSTRAINT;
+  
+FUNCTION get_value (
+         input1 : STRING;
+         np : SET OF Representation_item) : measure_representation_item;
+REPEAT i := 1 to SIZEOF(np) by 1;
+  IF input1 = np[i]\Representation_item.name THEN
+       RETURN(np[i]);
+  END_IF;
+END_REPEAT;
+  RETURN(?);
+END_FUNCTION; -- get_value
+
+  FUNCTION valid_range(input1 : measure_representation_item;
+                       input2 : measure_representation_item) : BOOLEAN;
+   RETURN(TRUE);
+  END_FUNCTION; 
+  
+  FUNCTION get_characterized_column_headers(input : Characteristic_data_table_header_armx): LIST [1:?] OF general_property;
+    LOCAL
+      middle : SET [1:?] OF general_property;
+      result : LIST [1:?] OF general_property;
+      links  : SET [1:?] OF Characteristic_data_table_header_link_armx;
+      temp   : general_property;
+      precedent : SET [0:?] OF Characteristic_data_table_header_link_armx;
+      subsequent : SET [0:?] OF Characteristic_data_table_header_link_armx;
+    END_LOCAL;
+    -- Collect all headers
+    links := bag_to_set(USEDIN(input, 'CHARACTERISTIC_XIM.' + 'CHARACTERISTIC_DATA_TABLE_HEADER_LINK_ARMX.TABLE'));
+    -- Collect all Independent_properties
+    REPEAT i := 1 to HIINDEX(links);
+      middle := middle + links[i]\Characteristic_data_table_header_link_armx.precedent;
+      middle := middle + links[i]\Characteristic_data_table_header_link_armx.subsequent;
+    END_REPEAT;
+    result[1] := ?;
+    -- Now need to construct the resulting list
+    REPEAT i := 1 to HIINDEX(middle);
+      precedent := bag_to_set(QUERY (l <* (USEDIN(middle[i], 'CHARACTERISTIC_XIM.' + 
+        'CHARACTERISTIC_DATA_TABLE_HEADER_LINK_ARMX.PRECEDENT')) | l.table = input));
+      -- illegal chain
+      IF (SIZEOF(precedent) > 1) THEN
+        RETURN(?);
+      END_IF;
+      -- check if this is not last member
+      IF (SIZEOF(precedent) = 1) THEN
+        subsequent := bag_to_set(QUERY (l <* (USEDIN(middle[i], 'CHARACTERISTIC_XIM.' + 
+          'CHARACTERISTIC_DATA_TABLE_HEADER_LINK_ARMX.SUBSEQUENT')) | l.table = input));
+        -- we found first member
+        IF (SIZEOF(subsequent) = 0) THEN
+          result[1] := middle[i];
+          ESCAPE;
+        END_IF;
+      END_IF;
+    END_REPEAT;
+    -- if there is no first member found yet - chain is broken
+    IF (result[1] = ?) THEN
+      RETURN (?);
+    END_IF;
+    temp := result[1];
+    REPEAT i := 2 to HIINDEX(middle);
+      result[i] := precedent[1]\Characteristic_data_table_header_link_armx.subsequent;
+      precedent := bag_to_set(QUERY (l <* (USEDIN(result[i], 'CHARACTERISTIC_XIM.' + 
+        'CHARACTERISTIC_DATA_TABLE_HEADER_LINK_ARMX.PRECEDENT')) | l.table = input));
+      IF (HIINDEX(middle) = i) THEN
+        ESCAPE;
+      END_IF;
+      -- illegal chain
+      IF (SIZEOF(precedent) <> 1) THEN
+        RETURN(?);
+      END_IF;
+    END_REPEAT; 
+    RETURN (result);
+  END_FUNCTION;  
+
+  FUNCTION get_table(input : Characteristic_data_table_header_link_armx): Characteristic_data_table_header_armx;
+    LOCAL
+      middle : BAG [0:?] OF general_property_relationship;
+    END_LOCAL;
+      middle := QUERY (ipr <* (USEDIN(input, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' + 
+        'GENERAL_PROPERTY_RELATIONSHIP.RELATED_PROPERTY')) | ipr.name = 'decomposition');      
+      REPEAT i := 1 to HIINDEX(middle);       
+        IF('CHARACTERISTIC_XIM.CHARACTERISTIC_DATA_TABLE_HEADER_ARMX' IN TYPEOF(middle[i].relating_property))THEN
+          RETURN (middle[i].relating_property);
+        END_IF;
+      END_REPEAT;
+      RETURN (?);
+  END_FUNCTION;
+
+END_SCHEMA;
+

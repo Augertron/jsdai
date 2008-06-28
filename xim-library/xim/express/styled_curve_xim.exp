@@ -1,0 +1,97 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N3618 - ISO/CD-TS 10303-1749 Styled curve - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Styled_curve_xim;
+
+USE FROM Colour_xim;    -- ISO/TS 10303-1002
+
+USE FROM Elemental_geometric_shape_xim;    -- ISO/TS 10303-1004
+
+USE FROM external_reference_schema(external_source);
+
+USE FROM Styled_curve_mim;
+
+USE FROM support_resource_schema(label);
+
+(* Here XIM is different from ARM because of different mapping alternatives *)
+TYPE curve_font_select = SELECT 
+	(Curve_font,
+	Externally_defined_curve_font_armx,
+	Predefined_curve_font,
+	User_defined_curve_font_armx);
+END_TYPE;
+
+ENTITY Curve_appearance
+  (*CONNOTATIONAL *) SUBTYPE OF (curve_style);
+  SELF\curve_style.curve_colour RENAMED colour : colour;
+  SELF\curve_style.curve_font RENAMED font : curve_font_select;
+  SELF\curve_style.curve_width RENAMED width : positive_length_measure;
+DERIVE
+  SELF\curve_style.name : label := ?;
+END_ENTITY;
+
+ENTITY Curve_font
+  SUBTYPE OF (curve_style_font);
+  	SELF\curve_style_font.name RENAMED curve_font_name : STRING;
+  DERIVE
+    SELF\curve_style_font.pattern_list : LIST [1:?] OF curve_style_font_pattern := ?;
+END_ENTITY;
+
+ENTITY Externally_defined_curve_font_armx
+  (* CONNOTATIONAL *) SUBTYPE OF (externally_defined_curve_font);
+   (* Different than ARM *)
+   SELF\externally_defined_item.item_id RENAMED curve_font_name : STRING;
+   curve_font_reference : STRING;
+  (* Overlaps with curve_font_reference *)
+  DERIVE 
+   SELF\externally_defined_item.source : external_source := ?;
+END_ENTITY;
+
+ENTITY Predefined_curve_font
+  (* CONNOTATIONAL *) SUBTYPE OF (draughting_pre_defined_curve_font);
+   (* Different than ARM *)
+   SELF\pre_defined_item.name RENAMED curve_font_name : STRING;
+WHERE
+  WR1: SELF.curve_font_name IN ['continuous', 'chain', 'chain double dash', 'dashed', 'dotted'];
+END_ENTITY;
+
+ENTITY User_defined_curve_font_armx
+  SUBTYPE OF (Curve_font, user_defined_curve_font);
+  SELF\curve_style_font.pattern_list  RENAMED pattern : SET[1:?] OF curve_style_font_pattern;
+  segment_symbol : shape_representation;
+END_ENTITY;
+
+ENTITY Curve_font_pattern
+  SUBTYPE OF (curve_style_font_pattern);
+  SELF\curve_style_font_pattern.visible_segment_length RENAMED on_segment : REAL;
+  SELF\curve_style_font_pattern.invisible_segment_length RENAMED off_segment : REAL;
+END_ENTITY;
+
+END_SCHEMA;
+
+

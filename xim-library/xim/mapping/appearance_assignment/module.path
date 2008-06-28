@@ -1,0 +1,304 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping appearance_assignment(Appearance_assignment_arm, Appearance_assignment_mim);*)
+
+
+entity_mapping Appearance_assignment(Appearance_assignment, presentation_style_assignment);
+
+attribute_mapping appearance_components(appearance_components, $PATH, appearance_select);
+presentation_style_assignment
+presentation_style_assignment.styles[i] -> presentation_style_select
+     
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Context_dependent_appearance_assignment(Context_dependent_appearance_assignment, presentation_style_by_context);
+
+attribute_mapping context_definition(context_definition, $PATH, appearance_context);
+presentation_style_by_context
+		 presentation_style_by_context.style_context -> 
+		 style_context_select
+		 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Over_riding_styled_element(Over_riding_styled_element, over_riding_styled_item);
+
+attribute_mapping over_ridden_element(over_ridden_element, $PATH, Styled_element);
+over_riding_styled_item.over_ridden_style -> styled_item
+		 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Styled_element(Styled_element, styled_item);
+
+attribute_mapping appearance(appearance, $PATH, Appearance_assignment);
+
+		 styled_item.styles[i] -> presentation_style_assignment
+		 
+end_attribute_mapping;
+
+attribute_mapping invisible(invisible, invisibility.invisible_items);
+
+(invisible_item = styled_item
+invisible_item <- invisibility.invisible_items[i]
+invisibility .TRUE.)
+		 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Styled_geometric_model__mechanical_design_geometric_presentation_representation(Styled_geometric_model__mechanical_design_geometric_presentation_representation, mechanical_design_geometric_presentation_representation);
+
+attribute_mapping styled_geometry(styled_geometry, ($PATH), Shape_representation);
+(mechanical_design_geometric_presentation_representation <= representation
+representation
+representation.items[i] -> representation_item
+representation_item => mapped_item
+mapped_item.mapping_source -> representation_map
+representation_map.mapped_representation -> representation
+representation => shape_representation)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Styled_model__draughting_model(Styled_model__draughting_model, draughting_model);
+
+attribute_mapping version_id(version_id, (identification_assignment.assigned_id)(identification_assignment.assigned_id));
+(draughting_model = appearance_representation_identification_item
+appearance_representation_identification_item <* identification_item
+identification_item <- applied_identification_assignment.items[i]
+applied_identification_assignment <= identification_assignment
+{identification_assignment.role -> identification_role
+identification_role.name='version'}
+identification_assignment.assigned_id)
+
+end_attribute_mapping;
+
+attribute_mapping items(items, ($PATH), Mapping_based_styled_model);
+		 (draughting_model <= representation
+		 representation
+		 representation.items[i]-> representation_item 
+		 representation_item => mapped_item
+		 mapped_item.mapping_source -> representation_map
+		 representation_map.mapped_representation -> representation
+		 representation =>
+		 (draughting_model)
+		 (mechanical_design_geometric_presentation_representation))
+
+end_attribute_mapping;
+
+attribute_mapping items(items, ($PATH), Transformation_based_styled_model);
+		 (draughting_model <= representation
+		 representation
+		 representation.items[i]-> representation_item 
+		 representation_item => mapped_item
+		 mapped_item.mapping_source -> representation_map
+		 representation_map.mapped_representation -> representation
+		 representation => 
+		 (draughting_model)
+		 (mechanical_design_geometric_presentation_representation))
+
+end_attribute_mapping;
+
+attribute_mapping items(items, ($PATH), Styled_element);
+		 (draughting_model <= representation
+		 representation
+		 representation.items[i] -> representation_item
+		 representation_item => styled_item)
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Styled_model__mechanical_design_geometric_presentation_representation(Styled_model__mechanical_design_geometric_presentation_representation, mechanical_design_geometric_presentation_representation);
+
+attribute_mapping version_id(version_id, (identification_assignment.assigned_id)(identification_assignment.assigned_id));
+(mechanical_design_geometric_presentation_representation = appearance_representation_identification_item
+appearance_representation_identification_item <* identification_item
+identification_item <- applied_identification_assignment.items[i]
+applied_identification_assignment <= identification_assignment
+{identification_assignment.role -> identification_role
+identification_role.name='version'}
+identification_assignment.assigned_id)
+
+end_attribute_mapping;
+
+attribute_mapping items(items, ($PATH), Mapping_based_styled_model);
+		 (mechanical_design_geometric_presentation_representation <= representation
+		 representation
+		 representation.items[i]-> representation_item 
+		 representation_item => mapped_item
+		 mapped_item.mapping_source -> representation_map
+		 representation_map.mapped_representation -> representation
+		 representation =>
+		 (draughting_model)
+		 (mechanical_design_geometric_presentation_representation))
+end_attribute_mapping;
+
+attribute_mapping items(items, ($PATH), Transformation_based_styled_model);
+		 (mechanical_design_geometric_presentation_representation <= representation
+		 representation
+		 representation.items[i]-> representation_item 
+		 representation_item => mapped_item
+		 mapped_item.mapping_source -> representation_map
+		 representation_map.mapped_representation -> representation
+		 representation => 
+		 (draughting_model)
+		 (mechanical_design_geometric_presentation_representation))
+end_attribute_mapping;
+
+attribute_mapping items(items, ($PATH), Styled_element);
+		 (mechanical_design_geometric_presentation_representation <= representation
+		 representation
+		 representation.items[i] -> representation_item
+		 representation_item => styled_item)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Styled_model_element(Styled_model_element, styled_item);
+
+attribute_mapping element(element, $PATH, geometric_representation_item);
+styled_item
+		 styled_item.item -> representation_item
+		 (representation_item => geometric_representation_item)
+     (representation_item => mapped_item)
+		 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Mapping_based_styled_model(Mapping_based_styled_model, 
+			mapped_item
+);
+
+attribute_mapping replicated_model(replicated_model, ($PATH)($PATH), Styled_model);
+(
+(mapped_item.mapping_source -> 
+representation_map
+representation_map.mapped_representation ->
+representation =>
+draughting_model))(
+(mapped_item.mapping_source -> 
+representation_map
+representation_map.mapped_representation ->
+representation =>
+mechanical_design_geometric_presentation_representation)
+  )
+end_attribute_mapping;
+
+attribute_mapping source(source, ($PATH)($PATH), axis2_placement);
+(
+(mapped_item.mapping_source ->
+representation_map
+representation_map.mapping_origin -> representation_item
+representation_item => geometric_representation_item
+geometric_representation_item => placement
+placement => axis2_placement_2d)
+)(
+(mapped_item.mapping_source ->
+representation_map
+representation_map.mapping_origin -> representation_item
+representation_item => geometric_representation_item
+geometric_representation_item => placement
+placement => axis2_placement_3d)
+)
+end_attribute_mapping;
+
+attribute_mapping target(target, ($PATH)($PATH), axis2_placement);
+(
+(mapped_item.mapping_target -> representation_item
+representation_item => geometric_representation_item
+geometric_representation_item => placement
+placement => axis2_placement_2d)
+)(
+(mapped_item.mapping_target -> representation_item
+representation_item => geometric_representation_item
+geometric_representation_item => placement
+placement => axis2_placement_3d)
+)
+end_attribute_mapping;
+
+attribute_mapping target(target, $PATH, cartesian_transformation_operator_2d);
+
+mapped_item.mapping_target -> representation_item
+representation_item => geometric_representation_item
+geometric_representation_item => cartesian_transformation_operator
+cartesian_transformation_operator => cartesian_transformation_operator_2d
+
+end_attribute_mapping;
+
+attribute_mapping target(target, $PATH, Cartesian_transformation_operator_3d);
+
+mapped_item.mapping_target -> representation_item
+representation_item => geometric_representation_item
+geometric_representation_item => cartesian_transformation_operator
+cartesian_transformation_operator => cartesian_transformation_operator_3d
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Transformation_based_styled_model(Transformation_based_styled_model, 
+			mapped_item
+);
+
+attribute_mapping replicated_model(replicated_model, ($PATH)($PATH), Styled_model);
+(
+(mapped_item.mapping_source -> 
+representation_map
+representation_map.mapped_representation -> representation
+representation => draughting_model)
+)(
+(mapped_item.mapping_source -> 
+representation_map
+representation_map.mapped_representation -> representation
+representation => mechanical_design_geometric_presentation_representation)
+)
+end_attribute_mapping;
+
+attribute_mapping replication_transformation(replication_transformation, $PATH, cartesian_transformation_operator_2d);
+
+mapped_item.mapping_target -> representation_item
+representation_item => geometric_representation_item
+geometric_representation_item => cartesian_transformation_operator
+cartesian_transformation_operator => cartesian_transformation_operator_2d
+
+end_attribute_mapping;
+
+attribute_mapping replication_transformation(replication_transformation, $PATH, Cartesian_transformation_operator_3d);
+
+mapped_item.mapping_target -> representation_item
+representation_item => geometric_representation_item
+geometric_representation_item => cartesian_transformation_operator
+cartesian_transformation_operator => cartesian_transformation_operator_3d
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

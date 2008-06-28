@@ -1,0 +1,76 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping product_categorization(Product_categorization_arm, Product_categorization_mim);*)
+
+uof_mapping Product_Categorization(Product_Categorization);
+
+entity_mapping Product_category(Product_category, product_category);
+
+attribute_mapping id(id, $PATH);
+
+				  product_category 
+				  id_attribute_select = product_category
+				  id_attribute_select <-
+				  id_attribute.identified_item
+				  id_attribute.attribute_value 
+			  
+end_attribute_mapping;
+
+attribute_mapping name(name, product_category.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, product_category.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Product_category_hierarchy(Product_category_hierarchy, product_category_relationship);
+
+mapping_constraints;
+
+			  product_category_relationship
+				{product_category_relationship.name = 'hierarchy'}
+			
+end_mapping_constraints;
+
+attribute_mapping super_category(super_category, $PATH, Product_category);
+     
+				  product_category_relationship
+				  product_category_relationship.category -> product_category
+				
+end_attribute_mapping;
+
+attribute_mapping sub_category(sub_category, $PATH, Product_category);
+     
+				  product_category_relationship
+				  product_category_relationship.sub_category -> product_category
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

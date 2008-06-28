@@ -1,0 +1,71 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4696 - ISO/CD-TS 10303-1776 Extended date - EXPRESS ARM
+*)
+SCHEMA Extended_date_arm; 
+
+USE FROM Date_time_arm; 
+
+  TYPE date_select = SELECT ( 
+    Calendar_date, 
+    Year_month, 
+    Date,
+    Ordinal_date, 
+    Week_of_year_and_day_date);
+  END_TYPE; 
+
+  TYPE day_in_year_number = INTEGER;
+    WHERE
+      WR1: {1 <= SELF <= 366};
+  END_TYPE; 
+
+  TYPE day_in_week_number = INTEGER;
+    WHERE
+      WR1: { 1 <= SELF <= 7 };
+  END_TYPE; 
+    
+  TYPE extended_date_time_select = SELECT (
+    date_or_date_time_select, 
+    date_select);  
+  END_TYPE;
+
+  TYPE week_in_year_number = INTEGER;
+    WHERE
+      WR1: { 1 <= SELF <= 53 };
+  END_TYPE; 
+   
+  ENTITY Year_month;
+    month_component : month_in_year_number; 
+    year_component  : year_number; 
+  END_ENTITY;  
+
+  ENTITY Date;
+    year_component  : year_number; 
+  END_ENTITY;  
+ 
+  ENTITY Ordinal_date;
+      day_component  : day_in_year_number;   
+      year_component : year_number; 
+    WHERE 
+      WR1:  ( NOT leap_year ( SELF  . year_component ) AND  { 1 <= day_component <= 365 } ) OR 
+        ( leap_year ( SELF . year_component ) AND { 1 <= day_component <= 366 } ) ;  
+  END_ENTITY; 
+ 
+  ENTITY Week_of_year_and_day_date;
+    day_component  : OPTIONAL day_in_week_number;   
+    year_component : year_number; 
+    week_component : week_in_year_number; 
+  END_ENTITY; 
+
+  FUNCTION leap_year
+    (year : year_number) : BOOLEAN;
+      IF ( ( ( ( year MOD  4 ) = 0 ) AND 
+        ( ( year MOD  100 ) <> 0 ) ) OR ( ( year MOD 400 ) = 0 ) ) 
+        THEN 
+          RETURN  ( TRUE ) ; 
+        ELSE 
+          RETURN ( FALSE ) ; 
+      END_IF ; 
+  END_FUNCTION;
+
+END_SCHEMA; 

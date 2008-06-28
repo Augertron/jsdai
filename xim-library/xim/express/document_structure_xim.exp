@@ -1,0 +1,64 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+Derived from ISO TC184/SC4/WG12 N1195 - ISO/TS 10303-1124 Document structure - EXPRESS ARM
+by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+(* Based on ARM *)
+
+
+SCHEMA Document_structure_xim;
+
+USE FROM Document_definition_xim;  
+USE FROM File_identification_xim; 
+
+USE FROM document_schema(document_relationship);
+
+USE FROM product_definition_schema(product_definition_relationship);
+
+USE FROM support_resource_schema(label);
+  
+ENTITY Document_definition_relationship
+  (* CONNOTATIONAL *) SUBTYPE OF (product_definition_relationship);
+  SELF\product_definition_relationship.name RENAMED relation_type : STRING;
+  SELF\product_definition_relationship.relating_product_definition RENAMED relating_document_definition : Document_definition;
+  SELF\product_definition_relationship.related_product_definition RENAMED related_document_definition 	: Document_definition;
+DERIVE
+  SELF\product_definition_relationship.id : identifier := ?;
+WHERE
+  WR1: relating_document_definition :<>: related_document_definition;
+END_ENTITY;
+
+ENTITY File_relationship
+  (* CONNOTATIONAL *) SUBTYPE OF (document_relationship);
+  SELF\document_relationship.name RENAMED relation_type : STRING;
+  SELF\document_relationship.relating_document RENAMED relating_document_file : File;
+  SELF\document_relationship.related_document RENAMED related_document_file 	: File;
+WHERE
+  WR1: relating_document_file:<>: related_document_file;
+END_ENTITY;
+
+END_SCHEMA;
+

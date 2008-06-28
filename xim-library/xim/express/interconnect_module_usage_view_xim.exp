@@ -1,0 +1,183 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Interconnect module usage view - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Interconnect_module_usage_view_xim;
+
+USE FROM Functional_assignment_to_part_xim;
+
+USE FROM Extended_geometric_tolerance_xim;
+
+USE FROM Functional_usage_view_xim;
+
+USE FROM Interconnect_module_usage_view_mim;
+
+	TYPE cavity_reference_select = SELECT(
+		Interconnect_module_primary_surface,
+		Interconnect_module_secondary_surface
+	);
+	END_TYPE;
+
+  ENTITY Interconnect_module_cavity_surface
+    (* CONNOTATIONAL *) SUBTYPE OF (Interconnect_module_surface_feature);
+      reference_surface : cavity_reference_select;
+    WHERE
+      WR1 : SELF :<>: reference_surface;
+      WR2 : SIZEOF(QUERY(ucur <* USEDIN(SELF,
+            'PART_FEATURE_LOCATION_XIM.USAGE_CONCEPT_USAGE_RELATIONSHIP_ARMX.' +
+            'ASSOCIATED_USAGE') | NOT
+			('PART_TEMPLATE_EXTENSION_XIM.PLANAR_CLOSED_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN TYPEOF(ucur.associated_shape_definition))            
+            )) = 0;        
+  END_ENTITY;
+
+  ENTITY Interconnect_module_cutout_segment_surface_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Interconnect_module_surface_feature, interconnect_module_cutout_segment_surface);
+      composed_surface 																													: Interconnect_module_cutout_surface;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED start_vertex	: Edge_segment_vertex_armx;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED end_vertex		: Edge_segment_vertex_armx;
+    WHERE
+      WR1 : start_vertex :<>: end_vertex;
+      WR2 : SIZEOF(QUERY(ucur <* USEDIN(SELF,
+            'PART_FEATURE_LOCATION_XIM.USAGE_CONCEPT_USAGE_RELATIONSHIP_ARMX.' +
+            'ASSOCIATED_USAGE') | NOT
+            (('PART_TEMPLATE_EXTENSION_XIM.PLANAR_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN TYPEOF(ucur.associated_shape_definition)) AND NOT
+            ('PART_TEMPLATE_EXTENSION_XIM.PLANAR_CLOSED_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN TYPEOF(ucur.associated_shape_definition)))            
+            )) = 0;        
+  END_ENTITY;
+
+  ENTITY Interconnect_module_cutout_surface
+    (* CONNOTATIONAL *) SUBTYPE OF (Interconnect_module_surface_feature);
+    WHERE
+      WR1: SIZEOF(QUERY(ucur <* USEDIN(SELF,
+         'PART_FEATURE_LOCATION_XIM.USAGE_CONCEPT_USAGE_RELATIONSHIP_ARMX.' +
+         'ASSOCIATED_USAGE') | NOT
+         ('PART_TEMPLATE_EXTENSION_XIM.PLANAR_CLOSED_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN
+         TYPEOF(ucur.associated_shape_definition)))) = 0;      
+  END_ENTITY;
+
+  ENTITY Interconnect_module_edge_segment_surface_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Interconnect_module_surface_feature, interconnect_module_edge_segment_surface);
+      composed_surface 																													: Interconnect_module_edge_surface;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED start_vertex	: Edge_segment_vertex_armx;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED end_vertex		: Edge_segment_vertex_armx;
+    WHERE
+      WR1 : start_vertex :<>: end_vertex;
+      WR2 : SIZEOF(QUERY(ucur <* USEDIN(SELF,
+            'PART_FEATURE_LOCATION_XIM.USAGE_CONCEPT_USAGE_RELATIONSHIP_ARMX.' +
+            'ASSOCIATED_USAGE') | NOT
+            (('PART_TEMPLATE_EXTENSION_XIM.PLANAR_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN TYPEOF(ucur.associated_shape_definition)) AND NOT
+            ('PART_TEMPLATE_EXTENSION_XIM.PLANAR_CLOSED_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN TYPEOF(ucur.associated_shape_definition)))            
+            )) = 0;        
+  END_ENTITY;
+
+  ENTITY Interconnect_module_edge_surface
+    (* CONNOTATIONAL *) SUBTYPE OF (Interconnect_module_surface_feature);
+  WHERE
+    WR1: SIZEOF(QUERY(ucur <* USEDIN(SELF,
+         'PART_FEATURE_LOCATION_XIM.USAGE_CONCEPT_USAGE_RELATIONSHIP_ARMX.' +
+         'ASSOCIATED_USAGE') | NOT
+         ('PART_TEMPLATE_EXTENSION_XIM.PLANAR_CLOSED_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN
+         TYPEOF(ucur.associated_shape_definition)))) = 0;      
+  END_ENTITY;
+
+  ENTITY Interconnect_module_interface_terminal_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Interconnect_module_terminal_armx, interconnect_module_interface_terminal);
+  END_ENTITY;
+
+  ENTITY Interconnect_module_primary_surface
+    (* CONNOTATIONAL *) SUBTYPE OF (Interconnect_module_surface_feature);
+  END_ENTITY;
+
+  ENTITY Interconnect_module_secondary_surface
+    (* CONNOTATIONAL *) SUBTYPE OF (Interconnect_module_surface_feature);
+  END_ENTITY;
+
+  ENTITY Interconnect_module_surface_feature
+    ABSTRACT SUPERTYPE OF (ONEOF (Interconnect_module_cavity_surface,
+ Interconnect_module_cutout_segment_surface_armx,
+ Interconnect_module_cutout_surface,
+ Interconnect_module_secondary_surface,
+ Interconnect_module_primary_surface,
+ Interconnect_module_edge_surface,
+ Interconnect_module_edge_segment_surface_armx))
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_feature);
+      SELF\Shape_element.containing_shape(* TEMP-PF! *) : Interconnect_module_usage_view;
+  END_ENTITY;
+
+  ENTITY Interconnect_module_terminal_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_terminal, interconnect_module_terminal);
+      SELF\Shape_feature.connection_area                : OPTIONAL SET[1:?] OF Connection_zone_in_usage_view;            
+      SELF\Shape_element.containing_shape(* TEMP-PF! *) : Interconnect_module_usage_view;
+  END_ENTITY;
+
+  ENTITY Interconnect_module_terminal_surface_constituent_relationship
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_constituent_relationship);
+      SELF\Shape_element_relationship.relating : Interconnect_module_surface_feature;
+      SELF\Shape_element_relationship.related  : Interconnect_module_terminal_armx;
+  END_ENTITY;
+
+  ENTITY Interconnect_module_usage_view
+    SUPERTYPE OF (Pcb_usage_view)
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_usage_view);
+      thickness_over_metal_requirement      : OPTIONAL Length_tolerance_characteristic;
+      thickness_over_dielectric_requirement : OPTIONAL Length_tolerance_characteristic;
+      measurement_condition                 : OPTIONAL Restraint_condition;
+      located_thickness_requirement         : OPTIONAL SET[1:?] OF Located_interconnect_module_thickness_requirement;
+      implemented_function                  : OPTIONAL Functional_unit_usage_view;
+    DERIVE
+      SELF\Product_view_definition.additional_characterization : STRING := 'interconnect module';  
+    WHERE
+      WR1 : SIZEOF(QUERY(pf <* USEDIN(SELF,
+ 'INTERCONNECT_MODULE_USAGE_VIEW_XIM.INTERCONNECT_MODULE_SURFACE_FEATURE.CONTAINING_SHAPE') | ('INTERCONNECT_MODULE_USAGE_VIEW_xim.' + 'INTERCONNECT_MODULE_PRIMARY_SURFACE' IN TYPEOF(pf)))) <= 1;
+      WR2 : SIZEOF(QUERY(pf <* USEDIN(SELF,
+ 'INTERCONNECT_MODULE_USAGE_VIEW_XIM.INTERCONNECT_MODULE_SURFACE_FEATURE.CONTAINING_SHAPE') | ('INTERCONNECT_MODULE_USAGE_VIEW_xim.' + 'INTERCONNECT_MODULE_SECONDARY_SURFACE' IN TYPEOF(pf)))) <= 1;
+      WR3 : SIZEOF(QUERY(pf <* USEDIN(SELF,
+ 'INTERCONNECT_MODULE_USAGE_VIEW_XIM.INTERCONNECT_MODULE_SURFACE_FEATURE.CONTAINING_SHAPE') | ('INTERCONNECT_MODULE_USAGE_VIEW_xim.' + 'INTERCONNECT_MODULE_EDGE_SURFACE' IN TYPEOF(pf)))) <= 1;
+   END_ENTITY;
+
+  ENTITY Located_interconnect_module_thickness_requirement
+  	(* CONNOTATIONAL *) SUBTYPE OF (property_definition_representation);
+      reference_location    : axis2_placement;
+      thickness_requirement : Length_tolerance_characteristic;
+    DERIVE
+      SELF\property_definition_representation.used_representation : representation := ?;
+      SELF\property_definition_representation.definition : represented_definition := ?;
+    INVERSE
+      design : SET[1:?] OF interconnect_module_usage_view FOR located_thickness_requirement;
+    UNIQUE
+      UR1 : design, reference_location;
+  END_ENTITY;
+
+  ENTITY Pcb_usage_view
+    (* CONNOTATIONAL *) SUBTYPE OF (Interconnect_module_usage_view, interconnect_definition);
+    WHERE
+      WR1 : EXISTS(thickness_over_metal_requirement) OR EXISTS(thickness_over_dielectric_requirement);
+  END_ENTITY;
+
+END_SCHEMA;
+
+

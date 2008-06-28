@@ -1,0 +1,156 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+Derived from ISO TC184/SC4/WG12 N3070 - ISO/TS 10303-1276 Location - EXPRESS ARM
+by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+
+SCHEMA Location_xim;
+
+USE FROM Classification_assignment_xim;    -- ISO/TS 10303-1114
+
+USE FROM Person_organization_xim;    -- ISO/TS 10303-1011
+
+USE FROM Product_identification_xim;    -- ISO/TS 10303-1017
+
+USE FROM product_version_xim;    -- ISO/TS 10303-1018
+
+USE FROM Value_with_unit_xim;    -- ISO/TS 10303-1054
+
+USE FROM management_resources_schema   -- ISO 10303-41
+  (location_representation_assignment); 
+
+USE FROM location_mim;
+
+USE FROM location_schema   -- ISO 10303-41
+  (location,
+   location_relationship); 
+
+USE FROM qualified_measure_schema(
+	measure_representation_item);
+
+USE FROM representation_schema(
+	representation,
+	representation_context,
+	representation_item);
+
+(* Instead of ARM type Address_based_location_representation USE AIM address *)
+
+TYPE l_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH 
+   (Location_armx, 
+    Location_relationship_armx);
+END_TYPE; 
+
+TYPE product_based_location_representation = EXTENSIBLE GENERIC_ENTITY SELECT
+   (product, 
+    Product_definition_formation);
+END_TYPE; 
+
+ENTITY Global_location_representation
+  (* CONNOTATIONAL *) SUBTYPE OF (representation);
+  altitude : OPTIONAL measure_with_unit;
+  geographical_area : OPTIONAL STRING;
+  latitude : measure_with_unit;
+  longitude : measure_with_unit;
+ DERIVE
+  SELF\representation.name : label :='global location representation';
+  (* overlaps with altitude, latitude and longitude *)
+  SELF\representation.items : SET[0:?] OF representation_item := ?;
+  (* overlaps with geographical_area *)
+  SELF\representation.context_of_items : representation_context := ?;
+END_ENTITY;
+
+ENTITY Location_armx
+	(* CONNOTATIONAL *) SUBTYPE OF (location);
+	(* attributes are accessable from supertype
+  name : STRING;
+  description : OPTIONAL STRING; *)
+  alternative_location_representations : OPTIONAL SET[1:?] OF location_representation; (** Originally it is mandatory SET[0:?] **)
+END_ENTITY;
+
+ENTITY Location_relationship_armx
+	(* CONNOTATIONAL *) SUBTYPE OF (location_relationship);
+	(* attributes are accessable from supertype
+  name : STRING;
+  description : OPTIONAL STRING; *)
+  SELF\location_relationship.relating_location RENAMED relating : Location_armx;
+  SELF\location_relationship.related_location RENAMED related   : Location_armx;
+END_ENTITY;
+
+(* This is really ugly model - it is 5 alternatives not related at all, it is better to make this common supertype as select
+ENTITY Location_representation
+  ABSTRACT SUPERTYPE OF (ONEOF (-- Address_based_location_representation, AIM address is used so it can't be subtype of this guy
+                                Global_location_representation,
+                                Organization_based_location_representation_with_identification,
+                                Product_based_location_identification,
+                                Regional_grid_location_representation));
+END_ENTITY; *)
+
+TYPE location_representation = SELECT 
+		(address,
+		Global_location_representation,
+		Organization_based_location_representation_with_identification,
+		Product_based_location_identification,
+		Regional_grid_location_representation);
+END_TYPE;                                 
+
+
+(* 2 ARM entities Organization_based_location_representation and Organizational_location_identification are merged into one entity *)
+ENTITY Organization_based_location_representation_with_identification
+  (* CONNOTATIONAL *) SUBTYPE OF (applied_location_representation_assignment);
+  location_value : STRING;
+  organization_for_location : Organization;
+ (* Overlaps with organization_for_location *)
+ DERIVE
+  SELF\applied_location_representation_assignment.items : SET[1:?] OF location_representation_item :=?;
+END_ENTITY;
+
+ENTITY Product_based_location_identification
+  (* CONNOTATIONAL *) SUBTYPE OF (applied_location_representation_assignment);
+  SELF\location_representation_assignment.id RENAMED location_identification       : identifier;
+  SELF\location_representation_assignment.name RENAMED location_name               : OPTIONAL label;
+  referenced_product : product_based_location_representation;
+  DERIVE
+    -- overlaps with reference_product
+    SELF\applied_location_representation_assignment.items : SET [1:?] OF location_representation_item :=?;
+END_ENTITY;
+
+ENTITY Regional_coordinate
+	(* CONNOTATIONAL *) SUBTYPE OF (measure_representation_item);
+	(* attributes accessable from supertype
+  name : STRING;
+  coordinate_value : measure_with_unit; *)
+  grid_system : Regional_grid_location_representation;
+END_ENTITY;
+
+ENTITY Regional_grid_location_representation
+  (* CONNOTATIONAL *) SUBTYPE OF (representation);
+  (* attribute accessable from supertype
+  description : OPTIONAL STRING; *)
+ DERIVE
+  SELF\representation.name : label :='regional grid location representation';
+END_ENTITY;
+
+END_SCHEMA;  -- Location_xim

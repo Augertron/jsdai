@@ -1,0 +1,576 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping characteristic(Characteristic_arm, Characteristic_mim);*)
+
+(*
+entity_mapping Characteristic_representation(Characteristic_representation, coordinated_representation_item);
+
+mapping_constraints;
+coordinated_representation_item <=
+[representation]
+[representation_item]
+
+end_mapping_constraints;
+
+end_entity_mapping;
+*)
+
+entity_mapping Characteristic_data_table_header_armx(Characteristic_data_table_header_armx, characteristic_data_table_header);
+
+mapping_constraints;
+			characteristic_data_table_header <=
+			general_property
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Characteristic_data_table_header_link_armx(Characteristic_data_table_header_link_armx, characteristic_data_table_header_link);
+
+mapping_constraints;
+			[characteristic_data_table_header_link <=
+			general_property]
+			[characteristic_data_table_header_link <=
+			general_property_relationship]
+end_mapping_constraints;
+
+attribute_mapping subsequent(subsequent, $PATH, general_property);
+			characteristic_data_table_header_link <=
+      general_property_relationship
+			general_property_relationship.related_property ->
+			general_property
+end_attribute_mapping;
+
+attribute_mapping precedent(precedent, $PATH, general_property);
+			characteristic_data_table_header_link <=
+      general_property_relationship
+			general_property_relationship.relating_property ->
+			general_property  
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Characteristic_data_table_representation(Characteristic_data_table_representation, representation);
+
+attribute_mapping items(items, $PATH, Characteristic_data_table);
+			representation
+			representation.items[1] -> representation_item
+			representation_item =>
+			compound_representation_item =>
+			table_representation_item
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Characteristic_data_table(Characteristic_data_table, table_representation_item);
+
+mapping_constraints;
+table_representation_item <=
+compound_representation_item
+{compound_representation_item
+compound_representation_item.item_element ->
+compound_item_definition = list_representation_item
+list_representation_item[i] ->
+representation_item =>
+compound_representation_item =>
+row_representation_item} 
+compound_representation_item <=
+representation_item
+
+end_mapping_constraints;
+
+attribute_mapping property_value(property_value, $PATH, Characteristic_data_table_row);
+table_representation_item <=
+compound_representation_item
+compound_representation_item.item_element ->
+compound_item_definition = list_representation_item
+list_representation_item[i] ->
+representation_item =>
+compound_representation_item =>
+row_representation_item
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Characteristic_data_table_row(Characteristic_data_table_row, row_representation_item);
+
+mapping_constraints;
+row_representation_item <=
+[compound_representation_item
+{compound_representation_item
+compound_representation_item.item_element ->
+compound_item_definition = list_representation_item} 
+compound_representation_item <=
+representation_item]
+
+end_mapping_constraints;
+
+attribute_mapping cell(cell, $PATH, characteristic);
+	row_representation_item <=
+	compound_representation_item
+	compound_representation_item.item_element ->
+	compound_item_definition = list_representation_item
+	list_representation_item[i] ->
+	representation_item
+end_attribute_mapping;
+
+attribute_mapping cell(cell, $PATH, descriptive_representation_item);
+	row_representation_item <=
+	compound_representation_item
+	compound_representation_item.item_element ->
+	compound_item_definition = list_representation_item
+	list_representation_item[i] ->
+	representation_item =>
+	descriptive_representation_item
+end_attribute_mapping;
+
+attribute_mapping cell(cell, $PATH, measure_representation_item);
+	row_representation_item <=
+	compound_representation_item
+	compound_representation_item.item_element ->
+	compound_item_definition = list_representation_item
+	list_representation_item[i] ->
+	representation_item =>
+	measure_representation_item
+end_attribute_mapping;
+
+attribute_mapping cell(cell, $PATH, Value_list);
+	row_representation_item <=
+	compound_representation_item
+	compound_representation_item.item_element ->
+	compound_item_definition = list_representation_item
+	list_representation_item[i] ->
+	representation_item =>
+	compound_representation_item
+	{compound_representation_item.item_element ->
+	compound_item_definition = list_representation_item}
+end_attribute_mapping;
+
+attribute_mapping cell(cell, $PATH, Value_set);
+	row_representation_item <=
+	compound_representation_item
+	compound_representation_item.item_element ->
+	compound_item_definition = list_representation_item
+	list_representation_item[i] ->
+	representation_item =>
+	compound_representation_item
+	{compound_representation_item.item_element ->
+	compound_item_definition = set_representation_item}
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Document_assignment(Document_assignment, (applied_document_reference)(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment) *))
+extended;
+
+attribute_mapping is_assigned_to(is_assigned_to, , Property_value_representation);
+(
+						document_reference_item *> c_document_reference_item
+						c_document_reference_item = representation
+					)(
+						document_reference_item *> c_document_reference_item
+						c_document_reference_item = representation
+					)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Expanded_uncertainty(Expanded_uncertainty, expanded_uncertainty);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping coverage_factor(coverage_factor, expanded_uncertainty.coverage_factor);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Externally_defined_type_qualifier(Externally_defined_type_qualifier, type_qualifier);
+
+mapping_constraints;
+  	!{(type_qualifier.name = 'minimum')
+  	  (type_qualifier.name = 'maximum')
+  	  (type_qualifier.name = 'nominal')
+  	  (type_qualifier.name = 'specified')
+  	  (type_qualifier.name = 'typical')
+  	  (type_qualifier.name = 'calculated')
+  	  (type_qualifier.name = 'designed')
+  	  (type_qualifier.name = 'estimated')
+  	  (type_qualifier.name = 'measured')
+  	  (type_qualifier.name = 'required')
+  	  (type_qualifier.name = 'set point')}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Length_tolerance_characteristic(Length_tolerance_characteristic, representation);
+
+mapping_constraints;
+representation
+{representation
+representation.description = 'length tolerance'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Standard_uncertainty(Standard_uncertainty, standard_uncertainty);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping uncertainty_value(uncertainty_value, standard_uncertainty.uncertainty_value);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Uncertainty_qualifier(Uncertainty_qualifier, uncertainty_qualifier);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping measure_name(measure_name, uncertainty_qualifier.measure_name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, uncertainty_qualifier.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+(* Take entity from MIM
+entity_mapping Logical_representation_item(Logical_representation_item, descriptive_representation_item);
+
+mapping_constraints;
+			{descriptive_representation_item <= representation_item
+			(representation_item.name = '.BOOLEAN.')
+			(representation_item.name = '.LOGICAL.')}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+*)
+
+entity_mapping Maximum_tolerance_characteristic(Maximum_tolerance_characteristic, representation);
+
+mapping_constraints;
+representation
+{representation
+representation.name = 'maximum tolerance'}
+
+end_mapping_constraints;
+
+attribute_mapping items(items, $PATH, Value_limit);
+representation
+representation.items[i] ->
+representation_item =>
+[measure_representation_item]
+[qualified_representation_item
+{qualified_representation_item.qualifiers[1] ->
+value_qualifier = type_qualifier
+type_qualifier
+{type_qualifier.name = 'maximum'}}]
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Measure_qualification(Measure_qualification, measure_qualification);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping name(name, measure_qualification.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, measure_qualification.description);
+
+end_attribute_mapping;
+
+attribute_mapping qualified_measure(qualified_measure, $PATH, measure_with_unit);
+measure_qualification
+measure_qualification.qualified_measure ->
+measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping qualifiers(qualifiers, $PATH, value_qualifier);
+measure_qualification
+measure_qualification.qualifiers[i] ->
+(value_qualifier = precision_qualifier)
+(value_qualifier = type_qualifier)
+(value_qualifier = uncertainty_qualifier)
+
+end_attribute_mapping;
+
+attribute_mapping qualifiers(qualifiers, $PATH, Precision_qualifier);
+measure_qualification
+measure_qualification.qualifiers[i] ->
+value_qualifier = precision_qualifier
+
+end_attribute_mapping;
+
+attribute_mapping qualifiers(qualifiers, $PATH, Type_qualifier);
+measure_qualification
+measure_qualification.qualifiers[i] ->
+value_qualifier = type_qualifier
+
+end_attribute_mapping;
+
+attribute_mapping qualifiers(qualifiers, $PATH, Uncertainty_qualifier);
+measure_qualification
+measure_qualification.qualifiers[i] ->
+value_qualifier = uncertainty_qualifier
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Minimum_tolerance_characteristic(Minimum_tolerance_characteristic, representation);
+
+mapping_constraints;
+representation
+{representation
+representation.name = 'minimum tolerance'}
+
+end_mapping_constraints;
+
+attribute_mapping items(items, $PATH, Value_limit);
+representation
+representation.items[i] ->
+representation_item =>
+[measure_representation_item]
+[qualified_representation_item
+{qualified_representation_item.qualifiers[1] ->
+value_qualifier = type_qualifier
+type_qualifier
+{type_qualifier.name = 'minimum'}}]
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Nominal_tolerance_characteristic(Nominal_tolerance_characteristic, representation);
+
+mapping_constraints;
+representation
+{representation
+representation.name = 'nominal tolerance'}
+end_mapping_constraints;
+
+attribute_mapping items(items, $PATH, qualified_representation_item);
+representation
+representation.items[i] ->
+representation_item =>
+[measure_representation_item]
+[qualified_representation_item
+{qualified_representation_item.qualifiers[1] ->
+value_qualifier = type_qualifier
+type_qualifier
+{type_qualifier.name = 'nominal'}}]
+
+end_attribute_mapping;
+
+
+attribute_mapping items(items, $PATH, measure_representation_item);
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Plus_minus_tolerance_characteristic(Plus_minus_tolerance_characteristic, representation);
+
+mapping_constraints;
+representation
+{representation
+representation.name = 'plus minus tolerance'}
+
+end_mapping_constraints;
+
+attribute_mapping items(items, $PATH, Value_with_tolerances);
+representation
+representation.items[i] ->
+representation_item =>
+[qualified_representation_item]
+[measure_representation_item]
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Statistical_tolerance_characteristic(Statistical_tolerance_characteristic, representation);
+
+mapping_constraints;
+representation
+{representation
+representation.name = 'statistical tolerance'}
+
+end_mapping_constraints;
+
+attribute_mapping items(items, $PATH, measure_representation_item);
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Symmetrical_tolerance_characteristic(Symmetrical_tolerance_characteristic, representation);
+
+mapping_constraints;
+representation
+{representation
+representation.name = 'symmetrical tolerance'}
+
+end_mapping_constraints;
+
+attribute_mapping items(items, $PATH, measure_representation_item);
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Tolerance_characteristic(Tolerance_characteristic, representation);
+
+mapping_constraints;
+[representation
+{representation
+(representation.name = 'tolerance')
+(representation.name = 'minimum tolerance')
+(representation.name = 'maximum tolerance')
+(representation.name = 'nominal tolerance')
+(representation.name = 'plus minus tolerance')
+(representation.name = 'symmetrical tolerance')
+(representation.name = 'statistical tolerance')}]
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Precision_qualifier(Precision_qualifier, precision_qualifier);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping precision_value(precision_value, precision_qualifier.precision_value);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Qualitative_uncertainty(Qualitative_uncertainty, qualitative_uncertainty);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping uncertainty_value(uncertainty_value, qualitative_uncertainty.uncertainty_value);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Range_characteristic_armx(Range_characteristic_armx, range_characteristic);
+
+mapping_constraints;
+range_characteristic <=
+[representation
+{representation
+representation.name = 'range characteristic'}]
+[descriptive_representation_item]
+
+end_mapping_constraints;
+
+attribute_mapping range_type(range_type, $PATH);
+range_characteristic <=
+descriptive_representation_item
+descriptive_representation_item.description
+{(descriptive_representation_item.description = 'closed')
+(descriptive_representation_item.description = 'open')
+(descriptive_representation_item.description = 'lower_open')
+(descriptive_representation_item.description = 'upper_open')}
+
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, measure_representation_item);
+range_characteristic <=
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Text_representation_item(Text_representation_item, descriptive_representation_item);
+
+mapping_constraints;
+
+			descriptive_representation_item <= representation_item
+			{representation_item.name = 'text'}
+			
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Type_qualifier(Type_qualifier, type_qualifier);
+
+(* This is XIM specific constraint in order to avoid wrong hits *)
+mapping_constraints;
+{type_qualifier
+value_qualifier = type_qualifier
+value_qualifier <-
+measure_qualification.qualifiers
+measure_qualification}
+end_mapping_constraints;
+
+attribute_mapping name(name, type_qualifier.name);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

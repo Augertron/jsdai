@@ -1,0 +1,55 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Layered 2d shape - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Layered_2d_shape_xim;
+	USE FROM Constructive_solid_geometry_2d_xim;
+	USE FROM Wireframe_2d_xim;
+	USE FROM Shape_feature_xim;	-- ISO/TS 10303-xxxx
+	USE FROM Area_2d_xim;
+	
+    USE FROM support_resource_schema(label);
+
+  	TYPE part_template_or_physical_unit_2d_shape_model_select = EXTENSIBLE GENERIC_ENTITY SELECT;
+  	END_TYPE;
+
+  ENTITY Planar_projected_shape_model
+    (* CONNOTATIONAL *) SUBTYPE OF (Planar_shape_model);
+    DERIVE
+      SELF\Representation.name : label := 'ppsm';
+  END_ENTITY;
+
+  ENTITY Planar_shape_model
+    ABSTRACT SUPERTYPE OF(Planar_projected_shape_model) 
+    (* CONNOTATIONAL *) SUBTYPE OF (shape_representation);
+    WHERE
+      WR1 : SELF\Shape_representation.context_of_items.dimension_count = 2;
+  END_ENTITY;
+
+END_SCHEMA;
+
+

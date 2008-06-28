@@ -1,0 +1,125 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N4357 - ISO/TS 10303-1032 Shape property assignment - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+(* Based on mixture of ARM and AIM *)
+
+
+SCHEMA Shape_property_assignment_xim; 
+
+USE FROM Assembly_structure_xim; -- ISO/TS 10303-1026
+
+USE FROM Characterizable_object_xim;  -- ISO/TS 10303-1765
+
+USE FROM External_model_xim; -- ISO/TS 10303-1033
+
+USE FROM Product_view_definition_relationship_xim; -- ISO/TS 10303-1041
+
+USE FROM Shape_property_assignment_mim;
+
+
+TYPE shape_dependent_select = SELECT
+   (Item_shape, 
+    Shape_element);
+END_TYPE; 
+
+TYPE shape_model = SELECT
+   (External_geometric_model, 
+    Shape_representation
+    );
+END_TYPE; 
+
+TYPE shape_select = SELECT
+   (Item_shape, 
+    Shape_element, 
+    Shape_element_relationship);
+END_TYPE; 
+
+TYPE shapeable_item = SELECT
+   (Characterized_object, 
+    product_definition, 
+    product_definition_relationship,
+    product_definition_usage);
+END_TYPE; 
+
+ENTITY Contextual_item_shape
+  SUBTYPE OF (Item_shape);
+  SELF\Item_shape.described_element : product_definition_usage;
+DERIVE
+  shaped_product : Product_definition := described_element\Product_definition_relationship.related_product_definition;
+END_ENTITY;
+
+ENTITY Item_shape
+	(* CONNOTATIONAL *) SUBTYPE OF(product_definition_shape);
+  	id_x : OPTIONAL STRING;
+  	SELF\Product_definition_shape.definition RENAMED described_element : shapeable_item;  	
+  DERIVE
+  	SELF\property_definition.id : identifier := id_x;
+  	SELF\property_definition.name : label := ?;
+END_ENTITY;
+
+ENTITY Shape_dependent_property_representation
+	(* CONNOTATIONAL *) SUBTYPE OF (Representation);
+  SELF\Representation.name RENAMED characteristic_type : STRING;
+  description_x : OPTIONAL STRING;
+  described_element : shape_dependent_select;
+  DERIVE
+  	property_representation : representation := SELF; -- Identical mapping
+  	SELF\Representation.description : text := description_x;
+    SELF\representation.context_of_items : representation_context := ?;
+END_ENTITY;
+
+ENTITY Shape_description_association
+(** Can't make it Abstract in XIMs only in order to avoid wrong hits during mapping operations  - need to solve other way **)
+	SUBTYPE OF (shape_definition_representation);
+ 	  role                                                                                  : STRING;
+    SELF\property_definition_representation.definition RENAMED represented_characteristic : shape_select;
+    SELF\property_definition_representation.used_representation RENAMED representation    : shape_model;
+  DERIVE
+    SELF\property_definition_representation.name : label := role;
+END_ENTITY;
+
+ENTITY Shape_element
+--    ABSTRACT SUPERTYPE
+	(* CONNOTATIONAL *) SUBTYPE OF (Shape_aspect);
+	id_x : OPTIONAL STRING;
+	SELF\Shape_aspect.name RENAMED element_name : STRING;
+    SELF\Shape_aspect.of_shape RENAMED containing_shape : Item_shape;
+  DERIVE
+    SELF\shape_aspect.product_definitional : LOGICAL := ?;
+    SELF\shape_aspect.id : identifier := id_x;
+END_ENTITY;
+
+ENTITY Shape_element_relationship
+	ABSTRACT (* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+	SELF\shape_aspect_relationship.name RENAMED relation_type : STRING;
+  SELF\shape_aspect_relationship.relating_shape_aspect RENAMED relating : Shape_element;
+  SELF\shape_aspect_relationship.related_shape_aspect RENAMED related : Shape_element;
+END_ENTITY;
+
+END_SCHEMA;  -- Shape_property_assignment_xim
+

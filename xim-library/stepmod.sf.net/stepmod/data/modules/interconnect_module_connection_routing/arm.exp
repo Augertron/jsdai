@@ -1,0 +1,115 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3999 - ISO/TS 10303-1684 Interconnect module connection routing - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3441
+*)
+
+SCHEMA Interconnect_module_connection_routing_arm;
+
+	USE FROM Fabrication_joint_arm;	-- ISO/TS 10303-1668
+	USE FROM Interconnect_module_with_macros_arm;	-- ISO/TS 10303-1687
+
+	TYPE imcr_termination_or_junction = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON termination_or_junction WITH 
+    	(Inter_stratum_join_relationship,
+     	Explicitly_located_layer_connection_point);
+  	END_TYPE;
+
+	SUBTYPE_CONSTRAINT layer_connection_point_subtypes FOR Layer_connection_point; 
+		(ONEOF (Explicitly_located_layer_connection_point,
+		Dependently_located_layer_connection_point));
+	END_SUBTYPE_CONSTRAINT; 
+
+	TYPE terminal_or_inter_stratum_feature = SELECT(
+  		Embedded_physical_component_terminal,
+		Inter_stratum_feature,
+		Interconnect_module_macro_component_join_terminal,
+     	Interconnect_module_terminal,
+     	Printed_component_join_terminal);
+	END_TYPE;
+
+  	TYPE map_link = SELECT(
+  		Conductive_interconnect_element_terminal_link,
+		Passage_terminal_based_fabrication_joint_link);
+	END_TYPE;
+
+  	TYPE trace_junction_or_via = EXTENSIBLE SELECT
+     	(Explicitly_located_layer_connection_point);
+	END_TYPE; -- trace_junction_or_via
+
+ 
+  	ENTITY Dependently_located_layer_connection_point
+    	SUBTYPE OF (Layer_connection_point);
+      		associated_design_object : terminal_or_inter_stratum_feature;
+      		reference_zone           : OPTIONAL Connection_zone_in_design_view;
+  	END_ENTITY; 
+
+  	ENTITY Dielectric_crossover_area;
+      	relating_concept               : Stratum_feature;    
+      	related_concept                : Stratum_feature;
+      	resulting_dielectric_crossover : Stratum_feature;
+        resulting_shape        : OPTIONAL Geometric_model;
+      INVERSE
+	    technology_requirement : SET[1:?] OF requirement_assignment FOR assigned_to;
+  	END_ENTITY; 
+
+  	ENTITY Direct_stratum_component_join_implementation;
+      	implementing_joint      : Fabrication_joint;
+      	topological_requirement : Stratum_embedded_physical_component_join_relationship;
+  	END_ENTITY; 
+
+  	ENTITY Explicitly_located_layer_connection_point
+    	SUBTYPE OF (Layer_connection_point);
+  	END_ENTITY; 
+
+  	ENTITY Indirect_stratum_component_join_implementation
+    	SUBTYPE OF (Plated_inter_stratum_feature);
+      		indirect_topological_requirement : Stratum_embedded_physical_component_join_relationship;
+      		implementing_joint               : Fabrication_joint;
+    	UNIQUE
+      		UR1 : indirect_topological_requirement,
+ 				implementing_joint;
+  	END_ENTITY; 
+
+  	ENTITY Inter_stratum_join_implementation
+    	ABSTRACT SUPERTYPE OF (ONEOF (Physical_network_supporting_stratum_feature_conductive_join,
+ 			Physical_network_supporting_inter_stratum_feature));
+      		topological_requirement : Inter_stratum_join_relationship;
+  	END_ENTITY; 
+
+  	ENTITY Junction_vertex_allocation;
+			implementation_point : trace_junction_or_via;
+      		required_vertex      : Topological_junction;
+    	UNIQUE
+      		UR1 : required_vertex;
+  	END_ENTITY; 
+
+  	ENTITY Physical_connectivity_abstraction_map;
+      		name_space_context_based_definition : Physical_connectivity_element;
+      		geometric_context_based_definition  : map_link;
+    	UNIQUE
+      UR1 : name_space_context_based_definition,
+ 		geometric_context_based_definition;
+  	END_ENTITY; 
+
+  	ENTITY Physical_network_supporting_inter_stratum_feature
+    	SUBTYPE OF (Plated_inter_stratum_feature,
+ 			Inter_stratum_join_implementation);
+  	END_ENTITY; 
+
+  	ENTITY Physical_network_supporting_stratum_feature_conductive_join
+    	SUBTYPE OF (Stratum_feature_conductive_join,
+		Inter_stratum_join_implementation);
+  	END_ENTITY; 
+
+  	ENTITY Stratum_feature_conductive_join
+    	SUPERTYPE OF (Physical_network_supporting_stratum_feature_conductive_join);
+      	relating_concept : Stratum_feature_template_component;    
+      	related_concept  : Stratum_feature_template_component;
+        resulting_shape        : OPTIONAL Geometric_model;
+      INVERSE
+	    technology_requirement : SET[1:?] OF requirement_assignment FOR assigned_to;
+    WHERE
+      WR1 : related_concept.resident_stratum :<>: relating_concept.resident_stratum;
+	END_ENTITY; 
+
+END_SCHEMA;

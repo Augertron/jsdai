@@ -1,0 +1,168 @@
+(* THIS IS DOCUMENT ISO TC184/SC4/WG12 N4852, CONTAINING REVISED EXPRESS FOR *)
+(* ISO 10303-108, 'PARAMETERIZATION AND CONSTRAINTS FOR EXPLICIT GEOMETRIC   *)
+(* PRODUCT MODELS' TO TAKE INTO ACCOUNT TC1 FOR THAT DOCUMENT -- 2007-04-20  *)                                          
+
+SCHEMA parameterization_schema;
+
+REFERENCE FROM support_resource_schema             -- ISO 10303-41
+  (identifier,
+   label,
+   text);
+
+REFERENCE FROM representation_schema               -- ISO 10303-43
+  (representation_item,
+   using_representations);
+
+REFERENCE FROM mathematical_functions_schema       -- ISO 10303-50
+  (finite_space,
+   maths_number,
+   maths_value,
+   maths_variable,
+   member_of,
+   positive_integer);
+
+REFERENCE FROM variational_representation_schema   -- ISO 10303-108
+  (variational_representation_item);
+
+REFERENCE FROM ISO13584_generic_expressions_schema -- ISO 13584-20
+  (environment,
+   generic_variable,
+   variable_semantics);
+
+TYPE attribute_identifier = identifier;
+WHERE
+   WR1: validate_attribute_id(SELF);
+END_TYPE;
+
+ENTITY variational_parameter
+  ABSTRACT SUPERTYPE OF (ONEOF (bound_variational_parameter, 
+                                unbound_variational_parameter))
+  SUBTYPE OF (variational_representation_item, maths_variable);
+  parameter_description : OPTIONAL text; 
+  parameter_current_value : maths_value;
+DERIVE
+  SELF\maths_variable.name : label := SELF\representation_item.name;
+WHERE
+  WR1 : member_of(parameter_current_value, 
+    SELF\maths_variable.values_space);
+END_ENTITY; 
+
+ENTITY bound_variational_parameter
+  SUBTYPE OF (variational_parameter);
+DERIVE
+  SELF\variational_parameter.parameter_current_value : maths_value := ?;
+WHERE
+WR1 : 'PARAMETERIZATION_SCHEMA.BOUND_PARAMETER_ENVIRONMENT'
+    IN TYPEOF(SELF\generic_variable.interpretation);
+END_ENTITY; 
+
+ENTITY unbound_variational_parameter
+  SUBTYPE OF (variational_parameter);
+WHERE
+  WR1: 'PARAMETERIZATION_SCHEMA.UNBOUND_PARAMETER_ENVIRONMENT' 
+    IN TYPEOF(SELF\generic_variable.interpretation);
+END_ENTITY;
+
+ENTITY bound_parameter_environment
+  SUBTYPE OF (environment);  
+WHERE
+  WR1: ('PARAMETERIZATION_SCHEMA.BOUND_VARIATIONAL_PARAMETER' IN
+    TYPEOF(SELF\environment.syntactic_representation)) AND
+    ('PARAMETERIZATION_SCHEMA.INSTANCE_ATTRIBUTE_REFERENCE' IN
+    TYPEOF(SELF\environment.semantics));
+END_ENTITY; 
+
+ENTITY unbound_parameter_environment
+  SUBTYPE OF (environment);  
+WHERE
+  WR1: ('PARAMETERIZATION_SCHEMA.UNBOUND_VARIATIONAL_PARAMETER' IN
+    TYPEOF(SELF\environment.syntactic_representation)) AND
+    ('PARAMETERIZATION_SCHEMA.UNBOUND_VARIATIONAL_PARAMETER_SEMANTICS' IN
+    TYPEOF(SELF\environment.semantics));
+END_ENTITY; 
+
+ENTITY instance_attribute_reference
+  SUBTYPE OF (variable_semantics);  
+  attribute_name  : attribute_identifier;
+  owning_instance : representation_item;
+END_ENTITY; 
+
+ENTITY unbound_variational_parameter_semantics
+  SUBTYPE OF (variable_semantics);
+END_ENTITY;
+
+ENTITY fixed_instance_attribute_set
+  SUBTYPE OF (variational_representation_item);
+  fixed_attributes : SET[1:?] OF instance_attribute_reference;
+WHERE
+  WR1: SIZEOF(QUERY(q <* using_representations(SELF) | 
+    SIZEOF(QUERY(r <* q.items |
+    'PARAMETERIZATION_SCHEMA.FIXED_INSTANCE_ATTRIBUTE_SET' 
+    IN TYPEOF(r))) > 1)) = 0;
+END_ENTITY;
+
+ENTITY generated_finite_numeric_space
+  SUBTYPE OF (finite_space);
+  start_value      : maths_number;
+  increment_value  : maths_number;
+  increment_number : positive_integer;
+DERIVE
+  SELF\finite_space.members : SET [2:?] OF maths_number 
+    := make_numeric_set(start_value, increment_value, increment_number); 
+WHERE
+  WR1: increment_value <> 0.0;
+END_ENTITY;
+
+FUNCTION make_numeric_set(start, delta : maths_number; 
+                          incs         : positive_integer) 
+                                       : SET [2:?] OF maths_number;
+
+  LOCAL
+    i : INTEGER;
+    numeric_set : SET[2:?] OF maths_number := [start, (start + delta)];
+  END_LOCAL;
+
+  IF incs > 1 THEN REPEAT i := 2 TO incs;
+                     numeric_set := numeric_set + (start + (i*delta));
+                   END_REPEAT;
+  END_IF;
+  RETURN(numeric_set);
+END_FUNCTION;
+
+FUNCTION validate_attribute_id(attid : attribute_identifier) : BOOLEAN;
+
+  CONSTANT
+    letters      : SET[52:52] OF STRING := 
+      ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p',
+       'q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F',
+       'G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V',
+       'W','X','Y','Z'];
+    numbers_etc  : SET[15:15] OF STRING := 
+      ['0','1','2','3','4','5','6','7','8','9','_','[',']','.','\'];
+    valid_chars  : SET[67:67] OF STRING := letters + numbers_etc;
+  END_CONSTANT;
+
+  LOCAL
+    id_length : INTEGER := LENGTH(attid);
+    id_valid  : BOOLEAN := TRUE;
+    i         : INTEGER;
+  END_LOCAL;
+
+  -- check that indentifier starts with a letter
+
+  IF NOT (attid[1] IN letters) THEN 
+    id_valid := FALSE; 
+  END_IF;
+  
+  -- check that no invalid characters occur subsequently
+
+  REPEAT i := 2 TO id_length WHILE id_valid = TRUE;
+    IF NOT (attid[i] IN valid_chars) THEN 
+      id_valid := FALSE;
+    END_IF;
+  END_REPEAT;
+  RETURN(id_valid);
+
+END_FUNCTION;
+
+END_SCHEMA; -- parameterization_schema 

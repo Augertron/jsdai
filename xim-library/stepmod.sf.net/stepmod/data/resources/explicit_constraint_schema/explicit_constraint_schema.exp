@@ -1,0 +1,124 @@
+(* THIS IS DOCUMENT ISO TC184/SC4/WG12 N4852, CONTAINING REVISED EXPRESS FOR *)
+(* ISO 10303-108, 'PARAMETERIZATION AND CONSTRAINTS FOR EXPLICIT GEOMETRIC   *)
+(* PRODUCT MODELS' TO TAKE INTO ACCOUNT TC1 FOR THAT DOCUMENT -- 2007-04-20  *)                                          
+
+SCHEMA explicit_constraint_schema;
+
+REFERENCE FROM support_resource_schema             -- ISO 10303-41
+  (text);
+
+REFERENCE FROM representation_schema               -- ISO 10303-43
+  (item_in_context,
+   representation_item,
+   using_representations);
+
+REFERENCE FROM mathematical_functions_schema       -- ISO 10303-50
+  (compatible_spaces,
+   maths_variable,
+   values_space_of);
+
+REFERENCE FROM parameterization_schema             -- ISO 10303-108
+  (bound_variational_parameter,
+   variational_parameter,
+   unbound_variational_parameter);
+
+REFERENCE FROM variational_representation_schema   -- ISO 10303-108
+  (variational_representation_item);
+
+REFERENCE FROM ISO13584_generic_expressions_schema -- ISO 13584-20
+  (used_variables);
+
+REFERENCE FROM ISO13584_expressions_schema         -- ISO 13584-20
+  (boolean_expression,
+   expression);
+
+TYPE constraint_group_member = SELECT
+  (explicit_constraint,
+   simultaneous_constraint_group);
+END_TYPE;
+
+ENTITY explicit_constraint
+  ABSTRACT SUPERTYPE OF (ONEOF(defined_constraint,
+                               free_form_constraint))
+  SUBTYPE OF (variational_representation_item); 
+  description : OPTIONAL text;
+  constrained_elements : SET[1:?] OF representation_item;
+  reference_elements   : SET[0:?] OF representation_item;
+WHERE
+  WR1: SIZEOF(constrained_elements * reference_elements) = 0;
+END_ENTITY;
+
+ENTITY defined_constraint 
+  ABSTRACT SUPERTYPE OF (equal_parameter_constraint)
+  SUBTYPE OF (explicit_constraint);
+END_ENTITY; 
+
+ENTITY equal_parameter_constraint
+  SUBTYPE OF (defined_constraint);
+  SELF\explicit_constraint.constrained_elements : 
+    SET[1:?] OF variational_parameter;
+  SELF\explicit_constraint.reference_elements   : 
+    SET[0:1] OF variational_parameter;
+WHERE
+  WR1: SIZEOF(SELF\explicit_constraint.constrained_elements +
+    SELF\explicit_constraint.reference_elements) >= 2;
+END_ENTITY;
+
+ENTITY free_form_constraint 
+  ABSTRACT SUPERTYPE OF (ONEOF(free_form_assignment, free_form_relation))
+  SUBTYPE OF (explicit_constraint);
+  SELF\explicit_constraint.constrained_elements : 
+    SET[1:?] OF variational_parameter;
+  SELF\explicit_constraint.reference_elements   : 
+    SET[0:?] OF variational_parameter;
+  constraining_expression : expression;
+END_ENTITY; 
+
+ENTITY free_form_assignment 
+  SUBTYPE OF (free_form_constraint);
+WHERE
+  WR1: SIZEOF(QUERY(q <* SELF\free_form_constraint.constrained_elements | 
+    q IN used_variables
+    (SELF\free_form_constraint.constraining_expression))) = 0; 
+  WR2: SIZEOF(QUERY(q <* SELF\free_form_constraint.reference_elements | 
+    NOT (q IN used_variables(
+    SELF\free_form_constraint.constraining_expression)))) = 0; 
+  WR3: SIZEOF(SELF\free_form_constraint.reference_elements) >= 1;
+  WR4: SIZEOF(QUERY(q <* SELF\free_form_constraint.constrained_elements |
+    NOT (compatible_spaces(values_space_of(
+    SELF\free_form_constraint.constraining_expression),
+    q\maths_variable.values_space)))) = 0;
+END_ENTITY; 
+
+ENTITY free_form_relation 
+  SUBTYPE OF (free_form_constraint);
+WHERE 
+  WR1: 'ISO13584_EXPRESSIONS_SCHEMA.BOOLEAN_EXPRESSION' IN TYPEOF
+    (SELF\free_form_constraint.constraining_expression); 
+  WR2: SIZEOF(QUERY(q <* (SELF\free_form_constraint.constrained_elements + 
+    SELF\free_form_constraint.reference_elements) | 
+    NOT (q IN used_variables
+    (SELF\free_form_constraint.constraining_expression)))) = 0; 
+END_ENTITY; 
+
+ENTITY simultaneous_constraint_group
+  SUBTYPE OF (variational_representation_item);
+  constraint_group : SET[2:?] OF constraint_group_member;
+WHERE
+  WR1: SIZEOF(QUERY(q <* using_representations(SELF) |
+    SIZEOF(QUERY(r <* q.items | 
+    ('EXPLICIT_CONSTRAINT_SCHEMA.SIMULTANEOUS_CONSTRAINT_GROUP'
+    IN TYPEOF(r)) AND (SIZEOF(QUERY(s <* constraint_group | 
+    (s IN r.constraint_group) AND NOT (r :=: SELF))) > 0))) > 0)) = 0;
+  WR2: SIZEOF(QUERY(q <* using_representations(constraint_group[1]) | 
+    (SIZEOF(QUERY(r <* constraint_group | 
+    item_in_context(r,q.context_of_items)))
+    = SIZEOF(constraint_group)))) > 0;
+  WR3: SIZEOF(QUERY(q <* constraint_group |
+    (('EXPLICIT_CONSTRAINT_SCHEMA.EXPLICIT_CONSTRAINT' IN TYPEOF(q)) 
+    AND (SIZEOF(QUERY(r <* q.constrained_elements |
+    SIZEOF(QUERY(s <* constraint_group | 
+    r IN s.reference_elements)) > 0)) > 0)))) = 0;
+END_ENTITY;
+
+END_SCHEMA; -- explicit_constraint_schema

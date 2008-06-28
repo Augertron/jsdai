@@ -1,0 +1,2194 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Not Derived from any EXPRESS stepmod schema
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA ida_step_schema_xim;
+
+-- Main changes from original ap214_arm, 2003-09-27
+-- 1) USE from integrated resources the geometric and persopn/organization/address
+-- 2) replace geometric_model with shape_representation
+-- 3) replace cartesian_coordinate_space, _2d, _3d with geometric_representation_context
+
+-- 4) replace model_image with camera_image
+-- 5) replace view with presentation_view
+-- 6) replace drawing_sheet with drawing_sheet_revision
+-- 7) replace drawing with drawing_revision
+-- 8) removed path entity
+-- 9) general_shape_dependent_property.property_value type changed to representation_item
+--10) JB: kinematic_pair from ap214_arm changed to kinematic_pair from kinematic_structure_schema
+--11) JB: pair_value from ap214_arm changed to pair_value from kinematic_structure_schema
+
+--12) RR: changed digital_file.associated_model_space from inverse aggregate made direct link to representation
+
+--13) EM: Added implementation_select from AP212
+--14) EM: Added terminal from AP212
+--15) EM: Added interface_terminal from AP212
+--16) EM: Added terminal_designation from AP212
+--17) EM: Added object_designation from AP212 (commented subtype definitions document_designation and signal_designation and
+		--attribute type_of_object_designation type name substituted with STRING)
+--18) EM: Added connection from AP212
+--19) EM: Added connectivity_definition from AP212 (commented subtype interface_terminal_connection)
+
+--20) RR: Added coordinated_universal_time_offset, ahead_or_behind from Date_time_schema
+--21) RR: Added some missing schemas .. such as Quantified_measure_schema
+
+--22)EM Added connectivity_definition to classified_element_select
+--23)EM Added item to item_property_select
+--24)EM Added drawing_sheet_revision to item_property_select
+--25)EM Added connectivity_definition to item_property_select
+
+--26)RR: Added dimensional_exponents from measure_schema
+
+--27)EM Added camera_image_2d_with_scale from automotive_design
+
+--28)RR: Changed attributes types of dated_configuration to date_time
+
+--29)EM Added item_presentation from AP212_ARM
+--30)EM Added presentation_select from AP212_ARM, but strongly reduced entities count - left onfy necessary.
+
+--31)EM Added terminal to item_property_select
+
+--32)EM Added interface_terminals_relationship and terminal_relationship, the attribute types name substitutes with STRING.
+--33) Mudularization - making everything XIM based
+ 
+(* ADD USE FROMs for XIMS *)
+
+(* Needed by stackup tool for now *)
+USE FROM lksoft_extensions_xim;
+
+USE FROM curve_swept_solid_xim;
+
+USE FROM Part_occurrence_xim; 
+
+-- Needed by EUCAM
+USE FROM picture_representation_xim;
+
+USE FROM group_xim;
+USE FROM activity_xim;
+USE FROM activity_method_xim;
+USE FROM advanced_boundary_representation_xim;
+USE FROM alias_identification_xim;
+USE FROM approval_xim;
+USE FROM assembly_structure_xim;
+USE FROM certification_xim;
+USE FROM class_xim;
+USE FROM classification_assignment_xim;
+USE FROM classification_with_attributes_xim;
+USE FROM configuration_effectivity_xim;
+USE FROM configuration_item_xim;
+USE FROM contextual_shape_positioning_xim;
+USE FROM contract_xim;
+USE FROM date_time_xim;
+USE FROM date_time_assignment_xim;
+USE FROM derived_shape_element_xim; 
+USE FROM dimension_tolerance_xim;
+USE FROM document_and_version_identification_xim;
+USE FROM document_assignment_xim;
+USE FROM document_definition_xim;
+USE FROM document_structure_xim;
+USE FROM effectivity_application_xim;
+REFERENCE FROM effectivity_application_xim(Pre_defined_effectivity_or_ineffectivity_assignment_types);
+USE FROM effectivity_xim;
+USE FROM elemental_geometric_shape_xim;
+USE FROM event_xim;
+USE FROM event_assignment_xim;
+USE FROM extended_measure_representation_xim;
+USE FROM external_class_xim;
+USE FROM external_item_identification_assignment_xim;
+USE FROM external_model_xim;
+USE FROM file_identification_xim;
+USE FROM foundation_representation_xim;
+USE FROM geometrically_bounded_surface_xim;
+USE FROM geometric_tolerance_xim;
+USE FROM identification_assignment_xim;
+USE FROM independent_property_xim;
+USE FROM independent_property_representation_xim;
+USE FROM item_definition_structure_xim;
+USE FROM manifold_surface_xim;
+USE FROM measure_representation_xim;
+USE FROM multi_linguism_xim;
+USE FROM name_assignment_xim;
+USE FROM part_and_version_identification_xim;
+USE FROM part_definition_relationship_xim;
+USE FROM part_view_definition_xim;
+USE FROM person_organization_xim;
+USE FROM person_organization_assignment_xim;
+USE FROM plib_class_reference_xim;
+USE FROM process_property_assignment_xim;
+USE FROM product_categorization_xim;
+USE FROM product_concept_identification_xim;
+USE FROM product_identification_xim;
+USE FROM product_replacement_xim;
+USE FROM product_structure_xim;
+USE FROM product_version_xim;
+USE FROM product_version_relationship_xim;
+USE FROM product_view_definition_xim;
+USE FROM product_view_definition_properties_xim;
+USE FROM product_view_definition_relationship_xim;
+USE FROM project_xim;
+USE FROM property_assignment_xim;
+USE FROM requirement_assignment_xim;
+USE FROM requirement_identification_and_version_xim;
+USE FROM requirement_view_definition_xim;
+USE FROM requirement_view_definition_relationship_xim;
+USE FROM security_classification_xim;
+USE FROM shape_property_assignment_xim;
+USE FROM single_part_representation_xim;
+USE FROM time_interval_xim;
+USE FROM value_with_unit_xim;
+USE FROM work_order_xim;
+USE FROM work_request_xim;
+USE FROM basic_geometry_xim;
+USE FROM basic_curve_xim;
+USE FROM area_2d_xim;
+USE FROM manifold_subsurface_xim;
+USE FROM Conductivity_material_aspects_xim;
+USE FROM Generic_material_aspects_xim;
+USE FROM Default_tolerance_xim;
+USE FROM Constructive_solid_geometry_2d_xim;
+
+USE FROM Failure_mode_effects_causes_analysis_xim;
+
+(* Needed by MS Project translator *)
+-- USE FROM Work_breakdown_xim;
+USE FROM Scheme_xim;
+USE FROM Activity_as_realized_xim;
+
+(* AP210 related XIMS *)
+
+USE FROM Ap210_electronic_assembly_interconnect_and_packaging_design_xim;
+USE FROM Shape_feature_xim;
+
+(* IDA STEP specific *)
+USE FROM alternative_solution_xim;
+USE FROM associative_text_xim;
+USE FROM appearance_assignment_xim;
+USE FROM constructive_solid_geometry_3d_xim;
+USE FROM construction_history_xim;
+USE FROM product_class_xim;
+USE FROM task_specification_xim;
+-- AP236 models causing problems at MIM level, so need to refuse using XIMs as well
+USE FROM surface_conditions_xim;
+USE FROM specification_based_configuration_xim;
+USE FROM specification_control_xim;
+USE FROM external_properties_xim;
+USE FROM Manufacturing_configuration_effectivity_xim;
+USE FROM Inertia_characteristics_xim;
+
+USE FROM part_collection_xim;
+USE FROM product_breakdown_xim;
+
+USE FROM construction_geometry_xim;
+USE FROM curve_appearance_xim;
+-- USE FROM pdm_material_aspects_xim;
+
+-- USE FROM drawing_structure_and_administration_xim;
+USE FROM faceted_boundary_representation_xim;
+USE FROM layer_assignment_xim;
+USE FROM position_in_organization_xim;
+USE FROM product_as_individual_xim;
+USE FROM product_as_individual_assembly_xim;
+USE FROM physical_breakdown_xim;
+USE FROM functional_breakdown_xim;
+USE FROM specified_product_xim;
+USE FROM general_surface_appearance_xim;
+USE FROM wireframe_2d_xim;
+USE FROM geometrically_bounded_wireframe_xim;
+
+USE FROM Dimension_and_tolerance_callouts_xim;
+USE FROM Annotated_presentation_xim;
+
+(* Needed by Task Editor *)
+USE FROM Zonal_breakdown_xim;
+
+(* USE FROM product_occurrence_xim; *)
+ 
+(* END OF ADD USE FROMs for XIMS *) 
+
+	(* added for extended ARM *)
+	USE FROM aic_advanced_brep; -- ISO 10303-514
+
+	USE FROM aic_csg; -- ISO 10303-515
+
+	USE FROM aic_edge_based_wireframe; -- ISO 10303-501
+
+	USE FROM aic_geometrically_bounded_2d_wireframe; -- ISO 10303-503
+
+	USE FROM aic_draughting_elements; -- ISO 10303-506
+
+	USE FROM aic_draughting_annotation; -- ISO 10303-504
+
+	USE FROM aic_associative_draughting_elements; -- ISO 10303-520
+
+	USE FROM aic_geometrically_bounded_surface; -- ISO 10303-507
+
+	USE FROM aic_geometrically_bounded_wireframe; -- ISO 10303-510
+
+	USE FROM aic_manifold_surface; -- ISO 10303-509
+
+	USE FROM aic_manifold_subsurface; -- ISO 10303-521
+
+	USE FROM aic_shell_based_wireframe; -- ISO 10303-502
+
+	USE FROM aic_mechanical_design_geometric_presentation; -- ISO 10303-517
+
+	USE FROM aic_non_manifold_surface; -- ISO 10303-508
+
+	USE FROM aic_topologically_bounded_surface; -- ISO 10303-511
+
+	USE FROM presentation_definition_schema; -- ISO 10303-46
+
+	USE FROM presentation_appearance_schema; -- ISO 10303-46
+	
+	USE FROM document_schema; -- ISO 10303-46 (Added by GL)
+
+	USE FROM process_property_schema; -- ISO 10303-49? (Added by GL)
+	
+	USE FROM kinematic_analysis_control_and_result_schema; --(Added by GL)
+	
+	USE FROM qualified_measure_schema   -- ISO 10303-45
+	(	descriptive_representation_item,
+	   	measure_qualification,
+		measure_representation_item,
+		precision_qualifier,
+		qualified_representation_item,
+		standard_uncertainty,
+		type_qualifier,
+		uncertainty_qualifier
+	);
+
+	USE FROM draughting_element_schema(
+		terminator_symbol
+	);
+
+	USE FROM ida_step_aim_schema;
+
+	USE FROM person_organization_schema(
+		address,
+		organization,
+		organizational_address,
+		person,
+		personal_address
+	);
+
+	USE FROM product_property_representation_schema(
+   		shape_representation,
+   		shape_representation_relationship
+	);
+		-- shape_definition_representation,
+
+	USE FROM geometric_model_schema   -- ISO 10303-42
+	  (
+	  	block,
+		boolean_result,
+		brep_with_voids,
+		csg_solid,
+		edge_based_wireframe_model,
+		extruded_face_solid,
+		face_based_surface_model,
+		faceted_brep,
+		geometric_curve_set,
+		geometric_set,
+		half_space_solid,
+		manifold_solid_brep,
+		revolved_face_solid,
+		right_angular_wedge,
+		right_circular_cone,
+		right_circular_cylinder,
+		shell_based_surface_model,
+		solid_model,
+		solid_replica,
+		sphere,
+		swept_face_solid,
+		torus
+	);
+
+	USE FROM geometry_schema   -- ISO 10303-42
+	  (
+	  	axis1_placement,
+	   	axis2_placement_2d,
+	   	axis2_placement_3d,
+	   	b_spline_curve,
+	   	b_spline_surface,
+	   	bounded_curve,
+	   	bounded_surface,
+	   	cartesian_point,
+	   	cartesian_transformation_operator,
+	   	cartesian_transformation_operator_2d,
+	   	cartesian_transformation_operator_3d,
+	   	circle,
+	   	composite_curve,
+		conic,
+	   	conical_surface,
+	   	curve,
+	   	curve_bounded_surface,
+	   	cylindrical_surface,
+	   	degenerate_pcurve,
+	   	degenerate_toroidal_surface,
+	   	direction,
+	   	elementary_surface,
+	   	ellipse,
+	   	geometric_representation_context,
+	   	geometric_representation_item,
+	   	hyperbola,
+	   	line,
+	   	offset_curve_2d,
+	   	offset_curve_3d,
+	   	offset_surface,
+	   	oriented_surface,
+	   	parabola,
+	   	pcurve,
+	   	placement,
+	   	plane,
+	   	point,
+	   	point_on_curve,
+	   	point_on_surface,
+	  	point_replica,
+	   	polyline,
+	   	rectangular_composite_surface,
+	   	rectangular_trimmed_surface,
+	   	spherical_surface,
+	   	surface,
+	   	surface_curve,
+	   	surface_of_linear_extrusion,
+	   	surface_of_revolution,
+	   	toroidal_surface,
+	   	trimmed_curve
+	);
+
+	USE FROM topology_schema   -- ISO 10303-42
+	  (
+	  	closed_shell,
+	   	connected_edge_set,
+	   	connected_face_set,
+	   	connected_face_sub_set,
+	   	edge,
+	   	edge_curve,
+	   	edge_loop,
+	   	face,
+	   	face_bound,
+	   	face_outer_bound,
+	   	face_surface,
+	   	loop,
+	   	open_shell,
+	   	oriented_closed_shell,
+	   	oriented_edge,
+	   	oriented_face,
+	   	path,
+	   	poly_loop,
+	   	seam_edge,
+	   	subedge,
+	   	subface,
+	   	topological_representation_item,
+	   	vertex,
+	   	vertex_loop,
+	   	vertex_point);
+
+	USE FROM measure_schema   -- ISO 10303-41
+	  (amount_of_substance_measure,
+	   amount_of_substance_measure_with_unit,
+	   amount_of_substance_unit,
+	   area_measure,
+	   area_measure_with_unit,
+	   area_unit,
+	   celsius_temperature_measure,
+	   celsius_temperature_measure_with_unit,
+	   context_dependent_measure,
+	   context_dependent_unit,
+	   conversion_based_unit,
+	   count_measure,
+	   derived_unit,
+	   descriptive_measure,
+	   dimensional_exponents,
+	   electric_current_measure,
+	   electric_current_measure_with_unit,
+	   electric_current_unit,
+	   global_unit_assigned_context,
+	   length_measure,
+	   length_measure_with_unit,
+	   length_unit,
+	   luminous_intensity_measure,
+	   luminous_intensity_measure_with_unit,
+	   luminous_intensity_unit,
+	   mass_measure,
+	   mass_measure_with_unit,
+	   mass_unit,
+	   measure_with_unit,
+	   named_unit,
+	   numeric_measure,
+	   parameter_value,
+	   plane_angle_measure,
+	   plane_angle_measure_with_unit,
+	   plane_angle_unit,
+	   positive_length_measure,
+	   positive_plane_angle_measure,
+	   positive_ratio_measure,
+	   ratio_measure,
+	   ratio_measure_with_unit,
+	   ratio_unit,
+	   si_unit,
+	   solid_angle_measure,
+	   solid_angle_measure_with_unit,
+	   solid_angle_unit,
+	   thermodynamic_temperature_measure,
+	   thermodynamic_temperature_measure_with_unit,
+	   thermodynamic_temperature_unit,
+	   time_measure,
+	   time_measure_with_unit,
+	   time_unit,
+	   volume_measure,
+	   volume_measure_with_unit,
+	   volume_unit,
+	   unit);
+
+	USE FROM date_time_schema(
+		date,
+		calendar_date,
+		date_and_time,
+		local_time,
+		coordinated_universal_time_offset,
+		ahead_or_behind
+	);
+
+	USE FROM representation_schema   -- ISO 10303-43
+	  (
+	  	compound_representation_item,
+	   	founded_item,
+	   	functionally_defined_transformation,
+	   	global_uncertainty_assigned_context,
+	   	item_defined_transformation,
+	   	list_representation_item,
+	   	mapped_item,
+	   	representation,
+	   	representation_context,
+	   	representation_item,
+	   	representation_map,
+	   	representation_relationship,
+	  	representation_relationship_with_transformation,
+	   	set_representation_item,
+	   	uncertainty_assigned_representation,
+	   	uncertainty_measure_with_unit,
+	   	value_representation_item
+	);
+
+	USE FROM presentation_organization_schema --ISO 10303-46
+	(
+		area_in_set,
+		camera_image,
+		camera_model,
+		camera_model_d2,
+		camera_model_d3,
+		camera_model_d3_with_hlhsr,
+		camera_usage,
+		light_source,
+		light_source_ambient,
+		light_source_directional,
+		light_source_positional,
+		light_source_spot,
+		presentation_area,
+		presentation_layer_assignment,
+		presentation_representation,
+		presentation_set,
+		presentation_size,
+		presentation_view,
+		view_volume,
+		layered_item -- GL added
+	);
+
+	REFERENCE FROM presentation_organization_schema
+		(aspect_ratio);
+
+	USE FROM drawing_definition_schema -- ISO 10303-101
+	(
+		draughting_title,
+		drawing_definition,
+		drawing_revision,
+		drawing_revision_sequence,
+		drawing_sheet_revision,
+		drawing_sheet_revision_usage
+	);
+
+
+	USE FROM basic_attribute_schema -- ISO 10303-41.2
+	(
+		description_attribute,
+		id_attribute,
+		name_attribute,
+		object_role,
+		role_association
+	);
+
+	USE FROM kinematic_structure_schema -- ISO 10303-105
+	(
+		kinematic_pair,
+		cylindrical_pair,
+		fully_constrained_pair,
+		gear_pair,
+		planar_curve_pair,
+		planar_pair,
+		point_on_planar_curve_pair,
+		point_on_surface_pair,
+		prismatic_pair,
+		rack_and_pinion_pair,
+		revolute_pair,
+		screw_pair,
+		spherical_pair,
+		surface_pair,
+		unconstrained_pair,
+		universal_pair,
+		cylindrical_pair_value,
+		gear_pair_value,
+		planar_pair_value,
+		point_on_planar_curve_pair_value,
+		point_on_surface_pair_value,
+		prismatic_pair_value,
+		rack_and_pinion_pair_value,
+		revolute_pair_value,
+		rolling_curve_pair_value,
+		rolling_surface_pair_value,
+		screw_pair_value,
+		sliding_curve_pair_value,
+		sliding_surface_pair_value,
+		spherical_pair_value,
+		unconstrained_pair_value,
+		universal_pair_value,
+		spatial_rotation,
+		ypr_rotation,
+		rotation_about_direction,
+		rigid_placement,
+		su_parameters,
+		kinematic_link_representation_relation,
+		kinematic_link_representation_association,
+		mechanism, -- GL added
+		kinematic_structure, -- GL added
+		kinematic_ground_representation -- GL added
+	);
+	
+	USE FROM management_resources_schema(
+		identification_assignment,
+		identification_role
+	);
+
+
+ TYPE undefined_object_string = STRING;
+ END_TYPE;
+
+(** GL - moved from pre_defined_product_....specializations *)
+TYPE ida_external_identification_item_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH (
+	  Externally_defined_effectivity_or_ineffectivity_assignment__aia);
+END_TYPE;
+
+SUBTYPE_CONSTRAINT pdpdms_applied_ineffectivity_assignment_subtypes FOR applied_ineffectivity_assignment;
+	ABSTRACT SUPERTYPE;
+    ONEOF (Pre_defined_effectivity_or_ineffectivity_assignment__aia,
+           Externally_defined_effectivity_or_ineffectivity_assignment__aia);
+END_SUBTYPE_CONSTRAINT;
+
+ENTITY Pre_defined_effectivity_or_ineffectivity_assignment__aia
+	ABSTRACT SUPERTYPE OF (ONEOF (Applied_ineffectivity_assignment__actual,
+                                Applied_ineffectivity_assignment__planned,
+                                Applied_ineffectivity_assignment__required))
+  SUBTYPE OF (applied_ineffectivity_assignment);
+  WHERE
+    WR1: SELF\effectivity_assignment.role.name IN Pre_defined_effectivity_or_ineffectivity_assignment_types;
+END_ENTITY;
+
+ENTITY Externally_defined_effectivity_or_ineffectivity_assignment__aia
+  SUBTYPE OF (applied_ineffectivity_assignment);
+INVERSE
+  source : External_source_identification FOR item;
+WHERE
+  WR1: NOT (SELF\effectivity_assignment.role.name IN Pre_defined_effectivity_or_ineffectivity_assignment_types);
+END_ENTITY;
+
+ENTITY Applied_ineffectivity_assignment__actual
+  SUBTYPE OF (Pre_defined_effectivity_or_ineffectivity_assignment__aia);
+DERIVE
+  SELF\effectivity_assignment.role : object_role := object_role('actual', ?);
+END_ENTITY;
+
+ENTITY Applied_ineffectivity_assignment__planned
+  SUBTYPE OF (Pre_defined_effectivity_or_ineffectivity_assignment__aia);
+DERIVE
+  SELF\effectivity_assignment.role : object_role := object_role('planned', ?);
+END_ENTITY;
+
+ENTITY Applied_ineffectivity_assignment__required
+  SUBTYPE OF (Pre_defined_effectivity_or_ineffectivity_assignment__aia);
+DERIVE
+  SELF\effectivity_assignment.role : object_role := object_role('required', ?);
+END_ENTITY;
+
+ TYPE undefined_object = STRING;
+ END_TYPE;
+
+ TYPE general_organizational_data_select = SELECT (
+   configuration_item,
+   assembly_component_usage_substitute,
+   Product_view_definition,
+   class_category_association,
+   class_specification_association,
+   class_condition_association,
+   class_inclusion_association,
+   Design_constraint_definition,
+   product_class,
+   activity,
+   Applied_activity_assignment,
+   document,
+   document_version,
+   configuration,
+   drawing_revision,
+   drawing_sheet_revision,
+   process_plan_armx,
+   certification,
+   class_system,
+   classification_association,
+   Document_definition,
+   file,
+   process_operation_occurrence,
+   material_designation,
+   Product_as_individual,
+   physical_assembly_relationship,
+   physical_instance_test_result,
+   Breakdown_element_usage,
+   manufacturing_configuration,
+   Breakdown_element_definition,
+   action_request_solution,
+   Alternate_part_relationship,
+   approval_status,
+   class_structure_relationship,
+   Breakdown_element_usage,
+   contract,
+   Class_with_attributes,
+   shape_representation,
+   Part,
+   item_definition_instance_relationship,
+   Part_definition_relationship,
+   product_occurrence, --item_instance,
+   item_instance_relationship,
+   Part_version,
+   product_definition_formation_relationship,
+   Person_or_organization_or_person_in_organization_in_position_relationship,
+   organization_relationship,
+   process_operation_definition,
+   process_operation_resource_assignment,
+   person_and_organization,
+   general_organizational_data_sub_select
+  );
+ END_TYPE;
+
+ TYPE ida_general_tolerance_table_select = EXTENSIBLE SELECT BASED_ON general_tolerance_table_select WITH (
+   file);
+ END_TYPE;
+ 
+ TYPE structuring_method_select = SELECT (
+   group
+--   layer -- there's no such entity - not clear what to use instead
+  );
+ END_TYPE;
+
+ TYPE ida_default_setting_select = EXTENSIBLE SELECT BASED_ON default_setting_select WITH (
+   default_surface_texture,
+   default_thickness
+  );
+ END_TYPE;
+
+ TYPE model_change_select = SELECT (
+   Representation_relationship
+  );
+ END_TYPE;
+
+ TYPE ida_documented_element_select = EXTENSIBLE SELECT BASED_ON documented_element_select WITH (
+   contract,
+   material_designation,
+   activity,
+   approval,
+   drawing_sheet_revision,
+   change_armx,
+   product_occurrence, --item_instance,
+   Design_constraint_definition,
+   Product_view_definition,
+   descriptive_representation_item,
+   resource_requirement_type,
+   Class_with_attributes,
+   classification_attribute,
+   class_system,
+   certification,
+   Action_method,
+   item_shape,
+   item_definition_instance_relationship,
+   item_instance_relationship,
+   Part_definition_relationship,
+   Breakdown_element_definition,
+   Shape_feature_definition_armx,
+   general_feature_armx,
+   physical_assembly_relationship,
+   Product_as_individual,
+   physical_instance_test_result,
+   process_plan_armx,
+   process_operation_occurrence,
+   configuration_item,
+   product_class,
+   Breakdown_element_usage,
+   project,
+   property,
+   class_structure_relationship,
+   Part,
+   Applied_activity_assignment,
+   Part_version,
+   person,
+   documented_element_sub_select,
+   path_feature_component,
+   organization
+  );
+ END_TYPE;
+
+ TYPE resource_definition_select = SELECT (
+(** GL - commented out options which do not have a good mapping. Might be reviewed in the future if needed *) 
+--   descriptive_representation_item,
+--   resource_requirement_type,
+   Product_view_definition__product_definition_resource_xim, -- Originally it was Product_view_definition, but we need to somehow workarround problems in the mapping
+   Product_occurrence --item_instance,
+--   Product_as_individual_view, -- Physical_instance
+--   Physical_element_definition
+  );
+ END_TYPE;
+
+ TYPE ida_template_definition_select = EXTENSIBLE SELECT BASED_ON template_definition_select WITH  (
+   external_model
+  );
+ END_TYPE;
+
+ TYPE ida_element_with_dimension_select = EXTENSIBLE SELECT BASED_ON element_with_dimension_select WITH (
+   annotation_curve_occurrence
+  );
+ END_TYPE;
+
+ TYPE ida_constructive_element_select = EXTENSIBLE SELECT BASED_ON constructive_element_select WITH (
+   face,
+   oriented_edge_curve,
+   vertex_point
+  );
+ END_TYPE;
+
+ TYPE process_operation_input_or_output_select = SELECT (
+   Product_view_definition,
+   mated_item_association,
+   assembly_component_usage,
+   product_occurrence --item_instance
+  );
+ END_TYPE;
+
+(* Made a copy from Project_management_project_breakdown_connector_arm, according request from Ramunas/Eva *) 
+  TYPE ida_position_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_item WITH (product, product_definition_formation, product_definition);
+  END_TYPE;
+ 
+ TYPE string_select = SELECT (
+   Attribute_translation_assignment,
+   default_language_string
+  );
+ END_TYPE;
+
+ TYPE point_or_curve_select = SELECT (
+   curve,
+   point
+  );
+ END_TYPE;
+
+ TYPE model_property_representation_select = SELECT (
+   shape_representation,
+   external_model
+  );
+ END_TYPE;
+
+ TYPE change_relationship_select = SELECT (
+   product_definition_formation_relationship,
+   process_plan_relationship,
+   design_constraint_relationship,
+   shape_element_relationship,
+   replaced_usage_relationship,
+   Breakdown_element_usage,
+   process_operation_occurrence_relationship
+  );
+ END_TYPE;
+
+ TYPE transformation_select = SELECT (
+   mapped_item,
+   representation_relationship_with_transformation
+  );
+ END_TYPE;
+
+ TYPE event_or_date_select = SELECT (
+   event,
+   date_time
+  );
+ END_TYPE;
+
+ TYPE period_or_date_select = SELECT (
+   time_measure_with_unit,
+   event,
+   date_time
+  );
+ END_TYPE;
+
+ TYPE active_or_inactive = ENUMERATION OF ( active,inactive  );
+ END_TYPE;
+
+ TYPE default_language_string = STRING;
+ END_TYPE;
+
+ TYPE simulation_context_select = SELECT (
+   Product_view_definition,
+   product_occurrence, --item_instance,
+   product_specification,
+   product_class,
+   item_definition_instance_relationship,
+   item_instance_relationship,
+   Part_definition_relationship,
+   Breakdown_element_definition
+  );
+ END_TYPE;
+
+TYPE ida_classified_element_select = EXTENSIBLE SELECT BASED_ON classified_element_select WITH (
+   Design_constraint_definition,
+   Part,
+   approval_status,
+   security_classification,
+   product_class,
+   document,
+   Document_definition,
+   project,
+   contract,
+   Action_method,
+   property,
+   material_designation,
+   configuration_item,
+   Breakdown_element_definition,
+   Shape_feature_definition_armx,
+   general_feature_armx,
+   activity,
+   Part_version,
+   property_definition,
+   product_occurrence, --item_instance,
+   Product_view_definition,
+   document_version,
+   shape_element,
+   specification_category,
+   Transition_feature_solid,
+   action_directive,
+   versioned_action_request,
+   process_plan_armx,
+   process_operation_definition,
+   process_operation_occurrence,
+   file,
+   connectivity_definition (*added because of AP212 compatibility*)
+  );
+ END_TYPE;
+
+ TYPE property_source_select = SELECT (
+   External_library_property,
+   plib_property_reference
+  );
+ END_TYPE;
+
+ TYPE item_property_select = SELECT (
+   product_class,
+   Design_constraint_definition,
+   product_occurrence, --item_instance,
+   Product_view_definition,
+   Breakdown_element_usage,
+   Part_definition_relationship,
+   item_definition_instance_relationship,
+   item_instance_relationship,
+   item_shape,
+   shape_element,
+   shape_element_relationship,
+   Breakdown_element_definition,
+   file,
+   Document_definition,
+   Shape_feature_definition_armx,
+   general_feature_armx,
+   Transition_feature_solid,
+   configuration_item,
+   Product_as_individual,
+   Part, (*added because of AP212 compatibility*)
+   drawing_sheet_revision, (*added because of AP212 compatibility*)
+   connectivity_definition, (*added because of AP212 compatibility*)
+   terminal (*added because of AP212 compatibility*)
+  );
+ END_TYPE;
+
+ TYPE model_property_select = SELECT (
+   process_property_select,
+   item_property_select
+  );
+ END_TYPE;
+
+ TYPE test_activity_select = SELECT (
+   activity,
+   process_operation_occurrence
+  );
+ END_TYPE;
+ 
+ TYPE process_property_select = SELECT (
+   process_plan_armx,
+   process_operation_occurrence,
+   process_operation_resource_assignment,
+   activity,
+   action_request_solution,
+   process_operation_definition
+  );
+ END_TYPE;
+
+ TYPE model_change_element_select = SELECT (
+   shape_representation);
+ END_TYPE;
+
+ TYPE incremental_change_select = SELECT (
+   incremental_model_change_property_definition,
+   incremental_model_change_action_property,
+   model_change_element_select
+  );
+ END_TYPE;
+
+ TYPE ida_instance_usage_context_select = EXTENSIBLE SELECT BASED_ON instance_usage_context_select WITH (
+   Breakdown_element_usage,
+   item_definition_instance_relationship,
+   process_operation_input_or_output
+  );
+ END_TYPE;
+
+ TYPE final_definition_select = SELECT (
+   Product_as_individual,
+   Product_view_definition,
+   descriptive_representation_item,
+   resource_requirement_type
+  );
+ END_TYPE;
+
+ TYPE product_function_component_select = SELECT (
+   Physical_element_definition,
+   Functional_element_definition
+  );
+ END_TYPE;
+
+ TYPE validity_context_select = SELECT (
+   organization,
+   configuration_item,
+   product_class
+  );
+ END_TYPE;
+
+ TYPE general_organizational_data_sub_select = SELECT (
+   security_classification,
+   project,
+   property,
+   property_definition,
+   specification_category,
+   specification,
+   specification_expression,
+   specification_inclusion,
+--sr   styled_representation,
+   presentation_area,
+   action_directive,
+   versioned_action_request
+  );
+ END_TYPE;
+
+ TYPE documented_element_sub_select = SELECT (
+   specification_category,
+   surface_condition,
+   versioned_action_request,
+   action_directive,
+   Transition_feature_solid,
+   security_classification,
+   presentation_area,
+   retention_period,
+   shape_element,
+   shape_element_relationship,
+   specification
+  );
+ END_TYPE;
+
+ TYPE date_time = SELECT(
+ 	date_and_time,
+ 	calendar_date
+  );
+ END_TYPE;
+
+ TYPE oriented_edge_curve = SELECT(
+ 	oriented_edge,
+ 	edge_curve
+  );
+ END_TYPE;
+
+TYPE ida_failure_mode_select = EXTENSIBLE SELECT BASED_ON failure_mode_select WITH 
+  (Part_view_definition, 
+  Breakdown_version);
+END_TYPE;
+
+TYPE ida_state_definition_of_item = EXTENSIBLE SELECT BASED_ON state_definition_of_item WITH 
+  (Part_view_definition, 
+  Breakdown_version,
+  Part_occurrence,
+  Breakdown_element);
+END_TYPE;
+
+  TYPE general_shape_dependent_value_select = SELECT
+	(representation_item,
+	measure_with_unit
+	);
+  END_TYPE; 
+
+ ENTITY mating_definition
+  (* CONNOTATIONAL *) SUBTYPE OF (
+   Product_view_definition
+  );
+(*
+UOF:S8
+*)
+  mating_type : UNDEFINED_OBJECT;
+ DERIVE 
+  (* Fully overlaps with mating_type. mating_type is left just for convenience *)
+  SELF\product_definition.name : label :=?;
+ INVERSE
+  mated_items : SET [2:?] OF mated_item_association FOR relating;
+ END_ENTITY;
+
+ ENTITY recyclability_property
+  (* CONNOTATIONAL *) SUBTYPE OF (
+   property
+  );
+(*
+UOF:PR1
+*)
+  DERIVE
+   SELF\general_property.name : label := 'recyclability property';
+ END_ENTITY;
+
+ ENTITY mass_property
+  (* CONNOTATIONAL *) SUBTYPE OF (
+   property
+  );
+(*
+UOF:PR1
+*)
+  DERIVE
+   SELF\general_property.name : label := 'mass property';
+ END_ENTITY;
+
+ ENTITY hidden_element_handling
+(*
+UOF:P3,P1
+*)
+  (* CONNOTATIONAL *) SUBTYPE OF (camera_model_d3_with_hlhsr);
+  is_defined_for : SET [1:?] OF camera_image;
+  switch : active_or_inactive;
+--GDT-TODO  hidden_element_appearance : OPTIONAL ida_appearance_assignment; 
+  DERIVE
+   SELF\camera_model_d3_with_hlhsr.hidden_line_surface_removal : BOOLEAN :=?; -- switch = .ACTIVE.;
+ END_ENTITY;
+
+ ENTITY process_plan_armx
+(*
+UOF:S8
+*)	
+	(* CONNOTATIONAL *) SUBTYPE OF (action); -- It maps to 2 alternatives (process_plan and product_process_plan). But they have common supertype - action. So let's use it.
+  plan_id : UNDEFINED_OBJECT;
+  name_x : OPTIONAL string_select;
+  description_x : OPTIONAL string_select;
+  produced_output : OPTIONAL SET [1:?] OF Part_version;
+  DERIVE
+   (* Partially overlaps with name_x *)
+   SELF\action.name : label :=?;
+   (* Partially overlaps with description_x *)
+   SELF\action.description : text :=?;
+ END_ENTITY;
+
+ ENTITY process_operation_occurrence
+(*
+UOF:S8
+*)
+	(* CONNOTATIONAL *) SUBTYPE OF (action_relationship);
+  SELF\action_relationship.relating_action RENAMED plan : process_plan_armx;
+  is_defined_in : OPTIONAL geometric_representation_context;
+  operation_definition : process_operation_definition;
+  id : UNDEFINED_OBJECT;
+ END_ENTITY;
+
+ ENTITY same_time_machining_relationship
+  (* CONNOTATIONAL *) SUBTYPE OF (
+   item_instance_relationship
+  );
+(*
+UOF:S8
+*)
+  description_x : OPTIONAL string_select;
+  placement : OPTIONAL transformation_select;
+  DERIVE
+   (* Partially overlaps with description_x attribute *)
+   SELF\product_definition_relationship.description : text :=?;
+ END_ENTITY;
+
+(* 2 entities are made out of 1 structuring_method_hierarchy according 2 AIM alternatives *)
+ ENTITY structuring_method_hierarchy__group
+(*
+UOF:S2
+*)
+ (* CONNOTATIONAL *) SUBTYPE OF (group_relationship);
+  SELF\group_relationship.relating_group RENAMED relating : structuring_method_select;
+  SELF\group_relationship.related_group RENAMED related   : group;
+ END_ENTITY;
+
+ ENTITY structuring_method_hierarchy__presentation
+  (* CONNOTATIONAL *) SUBTYPE OF (presentation_layer_assignment);
+(*
+UOF:S2
+*)
+  relating : structuring_method_select;
+  related : group;
+  (* Overlaps with both attributes *)
+  DERIVE
+   SELF\presentation_layer_assignment.assigned_items : SET [1:?] OF layered_item :=?;
+ END_ENTITY;
+
+ ENTITY general_feature_armx
+(*
+UOF:FF1
+*)
+	(* CONNOTATIONAL *) SUBTYPE OF (general_feature);
+  SELF\characterized_object.name RENAMED feature_type            : UNDEFINED_OBJECT;
+  SELF\characterized_object.description RENAMED feature_category : UNDEFINED_OBJECT;
+  location_and_orientation : OPTIONAL placement;
+  additional_parameter : SET [0:?] OF measure_representation_item;
+ END_ENTITY;
+
+ ENTITY process_state
+  (* CONNOTATIONAL *) SUBTYPE OF (Product_view_definition);
+(*
+UOF:S8
+*)
+  related_item_definition : Product_view_definition;
+ END_ENTITY;
+
+ ENTITY process_plan_relationship
+   SUPERTYPE OF (ONEOF (process_plan_relationship__alternative,
+                        process_plan_relationship__version_association,
+                        process_plan_relationship__version_sequence))
+(*
+UOF:S8
+*)
+  (* CONNOTATIONAL *) SUBTYPE OF (action_relationship);
+  SELF\action_relationship.relating_action RENAMED relating : process_plan_armx;
+  SELF\action_relationship.related_action RENAMED related : process_plan_armx;
+  description_x : OPTIONAL string_select;
+  SELF\action_relationship.name RENAMED relation_type : UNDEFINED_OBJECT;
+  DERIVE
+   (* Partially overlaps with description_x - problem is caused by multi_linguism_string *)
+   SELF\action_relationship.description : text :=?;
+ END_ENTITY;
+ 
+ ENTITY process_plan_relationship__alternative
+   SUBTYPE OF (process_plan_relationship);
+   DERIVE
+     SELF\action_relationship.name : label := 'alternative';
+ END_ENTITY;
+
+ ENTITY process_plan_relationship__version_association
+   SUBTYPE OF (process_plan_relationship);
+   DERIVE
+     SELF\action_relationship.name : label := 'version association';
+ END_ENTITY;
+
+ ENTITY process_plan_relationship__version_sequence
+   SUBTYPE OF (process_plan_relationship);
+   DERIVE
+     SELF\action_relationship.name : label := 'version sequence';
+ END_ENTITY;
+ 
+
+ ENTITY process_operation_input_or_output
+(*
+UOF:S8
+*)
+	(* CONNOTATIONAL *) SUBTYPE OF (process_product_association);
+  SELF\process_product_association.name RENAMED role : UNDEFINED_OBJECT;
+  description_x : OPTIONAL string_select;
+  operation : process_operation_occurrence;
+  SELF\process_product_association.defined_product RENAMED element : process_operation_input_or_output_select;
+  placement : OPTIONAL Cartesian_transformation_operator;
+  concerned_shape : SET [0:?] OF shape_element;
+ END_ENTITY;
+
+ ENTITY process_operation_resource_assignment
+(*
+UOF:S8
+*)
+	(* CONNOTATIONAL *) SUBTYPE OF (requirement_for_action_resource);
+  reference_tool : BOOLEAN;
+  operation : process_operation_occurrence;
+  reason : OPTIONAL string_select;
+  resource_definition : resource_definition_select;
+  placement : OPTIONAL Cartesian_transformation_operator;
+  DERIVE
+   (* Partially overlaps with reason *)
+   SELF\action_resource_requirement.description : text :=?;
+   (* Overlaps with operation attribute *)
+   SELF\action_resource_requirement.operations : SET [1:?] OF characterized_action_definition :=?;
+   (* Overlaps with placement and partially resource_definition attributes *)
+   SELF\requirement_for_action_resource.resources : SET [1:?] OF action_resource :=?;
+ END_ENTITY;
+
+ ENTITY mated_item_association
+  (* CONNOTATIONAL *) SUBTYPE OF (
+   item_definition_instance_relationship
+  );
+(*
+UOF:S8
+*)
+  SELF\item_definition_instance_relationship.relating : mating_definition;
+  placement : OPTIONAL transformation_select;
+ END_ENTITY;
+
+ ENTITY default_surface_texture
+(*
+UOF:C1
+*)
+ (* CONNOTATIONAL *) SUBTYPE OF (representation);
+  measuring_method : UNDEFINED_OBJECT;
+  DERIVE 
+   (* Overlaps with measuring_method attribute *)
+   SELF\representation.items : SET[1:?] OF representation_item :=?;
+ END_ENTITY;
+
+(* Split model_change entity into 2 entities according mapping alternatives property_definition and action_property *)
+ ENTITY model_change__property_definition
+  ABSTRACT SUPERTYPE OF ( ONEOF(full_model_change_property_definition,incremental_model_change_property_definition) )
+  (* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+(*
+UOF:S2
+*)
+  id_x : OPTIONAL UNDEFINED_OBJECT;
+  description_x : string_select;
+  is_describing : change_armx;
+  deleted_element : SET [0:?] OF representation_item;
+  DERIVE
+   (* Partially overlaps with description_x - problem is caused by multi_linguism_string *)
+   SELF\property_definition.description : text :=?;
+   (* Partially overlaps with is_describing *)
+   SELF\property_definition.definition : characterized_definition :=?;
+   SELF\property_definition.id : identifier := id_x;
+ END_ENTITY;
+
+ ENTITY model_change__action_property
+  ABSTRACT SUPERTYPE OF ( ONEOF(full_model_change_action_property,incremental_model_change_action_property) )
+  (* CONNOTATIONAL *) SUBTYPE OF (action_property);
+(*
+UOF:S2
+*)
+  id : OPTIONAL UNDEFINED_OBJECT;
+  description_x : string_select;
+  SELF\action_property.definition RENAMED is_describing : change__action_relationship;
+  deleted_element : SET [0:?] OF representation_item;
+  DERIVE
+   (* Partially overlaps with description_x - problem is caused by multi_linguism_string *)
+   SELF\action_property.description : text :=?;
+ END_ENTITY;
+
+ ENTITY property
+  ABSTRACT SUPERTYPE OF ( ONEOF(cost_property,quality_property,duration_property,recyclability_property,mass_property) )
+  (* CONNOTATIONAL *) SUBTYPE OF (general_property);
+(*
+UOF:PR1
+*)
+  allowed_unit : SET [0:?] OF unit;
+  description_x : OPTIONAL string_select; 
+  property_source : OPTIONAL property_source_select;
+  -- id : UNDEFINED_OBJECT; (* accessable from supertype *)
+  version_id : OPTIONAL UNDEFINED_OBJECT;
+  DERIVE
+   (* Partially overlaps with description_x - problem is caused by multi_linguism_string *)
+   SELF\general_property.description : text :=?;
+ END_ENTITY;
+
+ ENTITY feature_parameter
+ 	(* CONNOTATIONAL *) SUBTYPE OF (measure_representation_item);
+(*
+UOF:S1
+*)
+  parameter_name : OPTIONAL UNDEFINED_OBJECT;
+  DERIVE
+   parameter_value : measure_with_unit :=SELF;
+ END_ENTITY;
+
+ ENTITY final_solution
+  (* CONNOTATIONAL *) SUBTYPE OF (alternative_solution);
+(*
+UOF:S7
+*)
+  final_specification : SET [1:?] OF final_definition_select;
+  final_status : UNDEFINED_OBJECT;
+ END_ENTITY;
+
+ ENTITY value_limitation
+  (* CONNOTATIONAL *) SUBTYPE OF (plus_minus_tolerance);
+(*
+UOF:T1
+*)
+  SELF\plus_minus_tolerance.range RENAMED is_defined_by : limitation_definition_select;
+  envelope : OPTIONAL BOOLEAN;
+  limited_value : measure_representation_item;
+ END_ENTITY;
+
+ ENTITY external_model
+  ABSTRACT SUPERTYPE OF (external_picture)
+  (* CONNOTATIONAL *) SUBTYPE OF (representation);
+(*
+UOF:E1
+*)
+  is_defined_as : digital_file;
+  SELF\representation.context_of_items RENAMED is_defined_in : geometric_representation_context;
+  description_x : OPTIONAL string_select;
+  model_id : UNDEFINED_OBJECT;
+  DERIVE
+  (* Partially overlaps with description_x - problem is caused by multi_linguism_string *)
+   SELF\representation.description : text :=?;
+ END_ENTITY;
+
+ ENTITY geometric_model_version
+  (* CONNOTATIONAL *) SUBTYPE OF (shape_representation);
+(*
+UOF:E1,S2
+*)
+  version_id : UNDEFINED_OBJECT;
+ END_ENTITY;
+
+ ENTITY process_plan_version
+  (* CONNOTATIONAL *) SUBTYPE OF (process_plan_armx);
+(*
+UOF:S8
+*)
+  version_id : UNDEFINED_OBJECT;
+ END_ENTITY;
+
+ ENTITY element_delivery_armx
+ (* CONNOTATIONAL *) SUBTYPE OF (element_delivery);
+(*
+UOF:S5
+*)
+  destination : organization;
+  quantity : measure_with_unit;
+  deliverable_element : Applied_activity_assignment;
+ END_ENTITY;
+
+ ENTITY mated_item_relationship
+  (* CONNOTATIONAL *) SUBTYPE OF (product_definition_relationship);
+(*
+UOF:S8
+*)
+  mated_shape : OPTIONAL shape_element_relationship;
+  relating : mated_item_association; -- BOTH mapps are WRONG - SEDS
+  related : mated_item_association; -- BOTH mapps are WRONG - SEDS
+  SELF\product_definition_relationship.related_product_definition RENAMED mating_material : quantified_instance; -- SET can't be implemented, because of mapping SET [0:?] OF quantified_instance;
+  DERIVE
+   (* Most likely overlaps with relating when mapping is fixed *)
+   SELF\product_definition_relationship.relating_product_definition : product_definition :=?;
+ END_ENTITY;
+
+(* Split into 3 entities according mapping alternatives property_definition_relationship, shape_aspect_relationship and action_property *)
+ ENTITY property_change__property_definition_relationship
+  (* CONNOTATIONAL *) SUBTYPE OF (property_definition_relationship);
+(*
+UOF:PR1
+*)
+  is_describing : change__product_definition_relationship;
+  added_property : SET [0:?] OF property_value_representation;
+  deleted_property : SET [0:?] OF property_value_representation;
+  description_x : string_select;
+  id : OPTIONAL UNDEFINED_OBJECT;
+  DERIVE
+   (* Overlaps with description_x *)
+   SELF\property_definition_relationship.description : text :=?;
+ END_ENTITY;
+
+ ENTITY property_change__shape_aspect_relationship
+  (* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+(*
+UOF:PR1
+*)
+  is_describing : change__shape_aspect_relationship; -- IDENTICAL MAPPING - means we need a complex here
+  added_property : SET [0:?] OF property_value_representation;
+  deleted_property : SET [0:?] OF property_value_representation;
+  description_x : string_select;
+  id_x : OPTIONAL UNDEFINED_OBJECT;
+  DERIVE
+   (* Overlaps with description_x *)
+   SELF\shape_aspect_relationship.description : text :=?;
+   SELF\shape_aspect_relationship.id : identifier := id_x;
+ END_ENTITY;
+
+ ENTITY property_change__action_property
+  (* CONNOTATIONAL *) SUBTYPE OF (action_property);
+(*
+UOF:PR1
+*)
+  SELF\action_property.definition RENAMED is_describing : change__action_relationship;
+  added_property : SET [0:?] OF property_value_representation;
+  deleted_property : SET [0:?] OF property_value_representation;
+  description_x : string_select;
+  id : OPTIONAL UNDEFINED_OBJECT;
+  DERIVE
+   (* Overlaps with description_x *)
+   SELF\action_property.description : text :=?;
+ END_ENTITY;
+
+(* Split into 4 entities according mapping alternatives product_definition_relationship, product_definition_formation_relationship, action_relationship or shape_aspect_relationship *)
+(* Also have a select of all 4 alternatives *)
+ TYPE change_armx = SELECT (
+   change__product_definition_relationship,
+   change__product_definition_formation_relationship,
+   change__action_relationship,
+   change__shape_aspect_relationship
+  );
+ END_TYPE;
+
+ ENTITY change__product_definition_relationship
+ (* CONNOTATIONAL *) SUBTYPE OF (product_definition_relationship);
+(*
+UOF:S5,S2,PR1
+*)
+  description_x : OPTIONAL string_select;
+  described_change : change_relationship_select;
+  DERIVE
+  (* Partially overlaps with description_x - problem is caused by multi_linguism_string *)
+   SELF\product_definition_relationship.description : text :=?;
+ END_ENTITY;
+
+ ENTITY change__product_definition_formation_relationship
+ (* CONNOTATIONAL *) SUBTYPE OF (product_definition_formation_relationship);
+(*
+UOF:S5,S2,PR1
+*)
+  description_x : OPTIONAL string_select;
+  described_change : change_relationship_select;
+  DERIVE
+  (* Partially overlaps with description_x - problem is caused by multi_linguism_string *)
+   SELF\product_definition_formation_relationship.description : text :=?;
+ END_ENTITY;
+
+ ENTITY change__action_relationship
+ (* CONNOTATIONAL *) SUBTYPE OF (action_relationship);
+(*
+UOF:S5,S2,PR1
+*)
+  description_x : OPTIONAL string_select;
+  described_change : change_relationship_select;
+  DERIVE
+  (* Partially overlaps with description_x - problem is caused by multi_linguism_string *)
+   SELF\action_relationship.description : text :=?;
+ END_ENTITY;
+
+ ENTITY change__shape_aspect_relationship
+ (* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+(*
+UOF:S5,S2,PR1
+*)
+  description_x : OPTIONAL string_select;
+  described_change : change_relationship_select;
+  DERIVE
+  (* Partially overlaps with description_x - problem is caused by multi_linguism_string *)
+   SELF\shape_aspect_relationship.description : text :=?;
+ END_ENTITY;
+ 
+ ENTITY constructive_geometric_element
+ 	(* CONNOTATIONAL *) SUBTYPE OF (representation_item); --GL added
+(*
+UOF:S2
+*)
+  description : OPTIONAL string_select;
+  DERIVE
+   (* Partially overlaps with description_x - problem is caused by multi_linguism_string *)
+   SELF\representation_item.name : label :=?;
+   element : constructive_element_select := SELF;
+ INVERSE
+  geometry : SET [1:?] OF constructive_geometry_representation FOR items;
+ END_ENTITY;
+
+ ENTITY default_thickness
+  (* CONNOTATIONAL *) SUBTYPE OF (representation);
+(*
+UOF:T1
+*)
+  thickness_value : measure_with_unit;
+  description_x : OPTIONAL string_select;
+  parameter_name : OPTIONAL UNDEFINED_OBJECT;
+  DERIVE
+  (* Partially overlaps with description_x - problem is caused by multi_linguism_string *)
+   SELF\representation.description : text :=?;
+  (* Overlaps with thickness_value and parameter_name *)
+   SELF\representation.items : SET[1:?] OF representation_item :=?;
+ END_ENTITY;
+
+(* Split into 3 entities according mapping alternatives: property_definition, action_property and resource_property *)
+ ENTITY model_property_association__property_definition
+  (* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+(*
+UOF:PR1
+*)
+  described_element : model_property_select;
+  associated_property_value : model_property_value;
+  validity_context : OPTIONAL validity_context_select;
+  DERIVE
+   (* Overlaps with described_element *)
+   SELF\property_definition.definition : characterized_definition :=?;
+ END_ENTITY;
+
+ ENTITY model_property_association__action_property
+  (* CONNOTATIONAL *) SUBTYPE OF (action_property);
+(*
+UOF:PR1
+*)
+  described_element : model_property_select;
+  associated_property_value : model_property_value;
+  validity_context : OPTIONAL validity_context_select;
+  DERIVE
+   (* Overlaps with described_element *)
+   SELF\action_property.definition : characterized_action_definition :=?;
+ END_ENTITY;
+
+ ENTITY model_property_association__resource_property
+  (* CONNOTATIONAL *) SUBTYPE OF (resource_property);
+(*
+UOF:PR1
+*)
+  SELF\resource_property.resource RENAMED described_element : model_property_select;
+  associated_property_value : model_property_value;
+  validity_context : OPTIONAL validity_context_select;
+ END_ENTITY;
+
+ ENTITY quality_property
+  (* CONNOTATIONAL*) SUBTYPE OF (property);
+(*
+UOF:PR1
+*)
+  DERIVE
+   SELF\general_property.name : label := 'quality property';
+ END_ENTITY;
+
+ ENTITY cost_property
+  (* CONNOTATIONAL*) SUBTYPE OF (property);
+	(*
+	UOF:PR1
+	*)
+  DERIVE
+   SELF\general_property.name : label := 'cost property';
+ END_ENTITY;
+
+ ENTITY retention_period
+ (* CONNOTATIONAL *) SUBTYPE OF (retention);
+(*
+UOF:S4
+*)
+  start_definition : event_or_date_select;
+  earliest_end_definition : period_or_date_select;
+  latest_end_definition : period_or_date_select;
+  is_applied_to : SET [1:?] OF general_organizational_data_select;
+  retention_purpose : OPTIONAL string_select;
+  DERIVE
+   (* Partially overlaps with retention_purpose - problem is caused by multi_linguism_string *)
+   SELF\action.description : text :=?;
+ END_ENTITY;
+
+ ENTITY document_type_property
+(*
+UOF:E1
+*)
+	(* CONNOTATIONAL *) SUBTYPE OF (document_type);
+  -- document_type_name : UNDEFINED_OBJECT;
+  (* Change undefined object to label, because other type will not be possible to implement via mapping anyway *)
+  SELF\document_type.product_data_type RENAMED document_type_name : label;
+  used_classification_system : OPTIONAL class_system;
+ END_ENTITY;
+
+ ENTITY drawing_assignment
+  (* CONNOTATIONAL *) SUBTYPE OF (presented_item_representation);
+(*
+UOF:D1
+*)
+  SELF\presented_item_representation.presentation RENAMED associated_drawing : drawing_revision;
+--GDT-TODO  is_describing : presentation_association_select;
+  DERIVE
+   (* Overlaps with is_describing *)
+   SELF\presented_item_representation.item : presented_item :=?;
+ END_ENTITY;
+
+ ENTITY item_definition_instance_relationship
+  ABSTRACT SUPERTYPE OF ( ONEOF(mated_item_association,general_item_definition_instance_relationship) )
+(*
+UOF:S3
+*)
+	(* CONNOTATIONAL *) SUBTYPE OF (product_definition_relationship);
+  SELF\product_definition_relationship.related_product_definition RENAMED related   : product_occurrence; --item_instance;
+  SELF\product_definition_relationship.relating_product_definition RENAMED relating : Product_view_definition;
+ END_ENTITY;
+
+ ENTITY item_instance_relationship
+  ABSTRACT SUPERTYPE OF ( ONEOF(replaced_usage_relationship,same_time_machining_relationship,general_item_instance_relationship) )
+  (* CONNOTATIONAL *) SUBTYPE OF (Part_occurrence_relationship);
+(*
+UOF:S7
+*)
+  SELF\product_definition_relationship.relating_product_definition RENAMED relating : product_occurrence; --item_instance;
+  SELF\product_definition_relationship.related_product_definition RENAMED related   : product_occurrence; --item_instance;
+ END_ENTITY;
+
+(* Split into 2 entities according alternatives in the mapping representation_relationship_with_transformation and mapped_item *)
+ ENTITY instance_placement__rrwt
+  (* CONNOTATIONAL *) SUBTYPE OF (representation_relationship_with_transformation);
+(*
+UOF:S7
+*)
+  reference_product_component : Physical_element_definition;
+  placed_instance : single_instance;
+  DERIVE
+   (* Overlaps with placed_instance attribute *)
+    SELF\representation_relationship.rep_1 : representation :=?;
+   (* Overlaps with reference_product_component attribute *) 
+    SELF\representation_relationship.rep_2 : representation :=?;
+    placement : transformation_select :=SELF;
+ END_ENTITY;
+
+ ENTITY instance_placement__mi
+  (* CONNOTATIONAL *) SUBTYPE OF (mapped_item);
+(*
+UOF:S7
+*)
+  reference_product_component : Physical_element_definition;
+  placed_instance : single_instance;
+  DERIVE
+   (* Overlaps with placed_instance attribute *)
+    SELF\mapped_item.mapping_source : representation_map :=?;
+    placement : transformation_select :=SELF;
+ END_ENTITY;
+
+ ENTITY general_item_definition_instance_relationship
+  (* CONNOTATIONAL *) SUBTYPE OF (item_definition_instance_relationship);
+(*
+UOF:S7
+*)
+  description_x : OPTIONAL string_select;
+  SELF\product_definition_relationship.name RENAMED relation_type : UNDEFINED_OBJECT;
+  DERIVE
+   (* Partially overlaps with description_x - problem is caused by multi_linguism_string *)
+   SELF\product_definition_relationship.description : text :=?;
+ END_ENTITY;
+
+ ENTITY general_item_instance_relationship
+  SUBTYPE OF (item_instance_relationship);
+(*
+UOF:S7
+*)
+  SELF\product_definition_relationship.name RENAMED relation_type : UNDEFINED_OBJECT;
+  description_x : OPTIONAL string_select;
+  DERIVE
+   (* Partially overlaps with description_x attribute *)
+   SELF\product_definition_relationship.description : text :=?;
+ END_ENTITY;
+
+ ENTITY document_size_property
+(*
+UOF:E1
+*)
+	(* CONNOTATIONAL *) SUBTYPE OF (Representation);
+  file_size : OPTIONAL measure_with_unit;
+  page_count : OPTIONAL measure_with_unit;
+  (* Overlaps with all attributes above, so don't allow to set it for developer *)
+  DERIVE
+   SELF\Representation.items : SET[1:?] OF representation_item :=?;
+ END_ENTITY;
+
+ ENTITY document_version_relationship
+(*
+UOF:E1
+*)
+  SUPERTYPE OF (ONEOF (document_version_relationship__derivation,
+                       document_version_relationship__hierarchy,
+                       document_version_relationship__sequence,
+                       document_version_relationship__supplied_document))
+	(* CONNOTATIONAL *) SUBTYPE OF (product_definition_formation_relationship);
+	description_x : OPTIONAL string_select;
+  SELF\product_definition_formation_relationship.relating_product_definition_formation RENAMED relating : document_version;
+  SELF\product_definition_formation_relationship.related_product_definition_formation RENAMED related   : document_version;
+  relation_type : UNDEFINED_OBJECT;
+  DERIVE
+   (* Partially overlaps with description_x *)
+   SELF\product_definition_formation_relationship.description : text :=?;
+ END_ENTITY;
+
+ ENTITY document_version_relationship__derivation
+ 	SUBTYPE OF (document_version_relationship);
+  DERIVE
+   SELF\product_definition_formation_relationship.name : label := 'derivation';
+ END_ENTITY;
+
+ ENTITY document_version_relationship__hierarchy
+ 	SUBTYPE OF (document_version_relationship);
+  DERIVE
+   SELF\product_definition_formation_relationship.name : label := 'hierarchy';
+ END_ENTITY;
+
+ ENTITY document_version_relationship__sequence
+ 	SUBTYPE OF (document_version_relationship);
+  DERIVE
+   SELF\product_definition_formation_relationship.name : label := 'sequence';
+ END_ENTITY;
+
+ ENTITY document_version_relationship__supplied_document
+ 	SUBTYPE OF (document_version_relationship);
+  DERIVE
+   SELF\product_definition_formation_relationship.name : label := 'supplied document';
+ END_ENTITY;
+ 
+ ENTITY document_content_property
+  (* CONNOTATIONAL *) SUBTYPE OF (representation);
+(*
+UOF:E1
+*)
+  detail_level : OPTIONAL UNDEFINED_OBJECT;
+  geometry_type : OPTIONAL UNDEFINED_OBJECT;
+  real_world_scale : OPTIONAL measure_representation_item;
+  languages : SET [0:?] OF language;
+  DERIVE
+   (* Overlaps with most of attributes above *)
+   SELF\representation.items : SET[1:?] OF representation_item :=?;
+ END_ENTITY;
+
+ ENTITY document_creation_property
+  (* CONNOTATIONAL *) SUBTYPE OF (representation);
+(*
+UOF:E1
+*)
+  creating_system : UNDEFINED_OBJECT;
+  operating_system : OPTIONAL UNDEFINED_OBJECT;
+  creating_interface : OPTIONAL UNDEFINED_OBJECT;
+  (* Overlaps with all attributes above, so don't allow to set it for developer *)
+  DERIVE
+   SELF\Representation.items : SET[1:?] OF representation_item :=?;
+ END_ENTITY;
+
+ ENTITY document_format_property
+(*
+UOF:E1
+*)
+	(* CONNOTATIONAL *) SUBTYPE OF (Representation);
+  data_format : OPTIONAL UNDEFINED_OBJECT;
+  character_code : OPTIONAL UNDEFINED_OBJECT;
+  size_format : OPTIONAL rectangular_size;
+  (* Overlaps with all attributes above, so don't allow to set it for developer *)
+  DERIVE
+   SELF\Representation.items : SET[1:?] OF representation_item :=?;
+ END_ENTITY;
+
+ ENTITY duration_property
+  (* CONNOTATIONAL *) SUBTYPE OF (
+   property
+  );
+(*
+UOF:PR1
+*)
+  DERIVE
+   SELF\general_property.name : label := 'duration property';
+ END_ENTITY;
+
+ ENTITY physical_instance_test_result
+  (* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+(*
+UOF:S7
+*)
+  test_activity : OPTIONAL test_activity_select;
+  test_result : SET [0:?] OF property_value_representation;
+  tested_instance : Product_as_individual;
+  description_x : OPTIONAL string_select;
+  id_x : UNDEFINED_OBJECT;
+  DERIVE
+   (* Partially overlaps with description_x - problem is caused by multi_linguism_string *)
+   SELF\property_definition.description : text :=?;
+   SELF\property_definition.id : identifier :=id_x;
+ END_ENTITY;
+
+(* Split full_model_change entity into 2 entities according mapping alternatives property_definition and action_property *)
+ ENTITY full_model_change_property_definition
+  (* CONNOTATIONAL *) SUBTYPE OF (model_change__property_definition);
+(*
+UOF:S2
+*)
+  related_description : model_change_select;
+  added_element : SET [0:?] OF representation_item;
+ END_ENTITY;
+
+ ENTITY full_model_change_action_property
+  (* CONNOTATIONAL *) SUBTYPE OF (model_change__action_property);
+(*
+UOF:S2
+*)
+  related_description : model_change_select;
+  added_element : SET [0:?] OF representation_item;
+ END_ENTITY;
+
+(* Split incremental_model_change entity into 2 entities according mapping alternatives property_definition and action_property *)
+ ENTITY incremental_model_change_property_definition
+  (* CONNOTATIONAL *) SUBTYPE OF (model_change__property_definition);
+(*
+UOF:S2
+*)
+  basis_model : incremental_change_select;
+  added_element : SET [0:?] OF model_change_element_select;
+ END_ENTITY;
+
+ ENTITY incremental_model_change_action_property
+  (* CONNOTATIONAL *) SUBTYPE OF (model_change__action_property);
+(*
+UOF:S2
+*)
+  basis_model : incremental_change_select;
+  added_element : SET [0:?] OF model_change_element_select;
+ END_ENTITY;
+
+
+ ENTITY external_geometric_model_with_parameters
+  (* CONNOTATIONAL *) SUBTYPE OF (external_geometric_model);
+(*
+UOF:E1
+*)
+  parameter_value : SET [1:?] OF measure_representation_item;
+ END_ENTITY;
+
+ ENTITY external_picture
+  (* CONNOTATIONAL *) SUBTYPE OF (external_model);
+(*
+UOF:E1
+*)
+  SELF\external_model.is_defined_in : geometric_representation_context;
+ END_ENTITY;
+
+ ENTITY class_structure_relationship
+  (* CONNOTATIONAL *) SUBTYPE OF (configuration_design);
+(*
+UOF:S7
+*)
+  related : product_function_component_select;
+  relating : product_class;
+  description_x : OPTIONAL string_select;
+  relation_type : UNDEFINED_OBJECT;
+  DERIVE
+   (* Partially overlaps with description_x - problem is caused by multi_linguism_string *)
+   SELF\configuration_design.description : text :=?;
+   (* Overlaps with relation_type *)
+   SELF\configuration_design.name : label :=?;
+   (* Overlaps with related *)
+   SELF\configuration_design.design : configuration_design_item :=?;
+   (* Overlaps with relating *)
+   SELF\configuration_design.configuration: configuration_item :=?;
+ END_ENTITY;
+
+ ENTITY model_property_value
+  (* CONNOTATIONAL *) SUBTYPE OF (representation);
+(*
+UOF:PR1
+*)
+  definition : property;
+  DERIVE
+   describing_model : model_property_representation_select :=SELF;
+ END_ENTITY;
+
+ ENTITY named_size
+  (* CONNOTATIONAL *) SUBTYPE OF (rectangular_size);
+(*
+UOF:E1
+*)
+  referenced_standard : OPTIONAL class_system;
+  size : UNDEFINED_OBJECT;
+ END_ENTITY;
+
+ ENTITY rectangular_size
+  (* CONNOTATIONAL *) SUBTYPE OF (planar_extent);
+(*
+UOF:E1
+*)
+  density : OPTIONAL measure_with_unit; -- IDENTICAL_MAPPING - it has to be the same instance
+  width : measure_with_unit;
+  height : measure_with_unit;
+  DERIVE
+   (* Overlaps with height *)
+   SELF\planar_extent.size_in_y : length_measure :=?;
+   (* Overlaps with width *)
+   SELF\planar_extent.size_in_x : length_measure :=?;
+ END_ENTITY;
+
+ ENTITY general_shape_dependent_property
+  (* CONNOTATIONAL *) SUBTYPE OF (Shape_dependent_property_representation);
+(*
+UOF:PR1,S2
+*)
+  SELF\Shape_dependent_property_representation.characteristic_type RENAMED property_type : UNDEFINED_OBJECT;
+  property_value : general_shape_dependent_value_select;
+--  property_value : representation_item;
+ END_ENTITY;
+
+ ENTITY date_time_interval_assignment
+  (* CONNOTATIONAL *) SUBTYPE OF (applied_time_interval_assignment);
+(*
+UOF:S1
+*)
+  SELF\time_interval_assignment.assigned_time_interval : time_interval_with_bounds;
+  role_x : UNDEFINED_OBJECT;
+  description : OPTIONAL string_select;
+  SELF\applied_time_interval_assignment.items RENAMED is_applied_to : SET [1:?] OF general_organizational_data_select;
+  DERIVE
+   (* Overlaps with description and role *)
+   SELF\time_interval_assignment.role : time_interval_role :=?;
+ END_ENTITY;
+
+ ENTITY specific_document_classification_hierarchy
+  (* CONNOTATIONAL *) SUBTYPE OF (product_category_relationship);
+(*
+UOF:E1
+*)
+  SELF\product_category_relationship.category RENAMED super_classification   : specific_document_classification;
+  SELF\product_category_relationship.sub_category RENAMED sub_classification : specific_document_classification;
+ END_ENTITY;
+
+ ENTITY specific_document_classification
+  (* CONNOTATIONAL *) SUBTYPE OF (product_related_product_category);
+(*
+UOF:E1
+*)
+  SELF\product_related_product_category.products RENAMED associated_document : SET [1:?] OF document_armx;
+  description_x                                                              : OPTIONAL string_select;
+  SELF\product_category.name RENAMED classification_name                     : UNDEFINED_OBJECT;
+  DERIVE
+   (* Partially overlaps with description_x - problem is caused by multi_linguism_string *)
+   SELF\product_category.description : text :=?;
+ END_ENTITY;
+
+(* Split component_placement into 2 entities according mapping alternatives: representation_relationship_with_transformation and mapped_item *)
+ ENTITY component_placement__rrwt
+  (* CONNOTATIONAL *) SUBTYPE OF (representation_relationship_with_transformation);
+(*
+UOF:S7
+*)
+  placed_component : Physical_element_definition;
+  reference_product_component : Physical_element_definition;
+  DERIVE
+   (* Overlaps with placed_component attribute *)
+   SELF\representation_relationship.rep_1 : representation :=?;
+   (* Overlaps with reference_product_component attribute *)
+   SELF\representation_relationship.rep_2 : representation :=?;
+   placement : transformation_select :=SELF;
+ END_ENTITY;
+
+ ENTITY component_placement__mi
+  (* CONNOTATIONAL *) SUBTYPE OF (mapped_item);
+(*
+UOF:S7
+*)
+  placed_component : Physical_element_definition;
+  reference_product_component : Physical_element_definition;
+  DERIVE
+   (* Overlaps with placed_component attribute *)
+   SELF\mapped_item.mapping_source : representation_map :=?;
+   placement : transformation_select :=SELF;
+ END_ENTITY;
+
+ ENTITY process_operation_definition
+(*
+UOF:S8
+*)
+	(* CONNOTATIONAL *) SUBTYPE OF (process_operation);
+  SELF\action_method.name RENAMED id : UNDEFINED_OBJECT;
+  name_x : OPTIONAL string_select;
+  SELF\action_method.consequence RENAMED process_type : UNDEFINED_OBJECT;
+  description_x : OPTIONAL string_select;
+  version_id : OPTIONAL UNDEFINED_OBJECT;
+  DERIVE
+   (* Partially overlaps with description_x *)
+   SELF\process_operation.description : text :=?;
+ END_ENTITY;
+
+ ENTITY process_operation_definition_relationship
+  (* CONNOTATIONAL *) SUBTYPE OF (action_method_relationship);
+(*
+UOF:S8
+*)
+  SELF\action_method_relationship.relating_method RENAMED relating : process_operation_definition;
+  SELF\action_method_relationship.related_method RENAMED related   : process_operation_definition;
+  SELF\action_method_relationship.name RENAMED relation_type       : UNDEFINED_OBJECT;
+ END_ENTITY;
+
+ ENTITY process_operation_occurrence_relationship
+(*
+UOF:S8
+*)
+	(* CONNOTATIONAL *) SUBTYPE OF (action_relationship);
+  related : process_operation_occurrence;
+  SELF\action_relationship.name RENAMED relation_type : UNDEFINED_OBJECT;
+  relating : process_operation_occurrence;
+  waiting_time : OPTIONAL representation_item;
+  description_x : OPTIONAL string_select;
+  cycle_time : OPTIONAL time_measure_with_unit;
+  DERIVE
+  	(* Overlaps with related attribute *)
+   SELF\action_relationship.related_action : action :=?;
+  	(* Overlaps with relating attribute *)
+   SELF\action_relationship.relating_action : action :=?;   
+ END_ENTITY;
+
+ ENTITY path_parameter
+  (* CONNOTATIONAL *) SUBTYPE OF (shape_defining_relationship);
+(*
+UOF:FF1
+*)
+  SELF\shape_aspect_relationship.relating_shape_aspect RENAMED associated_path : path_feature_component;
+  SELF\shape_aspect_relationship.description RENAMED parameter_role : UNDEFINED_OBJECT;
+  parameter_context : general_feature_armx;
+  DERIVE
+   (* Overlaps with attribute parameter_context *)
+   SELF\shape_aspect_relationship.related_shape_aspect : shape_aspect :=?;
+ END_ENTITY;
+
+  (*
+  new subtypes created from magic strings
+  *)
+
+ ENTITY product_definition_formation_relationship__derivation
+ (* CONNOTATIONAL *) SUBTYPE OF (product_definition_formation_relationship);
+  DERIVE
+   SELF\product_definition_formation_relationship.name : label := 'derivation';
+ END_ENTITY;
+
+ ENTITY product_definition_formation_relationship__hierarchy
+ (* CONNOTATIONAL *) SUBTYPE OF (product_definition_formation_relationship);
+  DERIVE
+   SELF\product_definition_formation_relationship.name : label := 'hierarchy';
+ END_ENTITY;
+
+ ENTITY product_definition_formation_relationship__sequence
+ (* CONNOTATIONAL *) SUBTYPE OF (product_definition_formation_relationship);
+  DERIVE
+   SELF\product_definition_formation_relationship.name : label := 'sequence';
+ END_ENTITY;
+
+ ENTITY product_definition_formation_relationship__supplied_item
+ (* CONNOTATIONAL *) SUBTYPE OF (product_definition_formation_relationship);
+  DERIVE
+   SELF\product_definition_formation_relationship.name : label := 'supplied item';
+ END_ENTITY;
+ 
+ ENTITY person_or_organization_or_person_in_organization_in_position_relationship__successor
+   SUBTYPE OF (person_or_organization_or_person_in_organization_in_position_relationship);
+   DERIVE
+     SELF\position_in_organization_assignment.role : position_in_organization_role := position_in_organization_role('', 'successor', ?);
+ END_ENTITY;
+ 
+ ENTITY Part_definition_relationship__definition_replacement
+   SUBTYPE OF (Part_definition_relationship);
+   DERIVE
+     SELF\product_definition_relationship.name : label := 'definition replacement';
+ END_ENTITY;
+
+ ENTITY Part_definition_relationship__geometrical_relationship
+   SUBTYPE OF (Part_definition_relationship);
+   DERIVE
+     SELF\product_definition_relationship.name : label := 'geometrical relationship';
+ END_ENTITY;
+
+ ENTITY Part_definition_relationship__tool_part_relationship
+   SUBTYPE OF (Part_definition_relationship);
+   DERIVE
+     SELF\product_definition_relationship.name : label := 'tool part relationship';
+ END_ENTITY;
+
+ ENTITY Document_definition_relationship__addition
+   SUBTYPE OF (document_definition_relationship);
+   DERIVE
+     SELF\product_definition_relationship.name : label := 'addition';
+ END_ENTITY;
+
+ ENTITY Document_definition_relationship__copy
+   SUBTYPE OF (document_definition_relationship);
+   DERIVE
+     SELF\product_definition_relationship.name : label := 'copy';
+ END_ENTITY;
+
+ ENTITY Document_definition_relationship__derivation
+   SUBTYPE OF (document_definition_relationship);
+   DERIVE
+     SELF\product_definition_relationship.name : label := 'derivation';
+ END_ENTITY;
+
+ ENTITY Document_definition_relationship__decomposition
+   SUBTYPE OF (document_definition_relationship);
+   DERIVE
+     SELF\product_definition_relationship.name : label := 'decomposition';
+ END_ENTITY;
+
+ ENTITY Document_definition_relationship__peer
+   SUBTYPE OF (document_definition_relationship);
+   DERIVE
+     SELF\product_definition_relationship.name : label := 'peer';
+ END_ENTITY;
+
+ ENTITY Document_definition_relationship__reference
+   SUBTYPE OF (document_definition_relationship);
+   DERIVE
+     SELF\product_definition_relationship.name : label := 'reference';
+ END_ENTITY;
+
+ ENTITY Document_definition_relationship__sequence
+   SUBTYPE OF (document_definition_relationship);
+   DERIVE
+     SELF\product_definition_relationship.name : label := 'sequence';
+ END_ENTITY;
+
+ ENTITY Document_definition_relationship__substitution
+   SUBTYPE OF (document_definition_relationship);
+   DERIVE
+     SELF\product_definition_relationship.name : label := 'substitution';
+ END_ENTITY;
+
+ ENTITY Document_definition_relationship__translation
+   SUBTYPE OF (document_definition_relationship);
+   DERIVE
+     SELF\product_definition_relationship.name : label := 'translation';
+ END_ENTITY;
+ 
+ (** Syntetic entity in order to avoid some mapping problems - 2116 from bugzilla *)
+ ENTITY Product_view_definition__product_definition_resource_xim
+  SUBTYPE OF (Product_view_definition, product_definition_resource);
+ END_ENTITY;
+  
+END_SCHEMA;

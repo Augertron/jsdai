@@ -1,0 +1,321 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Chemical substance - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+(** chemical elements and compositions
+This part of ISO 10303 specifies an application module for the Representation ... 
+... of substances such as chemical elements, chemical compounds and their composition.
+A Make_from_relationship may be used to relate
+Substance_view_definition to other kinds of Product_definition.
+*)
+SCHEMA Chemical_substance_xim;   
+ 
+USE FROM Assembly_structure_xim;
+
+USE FROM Generic_material_aspects_xim;	-- ISO/TS 10303-1681	
+
+USE FROM Part_view_definition_xim;
+
+USE FROM Product_view_definition_relationship_xim; -- ISO/TS 10303-1041
+
+USE FROM Person_organization_assignment_xim; -- ISO/TS 10303-1013
+
+USE FROM Chemical_substance_mim;
+
+USE FROM support_resource_schema(text, label);
+
+USE FROM application_context_schema(product_context);
+
+REFERENCE FROM Product_identification_xim    --  ISO/TS 10303-1017 
+  (types_of_product);  
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+ 
+CONSTANT 
+ 
+  -- normative reference: ISO 31-9, Annex A 
+  -- posistion is identical to Atomic number 
+  chemical_elements : LIST OF STRING := [
+      'HYDROGEN', -- 1 
+      'HELIUM', -- 2 
+ 
+      'LITHIUM', -- 3 
+      'BERYLLIUM', -- 4 
+      'BORON', -- 5 
+      'CARBON', -- 6 
+      'NITROGEN', -- 7 
+      'OXYGEN', -- 8 
+      'FLUORINE', -- 9 
+      'NEON', -- 10 
+       
+      'SODIUM', -- 11 
+      'MAGNESIUM', -- 12 
+      'ALUMINIUM', -- 13 
+      'SILICON', -- 14 
+      'PHOSPHORUS', -- 15 
+      'SULPHUR', -- 16 
+      'CHLORINE', -- 17 
+      'ARGON', -- 18 
+       
+      'POTASSIUM', -- 19 
+      'CALCIUM', -- 20 
+      'SCANDIUM', -- 21 
+      'TITANIUM', -- 22 
+      'VANADIUM', -- 23 
+      'CHROMIUM', -- 24 
+      'MANGANESE', -- 25 
+      'IRON', -- 26 
+      'COBALT', -- 27 
+      'NICKEL', -- 28 
+      'COPPER', -- 29 
+      'ZINC', -- 30 
+      'GALLIUM', -- 31 
+      'GERMANIUM', -- 32 
+      'ARSENIC', -- 33 
+      'SELENIUM', -- 34 
+      'BROMINE', -- 35 
+      'KRYPTON', -- 36 
+ 
+      'RUBIDIUM', -- 37 
+      'STRONTIUM', -- 38 
+      'YTTRIUM', -- 39 
+      'ZIRCONIUM', -- 40 
+      'NIOBIUM', -- 41 
+      'MOLYBDENUM', -- 42 
+      'TECHNETIUM', -- 43 
+      'RUTHENIUM', -- 44 
+      'RHODIUM', -- 45 
+      'PALLADIUM', -- 46 
+      'SILVER', -- 47 
+      'CADMIUM', -- 48 
+      'INDIUM', -- 49 
+      'TIN', -- 50 
+      'ANTIMONY', -- 51 
+      'TELLURIUM', -- 52 
+      'IODINE', -- 53 
+      'XENON', -- 54 
+       
+      'CAESIUM', -- 55 
+      'BARIUM', -- 56 
+      'LANTHANUM', -- 57 
+      'CERIUM', -- 58 
+      'PRASEODYMIUM', -- 59 
+      'NEODYMIUM', -- 60 
+      'PROMETHIUM', -- 61 
+      'SAMARIUM', -- 62 
+      'EUROPIUM', -- 63
+      'GADOLINIUM', -- 64 
+      'TERBIUM', -- 65 
+      'DYSPROSIUM', -- 66 
+      'HOLMIUM', -- 67 
+      'ERBIUM', -- 68 
+       
+      'THULIUM', -- 69 
+      'YTTERBIUM', -- 70 
+      'LUTETIUM', -- 71 
+      'HAFNIUM', -- 72 
+      'TANTALUM', -- 73 
+      'TUNGSTEN', -- 74 
+      'RHENIUM', -- 75 
+      'OSMIUM', -- 76 
+      'IRIDIUM', -- 77 
+      'PLATINUM', -- 78 
+      'GOLD', -- 79 
+      'MERCURY', -- 80 
+      'THALLIUM', -- 81 
+      'LEAD', -- 82 
+      'BISMUTH', -- 83 
+      'POLONIUM', -- 84 
+      'ASTATINE', -- 85 
+      'RADON', -- 86 
+      'FRANCIUM', -- 87 
+      'RADIUM', -- 88 
+      'ACTINIUM', -- 89 
+      'THORIUM', -- 90 
+      'PROTACTINIUM', -- 91 
+      'URANIUM', -- 92 
+      'NEPTUNIUM', -- 93 
+      'PLUTONIUM', -- 94 
+      'AMERICIUM', -- 95 
+      'CURIUM', -- 96 
+      'BERKELIUM', -- 97 
+      'CALIFORNIUM', -- 98 
+      'EINSTEINIUM', -- 99 
+      'FERMIUM', -- 100 
+      'MENDELEVIUM', -- 101 
+      'NOBELIUM', -- 102 
+      'LAWRENCIUM', -- 103 
+      'RUTHERFORDIUM', -- 104 
+      'DUBNIUM', -- 105 
+      'SEABORGIUM', -- 106 
+      'BOHRIUM', -- 107 
+      'HASSIUM', -- 108 
+      'MEITNERIUM', -- 109 
+      'DARMSTADTIUM', -- 110
+      'ROENTGENIUM']; -- 111
+  END_CONSTANT; 
+
+  TYPE cs_material_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON material_item_select WITH
+    (Substance_view_definition);
+  END_TYPE;
+
+  TYPE substance_composition_basis = EXTENSIBLE ENUMERATION OF ( 
+       VOLUME, 
+       MASS, 
+       MOLES, 
+       ATOMS);      
+  END_TYPE; 
+ 
+(** 
+A chemical compound is a substance formed from two or more chemical elements, with a fixed ratio determining the composition.  
+ 
+Example: Dihydrogen monoxide (water, H2O) is a compound composed of two hydrogen atoms for every oxygen atom. 
+ 
+Note 1: In general, this fixed ratio must be fixed due to some sort of physical property, rather than an arbitrary man-made selection. This is why materials such as brass, the superconductor YBCO, the semiconductor aluminium gallium arsenide, or chocolate are considered mixtures or alloys rather than compounds. 
+ 
+A defining characteristic of a compound is that it has a chemical formula. Formulas describe the ratio of atoms in a Substance, and the number of atoms in a single molecule of the substance (thus the formula for ethene is C2H4 rather than CH2). The formula does not indicate that a compound is composed of molecules; for example, sodium chloride (table salt, NaCl) is an ionic compound.   
+ 
+Note 2: The representation of the chemical formula is outside the scope of this part of ISO 10303. 
+ 
+If available the CAS registry number shall be used for the id. In this case an organization instance with the name 'Chemical Abstracts Service' shall be used as id-owner. 
+ 
+Example 2: The CAS number of water is "7732-18-5". 
+ 
+*)   
+ 
+  ENTITY Chemical_compound 
+    (* CONNOTATIONAL *) SUBTYPE OF (Substance); 
+	DERIVE
+  		id_owner_organization: SET[0:?] OF applied_organization_assignment :=
+          bag_to_set(QUERY(temp <* USEDIN(SELF,'PERSON_ORGANIZATION_ASSIGNMENT_MIM.'+
+         'APPLIED_ORGANIZATION_ASSIGNMENT.ITEMS') |
+                         (temp.role.name = 'id owner') ));
+  		id_owner_pao: SET[0:?] OF applied_person_and_organization_assignment :=
+          bag_to_set(QUERY(temp <* USEDIN(SELF,'PERSON_ORGANIZATION_ASSIGNMENT_MIM.'+
+         'APPLIED_PERSON_AND_ORGANIZATION_ASSIGNMENT.ITEMS') |
+                         (temp.role.name = 'id owner') ));
+  WHERE 
+     WR1: SIZEOF([ 'chemical compound' ] * types_of_product(SELF))= 1 ; 
+     WR2 : ((SIZEOF(id_owner_organization)+SIZEOF(id_owner_pao)) = 1);
+  END_ENTITY; 
+   
+  ENTITY Chemical_element 
+    (* CONNOTATIONAL *) SUBTYPE OF (Substance); 
+  WHERE 
+     WR1: SIZEOF([ 'chemical element' ] * types_of_product(SELF))= 1 ; 
+  END_ENTITY; 
+   
+ 
+(** A Physical_particle is a kind of substance from physics covering
+ radiation and all kinds of subatomic and elementary particles.
+
+ Example: electron, proton, photon and alpha particle are examples of Elementary_particle
+*)
+  ENTITY Physical_particle
+    (* CONNOTATIONAL *) SUBTYPE OF (Substance);
+  WHERE 
+     WR1: SIZEOF([ 'physical particle' ] * types_of_product(SELF))= 1 ;
+  END_ENTITY;
+
+   ENTITY Raw_material_definition_relationship
+      (* CONNOTATIONAL *) SUBTYPE OF (make_from_usage_option);
+     	SELF\Product_definition_relationship.relating_product_definition RENAMED application : Part_view_definition;
+     	SELF\Product_definition_relationship.related_product_definition RENAMED definition   : Substance_view_definition;  
+     DERIVE
+       SELF\make_from_usage_option.ranking_rationale : text := ?;
+       SELF\make_from_usage_option.quantity : measure_with_unit := ?;
+       SELF\make_from_usage_option.ranking : INTEGER := ?;
+       SELF\product_definition_relationship.name : label := 'raw material definition';
+     UNIQUE
+       UR1: application;      
+   END_ENTITY;
+   
+  ENTITY Substance
+    SUPERTYPE OF (ONEOF(Chemical_element, Chemical_compound, Physical_particle))
+    (* CONNOTATIONAL *) SUBTYPE OF (Product_armx);    
+    UNIQUE 
+      UR1: SELF\product.id;
+    WHERE 
+      WR1: SIZEOF([ 'substance' ] * types_of_product(SELF))= 1 ; 
+  END_ENTITY; 
+   
+  ENTITY Substance_composition_relationship 
+    (* CONNOTATIONAL *) SUBTYPE OF (product_material_composition_relationship);
+      SELF\Product_definition_relationship.related_product_definition RENAMED constituent	: Substance_view_definition; 
+      SELF\Product_definition_relationship.relating_product_definition RENAMED whole      : Substance_view_definition; 
+      composition_basis_x 			: substance_composition_basis;
+      -- Inherited from supertype
+      -- determination_method : STRING; 
+      amount : measure_with_unit; 
+    DERIVE      
+      (* overlaps with composition_basis - it is not redeclared because types are not matching STRING vs ENUMERATION *)
+      SELF\product_material_composition_relationship.composition_basis : label :=?;
+      (* overlaps with composition_basis - it is not redeclared just because of different cardinality *)
+      SELF\product_material_composition_relationship.constituent_amount : SET[1:?] OF measure_with_unit :=?;
+      SELF\product_definition_relationship.name : label := 'assembly material composition';
+    WHERE
+      WR1 : 'VALUE_WITH_UNIT_XIM.RATIO_UNIT' IN TYPEOF(amount.unit_component);      
+  END_ENTITY; 
+
+  ENTITY Substance_version 
+    (* CONNOTATIONAL *) SUBTYPE OF (product_definition_formation); 
+    SELF\product_definition_formation.of_product : Substance; 
+  END_ENTITY; 
+ 
+  
+  ENTITY Substance_view_definition 
+    (* CONNOTATIONAL *) SUBTYPE OF (Product_view_definition); 
+    SELF\Product_view_definition.defined_version : Substance_version; 
+  END_ENTITY; 
+
+RULE substance_version_constraint FOR 
+(product_definition_formation);
+WHERE
+    WR1: SIZEOF ( QUERY ( pv <* Product_definition_formation | ( NOT ( 'CHEMICAL_SUBSTANCE_XIM.' + 'SUBSTANCE_VERSION' IN TYPEOF ( pv) ) ) AND ( 'CHEMICAL_SUBSTANCE_XIM.' + 'SUBSTANCE' IN TYPEOF ( pv.of_product) ) ) ) =0 ;
+END_RULE; 
+
+RULE substance_view_definition_constraint FOR 
+(Product_definition);
+WHERE
+  WR1: SIZEOF ( QUERY ( pvd <* Product_definition | ( NOT ( 'CHEMICAL_SUBSTANCE_xim.' + 'SUBSTANCE_VIEW_DEFINITION' IN TYPEOF (pvd) ) ) AND ( 'CHEMICAL_SUBSTANCE_xim.' + 'SUBSTANCE_VERSION' IN TYPEOF ( pvd.formation) ) ) ) =0 ;
+END_RULE; 
+
+RULE chemical_element_constraint FOR 
+(Product_armx);
+WHERE
+  WR1: SIZEOF ( QUERY ( p <* Product_armx | 
+               (('CHEMICAL_SUBSTANCE_XIM.' + 'SUBSTANCE' IN TYPEOF (p) ) AND ((p\Product.name) IN chemical_elements) ) 
+                OR
+               (NOT('CHEMICAL_SUBSTANCE_XIM.' + 'SUBSTANCE' IN TYPEOF (p) ) AND NOT((p\Product.name) IN chemical_elements) )
+       )) =
+       SIZEOF ( Product_armx);
+END_RULE; 
+
+ 
+END_SCHEMA; 
+

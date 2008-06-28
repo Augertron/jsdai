@@ -1,0 +1,47 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Functional decomposition to assembly design - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Functional_decomposition_to_assembly_design_xim;
+
+USE FROM Assembly_technology_xim;
+
+USE FROM Functional_decomposition_to_design_xim; -- ISO/TS 10303-1676
+
+  ENTITY Design_functional_unit_allocation_to_assembly_joint
+  	(* CONNOTATIONAL *) SUBTYPE OF (product_definition_relationship);
+      SELF\product_definition_relationship.relating_product_definition RENAMED functional_design_definition_path 	: Design_composition_path_armx;
+      implementation                    																																					: Assembly_joint_armx;
+    DERIVE
+      SELF\product_definition_relationship.related_product_definition : product_definition := ?;
+      SELF\product_definition_relationship.id : identifier := ?;
+    UNIQUE
+      UR1 : functional_design_definition_path;
+  END_ENTITY;
+
+END_SCHEMA;
+

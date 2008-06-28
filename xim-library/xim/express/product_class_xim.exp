@@ -1,0 +1,205 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(* 
+   Derived from ISO/TC184/SC4 WG12N2640 - ISO/TS 10303-1103 Product class - Express ARM 
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Product_class_xim;
+
+USE FROM Identification_assignment_xim;
+
+USE FROM Product_concept_identification_xim;
+
+USE FROM Group_xim;
+
+USE FROM Product_class_mim;
+
+USE FROM support_resource_schema (label);
+
+USE FROM product_concept_schema(concept_feature_relationship_with_condition); -- likely SEDS as it should be accessable from MIM
+
+USE FROM support_resource_schema(text);
+
+
+TYPE expression_operator = ENUMERATION OF (or_operator, and_operator, oneof_operator, not_operator);
+END_TYPE;
+
+TYPE specification_operand_select = SELECT
+		(Specification_expression, Specification);
+END_TYPE;
+(* Accessable from MIM
+TYPE id_for_class = EXTENSIBLE SELECT BASED_ON identification_item WITH 
+   (product_class);
+END_TYPE; 
+
+TYPE specification_for_category = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON groupable_item;
+END_TYPE;
+*)
+  ENTITY Class_category_association
+    SUBTYPE OF (product_concept_feature_category_usage);
+      associated_product_class : Product_class_armx;
+      mandatory : BOOLEAN;
+      SELF\group_assignment.assigned_group RENAMED associated_category : Specification_category;
+    DERIVE 
+      (* Overlapping with associated_product_class *)
+      SELF\product_concept_feature_category_usage.items : SET [1:?] OF category_usage_item := ?;
+  END_ENTITY;
+
+  ENTITY Class_condition_association
+    SUBTYPE OF (product_concept_feature_association);
+      SELF\product_concept_feature_association.name RENAMED condition_type : label; (* Should be one of those 'part usage', 'identification', 'validity', 'design case' *)
+      SELF\product_concept_feature_association.concept RENAMED associated_product_class : Product_class_armx;
+     (* Attribute is accessable from supertype product_concept_feature_association
+        description : OPTIONAL STRING; *)
+      SELF\product_concept_feature_association.feature RENAMED associated_condition : Specification_expression;
+    (* Add WR from mapping constraints which is logical and needed *)  
+    WHERE
+      WR1: condition_type IN ['part usage', 'identification', 'validity', 'design case'];
+  END_ENTITY;
+
+  ENTITY Class_inclusion_association
+    SUBTYPE OF (product_concept_feature_association);
+      SELF\product_concept_feature_association.concept RENAMED associated_product_class : Product_class_armx;
+      SELF\product_concept_feature_association.feature RENAMED associated_inclusion : Specification_inclusion;
+  END_ENTITY;
+
+  ENTITY Class_specification_association
+    SUBTYPE OF (product_concept_feature_association);
+      SELF\product_concept_feature_association.concept RENAMED associated_product_class : Product_class_armx; 
+      SELF\product_concept_feature_association.name RENAMED association_type : label; (* Should be one of those 'replaceable standard', 'non replaceable standard', 'availability', 'identification', 'option', 'part usage' *)
+      SELF\product_concept_feature_association.feature RENAMED associated_specification : Specification;
+    (* Add WR from mapping constraints which is logical and needed *)  
+    WHERE
+      WR1: association_type IN ['replaceable standard', 'non replaceable standard', 'availability', 'identification', 'option', 'part usage'];
+  END_ENTITY;
+
+  ENTITY Product_class_armx
+    SUBTYPE OF (product_class);
+      version_id : OPTIONAL STRING;
+      SELF\characterized_object.name RENAMED level_type : label;
+      -- GL - in my opinion this is simply wrong  
+    -- WHERE
+    --WR1: NOT EXISTS(SELF\Product_concept.market_context);
+  END_ENTITY;
+
+  ENTITY Product_class_relationship
+    ABSTRACT SUPERTYPE OF (ONEOF (Product_class_relationship__derivation,
+      Product_class_relationship__hierarchy,
+      Product_class_relationship__substitution,
+      Product_class_relationship__version_sequence))
+    SUBTYPE OF (product_concept_relationship);
+      SELF\product_concept_relationship.relating_product_concept RENAMED relating : Product_class_armx;
+      SELF\product_concept_relationship.related_product_concept RENAMED related : Product_class_armx;
+      SELF\product_concept_relationship.name RENAMED relation_type : label; (* Should be one of those 'derivation', 'hierarchy', 'version sequence', 'substitution' *)
+    (* Add WR from mapping constraints which is logical and needed *)  
+    WHERE
+      WR1: relation_type IN ['derivation', 'hierarchy', 'version sequence', 'substitution'];
+  END_ENTITY;
+
+  ENTITY Product_class_relationship__derivation
+    SUBTYPE OF (Product_class_relationship);
+    DERIVE
+      SELF\Product_class_relationship.relation_type : label := 'derivation';
+  END_ENTITY;
+
+  ENTITY Product_class_relationship__hierarchy
+    SUBTYPE OF (Product_class_relationship);
+    DERIVE
+      SELF\Product_class_relationship.relation_type : label := 'hierarchy';
+  END_ENTITY;
+
+  ENTITY Product_class_relationship__substitution
+    SUBTYPE OF (Product_class_relationship);
+    DERIVE
+      SELF\Product_class_relationship.relation_type : label := 'substitution';
+  END_ENTITY;
+
+  ENTITY Product_class_relationship__version_sequence
+    SUBTYPE OF (Product_class_relationship);
+    DERIVE
+      SELF\Product_class_relationship.relation_type : label := 'version sequence';
+  END_ENTITY;
+
+  ENTITY Specification
+    SUBTYPE OF (product_concept_feature);
+    (* Accessable from supertype
+      id : STRING;
+      name : OPTIONAL STRING;
+      description : OPTIONAL STRING; *)
+      version_id : OPTIONAL STRING;
+      category : Specification_category;
+  END_ENTITY;
+
+  ENTITY Specification__package
+    SUBTYPE OF (package_product_concept_feature, Specification);
+  END_ENTITY;
+
+  ENTITY Specification_category
+   SUBTYPE OF (product_concept_feature_category);
+     SELF\group.name RENAMED id_x : label;
+     (* Derived from supertype
+     description : STRING; *)
+  END_ENTITY;
+
+  ENTITY Specification_category__exclusive
+    SUBTYPE OF (exclusive_product_concept_feature_category, Specification_category);
+  END_ENTITY;
+
+  ENTITY Specification_category_hierarchy
+    SUBTYPE OF (group_relationship);
+      SELF\group_relationship.related_group RENAMED sub_category : Specification_category ;
+      SELF\group_relationship.relating_group RENAMED super_category : Specification_category;
+    DERIVE
+      SELF\group_relationship.name        : label := ?;
+      SELF\group_relationship.description : text  := ?;
+  END_ENTITY;
+
+  ENTITY Specification_expression
+    SUBTYPE OF (conditional_concept_feature);
+    (* Derived from supertype
+      id : OPTIONAL STRING;
+      description : OPTIONAL STRING; *)
+      operation : expression_operator;
+      operand : SET[1:?] OF specification_operand_select;
+    DERIVE
+      (* Overlaps with operation and operand attributes *)
+       SELF\conditional_concept_feature.condition : concept_feature_relationship_with_condition := ?;     
+    WHERE
+      WR1: (operation <> not_operator) OR (SIZEOF(operand)=1); 
+  END_ENTITY;
+
+  ENTITY Specification_inclusion
+    SUBTYPE OF (inclusion_product_concept_feature);
+      (* DERIVED from supertype
+      id : OPTIONAL STRING;
+      description : OPTIONAL STRING; *)
+      if_condition : specification_operand_select;
+      included_specification : specification_operand_select;
+    DERIVE
+      (* Overlaps with if_condition and included_specification attributes *)
+       SELF\conditional_concept_feature.condition : concept_feature_relationship_with_condition := ?;     
+  END_ENTITY;
+
+END_SCHEMA;

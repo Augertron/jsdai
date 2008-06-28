@@ -1,0 +1,90 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4625 - ISO/CD-TS 10303-1480 Task element - EXPRESS ARM
+*) 
+
+SCHEMA Task_element_arm;
+
+USE FROM Activity_method_assignment_arm;
+
+USE FROM Condition_arm;
+
+TYPE task_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_method_item;
+END_TYPE;
+
+ENTITY Concurrent_elements
+SUBTYPE OF (Structured_task_element);
+  elements : SET [2 : ?] OF Task_element;
+END_ENTITY;
+
+ENTITY Decision_point
+SUBTYPE OF (Structured_task_element);
+  condition : Condition;
+  true_case_element : OPTIONAL Task_element;
+  false_case_element : OPTIONAL Task_element;
+  unknown_case_element : OPTIONAL Task_element;
+END_ENTITY;
+
+ENTITY End_task
+SUBTYPE OF (Task_element);
+END_ENTITY;
+
+ENTITY Exit_loop
+SUBTYPE OF (Task_element);
+END_ENTITY;
+
+ENTITY Looping_element
+SUPERTYPE OF (ONEOF(Repeat_count, Repeat_until, Repeat_while))
+SUBTYPE OF (Structured_task_element);
+  repeated_element : Task_element;
+END_ENTITY;
+
+ENTITY Repeat_count
+SUBTYPE OF (Looping_element);
+  count : INTEGER;
+END_ENTITY;
+
+ENTITY Repeat_until
+SUBTYPE OF (Looping_element);
+  condition : Condition;
+END_ENTITY;
+
+ENTITY Repeat_while
+SUBTYPE OF (Looping_element);
+  condition : Condition;
+END_ENTITY;
+
+ENTITY Structured_task_element
+ABSTRACT SUPERTYPE OF (ONEOF(Concurrent_elements, Decision_point, Looping_element, Task_element_sequence))
+SUBTYPE OF (Task_element);
+END_ENTITY;
+
+ENTITY Task_element
+ABSTRACT SUPERTYPE OF (ONEOF(End_task, Exit_loop, Structured_task_element, Task_step))
+SUBTYPE OF (Activity_method);
+END_ENTITY;
+
+ENTITY Task_element_assignment
+SUBTYPE OF (Applied_activity_method_assignment);
+  SELF\Applied_activity_method_assignment.assigned_activity_method RENAMED assigned_task_element : Task_element;
+  SELF\Applied_activity_method_assignment.items : SET [1 : ?] OF task_item;
+END_ENTITY;
+
+ENTITY Task_element_relationship
+SUBTYPE OF (Activity_method_relationship);
+  SELF\Activity_method_relationship.relating_method : Task_element;
+  SELF\Activity_method_relationship.related_method : Task_element;
+END_ENTITY;
+
+ENTITY Task_element_sequence
+SUBTYPE OF (Structured_task_element);
+  elements : LIST [2 : ?] OF Task_element;
+END_ENTITY;
+
+ENTITY Task_step
+SUBTYPE OF (Task_element);
+  SELF\Activity_method.description RENAMED step_text : STRING;
+END_ENTITY;
+
+END_SCHEMA;
+

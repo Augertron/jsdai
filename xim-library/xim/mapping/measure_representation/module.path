@@ -1,0 +1,81 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping measure_representation(Measure_representation_arm, Measure_representation_mim);*)
+
+uof_mapping Measure_representation(Measure_representation);
+(* Multiple entities substituted by entities from AIM
+entity_mapping Measure_item(Measure_item, 
+			( /SUBTYPE(Numerical_item_with_global_unit)/ )
+			( /SUBTYPE(Numerical_item_with_unit)/ )
+			);
+
+end_entity_mapping;
+
+entity_mapping Numerical_item_with_global_unit(Numerical_item_with_global_unit, value_representation_item);
+
+mapping_constraints;
+
+			{value_representation_item  <= representation_item
+			representation_item <- representation.items[i]
+			representation.context_of_items -> representation_context
+			representation_context => global_unit_assigned_context}
+      
+end_mapping_constraints;
+
+attribute_mapping value_component(value_component, value_representation_item.value_component);
+
+end_attribute_mapping;
+
+attribute_mapping value_component(value_component, $PATH, measure_value);
+value_representation_item.value_component
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Numerical_item_with_unit(Numerical_item_with_unit, measure_representation_item);
+
+mapping_constraints;
+measure_representation_item <= representation_item
+end_mapping_constraints;
+
+end_entity_mapping;
+*)
+entity_mapping Property_value_representation(Property_value_representation, representation);
+
+mapping_constraints;
+
+			{representation.context_of_items -> representation_context} (* /SUBTYPE(Numerical_representation_context)/} *)
+			
+end_mapping_constraints;
+
+attribute_mapping context_of_items(context_of_items, $PATH, representation_context);
+
+			representation.context_of_items -> representation_context (* /SUBTYPE(Numerical_representation_context)/ *)
+			
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

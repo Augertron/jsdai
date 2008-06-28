@@ -1,0 +1,47 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+ Derived from ISO TC184/SC4/WG12 N2992 - ISO/TS 10303-1259 Activity as realized - EXPRESS ARM
+ by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+SCHEMA Activity_as_realized_xim;
+
+USE FROM Activity_xim;    -- ISO/TS 10303-1047
+
+USE FROM Activity_as_realized_mim;
+
+ENTITY Activity_actual
+  SUBTYPE OF (Activity, action_actual);
+END_ENTITY;
+
+ENTITY Activity_happening
+  SUBTYPE OF (Activity_relationship);
+  SELF\Activity_relationship.relating_activity RENAMED actual : Activity_actual;
+  SELF\Activity_relationship.related_activity RENAMED predicted : Activity;
+WHERE
+  WR1: NOT ('ACTIVITY_AS_REALIZED.ACTIVITY_ACTUAL' IN TYPEOF(predicted));
+END_ENTITY;
+
+END_SCHEMA;  -- Activity_as_realized_xim

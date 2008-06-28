@@ -1,0 +1,40 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3826 - ISO/TS 10303-1601 Altered package - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3283
+*)
+
+
+SCHEMA Altered_package_mim;
+	USE FROM Package_mim;	-- ISO/TS 10303-1707
+
+ 	TYPE ap_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH  
+		(package);
+	END_TYPE;
+
+(** Needed by mapping *)
+TYPE ap_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH 
+     (package_terminal);
+END_TYPE; 
+
+ENTITY altered_package_terminal
+  ABSTRACT SUPERTYPE OF ((shape_formed_terminal ANDOR
+      surface_prepped_terminal) ANDOR length_trimmed_terminal)
+   SUBTYPE OF (package_terminal);
+END_ENTITY;
+
+ENTITY length_trimmed_terminal
+   SUBTYPE OF (altered_package_terminal);
+END_ENTITY;
+
+ENTITY shape_formed_terminal
+   SUBTYPE OF (altered_package_terminal);
+END_ENTITY;
+
+ENTITY surface_prepped_terminal
+   SUBTYPE OF (altered_package_terminal);
+END_ENTITY;
+	
+END_SCHEMA;
+
+

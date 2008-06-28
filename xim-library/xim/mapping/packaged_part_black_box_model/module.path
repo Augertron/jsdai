@@ -1,0 +1,181 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping packaged_part_black_box_model(Packaged_part_black_box_model_arm, Packaged_part_black_box_model_mim);*)
+
+(*
+entity_mapping Material_identification(Material_identification, material_designation)
+extended;
+
+attribute_mapping items(items, $PATH, Packaged_part_armx);
+
+				characterized_definition
+				characterized_definition = product_definition
+				product_definition
+				product_definition => 
+				physical_unit => 
+				packaged_part
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Packaged_part_armx(Packaged_part_armx, packaged_part);
+
+mapping_constraints;
+packaged_part <=
+physical_unit <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping implemented_function(implemented_function, $PATH, Functional_unit_usage_view);
+packaged_part <=
+physical_unit <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'implemented function'}
+product_definition_relationship.relating_product_definition ->
+{product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'functional design usage'}
+product_definition =>
+functional_unit
+
+end_attribute_mapping;
+
+attribute_mapping used_package(used_package, $PATH, Package_armx);
+packaged_part <=
+physical_unit <=
+product_definition <-
+product_definition_relationship.related_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'used package'}
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+physical_unit =>
+package
+
+end_attribute_mapping;
+
+attribute_mapping used_package(used_package, $PATH, Package_external_reference);
+packaged_part <=
+physical_unit <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+{property_definition_representation.name = 'used package'}
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.name = 'package external reference'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Packaged_part_join_terminal(Packaged_part_join_terminal, packaged_part_terminal);
+
+mapping_constraints;
+packaged_part_terminal <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'join terminal'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Packaged_part_terminal_armx(Packaged_part_terminal_armx, packaged_part_terminal);
+
+mapping_constraints;
+packaged_part_terminal <=
+shape_aspect
+{(shape_aspect.description = 'interface terminal')
+(shape_aspect.description = 'join terminal')}
+
+end_mapping_constraints;
+
+attribute_mapping terminal_of_package(terminal_of_package, $PATH, Package_terminal_armx);
+packaged_part_terminal <=
+shape_aspect					
+{shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+physical_unit <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship.name = 'used package'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+physical_unit
+{physical_unit =>
+package}
+physical_unit <=
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect =>
+placed_feature =>
+package_terminal}
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'terminal of package'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect =>
+placed_feature =>
+package_terminal
+
+end_attribute_mapping;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Packaged_part_armx);
+packaged_part_terminal <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+physical_unit =>
+packaged_part
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Part_terminal(Part_terminal, 
+			(/SUBTYPE(Packaged_part_terminal_armx)/)
+		)
+extended;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

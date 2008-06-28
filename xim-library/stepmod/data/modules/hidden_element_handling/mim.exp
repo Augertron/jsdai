@@ -1,0 +1,28 @@
+--======================================
+-- Hidden_element_handling has to go into a new module xxx which is on
+--  top of new module Associative_draughting_elements. THis is because
+--  Associative_draughting_elements is for both, 2D and 3D cases.
+
+SCHEMA Hidden_element_handling_mim;
+
+USE FROM Appearance_assignment_mim;
+
+USE FROM Camera_view_3d_mim;
+
+USE FROM presentation_organization_schema    --  ISO 10303-46
+  (camera_model_d3_with_hlhsr);
+  
+USE FROM presentation_appearance_schema    --  ISO 10303-46  
+  (context_dependent_over_riding_styled_item);
+
+ENTITY hidden_element_over_riding_styled_item
+  SUBTYPE OF (context_dependent_over_riding_styled_item);
+WHERE
+  WR1: SIZEOF ( SELF.style_context ) =1;
+  WR2: 'HIDDEN_ELEMENT_HANDLING_MIM.'+ 'PRESENTATION_VIEW' IN TYPEOF ( SELF.style_context[1] );
+  WR3: 'HIDDEN_ELEMENT_HANDLING_MIM.'+ 'CAMERA_IMAGE' IN TYPEOF ( SELF.item );
+  WR4: 'HIDDEN_ELEMENT_HANDLING_MIM.'+ 'CAMERA_MODEL_D3_WITH_HLHSR' IN TYPEOF ( SELF.item\ mapped_item.mapping_source. mapping_origin );
+  WR5: SIZEOF ( QUERY ( rep <* USEDIN ( SELF , 'HIDDEN_ELEMENT_HANDLING_MIM.REPRESENTATION.ITEMS' ) | 'HIDDEN_ELEMENT_HANDLING_MIM.'+ 'PRESENTATION_VIEW' IN TYPEOF ( rep ) ) );
+END_ENTITY;
+
+END_SCHEMA;

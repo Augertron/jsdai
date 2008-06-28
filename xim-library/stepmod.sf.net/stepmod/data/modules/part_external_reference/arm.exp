@@ -1,0 +1,36 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4080 - ISO/TS 10303-1711 Part external reference - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3507
+*)
+
+SCHEMA Part_external_reference_arm;
+
+	USE FROM Physical_layout_template_arm;	-- ISO/TS 10303-1722
+
+  ENTITY Package_external_reference;
+      design_owner          : STRING;
+      part_number           : STRING;
+      revision_code         : STRING;
+      product_definition_id : STRING;
+  END_ENTITY;
+  
+  ENTITY Package_terminal_external_reference;
+      name                  : STRING;  
+      associated_definition : Package_external_reference;
+    UNIQUE
+      UR1 : associated_definition,
+ name;
+  END_ENTITY;
+
+  ENTITY Part_terminal_external_reference;
+      associated_definition : physical_unit_or_part_template;
+      feature_name          : STRING; 
+      feature_type          : STRING; 
+    UNIQUE
+      UR1 : associated_definition,
+ feature_name,
+ feature_type;
+  END_ENTITY;
+
+END_SCHEMA;  

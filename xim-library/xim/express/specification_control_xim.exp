@@ -1,0 +1,182 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*  
+   Derived from ISO/TC184/SC4 WG12N2622 - ISO/TS 10303-1112 Specification control - Express ARM 
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+
+SCHEMA Specification_control_xim;
+
+USE FROM Alternative_solution_xim;
+
+USE FROM Effectivity_application_xim;
+
+USE FROM Functional_breakdown_xim;
+
+USE FROM Part_collection_xim;
+
+USE FROM Product_occurrence_xim;
+
+USE FROM Product_placement_xim;
+
+USE FROM Physical_breakdown_xim;
+
+USE FROM Requirement_identification_and_version_xim;
+
+USE FROM Specification_based_configuration_xim;
+
+USE FROM Specified_product_xim;
+
+USE FROM specification_control_mim;
+
+USE FROM product_definition_schema(product_definition_substitute);
+
+TYPE breakdown_element_select = SELECT (
+	Functional_element_definition,
+	Physical_element_definition);
+END_TYPE;
+
+TYPE constraint_context_select = SELECT (Product_class);
+END_TYPE;
+
+-- The same extension is accessable via MIM
+-- TYPE effectivity_specification_for_replacement  = SELECT BASED_ON effectivity_item WITH
+--      (Replaced_usage_relationship);
+-- END_TYPE;
+
+-- The same extension is accessable via MIM
+-- TYPE instance_usage_context_select = EXTENSIBLE GENERIC_ENTITY SELECT (
+--	Collected_item_association, 
+--	Solution_element);
+-- END_TYPE;
+
+ENTITY Breakdown_node_relationship
+	(* CONNOTATIONAL *) SUBTYPE OF(product_definition_usage);
+	(* attribute is accessable from supertype product_definition_relationship
+  description: OPTIONAL STRING; *)
+  SELF\product_definition_relationship.relating_product_definition RENAMED relating: complex_product_select;
+  SELF\product_definition_relationship.related_product_definition RENAMED related: breakdown_element_select;
+  SELF\product_definition_relationship.name RENAMED relation_type: label;  
+WHERE
+WR1: (NOT (relation_type IN ['functionality', 'realization'])) OR
+	(TYPEOF(related) <> TYPEOF(relating));
+WR2: (NOT (relation_type IN ['decomposition', 'specialization', 'occurrence'])) OR
+	(aggregate1_in_aggregate2(TYPEOF(related),TYPEOF(relating)) OR aggregate1_in_aggregate2(TYPEOF(relating),TYPEOF(related)) ) ;
+WR3: (NOT (relation_type IN ['occurrence'])) OR 
+	('SPECIFICATION_CONTROL_ARM.PHYSICAL_ELEMENT_DEFINITION' IN TYPEOF(relating));
+END_ENTITY;
+
+ENTITY Class_breakdown_association
+	(* CONNOTATIONAL *) SUBTYPE OF(configuration_design);
+	(* attribute is accessable from supertype configuration_design
+  description: OPTIONAL STRING; *)
+  considered_class: Product_class;
+  SELF\configuration_design.design RENAMED breakdown_element: breakdown_element_select;
+  relation_type: STRING;
+  (* Overlaps with relation_type *)
+  DERIVE
+   SELF\configuration_design.name : label :=?;
+END_ENTITY;
+
+ENTITY Complex_node_relationship
+	(* CONNOTATIONAL *) SUBTYPE OF(product_definition_formation_relationship);
+	(* attribute is accessable from supertype product_definition_formation_relationship
+  description: OPTIONAL STRING; *)
+  SELF\product_definition_formation_relationship.relating_product_definition_formation RENAMED relating: complex_product_select;
+  SELF\product_definition_formation_relationship.related_product_definition_formation RENAMED related: complex_product_select;
+  SELF\product_definition_formation_relationship.name RENAMED relation_type: label;  
+WHERE
+WR1: (aggregate1_in_aggregate2(TYPEOF(related),TYPEOF(relating)) OR aggregate1_in_aggregate2(TYPEOF(relating),TYPEOF(related)) ) ;
+END_ENTITY;
+
+ENTITY Design_constraint_context_association
+	(* CONNOTATIONAL *) SUBTYPE OF(configuration_design);
+  SELF\configuration_design.design RENAMED constraint_definition: Design_constraint_definition;
+  constraint_context: constraint_context_select;
+  (* attribute below is overlapping with attribute constraint_context. So make it DERIVED *)
+  DERIVE
+  	SELF\configuration_design.configuration : configuration_item :=?;
+END_ENTITY;
+
+ENTITY Design_constraint_association
+	(* CONNOTATIONAL *) SUBTYPE OF (product_definition_relationship);
+  SELF\product_definition_relationship.description RENAMED name_x                                : OPTIONAL text;	
+  SELF\product_definition_relationship.related_product_definition RENAMED constrained_object     : complex_product_select;
+  SELF\product_definition_relationship.relating_product_definition RENAMED constraint_definition : Design_constraint_definition;  
+END_ENTITY;
+
+ENTITY Design_constraint_definition
+(* CONNOTATIONAL *) SUBTYPE OF (Product_view_definition);
+  SELF\Product_view_definition.defined_version : Requirement_version;
+END_ENTITY;
+
+ENTITY Design_constraint_relationship
+(* CONNOTATIONAL *) SUBTYPE OF (product_definition_relationship);
+  SELF\product_definition_relationship.relating_product_definition RENAMED relating_view : Design_constraint_definition;
+  SELF\product_definition_relationship.related_product_definition RENAMED related_view   : Design_constraint_definition;
+END_ENTITY;
+
+ENTITY Part_function_association
+(* CONNOTATIONAL *) SUBTYPE OF (product_definition_relationship);
+  SELF\product_definition_relationship.relating_product_definition RENAMED relating_view : Functional_element_definition;
+  SELF\product_definition_relationship.related_product_definition RENAMED related_view   : Part_view_definition;
+END_ENTITY;
+
+ENTITY Part_occurrence_relationship
+(* CONNOTATIONAL *) SUBTYPE OF (product_definition_relationship);
+  SELF\product_definition_relationship.relating_product_definition RENAMED relating_view : Part_occurrence;
+  SELF\product_definition_relationship.related_product_definition RENAMED related_view   : Part_occurrence;
+END_ENTITY;
+
+(* On the ARM it was subtype of Part_occurrence_relationship, but it causes too many problems and removing of this supertype
+will result in loss of no attribute. So let's do it. As a result - we need to add 2 attributes *)
+ENTITY Replaced_usage_relationship
+SUBTYPE OF (product_definition_substitute);
+  usage_context: instance_usage_context_select;
+  (* Added from supertype as a copy *)
+  relating_product_definition : Part_occurrence;
+  related_product_definition  : Part_occurrence;
+DERIVE
+-- Impossible to contrain here, because SELF\product_definition_substitute.context_relationship is not allowed to be set.
+--  SELF\product_definition_relationship.relation_type : STRING := 'usage replacement';
+  SELF\product_definition_substitute.context_relationship : product_definition_relationship :=?;
+END_ENTITY;
+
+ENTITY Specification_category_breakdown_influence
+	(* CONNOTATIONAL *) SUBTYPE OF (class_usage_effectivity_context_assignment);
+  influencing_category: Class_category_association;
+  influenced_breakdown_node: breakdown_element_select;
+  (* overlapping with influencing_category *) 
+  DERIVE
+  	SELF\effectivity_context_assignment.assigned_effectivity_assignment : effectivity_assignment :=?;
+  	-- Overlaps with influencing_category
+  	SELF\class_usage_effectivity_context_assignment.items : SET [1:?] OF class_usage_effectivity_context_item :=?;
+END_ENTITY;
+
+FUNCTION aggregate1_in_aggregate2 (agg1, agg2: AGGREGATE OF GENERIC): LOGICAL;
+RETURN(SIZEOF(QUERY (ele <* agg1 | VALUE_IN(agg2, ele)))= SIZEOF(agg1));
+END_FUNCTION;
+
+END_SCHEMA;

@@ -1,0 +1,43 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3969 - ISO/TS 10303-1674 Functional assignment to part - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3669
+*)
+
+SCHEMA Functional_assignment_to_part_arm;
+
+	USE FROM Functional_usage_view_arm;	-- ISO/TS 10303-1705
+	USE FROM Physical_unit_usage_view_arm;	-- ISO/TS 10303-1732
+
+	TYPE fatp_groupable_item = SELECT BASED_ON groupable_item WITH 
+	   (Part_connected_terminals_definition);
+	END_TYPE; 
+
+  ENTITY Functional_usage_view_to_part_terminal_assignment;
+      physical_usage_view_terminal   : Part_terminal;
+      functional_usage_view_terminal : Scalar_terminal_definition;
+    UNIQUE
+      UR1 : functional_usage_view_terminal,
+ physical_usage_view_terminal;
+  END_ENTITY;
+
+  ENTITY Part_connected_terminals_definition;
+      name                  : STRING;   
+      associated_definition : Part_usage_view;
+      connected_terminals   : SET[2:?] OF Part_terminal;
+    UNIQUE
+      UR1 : name,
+ associated_definition;
+    WHERE
+      WR1 : SIZEOF(QUERY(ct <* connected_terminals | NOT (associated_definition = ct\Shape_element.containing_shape))) = 0;
+  END_ENTITY;
+
+  ENTITY Part_terminal
+    ABSTRACT SUPERTYPE
+    SUBTYPE OF (Part_feature);
+    INVERSE
+      connection_requirement         : SET[0:1] OF part_connected_terminals_definition FOR connected_terminals;
+      functional_usage_view_terminal : SET[0:1] OF functional_usage_view_to_part_terminal_assignment FOR physical_usage_view_terminal;
+  END_ENTITY;
+
+END_SCHEMA;

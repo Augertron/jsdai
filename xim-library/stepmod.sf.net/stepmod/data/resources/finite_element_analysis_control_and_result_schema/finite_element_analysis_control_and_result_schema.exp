@@ -1,0 +1,2418 @@
+(* Genenerated from: ../../irs/wg12n550.exp *)
+
+SCHEMA finite_element_analysis_control_and_result_schema;
+
+  REFERENCE FROM fea_scalar_vector_tensor_schema
+      (anisotropic_symmetric_tensor2_2d,
+       anisotropic_symmetric_tensor2_3d,
+       anisotropic_symmetric_tensor4_2d,
+       isotropic_symmetric_tensor2_3d,
+       orthotropic_symmetric_tensor2_3d,
+       scalar,
+       symmetric_tensor2_2d,
+       symmetric_tensor2_3d,
+       symmetric_tensor4_2d,
+       tensor1,
+       tensor1_2d,
+       tensor1_3d);
+
+  REFERENCE FROM geometric_model_schema 
+      (solid_model);
+
+  REFERENCE FROM geometry_schema 
+      (curve,
+       point,
+       surface);
+
+  REFERENCE FROM measure_schema 
+      (context_dependent_measure,
+       count_measure,
+       length_measure,
+       plane_angle_measure);
+
+  REFERENCE FROM structural_response_representation_schema 
+      (analysis_item_within_representation,
+       axisymmetric_curve_2d_element_descriptor,
+       axisymmetric_curve_2d_element_representation,
+       axisymmetric_surface_2d_element_descriptor,
+       axisymmetric_surface_2d_element_representation,
+       axisymmetric_volume_2d_element_descriptor,
+       axisymmetric_volume_2d_element_representation,
+       curve_2d_element_coordinate_system,
+       curve_2d_element_descriptor,
+       curve_2d_element_group,
+       curve_2d_element_representation,
+       curve_3d_element_coordinate_system,
+       curve_3d_element_descriptor,
+       curve_3d_element_group,
+       curve_3d_element_representation,
+       curve_element_location,
+       curve_section_element_location,
+       curve_volume_element_location,
+       degree_of_freedom,
+       directionally_explicit_element_representation,
+       element_descriptor,
+       element_group,
+       element_representation,
+       explicit_element_representation,
+       fea_axis2_placement_3d,
+       fea_model,      
+       node_group,
+       node_representation,
+       plane_curve_2d_element_descriptor,
+       plane_curve_2d_element_representation,
+       plane_surface_2d_element_descriptor,
+       plane_surface_2d_element_representation,
+       plane_volume_2d_element_descriptor,
+       plane_volume_2d_element_representation,
+       point_element_representation,
+       substructure_element_representation,
+       surface_2d_element_coordinate_system,
+       surface_2d_element_descriptor,
+       surface_2d_element_group,
+       surface_2d_element_representation,
+       surface_3d_element_coordinate_system,
+       surface_3d_element_descriptor,
+       surface_3d_element_group,
+       surface_3d_element_representation,
+       surface_element_location,
+       surface_section_element_location,
+       surface_volume_element_location,
+       volume_2d_element_coordinate_system,
+       volume_2d_element_descriptor,
+       volume_2d_element_group,
+       volume_2d_element_representation,
+       volume_3d_element_coordinate_system,
+       volume_3d_element_group,
+       volume_3d_element_descriptor,
+       volume_3d_element_representation,
+       volume_element_location);
+
+  REFERENCE FROM support_resource_schema 
+      (identifier,
+       label,
+       text);
+
+TYPE model_or_control_element = SELECT
+     (element_representation,
+      constraint_element);
+END_TYPE;
+
+TYPE cylindrical_harmonic_number = INTEGER;
+WHERE
+  WR1: SELF >= 0;
+END_TYPE;
+
+TYPE volume_3d_face = INTEGER;
+WHERE
+  WR1: (SELF >= 1) AND (SELF <= 6);
+END_TYPE;
+
+TYPE volume_2d_face = INTEGER;
+WHERE
+  WR1: (SELF >= 1) AND (SELF <= 4);
+END_TYPE;
+
+TYPE volume_3d_edge = INTEGER;
+WHERE
+  WR1: (SELF >= 1) AND (SELF <= 12);
+END_TYPE;
+
+TYPE volume_2d_edge = INTEGER;
+WHERE
+  WR1: (SELF >= 1) AND (SELF <= 4);
+END_TYPE;
+
+TYPE surface_3d_face = INTEGER;
+WHERE
+  WR1: (SELF >= 1) AND (SELF <= 2);
+END_TYPE;
+
+TYPE surface_3d_edge = INTEGER;
+WHERE
+  WR1: (SELF >= 1) AND (SELF <= 4);
+END_TYPE;
+
+TYPE surface_2d_face = INTEGER;
+WHERE
+  WR1: (SELF >= 1) AND (SELF <= 2);
+END_TYPE;
+
+TYPE surface_2d_edge = INTEGER;
+WHERE
+  WR1: (SELF >= 1) AND (SELF <= 2);
+END_TYPE;
+
+TYPE field_value = SELECT 
+  (unspecified_value,
+   scalar,
+   tensor1_2d,
+   tensor1_3d,
+   anisotropic_symmetric_tensor2_2d,
+   isotropic_symmetric_tensor2_3d,
+   orthotropic_symmetric_tensor2_3d,
+   anisotropic_symmetric_tensor2_3d);
+END_TYPE;
+
+TYPE unspecified_value = ENUMERATION OF
+  (unspecified);
+END_TYPE;
+
+TYPE measure_or_unspecified_value = SELECT
+  (context_dependent_measure,
+   unspecified_value);
+END_TYPE;
+
+TYPE boundary_variable = SELECT
+   (boundary_surface_scalar_variable,
+   boundary_surface_vector_3d_variable,
+   application_defined_scalar_variable,
+   application_defined_vector_3d_variable);
+END_TYPE;
+
+TYPE boundary_aggregated_variable = SELECT
+   (aggregated_vector_3d_variable,
+   application_defined_vector_3d_variable);
+END_TYPE;
+
+TYPE volume_variable = SELECT 
+  (volume_scalar_variable,
+   volume_angular_variable,
+   volume_vector_3d_variable,
+   volume_tensor2_3d_variable,
+   application_defined_scalar_variable,
+   application_defined_vector_3d_variable,
+   application_defined_tensor2_3d_variable);
+END_TYPE;
+
+TYPE volume_aggregated_variable = SELECT 
+  (aggregated_scalar_variable,
+   aggregated_angular_variable,
+   aggregated_vector_3d_variable,
+   aggregated_tensor2_3d_variable,
+   application_defined_scalar_variable,
+   application_defined_vector_3d_variable,
+   application_defined_tensor2_3d_variable);
+END_TYPE;
+
+TYPE surface_element_variable = SELECT
+  (volume_variable,
+   surface_scalar_variable,
+   surface_vector_2d_variable,
+   surface_vector_3d_variable,
+   surface_tensor2_2d_variable,
+   application_defined_tensor2_2d_variable);
+END_TYPE;
+
+TYPE boundary_edge_variable = SELECT
+   (boundary_curve_scalar_variable,
+    boundary_curve_vector_3d_variable,
+    application_defined_scalar_variable,
+    application_defined_vector_3d_variable);
+END_TYPE;
+
+TYPE curve_element_variable = SELECT
+  (volume_variable,
+   curve_scalar_variable,
+   curve_vector_2d_variable,
+   application_defined_vector_2d_variable,
+   curve_vector_3d_variable);
+END_TYPE;
+
+TYPE curve_scalar_variable = ENUMERATION OF 
+     (curve_axial_force,
+      curve_axial_strain,
+      torque,
+      curve_warping,
+      bi_moment,
+      twist);
+END_TYPE;
+
+TYPE surface_scalar_variable = ENUMERATION OF 
+     (thickness,
+      surface_thermal_gradient,
+      reference_surface_thermal_gradient);
+END_TYPE;
+
+TYPE volume_scalar_variable = ENUMERATION OF 
+     (temperature,
+      moisture,
+      reference_temperature,
+      strain_energy_per_unit_volume);
+END_TYPE;
+
+TYPE boundary_curve_scalar_variable = ENUMERATION OF 
+     (normal_force_per_unit_length);
+END_TYPE;
+
+TYPE boundary_surface_scalar_variable = ENUMERATION OF 
+     (pressure);
+END_TYPE;
+
+TYPE aggregated_scalar_variable = ENUMERATION OF 
+     (total_strain_energy,
+      mass,
+      volume);
+END_TYPE;
+
+TYPE volume_angular_variable = ENUMERATION OF 
+     (constant_angular_acceleration,
+      application_defined_angular_scalar_variable);
+END_TYPE;
+
+TYPE aggregated_angular_variable = ENUMERATION OF 
+      (total_applied_moment,
+       application_defined_aggregated_angular_scalar_variable);
+END_TYPE;
+
+TYPE application_defined_scalar_variable = STRING;
+END_TYPE;
+
+TYPE curve_vector_2d_variable = ENUMERATION OF 
+     (curve_shear_force,
+      curve_bending_moment,
+      curve_element_curvature,
+      curve_thermal_gradient,
+      reference_curve_thermal_gradient);
+END_TYPE;
+
+TYPE surface_vector_2d_variable = ENUMERATION OF 
+     (surface_out_of_plane_shear_force,
+      surface_out_of_plane_shear_strain);
+END_TYPE;
+
+TYPE application_defined_vector_2d_variable = STRING;
+END_TYPE;
+
+TYPE curve_vector_3d_variable = ENUMERATION OF 
+     (applied_force_per_unit_length,
+      applied_moment_per_unit_length);
+END_TYPE;
+
+TYPE surface_vector_3d_variable = ENUMERATION OF 
+     (applied_force_per_unit_area,
+      applied_moment_per_unit_area);
+END_TYPE;
+
+TYPE volume_vector_3d_variable = ENUMERATION OF 
+     (position,
+      applied_force_per_unit_volume,
+      applied_moment_per_unit_volume,
+      displacement,
+      infinitesimal_rotation,
+      acceleration);
+END_TYPE;
+
+TYPE boundary_curve_vector_3d_variable = ENUMERATION OF 
+     (applied_force_per_unit_length,
+      applied_moment_per_unit_length);
+END_TYPE;
+
+TYPE boundary_surface_vector_3d_variable = ENUMERATION OF 
+     (applied_force_per_unit_area,
+      applied_moment_per_unit_area);
+END_TYPE;
+
+TYPE aggregated_vector_3d_variable = ENUMERATION OF 
+     (total_applied_force,
+      centre_of_mass_offset);
+END_TYPE;
+
+TYPE application_defined_vector_3d_variable = STRING;
+END_TYPE;
+
+TYPE surface_tensor2_2d_variable = ENUMERATION OF 
+     (surface_membrane_force,
+      surface_membrane_strain,
+      surface_bending_moment,
+      surface_curvature);
+END_TYPE;
+
+TYPE application_defined_tensor2_2d_variable = STRING;
+END_TYPE;
+
+TYPE volume_tensor2_3d_variable = ENUMERATION OF 
+     (total_strain,
+      stress);
+END_TYPE;
+
+TYPE aggregated_tensor2_3d_variable = ENUMERATION OF 
+     (rotational_inertia);
+END_TYPE;
+
+TYPE application_defined_tensor2_3d_variable = STRING;
+END_TYPE;
+
+TYPE message_level = ENUMERATION OF 
+     (error,
+      warning,
+      note);
+END_TYPE;
+
+TYPE surface_3d_state_coordinate_system = SELECT
+     (fea_axis2_placement_3d,
+      surface_3d_element_coordinate_system);
+END_TYPE;
+
+TYPE surface_2d_state_coordinate_system = SELECT
+     (fea_axis2_placement_3d,
+      surface_2d_element_coordinate_system);
+END_TYPE;
+
+TYPE curve_3d_state_coordinate_system = SELECT
+     (fea_axis2_placement_3d,
+      curve_3d_element_coordinate_system);
+END_TYPE;
+
+TYPE curve_2d_state_coordinate_system = SELECT
+     (fea_axis2_placement_3d,
+      curve_2d_element_coordinate_system);
+END_TYPE;
+
+TYPE action_type = ENUMERATION OF
+     (applied_loads,
+      residual_loads);
+END_TYPE;
+
+TYPE volume_3d_element_output_reference = SELECT
+     (volume_3d_element_representation,
+      volume_3d_element_descriptor,
+      volume_3d_element_group,
+      volume_3d_substructure_element_reference,
+      analysis_item_within_representation);
+END_TYPE;
+
+TYPE volume_2d_element_output_reference = SELECT
+     (volume_2d_element_representation,
+      volume_2d_element_descriptor,
+      volume_2d_element_group,
+      volume_2d_substructure_element_reference,
+      analysis_item_within_representation);
+END_TYPE;
+
+TYPE surface_3d_element_output_reference = SELECT
+     (surface_3d_element_representation,
+      surface_3d_element_descriptor,
+      surface_3d_element_group,
+      surface_3d_substructure_element_reference,
+      analysis_item_within_representation);
+END_TYPE;
+
+TYPE surface_2d_element_output_reference = SELECT
+     (surface_2d_element_representation,
+      surface_2d_element_descriptor,
+      surface_2d_element_group,
+      surface_2d_substructure_element_reference,
+      analysis_item_within_representation);
+END_TYPE;
+
+TYPE curve_3d_element_output_reference = SELECT
+     (curve_3d_element_representation,
+      curve_3d_element_descriptor,
+      curve_3d_element_group,
+      curve_3d_substructure_element_reference,
+      analysis_item_within_representation);
+END_TYPE;
+
+TYPE curve_2d_element_output_reference = SELECT
+     (curve_2d_element_representation,
+      curve_2d_element_descriptor,
+      curve_2d_element_group,
+      curve_2d_substructure_element_reference,
+      analysis_item_within_representation);
+END_TYPE;
+
+TYPE node_output_reference = SELECT
+     (node_representation,
+      node_group,
+      substructure_node_reference,
+      analysis_item_within_representation);
+END_TYPE;
+
+ENTITY control;                             
+  model_ref                 : fea_model;
+  control_id                : identifier;
+  creating_software         : text;  
+  description               : text;
+  user_defined_control      : SET [1:?] OF text;
+  intended_analysis_code    : SET [1:?] of text;
+UNIQUE
+  UR1: model_ref, control_id;
+END_ENTITY;      
+
+ENTITY analysis_step
+  SUPERTYPE OF (ONEOF (control_analysis_step,
+                       result_analysis_step));
+  analysis_control          : control;
+END_ENTITY;
+
+ENTITY control_analysis_step
+  SUPERTYPE OF (ONEOF(control_linear_static_analysis_step,
+                control_linear_modes_and_frequencies_analysis_step))
+  SUBTYPE OF (analysis_step);
+  step_id                   : identifier;
+  sequence                  : integer;
+  initial_state             : state;
+  description               : text;
+UNIQUE
+  UR1: SELF\analysis_step.analysis_control, sequence;
+  UR2: SELF\analysis_step.analysis_control, step_id;
+END_ENTITY;    
+
+ENTITY symmetry_control
+  SUPERTYPE OF (ONEOF (no_symmetry_control,
+                       cylindrical_symmetry_control));
+END_ENTITY;    
+
+ENTITY no_symmetry_control
+  SUBTYPE OF (symmetry_control);
+END_ENTITY;    
+
+ENTITY cylindrical_symmetry_control
+  SUBTYPE OF (symmetry_control);
+  harmonic                  : cylindrical_harmonic_number;
+  phase                     : measure_or_unspecified_value;
+END_ENTITY;    
+
+ENTITY control_linear_static_analysis_step
+  SUBTYPE OF (control_analysis_step);
+  process                   : control_linear_static_load_increment_process;   
+END_ENTITY;    
+
+ENTITY control_linear_static_analysis_step_with_harmonic
+  SUBTYPE OF (control_linear_static_analysis_step);
+  symmetry                  : cylindrical_symmetry_control;
+END_ENTITY;    
+
+ENTITY control_linear_modes_and_frequencies_analysis_step
+  SUBTYPE OF (control_analysis_step);
+  process                   : control_linear_modes_and_frequencies_process;
+  number_of_modes           : count_measure;
+  frequency_range           : ARRAY [1:2] OF context_dependent_measure;
+END_ENTITY;    
+
+ENTITY constraint_element
+  SUPERTYPE OF (ONEOF (single_point_constraint_element,
+                       linear_constraint_equation_element,
+                       nodal_dof_reduction,
+                       point_constraint,
+                       curve_constraint,
+                       surface_constraint,
+                       solid_constraint));
+  element_id                : identifier;
+  steps                     : SET [1:?] OF control_analysis_step;
+END_ENTITY;                              
+
+ENTITY single_point_constraint_element
+  SUBTYPE OF (constraint_element);
+  required_node             : node_output_reference;
+  coordinate_system         : fea_axis2_placement_3d;  
+  freedoms_and_values       : SET [1:?] OF freedom_and_coefficient;
+  description               : text;
+END_ENTITY;
+
+ENTITY linear_constraint_equation_element
+  SUBTYPE OF (constraint_element);
+  freedoms_and_coefficients : SET [1:?] OF 
+                                 linear_constraint_equation_nodal_term;
+  description               : text;
+END_ENTITY;
+
+ENTITY linear_constraint_equation_nodal_term;
+  node                      : node_representation;
+  coordinate_system         : fea_axis2_placement_3d;
+  freedom_and_coefficient_term : freedom_and_coefficient;
+  dependent                 : LOGICAL;
+END_ENTITY;
+
+ENTITY freedom_and_coefficient;
+  freedom                   : degree_of_freedom;
+  a                         : measure_or_unspecified_value;
+END_ENTITY;
+
+ENTITY nodal_dof_reduction
+  SUBTYPE OF (constraint_element);
+  required_node             : node_output_reference;
+  coordinate_system         : fea_axis2_placement_3d;  
+  freedoms                  : SET [1:?] OF degree_of_freedom;
+  description               : text;
+END_ENTITY;
+
+ENTITY point_constraint
+  SUBTYPE OF (constraint_element);
+  required_point            : analysis_item_within_representation;
+  coordinate_system         : fea_axis2_placement_3d;
+  freedoms_and_coefficients : SET [1:?] OF freedom_and_coefficient;
+  description               : text;
+WHERE
+  WR1: ('GEOMETRY_SCHEMA.POINT' IN TYPEOF (required_point.item)) OR
+       ('TOPOLOGY_SCHEMA.VERTEX_POINT' IN TYPEOF (required_point.item));
+END_ENTITY;
+
+ENTITY curve_constraint
+  SUBTYPE OF (constraint_element);
+  required_curve            : analysis_item_within_representation;
+  coordinate_system         : fea_axis2_placement_3d;
+  freedoms_and_coefficients : SET [1:?] OF freedom_and_coefficient;
+  description               : text;
+WHERE
+  WR1: ('GEOMETRY_SCHEMA.CURVE' IN TYPEOF (required_curve.item)) OR
+       ('TOPOLOGY_SCHEMA.EDGE_CURVE' IN TYPEOF (required_curve.item));
+END_ENTITY;
+
+ENTITY surface_constraint
+  SUBTYPE OF (constraint_element);
+  required_surface          : analysis_item_within_representation;
+  coordinate_system         : fea_axis2_placement_3d;
+  freedoms_and_coefficients : SET [1:?] OF freedom_and_coefficient;
+  description               : text;
+WHERE
+  WR1: ('GEOMETRY_SCHEMA.SURFACE' IN TYPEOF (required_surface.item)) OR
+       ('TOPOLOGY_SCHEMA.FACE_SURFACE' IN TYPEOF (required_surface.item));
+END_ENTITY;
+
+ENTITY solid_constraint
+  SUBTYPE OF (constraint_element);
+  required_solid            : analysis_item_within_representation;
+  coordinate_system         : fea_axis2_placement_3d;
+  freedoms_and_coefficients : SET [1:?] OF freedom_and_coefficient;
+  description               : text;
+WHERE
+  WR1: 'GEOMETRIC_MODEL_SCHEMA.SOLID_MODEL' IN TYPEOF (required_solid.item);
+END_ENTITY;
+
+ENTITY control_process
+  SUPERTYPE OF (ONEOF (control_linear_static_load_increment_process,
+                       control_linear_modes_and_frequencies_process));
+  process_id                : identifier;
+  description               : text;
+END_ENTITY;
+
+ENTITY control_linear_static_load_increment_process
+  SUBTYPE OF (control_process);
+  final_input_state         : state;
+END_ENTITY;
+
+ENTITY control_linear_modes_and_frequencies_process
+  SUBTYPE OF (control_process);
+  final_input_state         : state;
+END_ENTITY;
+
+ENTITY element_sequence;
+  order_id                  : identifier;
+  control_ref               : control;
+  purpose                   : text;
+  elements                  : LIST [1:?] OF model_or_control_element;
+UNIQUE
+  UR1: order_id, control_ref;
+END_ENTITY;
+
+ENTITY node_sequence;
+  order_id                  : identifier;
+  control_ref               : control;
+  purpose                   : text;
+  nodes                     : LIST [1:?] OF node_representation;
+UNIQUE
+  UR1: order_id, control_ref;
+END_ENTITY;
+
+ENTITY result;                             
+  result_id                 : identifier;
+  creating_software         : text;  
+  description               : text;
+END_ENTITY;      
+
+ENTITY result_analysis_step
+  SUPERTYPE OF (ONEOF (result_linear_static_analysis_sub_step,
+                result_linear_modes_and_frequencies_analysis_sub_step))
+  SUBTYPE OF (analysis_step);
+  analysis_result           : result;
+UNIQUE
+  UR1: SELF\analysis_step.analysis_control, analysis_result;
+END_ENTITY;
+
+ENTITY result_linear_static_analysis_sub_step
+  SUBTYPE OF (result_analysis_step);
+  state                     : calculated_state;
+END_ENTITY;
+
+ENTITY result_linear_modes_and_frequencies_analysis_sub_step
+  SUBTYPE OF (result_analysis_step);
+  states                    : SET [1:?] OF calculated_state;
+END_ENTITY;
+
+ENTITY control_result_relationship;
+  control                   : control_analysis_step;
+  result                    : result_analysis_step;
+END_ENTITY;
+
+ENTITY state
+  SUPERTYPE OF (ONEOF (specified_state,
+                       calculated_state,
+                       linearly_superimposed_state,
+                       output_request_state));
+  state_id                  : identifier;
+  description               : text;
+END_ENTITY;    
+
+ENTITY state_with_harmonic
+  SUBTYPE OF (state);
+  symmetry                  : cylindrical_symmetry_control;
+END_ENTITY;    
+
+ENTITY specified_state
+  SUBTYPE OF (state);
+END_ENTITY;
+
+ENTITY calculated_state
+  SUBTYPE OF (state);
+END_ENTITY;
+
+ENTITY linearly_superimposed_state
+  SUBTYPE OF (state);
+INVERSE
+  components                : SET [1:?] OF state_component FOR state;
+END_ENTITY;
+
+ENTITY state_component
+  SUBTYPE OF (state);
+  state                     : linearly_superimposed_state;
+  factor                    : context_dependent_measure;
+END_ENTITY;
+
+ENTITY output_request_state
+  SUBTYPE OF (state);
+  steps                     : SET [1:?] OF control_analysis_step;
+END_ENTITY;
+
+ENTITY state_relationship;
+  name                      : label;
+  description               : text;
+  relating_state            : state;
+  related_state             : state;
+END_ENTITY;
+
+ENTITY state_definition
+  SUPERTYPE OF (ONEOF (field_variable_definition,
+                       nodal_freedom_and_value_definition,
+                       element_nodal_freedom_actions,
+                       point_freedom_and_value_definition,
+                       curve_freedom_and_value_definition,
+                       surface_freedom_and_value_definition,
+                       solid_freedom_and_value_definition,
+                       linear_constraint_equation_element_value,
+                       single_point_constraint_element_values,
+                       analysis_message));
+  defined_state             : state;
+END_ENTITY;
+
+ENTITY field_variable_definition
+  SUPERTYPE OF (ONEOF (field_variable_element_definition,
+                       field_variable_element_group_value,
+                       field_variable_whole_model_value,
+                       field_variable_node_definition))
+  SUBTYPE OF (state_definition);
+END_ENTITY;
+
+ENTITY field_variable_element_definition
+  SUPERTYPE OF (ONEOF (volume_3d_element_field_variable_definition,
+                       volume_2d_element_field_variable_definition,
+                       surface_3d_element_field_variable_definition,
+                       surface_2d_element_field_variable_definition,
+                       curve_3d_element_field_variable_definition,
+                       curve_2d_element_field_variable_definition))
+  SUBTYPE OF (field_variable_definition);
+END_ENTITY;
+
+ENTITY volume_3d_element_field_variable_definition
+  SUPERTYPE OF (ONEOF (
+   volume_3d_element_location_point_variable_values,
+   volume_3d_whole_element_variable_value,
+   volume_3d_element_constant_specified_variable_value,
+   volume_3d_element_nodal_specified_variable_values,
+   volume_3d_element_boundary_location_point_variable_values,
+   volume_3d_element_boundary_whole_face_variable_value,
+   volume_3d_element_boundary_constant_specified_variable_value,
+   volume_3d_element_boundary_nodal_specified_variable_values,
+   volume_3d_element_boundary_edge_location_point_volume_variable_values,
+   volume_3d_element_boundary_edge_whole_edge_variable_value,
+   volume_3d_element_boundary_edge_constant_specified_volume_variable_value,
+   volume_3d_element_boundary_edge_nodal_specified_variable_values))
+
+  SUBTYPE OF (field_variable_element_definition);
+  element                   : volume_3d_element_output_reference;
+END_ENTITY;
+
+ENTITY volume_3d_element_location_point_variable_values
+  SUBTYPE OF (volume_3d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              volume_3d_element_value_and_location;
+  variable                  : volume_variable;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_3d_element_value_and_location;
+  simple_value              : field_value;
+  location                  : volume_element_location;
+  coordinate_system         : OPTIONAL volume_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+END_ENTITY;
+
+ENTITY volume_3d_whole_element_variable_value
+  SUBTYPE OF (volume_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_aggregated_variable;
+  coordinate_system         : OPTIONAL volume_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_3d_element_constant_specified_variable_value
+  SUBTYPE OF (volume_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_variable;
+  coordinate_system         : OPTIONAL volume_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_3d_element_nodal_specified_variable_values
+  SUBTYPE OF (volume_3d_element_field_variable_definition);
+  values                    : LIST [1:?] OF field_value;
+  additional_node_values    : BOOLEAN;
+  variable                  : volume_variable;
+WHERE
+  WR1: consistent_list_values (values, variable);
+  WR2: appropriate_list_value_existence (values, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_3d_element_boundary_location_point_variable_values
+  SUBTYPE OF (volume_3d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              volume_3d_element_value_and_location;
+  variable                  : boundary_variable;
+  element_face              : volume_3d_face;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_3d_element_boundary_whole_face_variable_value
+  SUBTYPE OF (volume_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_aggregated_variable;
+  element_face              : volume_3d_face;
+  coordinate_system         : OPTIONAL volume_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_3d_element_boundary_constant_specified_variable_value
+  SUBTYPE OF (volume_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_variable;
+  element_face              : volume_3d_face;
+  coordinate_system         : OPTIONAL volume_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_3d_element_boundary_nodal_specified_variable_values
+  SUBTYPE OF (volume_3d_element_field_variable_definition);
+  values                    : LIST [1:?] OF field_value;
+  additional_node_values    : BOOLEAN;
+  variable                  : boundary_variable;
+  element_face              : volume_3d_face;
+WHERE
+  WR1: consistent_list_values (values, variable);
+  WR2: appropriate_list_value_existence (values, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY 
+ volume_3d_element_boundary_edge_location_point_volume_variable_values
+  SUBTYPE OF (volume_3d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              volume_3d_element_value_and_location;
+  variable                  : boundary_edge_variable;
+  element_edge              : volume_3d_edge;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_3d_element_boundary_edge_whole_edge_variable_value
+  SUBTYPE OF (volume_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_aggregated_variable;
+  element_edge              : volume_3d_edge;
+  coordinate_system         : OPTIONAL volume_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY 
+ volume_3d_element_boundary_edge_constant_specified_volume_variable_value
+  SUBTYPE OF (volume_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_edge_variable;
+  element_edge              : volume_3d_edge;
+  coordinate_system         : OPTIONAL volume_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_3d_element_boundary_edge_nodal_specified_variable_values
+  SUBTYPE OF (volume_3d_element_field_variable_definition);
+  values                    : LIST [1:?] OF field_value;
+  additional_node_values    : BOOLEAN;
+  variable                  : boundary_edge_variable;
+  element_edge              : volume_3d_edge;
+WHERE
+  WR1: consistent_list_values (values, variable);
+  WR2: appropriate_list_value_existence (values, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_2d_element_field_variable_definition
+  SUPERTYPE OF (ONEOF (
+   volume_2d_element_location_point_variable_values,
+   volume_2d_whole_element_variable_value,
+   volume_2d_element_constant_specified_variable_value,
+   volume_2d_element_nodal_specified_variable_values,
+   volume_2d_element_boundary_location_point_variable_values,
+   volume_2d_element_boundary_whole_face_variable_value,
+   volume_2d_element_boundary_constant_specified_variable_value,
+   volume_2d_element_boundary_nodal_specified_variable_values,
+   volume_2d_element_boundary_edge_location_point_volume_variable_values,
+   volume_2d_element_boundary_edge_whole_edge_variable_value,
+   volume_2d_element_boundary_edge_constant_specified_volume_variable_value,
+   volume_2d_element_boundary_edge_nodal_specified_variable_values))
+
+  SUBTYPE OF (field_variable_element_definition);
+  element                   : volume_2d_element_output_reference;
+END_ENTITY;
+
+ENTITY volume_2d_element_location_point_variable_values
+  SUBTYPE OF (volume_2d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              volume_2d_element_value_and_location;
+  variable                  : volume_variable;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_2d_element_value_and_location;
+  simple_value              : field_value;
+  location                  : volume_element_location;
+  coordinate_system         : OPTIONAL volume_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+END_ENTITY;
+
+ENTITY volume_2d_whole_element_variable_value
+  SUBTYPE OF (volume_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_aggregated_variable;
+  coordinate_system         : OPTIONAL volume_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_2d_element_constant_specified_variable_value
+  SUBTYPE OF (volume_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_variable;
+  coordinate_system         : OPTIONAL volume_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_2d_element_nodal_specified_variable_values
+  SUBTYPE OF (volume_2d_element_field_variable_definition);
+  values                    : LIST [1:?] OF field_value; 
+  additional_node_values    : BOOLEAN;
+  variable                  : volume_variable;
+WHERE
+  WR1: consistent_list_values (values, variable);
+  WR2: appropriate_list_value_existence (values, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_2d_element_boundary_location_point_variable_values
+  SUBTYPE OF (volume_2d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              volume_2d_element_value_and_location;
+  variable                  : boundary_variable;
+  element_face              : volume_2d_face;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_2d_element_boundary_whole_face_variable_value
+  SUBTYPE OF (volume_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_aggregated_variable;
+  element_face              : volume_2d_face;
+  coordinate_system         : OPTIONAL volume_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_2d_element_boundary_constant_specified_variable_value
+  SUBTYPE OF (volume_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_variable;
+  element_face              : volume_2d_face;
+  coordinate_system         : OPTIONAL volume_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_2d_element_boundary_nodal_specified_variable_values
+  SUBTYPE OF (volume_2d_element_field_variable_definition);
+  values                    : LIST [1:?] OF field_value;
+  variable                  : boundary_variable;
+  additional_node_values    : BOOLEAN;
+  element_face              : volume_2d_face;
+WHERE
+  WR1: consistent_list_values (values, variable);
+  WR2: appropriate_list_value_existence (values, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY 
+ volume_2d_element_boundary_edge_location_point_volume_variable_values
+  SUBTYPE OF (volume_2d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              volume_2d_element_value_and_location;
+  variable                  : boundary_edge_variable;
+  element_edge              : volume_2d_edge;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_2d_element_boundary_edge_whole_edge_variable_value
+  SUBTYPE OF (volume_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_aggregated_variable;
+  element_edge              : volume_2d_edge;
+  coordinate_system         : OPTIONAL volume_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY 
+ volume_2d_element_boundary_edge_constant_specified_volume_variable_value
+  SUBTYPE OF (volume_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_edge_variable;
+  element_edge              : volume_2d_edge;
+  coordinate_system         : OPTIONAL volume_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_2d_element_boundary_edge_nodal_specified_variable_values
+  SUBTYPE OF (volume_2d_element_field_variable_definition);
+  values                    : LIST [1:?] OF field_value;
+  additional_node_values    : BOOLEAN;
+  variable                  : boundary_edge_variable;
+  element_edge              : volume_2d_edge;
+WHERE
+  WR1: consistent_list_values (values, variable);
+  WR2: appropriate_list_value_existence (values, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_3d_element_field_variable_definition
+  SUPERTYPE OF (ONEOF (
+  surface_3d_element_location_point_volume_variable_values,
+  surface_3d_element_location_point_variable_values,
+  surface_3d_whole_element_variable_value,
+  surface_3d_element_constant_specified_variable_value,
+  surface_3d_element_constant_specified_volume_variable_value,
+  surface_3d_element_nodal_specified_variable_values,
+  surface_3d_element_boundary_location_point_surface_variable_values,
+  surface_3d_element_boundary_whole_face_variable_value,
+  surface_3d_element_boundary_constant_specified_variable_value,
+  surface_3d_element_boundary_constant_specified_surface_variable_value,
+  surface_3d_element_boundary_nodal_specified_variable_values,
+  surface_3d_element_boundary_edge_location_point_surface_variable_values,
+  surface_3d_element_boundary_edge_location_point_variable_values,
+  surface_3d_element_boundary_edge_whole_edge_variable_value,
+  surface_3d_element_boundary_edge_constant_specified_variable_value,
+  surface_3d_element_boundary_edge_constant_specified_surface_variable_value,
+  surface_3d_element_boundary_edge_nodal_specified_variable_values))
+
+  SUBTYPE OF (field_variable_element_definition);
+  element                   : surface_3d_element_output_reference;
+END_ENTITY;
+
+ENTITY surface_3d_element_location_point_volume_variable_values
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              surface_3d_element_value_and_volume_location;
+  variable                  : volume_variable;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+
+END_ENTITY;
+
+ENTITY surface_3d_element_value_and_location;
+  simple_value              : field_value;
+  location                  : surface_element_location;
+  coordinate_system         : OPTIONAL surface_3d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+END_ENTITY;
+
+ENTITY surface_3d_element_value_and_volume_location;
+  simple_value              : field_value;
+  location                  : surface_volume_element_location;
+  coordinate_system         : OPTIONAL surface_3d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+END_ENTITY;
+
+ENTITY surface_3d_element_location_point_variable_values
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              surface_3d_element_value_and_location;
+  variable                  : surface_element_variable;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_3d_whole_element_variable_value
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_aggregated_variable;
+  coordinate_system         : OPTIONAL surface_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_3d_element_constant_specified_variable_value
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : surface_element_variable;
+  coordinate_system         : OPTIONAL surface_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_3d_element_constant_specified_volume_variable_value
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_variable;
+  coordinate_system         : OPTIONAL surface_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_3d_element_nodal_specified_variable_values
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  values                    : LIST [1:?] OF field_value;
+  additional_node_values    : BOOLEAN;
+  variable                  : surface_element_variable;
+WHERE
+  WR1: consistent_list_values (values, variable);
+  WR2: appropriate_list_value_existence (values, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY 
+ surface_3d_element_boundary_location_point_surface_variable_values
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              surface_3d_element_value_and_location;
+  variable                  : boundary_variable;
+  element_face              : surface_3d_face;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_3d_element_boundary_whole_face_variable_value
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_aggregated_variable;
+  element_face              : surface_3d_face;
+  coordinate_system         : OPTIONAL surface_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY 
+ surface_3d_element_boundary_constant_specified_surface_variable_value
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_variable;
+  element_face              : surface_3d_face;
+  coordinate_system         : OPTIONAL surface_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_3d_element_boundary_constant_specified_variable_value
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_aggregated_variable;
+  element_face              : surface_3d_face;
+  coordinate_system         : OPTIONAL surface_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_3d_element_boundary_nodal_specified_variable_values
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  values                    : LIST [1:?] OF field_value;
+  additional_node_values    : BOOLEAN;
+  variable                  : boundary_variable;
+  element_face              : surface_3d_face;
+WHERE
+  WR1: consistent_list_values (values, variable);
+  WR2: appropriate_list_value_existence (values, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY 
+ surface_3d_element_boundary_edge_location_point_surface_variable_values
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              surface_3d_element_value_and_volume_location;
+  variable                  : boundary_edge_variable;
+  element_edge              : surface_3d_edge;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY 
+ surface_3d_element_boundary_edge_location_point_variable_values
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              surface_3d_element_value_and_location;
+  variable                  : boundary_edge_variable;
+  element_edge              : surface_3d_edge;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_3d_element_boundary_edge_whole_edge_variable_value
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_aggregated_variable;
+  element_edge              : surface_3d_edge;
+  coordinate_system         : OPTIONAL surface_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY 
+ surface_3d_element_boundary_edge_constant_specified_surface_variable_value
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_edge_variable;
+  element_edge              : surface_3d_edge;
+  coordinate_system         : OPTIONAL surface_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_3d_element_boundary_edge_constant_specified_variable_value
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_edge_variable;
+  element_edge              : surface_3d_edge;
+  coordinate_system         : OPTIONAL surface_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_3d_element_boundary_edge_nodal_specified_variable_values
+  SUBTYPE OF (surface_3d_element_field_variable_definition);
+  values                    : LIST [1:?] OF field_value;
+  additional_node_values    : BOOLEAN;
+  variable                  : boundary_edge_variable;
+  element_edge              : surface_3d_edge;
+WHERE
+  WR1: consistent_list_values (values, variable);
+  WR2: appropriate_list_value_existence (values, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_2d_element_field_variable_definition
+  SUPERTYPE OF (ONEOF (
+  surface_2d_element_location_point_volume_variable_values,
+  surface_2d_element_location_point_variable_values,
+  surface_2d_whole_element_variable_value,
+  surface_2d_element_constant_specified_variable_value,
+  surface_2d_element_constant_specified_volume_variable_value,
+  surface_2d_element_nodal_specified_variable_values,
+  surface_2d_element_boundary_location_point_surface_variable_values,
+  surface_2d_element_boundary_whole_face_variable_value,
+  surface_2d_element_boundary_constant_specified_variable_value,
+  surface_2d_element_boundary_constant_specified_surface_variable_value,
+  surface_2d_element_boundary_nodal_specified_variable_values,
+  surface_2d_element_boundary_edge_location_point_surface_variable_values,
+  surface_2d_element_boundary_edge_location_point_variable_values,
+  surface_2d_element_boundary_edge_whole_edge_variable_value,
+  surface_2d_element_boundary_edge_constant_specified_variable_value,
+  surface_2d_element_boundary_edge_constant_specified_surface_variable_value,
+  surface_2d_element_boundary_edge_nodal_specified_variable_values))
+
+  SUBTYPE OF (field_variable_element_definition);
+  element                   : surface_2d_element_output_reference;
+END_ENTITY;
+
+ENTITY surface_2d_element_location_point_volume_variable_values
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              surface_2d_element_value_and_volume_location;
+  variable                  : volume_variable;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_2d_element_value_and_location;
+  simple_value              : field_value;
+  location                  : surface_element_location;
+  coordinate_system         : OPTIONAL surface_2d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+END_ENTITY;
+
+ENTITY surface_2d_element_value_and_volume_location;
+  simple_value              : field_value;
+  location                  : surface_volume_element_location;
+  coordinate_system         : OPTIONAL surface_2d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+END_ENTITY;
+
+ENTITY surface_2d_element_location_point_variable_values
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              surface_2d_element_value_and_location;
+  variable                  : surface_element_variable;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_2d_whole_element_variable_value
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_aggregated_variable;
+  coordinate_system         : OPTIONAL surface_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_2d_element_constant_specified_variable_value
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : surface_element_variable;
+  coordinate_system         : OPTIONAL surface_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_2d_element_constant_specified_volume_variable_value
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_variable;
+  coordinate_system         : OPTIONAL surface_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_2d_element_nodal_specified_variable_values
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  values                    : LIST [1:?] OF field_value;
+  additional_node_values    : BOOLEAN;
+  variable                  : surface_element_variable;
+WHERE
+  WR1: consistent_list_values (values, variable);
+  WR2: appropriate_list_value_existence (values, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY 
+ surface_2d_element_boundary_location_point_surface_variable_values
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              surface_2d_element_value_and_location;
+  variable                  : boundary_variable;
+  element_face              : surface_2d_face;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_2d_element_boundary_whole_face_variable_value
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_aggregated_variable;
+  element_face              : surface_2d_face;
+  coordinate_system         : OPTIONAL surface_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY 
+ surface_2d_element_boundary_constant_specified_surface_variable_value
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_variable;
+  element_face              : surface_2d_face;
+  coordinate_system         : OPTIONAL surface_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_2d_element_boundary_constant_specified_variable_value
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_aggregated_variable;
+  element_face              : surface_2d_face;
+  coordinate_system         : OPTIONAL surface_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_2d_element_boundary_nodal_specified_variable_values
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  values                    : LIST [1:?] OF field_value;
+  additional_node_values    : BOOLEAN;
+  variable                  : boundary_variable;
+  element_face              : surface_2d_face;
+WHERE
+  WR1: consistent_list_values (values, variable);
+  WR2: appropriate_list_value_existence (values, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY 
+ surface_2d_element_boundary_edge_location_point_surface_variable_values
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              surface_2d_element_value_and_volume_location;
+  variable                  : boundary_edge_variable;
+  element_edge              : surface_2d_edge;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY 
+ surface_2d_element_boundary_edge_location_point_variable_values
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              surface_2d_element_value_and_location;
+  variable                  : boundary_edge_variable;
+  element_edge              : surface_2d_edge;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_2d_element_boundary_edge_whole_edge_variable_value
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_aggregated_variable;
+  element_edge              : surface_2d_edge;
+  coordinate_system         : OPTIONAL surface_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY 
+ surface_2d_element_boundary_edge_constant_specified_surface_variable_value
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_edge_variable;
+  element_edge              : surface_2d_edge;
+  coordinate_system         : OPTIONAL surface_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_2d_element_boundary_edge_constant_specified_variable_value
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : boundary_edge_variable;
+  element_edge              : surface_2d_edge;
+  coordinate_system         : OPTIONAL surface_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_2d_element_boundary_edge_nodal_specified_variable_values
+  SUBTYPE OF (surface_2d_element_field_variable_definition);
+  values                    : LIST [1:?] OF field_value;
+  additional_node_values    : BOOLEAN;
+  variable                  : boundary_edge_variable;
+  element_edge              : surface_2d_edge;
+WHERE
+  WR1: consistent_list_values (values, variable);
+  WR2: appropriate_list_value_existence (values, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY curve_3d_element_field_variable_definition
+  SUPERTYPE OF (ONEOF (
+            curve_3d_element_location_point_volume_variable_values,
+            curve_3d_element_location_point_variable_values,
+            curve_3d_whole_element_variable_value,
+            curve_3d_element_constant_specified_variable_value,
+            curve_3d_element_constant_specified_volume_variable_value,
+            curve_3d_element_nodal_specified_variable_values))
+
+  SUBTYPE OF (field_variable_element_definition);
+  element                   : curve_3d_element_output_reference;
+END_ENTITY;
+
+ENTITY curve_3d_element_location_point_volume_variable_values
+  SUBTYPE OF (curve_3d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              curve_3d_element_value_and_volume_location;
+  variable                  : volume_variable;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY curve_3d_element_value_and_location;
+  simple_value              : field_value;
+  location                  : curve_element_location;
+  coordinate_system         : OPTIONAL curve_3d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+END_ENTITY;
+
+ENTITY curve_3d_element_value_and_volume_location;
+  simple_value              : field_value;
+  location                  : curve_volume_element_location;
+  coordinate_system         : OPTIONAL curve_3d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+END_ENTITY;
+
+ENTITY curve_3d_element_location_point_variable_values
+  SUBTYPE OF (curve_3d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              curve_3d_element_value_and_location;
+  variable                  : curve_element_variable;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY curve_3d_whole_element_variable_value
+  SUBTYPE OF (curve_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_aggregated_variable;
+  coordinate_system         : OPTIONAL curve_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY curve_3d_element_constant_specified_variable_value
+  SUBTYPE OF (curve_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : curve_element_variable;
+  coordinate_system         : OPTIONAL curve_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY curve_3d_element_constant_specified_volume_variable_value
+  SUBTYPE OF (curve_3d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_variable;
+  coordinate_system         : OPTIONAL curve_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY curve_3d_element_nodal_specified_variable_values
+  SUBTYPE OF (curve_3d_element_field_variable_definition);
+  values                    : LIST [1:?] OF field_value;
+  additional_node_values    : BOOLEAN;
+  variable                  : curve_element_variable;
+WHERE
+  WR1: consistent_list_values (values, variable);
+  WR2: appropriate_list_value_existence (values, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY curve_2d_element_field_variable_definition
+  SUPERTYPE OF (ONEOF (
+            curve_2d_element_location_point_volume_variable_values,
+            curve_2d_element_location_point_variable_values,
+            curve_2d_whole_element_variable_value,
+            curve_2d_element_constant_specified_variable_value,
+            curve_2d_element_constant_specified_volume_variable_value))
+  SUBTYPE OF (field_variable_element_definition);
+  element                   : curve_2d_element_output_reference;
+END_ENTITY;
+
+ENTITY curve_2d_element_location_point_volume_variable_values
+  SUBTYPE OF (curve_2d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              curve_2d_element_value_and_volume_location;
+  variable                  : curve_element_variable;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY curve_2d_element_value_and_location;
+  simple_value              : field_value;
+  location                  : curve_section_element_location;
+  coordinate_system         : OPTIONAL curve_2d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+END_ENTITY;
+
+ENTITY curve_2d_element_value_and_volume_location;
+  simple_value              : field_value;
+  location                  : curve_volume_element_location;
+  coordinate_system         : OPTIONAL curve_2d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+END_ENTITY;
+
+ENTITY curve_2d_element_location_point_variable_values
+  SUBTYPE OF (curve_2d_element_field_variable_definition);
+  basis                     : BOOLEAN;
+  values_and_locations      : SET [1:?] OF 
+                              curve_2d_element_value_and_location;
+  variable                  : curve_element_variable;
+WHERE
+  WR1: consistent_set_values (values_and_locations, variable);
+  WR2: appropriate_set_value_existence (values_and_locations, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY curve_2d_whole_element_variable_value
+  SUBTYPE OF (curve_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_aggregated_variable;
+  coordinate_system         : OPTIONAL curve_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY curve_2d_element_constant_specified_variable_value
+  SUBTYPE OF (curve_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : surface_element_variable;
+  coordinate_system         : OPTIONAL curve_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY curve_2d_element_constant_specified_volume_variable_value
+  SUBTYPE OF (curve_2d_element_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_variable;
+  coordinate_system         : OPTIONAL curve_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY field_variable_element_group_value
+  SUBTYPE OF (field_variable_definition);
+  group                     : element_group;
+  simple_value              : field_value;
+  variable                  : volume_aggregated_variable;
+  coordinate_system         : OPTIONAL fea_axis2_placement_3d;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY field_variable_whole_model_value
+  SUBTYPE OF (field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_aggregated_variable;
+  coordinate_system         : OPTIONAL fea_axis2_placement_3d;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY field_variable_node_definition
+  SUPERTYPE OF (ONEOF (volume_3d_node_field_variable_definition,
+                       volume_2d_node_field_variable_definition,
+                       surface_3d_node_field_variable_definition,
+                       surface_2d_node_field_variable_definition,
+                       curve_3d_node_field_variable_definition,
+                       curve_2d_node_field_variable_definition))
+  SUBTYPE OF (field_variable_definition);
+  node                      : node_output_reference;
+  group                     : OPTIONAL element_group;
+END_ENTITY;
+
+ENTITY volume_3d_node_field_variable_definition
+  SUBTYPE OF (field_variable_node_definition);
+  simple_value              : field_value;
+  variable                  : volume_variable;
+  coordinate_system         : OPTIONAL volume_3d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY volume_2d_node_field_variable_definition
+  SUBTYPE OF (field_variable_node_definition);
+  simple_value              : field_value;
+  variable                  : volume_variable;
+  coordinate_system         : OPTIONAL volume_2d_element_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_3d_node_field_variable_definition
+  SUPERTYPE OF (ONEOF (
+            surface_3d_node_field_section_variable_values,
+            surface_3d_node_field_aggregated_variable_values))
+  SUBTYPE OF (field_variable_node_definition);
+END_ENTITY;
+
+ENTITY surface_3d_node_field_section_variable_values
+  SUBTYPE OF (surface_3d_node_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : surface_element_variable;
+  location                  : surface_section_element_location;
+  coordinate_system         : OPTIONAL surface_3d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_3d_node_field_aggregated_variable_values
+  SUBTYPE OF (surface_3d_node_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_aggregated_variable;
+  coordinate_system         : OPTIONAL surface_3d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_2d_node_field_variable_definition
+  SUPERTYPE OF (ONEOF (
+            surface_2d_node_field_section_variable_values,
+            surface_2d_node_field_aggregated_variable_values))
+  SUBTYPE OF (field_variable_node_definition);
+END_ENTITY;
+
+ENTITY surface_2d_node_field_section_variable_values
+  SUBTYPE OF (surface_2d_node_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : surface_element_variable;
+  location                  : surface_section_element_location;
+  coordinate_system         : OPTIONAL surface_2d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY surface_2d_node_field_aggregated_variable_values
+  SUBTYPE OF (surface_2d_node_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_aggregated_variable;
+  coordinate_system         : OPTIONAL surface_2d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY curve_3d_node_field_variable_definition
+  SUPERTYPE OF (ONEOF (
+            curve_3d_node_field_section_variable_values,
+            curve_3d_node_field_aggregated_variable_values))
+  SUBTYPE OF (field_variable_node_definition);
+END_ENTITY;
+
+ENTITY curve_3d_node_field_section_variable_values
+  SUBTYPE OF (curve_3d_node_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : curve_element_variable;
+  location                  : curve_section_element_location;
+  coordinate_system         : OPTIONAL curve_3d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY curve_3d_node_field_aggregated_variable_values
+  SUBTYPE OF (curve_3d_node_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_aggregated_variable;
+  coordinate_system         : OPTIONAL curve_3d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY curve_2d_node_field_variable_definition
+  SUPERTYPE OF (ONEOF (
+            curve_2d_node_field_section_variable_values,
+            curve_2d_node_field_aggregated_variable_values))
+  SUBTYPE OF (field_variable_node_definition);
+END_ENTITY;
+
+ENTITY curve_2d_node_field_section_variable_values
+  SUBTYPE OF (curve_2d_node_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : curve_element_variable;
+  location                  : curve_section_element_location;
+  coordinate_system         : OPTIONAL curve_2d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY curve_2d_node_field_aggregated_variable_values
+  SUBTYPE OF (curve_2d_node_field_variable_definition);
+  simple_value              : field_value;
+  variable                  : volume_aggregated_variable;
+  coordinate_system         : OPTIONAL curve_2d_state_coordinate_system;
+WHERE
+  WR1: necessary_value_coordinate_system (simple_value, coordinate_system);
+  WR2: consistent_value (simple_value, variable);
+  WR3: appropriate_value_existence (simple_value, 
+       TYPEOF (SELF\state_definition.defined_state));
+END_ENTITY;
+
+ENTITY nodal_freedom_and_value_definition
+  SUPERTYPE OF (ONEOF (nodal_freedom_values,
+                       nodal_freedom_action_definition))
+  SUBTYPE OF (state_definition);
+  node                      : node_output_reference;    
+  coordinate_system         : fea_axis2_placement_3d;
+  degrees_of_freedom        : freedoms_list;
+  values                    : LIST [1:?] OF measure_or_unspecified_value;
+WHERE
+  WR1: SIZEOF(degrees_of_freedom.freedoms) = SIZEOF (values);
+END_ENTITY;
+
+ENTITY nodal_freedom_values
+  SUBTYPE OF (nodal_freedom_and_value_definition);
+END_ENTITY;
+
+ENTITY nodal_freedom_action_definition
+  SUBTYPE OF (nodal_freedom_and_value_definition);
+  action                    : action_type;
+END_ENTITY;
+
+ENTITY element_nodal_freedom_actions
+  SUBTYPE OF (state_definition);
+  element                   : model_or_control_element;
+  nodal_action              : LIST [1:?] OF 
+                                 element_nodal_freedom_terms;
+END_ENTITY;
+
+ENTITY element_nodal_freedom_terms;
+  coordinate_system         : fea_axis2_placement_3d;
+  degrees_of_freedom        : freedoms_list;
+  values                    : LIST [1:?] OF measure_or_unspecified_value;
+WHERE
+  WR1: SIZEOF(degrees_of_freedom.freedoms) = SIZEOF (values);
+END_ENTITY;
+
+ENTITY point_freedom_and_value_definition
+  SUPERTYPE OF (ONEOF (point_freedom_values,
+                       point_freedom_action_definition))
+  SUBTYPE OF (state_definition);
+  required_point            : analysis_item_within_representation;
+  coordinate_system         : fea_axis2_placement_3d;
+  degrees_of_freedom        : freedoms_list;
+  values                    : LIST [1:?] OF measure_or_unspecified_value;
+WHERE
+  WR1: SIZEOF(degrees_of_freedom.freedoms) = SIZEOF (values);
+  WR2: ('GEOMETRY_SCHEMA.POINT' IN TYPEOF (required_point.item)) OR
+       ('TOPOLOGY_SCHEMA.VERTEX_POINT' IN TYPEOF (required_point.item));
+END_ENTITY;
+
+ENTITY point_freedom_values
+  SUBTYPE OF (point_freedom_and_value_definition);
+END_ENTITY;
+
+ENTITY point_freedom_action_definition
+  SUBTYPE OF (point_freedom_and_value_definition);
+  action                    : action_type;
+END_ENTITY;
+
+ENTITY curve_freedom_and_value_definition
+  SUPERTYPE OF (ONEOF (curve_freedom_values,
+                       curve_freedom_action_definition))
+  SUBTYPE OF (state_definition);
+  required_curve            : analysis_item_within_representation;
+  coordinate_system         : fea_axis2_placement_3d;
+  degrees_of_freedom        : freedoms_list;
+  values                    : LIST [1:?] OF measure_or_unspecified_value;
+WHERE
+  WR1: SIZEOF(degrees_of_freedom.freedoms) = SIZEOF (values);
+  WR2: ('GEOMETRY_SCHEMA.CURVE' IN TYPEOF (required_curve.item)) OR
+       ('TOPOLOGY_SCHEMA.EDGE_CURVE' IN TYPEOF (required_curve.item));
+END_ENTITY;
+
+ENTITY curve_freedom_values
+  SUBTYPE OF (curve_freedom_and_value_definition);
+END_ENTITY;
+
+ENTITY curve_freedom_action_definition
+  SUBTYPE OF (curve_freedom_and_value_definition);
+  action                    : action_type;
+END_ENTITY;
+
+ENTITY surface_freedom_and_value_definition
+  SUPERTYPE OF (ONEOF (surface_freedom_values,
+                       surface_freedom_action_definition))
+  SUBTYPE OF (state_definition);
+  required_surface          : analysis_item_within_representation;
+  coordinate_system         : fea_axis2_placement_3d;
+  degrees_of_freedom        : freedoms_list;
+  values                    : LIST [1:?] OF measure_or_unspecified_value;
+WHERE
+  WR1: SIZEOF(degrees_of_freedom.freedoms) = SIZEOF (values);
+  WR2: ('GEOMETRY_SCHEMA.SURFACE' IN TYPEOF (required_surface.item)) OR
+       ('TOPOLOGY_SCHEMA.FACE_SURFACE' IN TYPEOF (required_surface.item));
+END_ENTITY;
+
+ENTITY surface_freedom_values
+  SUBTYPE OF (surface_freedom_and_value_definition);
+END_ENTITY;
+
+ENTITY surface_freedom_action_definition
+  SUBTYPE OF (surface_freedom_and_value_definition);
+  action                    : action_type;
+END_ENTITY;
+
+ENTITY solid_freedom_and_value_definition
+  SUPERTYPE OF (ONEOF (solid_freedom_values,
+                       solid_freedom_action_definition))
+  SUBTYPE OF (state_definition);
+  required_solid            : analysis_item_within_representation;
+  coordinate_system         : fea_axis2_placement_3d;
+  degrees_of_freedom        : freedoms_list;
+  values                    : LIST [1:?] OF measure_or_unspecified_value;
+WHERE
+  WR1: SIZEOF(degrees_of_freedom.freedoms) = SIZEOF (values);
+  WR2: 'GEOMETRIC_MODEL_SCHEMA.SOLID_MODEL' IN TYPEOF (required_solid.item);
+END_ENTITY;
+
+ENTITY solid_freedom_values
+  SUBTYPE OF (solid_freedom_and_value_definition);
+END_ENTITY;
+
+ENTITY solid_freedom_action_definition
+  SUBTYPE OF (solid_freedom_and_value_definition);
+  action                    : action_type;
+END_ENTITY;
+
+ENTITY freedoms_list;
+  freedoms                  : LIST [1:?] OF degree_of_freedom;
+END_ENTITY;
+
+ENTITY linear_constraint_equation_element_value
+  SUBTYPE OF (state_definition);
+  element                   : linear_constraint_equation_element;
+  b                         : measure_or_unspecified_value;
+END_ENTITY;
+
+ENTITY single_point_constraint_element_values
+  SUBTYPE OF (state_definition);
+  element                   : single_point_constraint_element;
+  degrees_of_freedom        : freedoms_list;
+  b                         : LIST [1:?] OF measure_or_unspecified_value;
+WHERE
+  WR1: SIZEOF(degrees_of_freedom.freedoms) = SIZEOF (b);
+END_ENTITY;
+
+ENTITY analysis_message
+  SUPERTYPE OF (ONEOF (whole_model_analysis_message,
+                       element_analysis_message,
+                       node_analysis_message,
+                       element_group_analysis_message))
+  SUBTYPE OF (state_definition);
+  level                     : message_level;
+  message_text              : text;
+END_ENTITY;
+
+ENTITY whole_model_analysis_message
+  SUPERTYPE OF (whole_model_modes_and_frequencies_analysis_message)
+  SUBTYPE OF (analysis_message);
+END_ENTITY;
+
+ENTITY whole_model_modes_and_frequencies_analysis_message
+  SUBTYPE OF (whole_model_analysis_message);
+  mode                      : count_measure;
+  frequency                 : context_dependent_measure;
+END_ENTITY;
+
+ENTITY element_analysis_message
+  SUBTYPE OF (analysis_message);
+  element                   : element_representation;
+END_ENTITY;
+
+ENTITY node_analysis_message
+  SUBTYPE OF (analysis_message);
+  node                      : node_output_reference;
+END_ENTITY;
+
+ENTITY element_group_analysis_message
+  SUBTYPE OF (analysis_message);
+  group                     : element_group;
+END_ENTITY;
+
+ENTITY volume_3d_substructure_element_reference;
+  substructure_element_ref  : substructure_element_representation;
+  element_ref               : volume_3d_element_representation;
+END_ENTITY;
+
+ENTITY volume_2d_substructure_element_reference;
+  substructure_element_ref  : substructure_element_representation;
+  element_ref               : volume_2d_element_representation;
+END_ENTITY;
+
+ENTITY surface_3d_substructure_element_reference;
+  substructure_element_ref  : substructure_element_representation;
+  element_ref               : surface_3d_element_representation;
+END_ENTITY;
+
+ENTITY surface_2d_substructure_element_reference;
+  substructure_element_ref  : substructure_element_representation;
+  element_ref               : surface_2d_element_representation;
+END_ENTITY;
+
+ENTITY curve_3d_substructure_element_reference;
+  substructure_element_ref  : substructure_element_representation;
+  element_ref               : curve_3d_element_representation;
+END_ENTITY;
+
+ENTITY curve_2d_substructure_element_reference;
+  substructure_element_ref  : substructure_element_representation;
+  element_ref               : curve_2d_element_representation;
+END_ENTITY;
+
+ENTITY substructure_node_reference;
+  substructure_element_ref  : substructure_element_representation;
+  node_ref                  : node_representation;
+END_ENTITY;
+
+FUNCTION necessary_value_coordinate_system 
+    (cs_value               : field_value;
+     coordinate_system      : GENERIC): BOOLEAN;
+
+    IF (SIZEOF (
+        ['FEA_SCALAR_VECTOR_TENSOR_SCHEMA.TENSOR1_2D',
+         'FEA_SCALAR_VECTOR_TENSOR_SCHEMA.TENSOR1_3D',
+         'FEA_SCALAR_VECTOR_TENSOR_SCHEMA.SYMMETRIC_TENSOR2_2D',
+         'FEA_SCALAR_VECTOR_TENSOR_SCHEMA.SYMMETRIC_TENSOR2_3D'] *
+        TYPEOF (cs_value)) = 1) THEN
+        IF (NOT EXISTS (coordinate_system) ) THEN
+            RETURN (FALSE);
+        END_IF;
+    END_IF;
+
+    RETURN (TRUE);
+
+END_FUNCTION;
+
+FUNCTION consistent_set_values
+    (values_and_locations   : SET [1:?] OF GENERIC;
+     variable               : GENERIC) : BOOLEAN;
+
+    LOCAL
+     vv_type                : STRING;
+     fv_type                : SET [1:?] OF STRING;
+     i                      : INTEGER;
+    END_LOCAL;
+
+    vv_type := variable_value_type (variable);
+
+    REPEAT i := 1 TO HIINDEX (values_and_locations);
+
+       fv_type := TYPEOF (values_and_locations[i].simple_value);
+
+       IF NOT (('FINITE_ELEMENT_ANALYSIS_CONTROL_AND_RESULT_SCHEMA.' +
+           'UNSPECIFIED_VALUE') IN fv_type) THEN
+
+          IF NOT (vv_type IN fv_type) THEN
+             RETURN (FALSE);
+          END_IF;
+
+       END_IF;
+
+    END_REPEAT;
+
+    RETURN (TRUE);
+
+END_FUNCTION;
+
+FUNCTION consistent_list_values
+    (values                 : LIST [1:?] OF field_value;
+     variable               : GENERIC) : BOOLEAN;
+ 
+    LOCAL
+     vv_type                : STRING;
+     fv_type                : SET [1:?] OF STRING;
+     i                      : INTEGER;
+    END_LOCAL;
+
+    vv_type := variable_value_type (variable);
+
+    REPEAT i := 1 TO HIINDEX (values);
+
+       fv_type := TYPEOF (values[i]);
+
+       IF NOT (('FINITE_ELEMENT_ANALYSIS_CONTROL_AND_RESULT_SCHEMA.' +
+           'UNSPECIFIED_VALUE') IN fv_type) THEN
+
+          IF NOT (vv_type IN fv_type) THEN
+             RETURN (FALSE);
+          END_IF;
+
+       END_IF;
+
+    END_REPEAT;
+
+    RETURN (TRUE);
+
+END_FUNCTION;
+
+FUNCTION consistent_value
+    (c_value                : field_value;
+     variable               : GENERIC) : BOOLEAN;
+
+    LOCAL
+     vv_type                : STRING;
+     fv_type                : SET [1:?] OF STRING;
+    END_LOCAL;
+
+    vv_type := variable_value_type (variable);
+
+    fv_type := TYPEOF (c_value);
+
+    IF NOT (('FINITE_ELEMENT_ANALYSIS_CONTROL_AND_RESULT_SCHEMA.' +
+       'UNSPECIFIED_VALUE') IN fv_type) THEN
+
+       IF NOT (vv_type IN fv_type) THEN
+          RETURN (FALSE);
+       END_IF;
+
+    END_IF;
+
+    RETURN (TRUE);
+
+END_FUNCTION;
+
+FUNCTION variable_value_type
+    (variable               : GENERIC) : STRING;
+
+    LOCAL
+     svt                    : STRING;
+     feacr                  : STRING;
+     variable_typeof        : SET [1:?] OF STRING;
+    END_LOCAL;
+        
+    svt     := 'FEA_SCALAR_VECTOR_TENSOR_SCHEMA.';
+    feacr   := 'FINITE_ELEMENT_ANALYSIS_CONTROL_AND_RESULT_SCHEMA.';
+    variable_typeof := TYPEOF (variable);
+
+    IF SIZEOF ([(feacr + 'CURVE_SCALAR_VARIABLE'),
+                (feacr + 'SURFACE_SCALAR_VARIABLE'),
+                (feacr + 'VOLUME_SCALAR_VARIABLE'),
+                (feacr + 'BOUNDARY_CURVE_SCALAR_VARIABLE'),
+                (feacr + 'BOUNDARY_SURFACE_SCALAR_VARIABLE'),
+                (feacr + 'AGGREGATED_SCALAR_VARIABLE'),
+                (feacr + 'VOLUME_ANGULAR_VARIABLE'),
+                (feacr + 'AGGREGATED_ANGULAR_VARIABLE'),
+                (feacr + 'APPLICATION_DEFINED_SCALAR_VARIABLE')] *
+               variable_typeof ) = 1 THEN
+        RETURN (svt + 'SCALAR');
+    END_IF;
+
+    IF SIZEOF ([(feacr + 'CURVE_VECTOR_2D_VARIABLE'),
+                (feacr + 'SURFACE_VECTOR_2D_VARIABLE'),
+                (feacr + 'APPLICATION_DEFINED_VECTOR_2D_VARIABLE')] *
+               variable_typeof ) = 1 THEN
+        RETURN (svt + 'TENSOR1_2D');
+    END_IF;
+
+    IF SIZEOF ([(feacr + 'CURVE_VECTOR_3D_VARIABLE'),
+                (feacr + 'SURFACE_VECTOR_3D_VARIABLE'),
+                (feacr + 'VOLUME_VECTOR_3D_VARIABLE'),
+                (feacr + 'BOUNDARY_CURVE_VECTOR_3D_VARIABLE'),
+                (feacr + 'BOUNDARY_SURFACE_VECTOR_3D_VARIABLE'),
+                (feacr + 'AGGREGATED_VECTOR_3D_VARIABLE'),
+                (feacr + 'APPLICATION_DEFINED_VECTOR_3D_VARIABLE')] *
+               variable_typeof ) = 1 THEN
+        RETURN (svt + 'TENSOR1_3D');
+    END_IF;
+
+    IF SIZEOF ([(feacr + 'SURFACE_TENSOR2_2D_VARIABLE'),
+                (feacr + 'APPLICATION_DEFINED_TENSOR2_2D_VARIABLE')] *
+               variable_typeof ) = 1 THEN
+        RETURN (svt + 'SYMMETRIC_TENSOR2_3D');
+    END_IF;
+
+    IF SIZEOF ([(feacr + 'VOLUME_TENSOR2_3D_VARIABLE'),
+                (feacr + 'AGGREGATED_TENSOR2_3D_VARIABLE'),
+                (feacr + 'APPLICATION_DEFINED_TENSOR2_3D_VARIABLE')] *
+               variable_typeof ) = 1 THEN
+        RETURN (svt + 'SYMMETRIC_TENSOR2_3D');
+    END_IF;
+
+    RETURN ('NO_MATCH');
+
+END_FUNCTION;
+
+FUNCTION appropriate_set_value_existence
+    (values_and_locations   : SET [1:?] OF GENERIC;
+     type_self              : SET [1:?] OF STRING) : BOOLEAN;
+
+    LOCAL
+     i                      : INTEGER;
+    END_LOCAL;
+
+    REPEAT i := 1 TO HIINDEX (values_and_locations);
+       IF NOT (appropriate_value_existence
+                (values_and_locations[i].simple_value, type_self)) 
+          THEN
+          RETURN (FALSE);
+       END_IF;
+    END_REPEAT;
+
+    RETURN (TRUE);
+
+END_FUNCTION;
+
+FUNCTION appropriate_list_value_existence
+    (values                 : LIST [1:?] OF GENERIC;
+     type_self              : SET [1:?] OF STRING) : BOOLEAN;
+
+    LOCAL
+     i                      : INTEGER;
+    END_LOCAL;
+
+    REPEAT i := 1 TO HIINDEX (values);
+       IF NOT (appropriate_value_existence (values[i], type_self)) THEN
+          RETURN (FALSE);
+       END_IF;
+    END_REPEAT;
+
+    RETURN (TRUE);
+
+END_FUNCTION;
+
+FUNCTION appropriate_value_existence
+    (a_value_e              : GENERIC;
+     type_self              : SET [1:?] OF STRING) : BOOLEAN;
+
+    LOCAL
+     feacr                  : STRING;
+     value_typeof           : SET [1:?] OF STRING;
+    END_LOCAL;
+        
+    feacr := 'FINITE_ELEMENT_ANALYSIS_CONTROL_AND_RESULT_SCHEMA.';
+    value_typeof := TYPEOF(a_value_e);
+
+    IF (((feacr + 'OUTPUT_REQUEST_STATE') IN type_self) AND
+       NOT ((feacr + 'UNSPECIFIED_VALUE') IN value_typeof)) THEN
+       RETURN (FALSE);
+    END_IF;
+
+    RETURN (TRUE);
+
+END_FUNCTION;
+
+END_SCHEMA; -- finite_element_analysis_control_and_result_schema

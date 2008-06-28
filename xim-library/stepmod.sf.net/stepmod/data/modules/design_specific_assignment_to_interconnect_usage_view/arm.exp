@@ -1,0 +1,44 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3936 - ISO/TS 10303-1663 Design specific assignment to interconnect usage view - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3393
+*)
+
+SCHEMA Design_specific_assignment_to_interconnect_usage_view_arm;
+
+	USE FROM Fabrication_joint_arm;	-- ISO/TS 10303-1668
+
+	SUBTYPE_CONSTRAINT dsatiuv_component_feature_to_physical_usage_view_assignment_subtypes FOR Component_feature_to_physical_usage_view_assignment;     
+		ONEOF (Component_terminal_to_interconnect_module_macro_terminal_assignment,
+		 Component_terminal_to_interconnect_module_interface_terminal_assignment);
+	END_SUBTYPE_CONSTRAINT;
+
+ 	TYPE interconnect_or_assembly_module_select = SELECT
+ 		(Component_termination_passage_interface_terminal,
+     	Printed_connector_component_interface_terminal,
+     	Land_interface_terminal);
+	END_TYPE;
+
+  ENTITY Component_terminal_to_interconnect_module_interface_terminal_assignment
+    SUBTYPE OF (Component_feature_to_physical_usage_view_assignment);
+      SELF\Component_feature_to_physical_usage_view_assignment.defined_part_feature RENAMED usage_view_terminal	: Interconnect_module_interface_terminal;
+      SELF\Component_feature_to_physical_usage_view_assignment.assigned_design_object RENAMED assigned_terminal	: interconnect_or_assembly_module_select;
+  END_ENTITY;
+
+  ENTITY Component_terminal_to_interconnect_module_macro_terminal_assignment
+    SUBTYPE OF (Component_feature_to_physical_usage_view_assignment);
+      SELF\Component_feature_to_physical_usage_view_assignment.defined_part_feature RENAMED usage_view_terminal : Interconnect_module_macro_terminal;
+      SELF\Component_feature_to_physical_usage_view_assignment.assigned_design_object RENAMED assigned_terminal	: fabricated_feature_select;
+  END_ENTITY;
+
+  ENTITY Stratum_concept_to_physical_usage_view_assignment;
+      assigned_design_object : stratum_concept;
+      defined_part_feature   : Part_feature;
+      purpose                : OPTIONAL STRING; 
+    UNIQUE
+    	UR1 : defined_part_feature;
+    WHERE
+      WR1 : NOT ('DESIGN_SPECIFIC_ASSIGNMENT_TO_INTERCONNECT_USAGE_VIEW_ARM.INTERCONNECT_MODULE_TERMINAL' IN TYPEOF(defined_part_feature));
+  END_ENTITY;
+
+END_SCHEMA;

@@ -1,0 +1,32 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4162 - ISO/TS 10303-1738 Product identification extension - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3586
+*)
+
+
+SCHEMA Product_identification_extension_mim;
+	USE FROM External_item_identification_assignment_mim;	-- ISO/TS 10303-1128
+	USE FROM Product_view_definition_mim;	-- ISO/TS 10303-1019
+	
+	USE FROM External_reference_schema
+		(externally_defined_item,
+		external_source);
+	
+TYPE pie_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH 
+     (externally_defined_product_definition);
+END_TYPE; 
+
+ENTITY externally_defined_product_definition
+ SUPERTYPE OF (library_defined_product_definition)
+ SUBTYPE OF (product_definition, externally_defined_item);
+END_ENTITY;
+
+ENTITY library_defined_product_definition
+ SUBTYPE OF (externally_defined_product_definition);
+DERIVE
+  library : external_source := SELF\externally_defined_item.source;
+END_ENTITY;
+	
+END_SCHEMA;
+

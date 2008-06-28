@@ -1,0 +1,59 @@
+(*
+ $Id$
+ ISO TC184/SC4/WG12 N4658 - ISO/CD-TS 10303-1311 Associative draughting elements - EXPRESS MIM
+*)
+
+SCHEMA Associative_draughting_elements_mim;
+
+USE FROM Shape_property_assignment_mim; -- ISO/CD-TS 10303-1032
+
+USE FROM Draughting_element_mim; -- ISO/CD-TS 10303-1310
+
+USE FROM aic_associative_draughting_elements; --  ISO 10303-520
+
+USE FROM draughting_dimension_schema(dimension_callout); --  ISO 10303-101
+
+  TYPE draughting_model_item_association_select = SELECT
+    (annotation_occurrence,
+     draughting_callout);
+  END_TYPE;
+
+  ENTITY draughting_model_item_association
+    SUBTYPE OF(item_identified_representation_usage);
+      SELF\item_identified_representation_usage.definition          : shape_aspect;
+      SELF\item_identified_representation_usage.used_representation : draughting_model;
+      SELF\item_identified_representation_usage.identified_item     : draughting_model_item_association_select;
+    WHERE
+	  WR1: (NOT('AIC_DRAUGHTING_ELEMENTS.'+'DATUM_FEATURE_CALLOUT' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	       ('SHAPE_ASPECT_DEFINITION_SCHEMA.'+'DATUM_FEATURE' IN TYPEOF(SELF\item_identified_representation_usage.definition)));
+	  WR2: (NOT('AIC_DRAUGHTING_ELEMENTS.'+'DATUM_TARGET_CALLOUT' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	       ('SHAPE_ASPECT_DEFINITION_SCHEMA.'+'DATUM_TARGET' IN TYPEOF(SELF\item_identified_representation_usage.definition)));
+	  WR3: (NOT('AIC_DRAUGHTING_ELEMENTS.'+'ANGULAR_DIMENSION' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	       ('SHAPE_DIMENSION_SCHEMA.'+'ANGULAR_SIZE' IN TYPEOF(SELF\item_identified_representation_usage.definition)));
+	  -- Names are from Recommended practices on GD&T      
+	  WR4: ((NOT('AIC_DRAUGHTING_ELEMENTS.'+'CURVE_DIMENSION' IN TYPEOF(SELF\item_identified_representation_usage.identified_item))) OR
+	       (('SHAPE_DIMENSION_SCHEMA.'+'DIMENSIONAL_SIZE' IN TYPEOF(SELF\item_identified_representation_usage.definition)) AND
+	       (SELF\item_identified_representation_usage.definition.name = 'curve dimension')));
+	  WR5: ((NOT('AIC_DRAUGHTING_ELEMENTS.'+'DIAMETER_DIMENSION' IN TYPEOF(SELF\item_identified_representation_usage.identified_item))) OR
+	       (('SHAPE_DIMENSION_SCHEMA.'+'DIMENSIONAL_SIZE' IN TYPEOF(SELF\item_identified_representation_usage.definition)) AND
+	       (SELF\item_identified_representation_usage.definition.name = 'diameter')));
+	  WR6: ((NOT('AIC_DRAUGHTING_ELEMENTS.'+'LINEAR_DIMENSION' IN TYPEOF(SELF\item_identified_representation_usage.identified_item))) OR
+	       (('SHAPE_DIMENSION_SCHEMA.'+'DIMENSIONAL_SIZE' IN TYPEOF(SELF\item_identified_representation_usage.definition)) AND
+	       ((SELF\item_identified_representation_usage.definition.name = 'heigth') OR 
+	       (SELF\item_identified_representation_usage.definition.name = 'length') OR
+	       (SELF\item_identified_representation_usage.definition.name = 'width'))));
+	  WR7: ((NOT('AIC_DRAUGHTING_ELEMENTS.'+'RADIUS_DIMENSION' IN TYPEOF(SELF\item_identified_representation_usage.identified_item))) OR
+	       (('SHAPE_DIMENSION_SCHEMA.'+'DIMENSIONAL_SIZE' IN TYPEOF(SELF\item_identified_representation_usage.definition)) AND
+	       (SELF\item_identified_representation_usage.definition.name = 'radius')));
+	  WR8: (NOT('AIC_DRAUGHTING_ELEMENTS.'+'GEOMETRICAL_TOLERANCE_CALLOUT' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	       ('SHAPE_TOLERANCE_SCHEMA.'+'GEOMETRIC_TOLERANCE' IN TYPEOF(SELF\item_identified_representation_usage.definition)));
+	  -- WRs capturing callout <- GD&T type for N:1 links and       
+	  WR9: (NOT('SHAPE_DIMENSION_SCHEMA.'+'DIMENSIONAL_SIZE' IN TYPEOF(SELF\item_identified_representation_usage.definition)) OR
+	        (('DRAUGHTING_DIMENSION_SCHEMA.'+'DIMENSION_CALLOUT' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	        ('DRAUGHTING_ELEMENT_SCHEMA.'+'DIMENSION_CURVE_DIRECTED_CALLOUT' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	        ('AIC_DRAUGHTING_ELEMENTS.'+'LEADER_DIRECTED_DIMENSION' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	        ('AIC_DRAUGHTING_ELEMENTS.'+'ORDINATE_DIMENSION' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	        ('AIC_DRAUGHTING_ELEMENTS.'+'STRUCTURED_DIMENSION_CALLOUT' IN TYPEOF(SELF\item_identified_representation_usage.identified_item))));
+  END_ENTITY;
+
+END_SCHEMA;  

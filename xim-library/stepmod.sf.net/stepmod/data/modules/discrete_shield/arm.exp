@@ -1,0 +1,28 @@
+(*
+ $Id$
+ ISO TC184/SC4/WG12 N4179 - ISO/TS 10303-1744 Discrete shield - EXPRESS ARM
+ Supersedes ISO TC184/SC4/WG12 N3603
+*)
+
+SCHEMA Discrete_shield_arm;
+
+USE FROM Assembly_component_placement_requirements_arm;	-- ISO/TS 10303-1634
+USE FROM Physical_connectivity_definition_arm; -- ISO/TS 10303-1755
+
+ TYPE physical_shieldable_item = SELECT 
+    (Assembly_component, 
+    Component_feature, 
+    Physical_connectivity_definition, 
+    Placement_group_requirement_definition); 
+ END_TYPE; 
+
+  ENTITY Physical_shield 
+    SUBTYPE OF (Physical_component); 
+      shielded_item : SET[1:?] OF physical_shieldable_item; 
+  END_ENTITY; 
+
+ENTITY Routed_physical_shield
+   SUBTYPE OF (Routed_physical_component, Physical_shield);
+END_ENTITY;
+
+END_SCHEMA;

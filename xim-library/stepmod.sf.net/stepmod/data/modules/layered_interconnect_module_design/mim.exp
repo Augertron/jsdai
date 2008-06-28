@@ -1,0 +1,461 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4042 - ISO/TS 10303-1698 Layered interconnect module design - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3484
+*)
+
+
+SCHEMA Layered_interconnect_module_design_mim;
+USE FROM Component_grouping_mim;	-- ISO/TS 10303-1656
+USE FROM Edge_shape_feature_mim;	-- ISO/TS 10303-1673
+USE FROM Interconnect_module_connection_routing_mim;	-- ISO/TS 10303-1684
+USE FROM Interconnect_physical_requirement_allocation_mim;	-- ISO/TS 10303-1689
+USE FROM Footprint_definition_mim;	-- ISO/TS 10303-1646
+USE FROM Physical_connectivity_definition_mim;	-- ISO/TS 10303-1755
+USE FROM Assembly_component_placement_requirements_mim;	-- ISO/TS 10303-1634	
+	
+  SUBTYPE_CONSTRAINT array_placement_group_subtypes FOR array_placement_group; 
+    (ONEOF (laminate_text_string_component,
+     linear_array_placement_group_component,
+     rectangular_array_placement_group_component));
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT assembly_component_subtypes FOR assembly_component; 
+    (ONEOF (physical_component,
+     laminate_component));
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT component_feature_subtypes FOR component_feature; 
+    (ONEOF (physical_component_feature,
+     laminate_component_feature));
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT limd_component_terminal_subtypes FOR component_terminal; 
+    (ONEOF (physical_component_terminal,
+     laminate_component_join_terminal));
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT inter_stratum_feature_subtypes FOR Inter_stratum_feature;     
+    ONEOF (Cutout,
+    Interconnect_module_edge);
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT interconnect_module_terminal_subtypes FOR interconnect_module_terminal;     
+    (ONEOF (interconnect_module_interface_terminal,
+     interconnect_module_macro_terminal));
+  END_SUBTYPE_CONSTRAINT; 
+
+  SUBTYPE_CONSTRAINT limd_product_definition_subtypes FOR product_definition; 
+    (ONEOF (physical_unit,
+     stratum));
+  END_SUBTYPE_CONSTRAINT; 
+
+  SUBTYPE_CONSTRAINT limd_part_template_definition_subtypes FOR part_template_definition; 
+    (ONEOF (
+       ONEOF(printed_part_template, special_symbol_template) ANDOR  geometric_template, 
+         non_conductive_cross_section_template,
+         part_string_template, 
+         parametric_template,
+         part_text_template,
+         stratum_stack_model,
+         stratum_sub_stack));
+  END_SUBTYPE_CONSTRAINT;
+
+  TYPE limd_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH 
+    (stratum_feature_conductive_join,
+     dielectric_crossover_area,
+     physical_unit);
+  END_TYPE; 
+
+  TYPE limd_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH 
+    (assembly_component,
+     stratum_feature_based_derived_pattern,
+     stratum);
+  END_TYPE; 
+
+  TYPE limd_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH 
+    (inter_stratum_feature,
+     stratum,
+     stratum_feature,
+     stratum_surface,
+     structured_layout_component);
+  END_TYPE; 
+
+  TYPE limd_groupable_item = SELECT BASED_ON groupable_item WITH 
+    (physical_network,
+     stratum);
+  END_TYPE; 
+
+  ENTITY additive_laminate_text_component
+    SUBTYPE OF (generic_laminate_text_component);
+  END_ENTITY;
+
+  ENTITY area_component
+    SUPERTYPE OF (connected_area_component)
+    SUBTYPE OF (stratum_feature_template_component);
+  END_ENTITY;
+
+  ENTITY breakout_occurrence
+    SUBTYPE OF (footprint_occurrence);
+  END_ENTITY;  
+
+  ENTITY component_termination_passage
+    SUBTYPE OF (plated_passage);
+  END_ENTITY;
+
+  ENTITY conductive_interconnect_element
+    ABSTRACT SUPERTYPE OF (ONEOF (unrouted_conductive_interconnect_element, conductive_interconnect_element_with_pre_defined_transitions))
+    SUBTYPE OF (stratum_feature_template_component);
+  END_ENTITY;
+
+  ENTITY conductive_interconnect_element_terminal_link
+    SUBTYPE OF (shape_aspect,shape_aspect_relationship);
+      SELF\shape_aspect_relationship.relating_shape_aspect : laminate_component_feature;  
+      SELF\shape_aspect_relationship.related_shape_aspect  : laminate_component_feature;
+    WHERE
+      WR1: SELF\shape_aspect_relationship.related_shape_aspect :<>:
+        SELF\shape_aspect_relationship.relating_shape_aspect;
+  END_ENTITY; 
+
+  ENTITY conductive_interconnect_element_with_pre_defined_transitions
+    SUBTYPE OF (conductive_interconnect_element);
+  END_ENTITY;
+
+  ENTITY connected_area_component
+    SUBTYPE OF (area_component);
+  END_ENTITY;
+
+  ENTITY cutout
+    SUPERTYPE OF (ONEOF (physical_connectivity_interrupting_cutout,
+      plated_cutout,
+      partially_plated_cutout))
+    SUBTYPE OF (inter_stratum_feature);
+  END_ENTITY;
+
+  ENTITY cutout_edge_segment
+    SUPERTYPE OF (plated_cutout_edge_segment)
+    SUBTYPE OF (inter_stratum_feature,shape_aspect_relationship);
+      SELF\shape_aspect_relationship.relating_shape_aspect : edge_segment_vertex;
+      SELF\shape_aspect_relationship.related_shape_aspect  : edge_segment_vertex;
+    WHERE
+      WR1: SELF\shape_aspect_relationship.relating_shape_aspect :<>:
+        SELF\shape_aspect_relationship.related_shape_aspect;
+  END_ENTITY;
+
+  ENTITY dependent_thermal_isolation_removal_component
+    SUBTYPE OF (material_removal_structured_component);
+  END_ENTITY;
+
+  ENTITY derived_stratum
+    SUBTYPE OF (stratum);
+  END_ENTITY;
+
+  ENTITY design_layer_stratum
+    SUBTYPE OF (stratum);
+  END_ENTITY;
+
+  ENTITY dielectric_material_passage
+    SUBTYPE OF (inter_stratum_feature);
+  END_ENTITY;
+
+  ENTITY documentation_layer_stratum
+    SUBTYPE OF (stratum);
+  END_ENTITY;
+  	
+  ENTITY electrical_isolation_laminate_component
+    SUBTYPE OF (material_removal_laminate_component);
+  END_ENTITY;
+
+  ENTITY fiducial
+    SUBTYPE OF (laminate_component);
+  END_ENTITY;
+
+  ENTITY fiducial_stratum_feature
+    SUBTYPE OF (stratum_feature);
+  END_ENTITY;
+
+  ENTITY filled_via
+    SUBTYPE OF (via);
+  END_ENTITY;  
+
+  ENTITY footprint_occurrence
+    SUBTYPE OF (structured_layout_component);
+  END_ENTITY;
+
+  ENTITY footprint_occurrence_product_definition_relationship
+    SUBTYPE OF (structured_layout_component_sub_assembly_relationship);
+  END_ENTITY;
+
+  ENTITY inter_stratum_feature
+    SUBTYPE OF (laminate_component);
+  END_ENTITY;
+
+  ENTITY interconnect_module_edge
+    SUPERTYPE OF (ONEOF (partially_plated_interconnect_module_edge, plated_interconnect_module_edge))
+    SUBTYPE OF (inter_stratum_feature);
+  END_ENTITY;
+
+  ENTITY interconnect_module_edge_segment
+    SUPERTYPE OF (ONEOF(plated_interconnect_module_edge_segment,
+                        unplated_interconnect_module_edge_segment))
+    SUBTYPE OF (inter_stratum_feature,shape_aspect_relationship);
+      SELF\shape_aspect_relationship.relating_shape_aspect : edge_segment_vertex;  
+      SELF\shape_aspect_relationship.related_shape_aspect  : edge_segment_vertex;
+    WHERE
+      WR1: SELF\shape_aspect_relationship.relating_shape_aspect :<>:
+        SELF\shape_aspect_relationship.related_shape_aspect;
+  END_ENTITY;
+
+  ENTITY interconnect_module_macro_terminal
+    SUBTYPE OF (interconnect_module_terminal);
+  END_ENTITY;
+
+  ENTITY interface_access_component_definition
+    SUBTYPE OF (laminate_component);
+  END_ENTITY;
+
+  ENTITY interface_access_material_removal_laminate_component
+    SUBTYPE OF (material_removal_laminate_component);
+  END_ENTITY;
+
+  ENTITY interface_access_stratum_feature_template_component
+    SUBTYPE OF (stratum_feature_template_component);
+  END_ENTITY;
+
+  ENTITY internal_probe_access_area
+    SUBTYPE OF (probe_access_area);
+  END_ENTITY;
+
+  ENTITY join_shape_aspect
+    SUBTYPE OF (shape_aspect);
+  END_ENTITY;
+
+  ENTITY laminate_component
+    SUPERTYPE OF (ONEOF (material_removal_laminate_component,
+      stratum_feature_template_component ANDOR probe_access_area,
+      inter_stratum_feature,
+      generic_laminate_text_component,
+      laminate_text_string_component) ANDOR
+      fiducial)
+    SUBTYPE OF (assembly_component);
+  END_ENTITY;
+
+  ENTITY laminate_component_feature
+    SUPERTYPE OF (ONEOF (laminate_component_interface_terminal,
+      laminate_component_join_terminal))
+    SUBTYPE OF (component_feature);
+  END_ENTITY;
+
+  ENTITY laminate_component_interface_terminal
+    SUBTYPE OF (laminate_component_feature);
+  END_ENTITY;
+
+  ENTITY laminate_component_join_terminal
+    SUBTYPE OF (laminate_component_feature,
+ 		component_terminal);
+  END_ENTITY;
+
+  ENTITY laminate_group_component_make_from_relationship
+    SUBTYPE OF (make_from_usage_option);
+      SELF\product_definition_relationship.relating_product_definition : assembly_group_component;
+      SELF\product_definition_relationship.related_product_definition  : assembly_group_component;
+  END_ENTITY;
+
+  ENTITY generic_laminate_text_component
+    ABSTRACT SUPERTYPE OF (ONEOF(additive_laminate_text_component, 
+      material_removal_laminate_text_component))
+    SUBTYPE OF (laminate_component);
+  END_ENTITY;
+
+  ENTITY laminate_text_string_component
+    SUBTYPE OF (array_placement_group, laminate_component);
+  END_ENTITY;
+
+  ENTITY layer_connection_point
+    SUBTYPE OF (shape_aspect);
+    UNIQUE
+      UR1: SELF\shape_aspect.name, SELF\shape_aspect.of_shape;
+  END_ENTITY;
+
+  ENTITY layout_junction
+    SUBTYPE OF (shape_aspect);
+  END_ENTITY;
+
+  ENTITY layer_stack_region
+    SUBTYPE OF (instanced_feature);
+  END_ENTITY;
+
+  ENTITY material_removal_laminate_component
+    SUBTYPE OF (laminate_component);
+  END_ENTITY;
+
+  ENTITY material_removal_structured_component
+    SUBTYPE OF (structured_layout_component);
+  END_ENTITY;
+
+  ENTITY multi_layer_component_definition
+    SUBTYPE OF (laminate_component);
+  END_ENTITY;
+
+  ENTITY multi_layer_material_removal_laminate_component
+    SUBTYPE OF (material_removal_laminate_component);
+  END_ENTITY;
+
+  ENTITY multi_layer_stratum_feature_template_component
+    SUBTYPE OF (stratum_feature_template_component);
+  END_ENTITY;
+
+  ENTITY multi_stratum_special_symbol_component
+    SUBTYPE OF (structured_layout_component);
+  END_ENTITY;
+
+  ENTITY material_removal_laminate_text_component
+    SUBTYPE OF (generic_laminate_text_component);
+  END_ENTITY;
+
+  ENTITY padstack_occurrence
+    SUBTYPE OF (structured_layout_component);
+  END_ENTITY;
+
+  ENTITY padstack_occurrence_product_definition_relationship
+    SUBTYPE OF (property_definition, next_assembly_usage_occurrence_relationship);
+    WHERE
+      WR1: SELF\product_definition_relationship.related_product_definition :<>:
+        SELF\product_definition_relationship.relating_product_definition;
+  END_ENTITY; 
+
+  ENTITY partially_plated_cutout
+    SUBTYPE OF (cutout);
+  END_ENTITY;
+
+  ENTITY partially_plated_interconnect_module_edge
+    SUBTYPE OF (interconnect_module_edge);
+  END_ENTITY;
+
+  ENTITY physical_connectivity_interrupting_cutout
+    SUBTYPE OF (cutout);
+  END_ENTITY;
+
+  ENTITY physical_network
+    SUBTYPE OF (shape_aspect);
+  END_ENTITY;
+
+  ENTITY plated_cutout
+    SUBTYPE OF (cutout, plated_inter_stratum_feature);
+  END_ENTITY;
+
+  ENTITY plated_cutout_edge_segment
+    SUBTYPE OF (cutout_edge_segment,plated_inter_stratum_feature);
+  END_ENTITY;
+
+  ENTITY plated_interconnect_module_edge
+    SUBTYPE OF (interconnect_module_edge, plated_inter_stratum_feature);
+  END_ENTITY;
+
+  ENTITY plated_interconnect_module_edge_segment
+    SUBTYPE OF (interconnect_module_edge_segment,
+                plated_inter_stratum_feature);
+  END_ENTITY;
+
+  ENTITY plated_inter_stratum_feature
+    SUPERTYPE OF (ONEOF (plated_cutout_edge_segment,
+      plated_interconnect_module_edge_segment,
+      plated_passage))
+    SUBTYPE OF (inter_stratum_feature);
+  END_ENTITY;
+
+  ENTITY plated_passage 
+    SUPERTYPE OF (ONEOF (component_termination_passage,
+      via))
+    SUBTYPE OF (plated_inter_stratum_feature);
+  END_ENTITY;
+
+  ENTITY primary_stratum_indicator_symbol
+    SUBTYPE OF (single_stratum_special_symbol_component);
+  END_ENTITY;
+  
+  ENTITY probe_access_area
+    SUBTYPE OF (laminate_component, shape_aspect);
+    DERIVE
+      SELF\shape_aspect.of_shape : probe_access_area := SELF;
+  END_ENTITY;
+
+  ENTITY region_based_derived_pattern
+    SUBTYPE OF (shape_aspect);
+  END_ENTITY;
+
+  ENTITY single_stratum_special_symbol_component
+    SUPERTYPE OF (primary_stratum_indicator_symbol)
+    SUBTYPE OF (structured_layout_component);
+  END_ENTITY;
+  
+  ENTITY stratum
+    SUPERTYPE OF (ONEOF (documentation_layer_stratum, design_layer_stratum))
+    SUBTYPE OF (product_definition, product_definition_shape);
+    DERIVE
+      SELF\property_definition.definition : stratum := SELF;
+    UNIQUE
+      UR1: SELF\product_definition.id, SELF\product_definition.formation;
+    WHERE
+      WR1: SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' +'NAME_ATTRIBUTE.NAMED_ITEM')) = 0;
+      WR2: NOT EXISTS(SELF\property_definition.description);
+  END_ENTITY;	
+
+  ENTITY stratum_feature
+    SUPERTYPE OF (fiducial_stratum_feature)
+    SUBTYPE OF (shape_aspect);
+  END_ENTITY;
+
+  ENTITY stratum_feature_based_derived_pattern
+    SUBTYPE OF(characterized_object, property_definition_relationship);
+  END_ENTITY;
+
+  ENTITY stratum_feature_template_component
+    SUBTYPE OF (laminate_component);
+  END_ENTITY;
+
+  ENTITY stratum_surface
+    SUBTYPE OF (shape_aspect);
+  END_ENTITY;
+
+  ENTITY structured_layout_component
+    ABSTRACT SUPERTYPE OF (ONEOF (footprint_occurrence, 
+            material_removal_structured_component,
+			multi_stratum_special_symbol_component,
+            padstack_occurrence, 
+            single_stratum_special_symbol_component))
+    SUBTYPE OF (assembly_group_component);
+  END_ENTITY;  
+
+  ENTITY structured_layout_component_sub_assembly_relationship
+    SUPERTYPE OF (footprint_occurrence_product_definition_relationship)
+    SUBTYPE OF (next_assembly_usage_occurrence_relationship);
+    WHERE
+      WR1: SELF\product_definition_relationship.related_product_definition :<>:
+        SELF\product_definition_relationship.relating_product_definition;
+  END_ENTITY;  
+
+  ENTITY unplated_cutout_edge_segment
+    SUBTYPE OF (cutout_edge_segment);
+  END_ENTITY;
+
+  ENTITY unplated_interconnect_module_edge_segment
+    SUBTYPE OF (interconnect_module_edge_segment);
+  END_ENTITY;
+
+  ENTITY unrouted_conductive_interconnect_element
+    SUBTYPE OF (conductive_interconnect_element);
+  END_ENTITY;
+
+  ENTITY unsupported_passage
+    SUBTYPE OF (inter_stratum_feature);
+  END_ENTITY;
+
+  ENTITY via
+    ABSTRACT SUPERTYPE OF (filled_via)
+    SUBTYPE OF (plated_passage);
+  END_ENTITY;    				
+  
+END_SCHEMA;
+
+

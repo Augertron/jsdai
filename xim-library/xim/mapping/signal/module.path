@@ -1,0 +1,137 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping signal(Signal_arm, Signal_mim);*)
+
+
+entity_mapping Composite_signal_property(Composite_signal_property, property_definition);
+
+mapping_constraints;
+{property_definition
+property_definition.name = 'composite signal property'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Composite_signal_property_relationship_armx(Composite_signal_property_relationship_armx, composite_signal_property_relationship);
+
+mapping_constraints;
+{[composite_signal_property_relationship <=
+property_definition_relationship]
+[composite_signal_property_relationship <=
+property_definition]}
+
+end_mapping_constraints;
+
+attribute_mapping composition(composition, $PATH, Composite_signal_property);
+composite_signal_property_relationship <=
+property_definition_relationship
+property_definition_relationship.relating_property_definition ->
+property_definition
+{property_definition
+property_definition.name = 'composite signal property'}
+
+end_attribute_mapping;
+
+attribute_mapping signal_property_structural_element(signal_property_structural_element, $PATH, Signal_property);
+property_definition_relationship
+property_definition_relationship.related_property_definition ->
+property_definition
+{property_definition
+property_definition.name = 'signal property'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping External_source_identification(External_source_identification, applied_external_identification_assignment)
+extended;
+
+attribute_mapping item(item, , Composite_signal_property_relationship_armx);
+
+				external_identification_item *> s_external_identification_item
+				s_external_identification_item = composite_signal_property_relationship
+			
+end_attribute_mapping;
+
+attribute_mapping item(item, , Signal_property);
+
+				external_identification_item *> s_external_identification_item
+				s_external_identification_item = property_definition
+			
+end_attribute_mapping;
+
+attribute_mapping item(item, , Signal);
+
+				external_identification_item *> s_external_identification_item
+				s_external_identification_item = signal
+			
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Signal(Signal, signal);
+
+mapping_constraints;
+signal <=
+characterized_object
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Signal_property(Signal_property, property_definition);
+
+mapping_constraints;
+{(property_definition
+property_definition.name = 'signal property')
+(property_definition
+property_definition.name = 'composite signal property')}
+
+end_mapping_constraints;
+
+attribute_mapping signal_property_representation(signal_property_representation, $PATH, Value_list);
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+compound_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping characterized_signal(characterized_signal, $PATH, Signal);
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_object
+characterized_object =>
+signal
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

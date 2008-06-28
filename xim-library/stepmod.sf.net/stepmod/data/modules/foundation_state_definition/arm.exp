@@ -1,0 +1,47 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4583 - ISO/CD-TS 10303-1469 Foundation state definition - EXPRESS ARM
+*)
+
+SCHEMA Foundation_state_definition_arm;
+
+TYPE state_definition_of_item = EXTENSIBLE GENERIC_ENTITY SELECT ;
+END_TYPE;
+
+ENTITY Applied_state_definition_assignment;
+  assigned_to : state_definition_of_item;
+  described_state_definition : State_definition;
+  role : State_definition_role;
+END_ENTITY;
+
+ENTITY Composition_of_state_definition
+SUBTYPE OF (State_definition_relationship);
+  SELF\State_definition_relationship.related RENAMED part : SET [1 : ?] OF State_definition;
+  SELF\State_definition_relationship.relating RENAMED whole : SET [1 : ?] OF State_definition;
+END_ENTITY;
+
+ENTITY State_definition;
+  name : STRING;
+  description : OPTIONAL STRING;
+END_ENTITY;
+
+ENTITY State_definition_relationship;
+  name : STRING;
+  relating : SET [1 : ?] OF State_definition;
+  description : OPTIONAL STRING;
+  related : SET [1 : ?] OF State_definition;
+END_ENTITY;
+
+ENTITY State_definition_role;
+  name : STRING;
+  description : OPTIONAL STRING;
+END_ENTITY;
+
+ENTITY State_transition_definition
+SUBTYPE OF (State_definition_relationship);
+  SELF\State_definition_relationship.relating RENAMED end_state : SET [1 : ?] OF State_definition;
+  SELF\State_definition_relationship.related RENAMED start_state : SET [1 : ?] OF State_definition;
+END_ENTITY;
+
+END_SCHEMA;
+

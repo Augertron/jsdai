@@ -1,0 +1,122 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping external_properties(External_properties_arm, External_properties_mim);*)
+
+uof_mapping External_propeties(External_propeties);
+
+entity_mapping External_library_property(External_library_property, externally_defined_general_property);
+
+mapping_constraints;
+
+	 externally_defined_general_property <=
+[general_property]
+[externally_defined_item]
+
+end_mapping_constraints;
+
+attribute_mapping external_id(external_id, externally_defined_item.item_id);
+
+externally_defined_general_property <= externally_defined_item
+externally_defined_item.item_id
+
+end_attribute_mapping;
+
+attribute_mapping library_type(library_type, external_source.source_id);
+
+externally_defined_general_property <= externally_defined_item
+externally_defined_item.source ->
+external_source
+external_source.source_id
+{external_source.source_id ->
+source_item
+source_item = identifier
+identifier}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Plib_property_reference(Plib_property_reference, externally_defined_general_property);
+
+mapping_constraints;
+
+	 externally_defined_general_property <=
+[general_property]
+[externally_defined_item]
+externally_defined_item.source -> external_source 
+{external_source => known_source
+known_source <= pre_defined_item
+pre_defined_item.name = 'ISO 13584 library'}
+
+end_mapping_constraints;
+
+attribute_mapping code(code, externally_defined_item.item_id);
+
+externally_defined_general_property <= externally_defined_item
+externally_defined_item.item_id
+
+end_attribute_mapping;
+
+attribute_mapping version(version, 
+applied_external_identification_assignment.assigned_id);
+
+externally_defined_general_property
+external_identification_for_plib_property = externally_defined_general_property
+external_identification_for_plib_property <* external_identification_item (* Changed line *)
+external_identification_item <- applied_external_identification_assignment.items[i]
+applied_external_identification_assignment <=
+external_identification_assignment <=
+{external_identification_assignment
+external_identification_assignment.source ->
+external_source =>
+known_source <=
+pre_defined_item
+pre_defined_item.name = 'ISO 13584 library'}
+identification_assignment
+{identification_assignment.role -> identification_role
+identification_role.name = 'version'}
+identification_assignment.assigned_id
+
+end_attribute_mapping;
+
+attribute_mapping name_scope(name_scope, $PATH, Plib_class_reference);
+
+externally_defined_general_property <=
+externally_defined_item <- externally_defined_item_relationship.relating_item 
+externally_defined_item_relationship
+{externally_defined_item_relationship.name = 'name scope'}
+externally_defined_item_relationship.related_item -> externally_defined_item
+{externally_defined_item.source ->
+external_source =>
+known_source <=
+pre_defined_item
+pre_defined_item.name = 'ISO 13584 library'}
+externally_defined_item => externally_defined_class
+
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

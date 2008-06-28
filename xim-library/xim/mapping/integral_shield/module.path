@@ -1,0 +1,332 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping shield(Shield_arm, Shield_mim);*)
+
+
+entity_mapping Component_group_external_reference(Component_group_external_reference, representation);
+
+mapping_constraints;
+{representation
+representation.name = 'component group external reference'}
+
+end_mapping_constraints;
+
+attribute_mapping name(name, descriptive_representation_item);
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'name'}
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping associated_definition(associated_definition, descriptive_representation_item);
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'associated definition'}
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Integral_shield_armx(Integral_shield_armx, integral_shield);
+
+mapping_constraints;
+integral_shield <=
+laminate_component <=
+assembly_component <=	
+component_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping shielded_item(shielded_item, $PATH, Physical_connectivity_definition_external_reference);
+integral_shield <=
+laminate_component <=
+assembly_component <=	
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation representation.name = 'physical connectivity definition external reference'}
+
+end_attribute_mapping;
+
+attribute_mapping shielded_item(shielded_item, $PATH, Component_group_external_reference);
+integral_shield <=
+laminate_component <=
+assembly_component <=	
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation representation.name = 'component group external reference'}
+
+end_attribute_mapping;
+
+attribute_mapping shielded_item(shielded_item, $PATH, Component_feature_external_reference);
+integral_shield <=
+laminate_component <=
+assembly_component <=	
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i]->
+representation_item
+{representation_item
+representation_item.name = 'component feature external reference'}			
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping shielded_item(shielded_item, $PATH, Component_external_reference);
+integral_shield <=
+laminate_component <=
+assembly_component <=	
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation.name = 'component external reference'}
+
+end_attribute_mapping;
+
+attribute_mapping shielded_item(shielded_item, $PATH, Component_feature_armx);
+integral_shield <=
+laminate_component <=
+assembly_component <=	
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'shielded item'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+component_feature
+
+end_attribute_mapping;
+
+attribute_mapping shielded_item(shielded_item, $PATH, Stratum_feature_template_component);
+integral_shield <=
+laminate_component <=
+assembly_component <=	
+component_definition <=
+product_definition
+product_definition <-
+product_definition_relationship.related_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'shielded item'}
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+component_definition =>
+assembly_component =>
+laminate_component
+end_attribute_mapping;
+
+attribute_mapping shielded_item(shielded_item, $PATH, Generic_physical_network);
+integral_shield <=
+laminate_component <=
+assembly_component <=	
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'shielded item'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+physical_network
+
+end_attribute_mapping;
+
+attribute_mapping shielded_item(shielded_item, $PATH, Physical_connectivity_definition_armx);
+integral_shield <=
+laminate_component <=
+assembly_component <=	
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'shielded item'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+physical_connectivity_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Physical_connectivity_definition_external_reference(Physical_connectivity_definition_external_reference, representation);
+
+mapping_constraints;
+{representation
+representation.name = 'physical connectivity definition external reference'}
+
+end_mapping_constraints;
+
+attribute_mapping name(name, descriptive_representation_item);
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'name'}
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping associated_definition(associated_definition, descriptive_representation_item);
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'associated definition'}
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Routed_shield_armx(Routed_shield_armx, routed_shield);
+
+mapping_constraints;
+routed_shield <=
+integral_shield <=
+laminate_component <=
+assembly_component <=
+component_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping routed_centreline_shape(routed_centreline_shape, $PATH, Curve);
+routed_shield <=
+integral_shield <=
+laminate_component <=
+assembly_component <=
+component_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition
+property_definition.name = 'routed centreline shape'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation.items[i] ->
+representation_item =>
+geometric_representation_item =>
+curve
+
+end_attribute_mapping;
+
+attribute_mapping curve_parameters(curve_parameters, $PATH, Curve_style_parameters);
+routed_shield <=
+integral_shield <=
+laminate_component <=
+assembly_component <=
+component_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition
+property_definition.name = 'curve parameters'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+curve_style_parameters_representation
+end_attribute_mapping;
+
+
+attribute_mapping component_extent(component_extent, $PATH, Inter_stratum_extent);
+routed_shield <=
+integral_shield <=
+laminate_component <=
+assembly_component <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'component extent'}
+property_definition_relationship.relating_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'inter stratum extent'}
+
+end_attribute_mapping;
+
+attribute_mapping derived_from(derived_from, $PATH, Printed_part_cross_section_template_armx);
+routed_shield <=
+integral_shield <=
+laminate_component <=
+assembly_component <=
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'definition usage'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+part_template_definition =>
+printed_part_template =>
+printed_part_cross_section_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

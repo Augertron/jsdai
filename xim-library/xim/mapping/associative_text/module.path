@@ -1,0 +1,207 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping associative_text(Associative_text_arm, Associative_text_mim);*)
+
+
+entity_mapping Annotation_curve(Annotation_curve, annotation_curve_occurrence);
+
+attribute_mapping annotation_curve_type(annotation_curve_type, curve_style.name);
+annotation_curve_occurrence <=
+annotation_occurrence <=
+styled_item 
+styled_item.styles[i] ->
+presentation_style_assignment
+presentation_style_assignment.styles[i] ->
+presentation_style_select
+presentation_style_select = curve_style 
+curve_style
+curve_style.name
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Annotation_element(Annotation_element, [annotation_occurrence][geometric_representation_item]);
+
+end_entity_mapping;
+
+entity_mapping Leader(Leader, leader_curve);
+
+mapping_constraints;
+
+{leader_curve <= annotation_curve_occurrence
+annotation_curve_occurrence <= annotation_occurrence}
+
+end_mapping_constraints;
+
+attribute_mapping curve(curve, $PATH, Curve);
+
+leader_curve <= annotation_curve_occurrence
+annotation_curve_occurrence <= annotation_occurrence
+annotation_occurrence <= styled_item
+styled_item.item -> representation_item
+representation_item => geometric_representation_item
+geometric_representation_item => curve
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping text_armx(text_armx, (annotation_text_occurrence)
+(/SUBTYPE(Text_with_leader)/));
+
+mapping_constraints;
+
+annotation_text_occurrence <= annotation_occurrence
+annotation_occurrence <= styled_item
+
+end_mapping_constraints;
+
+attribute_mapping text(text, $PATH, text_literal);
+
+annotation_text_occurrence <= annotation_occurrence
+annotation_occurrence <= styled_item
+styled_item.item -> representation_item
+representation_item => geometric_representation_item 
+geometric_representation_item => text_literal
+
+end_attribute_mapping;
+
+attribute_mapping text(text, $PATH, composite_text);
+
+annotation_text_occurrence <= annotation_occurrence
+annotation_occurrence <= styled_item
+styled_item.item -> representation_item
+representation_item => geometric_representation_item 
+geometric_representation_item => composite_text
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Text_with_leader(Text_with_leader, draughting_elements);
+
+mapping_constraints;
+
+draughting_elements <= draughting_callout
+{draughting_callout.contents[i] -> draughting_callout_element
+draughting_callout_element = annotation_text_occurrence}
+{draughting_callout.contents[i] -> draughting_callout_element
+draughting_callout_element = annotation_curve_occurrence
+annotation_curve_occurrence => leader_curve}
+
+end_mapping_constraints;
+
+attribute_mapping leader(leader, $PATH, Leader);
+
+draughting_elements <= draughting_callout
+draughting_callout.contents[i] -> draughting_callout_element
+draughting_callout_element = annotation_curve_occurrence
+annotation_curve_occurrence => leader_curve
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Item_text_association(Item_text_association, draughting_elements);
+
+mapping_constraints;
+
+
+end_mapping_constraints;
+
+attribute_mapping target_item(target_item, $PATH, Shape_element);
+
+draughting_elements <=
+draughting_callout <=
+geometric_representation_item <=
+representation_item <- representation.items[i]
+representation <-
+{representation => shape_representation}
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+represented_definition
+represented_definition = property_definition
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition = shape_aspect
+
+end_attribute_mapping;
+
+attribute_mapping target_geometry(target_geometry, $PATH, geometric_representation_item);
+
+draughting_elements <=
+draughting_callout <=
+geometric_representation_item <=
+representation_item <- representation.items[i]
+representation <-
+{representation => shape_representation}
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+represented_definition
+represented_definition = property_definition
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition = shape_aspect
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship => shape_aspect_associativity}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+represented_definition = property_definition
+represented_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+{representation => shape_representation}
+representation.items[i] ->
+representation_item => 
+geometric_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping text_occurrence(text_occurrence, $PATH, Text);
+
+draughting_elements <= draughting_callout
+draughting_callout.contents[i] -> draughting_callout_element
+draughting_callout_element = annotation_text_occurrence
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

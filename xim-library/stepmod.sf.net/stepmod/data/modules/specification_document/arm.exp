@@ -1,0 +1,113 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N5003 - ISO/CD-TS 10303-1747 Specification document - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4188
+*)
+
+SCHEMA Specification_document_arm;
+
+USE FROM Characteristic_arm;	-- ISO/TS 10303-1654
+USE FROM Configuration_item_arm;	-- ISO/TS 10303-1056
+USE FROM Tagged_text_representation_arm; -- ISO/TS 10303-1366
+
+REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
+
+  TYPE sd_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH (
+    Product_configuration,
+    Product_view_definition,
+    Product_version,
+    Product);
+  END_TYPE;
+
+  ENTITY Design_specification
+    SUPERTYPE OF (Interface_specification_document_definition)
+    SUBTYPE OF (Specification_definition);
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.additional_characterization);
+  END_ENTITY;
+
+  ENTITY Fabrication_technology_specification
+    SUBTYPE OF (Process_specification);
+  END_ENTITY;
+
+  ENTITY Interface_specification_document_definition
+    SUBTYPE OF (Design_specification);
+  END_ENTITY;
+
+  ENTITY Language_reference_manual
+    SUBTYPE OF (Specification_definition);
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.additional_characterization);
+  END_ENTITY;
+
+  ENTITY Material_specification
+    SUBTYPE OF (Specification_definition);
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.additional_characterization);
+  END_ENTITY;
+
+  ENTITY Partial_document_with_structured_text_representation_assignment
+    SUBTYPE OF(Partial_document_assignment);
+      structured_portion : string_representation_item_select;
+    UNIQUE
+      UR1: SELF\Partial_document_assignment.document_portion,
+      SELF\Document_assignment.assigned_document;
+  END_ENTITY;
+
+  ENTITY Process_specification
+    SUBTYPE OF (Specification_definition);
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.additional_characterization);
+  END_ENTITY;
+
+  ENTITY Specification_allocation
+  	SUBTYPE OF (Document_assignment);
+      SELF\Document_assignment.assigned_document RENAMED allocated_specification : Specification_definition;
+  END_ENTITY;
+
+  ENTITY Specification_definition
+  	SUPERTYPE OF(ONEOF (Design_specification,
+	 Process_specification,
+	 Material_specification,
+	 Test_specification,
+	 Language_reference_manual))
+    SUBTYPE OF (Document_definition);
+	DERIVE
+  		source: SET[0:?] OF Organization_or_person_in_organization_assignment :=
+         bag_to_set(QUERY(temp <* USEDIN(SELF,'PERSON_ORGANIZATION_ASSIGNMENT_ARM.'+
+         'ORGANIZATION_OR_PERSON_IN_ORGANIZATION_ASSIGNMENT.ITEMS') |
+                         (temp.role = 'document source') ));
+	WHERE
+      WR1: EXISTS (source) AND (SIZEOF(source) = 1);
+  END_ENTITY;
+
+  ENTITY Surface_finish_specification
+    SUBTYPE OF (Material_specification);
+  END_ENTITY;
+
+  ENTITY Test_specification
+    SUBTYPE OF (Specification_definition);
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.additional_characterization);
+  END_ENTITY;
+
+  FUNCTION get_document_definition(
+      input : documented_element_select;
+      role : STRING;
+      type_name : STRING) : SET OF Document_definition; 
+    LOCAL
+      dd : SET[0:?] OF Document_definition := [];  --this gives us access to the information base
+      da : SET[0:?] OF Document_assignment :=[];
+    END_LOCAL;
+    da := bag_to_set(QUERY(dr <* USEDIN (input, 'DOCUMENT_ASSIGNMENT_ARM.'+
+	  'DOCUMENT_ASSIGNMENT.IS_ASSIGNED_TO') | (dr.role = role)));
+    -- iterate over da
+    REPEAT i := 1 to SIZEOF(da) by 1;
+      IF(type_name IN TYPEOF (da[i].assigned_document))THEN
+        dd := dd + da[i].assigned_document;
+      END_IF;
+    END_REPEAT;
+    RETURN(dd);
+  END_FUNCTION;
+	
+END_SCHEMA;

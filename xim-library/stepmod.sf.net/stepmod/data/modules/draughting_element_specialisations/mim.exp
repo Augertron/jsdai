@@ -1,0 +1,36 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4712 - ISO/CD-TS 10303-1312 Draughting element specialisations - EXPRESS MIM
+*)
+
+SCHEMA Draughting_element_specialisations_mim; 
+
+USE FROM Draughting_element_mim; -- ISO/CD-TS 10303-1310
+
+USE FROM aic_draughting_elements; --  ISO 10303-506
+
+USE FROM presentation_definition_schema (annotation_symbol_occurrence); -- ISO/CD-TS 10303-46
+          
+  ENTITY surface_condition_callout
+    SUBTYPE OF (draughting_callout);
+      WHERE
+       WR1: SIZEOF ( QUERY ( c <* SELF.contents | SIZEOF (
+         ['PRESENTATION_DEFINITION_SCHEMA.'+ 'ANNOTATION_CURVE_OCCURRENCE' ,
+         'PRESENTATION_DEFINITION_SCHEMA.'+ 'ANNOTATION_SYMBOL_OCCURRENCE' ,
+         'PRESENTATION_DEFINITION_SCHEMA.'+ 'ANNOTATION_TEXT_OCCURRENCE']* TYPEOF
+         ( c ) ) <>1 ) ) =0;
+  END_ENTITY;
+
+  SUBTYPE_CONSTRAINT des_draughting_callout_subtypes FOR draughting_callout;         
+    ONEOF (datum_feature_callout,
+      datum_target_callout, 
+      dimension_curve_directed_callout,
+      draughting_elements, 
+      geometrical_tolerance_callout,
+      leader_directed_callout, 
+      projection_directed_callout,
+      structured_dimension_callout) ANDOR 
+      (surface_condition_callout);    
+  END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA;

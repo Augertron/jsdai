@@ -1,0 +1,180 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping stratum_non_planar_shape(Stratum_non_planar_shape_arm, Stratum_non_planar_shape_mim);*)
+
+
+entity_mapping Stratum_average_surface_shape_model(Stratum_average_surface_shape_model, manifold_surface_shape_representation);
+
+mapping_constraints;
+manifold_surface_shape_representation <=
+shape_representation <=
+representation
+{representation.name = 'stratum average surface shape model'}
+
+end_mapping_constraints;
+
+attribute_mapping of_surface(of_surface, $PATH, Stratum_average_surface);
+manifold_surface_shape_representation <=
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition = shape_aspect
+{shape_aspect
+shape_aspect.description = 'average surface'}
+shape_aspect =>
+stratum_surface
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Stratum_feature_non_planar_2d_shape_model(Stratum_feature_non_planar_2d_shape_model, manifold_surface_shape_representation);
+
+mapping_constraints;
+{manifold_surface_shape_representation <=
+shape_representation <=
+representation
+representation.name = 'stratum feature non planar 2d shape model'}
+
+end_mapping_constraints;
+
+attribute_mapping shape_characterized_component(shape_characterized_component, $PATH, Stratum_feature_armx);
+manifold_surface_shape_representation <=
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition = shape_aspect
+shape_aspect =>
+stratum_feature
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Stratum_feature_shape_stratum_average_surface_shape_relationship(Stratum_feature_shape_stratum_average_surface_shape_relationship, representation_relationship);
+
+mapping_constraints;
+{representation_relationship
+representation_relationship.name = 'stratum feature shape stratum average surface shape relationship'}
+
+end_mapping_constraints;
+
+attribute_mapping of_stratum_feature_shape(of_stratum_feature_shape, $PATH, Stratum_feature_non_planar_2d_shape_model);
+representation_relationship
+representation_relationship.rep_2 ->
+{representation
+representation.name = 'stratum feature non planar 2d shape model'}
+representation =>
+shape_representation =>
+manifold_surface_shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping of_stratum_average_surface_shape(of_stratum_average_surface_shape, $PATH, Stratum_average_surface_shape_model);
+representation_relationship
+representation_relationship.rep_1 ->
+{representation.name = 'stratum average surface shape model'}
+representation =>
+shape_representation =>
+manifold_surface_shape_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Stratum_feature_shape_stratum_surface_shape_relationship(Stratum_feature_shape_stratum_surface_shape_relationship, representation_relationship);
+
+mapping_constraints;
+{representation_relationship
+representation_relationship.name = 'stratum feature shape stratum surface shape relationship'}
+
+end_mapping_constraints;
+
+attribute_mapping of_stratum_feature_shape(of_stratum_feature_shape, $PATH, Stratum_feature_non_planar_2d_shape_model);
+representation_relationship
+representation_relationship.rep_2 ->
+{representation.name = 'stratum feature non planar 2d shape model'}
+representation =>
+shape_representation =>
+manifold_surface_shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping of_stratum_surface_shape(of_stratum_surface_shape, $PATH, Stratum_surface_shape_model);
+representation_relationship
+representation_relationship.rep_1 ->
+{representation.name = 'stratum surface shape model'}
+representation =>
+shape_representation =>
+manifold_surface_shape_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Stratum_surface_shape_model(Stratum_surface_shape_model, manifold_surface_shape_representation);
+
+mapping_constraints;
+{manifold_surface_shape_representation <=
+shape_representation <=
+representation
+representation.name = 'stratum surface shape model'}
+
+end_mapping_constraints;
+
+attribute_mapping of_surface(of_surface, $PATH, Stratum_surface_armx);
+manifold_surface_shape_representation <=
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition = shape_aspect
+shape_aspect
+{shape_aspect
+(shape_aspect.description = 'primary surface')
+(shape_aspect.description = 'secondary surface')}
+shape_aspect =>
+stratum_surface
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

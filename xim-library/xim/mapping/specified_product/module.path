@@ -1,0 +1,94 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping specified_product(Specified_product_arm, Specified_product_mim);*)
+
+uof_mapping Specified_product(Specified_product);
+
+entity_mapping Product_specification_armx(Product_specification_armx, (product_identification)(product_specification));
+
+mapping_constraints;
+(
+	product_identification <= 
+	[configuration_item]
+	[characterized_object]
+	)(
+	product_specification <=
+	[product_identification]
+	[configurable_item]
+	)
+end_mapping_constraints;
+
+attribute_mapping version_id(version_id, identification_assignment.assigned_id);
+
+product_identification = identification_item
+identification_item <- applied_identification_assignment.items[i]
+applied_identification_assignment <= identification_assignment
+{identification_assignment.role -> identification_role
+identification_role.name = 'version'}
+identification_assignment.assigned_id
+	
+end_attribute_mapping;
+
+attribute_mapping item_context(item_context, $PATH, Product_class_armx);
+
+	product_identification <= configuration_item
+configuration_item.item_concept -> product_concept
+product_concept => product_class
+	
+end_attribute_mapping;
+
+attribute_mapping defining_specifications(defining_specifications, ($PATH)($PATH), Specification);
+(
+product_specification <= configurable_item
+configurable_item.item_concept_feature[i] -> product_concept_feature_association
+product_concept_feature_association.feature -> product_concept_feature
+|product_concept_feature|
+	)(
+product_specification <= configurable_item
+configurable_item.item_concept_feature[i] -> product_concept_feature_association
+product_concept_feature_association.feature -> product_concept_feature
+product_concept_feature => package_product_concept_feature
+	)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Specification_based_product_version(Specification_based_product_version, product_definition_formation);
+
+mapping_constraints;
+
+	product_definition_formation = configuration_design_item
+	configuration_design_item <- configuration_design.design
+	{configuration_design.name = 'product design'}
+	configuration_design.configuration -> configuration_item
+	(configuration_item => product_identification)
+	(configuration_item => product_identification
+	product_identification => product_specification)
+	
+end_mapping_constraints;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

@@ -1,0 +1,258 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping type_of_person(Type_of_person_arm, Type_of_person_mim);*)
+
+uof_mapping Type_of_person(Type_of_person);
+
+entity_mapping Type_of_person(Type_of_person, person_type);
+
+attribute_mapping name(name, person_type.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, person_type.name);
+
+end_attribute_mapping;
+
+attribute_mapping has(has, $PATH, person_type_definition);
+
+					person_type <-
+					person_type_definition_formation.of_person_type
+					person_type_definition_formation <-
+					person_type_definition.formation
+					person_type_definition
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+(* All entities below are substituted by AIM entities
+entity_mapping Type_of_person_definition(Type_of_person_definition, person_type_definition);
+
+attribute_mapping name(name, person_type_definition.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, person_type_definition.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Type_of_person_definition_relationship(Type_of_person_definition_relationship, person_type_definition_relationship);
+
+attribute_mapping name(name, person_type_definition_relationship.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, person_type_definition_relationship.description);
+
+end_attribute_mapping;
+
+attribute_mapping related(related, $PATH, Type_of_person_definition);
+
+					person_type_definition_relationship
+					person_type_definition_relationship.related_person_type_definition ->
+					person_type_definition
+				
+end_attribute_mapping;
+
+attribute_mapping relating(relating, $PATH, Type_of_person_definition);
+
+					person_type_definition_relationship
+					person_type_definition_relationship.relating_person_type_definition ->
+					person_type_definition
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Type_of_person_definition_required_attributes_relationship(Type_of_person_definition_required_attributes_relationship, applied_person_type_definition_assignment);
+
+mapping_constraints;
+
+				person_type_definition_assignment =>
+				applied_person_type_definition_assignment
+			
+end_mapping_constraints;
+
+attribute_mapping assigned_required_attributes(assigned_required_attributes, $PATH, Type_of_person_definition);
+
+					applied_person_type_definition_assignment <=
+					person_type_definition_assignment
+					person_type_definition_assignment.assigned_person_type_definition ->
+					person_type_definition
+				
+end_attribute_mapping;
+
+attribute_mapping required_attributes(required_attributes, $PATH, defined_attributes);
+
+				applied_person_type_definition_assignment
+				applied_person_type_definition_assignment.items[1] = person_definition_item
+                                  
+			
+end_attribute_mapping;
+
+attribute_mapping required_attributes(required_attributes, $PATH, Qualification_type);
+
+				applied_person_type_definition_assignment
+				applied_person_type_definition_assignment.items[1] ->
+				qualification_type
+			
+end_attribute_mapping;
+
+attribute_mapping required_attributes(required_attributes, $PATH, Experience_type);
+
+				applied_person_type_definition_assignment
+				applied_person_type_definition_assignment.items[1] ->
+				experience_type
+			
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Type_of_person_assignment(Type_of_person_assignment, applied_person_type_assignment);
+
+mapping_constraints;
+
+				person_type_assignment =>
+				applied_person_type_assignment
+			
+end_mapping_constraints;
+
+attribute_mapping assigned_type_of_person(assigned_type_of_person, $PATH, Type_of_person);
+
+					applied_person_type_assignment <=
+					person_type_assignment
+					person_type_assignment.assigned_person_type ->
+					person_type
+				
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, type_of_person_item_select);
+
+					applied_person_type_assignment
+					applied_person_type_assignment.items[1] ->
+					person_type_item
+				
+end_attribute_mapping;
+
+attribute_mapping role(role, person_type_role.name);
+
+                                  applied_person_type_assignment <=
+                                  person_type_assignment
+                                  person_type_assignment.role -> person_type_role
+                                  person_type_role.name
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+end_uof_mapping;
+(*
+
+entity_mapping Classification_assignment(Classification_assignment, applied_classification_assignment)
+extended;
+
+mapping_constraints;
+
+				applied_classification_assignment <=
+				classification_assignment
+			
+end_mapping_constraints;
+
+attribute_mapping items(items, , Type_of_person_definition_relationship);
+
+					applied_classification_assignment
+					applied_classification_assignment.items[i] ->
+					classification_item *>
+					person_type_definition_relationship_classification_item
+					person_type_definition_relationship_classification_item = person_type_definition_relationship
+					person_type_definition_relationship
+				
+end_attribute_mapping;
+
+attribute_mapping items(items, , Type_of_person_definition);
+
+					applied_classification_assignment
+					applied_classification_assignment.items[i] ->
+					classification_item *>
+					person_type_definition_relationship_classification_item
+					person_type_definition_relationship_classification_item = person_type_definition
+					person_type_definition
+				
+end_attribute_mapping;
+
+attribute_mapping items(items, , Type_of_person_assignment);
+
+					applied_classification_assignment
+					applied_classification_assignment.items[i] ->
+					classification_item *>
+					person_type_definition_relationship_classification_item
+					person_type_definition_relationship_classification_item = applied_person_type_assignment
+					applied_person_type_assignment
+				
+end_attribute_mapping;
+
+attribute_mapping items(items, , Type_of_person);
+
+					applied_classification_assignment
+					applied_classification_assignment.items[i] ->
+					classification_item *>
+					person_type_definition_relationship_classification_item
+					person_type_definition_relationship_classification_item = person_type
+					person_type
+				
+end_attribute_mapping;
+
+attribute_mapping items(items, , Type_of_person_definition_required_attributes_relationship);
+
+					applied_classification_assignment
+					applied_classification_assignment.items[i] ->
+					classification_item *>
+					person_type_definition_relationship_classification_item
+					person_type_definition_relationship_classification_item = applied_person_type_definition_assignment
+					applied_person_type_definition_assignment
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Assigned_property(Assigned_property, property_definition)
+extended;
+
+attribute_mapping described_element(described_element, , Type_of_person_definition);
+
+					property_definition
+					property_definition.definition ->
+					characterized_definition = 
+					characterized_object =>
+					characterized_person_type_definition
+					characterized_person_type_definition <=
+					person_type_definition
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+(*end_schema_mapping;*)

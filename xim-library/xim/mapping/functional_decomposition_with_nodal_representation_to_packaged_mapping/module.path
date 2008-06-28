@@ -1,0 +1,80 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping functional_decomposition_with_nodal_representation_to_packaged_mapping(Functional_decomposition_with_nodal_representation_to_packaged_mapping_arm, Functional_decomposition_with_nodal_representation_to_packaged_mapping_mim);*)
+
+
+entity_mapping Aggregate_connectivity_requirement_armx(Aggregate_connectivity_requirement_armx, aggregate_connectivity_requirement);
+
+mapping_constraints;
+[aggregate_connectivity_requirement <=
+product_definition]
+[aggregate_connectivity_requirement <=
+applied_group_assignment]
+
+end_mapping_constraints;
+
+attribute_mapping connectivity_requirement(connectivity_requirement, $PATH, Functional_unit_network_node_definition);
+aggregate_connectivity_requirement <=
+applied_group_assignment
+applied_group_assignment.items ->
+groupable_item = network_node_definition
+network_node_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Connectivity_allocation(Connectivity_allocation, property_definition_relationship);
+
+mapping_constraints;
+{property_definition_relationship
+property_definition_relationship.name = 'connectivity allocation'}
+
+end_mapping_constraints;
+
+attribute_mapping connectivity_requirement(connectivity_requirement, $PATH, Aggregate_connectivity_requirement_armx);
+property_definition_relationship
+property_definition_relationship.relating_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition = characterized_product_definition 
+characterized_product_definition = product_definition
+product_definition =>
+aggregate_connectivity_requirement
+
+end_attribute_mapping;
+
+attribute_mapping implementation(implementation, $PATH, Physical_connectivity_definition_armx);
+property_definition_relationship
+property_definition_relationship.related_property_definition ->
+property_definition =>
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect =>
+physical_connectivity_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

@@ -1,0 +1,24 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4104 - ISO/TS 10303-1719 Part template non planar shape - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3528
+*)
+SCHEMA Part_template_non_planar_shape_arm;
+
+    USE FROM Part_template_3d_shape_arm;	-- ISO/TS 10303-1717
+	USE FROM Manifold_surface_arm;	-- ISO/TS 10303-1509
+
+	TYPE ptnps_part_template_or_physical_unit_3d_shape_model_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON part_template_or_physical_unit_3d_shape_model_select WITH 
+ 		(Part_template_non_planar_2d_shape_model);
+	END_TYPE;
+
+  ENTITY Part_template_non_planar_2d_shape_model
+    SUBTYPE OF (Manifold_surface_shape_representation,
+	 			Part_template_shape_model);
+      transformation                    : Axis_placement_3d;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Representation.name);
+      WR2 : NOT EXISTS(SELF\Representation.description);
+  END_ENTITY;
+
+END_SCHEMA;

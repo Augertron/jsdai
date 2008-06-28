@@ -1,0 +1,71 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Functional assignment to part - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Functional_assignment_to_part_xim;
+
+USE FROM Physical_unit_usage_view_xim;
+
+USE FROM Functional_usage_view_xim;
+
+USE FROM Functional_assignment_to_part_mim;
+
+  ENTITY Functional_usage_view_to_part_terminal_assignment
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED physical_usage_view_terminal		: Part_terminal;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED functional_usage_view_terminal : Scalar_terminal_definition;
+    DERIVE
+      SELF\shape_aspect_relationship.description : text := ?;
+      SELF\shape_aspect_relationship.name : label := ?;
+    UNIQUE
+      UR1 : functional_usage_view_terminal,
+ physical_usage_view_terminal;
+  END_ENTITY;
+
+  ENTITY Part_connected_terminals_definition_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (part_connected_terminals_definition);
+      SELF\shape_aspect.of_shape RENAMED associated_definition : Part_usage_view;
+      connected_terminals   : SET[2:?] OF Part_terminal;
+    DERIVE
+      SELF\shape_aspect.description : text := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+    UNIQUE
+      UR1 : name,
+ associated_definition;
+    WHERE
+      WR1 : SIZEOF(QUERY(ct <* connected_terminals | NOT (associated_definition = ct\Shape_element.containing_shape))) = 0;
+  END_ENTITY;
+
+  ENTITY Part_terminal
+    ABSTRACT SUPERTYPE (* CONNOTATIONAL *) SUBTYPE OF (Part_feature);
+    INVERSE
+      connection_requirement         : SET[0:1] OF part_connected_terminals_definition_armx FOR connected_terminals;
+      functional_usage_view_terminal : SET[0:1] OF functional_usage_view_to_part_terminal_assignment FOR physical_usage_view_terminal;
+  END_ENTITY;
+
+END_SCHEMA;
+

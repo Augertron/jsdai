@@ -1,0 +1,146 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+ Derived from ISO TC184/SC4/WG12 N3109 - ISO/TS 10303-1248 Product breakdown - EXPRESS ARM
+ by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+
+SCHEMA Product_breakdown_xim;
+
+USE FROM Product_identification_xim;    -- ISO/TS 10303-1017
+
+USE FROM product_version_xim;    -- ISO/TS 10303-1018
+
+USE FROM Product_view_definition_xim;    -- ISO/TS 10303-1019
+
+USE FROM Product_view_definition_relationship_xim;    -- ISO/TS 10303-1041
+
+USE FROM Property_assignment_xim;    -- ISO/TS 10303-1030
+
+USE FROM product_breakdown_mim;
+
+REFERENCE FROM product_identification_xim(          -- ISO/TS 10303-1017 
+        types_of_product); 
+
+TYPE breakdown_element_realization_property_assignment_select = SELECT BASED_ON property_assignment_select WITH 
+   (Breakdown_element_realization, 
+    Breakdown_element_usage_armx);
+END_TYPE; 
+
+TYPE breakdown_item = EXTENSIBLE SELECT
+   (Breakdown_element_definition, 
+    Breakdown_element_usage_armx);
+END_TYPE; 
+
+TYPE product_item = EXTENSIBLE SELECT
+   (Product_view_definition, 
+    product_definition_usage);
+END_TYPE; 
+
+ENTITY Breakdown
+  (* CONNOTATIONAL *) SUBTYPE OF (Product_armx);
+  (* GL - added because of mapping *)
+  WHERE
+    WR1:  'breakdown' IN types_of_product (SELF) ;  
+END_ENTITY;
+
+ENTITY Breakdown_context_armx
+	(* CONNOTATIONAL *) SUBTYPE OF (breakdown_context);
+(* Attributes are accesable from supertype product_definition_relationship
+  id : STRING;
+  name : STRING;
+  description : OPTIONAL STRING; *)
+  breakdown : Breakdown_version;
+  SELF\product_definition_relationship.related_product_definition RENAMED breakdown_element : Breakdown_element_definition;
+  (* Make derived attribute, because it is in principle overlapping with "breakdown" *)
+  DERIVE 
+  	SELF\product_definition_relationship.relating_product_definition : product_definition := ?;
+END_ENTITY;
+
+ENTITY Breakdown_element
+  (* CONNOTATIONAL *) SUBTYPE OF (Product_armx);
+  (* GL added *)
+  WHERE
+    WR1  : 'breakdown element' IN types_of_product(SELF);
+END_ENTITY;
+
+ENTITY Breakdown_element_definition
+  (* CONNOTATIONAL *) SUBTYPE OF (Product_view_definition);
+  SELF\product_definition.formation : Breakdown_element_version;
+  (* GL added to reflect restrictions from mapping *)
+  WHERE
+    WR1: SELF\Product_view_definition.initial_context\product_definition_context.name IN 
+      ['breakdown element definition', 'zone definition', 'functional definition', 'conceptual definition'];
+END_ENTITY;
+(* Better to use AIM entity directly
+ENTITY Breakdown_element_realization_armx
+  SUBTYPE OF (Product_definition_element_relationship_armx, breakdown_element_realization);
+END_ENTITY;
+*)
+ENTITY Breakdown_element_usage_armx
+  (* CONNOTATIONAL *) SUBTYPE OF (breakdown_element_usage); (* SEDS on mapping *)
+  (* Accessable from supertype product_definition_relationship
+  name : STRING; *)
+  SELF\product_definition_relationship.relating_product_definition RENAMED parent_element : Breakdown_element_definition;
+  SELF\product_definition_relationship.related_product_definition RENAMED child_element : Breakdown_element_definition;
+END_ENTITY;
+
+ENTITY Breakdown_element_version
+  (* CONNOTATIONAL *) SUBTYPE OF (product_definition_formation);
+  SELF\product_definition_formation.of_product : Breakdown_element;
+END_ENTITY;
+
+ENTITY Breakdown_of_armx
+	(* CONNOTATIONAL *) SUBTYPE OF (breakdown_of);
+	(* accessable from supertype product_definition_relationship 
+  id : STRING;
+  name : STRING;
+  description : OPTIONAL STRING; *)
+  breakdown : Breakdown_version;
+  SELF\product_definition_relationship.related_product_definition RENAMED of_view : Product_view_definition;
+  (* breakdown attribute is more specific version of this one *)
+  DERIVE
+  	SELF\product_definition_relationship.relating_product_definition : product_definition := ?; 
+END_ENTITY;
+
+ENTITY Breakdown_version
+  (* CONNOTATIONAL *) SUBTYPE OF (product_definition_formation);
+  SELF\product_definition_formation.of_product : Breakdown;
+INVERSE
+  breakdown_of : SET[1:?] OF Breakdown_of_armx FOR breakdown;
+END_ENTITY;
+
+ENTITY Product_definition_element_relationship_armx
+	(* CONNOTATIONAL *) SUBTYPE OF (product_definition_element_relationship);
+	(* accessable from supertype group 
+  id : STRING;
+  name : STRING;
+  description : OPTIONAL STRING; *)
+  breakdown : breakdown_item;
+  product : product_item;
+END_ENTITY;
+
+END_SCHEMA;  -- Product_breakdown_xim
+

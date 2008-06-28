@@ -1,0 +1,147 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Assembly physical interface requirement - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Assembly_physical_interface_requirement_xim;
+
+USE FROM Layered_3d_shape_xim;	-- ISO/TS 10303-1694
+
+USE FROM Printed_physical_layout_template_xim;
+
+USE FROM Assembly_functional_interface_requirement_xim;
+
+USE FROM product_structure_schema(specified_higher_usage_occurrence);
+
+REFERENCE FROM Requirement_decomposition_xim(get_rvd);
+
+USE FROM Assembly_functional_interface_requirement_mim;
+
+USE FROM Physical_unit_design_view_mim;
+
+USE FROM Non_feature_shape_element_mim;
+
+
+	TYPE apir_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
+	    (Mating_connector_termination,
+	    Termination_constraint);
+	END_TYPE; 
+
+(** Renamed packaged_or_printed_terminal to mating_connector_definition_select *)
+	TYPE mating_connector_definition_select = SELECT
+		(Packaged_part_terminal_armx,
+		Printed_part_template_terminal_armx);
+	END_TYPE;
+
+	TYPE three_dimensional_shape = SELECT
+		(Advanced_brep_shape_representation,
+		curve_swept_solid_shape_representation,
+	 	Geometrically_bounded_surface_shape_representation);
+	END_TYPE;
+
+  ENTITY Interface_requirement_occurrence
+    (* CONNOTATIONAL *) SUBTYPE OF (Predefined_requirement_view_definition_armx);
+      interface_to_next_higher_assembly : OPTIONAL Next_higher_assembly_interface_requirement;
+      reference_protocol                : OPTIONAL Protocol_physical_layer_definition_armx;
+    WHERE    
+      WR1: SELF\Product_view_definition.initial_context.life_cycle_stage = 'design'; 
+  END_ENTITY;
+
+  ENTITY Mating_connector_usage
+  	(* CONNOTATIONAL *) SUBTYPE OF (Product_view_definition, product_definition_with_associated_documents);
+      definition            : Product_view_definition;
+      SELF\product_definition.id RENAMED reference_designation : OPTIONAL identifier; 
+    DERIVE
+      SELF\product_definition.frame_of_reference : product_definition_context := ?;
+      SELF\product_definition.description : text := ?;
+      SELF\product_definition.formation : product_definition_formation := ?;
+    INVERSE
+      placement_context : mating_connector_placement_relationship FOR placed_connector;
+  END_ENTITY;
+
+  ENTITY Mating_connector_placement_relationship
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_representation);
+      placed_connector    : Mating_connector_usage;
+      interface_context   : Next_higher_assembly_interface_requirement;
+      connector_placement : axis2_placement;
+    DERIVE
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+      SELF\representation.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Mating_connector_termination
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect);
+      definition         : mating_connector_definition_select;
+      accessed_connector : Mating_connector_usage;
+	DERIVE
+  	  signal_definition: SET[0:?] OF Requirement_view_definition :=
+      get_rvd(SELF, 'signal definition');
+      SELF\shape_aspect.of_shape : product_definition_shape := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+      SELF\shape_aspect.description : text := ?;
+    UNIQUE
+      UR1 : definition,
+ accessed_connector;
+	WHERE
+   		WR1 : SIZEOF(signal_definition) <= 1;
+  END_ENTITY;
+
+  ENTITY Next_higher_assembly_interface_requirement
+  	(* CONNOTATIONAL *) SUBTYPE OF (specified_higher_usage_occurrence);
+      shape                           : three_dimensional_shape;
+      version_of_next_higher_assembly : product_definition_formation;
+    DERIVE
+      SELF\assembly_component_usage.reference_designator : identifier := ?;
+      SELF\product_definition_relationship.relating_product_definition : product_definition := ?;
+      SELF\specified_higher_usage_occurrence.next_usage : next_assembly_usage_occurrence := ?;
+      SELF\product_definition_relationship.related_product_definition : product_definition := ?;
+      SELF\specified_higher_usage_occurrence.upper_usage : assembly_component_usage := ?;
+      SELF\product_definition_relationship.id : identifier := ?;
+  END_ENTITY;
+
+  ENTITY Protocol_requirement_allocation_to_part_terminal_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Requirement_assignment_armx, protocol_requirement_allocation_to_part_terminal);
+      SELF\Requirement_assignment_armx.assigned_to : Part_terminal;
+      protocol_signal													: Functional_unit_usage_view_terminal_definition;
+      SELF\Requirement_assignment_armx.assigned_requirement RENAMED assigned_requirement_property  : Interface_requirement_occurrence;    	
+    WHERE
+      WR1 : EXISTS(assigned_requirement_property\Interface_requirement_occurrence.reference_protocol);
+      WR2 : protocol_signal IN assigned_requirement_property\Interface_requirement_occurrence.reference_protocol.host_functional_definition\Functional_unit_usage_view.access_mechanism;  
+   END_ENTITY;
+
+  ENTITY Termination_constraint
+  	(* CONNOTATIONAL *) SUBTYPE OF (Constraint_occurrence);
+      constrained_termination      : SET[2:?] OF Mating_connector_termination;
+	DERIVE
+  		termination_usage_constraint: SET[0:?] OF Requirement_view_definition :=
+  		get_rvd(SELF, 'termination usage constraint');
+	WHERE
+   		WR1 : SIZEOF(termination_usage_constraint) <= 1;
+  END_ENTITY;
+
+END_SCHEMA;
+

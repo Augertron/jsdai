@@ -1,0 +1,139 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   ISO TC184/SC4/WG12 N4879 - ISO/CD-TS 10303-1255 State definition - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3172
+*) 
+
+SCHEMA State_definition_xim;
+
+USE FROM Activity_xim;    -- ISO/TS 10303-1047
+
+USE FROM Classification_assignment_xim;    -- ISO/TS 10303-1114
+
+USE FROM Foundation_state_definition_xim;    -- ISO/CD-TS 10303-1469
+
+USE FROM Identification_assignment_xim;    -- ISO/TS 10303-1021
+
+USE FROM state_definition_mim;
+
+TYPE state_definition_activity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH 
+   (Applied_state_definition_assignment);
+END_TYPE; 
+
+TYPE state_definition_classification_item_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH 
+   (Applied_state_definition_assignment, 
+    state_type, 
+    state_type_relationship);
+END_TYPE; 
+
+TYPE state_definition_identification_item_armx = EXTENSIBLE SELECT BASED_ON identification_item WITH 
+   (state_type, 
+    state_type_relationship);
+END_TYPE; 
+
+  ENTITY And_state_cause_effect_definition
+    SUBTYPE OF (State_cause_effect_definition);
+    DERIVE
+      SELF\state_type_relationship.name : label := 'and state cause effect definition';  
+  END_ENTITY;
+
+  ENTITY Applied_state_definition_armx
+    SUBTYPE OF (Applied_state_definition_assignment, state_type, State_type_role);
+    DERIVE
+      SELF\Applied_state_definition_assignment.described_state_definition : state_type := SELF;
+      SELF\Applied_state_definition_assignment.role : Applied_state_definition_armx := State_type_role('assigned',?);
+  END_ENTITY;
+
+  ENTITY Applied_state_definition_occurrence_armx
+    SUBTYPE OF (Applied_state_definition_armx, state_type_relationship);
+      SELF\state_type_relationship.related_state_type : SET [1:?] OF Applied_state_definition_armx;
+    DERIVE
+      SELF\state_type_relationship.relating_state_type : SET [1:?] OF Applied_state_definition_occurrence_armx := [SELF];
+  END_ENTITY;
+  
+  ENTITY Or_state_cause_effect_definition
+    SUBTYPE OF (State_cause_effect_definition);
+      DERIVE
+        SELF\state_type_relationship.name : label := 'or state cause effect definition';  
+  END_ENTITY;
+
+  ENTITY Sequence_of_state_definition
+    SUBTYPE OF (state_type_relationship);
+      SELF\state_type_relationship.relating_state_type RENAMED successor : SET[1:?] OF state_type;
+      SELF\state_type_relationship.related_state_type RENAMED predecessor : SET[1:?] OF state_type;
+      DERIVE
+        SELF\state_type_relationship.name : label := 'sequence of state definition';  
+  END_ENTITY;
+
+  ENTITY State_cause_effect_definition
+    SUBTYPE OF (state_type_relationship);
+      SELF\state_type_relationship.relating_state_type RENAMED effect : SET[1:?] OF state_type;
+      SELF\state_type_relationship.related_state_type RENAMED cause : SET[1:?] OF state_type;
+    DERIVE
+      SELF\state_type_relationship.name : label := 'state cause effect definition';  
+  END_ENTITY;
+
+  ENTITY State_complement_definition
+    SUBTYPE OF (state_type_relationship);
+      SELF\state_type_relationship.relating_state_type RENAMED universe : SET[1:?] OF state_type;
+      SELF\state_type_relationship.related_state_type RENAMED set_1 : SET[1:?] OF state_type;
+      set_2 : SET[1:?] OF state_type;
+    DERIVE
+      SELF\state_type_relationship.name : label := 'state complement definition';  
+  END_ENTITY;
+
+  ENTITY State_proper_subset_definition
+    SUBTYPE OF (state_type_relationship);
+      SELF\state_type_relationship.related_state_type RENAMED proper_subset : SET[1:?] OF state_type;
+      SELF\state_type_relationship.relating_state_type RENAMED proper_superset : SET[1:?] OF state_type;
+    DERIVE
+      SELF\state_type_relationship.name : label := 'state proper subset definition';  
+  END_ENTITY;
+
+  ENTITY State_subset_definition
+    SUBTYPE OF (state_type_relationship);
+      SELF\state_type_relationship.relating_state_type RENAMED superset : SET[1:?] OF state_type;
+      SELF\state_type_relationship.related_state_type RENAMED subset : SET[1:?] OF state_type;
+    DERIVE
+      SELF\state_type_relationship.name : label := 'state subset definition';  
+  END_ENTITY;
+
+  ENTITY State_symptom_definition
+    SUBTYPE OF (state_type_relationship);
+      SELF\state_type_relationship.relating_state_type RENAMED symptom_effect : SET[1:?] OF state_type;
+      SELF\state_type_relationship.related_state_type RENAMED symptom_cause : SET[1:?] OF state_type;
+    DERIVE
+      SELF\state_type_relationship.name : label := 'state symptom definition';  
+  END_ENTITY;
+
+  ENTITY Xor_state_cause_effect_definition
+    SUBTYPE OF (State_cause_effect_definition);
+    DERIVE
+      SELF\state_type_relationship.name : label := 'xor state cause effect definition';  
+  END_ENTITY;
+
+END_SCHEMA;
+
+

@@ -1,0 +1,53 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4687 - ISO/CD-TS 10303-1750 Text representation - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4197
+*)
+
+SCHEMA Text_representation_arm;
+
+USE FROM Text_appearance_arm;
+
+  TYPE tr_font_select  = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON font_select WITH
+    (Text_font);
+  END_TYPE;
+
+  ENTITY Annotation_text_character 
+    SUBTYPE OF (Detailed_geometric_model_element);
+    replicated_model : Character_glyph_symbol; 
+    source           : Axis_placement;
+    target           : Axis_placement;
+  END_ENTITY;
+
+  ENTITY Character_glyph_font_usage; 
+    character : Character_glyph_symbol;
+    font      : Text_font;
+  END_ENTITY;
+
+  ENTITY Character_glyph_symbol
+    SUBTYPE OF (Representation);
+      SELF\Representation.name RENAMED character : STRING (1) FIXED; 
+  END_ENTITY; 
+
+  ENTITY Text_font; 
+    id           : STRING; 
+    name         : STRING; 
+    description  : STRING;
+   INVERSE          
+    glyphs: SET [1:?] OF Character_glyph_font_usage FOR font;
+  END_ENTITY;
+
+  ENTITY Text_font_family; 
+    id           : STRING; 
+    name         : STRING; 
+    description  : STRING;
+   INVERSE          
+    fonts: SET [1:?] OF Text_font_in_family FOR family;
+  END_ENTITY; 
+
+  ENTITY Text_font_in_family;
+    font   : Text_font;
+    family : Text_font_family;
+  END_ENTITY;
+
+END_SCHEMA;

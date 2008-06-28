@@ -1,0 +1,116 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4159 - ISO/TS 10303-1737 Printed physical layout template - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3583
+*)
+
+
+SCHEMA Printed_physical_layout_template_mim;
+USE FROM Functional_usage_view_mim;	-- ISO/TS 10303-1705
+USE FROM Part_template_2d_shape_mim; -- ISO/TS 10303-1716	
+
+  TYPE pplt_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON groupable_item WITH 
+    (printed_part_template_terminal);
+  END_TYPE;
+
+  SUBTYPE_CONSTRAINT pplt_part_template_definition_subtypes FOR part_template_definition; 
+    ONEOF (Printed_part_template,
+      Non_conductive_cross_section_template);
+  END_SUBTYPE_CONSTRAINT;
+
+  ENTITY basic_multi_stratum_printed_part_template 
+    SUBTYPE OF (printed_part_template);
+  END_ENTITY;
+
+  ENTITY multi_stratum_printed_part_template
+    SUBTYPE OF (structured_printed_part_template, multi_stratum_structured_template);
+  END_ENTITY;
+
+  ENTITY non_conductive_cross_section_template
+    SUBTYPE OF (part_template_definition);
+  END_ENTITY;
+
+  ENTITY printed_connector_template
+    SUBTYPE OF (printed_part_template);
+  END_ENTITY;
+	
+  ENTITY printed_connector_template_terminal_relationship
+    SUBTYPE OF (shape_aspect, shape_aspect_relationship);
+    UNIQUE
+      UR1: SELF\shape_aspect_relationship.relating_shape_aspect,
+        SELF\shape_aspect_relationship.related_shape_aspect;
+    WHERE
+      WR1: SELF\shape_aspect_relationship.relating_shape_aspect :<>:
+        SELF\shape_aspect_relationship.related_shape_aspect;
+  END_ENTITY;
+
+  ENTITY printed_part_cross_section_template
+    SUBTYPE OF (printed_part_template);
+  END_ENTITY;
+
+  ENTITY printed_part_cross_section_template_terminal
+    SUBTYPE OF (printed_part_template_terminal);
+  END_ENTITY;
+
+  ENTITY printed_part_template
+    ABSTRACT SUPERTYPE OF (ONEOF (basic_multi_stratum_printed_part_template,
+      structured_printed_part_template) ANDOR printed_connector_template)
+    SUBTYPE OF (part_template_definition);
+  END_ENTITY;
+
+  ENTITY printed_part_template_connected_terminals_definition
+    SUBTYPE OF (shape_aspect);
+    UNIQUE
+      UR1: SELF\shape_aspect.name;
+  END_ENTITY;
+
+  ENTITY printed_part_template_material
+    SUBTYPE OF (product_definition);
+  END_ENTITY;
+
+  ENTITY printed_part_template_material_link
+    SUBTYPE OF (shape_aspect,shape_aspect_relationship);
+      SELF\shape_aspect_relationship.relating_shape_aspect : template_material_cross_section_boundary;  
+      SELF\shape_aspect_relationship.related_shape_aspect  : template_material_cross_section_boundary;
+    UNIQUE
+      UR1: SELF\shape_aspect_relationship.related_shape_aspect, 
+        SELF\shape_aspect_relationship.relating_shape_aspect;
+    WHERE
+      WR1: SELF\shape_aspect_relationship.related_shape_aspect :<>:
+        SELF\shape_aspect_relationship.relating_shape_aspect;
+  END_ENTITY; 
+
+  ENTITY printed_part_template_terminal
+    SUPERTYPE OF (printed_part_cross_section_template_terminal ANDOR structured_printed_part_template_terminal)
+    SUBTYPE OF (shape_aspect);
+  END_ENTITY;
+
+  ENTITY printed_part_template_terminal_connection_zone_category
+    SUBTYPE OF (group);
+  END_ENTITY;
+
+  ENTITY printed_tiebar_template
+    SUBTYPE OF (structured_printed_part_template);
+  END_ENTITY;
+
+  ENTITY single_stratum_printed_part_template
+    SUBTYPE OF (structured_printed_part_template, single_stratum_structured_template);
+  END_ENTITY;
+  
+  ENTITY structured_printed_part_template
+    ABSTRACT SUPERTYPE OF (ONEOF (single_stratum_printed_part_template, 
+      multi_stratum_printed_part_template))
+    SUBTYPE OF (printed_part_template, structured_template);
+  END_ENTITY;  
+
+  ENTITY structured_printed_part_template_terminal
+    SUBTYPE OF (printed_part_template_terminal);
+  END_ENTITY;  
+
+  ENTITY template_material_cross_section_boundary
+    SUBTYPE OF (shape_aspect);
+  END_ENTITY;
+	
+END_SCHEMA;
+
+

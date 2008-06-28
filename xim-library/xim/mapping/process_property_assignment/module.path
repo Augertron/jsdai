@@ -1,0 +1,140 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping process_property_assignment(Process_property_assignment_arm, Process_property_assignment_mim);*)
+
+uof_mapping Process_Property_Assignment(Process_Property_Assignment);
+(* Both entities taken from AIM
+entity_mapping Activity_property(Activity_property, action_property);
+
+attribute_mapping name(name, action_property.name);
+
+end_attribute_mapping;
+
+attribute_mapping described_element(described_element, $PATH, characterized_activity_definition);
+action_property
+action_property.definition ->
+ characterized_action_definition
+end_attribute_mapping;
+
+attribute_mapping described_element(described_element, $PATH, Activity);
+action_property
+action_property.definition ->
+ characterized_action_definition
+characterized_action_definition = action
+action => executed_action
+executed_action
+end_attribute_mapping;
+
+attribute_mapping described_element(described_element, $PATH, Action_method);
+action_property
+action_property.definition ->
+ characterized_action_definition
+characterized_action_definition = action_method
+action_method
+
+end_attribute_mapping;
+
+attribute_mapping description(description, action_property.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Activity_property_representation(Activity_property_representation, action_property_representation);
+
+attribute_mapping property(property, $PATH, action_property);
+action_property_representation
+action_property_representation.property ->
+action_property
+end_attribute_mapping;
+
+attribute_mapping rep(rep, $PATH, Representation);
+action_property_representation
+				 action_property_representation.representation -> representation
+end_attribute_mapping;
+
+attribute_mapping role(role, action_property_representation.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, action_property_representation.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Applied_independent_activity_property(Applied_independent_activity_property, action_property);
+
+mapping_constraints;
+action_property
+{action_property = derived_property_select
+derived_property_select <- 
+general_property_association.derived_definition
+general_property_association}
+			
+end_mapping_constraints;
+
+(* XIM specific add-on *)
+attribute_mapping representation(representation, $PATH, measure_with_unit);
+action_property <-
+action_property_representation.property
+action_property_representation
+action_property_representation.representation -> 
+representation
+representation.items[i] ->
+representation_item
+representation_item =>
+measure_representation_item <=
+measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping representation(representation, $PATH);
+action_property <-
+action_property_representation.property
+action_property_representation
+action_property_representation.representation -> 
+representation
+representation.items[i] ->
+representation_item
+{representation_item =>
+descriptive_representation_item}
+representation_item.name
+
+end_attribute_mapping;
+
+attribute_mapping base_element_property(base_element_property, $PATH, general_property);
+action_property
+action_property = derived_property_select
+derived_property_select <- 
+general_property_association.derived_definition
+general_property_association
+general_property_association.base_definition ->
+general_property
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

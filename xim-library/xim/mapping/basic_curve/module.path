@@ -1,0 +1,126 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping basic_curve(Basic_curve_arm, Basic_curve_mim);*)
+
+entity_mapping Closed_curve(Closed_curve, |composite_curve|);
+
+mapping_constraints;
+(* Not supported by mapping compiler - unfortunately need to ignore
+{composite_curve
+composite_curve.closed_curve = .TRUE.}
+*)
+end_mapping_constraints;
+
+end_entity_mapping;
+(*
+entity_mapping Composite_curve(Composite_curve, composite_curve);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping curve_segment(curve_segment, $PATH, Composite_curve_segment);
+composite_curve.segments[i] ->
+composite_curve_segment
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Composite_curve_segment(Composite_curve_segment, composite_curve_segment);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping segment_curve(segment_curve, $PATH, Curve);
+composite_curve_segment.parent_curve ->
+curve
+
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Measurement_path(Measurement_path, representation);
+
+mapping_constraints;
+{representation.name = 'measuring direction'}
+end_mapping_constraints;
+
+attribute_mapping defined_by(defined_by, $PATH, Curve);
+{representation
+representation.items[i] ->
+representation_item =>
+geometric_representation_item =>
+curve 
+(curve => pcurve)
+(curve => surface_curve)}
+
+end_attribute_mapping;
+
+attribute_mapping defined_in(defined_in, $PATH, geometric_representation_context);
+representation
+representation.context_of_items ->
+representation_context =>
+geometric_representation_context
+end_attribute_mapping;
+
+end_entity_mapping;
+(* Removed option
+entity_mapping External_source_identification(External_source_identification, applied_external_identification_assignment)
+extended;
+
+attribute_mapping item(item, , Boundary_curve_armx);
+
+				external_identification_item *> bc_external_identification_item
+				bc_external_identification_item = trimmed_curve
+			
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+(*
+entity_mapping Trimmed_curve(Trimmed_curve, trimmed_curve);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping start_point(start_point, $PATH, Cartesian_point);
+trimmed_curve
+trimmed_curve.trim_1 ->
+cartesian_point
+
+end_attribute_mapping;
+
+attribute_mapping end_point(end_point, $PATH, Cartesian_point);
+trimmed_curve
+trimmed_curve.trim_1 ->
+cartesian_point
+
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+(*end_schema_mapping;*)

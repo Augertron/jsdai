@@ -1,0 +1,378 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping land(Land_arm, Land_mim);*)
+
+entity_mapping Contact_size_dependent_land_armx(Contact_size_dependent_land_armx, contact_size_dependent_land);
+
+mapping_constraints;
+contact_size_dependent_land <=
+land <=
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=	
+component_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping derived_from(derived_from, $PATH, Default_attachment_size_based_land_physical_template_armx);
+land <=
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=	
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'definition usage'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+land_physical_template =>
+default_attachment_size_based_land_physical_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Inter_stratum_feature_dependent_land_armx(Inter_stratum_feature_dependent_land_armx, inter_stratum_feature_dependent_land);
+
+mapping_constraints;
+inter_stratum_feature_dependent_land <=
+land <=
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=				
+component_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping derived_from(derived_from, $PATH, Default_passage_based_land_physical_template_armx);
+inter_stratum_feature_dependent_land <=
+land <=
+stratum_feature_template_component <=					
+laminate_component <=					
+assembly_component <=				
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'definition usage'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+land_physical_template =>
+default_passage_based_land_physical_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Land_armx(Land_armx, land);
+
+mapping_constraints;
+land <=
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=	
+component_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping alternate_land_definition(alternate_land_definition, $PATH, Land_physical_template_armx);
+land <=
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=	
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'alternate instantiated template'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+land_physical_template
+
+end_attribute_mapping;
+
+attribute_mapping derived_from(derived_from, $PATH, Land_physical_template_armx);
+land <=
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=	
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'definition usage'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+land_physical_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Land_interface_terminal(Land_interface_terminal, laminate_component_interface_terminal);
+
+mapping_constraints;
+laminate_component_interface_terminal <=
+laminate_component_feature <=
+component_feature <=	
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'land interface terminal'}
+
+end_mapping_constraints;
+
+attribute_mapping associated_component(associated_component, $PATH, Contact_size_dependent_land_armx);
+laminate_component_interface_terminal <=
+laminate_component_feature <=
+component_feature <=	
+shape_aspect
+shape_aspect.of_shape ->  
+product_definition_shape =>
+assembly_component =>
+laminate_component =>
+stratum_feature_template_component =>
+land =>
+contact_size_dependent_land
+
+end_attribute_mapping;
+
+attribute_mapping definition(definition, $PATH, Land_template_interface_terminal);
+laminate_component_interface_terminal <=
+laminate_component_feature <=
+component_feature <=	
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'instantiated feature'}
+shape_aspect_relationship.relating_shape_aspect ->
+{shape_aspect
+shape_aspect.description = 'interface terminal'}
+shape_aspect =>
+land_template_terminal
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Land_join_terminal(Land_join_terminal, laminate_component_join_terminal);
+
+mapping_constraints;
+laminate_component_join_terminal <=
+laminate_component_feature <=
+component_feature <=				
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'land join terminal'}
+
+end_mapping_constraints;
+
+attribute_mapping associated_component(associated_component, $PATH, Land_armx);
+laminate_component_join_terminal <=
+laminate_component_feature <=
+component_feature <=				
+shape_aspect
+shape_aspect.of_shape ->  
+product_definition_shape =>
+assembly_component =>
+laminate_component =>
+stratum_feature_template_component =>
+land
+
+end_attribute_mapping;
+
+attribute_mapping definition(definition, $PATH, Land_template_join_terminal);
+laminate_component_join_terminal <=
+laminate_component_feature <=
+component_feature <=				
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'instantiated feature'}
+shape_aspect_relationship.relating_shape_aspect ->
+{shape_aspect
+shape_aspect.description = 'join terminal'}
+shape_aspect =>
+land_template_terminal
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Plated_passage_dependent_land_armx(Plated_passage_dependent_land_armx, plated_passage_dependent_land);
+
+mapping_constraints;
+plated_passage_dependent_land <=
+inter_stratum_feature_dependent_land <=
+land <=
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=				
+component_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping derived_from(derived_from, $PATH, Default_plated_passage_based_land_physical_template_armx);
+plated_passage_dependent_land <=
+inter_stratum_feature_dependent_land <=
+land <=
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=				
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'definition usage'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+land_physical_template =>
+default_passage_based_land_physical_template =>
+default_plated_passage_based_land_physical_template
+
+end_attribute_mapping;
+
+attribute_mapping reference_plated_passage(reference_plated_passage, $PATH, Plated_passage_armx);
+plated_passage_dependent_land <=
+inter_stratum_feature_dependent_land <=
+land <=
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=				
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'reference plated passage'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+component_definition =>
+assembly_component =>
+laminate_component =>
+inter_stratum_feature =>
+plated_inter_stratum_feature =>
+plated_passage
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Unsupported_passage_dependent_land_armx(Unsupported_passage_dependent_land_armx, unsupported_passage_dependent_land);
+
+mapping_constraints;
+unsupported_passage_dependent_land <=
+inter_stratum_feature_dependent_land <=
+land <=
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=				
+component_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping reference_passage(reference_passage, $PATH, Unsupported_passage_armx);
+unsupported_passage_dependent_land <=
+inter_stratum_feature_dependent_land <=
+land <=
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=				
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'reference passage'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+component_definition =>
+assembly_component =>
+laminate_component =>
+inter_stratum_feature =>
+unsupported_passage
+
+end_attribute_mapping;
+
+attribute_mapping derived_from(derived_from, $PATH, Default_unsupported_passage_based_land_physical_template_armx);
+unsupported_passage_dependent_land <=
+inter_stratum_feature_dependent_land <=
+land <=
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=				
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'definition usage'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+land_physical_template =>
+default_passage_based_land_physical_template =>
+default_unsupported_passage_based_land_physical_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+(*end_schema_mapping;*)

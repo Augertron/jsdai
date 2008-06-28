@@ -1,0 +1,135 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping product_as_individual_assembly(Product_as_individual_assembly_arm, Product_as_individual_assembly_mim);*)
+
+entity_mapping Physical_assembly_relationship(Physical_assembly_relationship, assembly_component_usage);
+
+mapping_constraints;
+
+  assembly_component_usage
+	{assembly_component_usage <=
+	product_definition_usage <=
+	product_definition_relationship
+	product_definition_relationship.name = 'physical occurrence usage'}
+    
+end_mapping_constraints;
+
+attribute_mapping physical_component(physical_component, $PATH, Product_as_individual_view);
+
+	assembly_component_usage <=
+	product_definition_usage <=
+	product_definition_relationship
+	product_definition_relationship.related_product_definition ->
+	product_definition
+end_attribute_mapping;
+
+attribute_mapping physical_assembly(physical_assembly, $PATH, Product_as_individual_view);
+
+	assembly_component_usage <=
+	product_definition_usage <=
+	product_definition_relationship
+	product_definition_relationship.relating_product_definition ->
+	product_definition
+
+end_attribute_mapping;
+
+attribute_mapping is_realization_of(is_realization_of, $PATH, Product_occurrence);
+
+		assembly_component_usage <-
+		product_definition_occurrence_relationship.occurrence_usage
+		product_definition_occurrence_relationship
+		{product_definition_occurrence_relationship.name = 'physical realization'}
+		product_definition_occurrence_relationship.occurrence ->
+		product_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Product_as_individual_view_realization__pdr(Product_as_individual_view_realization__pdr, product_definition_relationship);
+
+mapping_constraints;
+
+product_definition_relationship
+{product_definition_relationship.name = 'physical realization'}
+
+    
+end_mapping_constraints;
+
+attribute_mapping product_design(product_design, $PATH, Part_view_definition);
+
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'part definition'}		
+
+end_attribute_mapping;
+
+attribute_mapping individual_product(individual_product, $PATH, Product_as_individual_view);
+
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Product_as_individual_view_realization__cd(Product_as_individual_view_realization__cd, configuration_design);
+
+mapping_constraints;
+
+configuration_design    
+{configuration_design.name = 'physical instance basis'}
+
+    
+end_mapping_constraints;
+
+attribute_mapping product_design(product_design, $PATH, configuration_item);
+
+configuration_design
+configuration_design.configuration ->
+configuration_item	
+
+end_attribute_mapping;
+
+attribute_mapping individual_product(individual_product, $PATH, Product_as_individual_view);
+
+configuration_design
+configuration_design.design ->
+configuration_design_item
+configuration_design_item = product_definition
+product_definition
+
+end_attribute_mapping;
+
+
+end_entity_mapping;
+
+(*end_schema_mapping;*)

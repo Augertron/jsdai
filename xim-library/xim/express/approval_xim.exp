@@ -1,0 +1,82 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+Derived from ISO TC184/SC4/WG12 N2909 - ISO/TS 10303-1012 Approval - EXPRESS ARM
+by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+(* Based on ARM *)
+
+SCHEMA Approval_xim; 
+
+USE FROM Date_time_assignment_xim;    -- ISO/TS 10303-1014
+
+USE FROM Person_organization_xim;    -- ISO/TS 10303-1011
+
+USE FROM approval_schema   -- ISO 10303-41
+  (approval,
+   approval_date_time,
+   approval_person_organization,
+   approval_relationship,
+   approval_role,
+   approval_status); 
+
+USE FROM basic_attribute_schema   -- ISO 10303-41
+  (object_role,
+   role_association,
+   role_select); 
+
+USE FROM management_resources_schema   -- ISO 10303-41
+  (approval_assignment); 
+
+USE FROM Approval_mim;
+
+USE FROM support_resource_schema(label);
+
+ENTITY Approval_armx
+	(* CONNOTATIONAL *) SUBTYPE OF (approval); 
+	SELF\approval.level RENAMED purpose : STRING;
+  planned_date : OPTIONAL date_time_select; 
+  actual_date : OPTIONAL date_time_select; 
+END_ENTITY;
+
+ENTITY Approval_assignment_armx
+	(* CONNOTATIONAL *) SUBTYPE OF (applied_approval_assignment);
+  SELF\approval_assignment.assigned_approval : Approval_armx;
+  role_x : OPTIONAL STRING;
+  DERIVE
+   SELF\approval_assignment.role : object_role :=?;
+END_ENTITY;
+
+ENTITY Approving_person_organization
+	(* CONNOTATIONAL *) SUBTYPE OF (approval_person_organization);
+  approval_date : OPTIONAL date_time_select; 
+  SELF\Approval_person_organization.authorized_approval : Approval_armx;
+  role_x : OPTIONAL STRING;
+  DERIVE
+   SELF\approval_person_organization.role : approval_role :=?;
+END_ENTITY;
+
+END_SCHEMA;  -- Approval_xim
+

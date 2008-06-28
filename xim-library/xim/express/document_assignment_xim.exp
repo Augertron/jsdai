@@ -1,0 +1,81 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+Derived from ISO TC184/SC4/WG12 N1189 - ISO/TS 10303-1122 Document assignment - EXPRESS ARM
+by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+(* Based on ARM *)
+
+SCHEMA Document_assignment_xim;
+
+USE FROM Document_and_version_identification_xim;    -- ISO/TS 10303-1121
+
+USE FROM Document_definition_xim;    -- ISO/TS 10303-1123
+
+USE FROM File_identification_xim;    -- ISO/TS 10303-1127
+
+USE FROM Document_assignment_mim;
+
+USE FROM management_resources_schema(document_reference, document_usage_role);
+
+USE FROM support_resource_schema(label);
+
+USE FROM document_schema(document_usage_constraint);
+
+TYPE assigned_document_select = SELECT 
+  (Document_armx,
+   Document_definition,
+   Document_version,
+   File);
+END_TYPE;
+
+TYPE documented_element_select = EXTENSIBLE SELECT BASED_ON document_reference_item;
+END_TYPE;
+
+ENTITY Document_assignment
+	(* CONNOTATIONAL *) SUBTYPE OF (applied_document_reference);
+  assigned_document_x                                          : assigned_document_select;
+  SELF\applied_document_reference.items RENAMED is_assigned_to : SET[1:1] OF documented_element_select;
+  role_x : STRING;
+DERIVE
+  SELF\document_reference.source : label := ?;
+  SELF\document_reference.assigned_document : document :=?;
+END_ENTITY;
+
+(** Originally Partial_document_assignment is subtype of Document_assignment, but because of mapping we need to do otherwise *)
+ENTITY Partial_document_assignment
+(* CONNOTATIONAL *) SUBTYPE OF (applied_document_usage_constraint_assignment);
+  assigned_document : assigned_document_select;
+  is_assigned_to : documented_element_select;
+  role_x : STRING;
+  document_portion : STRING;
+DERIVE
+  SELF\document_usage_constraint_assignment.assigned_document_usage : document_usage_constraint := ?;
+  SELF\document_usage_constraint_assignment.role : document_usage_role := ?;
+  SELF\applied_document_usage_constraint_assignment.items : SET [1:?] OF document_reference_item := ?;
+END_ENTITY;
+
+END_SCHEMA;
+

@@ -1,0 +1,151 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3885 - ISO/TS 10303-1646 Footprint definition - EXPRESS ARM
+*)
+
+SCHEMA Footprint_definition_arm;
+
+    USE FROM Part_template_2d_shape_arm; -- ISO/TS 10303-1716
+	USE FROM Package_arm;	-- ISO/TS 10303-1707
+	
+	REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
+
+  SUBTYPE_CONSTRAINT structured_template_planar_shape_model_subtypes FOR Structured_template_planar_shape_model;   
+ 	(ONEOF (Breakout_footprint_definition_shape_model, Footprint_definition_shape_model));
+  END_SUBTYPE_CONSTRAINT;  
+
+  SUBTYPE_CONSTRAINT multi_stratum_structured_template_subtypes FOR Multi_stratum_structured_template;   
+ 	(ONEOF (Padstack_definition, Generic_footprint_definition, Multi_stratum_special_symbol_template));
+  END_SUBTYPE_CONSTRAINT;  
+
+  ENTITY Breakout_footprint_definition
+    SUBTYPE OF (Generic_footprint_definition);
+      reference_footprint : Footprint_definition;
+    INVERSE
+      breakout_traces : SET[1:?] OF Stratum_feature_template_location_in_breakout_footprint_definition FOR assembly;
+    WHERE
+      WR1: SELF\Multi_stratum_structured_template.location = reference_footprint\Multi_stratum_structured_template.location;
+  END_ENTITY;
+
+  ENTITY Breakout_footprint_definition_shape_model
+    SUBTYPE OF (Structured_template_planar_shape_model);
+      SELF\Structured_template_planar_shape_model.shape_characterized_definition : SET[1:1] OF Breakout_footprint_definition;
+      reference_shape : Footprint_definition_shape_model;
+    WHERE
+      WR1 : reference_shape.shape_characterized_definition[1] :=: shape_characterized_definition[1].reference_footprint;
+  END_ENTITY;
+
+  ENTITY Footprint_definition
+    SUBTYPE OF (Generic_footprint_definition);
+      reference_package : OPTIONAL Part_usage_view;
+    WHERE
+      WR1 : SIZEOF (QUERY(shape <* SELF\Structured_template.shapes |
+               NOT ('PART_TEMPLATE_2D_SHAPE_ARM.FOOTPRINT_DEFINITION_SHAPE_MODEL' IN TYPEOF(shape))
+              )) = 0;
+      WR2 : SIZEOF (QUERY(tlist <* SELF\Structured_template.templates |
+               ('FOOTPRINT_DEFINITION_ARM.FOOTPRINT_DEFINITION' IN TYPEOF(tlist.template))
+              )) = 0;
+  END_ENTITY;
+
+  ENTITY Footprint_definition_shape_model
+    SUBTYPE OF (Structured_template_planar_shape_model);
+      SELF\Structured_template_planar_shape_model.shape_characterized_definition : SET[1:1] OF Footprint_definition;
+      reference_shape : OPTIONAL physical_unit_shape_model_select;
+    WHERE
+      WR1 : NOT (SIZEOF(['PHYSICAL_UNIT_3D_SHAPE_ARM.PHYSICAL_UNIT_3D_SHAPE_MODEL',
+                         'PHYSICAL_UNIT_2D_SHAPE_ARM.PHYSICAL_UNIT_PLANAR_SHAPE_MODEL'] * TYPEOF(reference_shape)) = 1) OR 
+            NOT ('PHYSICAL_UNIT_USAGE_VIEW_ARM.PART_USAGE_VIEW' IN TYPEOF(reference_shape\Physical_unit_shape_model.shape_characterized_definition)) OR
+            NOT ('PART_TEMPLATE_2D_SHAPE_ARM.FOOTPRINT_DEFINITION' IN TYPEOF(shape_characterized_definition[1])) OR      
+                 (shape_characterized_definition[1]\Footprint_definition.reference_package :=: 
+                  reference_shape\Physical_unit_shape_model.shape_characterized_definition);
+
+      WR2 : NOT (SIZEOF(['PHYSICAL_UNIT_3D_SHAPE_ARM.PHYSICAL_UNIT_3D_SHAPE_MODEL',
+                         'PHYSICAL_UNIT_2D_SHAPE_ARM.PHYSICAL_UNIT_PLANAR_SHAPE_MODEL'] * TYPEOF(reference_shape)) = 1) OR 
+                ('PHYSICAL_UNIT_USAGE_VIEW_ARM.PART_USAGE_VIEW' IN TYPEOF(reference_shape\Physical_unit_shape_model.shape_characterized_definition));
+
+      WR3 : NOT (SIZEOF(['PART_TEMPLATE_3D_SHAPE_ARM.PART_TEMPLATE_3D_SHAPE_MODEL'] * TYPEOF(reference_shape)) = 1) OR 
+                ('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.PRINTED_PART_TEMPLATE' 
+                   IN TYPEOF(reference_shape\Part_template_shape_model.shape_characterized_definition));
+      WR4 : NOT EXISTS(SELF\Representation.description);
+  END_ENTITY;
+
+  ENTITY Generic_footprint_definition
+    ABSTRACT SUPERTYPE OF (ONEOF (Footprint_definition, Breakout_footprint_definition))
+    SUBTYPE OF (Multi_stratum_structured_template);
+    DERIVE 
+      SELF\Multi_stratum_structured_template.location : template_arrangement := get_template_arrangement(padstacks);
+      padstacks : SET[1:?] OF Template_location_in_structured_template := bag_to_set(QUERY(tlict <* SELF\Structured_template.templates |
+         ('PART_TEMPLATE_2D_SHAPE_ARM.PADSTACK_DEFINITION' IN TYPEOF(tlict.template))));
+    WHERE
+      WR1 : SIZEOF(QUERY(ps <* templates | (ps.template\Multi_stratum_structured_template.location <> location)
+              AND (ps.template\Multi_stratum_structured_template.location <> template_arrangement.symmetrical))) = 0;
+      WR2 : ((location = template_arrangement.top) AND (SELF\Product_view_definition.initial_context\View_definition_context.description = 'top')) OR 
+            (NOT (location = template_arrangement.top) AND NOT (SELF\Product_view_definition.initial_context\View_definition_context.description = 'top'));
+      WR3 : ((location = template_arrangement.bottom) AND (SELF\Product_view_definition.initial_context\View_definition_context.description = 'bottom')) OR 
+            (NOT (location = template_arrangement.bottom) AND NOT (SELF\Product_view_definition.initial_context\View_definition_context.description = 'bottom'));
+      WR4 : ((location = template_arrangement.symmetrical) AND (SELF\Product_view_definition.initial_context\View_definition_context.description = 'symmetrical')) OR 
+            (NOT (location = template_arrangement.symmetrical) AND NOT (SELF\Product_view_definition.initial_context\View_definition_context.description = 'symmetrical'));
+  END_ENTITY;
+
+  ENTITY Part_feature_based_template_location
+    SUBTYPE OF (Template_location_in_structured_template);
+      reference_feature : Part_feature;
+    DERIVE
+      all_reference_feature : SET [1:?] OF Part_feature := bag_to_set(USEDIN
+      (SELF\Template_location_in_structured_template.assembly,
+      'PART_TEMPLATE_2D_SHAPE_ARM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.ASSEMBLY')); 
+      SELF\Template_location_in_structured_template.reference_designation :
+        STRING := reference_feature\Shape_element.element_name;      
+    WHERE
+      WR1: SIZEOF(QUERY( arf <* all_reference_feature | NOT(reference_feature.associated_definition :=: arf.associated_definition))) = 0;
+  END_ENTITY;
+
+  ENTITY Stratum_feature_template_location_in_breakout_footprint_definition
+    SUBTYPE OF (Stratum_specific_template_location);
+      SELF\Template_location_in_structured_template.assembly : Breakout_footprint_definition;
+      SELF\Template_location_in_structured_template.template : Stratum_feature_template;
+      original_padstack : Part_feature_based_template_location;
+      breakout_padstack : Template_location_in_structured_template;
+    WHERE
+    -- original_padstack must belong to Footprint_definition
+      WR1: original_padstack.assembly :=: assembly.reference_footprint;
+    -- breakout_padstack must belong to Breakout_footprint_definition
+      WR2: breakout_padstack.assembly :=: assembly;
+  END_ENTITY;
+
+  FUNCTION get_template_arrangement(
+    input : SET OF Template_location_in_structured_template
+  ) : template_arrangement;
+
+    LOCAL
+      tlist : SET OF Template_location_in_structured_template := 
+        (QUERY(inx <* input | ('PART_TEMPLATE_2D_SHAPE_ARM.MULTI_STRATUM_STRUCTURED_TEMPLATE' IN TYPEOF(inx.template))));
+      pabt : BAG OF STRING := [];
+      pabb : BAG OF STRING := [];
+      pabs : BAG OF STRING := [];
+    END_LOCAL;
+
+    REPEAT i := 1 TO SIZEOF(tlist) BY 1;
+      IF (tlist[i].template\Multi_stratum_structured_template.location = template_arrangement.top) THEN
+        pabt := pabt + 'top';
+      END_IF;
+      IF (tlist[i].template\Multi_stratum_structured_template.location = template_arrangement.bottom) THEN
+        pabb := pabb + 'bottom';
+      END_IF;
+      IF (tlist[i].template\Multi_stratum_structured_template.location = template_arrangement.symmetrical) THEN
+        pabs := pabs + 'symmetrical';
+      END_IF;
+    END_REPEAT;
+    IF ((SIZEOF(pabt) > 0) AND (SIZEOF(pabb) = 0)) THEN
+      RETURN(template_arrangement.top);
+    END_IF;
+    IF ((SIZEOF(pabb) > 0) AND (SIZEOF(pabt) = 0)) THEN
+      RETURN(template_arrangement.bottom);
+    END_IF;
+    IF ((SIZEOF(pabb) = 0) AND (SIZEOF(pabt) = 0) AND (SIZEOF(pabs) > 0)) THEN
+      RETURN(template_arrangement.symmetrical);
+    END_IF;
+    RETURN(?);
+  END_FUNCTION;
+
+END_SCHEMA;

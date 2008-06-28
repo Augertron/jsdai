@@ -1,0 +1,62 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3715 - ISO/WD 10303-1445 Information packet - EXPRESS ARM
+*) 
+SCHEMA Information_packet_arm;
+  USE FROM Date_time_assignment_arm;
+  USE FROM Person_organization_assignment_arm;
+  USE FROM Product_identification_arm;
+  USE FROM Product_view_definition_relationship_arm;
+  
+  TYPE information_packet_element = EXTENSIBLE GENERIC_ENTITY SELECT;
+  END_TYPE;
+
+  TYPE information_packet_item = EXTENSIBLE GENERIC_ENTITY SELECT;
+  END_TYPE;
+
+  TYPE information_packet_select = EXTENSIBLE GENERIC_ENTITY SELECT;
+  END_TYPE;
+
+  ENTITY Information_packet
+    SUBTYPE OF (Product);
+  END_ENTITY;
+
+  ENTITY Information_packet_version
+    SUBTYPE OF (Product_version);
+    SELF\Product_version.of_product : Information_packet;
+  END_ENTITY;
+
+  ENTITY Information_packet_definition
+   SUBTYPE OF (Product_view_definition);
+    status : STRING;
+    purpose : STRING;
+    role : OPTIONAL STRING;
+    SELF\Product_view_definition.defined_version : Information_packet_version;
+    contains : SET [0:?] OF information_packet_element;
+    used_by : SET [0:?] OF information_packet_item;
+   DERIVE
+  		released_by: SET[0:?] OF Organization_or_person_in_organization_assignment :=
+         QUERY(temp <* USEDIN(SELF,'PERSON_ORGANIZATION_ASSIGNMENT_ARM.'+
+         'ORGANIZATION_OR_PERSON_IN_ORGANIZATION_ASSIGNMENT.ITEMS') |
+                         (temp.role = 'released by') );
+  		release_date: SET[0:?] OF Date_or_date_time_assignment :=
+         QUERY(temp <* USEDIN(SELF,'DATE_TIME_ASSIGNMENT_ARM.'+
+         'DATE_OR_DATE_TIME_ASSIGNMENT.ITEMS') |
+                         (temp.role = 'release date') );
+	WHERE
+   	 WR1 : NOT EXISTS (released_by) OR (SIZEOF(released_by) = 0);
+   	 WR2 : NOT EXISTS (release_date) OR (SIZEOF(release_date) = 0);
+  END_ENTITY;
+
+  ENTITY Information_packet_definition_relationship
+   SUBTYPE OF (View_definition_relationship);
+    SELF\View_definition_relationship.relation_type : STRING;
+    SELF\View_definition_relationship.relating_view : Information_packet_definition;
+    SELF\View_definition_relationship.related_view  : Information_packet_definition;
+  END_ENTITY;
+
+  ENTITY Information_packet_aggregate;
+    composed_of : SET [0:?] OF information_packet_select;
+  END_ENTITY;
+END_SCHEMA;
+

@@ -1,0 +1,232 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Part template extension - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+
+SCHEMA Part_template_extension_xim;
+
+    USE FROM Layered_2d_shape_xim;	-- ISO/TS 10303-1693
+    USE FROM Fill_area_style_xim; -- ISO/TS 10303-1672
+	USE FROM Fabrication_technology_xim;	-- ISO/TS 10303-1670
+	USE FROM Text_representation_xim;	-- ISO/TS 10303-1750
+
+USE FROM Part_template_extension_mim;
+
+	SUBTYPE_CONSTRAINT inter_stratum_feature_template_subtypes FOR Inter_stratum_feature_template_armx;         
+	    (ONEOF (Component_termination_passage_template_armx,
+		 Via_template_armx,
+		 Unsupported_passage_template_armx,
+		 Inter_stratum_feature_edge_segment_template_armx,
+		 Inter_stratum_feature_edge_template_armx));
+	END_SUBTYPE_CONSTRAINT;        
+
+ SUBTYPE_CONSTRAINT pte_template_definition_subtypes FOR Template_definition;   
+ 	(ONEOF (Parametric_template_armx,
+ 	Part_string_template_armx,
+    Part_text_template_armx));
+ END_SUBTYPE_CONSTRAINT;  
+
+  TYPE extend_or_chord_2_extend_or_truncate_or_round = ENUMERATION OF
+    (truncate,
+     chord_2_extend,
+     round,
+     extend);
+  END_TYPE;
+
+  TYPE extend_or_truncate = ENUMERATION OF
+    (truncate,
+     extend);
+  END_TYPE;
+
+  TYPE square_or_round = ENUMERATION OF
+    (square,
+     round);
+  END_TYPE;
+
+  ENTITY Default_trace_template_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Trace_template_armx, default_trace_template);
+      of_stratum_technology : Stratum_technology_armx;
+  END_ENTITY;
+
+  ENTITY Inter_stratum_feature_edge_segment_template_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Inter_stratum_feature_template_armx, inter_stratum_feature_edge_segment_template);
+      composed_edge  																														: Inter_stratum_feature_edge_template_armx;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED start_vertex	: Edge_segment_vertex_armx;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED end_vertex		: Edge_segment_vertex_armx;
+      reference_path 																														: Trimmed_curve;
+    WHERE
+      WR1 : EXISTS(reference_path.start_point) AND EXISTS(reference_path.end_point);      
+      WR2 : start_vertex :<>: end_vertex;
+  END_ENTITY;
+
+  ENTITY Inter_stratum_feature_edge_template_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Inter_stratum_feature_template_armx, inter_stratum_feature_edge_template);
+    INVERSE
+      edges : SET[2:?] OF inter_stratum_feature_edge_segment_template_armx FOR composed_edge;
+  END_ENTITY;
+
+  ENTITY Part_string_template_armx
+    SUBTYPE OF (Template_definition, part_string_template);
+      string_alignment : text_alignment_armx;
+  END_ENTITY;
+
+  ENTITY Part_text_template_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Template_definition, part_text_template);
+    	of_character                            : Character_glyph_symbol;
+  END_ENTITY;
+
+  ENTITY Planar_path_shape_model_with_parameters
+    SUBTYPE OF (planar_path_shape_representation_with_parameters);
+    DERIVE
+      centreline : curve := ?;
+      parameters : Curve_style_parameters := ?;
+    WHERE
+      WR1: SIZEOF(QUERY(it <* SELF\Representation.items |
+      ('GEOMETRY_SCHEMA.AXIS2_PLACEMENT_2D' IN TYPEOF(it))
+                )) = 1;
+      WR2: SIZEOF(QUERY(it <* SELF\Representation.items |   
+      ('GEOMETRY_SCHEMA.AXIS2_PLACEMENT_2D' IN TYPEOF(it)) AND
+      NOT
+      ((it\Placement.location\Cartesian_point.coordinates[1] = 0.0) AND
+      (it\Placement.location\Cartesian_point.coordinates[2] = 0.0) AND
+      (it.ref_direction\Direction.coordinates[1] = 1.0) AND
+      (it.ref_direction\Direction.coordinates[2] = 0.0))
+                )) = 0;                
+  END_ENTITY;
+
+  ENTITY Planar_closed_path_shape_model_with_parameters
+    SUBTYPE OF (Planar_path_shape_model_with_parameters);
+    DERIVE
+      SELF\Planar_path_shape_model_with_parameters.centreline : closed_curve := ?;
+      SELF\Planar_path_shape_model_with_parameters.parameters : Closed_curve_style_parameters_armx := ?;
+  END_ENTITY;
+
+(* Available only in XIMS, for easier handling *)
+  ENTITY path_area_with_parameters_armx
+    SUBTYPE OF (path_area_with_parameters);
+      SELF\mapped_item.mapping_target RENAMED centreline : curve;
+      parameters : Curve_style_parameters;
+    DERIVE
+      SELF\mapped_item.mapping_source : representation_map := ?;
+  END_ENTITY; 
+
+  ENTITY Snowball_template_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Teardrop_template_armx, snowball_template);
+      snowball_start_distance     : length_measure_with_unit;
+      snowball_end_distance       : OPTIONAL length_measure_with_unit;
+      snowball_initial_spacing    : OPTIONAL length_measure_with_unit;
+      snowball_end_spacing        : OPTIONAL length_measure_with_unit;
+      snowball_initial_radius     : length_measure_with_unit;
+      snowball_end_radius         : OPTIONAL length_measure_with_unit;
+      snowball_quantity_per_trace : INTEGER; -- positive_integer;
+    WHERE
+      WR1 : NOT (snowball_quantity_per_trace > 1) OR (EXISTS(snowball_initial_spacing) AND EXISTS(snowball_end_spacing) AND EXISTS(snowball_end_distance) AND EXISTS(snowball_end_radius));
+      WR2 : (SIZEOF(USEDIN(SELF,'PART_TEMPLATE_2D_SHAPE_XIM.PART_TEMPLATE_PLANAR_SHAPE_MODEL.' + 'SHAPE_CHARACTERIZED_DEFINITION')) = 0) AND 
+            (SIZEOF(USEDIN(SELF,'PART_TEMPLATE_3D_SHAPE_XIM.PART_TEMPLATE_3D_SHAPE_MODEL.' + 'SHAPE_CHARACTERIZED_DEFINITION')) = 0) AND 
+            (SIZEOF(USEDIN(SELF,'PART_TEMPLATE_NON_PLANAR_SHAPE_XIM.' + 'PART_TEMPLATE_NON_PLANAR_2D_SHAPE_MODEL.' + 'SHAPE_CHARACTERIZED_DEFINITION')) = 0);
+  END_ENTITY;
+
+  ENTITY Teardrop_by_angle_template_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Teardrop_template_armx, teardrop_by_angle_template);
+      teardrop_angle : plane_angle_measure_with_unit;
+    WHERE
+      WR1 : (SIZEOF(USEDIN(SELF,'PART_TEMPLATE_2D_SHAPE_XIM.PART_TEMPLATE_PLANAR_SHAPE_MODEL.' + 'SHAPE_CHARACTERIZED_DEFINITION')) = 0) AND 
+            (SIZEOF(USEDIN(SELF,'PART_TEMPLATE_3D_SHAPE_XIM.PART_TEMPLATE_3D_SHAPE_MODEL.' + 'SHAPE_CHARACTERIZED_DEFINITION')) = 0) AND 
+            (SIZEOF(USEDIN(SELF,'PART_TEMPLATE_NON_PLANAR_SHAPE_XIM.' + 'PART_TEMPLATE_NON_PLANAR_2D_SHAPE_MODEL.' + 'SHAPE_CHARACTERIZED_DEFINITION')) = 0);
+  END_ENTITY;
+
+  ENTITY Teardrop_by_length_template_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Teardrop_template_armx, teardrop_by_length_template);
+      teardrop_taper_start_distance : length_measure_with_unit;
+      teardrop_taper_end_distance   : length_measure_with_unit;
+    WHERE
+      WR1 : (SIZEOF(USEDIN(SELF,'PART_TEMPLATE_2D_SHAPE_XIM.PART_TEMPLATE_PLANAR_SHAPE_MODEL.' + 'SHAPE_CHARACTERIZED_DEFINITION')) = 0) AND 
+            (SIZEOF(USEDIN(SELF,'PART_TEMPLATE_3D_SHAPE_XIM.PART_TEMPLATE_3D_SHAPE_MODEL.' + 'SHAPE_CHARACTERIZED_DEFINITION')) = 0) AND 
+            (SIZEOF(USEDIN(SELF,'PART_TEMPLATE_NON_PLANAR_SHAPE_XIM.' + 'PART_TEMPLATE_NON_PLANAR_2D_SHAPE_MODEL.' + 'SHAPE_CHARACTERIZED_DEFINITION')) = 0);
+  END_ENTITY;
+
+  ENTITY Teardrop_template_armx
+    SUPERTYPE OF (ONEOF (Snowball_template_armx,
+      Teardrop_by_angle_template_armx,
+      Teardrop_by_length_template_armx))
+    SUBTYPE OF (Parametric_template_armx, Single_stratum_template_armx, teardrop_template);
+   WHERE
+      WR1 : (SIZEOF(['PART_TEMPLATE_EXTENSION_XIM.SNOWBALL_TEMPLATE_ARMX',
+            'PART_TEMPLATE_EXTENSION_XIM.TEARDROP_BY_ANGLE_TEMPLATE_ARMX',
+            'PART_TEMPLATE_EXTENSION_XIM.TEARDROP_BY_LENGTH_TEMPLATE_ARMX'] * TYPEOF(SELF)) = 1) XOR
+            ('PRODUCT_IDENTIFICATION_EXTENSION_XIM.EXTERNALLY_DEFINED_VIEW_DEFINITION' IN TYPEOF(SELF));    
+  END_ENTITY;
+  
+  ENTITY Trace_template_armx
+    SUPERTYPE OF (Default_trace_template_armx)
+    (* CONNOTATIONAL *) SUBTYPE OF (Parametric_template_armx, trace_template);
+      trace_style : Curve_style_parameters;
+    DERIVE
+      SELF\Product_view_definition.name_x : STRING := '';
+  END_ENTITY;
+
+  ENTITY Curve_style_parameters
+  	ABSTRACT SUPERTYPE OF(ONEOF(Closed_curve_style_parameters_armx, Curve_style_parameters_with_ends_armx))
+  	(* CONNOTATIONAL *) SUBTYPE OF (curve_style_parameters_representation);
+	  name_x            : STRING;
+      corner_style      : extend_or_chord_2_extend_or_truncate_or_round;
+      curve_width       : length_measure_with_unit;
+      width_uncertainty : Length_measure_with_unit;
+    DERIVE
+      SELF\representation.name : label := ?;
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+    UNIQUE
+      UR1 : name_x;
+  END_ENTITY;
+
+  ENTITY Closed_curve_style_parameters_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Curve_style_parameters, closed_curve_style_parameters);
+  END_ENTITY;
+
+  ENTITY Curve_style_parameters_with_ends_armx
+    SUBTYPE OF (Curve_style_parameters, curve_style_parameters_with_ends);
+      end_extension     : extend_or_truncate;
+      end_style         : square_or_round;
+  END_ENTITY;
+
+  ENTITY Fill_area_template_armx
+   SUBTYPE OF (Parametric_template_armx, fill_area_template);
+    fill_area_style : OPTIONAL fill_area_style_select;
+    outer_boundary_style : Closed_curve_style_parameters_armx;
+    inner_boundary_style : Closed_curve_style_parameters_armx;
+  END_ENTITY;
+
+  ENTITY Parametric_template_armx
+    ABSTRACT SUPERTYPE OF (ONEOF (Fill_area_template_armx,
+      Teardrop_template_armx,
+      Trace_template_armx))
+    SUBTYPE OF (Template_definition, parametric_template);
+  END_ENTITY;
+  
+END_SCHEMA;
+

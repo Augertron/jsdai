@@ -1,0 +1,148 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Layered interconnect module 3d design - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Layered_interconnect_module_3d_design_xim;
+
+USE FROM Physical_unit_3d_design_view_xim;	-- ISO/TS 10303-1727
+USE FROM Stratum_non_planar_shape_xim;
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+
+  TYPE stratum_feature_3d_shape_select = SELECT
+    (Stratum_feature_non_planar_2d_shape_model,
+     Stratum_feature_3d_shape_model);
+  END_TYPE;
+
+  ENTITY Located_3d_inter_stratum_extent
+    SUBTYPE OF (Inter_stratum_extent);
+      location : cartesian_point;
+     direction : direction;
+  END_ENTITY;
+
+  ENTITY Stratum_3d_shape_model
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_representation);
+      shape_characterized_component : Stratum_armx;
+    DERIVE
+      SELF\Representation.name : label := 'stratum 3d shape';
+    WHERE
+      WR1 : NOT ('LAYERED_INTERCONNECT_MODULE_3D_DESIGN_XIM.PLANAR_SHAPE_MODEL' IN TYPEOF(SELF));
+      WR2 : SIZEOF(USEDIN(SELF, 'SHAPE_PROPERTY_ASSIGNMENT_XIM.SHAPE_DESCRIPTION_ASSOCIATION.REPRESENTATION'))=0;        
+  END_ENTITY;
+
+  ENTITY Stratum_feature_3d_shape_model
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_representation);
+      shape_characterized_component : Stratum_feature_armx;
+    DERIVE
+     SELF\Representation.name : label := '3d bound volume shape';
+    WHERE
+     WR1 : SIZEOF(USEDIN(SELF, 'SHAPE_PROPERTY_ASSIGNMENT_XIM.SHAPE_DESCRIPTION_ASSOCIATION.REPRESENTATION'))=0;         
+  END_ENTITY;
+
+  ENTITY Stratum_interconnect_module_3d_position
+  	(* CONNOTATIONAL *) SUBTYPE OF (mapped_item);
+      stratum_component																				: Interconnect_module_stratum_assembly_relationship;
+      stratum_shape             															: Stratum_3d_shape_model;
+      interconnect_module_shape 															: Physical_unit_3d_shape_model;
+      SELF\mapped_item.mapping_target RENAMED transformation	: axis2_placement_3d;
+   DERIVE
+     SELF\mapped_item.mapping_source : representation_map := ?;
+     SELF\representation_item.name : label := ?;
+   UNIQUE
+   	UR1 : stratum_component;
+  END_ENTITY;
+
+RULE no_component_assembly_3d_location_for_area_component FOR (Area_component_armx);
+WHERE
+  WR1:  SIZEOF(QUERY( ac <* Area_component_armx | NOT(
+       (SIZEOF(USEDIN(ac,'PHYSICAL_UNIT_3D_DESIGN_VIEW_XIM.ASSEMBLY_COMPONENT_3D_SHAPE_MODEL.SHAPE_CHARACTERIZED_COMPONENT')) = 0) OR
+       (no_3d_location_for_component(ac))) 
+  )) = 0;
+END_RULE;  
+
+RULE component_in_assembly_3d_context FOR (Area_component_armx);
+WHERE
+  WR1:  SIZEOF(QUERY( ac <* Area_component_armx | NOT(
+       (SIZEOF(USEDIN(ac,'PHYSICAL_UNIT_3D_DESIGN_VIEW_XIM.ASSEMBLY_COMPONENT_3D_SHAPE_MODEL.SHAPE_CHARACTERIZED_COMPONENT')) = 0) OR 
+        (in_3d_assembly_context(ac)))
+          )) = 0;
+END_RULE;  
+
+FUNCTION in_3d_assembly_context(comp : Assembly_component_armx) : LOGICAL;
+  LOCAL
+    shapes : SET OF Assembly_component_3d_shape_model := [];
+    shapes_in_context : SET OF Physical_unit_3d_shape_model := [];
+    assemblies : SET OF Product_view_definition := [];
+    i, j : INTEGER := 0;
+    in_context : LOGICAL := TRUE;
+  END_LOCAL;
+  
+  REPEAT i := 1 TO SIZEOF(comp.occurrence_contexts);
+    assemblies := assemblies + comp.occurrence_contexts[i].relating_view;
+  END_REPEAT;
+
+  shapes := bag_to_set(USEDIN(comp,'PHYSICAL_UNIT_3D_DESIGN_VIEW_XIM.ASSEMBLY_COMPONENT_3D_SHAPE_MODEL.SHAPE_CHARACTERIZED_COMPONENT'));
+  REPEAT i := 1 TO SIZEOF(shapes);
+    shapes_in_context := bag_to_set(USEDIN(shapes[i]\Shape_representation.context_of_items,'ELEMENTAL_GEOMETRIC_SHAPE_XIM.SHAPE_REPRESENTATION.CONTEXT_OF_ITEMS'));
+    in_context := FALSE;
+    j := 1;
+    REPEAT WHILE ((j <= SIZEOF(shapes_in_context)) AND (NOT (in_context)));
+      in_context := (shapes_in_context[j].shape_characterized_definition IN assemblies);
+      j := j + 1;
+    END_REPEAT;
+    
+    IF NOT (in_context) THEN
+      RETURN (FALSE);
+    END_IF;
+  END_REPEAT;
+  
+  RETURN (SIZEOF(shapes) > 0);
+END_FUNCTION;
+
+FUNCTION no_3d_location_for_component(comp : Assembly_component_armx) : BOOLEAN;
+  LOCAL
+    i, j : INTEGER := 0;
+    cis : SET OF Contextual_item_shape := [];
+    loc : SET OF Component_3d_location_armx := [];
+  END_LOCAL;
+  
+  REPEAT i := 1 TO SIZEOF(comp.occurrence_contexts);
+    cis := bag_to_set(USEDIN(comp.occurrence_contexts[i],'SHAPE_PROPERTY_ASSIGNMENT_XIM.CONTEXTUAL_ITEM_SHAPE.DESCRIBED_ELEMENT'));
+    REPEAT j := 1 TO SIZEOF(cis);
+      loc := bag_to_set(USEDIN(cis[j],'CONTEXTUAL_SHAPE_POSITIONING_XIM.CONTEXTUAL_SHAPE_REPRESENTATION.CONTEXTUAL_SHAPE'));
+      IF (SIZEOF(loc) > 0) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+  END_REPEAT;
+
+  RETURN (TRUE);
+END_FUNCTION;
+
+END_SCHEMA;
+
+

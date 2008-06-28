@@ -1,0 +1,99 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+Derived from ISO TC184/SC4/WG12 N2693 - ISO/TS 10303-1132 Associative text - EXPRESS ARM
+by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+
+SCHEMA Associative_text_xim;
+
+USE FROM Appearance_assignment_xim;    -- ISO/TS 10303-1001
+
+USE FROM Construction_geometry_xim;    -- ISO/TS 10303-1131
+
+USE FROM Elemental_geometric_shape_xim;    -- ISO/TS 10303-1004
+
+USE FROM Shape_property_assignment_xim;    -- ISO/TS 10303-1032
+
+USE FROM Text_appearance_xim;    -- ISO/TS 10303-1136
+
+USE FROM presentation_appearance_schema(styled_item);
+
+USE FROM draughting_element_schema(
+	leader_curve,
+	draughting_callout_element);
+
+USE FROM associative_text_mim;
+
+USE FROM aic_draughting_elements(draughting_elements);
+
+(*
+TYPE text_or_composite_text = SELECT
+   (composite_text, 
+    text_literal);
+END_TYPE; 
+
+ENTITY Annotation_curve
+  ABSTRACT SUPERTYPE 
+  SUBTYPE OF (Annotation_element, annotation_curve_occurrence);
+  annotation_curve_type : OPTIONAL STRING;
+END_ENTITY;
+
+ENTITY Annotation_element
+  ABSTRACT SUPERTYPE 
+  SUBTYPE OF (geometric_representation_item, Styled_element, draughting_annotation_occurrence);
+END_ENTITY;
+
+ENTITY Item_text_association
+	SUBTYPE OF (draughting_elements);
+  target_geometry : geometric_representation_item;
+  target_item : Shape_element;
+  text_occurrence : Text_armx;
+  -- Overlaps with text_occurrence 
+  DERIVE
+   SELF\draughting_callout.contents : SET [1:?] OF draughting_callout_element := ?;
+   SELF\representation_item.name : label := ?; 
+END_ENTITY;
+
+ENTITY Leader
+  SUBTYPE OF (Annotation_curve, leader_curve);
+  SELF\styled_item.item RENAMED curve : Curve;
+END_ENTITY;
+
+ENTITY Text_armx
+  SUBTYPE OF (Annotation_element, annotation_text_occurrence);
+  SELF\styled_item.item RENAMED text : text_or_composite_text;
+END_ENTITY;
+
+-- SEDS on this
+ENTITY Text_with_leader
+  SUBTYPE OF (Text_armx, draughting_elements);
+  leader : Leader;
+  -- Overlaps with leader
+  DERIVE
+   SELF\draughting_callout.contents : SET [1:?] OF draughting_callout_element := ?;
+END_ENTITY;
+*)
+END_SCHEMA;  -- Associative_text_arm

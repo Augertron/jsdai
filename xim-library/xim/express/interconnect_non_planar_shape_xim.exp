@@ -1,0 +1,61 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Interconnect non planar shape - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Interconnect_non_planar_shape_xim;
+
+    USE FROM Physical_unit_3d_shape_xim;	-- ISO/TS 10303-1727	
+	USE FROM Physical_unit_non_planar_design_view_xim;	-- ISO/TS 10303-1613
+	USE FROM Part_template_2d_shape_xim;	-- ISO/TS 10303-1716
+		
+USE FROM Interconnect_non_planar_shape_mim;
+
+  ENTITY Component_non_planar_location
+  	(* CONNOTATIONAL *) SUBTYPE OF (item_defined_transformation);
+      SELF\item_defined_transformation.transform_item_1 RENAMED transformation  : axis2_placement_3d;
+      placement_fixed 			: BOOLEAN;
+    -- Add attributes from original component_non_planar_position as discussed on SEDS-1227
+      component_model 																													: Assembly_component_non_planar_shape_model;
+      assembly_model  																													: Physical_unit_3d_shape_model;
+      component       																													: next_assembly_usage_occurrence;
+     (* Overlaps with placement_fixed *) 
+     DERIVE
+       SELF\item_defined_transformation.description: text := ?;
+       SELF\item_defined_transformation.transform_item_2 : representation_item := ?;
+       SELF\item_defined_transformation.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Component_part_2d_non_planar_geometric_representation_relationship_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (component_part_2d_non_planar_geometric_representation_relationship);
+    	SELF\representation_relationship.rep_1 RENAMED part_shape      : Part_template_planar_shape_model;
+      SELF\representation_relationship.rep_2 RENAMED component_shape : Assembly_component_non_planar_shape_model;
+    DERIVE
+      SELF\Representation_relationship.name : label := 'component part non planar shape';
+  END_ENTITY;
+
+END_SCHEMA;
+

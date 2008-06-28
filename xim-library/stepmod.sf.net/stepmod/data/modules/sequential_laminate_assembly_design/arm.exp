@@ -1,0 +1,108 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4170 - ISO/TS 10303-1741 Sequential laminate assembly design - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3594
+*)
+
+SCHEMA Sequential_laminate_assembly_design_arm;
+
+USE FROM Layered_interconnect_module_design_arm;	-- ISO/TS 10303-1698
+
+  TYPE slad_groupable_item = SELECT BASED_ON groupable_item WITH 
+	(Group_relationship,
+	Interconnect_module_stratum_assembly_relationship);
+  END_TYPE; 
+	
+  TYPE slad_material_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON material_item_select WITH 
+    (Definition_based_part_occurrence);
+  END_TYPE;
+  
+  TYPE slad_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
+     (Derived_laminate_assignment,
+     Sequential_laminate_assembly_relationship);
+  END_TYPE; 
+
+  TYPE stack_or_sub_stack = SELECT
+     (Design_stack_model, 
+     Stratum_sub_stack);
+  END_TYPE; 
+
+  TYPE stratum_assembly_relationship_or_stratum_technology_occurrence = SELECT
+     (Interconnect_module_stratum_assembly_relationship,
+     Stratum_technology_occurrence);
+  END_TYPE; 
+
+  ENTITY Adjacent_stratum_surface_embedded_sequential_laminate_surface_definition
+    SUBTYPE OF(Adjacent_stratum_surface_embedded_physical_component_surface_definition);
+    WHERE
+      WR1 : NOT ('COMPONENT_FEATURE_ARM.COMPONENT_FEATURE' IN TYPEOF(precedent_item)) OR 
+                ('INTERCONNECT_MODULE_USAGE_VIEW_ARM.INTERCONNECT_MODULE_SECONDARY_SURFACE' IN TYPEOF(precedent_item.definition));
+      WR2 : NOT ('COMPONENT_FEATURE_ARM.COMPONENT_FEATURE' IN TYPEOF(subsequent_item)) OR 
+                ('INTERCONNECT_MODULE_USAGE_VIEW_ARM.INTERCONNECT_MODULE_PRIMARY_SURFACE' IN TYPEOF(subsequent_item.definition));
+  END_ENTITY;
+  
+  ENTITY Derived_laminate_assignment;
+    oem_requirement     : stratum_assembly_relationship_or_stratum_technology_occurrence;
+    solution_definition : Sequential_laminate_assembly_relationship;
+  END_ENTITY;
+
+  ENTITY Interconnect_module_component_stratum_based_terminal
+    SUBTYPE OF (Interconnect_module_component_terminal);
+      SELF\Component_feature.definition : Interconnect_module_stratum_based_terminal;
+  END_ENTITY;
+
+  ENTITY Interconnect_module_product_assembly_view_fabrication_joint;
+      joined_terminal : SET[1:?] OF Interconnect_module_component_stratum_based_terminal;
+  END_ENTITY;
+
+  ENTITY Interconnect_module_stratum_based_terminal
+    SUBTYPE OF (Interconnect_module_terminal);
+    WHERE
+      WR1 : SIZEOF(QUERY(imtscr <* USEDIN(SELF,
+                        'INTERCONNECT_MODULE_USAGE_VIEW_ARM.' + 
+                        'INTERCONNECT_MODULE_TERMINAL_SURFACE_CONSTITUENT_RELATIONSHIP.' + 
+                        'RELATED') | 
+                        NOT (SIZEOF(['INTERCONNECT_MODULE_USAGE_VIEW_ARM.' + 
+                            'INTERCONNECT_MODULE_PRIMARY_SURFACE',
+                            'INTERCONNECT_MODULE_USAGE_VIEW_ARM.' + 
+                            'INTERCONNECT_MODULE_SECONDARY_SURFACE'] * TYPEOF(imtscr.relating)) = 1))) = 0;
+      WR2 : SIZEOF(USEDIN(SELF,
+                         'INTERCONNECT_MODULE_USAGE_VIEW_ARM.' + 
+                         'INTERCONNECT_MODULE_TERMINAL_SURFACE_CONSTITUENT_RELATIONSHIP.' + 'RELATED')) = 1;
+      WR3 : SIZEOF(QUERY(sct <* USEDIN(SELF,
+          'DESIGN_SPECIFIC_ASSIGNMENT_TO_INTERCONNECT_USAGE_VIEW_ARM.' +
+          'STRATUM_CONCEPT_TO_PHYSICAL_USAGE_VIEW_ASSIGNMENT.DEFINED_PART_FEATURE') |
+          'LAND_ARM.LAND' IN TYPEOF(sct.assigned_design_object)
+             )) = 1;
+  END_ENTITY;
+
+  ENTITY Sequential_laminate_assembly_relationship
+    SUBTYPE OF(Assembled_part_association);
+      SELF\Product_occurrence_definition_relationship.relating_view RENAMED assembly : Sequential_laminate_stackup_definition;
+      SELF\Product_occurrence_definition_relationship.related_view RENAMED component : Sequential_laminate_stackup_component;
+    WHERE
+      WR1: related_view\Definition_based_product_occurrence.derived_from <> relating_view;
+  END_ENTITY;
+
+  ENTITY Sequential_laminate_stackup_component 
+    SUBTYPE OF(Physical_component, Single_instance);
+    WHERE  
+      WR1 : NOT EXISTS(SELF\Product_view_definition.name);
+      WR2 : SIZEOF(USEDIN(SELF\Definition_based_part_occurrence.derived_from, 'PHYSICAL_UNIT_DESIGN_VIEW_ARM.PART_DESIGN_VIEW.USAGE_VIEW')) > 0;
+  END_ENTITY;
+
+  ENTITY Sequential_laminate_stackup_definition 
+    SUBTYPE of (Assembly_definition);
+      associated_stratum_stack : stack_or_sub_stack;
+  END_ENTITY;
+
+  ENTITY Stackup_requirement_to_design_relationship  
+    SUBTYPE OF(View_definition_relationship);
+      SELF\View_definition_relationship.relating_view : Interconnect_module;
+      SELF\View_definition_relationship.related_view  : Sequential_laminate_stackup_definition;
+    WHERE  
+      WR1 : NOT EXISTS(SELF\View_definition_relationship.relation_type);             
+  END_ENTITY;
+
+END_SCHEMA;
+

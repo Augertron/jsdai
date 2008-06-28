@@ -1,0 +1,224 @@
+(*
+$Id$
+ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+*) 
+
+SCHEMA basic_attribute_schema; 
+
+REFERENCE FROM action_schema   -- ISO 10303-41
+  (action,
+   action_request_solution); 
+
+REFERENCE FROM application_context_schema   -- ISO 10303-41
+  (application_context); 
+
+REFERENCE FROM approval_schema   -- ISO 10303-41
+  (approval_date_time,
+   approval_role); 
+
+REFERENCE FROM configuration_management_schema   -- ISO 10303-44
+  (configuration_design); 
+
+REFERENCE FROM date_time_schema   -- ISO 10303-41
+  (date_role,
+   date_time_role,
+   time_role); 
+
+REFERENCE FROM effectivity_schema   -- ISO 10303-41
+  (effectivity); 
+
+REFERENCE FROM external_reference_schema   -- ISO 10303-41
+  (external_source); 
+
+REFERENCE FROM group_schema   -- ISO 10303-41
+  (group); 
+
+REFERENCE FROM management_resources_schema   -- ISO 10303-41
+  (action_assignment,
+   action_request_assignment,
+   approval_assignment,
+   certification_assignment,
+   contract_assignment,
+   document_reference,
+   effectivity_assignment,
+   external_referent_assignment,
+   group_assignment,
+   name_assignment,
+   security_classification_assignment); 
+
+REFERENCE FROM measure_schema   -- ISO 10303-41
+  (derived_unit); 
+
+REFERENCE FROM person_organization_schema   -- ISO 10303-41
+  (address,
+   organization_role,
+   organizational_project,
+   person_and_organization,
+   person_and_organization_role,
+   person_role); 
+
+REFERENCE FROM product_definition_schema   -- ISO 10303-41
+  (product_category,
+   product_definition,
+   product_definition_substitute); 
+
+REFERENCE FROM product_property_definition_schema   -- ISO 10303-41
+  (property_definition,
+   shape_aspect,
+   shape_aspect_relationship); 
+
+REFERENCE FROM product_property_representation_schema   -- ISO 10303-41
+  (context_dependent_shape_representation,
+   property_definition_representation); 
+
+REFERENCE FROM representation_schema   -- ISO 10303-43
+  (representation); 
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (identifier,
+   label,
+   text); 
+
+
+TYPE description_attribute_select = SELECT
+   (action_request_solution, 
+    application_context, 
+    approval_role, 
+    configuration_design, 
+    context_dependent_shape_representation, 
+    date_role, 
+    date_time_role, 
+    effectivity, 
+    external_source, 
+    organization_role, 
+    person_and_organization, 
+    person_and_organization_role, 
+    person_role, 
+    property_definition_representation, 
+    representation, 
+    time_role);
+END_TYPE; 
+
+TYPE id_attribute_select = SELECT
+   (action, 
+    address, 
+    application_context, 
+    group, 
+    organizational_project, 
+    product_category, 
+    property_definition, 
+    representation, 
+    shape_aspect, 
+    shape_aspect_relationship);
+END_TYPE; 
+
+TYPE name_attribute_select = SELECT
+   (action_request_solution, 
+    address, 
+    configuration_design, 
+    context_dependent_shape_representation, 
+    derived_unit, 
+    effectivity, 
+    person_and_organization, 
+    product_definition, 
+    product_definition_substitute, 
+    property_definition_representation);
+END_TYPE; 
+
+TYPE role_select = SELECT
+   (action_assignment, 
+    action_request_assignment, 
+    approval_assignment, 
+    approval_date_time, 
+    certification_assignment, 
+    contract_assignment, 
+    document_reference, 
+    effectivity_assignment, 
+    external_referent_assignment, 
+    group_assignment, 
+    name_assignment, 
+    security_classification_assignment);
+END_TYPE; 
+
+ENTITY description_attribute;
+  attribute_value : text;
+  described_item : description_attribute_select;
+END_ENTITY;
+
+ENTITY id_attribute;
+  attribute_value : identifier;
+  identified_item : id_attribute_select;
+END_ENTITY;
+
+ENTITY name_attribute;
+  attribute_value : label;
+  named_item : name_attribute_select;
+END_ENTITY;
+
+ENTITY object_role;
+  name : label;
+  description : OPTIONAL text;
+END_ENTITY;
+
+ENTITY role_association;
+  role : object_role;
+  item_with_role : role_select;
+END_ENTITY;
+
+FUNCTION get_description_value
+ (obj : description_attribute_select) : text; 
+  LOCAL
+    description_bag : BAG OF description_attribute := (USEDIN(obj, 'BASIC_ATTRIBUTE_SCHEMA.' + 'DESCRIPTION_ATTRIBUTE.' + 'DESCRIBED_ITEM'));
+  END_LOCAL;
+
+  IF SIZEOF(description_bag) = 1 THEN
+    RETURN (description_bag[1].attribute_value);
+  ELSE
+    RETURN (?);
+  END_IF;
+END_FUNCTION; 
+
+FUNCTION get_id_value
+ (obj : id_attribute_select) : identifier; 
+LOCAL
+      id_bag : BAG OF id_attribute := (USEDIN(obj, 'BASIC_ATTRIBUTE_SCHEMA.' + 'ID_ATTRIBUTE.' + 'IDENTIFIED_ITEM'));
+END_LOCAL;
+IF SIZEOF(id_bag) = 1 THEN
+      RETURN (id_bag[1].attribute_value);
+ELSE
+      RETURN (?);
+END_IF;
+END_FUNCTION; 
+
+FUNCTION get_name_value
+ (obj : name_attribute_select) : label; 
+  LOCAL
+    name_bag : BAG OF name_attribute := (USEDIN(obj, 'BASIC_ATTRIBUTE_SCHEMA.' + 'NAME_ATTRIBUTE.' + 'NAMED_ITEM'));
+  END_LOCAL;
+
+  IF SIZEOF(name_bag) = 1 THEN
+    RETURN (name_bag[1].attribute_value);
+  ELSE
+    RETURN (?);
+  END_IF;
+END_FUNCTION; 
+
+FUNCTION get_role
+ (obj : role_select) : object_role; 
+  LOCAL
+    role_bag : BAG OF role_association := (USEDIN(obj, 'BASIC_ATTRIBUTE_SCHEMA.' + 'ROLE_ASSOCIATION.' + 'ITEM_WITH_ROLE'));
+  END_LOCAL;
+
+  IF SIZEOF(role_bag) = 1 THEN
+    RETURN (role_bag[1].role);
+  ELSE
+    RETURN (?);
+  END_IF;
+END_FUNCTION; 
+
+END_SCHEMA;  -- basic_attribute_schema
+
+
+
+
+

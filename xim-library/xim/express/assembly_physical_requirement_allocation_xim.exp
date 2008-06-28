@@ -1,0 +1,86 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Assembly physical requirement allocation - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Assembly_physical_requirement_allocation_xim;
+
+USE FROM Assembly_physical_interface_requirement_xim;
+
+USE FROM Assembly_technology_xim;
+
+-- REFERENCE FROM Requirement_decomposition_xim (get_predefined_requirement_view_definition);
+
+USE FROM Discrete_shield_xim;
+
+USE FROM Assembly_physical_requirement_allocation_mim;
+
+ 	TYPE component_or_feature = EXTENSIBLE GENERIC_ENTITY SELECT
+ 		(Assembly_component_armx,
+ 		Assembly_joint_armx,
+ 		Component_feature_armx);
+	END_TYPE;
+
+   ENTITY Assembly_requirement_allocation
+    (* CONNOTATIONAL *) SUBTYPE OF (Requirement_assignment_armx);
+      SELF\Requirement_assignment_armx.assigned_to : component_or_feature;
+  END_ENTITY;
+ 
+  ENTITY Assembly_separation_requirement_allocation
+    (* CONNOTATIONAL *) SUBTYPE OF (Assembly_requirement_allocation);
+      disjoint_assignment : SET[1:?] OF component_or_feature;
+  END_ENTITY;
+
+  ENTITY Electromagnetic_compatibility_requirement_allocation_armx
+    SUBTYPE OF (Assembly_requirement_allocation, electromagnetic_compatibility_requirement_allocation);
+  END_ENTITY;
+
+  ENTITY Interface_component_allocation
+  (* CONNOTATIONAL *) SUBTYPE OF (product_definition_relationship);
+      SELF\product_definition_relationship.related_product_definition RENAMED mating_solution			: Interface_component_armx;
+      SELF\product_definition_relationship.relating_product_definition RENAMED mating_requirement : Mating_connector_usage;
+    DERIVE
+      SELF\product_definition_relationship.id : identifier := ?;
+  END_ENTITY;
+
+ENTITY Assembly_shield_allocation_armx
+    SUBTYPE OF (Requirement_assignment_armx, assembly_shield_allocation);
+      SELF\Requirement_assignment_armx.assigned_to : Physical_shield_armx;
+      SELF\Requirement_assignment_armx.assigned_requirement RENAMED assigned_requirement_property  : Predefined_requirement_view_definition_armx;
+    WHERE
+     WR1 : assigned_requirement_property\Product_view_definition.initial_context\product_definition_context.application_domain = 'electrical';
+END_ENTITY;
+
+  ENTITY Thermal_requirement_allocation_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Assembly_requirement_allocation, thermal_requirement_allocation);
+      SELF\Requirement_assignment_armx.assigned_to : Thermal_component_armx;
+      SELF\Requirement_assignment_armx.assigned_requirement RENAMED assigned_requirement_property  : Predefined_requirement_view_definition_armx;
+    WHERE
+     WR1 : assigned_requirement_property\Product_view_definition.initial_context\product_definition_context.application_domain = 'thermal';
+  END_ENTITY;
+
+END_SCHEMA;
+

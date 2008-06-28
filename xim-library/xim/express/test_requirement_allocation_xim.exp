@@ -1,0 +1,56 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Test requirement allocation - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Test_requirement_allocation_xim;
+
+USE FROM Requirement_decomposition_xim;
+
+USE FROM Functional_assignment_to_part_xim;
+
+USE FROM Functional_usage_view_xim;
+
+USE FROM Requirement_decomposition_mim;
+
+  ENTITY Test_requirement_allocation
+    (* CONNOTATIONAL *) SUBTYPE OF (Requirement_assignment_armx);
+      SELF\Requirement_assignment_armx.assigned_to : product_definition_formation;
+      (** Need a rule to capture particular type for analytical_model_based_test_access *)
+      analytical_model_based_test_access                : OPTIONAL SET[1:?] OF Analytical_model_port_assignment_armx; --part_feature_model_port_assignment;
+      functional_specification_based_test_access        : OPTIONAL SET[1:?] OF Functional_usage_view_to_part_terminal_assignment;
+      SELF\Requirement_assignment_armx.assigned_requirement RENAMED assigned_requirement_property  : Predefined_requirement_view_definition_armx;
+   WHERE
+      WR1 : EXISTS(analytical_model_based_test_access) XOR EXISTS(functional_specification_based_test_access);
+      WR2 : NOT (EXISTS(functional_specification_based_test_access)) OR 
+      (SIZEOF(QUERY(fa <* functional_specification_based_test_access | NOT 
+      (fa.physical_usage_view_terminal\Shape_element.containing_shape.defined_version = SELF\Requirement_assignment_armx.assigned_to))) = 0);
+      WR3 : assigned_requirement_property\Product_view_definition.initial_context\product_definition_context.life_cycle_stage = 'test';
+  END_ENTITY;
+
+END_SCHEMA;  
+
+

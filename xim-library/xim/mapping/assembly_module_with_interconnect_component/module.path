@@ -1,0 +1,344 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping assembly_module_with_interconnect_component(Assembly_module_with_interconnect_component_arm, Assembly_module_with_interconnect_component_mim);*)
+
+entity_mapping Design_view_terminal_component_shape_relationship(Design_view_terminal_component_shape_relationship, representation_relationship_with_transformation);
+
+mapping_constraints;
+{representation_relationship_with_transformation <=
+representation_relationship				
+representation_relationship.name = 'design view terminal component shape relationship'}
+
+end_mapping_constraints;
+
+attribute_mapping associating_component_shape(associating_component_shape, $PATH, Shape_representation);
+representation_relationship_with_transformation <=
+representation_relationship
+representation_relationship.rep_1 ->
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping associated_usage(associated_usage, $PATH, conductive_interconnect_terminal_or_interconnect_component_join_terminal);
+representation_relationship_with_transformation <=
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'associated usage'}
+representation_relationship.rep_2 ->
+{representation =>
+shape_representation}
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect
+
+end_attribute_mapping;
+
+attribute_mapping associated_usage(associated_usage, $PATH, Interconnect_component_interface_terminal);
+representation_relationship_with_transformation <=
+				representation_relationship
+				{representation_relationship
+				representation_relationship.name = 'associated usage'}
+				representation_relationship.rep_2 ->
+				{representation =>
+				shape_representation}
+				representation <-
+				property_definition_representation.used_representation
+				property_definition_representation
+				property_definition_representation.definition ->
+				property_definition
+				property_definition.definition ->
+				characterized_definition
+				characterized_definition = shape_definition
+				shape_definition
+				shape_definition = shape_aspect
+				shape_aspect => component_feature => physical_component_feature => 
+				physical_component_interface_terminal
+				
+end_attribute_mapping;
+
+attribute_mapping associated_usage(associated_usage, $PATH, Interconnect_component_join_terminal);
+representation_relationship_with_transformation <=
+				representation_relationship
+				{representation_relationship
+				representation_relationship.name = 'associated usage'}
+				representation_relationship.rep_2 ->
+				{representation =>
+				shape_representation}
+				representation <-
+				property_definition_representation.used_representation
+				property_definition_representation
+				property_definition_representation.definition ->
+				property_definition
+				property_definition.definition ->
+				characterized_definition
+				characterized_definition = shape_definition
+				shape_definition
+				shape_definition = shape_aspect
+				shape_aspect => component_feature => 
+				component_terminal => 
+				physical_component_terminal
+				
+end_attribute_mapping;
+
+attribute_mapping associated_usage(associated_usage, $PATH, Movable_packaged_component_join_terminal);
+representation_relationship_with_transformation <=
+				representation_relationship
+				{representation_relationship
+				representation_relationship.name = 'associated usage'}
+				representation_relationship.rep_2 ->
+				{representation =>
+				shape_representation}
+				representation <-
+				property_definition_representation.used_representation
+				property_definition_representation
+				property_definition_representation.definition ->
+				property_definition
+				property_definition.definition ->
+				characterized_definition
+				characterized_definition = shape_definition
+				shape_definition
+				shape_definition = shape_aspect
+				shape_aspect => component_feature => 
+				component_terminal => 
+				physical_component_terminal
+				
+end_attribute_mapping;
+
+attribute_mapping associated_terminal_shape_definition(associated_terminal_shape_definition, $PATH, Shape_representation);
+representation_relationship_with_transformation <=
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'associated usage'}
+representation_relationship.rep_2 ->
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping associated_usage_placement(associated_usage_placement, $PATH, axis2_placement);
+representation_relationship_with_transformation
+representation_relationship_with_transformation
+representation_relationship_with_transformation.transformation_operator ->
+transformation
+transformation = item_defined_transformation
+item_defined_transformation.transform_item_1 ->
+representation_item
+representation_item =>
+geometric_representation_item =>
+placement
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_component_interface_terminal(Interconnect_component_interface_terminal, physical_component_interface_terminal);
+
+mapping_constraints;
+physical_component_interface_terminal <=
+physical_component_feature <=
+component_feature <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'interconnect component interface terminal'}
+
+end_mapping_constraints;
+
+attribute_mapping connection(connection, $PATH, Connection_zone_in_design_view);
+physical_component_interface_terminal <=
+physical_component_feature <=
+component_feature <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'terminal connection zone'}
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_component_join_terminal(Interconnect_component_join_terminal, physical_component_terminal);
+
+mapping_constraints;
+physical_component_terminal <=
+component_terminal <=
+component_feature <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'interconnect component join terminal'}
+
+end_mapping_constraints;
+
+attribute_mapping associated_component(associated_component, $PATH, Physical_component_armx);
+physical_component_terminal <=
+component_terminal <=
+component_feature <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+physical_component
+
+end_attribute_mapping;
+
+attribute_mapping connection_area(connection_area, $PATH, Connection_zone_in_design_view);
+physical_component_terminal <=
+component_terminal <=
+component_feature <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'connection area'}
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_module_component_armx(Interconnect_module_component_armx, interconnect_module_component);
+
+mapping_constraints;
+interconnect_module_component <= 
+physical_component <=
+assembly_component <=
+component_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping derived_from(derived_from, $PATH, Interconnect_module_usage_view);
+interconnect_module_component <= 
+physical_component <=
+assembly_component <=
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'definition usage'}
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+physical_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_module_component_surface_feature_armx(Interconnect_module_component_surface_feature_armx, interconnect_module_component_surface_feature);
+
+mapping_constraints;
+interconnect_module_component_surface_feature <=
+physical_component_feature <=				
+component_feature <=				
+shape_aspect
+{shape_aspect.description = 'interconnect module component surface feature'}
+
+end_mapping_constraints;
+
+attribute_mapping definition(definition, $PATH, Interconnect_module_surface_feature);
+interconnect_module_component_surface_feature <=
+physical_component_feature <=				
+component_feature <=				
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'instantiated feature'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+{(shape_aspect.description = 'interconnect module cavity surface')
+(shape_aspect.description = 'interconnect module cutout surface')
+(shape_aspect.description = 'interconnect module cutout segment surface')
+(shape_aspect.description = 'interconnect module edge surface')
+(shape_aspect.description = 'interconnect module edge segment surface')
+(shape_aspect.description = 'interconnect module primary surface')
+(shape_aspect.description = 'interconnect module secondary surface')
+(shape_aspect.description = 'interconnect module surface feature')}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_module_component_terminal(Interconnect_module_component_terminal, physical_component_terminal);
+
+mapping_constraints;
+(physical_component_terminal <=
+component_terminal <=
+component_feature <=				
+shape_aspect
+shape_aspect.description = 'interconnect module component terminal')
+
+end_mapping_constraints;
+
+attribute_mapping associated_component(associated_component, $PATH, Interconnect_module_component_armx);
+physical_component_terminal <=
+component_terminal <=
+component_feature <=					
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+physical_component =>
+interconnect_module_component
+end_attribute_mapping;
+
+attribute_mapping definition(definition, $PATH, Interconnect_module_terminal_armx);
+physical_component_terminal <=
+component_terminal <=
+component_feature <=					
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'instantiated feature'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+{shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape <=
+property_definition
+{property_definition.name = 'interconnect module'}}
+shape_aspect =>
+interconnect_module_terminal
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

@@ -1,0 +1,84 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping specification_based_configuration(Specification_based_configuration_arm, Specification_based_configuration_mim);*)
+
+uof_mapping Specification_based_configuration(Specification_based_configuration);
+
+entity_mapping Configuration(Configuration, configured_effectivity_assignment);
+(* This is removed from XIMs
+attribute_mapping configured_element(configured_element, $PATH, configured_effectivity_item);
+
+	configured_effectivity_assignment.configured_element -> configured_effectivity_item 
+			 	
+end_attribute_mapping;
+*)
+attribute_mapping is_solution_for(is_solution_for, $PATH, Class_condition_association);
+
+	 configured_effectivity_assignment <=
+	 effectivity_assignment <- effectivity_context_assignment.assigned_effectivity_assignment
+	 {effectivity_context_assignment.role -> effectivity_context_role
+	 effectivity_context_role.name = 'specification based condition'}
+	 effectivity_context_assignment => configured_effectivity_context_assignment
+	 configured_effectivity_context_assignment.items[1] -> configured_effectivity_context_item
+	 configured_effectivity_context_item = product_concept_feature_association
+		
+end_attribute_mapping;
+
+attribute_mapping is_solution_for(is_solution_for, $PATH, Class_specification_association);
+
+	 configured_effectivity_assignment <=
+	 effectivity_assignment <- effectivity_context_assignment.assigned_effectivity_assignment
+	 {effectivity_context_assignment.role -> effectivity_context_role
+	 effectivity_context_role.name = 'specification based condition'}
+	 effectivity_context_assignment => configured_effectivity_context_assignment
+	 configured_effectivity_context_assignment.items[1] -> configured_effectivity_context_item
+	 configured_effectivity_context_item = product_concept_feature_association
+	 
+end_attribute_mapping;
+
+attribute_mapping configuration_type(configuration_type, object_role.description);
+
+	 configured_effectivity_assignment <= effectivity_assignment
+	 effectivity_assignment.role -> object_role
+	 object_role.description
+	 {(object_role.description = 'exception')
+	 (object_role.description = 'inherited')
+	 (object_role.description = 'local')}
+	 
+end_attribute_mapping;
+
+attribute_mapping inheritance_type(inheritance_type, object_role.name);
+
+	 configured_effectivity_assignment <= effectivity_assignment
+   effectivity_assignment.role -> object_role
+	 object_role.name
+	 {(object_role.name = 'design')
+	 (object_role.name = 'usage')}
+	 
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

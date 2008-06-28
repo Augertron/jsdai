@@ -1,0 +1,625 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping analytical_model(Analytical_model_arm, Analytical_model_mim);*)
+entity_mapping Document_assignment(Document_assignment, (applied_document_reference)(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment) *))
+extended;
+
+attribute_mapping is_assigned_to(is_assigned_to, , Analytical_model_definition_armx);
+(
+						document_reference_item *> am_document_reference_item
+						am_document_reference_item = analytical_model_definition
+						analytical_model_definition
+					)(
+						document_reference_item *> am_document_reference_item
+						am_document_reference_item = analytical_model_definition
+						analytical_model_definition
+					)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Across_port_variable_armx(Across_port_variable_armx, across_port_variable);
+
+mapping_constraints;
+across_port_variable <=
+port_variable
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Analog_analytical_model_port_armx(Analog_analytical_model_port_armx, analog_analytical_model_port);
+
+mapping_constraints;
+analog_analytical_model_port <=
+analytical_model_port <=
+representation
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Analog_port_variable_armx(Analog_port_variable_armx, analog_port_variable);
+
+mapping_constraints;
+{[analog_port_variable <=
+representation]
+[analog_port_variable <=
+representation_item]}
+
+end_mapping_constraints;
+
+attribute_mapping variable_name(variable_name, representation.name);
+analog_port_variable <=
+representation
+representation.name
+
+end_attribute_mapping;
+
+attribute_mapping unit_of_measure(unit_of_measure, (named_unit) (derived_unit));
+analog_port_variable <=
+representation
+representation.context_of_items ->
+representation_context =>
+global_unit_assigned_context
+global_unit_assigned_context.units[i] ->
+unit
+(unit = named_unit
+named_unit)
+(unit = derived_unit
+derived_unit)
+
+end_attribute_mapping;
+
+attribute_mapping associated_port(associated_port, $PATH, Analog_analytical_model_port_armx);
+analog_port_variable <=
+representation_item <-
+representation.items[i]
+representation =>
+analytical_model_port=>
+analog_analytical_model_port
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Analytical_model_armx(Analytical_model_armx, product);
+
+mapping_constraints;
+product
+{product <-
+product_related_product_category.products
+product_related_product_category <=
+product_category
+product_category.name='analytical model'}
+   
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Analytical_model_application(Analytical_model_application, analytical_representation);
+
+mapping_constraints;
+analytical_representation <=
+representation
+
+end_mapping_constraints;
+
+attribute_mapping model_representation(model_representation, $PATH, Analytical_model_definition_armx);
+analytical_representation <=
+representation <-
+representation_relationship.rep_2
+representation_relationship
+representation_relationship.rep_1 ->
+representation
+{representation =>
+analytical_model}
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition
+product_definition =>
+analytical_model_definition
+end_attribute_mapping;
+
+attribute_mapping model_parameter_assignment(model_parameter_assignment, $PATH, Parameter_assignment_armx);
+analytical_representation <=
+representation <-
+representation_relationship.rep_1
+representation_relationship
+representation_relationship.rep_2 ->
+representation =>
+parameter_assignment
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Analytical_model_definition_armx(Analytical_model_definition_armx, analytical_model_definition);
+
+mapping_constraints;
+analytical_model_definition <=
+product_definition
+{characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+analytical_model}
+
+end_mapping_constraints;
+
+attribute_mapping defined_version(defined_version, $PATH, Analytical_model_version);
+analytical_model_definition <=
+product_definition
+product_definition.formation ->
+product_definition_formation
+{product_definition_formation.of_product ->
+product
+product <-
+product_related_product_category.products
+product_related_product_category <=
+product_category
+product_category.name='analytical model'}
+
+end_attribute_mapping;
+(* MADE DERIVED
+attribute_mapping representation_language(representation_language, $PATH, Language_reference_manual);
+analytical_model_definition <=
+product_definition
+document_reference_item = product_definition
+document_reference_item <-
+applied_document_reference.items[i]
+applied_document_reference
+applied_document_reference <=
+document_reference
+document_reference.assigned_document ->
+document <-
+document_product_association.relating_document
+{document_product_association.name = 'equivalence'}
+document_product_association.related_product ->
+product_or_formation_or_definition = product_definition
+product_definition
+{product_definition.name = 'language reference manual'}
+
+end_attribute_mapping;
+*)
+attribute_mapping source_code(source_code, $PATH, digital_file);
+analytical_model_definition <=
+product_definition =>
+product_definition_with_associated_documents
+product_definition_with_associated_documents.documentation_ids[i] -> 
+document 
+{document <-
+document_representation_type.represented_document
+document_representation_type.name = 'digital'} 
+document =>
+document_file
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Analytical_model_make_from_relationship_armx(Analytical_model_make_from_relationship_armx, analytical_model_make_from_relationship);
+
+mapping_constraints;
+{analytical_model_make_from_relationship <=
+product_definition_relationship}
+
+end_mapping_constraints;
+
+attribute_mapping reusable_model(reusable_model, $PATH, Analytical_model_definition_armx);
+analytical_model_make_from_relationship <=
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+analytical_model_definition
+
+end_attribute_mapping;
+
+attribute_mapping resultant_model(resultant_model, $PATH, Analytical_model_definition_armx);
+analytical_model_make_from_relationship <=
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition =>
+analytical_model_definition
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Analytical_model_parameter_armx(Analytical_model_parameter_armx, analytical_model_parameter);
+
+mapping_constraints;
+analytical_model_parameter <=
+model_parameter
+
+end_mapping_constraints;
+
+attribute_mapping accessed_analytical_model(accessed_analytical_model, $PATH, Analytical_model_armx);
+analytical_model_parameter <=
+model_parameter <=
+general_property
+represented_definition = general_property 
+represented_definition <-
+property_definition_representation.definition
+property_definition_representation.used_representation ->
+representation =>
+analytical_model
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Analytical_model_port_armx(Analytical_model_port_armx, analytical_model_port);
+
+mapping_constraints;
+analytical_model_port <=
+representation
+
+end_mapping_constraints;
+
+attribute_mapping port_name(port_name, representation.name);
+analytical_model_port <=
+representation
+representation.name
+
+end_attribute_mapping;
+
+attribute_mapping accessed_analytical_model(accessed_analytical_model, $PATH, Analytical_model_armx);
+analytical_model_port <=
+representation <-
+representation_relationship.rep_2
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'access mechanism'}
+representation_relationship.rep_1 ->
+representation =>
+analytical_model
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Analytical_model_port_assignment_armx(Analytical_model_port_assignment_armx, analytical_model_port_assignment);
+
+mapping_constraints;
+analytical_model_port_assignment <=
+[property_definition_representation]
+[representation_relationship]				
+
+end_mapping_constraints;
+
+attribute_mapping assigned_analytical_model_port(assigned_analytical_model_port, $PATH, Analytical_model_port_armx);
+analytical_model_port_assignment
+[analytical_model_port_assignment <=					
+property_definition_representation
+{property_definition_representation.name = 'part feature model port assignment'}
+property_definition_representation.used_representation ->]
+[analytical_model_port_assignment <=					
+representation_relationship
+representation_relationship.rep_2 ->]
+representation =>
+analytical_model_port
+
+end_attribute_mapping;
+
+attribute_mapping assigned_item(assigned_item, $PATH, analytical_model_port_assignment_select);
+analytical_model_port_assignment <=
+property_definition_representation
+{property_definition_representation.name = 'part feature model port assignment'}
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+
+end_attribute_mapping;
+
+attribute_mapping associated_analytical_model_application(associated_analytical_model_application, $PATH, Analytical_model_application);
+analytical_model_port_assignment <=
+representation_relationship
+representation_relationship.rep_1 ->
+representation =>
+analytical_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Analytical_model_port_make_from_relationship(Analytical_model_port_make_from_relationship, make_from_model_port_relationship);
+
+mapping_constraints;
+{[make_from_model_port_relationship <=
+representation_relationship]
+[make_from_model_port_relationship <=
+representation]}
+
+end_mapping_constraints;
+
+attribute_mapping associated_make_from(associated_make_from, $PATH, Analytical_model_make_from_relationship_armx);
+make_from_model_port_relationship <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation.definition ->
+represented_definition = property_definition
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition = product_definition_relationship
+product_definition_relationship =>
+analytical_model_make_from_relationship
+
+end_attribute_mapping;
+
+attribute_mapping reusable_feature(reusable_feature, $PATH, Analytical_model_port_armx);
+make_from_model_port_relationship <=
+
+
+
+representation_relationship
+representation_relationship.rep_1 ->
+representation =>
+analytical_model_port
+
+end_attribute_mapping;
+
+attribute_mapping resultant_feature(resultant_feature, $PATH, Analytical_model_port_armx);
+make_from_model_port_relationship <=
+representation_relationship
+representation_relationship.rep_2 ->
+representation =>
+analytical_model_port
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Analytical_model_scalar_port_armx(Analytical_model_scalar_port_armx, analytical_model_scalar_port);
+
+mapping_constraints;
+analytical_model_scalar_port <=
+analytical_model_vector_port
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Analytical_model_vector_port_armx(Analytical_model_vector_port_armx, analytical_model_vector_port);
+
+mapping_constraints;
+[analytical_model_vector_port <=
+analytical_model_port]
+[analytical_model_vector_port <=
+compound_representation_item
+compound_representation_item.item_element ->
+list_representation_item[i] -> 
+representation_item =>
+compound_representation_item =>
+analytical_model_vector_port =>
+analytical_model_scalar_port]
+
+end_mapping_constraints;
+
+attribute_mapping element_port(element_port, ,Analytical_model_scalar_port_armx);
+analytical_model_vector_port <=
+compound_representation_item <=
+representation_item =>
+compound_representation_item
+compound_representation_item.item_element ->
+list_representation_item[i] ->
+representation_item =>
+compound_representation_item =>
+analytical_model_vector_port =>
+analytical_model_scalar_port
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Analytical_model_version(Analytical_model_version, product_definition_formation);
+
+mapping_constraints;
+product_definition_formation
+product_definition_formation.of_product ->
+product
+{product <-
+product_related_product_category.products
+product_related_product_category <=
+product_category
+product_category.name='analytical model'}
+   
+end_mapping_constraints;
+
+attribute_mapping of_product(of_product, $PATH, Analytical_model_armx);
+product_definition_formation
+product_definition_formation.of_product -> 
+product
+{product <- 
+product_related_product_category.products[i] 
+product_related_product_category <= 
+product_category 
+product_category.name = 'analytical model'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Digital_analytical_model_port_armx(Digital_analytical_model_port_armx, digital_analytical_model_port);
+
+mapping_constraints;
+digital_analytical_model_port <=
+analytical_model_port <=
+representation
+
+end_mapping_constraints;
+
+attribute_mapping nominal_signal_flow_direction(nominal_signal_flow_direction, descriptive_representation_item);
+analytical_model_port <=
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'distributed property'}
+representation_item =>
+descriptive_representation_item
+{descriptive_representation_item
+(descriptive_representation_item.description = 'input direction')
+(descriptive_representation_item.description = 'output direction')
+(descriptive_representation_item.description = 'bidirectional')}
+
+end_attribute_mapping;
+
+attribute_mapping port_type(port_type, descriptive_representation_item);
+analytical_model_port <=
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'port type'}
+representation_item =>
+descriptive_representation_item
+{descriptive_representation_item
+(descriptive_representation_item.description = 'string property type')
+(descriptive_representation_item.description = 'logical property type')
+(descriptive_representation_item.description = 'boolean property type')}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Digital_analytical_model_scalar_port_armx(Digital_analytical_model_scalar_port_armx, digital_analytical_model_scalar_port);
+
+mapping_constraints;
+[digital_analytical_model_scalar_port <=
+digital_analytical_model_vector_port <=
+analytical_model_vector_port <=
+compound_representation_item <=
+representation_item]
+[digital_analytical_model_scalar_port <=
+analytical_model_scalar_port <= 
+analytical_model_vector_port <=
+compound_representation_item <=
+representation_item]
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Digital_analytical_model_vector_port_armx(Digital_analytical_model_vector_port_armx, digital_analytical_model_vector_port);
+
+mapping_constraints;
+digital_analytical_model_vector_port <=
+analytical_model_vector_port <=
+compound_representation_item <=
+representation_item
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping External_source_identification(External_source_identification, applied_external_identification_assignment)
+extended;
+
+attribute_mapping item(item, , Digital_analytical_model_vector_port_armx);
+
+				external_identification_item *> am_external_identification_item
+				am_external_identification_item = digital_analytical_model_vector_port
+			
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Terminal_pair_port_equivalence_relationship(Terminal_pair_port_equivalence_relationship, representation_relationship);
+
+mapping_constraints;
+{representation_relationship
+representation_relationship.name = 'terminal pair port equivalence relationship'}
+
+end_mapping_constraints;
+
+attribute_mapping equivalent_port(equivalent_port, $PATH, Analytical_model_port_armx);
+representation_relationship
+representation_relationship.rep_2 ->
+representation =>
+analytical_model_port
+
+end_attribute_mapping;
+
+attribute_mapping scalar_ports(scalar_ports, $PATH, Analytical_model_vector_port_armx);
+representation_relationship
+representation_relationship.rep_1 ->
+representation =>
+analytical_model_port =>
+analytical_model_vector_port
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Through_port_variable_armx(Through_port_variable_armx, through_port_variable);
+
+mapping_constraints;
+through_port_variable <=
+port_variable
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Transform_port_variable_armx(Transform_port_variable_armx, transform_port_variable);
+
+mapping_constraints;
+transform_port_variable <=
+port_variable
+
+end_mapping_constraints;
+
+attribute_mapping nominal_signal_flow_direction(nominal_signal_flow_direction, descriptive_representation_item);
+transform_port_variable <=
+port_variable <=
+representation
+representation.items[i] ->
+representation_item =>
+descriptive_representation_item
+{descriptive_representation_item
+(descriptive_representation_item.description = 'input direction')
+(descriptive_representation_item.description = 'output direction')
+(descriptive_representation_item.description = 'unknown direction')}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

@@ -1,0 +1,366 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping shape_property_assignment(Shape_property_assignment_arm, Shape_property_assignment_mim);*)
+
+uof_mapping Shape_Property_Assignment(Shape_Property_Assignment);
+
+entity_mapping Item_shape(Item_shape, 
+				product_definition_shape
+			);
+
+attribute_mapping id_x(id_x, id_attribute.attribute_value);
+
+	product_definition_shape <= property_definition
+	property_definition <- id_attribute.identified_item
+        id_attribute
+	id_attribute.attribute_value
+	
+end_attribute_mapping;
+
+attribute_mapping description(description, property_definition.description);
+
+	product_definition_shape <= property_definition
+	property_definition.description
+	
+end_attribute_mapping;
+
+(* GL added on demand *)
+attribute_mapping described_element(described_element, $PATH, Shape_feature_definition_armx);
+
+product_definition_shape <= property_definition
+property_definition.definition -> characterized_definition
+characterized_definition = characterized_object
+characterized_object =>
+shape_feature_definition
+end_attribute_mapping;
+
+
+(* Important case when we have it := SELF for those not of type Product_view_definition *)
+attribute_mapping described_element(described_element, $PATH, Item_shape);
+
+(product_definition_shape => stratum_technology)
+(product_definition_shape => passage_technology)
+
+end_attribute_mapping;
+
+
+attribute_mapping described_element(described_element, $PATH, Product_view_definition);
+
+product_definition_shape <= property_definition
+property_definition.definition -> characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition = product_definition
+				
+end_attribute_mapping;
+
+attribute_mapping described_element(described_element, $PATH, product_definition_usage);
+
+product_definition_shape <= property_definition
+property_definition.definition -> characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition = product_definition_relationship
+product_definition_relationship => product_definition_usage
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Shape_element(Shape_element, 
+				shape_aspect
+			);
+
+(* GL - problematic cases we need to avoid - maybe we will give up this later *)
+mapping_constraints;
+!{shape_aspect => datum}
+!{shape_aspect => join_shape_aspect}
+!{shape_aspect => physical_network}
+!{shape_aspect => conductive_interconnect_element_terminal_link}
+!{shape_aspect => packaged_connector_terminal_relationship}
+!{shape_aspect => part_connected_terminals_definition}
+!{shape_aspect => functional_unit_terminal_definition}
+!{shape_aspect => printed_connector_template_terminal_relationship}
+end_mapping_constraints;
+
+attribute_mapping description(description, 
+					shape_aspect.description
+				);
+
+end_attribute_mapping;
+
+attribute_mapping containing_shape(containing_shape, $PATH, Item_shape);
+
+					shape_aspect
+					shape_aspect.of_shape ->
+					product_definition_shape
+				
+end_attribute_mapping;
+
+attribute_mapping element_name(element_name, shape_aspect.name);
+
+end_attribute_mapping;
+
+attribute_mapping id_x(id_x, shape_aspect.id);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(* Replaced by AIM entity characterized_object
+entity_mapping Characterizable_object(Characterizable_object, 
+				characterized_object
+			);
+
+attribute_mapping name(name, characterized_object.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, characterized_object.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Shape_element_relationship(Shape_element_relationship, 
+(*				shape_aspect_relationship *)
+	(/SUBTYPE(COMPONENT_FEATURE_RELATIONSHIP_ARMX)/)
+ 	(/SUBTYPE(DATUM_DIFFERENCE_ARMX)/)
+ 	(/SUBTYPE(NON_FEATURE_SHAPE_ELEMENT_RELATIONSHIP)/)
+ 	(/SUBTYPE(PARALLEL_SHAPE_ELEMENT_RELATIONSHIP)/)
+ 	(/SUBTYPE(PART_FEATURE_MAKE_FROM_RELATIONSHIP)/)
+ 	(/SUBTYPE(PERPENDICULAR_SHAPE_ELEMENT_RELATIONSHIP)/)
+ 	(/SUBTYPE(SHAPE_ELEMENT_BOUNDARY_RELATIONSHIP)/)
+ 	(/SUBTYPE(SHAPE_ELEMENT_CONSTITUENT_RELATIONSHIP)/)
+ 	(/SUBTYPE(SHAPE_ELEMENT_DERIVING_RELATIONSHIP)/)
+			);
+mapping_constraints;
+	(/SUBTYPE(COMPONENT_FEATURE_RELATIONSHIP_ARMX)/)
+ 	(/SUBTYPE(DATUM_DIFFERENCE_ARMX)/)
+ 	(/SUBTYPE(NON_FEATURE_SHAPE_ELEMENT_RELATIONSHIP)/)
+ 	(/SUBTYPE(PARALLEL_SHAPE_ELEMENT_RELATIONSHIP)/)
+ 	(/SUBTYPE(PART_FEATURE_MAKE_FROM_RELATIONSHIP)/)
+ 	(/SUBTYPE(PERPENDICULAR_SHAPE_ELEMENT_RELATIONSHIP)/)
+ 	(/SUBTYPE(SHAPE_ELEMENT_BOUNDARY_RELATIONSHIP)/)
+ 	(/SUBTYPE(SHAPE_ELEMENT_CONSTITUENT_RELATIONSHIP)/)
+ 	(/SUBTYPE(SHAPE_ELEMENT_DERIVING_RELATIONSHIP)/)
+ 	{shape_aspect_relationship.name != 'physical connectivity definition relationship'}
+end_mapping_constraints;
+
+attribute_mapping relating(relating, 
+					shape_aspect_relationship.relating_shape_aspect
+				, Shape_element);
+
+end_attribute_mapping;
+
+attribute_mapping related(related, 
+					shape_aspect_relationship.related_shape_aspect
+				, Shape_element);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, 
+					shape_aspect_relationship.description
+				);
+
+end_attribute_mapping;
+
+attribute_mapping relation_type(relation_type, 
+				shape_aspect_relationship.name
+				);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Shape_dependent_property_representation(Shape_dependent_property_representation, 
+				representation
+			);
+
+attribute_mapping described_element(described_element, $PATH, Item_shape);
+
+					representation <-
+					property_definition_representation.used_representation
+					property_definition_representation
+					property_definition_representation.definition ->
+					represented_definition
+					represented_definition = property_definition
+					property_definition
+					{property_definition.name = 'shape dependent property'}
+					property_definition.definition ->
+					characterized_definition
+					characterized_definition = shape_definition
+					shape_definition = product_definition_shape 
+					product_definition_shape
+				
+end_attribute_mapping;
+
+attribute_mapping described_element(described_element, $PATH, Shape_element);
+
+					representation <-
+					property_definition_representation.used_representation
+					property_definition_representation
+					property_definition_representation.definition ->
+					represented_definition
+					represented_definition = property_definition
+					property_definition
+					{property_definition.name = 'shape dependent property'}
+					property_definition.definition ->
+					characterized_definition
+					characterized_definition = shape_definition
+					shape_definition = shape_aspect
+					shape_aspect
+				
+end_attribute_mapping;
+
+attribute_mapping property_representation(property_representation, $IDENTICAL_MAPPING, Representation);
+
+end_attribute_mapping;
+
+attribute_mapping characteristic_type(characteristic_type, 
+					representation.name
+				);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, 
+					representation.description
+				);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Shape_description_association(Shape_description_association, 
+				shape_definition_representation
+			);
+
+attribute_mapping description(description, 
+					property_definition_representation.description
+				);
+
+					shape_definition_representation <= 
+					property_definition_representation
+					property_definition_representation.description
+				
+end_attribute_mapping;
+
+attribute_mapping role(role, 
+					property_definition_representation.name
+				);
+
+					shape_definition_representation <= 
+					property_definition_representation
+					property_definition_representation.name
+				
+end_attribute_mapping;
+
+attribute_mapping representation(representation, $PATH, shape_representation);
+
+					shape_definition_representation <= 
+					property_definition_representation
+					property_definition_representation.used_representation -> 
+					{representation => 
+					shape_representation}
+					(* GL constraints - need to add them heremore on demand, trying to avoid any garbage
+					{representation
+					 representation.description = 'part feature template shape model'}*)
+				
+end_attribute_mapping;
+
+attribute_mapping representation(representation, $PATH, External_geometric_model);
+
+					shape_definition_representation <= 
+					property_definition_representation
+					property_definition_representation.used_representation -> 
+					representation => 
+					shape_representation
+				
+end_attribute_mapping;
+
+attribute_mapping represented_characteristic(represented_characteristic, $PATH, Item_shape);
+
+					shape_definition_representation <=
+					property_definition_representation
+					property_definition_representation.definition -> 
+          represented_definition = property_definition
+					property_definition => product_definition_shape
+					product_definition_shape
+				
+end_attribute_mapping;
+
+attribute_mapping represented_characteristic(represented_characteristic, $PATH, Shape_element);
+
+					shape_definition_representation <=
+					property_definition_representation
+					property_definition_representation.definition -> 
+represented_definition = shape_aspect
+				
+end_attribute_mapping;
+
+attribute_mapping represented_characteristic(represented_characteristic, $PATH, Shape_element_relationship);
+
+					shape_definition_representation <=
+					property_definition_representation
+					property_definition_representation.definition -> 
+represented_definition = shape_aspect_relationship
+					shape_aspect_relationship
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+
+entity_mapping Contextual_item_shape(Contextual_item_shape, 
+				product_definition_shape
+			);
+
+mapping_constraints;
+
+			product_definition_shape <= property_definition
+			{property_definition.definition -> characterized_definition
+			characterized_definition = characterized_product_definition
+			characterized_product_definition = product_definition_relationship
+			product_definition_relationship => product_definition_usage =>
+(* GL - try to make it much more strick here - later might add more alternatives *)			
+			assembly_component_usage =>
+			next_assembly_usage_occurrence 
+(* GL - comment out it as test with 214 data - requested by Viktoras
+			=>
+			next_assembly_usage_occurrence_relationship
+*)
+			}
+			
+end_mapping_constraints;
+
+attribute_mapping described_element(described_element, $PATH, product_definition_usage);
+
+			product_definition_shape <= property_definition
+			property_definition.definition -> characterized_definition
+			characterized_definition = characterized_product_definition
+			characterized_product_definition = product_definition_relationship
+			product_definition_relationship => product_definition_usage
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

@@ -1,0 +1,158 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping requirement_view_definition_relationship(Requirement_view_definition_relationship_arm, Requirement_view_definition_relationship_mim);*)
+
+uof_mapping Requirement_Collection_Relationship(Requirement_Collection_Relationship);
+
+entity_mapping Requirement_collection_relationship(Requirement_collection_relationship, 
+				product_definition_relationship
+			);
+
+mapping_constraints;
+
+				product_definition_relationship
+				{[product_definition_relationship
+				product_definition_relationship.description='requirement collection relationship']
+				[product_definition_relationship
+				product_definition_relationship.relating_product_definition ->
+				product_definition
+				product_definition.formation ->
+				product_definition_formation
+				product_definition_formation.of_product ->
+				product <- 
+				product_related_product_category.products[i]
+				product_related_product_category <=
+				product_category 
+				product_category.name='requirement']}
+			
+end_mapping_constraints;
+
+attribute_mapping collection(collection, $PATH, Requirement_view_definition);
+
+					product_definition_relationship
+					{product_definition_relationship
+					product_definition_relationship.description='requirement collection relationship'}
+					product_definition_relationship.relating_product_definition ->
+					product_definition
+					{product_definition
+					product_definition.formation ->
+					product_definition_formation
+					product_definition_formation.of_product ->
+					product	<- 
+					product_related_product_category.products[i]
+					product_related_product_category <=
+					product_category 
+					product_category.name='requirement'}
+				
+end_attribute_mapping;
+
+attribute_mapping member(member, $PATH, Requirement_view_definition);
+
+					product_definition_relationship
+					{product_definition_relationship
+					product_definition_relationship.description='requirement collection relationship'}
+					product_definition_relationship.related_product_definition ->
+					product_definition
+					{product_definition
+					product_definition.formation ->
+					product_definition_formation
+					product_definition_formation.of_product ->
+					product	<- 
+					product_related_product_category.products[i]
+					product_related_product_category <=
+					product_category
+					product_category.name='requirement'}
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+uof_mapping Tracing_Relationship(Tracing_Relationship);
+
+entity_mapping Tracing_relationship(Tracing_relationship, 
+				product_definition_relationship
+			);
+
+mapping_constraints;
+
+				product_definition_relationship
+				{[product_definition_relationship
+				product_definition_relationship.description='tracing relationship']
+				[product_definition_relationship
+				product_definition_relationship.relating_product_definition ->
+				product_definition
+				product_definition.formation ->
+				product_definition_formation
+				product_definition_formation.of_product ->
+				product <- 
+				product_related_product_category.products[i]
+				product_related_product_category <=
+				product_category 
+				product_category.name='requirement']}
+			
+end_mapping_constraints;
+
+attribute_mapping traces_from(traces_from, $PATH, Requirement_view_definition);
+
+					product_definition_relationship
+					{product_definition_relationship
+					product_definition_relationship.description='tracing relationship'}
+					product_definition_relationship.relating_product_definition ->
+					product_definition
+					{product_definition
+					product_definition.formation ->
+					product_definition_formation
+					product_definition_formation.of_product ->
+					product <- 
+					product_related_product_category.products[i]
+					product_related_product_category <=
+					product_category 
+					product_category.name='requirement'}
+				
+end_attribute_mapping;
+
+attribute_mapping traces_to(traces_to, $PATH, Requirement_view_definition);
+
+					product_definition_relationship
+					{product_definition_relationship
+					product_definition_relationship.description='tracing relationship'}
+					product_definition_relationship.related_product_definition ->
+					product_definition
+					{product_definition
+					product_definition.formation ->
+					product_definition_formation
+					product_definition_formation.of_product ->
+					product <- 
+					product_related_product_category.products[i]
+					product_related_product_category  <=
+					product_category 
+					product_category.name='requirement'}
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

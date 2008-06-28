@@ -1,0 +1,259 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping classification_with_attributes(Classification_with_attributes_arm, Classification_with_attributes_mim);*)
+
+uof_mapping Classification_with_attributes(Classification_with_attributes);
+
+entity_mapping Class_with_attributes(Class_with_attributes, (characterized_class)
+			(/SUBTYPE(External_class_with_attributes)/));
+
+mapping_constraints;
+
+			characterized_class <=
+			[class]
+			[characterized_object]
+			
+end_mapping_constraints;
+
+attribute_mapping version_id(version_id, identification_assignment.assigned_id);
+
+class = identification_item
+identification_item <- applied_identification_assignment.items[i]
+applied_identification_assignment <= identification_assignment
+{identification_assignment.role -> identification_role
+identification_role.name = 'version'}
+identification_assignment.assigned_id
+			
+end_attribute_mapping;
+
+attribute_mapping used_classification_system(used_classification_system, $PATH, Class_system);
+
+characterized_class <= class
+classification_item = class
+classification_item <- applied_classification_assignment.items[i]
+applied_classification_assignment <= classification_assignment
+{classification_assignment.role -> classification_role
+classification_role.name = 'class system membership'}
+classification_assignment.assigned_class -> group
+group => class_system
+			
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Classification_association(Classification_association, applied_classification_assignment);
+
+mapping_constraints;
+
+			applied_classification_assignment <= classification_assignment
+			
+end_mapping_constraints;
+
+attribute_mapping assigned_class(assigned_class, $PATH, Class_with_attributes);
+
+applied_classification_assignment <= classification_assignment
+classification_assignment.assigned_class -> class
+class => characterized_class
+ 			 
+end_attribute_mapping;
+
+attribute_mapping definitional(definitional, (classification_role.name)(classification_role.name)(classification_role.name));
+(
+applied_classification_assignment <= classification_assignment
+classification_assignment.role -> classification_role
+{classification_role.name = 'definitional'}		
+			)(
+applied_classification_assignment <= classification_assignment
+classification_assignment.role -> classification_role
+{classification_role.name = 'non-definitional'}		
+			)(
+applied_classification_assignment <= classification_assignment
+classification_assignment.role -> classification_role
+{classification_role.name = ''}		
+			)
+end_attribute_mapping;
+
+end_entity_mapping;
+(** Changed according 2159 issue in SEDSZILLA *)
+entity_mapping Classification_attribute(Classification_attribute, property_definition);
+
+mapping_constraints;
+
+{property_definition
+derived_property_select = property_definition
+derived_property_select <- 
+general_property_association.derived_definition
+general_property_association.base_definition -> 
+general_property}
+			
+end_mapping_constraints;
+
+attribute_mapping id_x(id_x, id_attribute.attribute_value);
+property_definition = id_attribute_select 
+id_attribute_select <- id_attribute.identified_item
+id_attribute.attribute_value
+
+end_attribute_mapping;
+(* Accessable from AIM
+attribute_mapping name(name, property_definition.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, property_definition.description);
+
+end_attribute_mapping;
+*)
+attribute_mapping allowed_values(allowed_values, $PATH, measure_representation_item);
+
+represented_definition = property_definition
+represented_definition <- property_definition_representation.definition
+{property_definition_representation.name='allowed values'}
+property_definition_representation.used_representation -> representation
+representation.items[i] -> representation_item
+representation_item => compound_representation_item
+compound_representation_item.item_element -> compound_item_definition
+compound_item_definition = set_representation_item
+set_representation_item[i] -> representation_item
+representation_item => measure_representation_item
+			 
+end_attribute_mapping;
+
+attribute_mapping attribute_definition(attribute_definition, $PATH, general_property);
+
+property_definition
+derived_property_select = property_definition
+derived_property_select <-
+general_property_association.derived_definition
+general_property_association
+{general_property_association.name = 'attribute definition'}
+general_property_association.base_definition ->
+general_property
+			 
+end_attribute_mapping;
+
+attribute_mapping characterized_class(characterized_class, $PATH, Class_with_attributes);
+
+property_definition.definition -> characterized_definition
+characterized_definition = characterized_object
+characterized_object => characterized_class
+			
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping External_class_with_attributes(External_class_with_attributes, externally_defined_class);
+
+mapping_constraints;
+
+			externally_defined_class <= class
+			class => characterized_class
+			
+end_mapping_constraints;
+
+attribute_mapping source(source, $PATH, Plib_class_reference);
+
+       externally_defined_class <= externally_defined_item
+			 externally_defined_item.source -> external_source
+			 external_source => known_source
+			 known_source <=	pre_defined_item
+			 {pre_defined_item.name = 'ISO 13584 library'}
+       
+end_attribute_mapping;
+
+attribute_mapping source(source, $IDENTICAL_MAPPING, externally_defined_class);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Class_hierarchy(Class_hierarchy, group_relationship);
+
+mapping_constraints;
+
+		group_relationship
+{group_relationship.name = 'class hierarchy'}
+[group_relationship.related_group ->]
+[group_relationship.relating_group ->]
+group => class
+		
+end_mapping_constraints;
+
+attribute_mapping super_class(super_class, $PATH, Class_armx);
+
+		group_relationship.relating_group ->
+		group =>
+		class
+		
+end_attribute_mapping;
+
+attribute_mapping sub_class(sub_class, $PATH, Class_armx);
+
+		group_relationship.related_group ->
+		group =>
+		class
+		
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Classification_association__class_system_membership(Classification_association__class_system_membership, applied_classification_assignment);
+
+mapping_constraints;
+
+			applied_classification_assignment <=
+			classification_assignment
+			{classification_assignment.role -> classification_role
+			classification_role.name
+			{classification_role.name = 'class system membership'}}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+end_uof_mapping;
+
+(* Class_system is taken from AIM instead
+entity_mapping Classification_system(Classification_system, class_system);
+
+mapping_constraints;
+
+			class_system <= group
+			
+end_mapping_constraints;
+
+attribute_mapping id(id, group.name);
+
+			class_system <= group
+			group.name
+			
+end_attribute_mapping;
+
+attribute_mapping description(description, group.description);
+
+			class_system <= group
+			group.description
+			
+end_attribute_mapping;
+
+end_entity_mapping; *)
+(*end_schema_mapping;*)

@@ -1,0 +1,341 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping product_class(Product_class_arm, Product_class_mim);*)
+
+uof_mapping Product_class(Product_class);
+
+entity_mapping Class_category_association(Class_category_association, product_concept_feature_category_usage);
+
+mapping_constraints;
+product_concept_feature_category_usage <= group_assignment
+end_mapping_constraints;
+
+attribute_mapping associated_product_class(associated_product_class, $PATH, Product_class_armx);
+product_concept_feature_category_usage.items[1] -> category_usage_item category_usage_item = product_class 
+end_attribute_mapping;
+
+attribute_mapping mandatory(mandatory, object_role.name);
+product_concept_feature_category_usage <= 
+group_assignment group_assignment = role_select role_select <- 
+role_association.item_with_role 
+role_association.role -> object_role 
+{(object_role.name = 'mandatory category usage') 
+(object_role.name = 'optional category usage')} 
+end_attribute_mapping;
+
+attribute_mapping associated_category(associated_category, ($PATH)($PATH), Specification_category);
+(product_concept_feature_category_usage <= group_assignment group_assignment.assigned_group -> group group => product_concept_feature_category |product_concept_feature_category| )(product_concept_feature_category_usage <= group_assignment group_assignment.assigned_group -> group group => product_concept_feature_category product_concept_feature_category => exclusive_product_concept_feature_category )
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Class_condition_association(Class_condition_association, product_concept_feature_association);
+
+attribute_mapping associated_product_class(associated_product_class, $PATH, Product_class_armx);
+  product_concept_feature_association.concept -> product_concept product_concept => product_class 
+end_attribute_mapping;
+
+attribute_mapping associated_condition(associated_condition, $PATH, Specification_expression);
+ product_concept_feature_association.feature -> product_concept_feature product_concept_feature => |conditional_concept_feature| 
+end_attribute_mapping;
+
+attribute_mapping condition_type(condition_type, product_concept_feature_association.name);
+ {(product_concept_feature_association.name)  (product_concept_feature_association.name = 'part usage') (product_concept_feature_association.name = 'identification') (product_concept_feature_association.name = 'validity') (product_concept_feature_association.name = 'design case')} 
+end_attribute_mapping;
+
+attribute_mapping description(description, product_concept_feature_association.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Class_inclusion_association(Class_inclusion_association, product_concept_feature_association);
+
+attribute_mapping associated_product_class(associated_product_class, $PATH, Product_class_armx);
+  product_concept_feature_association.concept -> product_concept product_concept => product_class 
+end_attribute_mapping;
+
+attribute_mapping associated_inclusion(associated_inclusion, $PATH, Specification_inclusion);
+ product_concept_feature_association.feature -> product_concept_feature product_concept_feature => conditional_concept_feature conditional_concept_feature => inclusion_product_concept_feature 
+end_attribute_mapping;
+
+attribute_mapping description(description, product_concept_feature_association.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Class_specification_association(Class_specification_association, product_concept_feature_association);
+
+attribute_mapping associated_product_class(associated_product_class, $PATH, Product_class_armx);
+  product_concept_feature_association.concept -> product_concept product_concept => product_class 
+end_attribute_mapping;
+
+attribute_mapping associated_specification(associated_specification, $PATH, Specification);
+ product_concept_feature_association.feature -> 
+ product_concept_feature 
+ {(|product_concept_feature|) 
+ (product_concept_feature => package_product_concept_feature)} 
+end_attribute_mapping;
+
+attribute_mapping association_type(association_type, product_concept_feature_association.name);
+ {(product_concept_feature_association.name)  (product_concept_feature_association.name = 'replaceable standard') (product_concept_feature_association.name = 'non replaceable standard') (product_concept_feature_association.name = 'availability') (product_concept_feature_association.name = 'identification') (product_concept_feature_association.name = 'option') (product_concept_feature_association.name = 'part usage')} 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Product_class_armx(Product_class_armx, product_class);
+
+mapping_constraints;
+product_class <= [product_concept] [characterized_object] 
+end_mapping_constraints;
+
+attribute_mapping version_id(version_id, identification_assignment.assigned_id);
+id_for_class = product_class 
+id_for_class <* identification_item 
+identification_item <- applied_identification_assignment.items[i] 
+applied_identification_assignment <= identification_assignment 
+{identification_assignment.role -> identification_role identification_role.name = 'version'} 
+identification_assignment.assigned_id 
+end_attribute_mapping;
+
+attribute_mapping level_type(level_type, characterized_object.name);
+product_class <= characterized_object 
+characterized_object.name
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Product_class_relationship(Product_class_relationship, product_concept_relationship);
+
+attribute_mapping relating(relating, $PATH, Product_class_armx);
+ product_concept_relationship.relating_product_concept -> product_concept => product_class 
+end_attribute_mapping;
+
+attribute_mapping related(related, $PATH, Product_class_armx);
+ product_concept_relationship.related_product_concept -> product_concept => product_class 
+end_attribute_mapping;
+
+attribute_mapping relation_type(relation_type, product_concept_relationship.name);
+ {(product_concept_relationship.name) 
+ (product_concept_relationship.name = 'derivation') 
+ (product_concept_relationship.name = 'hierarchy') 
+ (product_concept_relationship.name = 'version sequence') 
+ (product_concept_relationship.name = 'substitution')} 
+end_attribute_mapping;
+
+attribute_mapping description(description, product_concept_relationship.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Product_class_relationship__derivation(Product_class_relationship__derivation, product_concept_relationship);
+
+mapping_constraints;
+{product_concept_relationship.name = 'derivation'}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Product_class_relationship__hierarchy(Product_class_relationship__hierarchy, product_concept_relationship);
+
+mapping_constraints;
+{product_concept_relationship.name = 'hierarchy'}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Product_class_relationship__version_sequence(Product_class_relationship__version_sequence, product_concept_relationship);
+
+mapping_constraints;
+{product_concept_relationship.name = 'version sequence'}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Product_class_relationship__substitution(Product_class_relationship__substitution, product_concept_relationship);
+
+mapping_constraints;
+{product_concept_relationship.name = 'substitution'}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Specification(Specification, (|product_concept_feature|)(package_product_concept_feature));
+
+attribute_mapping id(id, product_concept_feature.id);
+
+end_attribute_mapping;
+
+attribute_mapping name(name, product_concept_feature.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, product_concept_feature.description);
+
+end_attribute_mapping;
+
+attribute_mapping version_id(version_id, identification_assignment.assigned_id);
+ id_for_class = product_concept_feature 
+ id_for_class <* identification_item  
+ identification_item <- applied_identification_assignment.items[i] 
+ applied_identification_assignment <= identification_assignment 
+ {identification_assignment.role -> identification_role 
+ identification_role.name = 'version'} 
+ identification_assignment.assigned_id
+end_attribute_mapping;
+
+attribute_mapping category(category, $PATH, Specification_category);
+ specification_for_category = product_concept_feature 
+ specification_for_category <* groupable_item  
+ groupable_item <- applied_group_assignment.items[i] 
+ applied_group_assignment <= group_assignment 
+ {group_assignment = role_select 
+ role_select <- role_association.item_with_role 
+ role_association.role -> object_role 
+ object_role.name = 'specification category member'} 
+ group_assignment.assigned_group -> 
+ group => product_concept_feature_category 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Specification__package(Specification__package, package_product_concept_feature);
+
+mapping_constraints;
+package_product_concept_feature <= product_concept_feature
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Specification_category(Specification_category, (|product_concept_feature_category|)(exclusive_product_concept_feature_category));
+
+mapping_constraints;
+(product_concept_feature_category <= group)(exclusive_product_concept_feature_category <= product_concept_feature_category product_concept_feature_category <= group)
+end_mapping_constraints;
+
+attribute_mapping id_x(id_x, group.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, group.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Specification_category__exclusive(Specification_category__exclusive, exclusive_product_concept_feature_category);
+
+mapping_constraints;
+exclusive_product_concept_feature_category <= product_concept_feature_category 
+product_concept_feature_category <= group
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Specification_category_hierarchy(Specification_category_hierarchy, group_relationship);
+
+mapping_constraints;
+{group_relationship.name = 'specification category hierarchy'}
+end_mapping_constraints;
+
+attribute_mapping sub_category(sub_category, $PATH, Specification_category);
+ group_relationship.related_group -> group group => product_concept_feature_category 
+end_attribute_mapping;
+
+attribute_mapping super_category(super_category, $PATH, Specification_category);
+ group_relationship.relating_group -> group group => product_concept_feature_category 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Specification_expression(Specification_expression, |conditional_concept_feature|);
+
+attribute_mapping id(id, product_concept_feature.id);
+conditional_concept_feature <= product_concept_feature product_concept_feature.id
+end_attribute_mapping;
+
+attribute_mapping description(description, product_concept_feature.description);
+conditional_concept_feature <= product_concept_feature product_concept_feature.description
+end_attribute_mapping;
+
+attribute_mapping operation(operation, concept_feature_relationship_with_condition.conditional_operator);
+conditional_concept_feature.condition -> concept_feature_relationship_with_condition 
+concept_feature_relationship_with_condition.conditional_operator -> 
+concept_feature_operator 
+{(concept_feature_operator.name = 'and') 
+(concept_feature_operator.name = 'or') 
+(concept_feature_operator.name = 'oneof') 
+(concept_feature_operator.name = 'not')} 
+end_attribute_mapping;
+
+attribute_mapping operand(operand, ($PATH)($PATH)($PATH), Specification);
+(conditional_concept_feature.condition -> concept_feature_relationship_with_condition  concept_feature_relationship_with_condition <= concept_feature_relationship [concept_feature_relationship.relating_product_concept_feature ->] [concept_feature_relationship.related_product_concept_feature ->] product_concept_feature )(conditional_concept_feature.condition -> concept_feature_relationship_with_condition  concept_feature_relationship_with_condition <= concept_feature_relationship (concept_feature_relationship.relating_product_concept_feature ->) (concept_feature_relationship.related_product_concept_feature ->) product_concept_feature)(conditional_concept_feature.condition -> concept_feature_relationship_with_condition  concept_feature_relationship_with_condition <= concept_feature_relationship (concept_feature_relationship.relating_product_concept_feature ->) (concept_feature_relationship.related_product_concept_feature ->) product_concept_feature  {product_concept_feature => conditional_concept_feature conditional_concept_feature.condition -> concept_feature_relationship_with_condition (concept_feature_relationship_with_condition <= concept_feature_relationship)*})
+end_attribute_mapping;
+
+attribute_mapping operand(operand, ($PATH)($PATH)($PATH), Specification_expression);
+(conditional_concept_feature.condition -> concept_feature_relationship_with_condition  concept_feature_relationship_with_condition <= concept_feature_relationship [concept_feature_relationship.relating_product_concept_feature ->] [concept_feature_relationship.related_product_concept_feature ->] product_concept_feature product_concept_feature => conditional_concept_feature )(conditional_concept_feature.condition -> concept_feature_relationship_with_condition  concept_feature_relationship_with_condition <= concept_feature_relationship (concept_feature_relationship.relating_product_concept_feature ->) (concept_feature_relationship.related_product_concept_feature ->) product_concept_feature product_concept_feature => conditional_concept_feature )(conditional_concept_feature.condition -> concept_feature_relationship_with_condition  concept_feature_relationship_with_condition <= concept_feature_relationship (concept_feature_relationship.relating_product_concept_feature ->) (concept_feature_relationship.related_product_concept_feature ->) product_concept_feature  {product_concept_feature => conditional_concept_feature conditional_concept_feature.condition -> concept_feature_relationship_with_condition (concept_feature_relationship_with_condition <= concept_feature_relationship)*})
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Specification_inclusion(Specification_inclusion, inclusion_product_concept_feature);
+
+mapping_constraints;
+inclusion_product_concept_feature <= conditional_concept_feature  conditional_concept_feature.condition -> concept_feature_relationship_with_condition concept_feature_relationship_with_condition.conditional_operator -> concept_feature_operator {concept_feature_operator.name = 'implication'} 
+end_mapping_constraints;
+
+attribute_mapping id(id, product_concept_feature.id);
+inclusion_product_concept_feature <= conditional_concept_feature  conditional_concept_feature <= product_concept_feature product_concept_feature.id
+end_attribute_mapping;
+
+attribute_mapping description(description, product_concept_feature.description);
+inclusion_product_concept_feature <= conditional_concept_feature  conditional_concept_feature <= product_concept_feature product_concept_feature.description
+end_attribute_mapping;
+
+attribute_mapping if_condition(if_condition, $PATH, Specification);
+inclusion_product_concept_feature <= conditional_concept_feature  conditional_concept_feature.condition -> concept_feature_relationship_with_condition concept_feature_relationship_with_condition <= concept_feature_relationship concept_feature_relationship.relating_product_concept_feature -> product_concept_feature 
+end_attribute_mapping;
+
+attribute_mapping if_condition(if_condition, $PATH, Specification_expression);
+inclusion_product_concept_feature <= conditional_concept_feature  conditional_concept_feature.condition -> concept_feature_relationship_with_condition concept_feature_relationship_with_condition <= concept_feature_relationship concept_feature_relationship.relating_product_concept_feature -> product_concept_feature product_concept_feature => conditional_concept_feature 
+end_attribute_mapping;
+
+attribute_mapping included_specification(included_specification, $PATH, Specification);
+inclusion_product_concept_feature <= conditional_concept_feature  conditional_concept_feature.condition -> concept_feature_relationship_with_condition concept_feature_relationship_with_condition <= concept_feature_relationship concept_feature_relationship.related_product_concept_feature -> product_concept_feature 
+end_attribute_mapping;
+
+attribute_mapping included_specification(included_specification, $PATH, Specification_expression);
+inclusion_product_concept_feature <= conditional_concept_feature  conditional_concept_feature.condition -> concept_feature_relationship_with_condition concept_feature_relationship_with_condition <= concept_feature_relationship concept_feature_relationship.related_product_concept_feature -> product_concept_feature product_concept_feature => conditional_concept_feature 
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

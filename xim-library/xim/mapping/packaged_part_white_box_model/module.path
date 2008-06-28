@@ -1,0 +1,368 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping packaged_part_white_box_model(Packaged_part_white_box_model_arm, Packaged_part_white_box_model_mim);*)
+
+
+entity_mapping Analytical_model_port_assignment_armx(Analytical_model_port_assignment_armx, analytical_model_port_assignment)
+extended;
+
+attribute_mapping assigned_item(assigned_item, , Functional_unit_usage_view_terminal_definition);
+
+				characterized_definition = shape_definition
+				shape_definition = shape_aspect
+				shape_aspect => functional_unit_terminal_definition
+				
+end_attribute_mapping;
+
+attribute_mapping assigned_item(assigned_item, , Connection_zone);
+
+				characterized_definition = shape_definition
+				shape_definition = shape_aspect
+				
+end_attribute_mapping;
+
+attribute_mapping assigned_item(assigned_item, , Datum_difference_armx);
+
+				characterized_definition = shape_definition
+				shape_definition = shape_aspect
+				shape_aspect => datum_difference
+				
+end_attribute_mapping;
+
+attribute_mapping assigned_item(assigned_item, , Part_device_terminal);
+
+				characterized_definition = shape_definition
+				shape_definition = shape_aspect
+				
+end_attribute_mapping;
+
+attribute_mapping assigned_item(assigned_item, , Part_feature);
+
+				characterized_definition = shape_definition
+				shape_definition = shape_aspect
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Device_2d_position(Device_2d_position, mapped_item);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping placed_device(placed_device, $PATH, Part_device);
+mapped_item <=
+representation_item <-
+representation.items[i]
+{representation =>
+shape_representation}
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition_relationship
+product_definition_relationship
+
+end_attribute_mapping;
+
+attribute_mapping part_shape(part_shape, $PATH, Physical_unit_planar_shape_model);
+mapped_item
+mapped_item.mapping_target ->
+representation_item <-
+representation.items[i]
+{[representation.name = 'ppsm']
+[representation.description = 'pupsm']
+[representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit =>
+packaged_part]}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping transformation(transformation, $PATH, axis2_placement_2d);
+mapped_item.mapping_target ->
+representation_item =>
+geometric_representation_item =>
+placement =>
+axis2_placement_2d
+
+end_attribute_mapping;
+
+attribute_mapping device_shape(device_shape, $PATH, Physical_unit_planar_shape_model);
+mapped_item
+mapped_item.mapping_source ->
+representation_map
+representation_map.mapped_representation ->
+{[representation.name = 'ppsm']
+[representation.description = 'pupsm']
+[representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit =>
+bare_die]}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Device_3d_position(Device_3d_position, mapped_item);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping placed_device(placed_device, $PATH, Part_device);
+mapped_item <=
+representation_item <-
+representation.items[i]
+{representation =>
+shape_representation}
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition_relationship
+product_definition_relationship
+
+end_attribute_mapping;
+
+attribute_mapping part_shape(part_shape, $PATH, Physical_unit_3d_shape_model);
+mapped_item
+mapped_item.mapping_target ->
+representation_item <-
+representation.items[i]
+{[representation.name = '3d bound volume shape']
+[representation.description = 'pu3dsm']
+[representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit =>
+packaged_part]}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping transformation(transformation, $PATH, axis2_placement_3d);
+mapped_item.mapping_target ->
+representation_item =>
+geometric_representation_item =>
+placement =>
+axis2_placement_3d
+
+end_attribute_mapping;
+
+attribute_mapping device_shape(device_shape, $PATH, Physical_unit_3d_shape_model);
+mapped_item
+mapped_item.mapping_source ->
+representation_map
+representation_map.mapped_representation ->
+{[representation.name = '3d bound volume shape']
+[representation.description = 'pu3dsm']
+[representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit =>
+bare_die]}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Device_terminal_map_armx(Device_terminal_map_armx, device_terminal_map);
+
+mapping_constraints;
+device_terminal_map <=
+[shape_aspect_relationship]
+[shape_aspect]
+
+end_mapping_constraints;
+
+attribute_mapping target_terminal(target_terminal, $PATH, Packaged_part_terminal_armx);
+device_terminal_map <=
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+{(shape_aspect.description = 'interface terminal')
+(shape_aspect.description = 'join terminal')}
+shape_aspect =>
+packaged_part_terminal
+
+end_attribute_mapping;
+
+attribute_mapping mapped_device_terminal(mapped_device_terminal, $PATH, Part_device_terminal);
+device_terminal_map <=
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Device_terminal_map_relationship(Device_terminal_map_relationship, shape_aspect_relationship);
+
+mapping_constraints;
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'device terminal map relationship'}
+
+end_mapping_constraints;
+
+attribute_mapping related_device_terminal_map(related_device_terminal_map, $PATH, Device_terminal_map_armx);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect =>
+device_terminal_map
+
+end_attribute_mapping;
+
+attribute_mapping relating_device_terminal_map(relating_device_terminal_map, $PATH, Device_terminal_map_armx);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+device_terminal_map
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Part_device(Part_device, product_definition_relationship);
+
+mapping_constraints;
+ {product_definition_relationship
+product_definition_relationship.description = 'part device'}
+
+end_mapping_constraints;
+
+attribute_mapping item_identification(item_identification, product_definition_relationship.name);
+
+end_attribute_mapping;
+
+attribute_mapping included_device(included_device, $PATH, Bare_die_armx);
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition =>
+physical_unit =>
+bare_die
+
+end_attribute_mapping;
+
+attribute_mapping defined_packaged_part(defined_packaged_part, $PATH, Packaged_part_armx);
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+physical_unit =>
+packaged_part
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Part_device_terminal(Part_device_terminal, shape_aspect);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping used_bare_die_terminal(used_bare_die_terminal, $PATH, Bare_die_terminal_armx);
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape <=
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition_relationship
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition =>
+physical_unit
+{physical_unit =>
+bare_die}
+physical_unit <=
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect =>
+minimally_defined_bare_die_terminal =>
+bare_die_terminal
+
+end_attribute_mapping;
+
+attribute_mapping terminated_device(terminated_device, $PATH, Part_device);
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape <=
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.description = 'part device'}
+product_definition_relationship
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

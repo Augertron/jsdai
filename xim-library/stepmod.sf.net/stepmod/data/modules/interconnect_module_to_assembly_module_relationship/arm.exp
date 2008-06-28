@@ -1,0 +1,71 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4002 - ISO/TS 10303-1685 Interconnect module to assembly module relationship - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3444
+*)
+
+SCHEMA Interconnect_module_to_assembly_module_relationship_arm;
+
+USE FROM Interconnect_module_connection_routing_arm;	-- ISO/TS 10303-1684
+
+  TYPE component_based_message_type = ENUMERATION OF
+    (component_reference_designation,
+     terminal_designation);
+  END_TYPE;
+
+  TYPE component_or_component_feature = SELECT
+    (Assembly_component,
+	 Component_external_reference,
+	 Component_feature,
+	 Component_feature_external_reference);
+  END_TYPE;
+
+  TYPE imtar_bare_die_component_or_packaged_component = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON bare_die_component_or_packaged_component WITH  
+    (Packaged_component,
+     Bare_die_component);
+  END_TYPE;
+
+  TYPE imtar_bare_die_terminal_or_packaged_part_terminal = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON bare_die_terminal_or_packaged_part_terminal WITH  
+    (Bare_die_terminal,
+     Packaged_part_terminal);
+  END_TYPE;
+
+  TYPE imtar_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
+	(Component_feature_to_layout_feature_relationship);
+  END_TYPE; 
+
+  TYPE imtar_restriction_basis_item = EXTENSIBLE SELECT BASED_ON restriction_basis_item WITH 
+	(component_or_component_feature);
+  END_TYPE; 
+
+  TYPE imtar_documented_element_select = EXTENSIBLE SELECT BASED_ON documented_element_select WITH 
+	(component_or_component_feature);
+  END_TYPE;
+
+  ENTITY Assembly_requirement_for_interconnect_relationship 
+    SUBTYPE OF (Part_definition_relationship);
+      SELF\View_definition_relationship.relating_view	: Assembly_module; 		
+      SELF\View_definition_relationship.related_view	: Interconnect_module;
+  END_ENTITY;
+   
+  ENTITY Component_based_annotation_symbol_placement_relationship
+    SUBTYPE OF (Component_feature_to_layout_feature_relationship);
+      SELF\Component_feature_to_layout_feature_relationship.related_stratum_concept : special_symbol_component;
+  END_ENTITY;
+
+  ENTITY Component_based_annotation_text_relationship
+    SUBTYPE OF (Component_feature_to_layout_feature_relationship);
+      SELF\Component_feature_to_layout_feature_relationship.related_stratum_concept : Laminate_text_string_component;
+      message_type                                                                  : component_based_message_type;
+  END_ENTITY;
+
+  ENTITY Component_feature_to_layout_feature_relationship
+	  SUPERTYPE OF (ONEOF (Component_based_annotation_symbol_placement_relationship,
+	         Component_based_annotation_text_relationship));
+      relating_feature        : component_or_component_feature;  
+      related_stratum_concept : stratum_concept;
+    INVERSE
+	  requirement : SET[0:1] OF requirement_assignment FOR assigned_to;
+  END_ENTITY;
+
+END_SCHEMA;

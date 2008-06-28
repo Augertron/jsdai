@@ -1,0 +1,191 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+ Derived from ISO TC184/SC4/WG12 N3097 - ISO/TS 10303-1242 Position in organization - EXPRESS ARM
+ by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+
+SCHEMA Position_in_organization_xim;
+
+USE FROM Classification_assignment_xim;    -- ISO/TS 10303-1114
+
+USE FROM Person_organization_xim;    -- ISO/TS 10303-1011
+
+USE FROM Project_xim;    -- ISO/TS 10303-1061
+
+USE FROM Type_of_person_xim;    -- ISO/TS 10303-1245
+
+USE FROM Position_in_organization_mim;
+
+USE FROM basic_attribute_schema (object_role);
+
+USE FROM support_resource_schema (identifier);
+
+TYPE classified_select_for_position = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH 
+   (Person_or_organization_or_person_in_organization_in_position_relationship, 
+    Position, 
+    Position_group, 
+    Position_group_relationship, 
+    Position_position_type_assignment, 
+    Position_relationship, 
+    Position_type);
+END_TYPE; 
+
+TYPE position_context_item = EXTENSIBLE GENERIC_ENTITY SELECT
+   (Organization, 
+    Position_group, 
+    Project);
+END_TYPE; 
+
+TYPE position_group_item = EXTENSIBLE GENERIC_ENTITY SELECT;
+END_TYPE; 
+
+TYPE position_item = EXTENSIBLE GENERIC_ENTITY SELECT;
+END_TYPE; 
+
+TYPE position_person_or_organization_or_person_in_organization_select = EXTENSIBLE GENERIC_ENTITY SELECT
+   (Organization, 
+    Person, 
+    person_and_organization);
+END_TYPE; 
+
+TYPE position_type_item = EXTENSIBLE GENERIC_ENTITY SELECT;
+END_TYPE; 
+
+ENTITY Person_or_organization_or_person_in_organization_in_position
+	(* CONNOTATIONAL *) SUBTYPE OF (applied_position_in_organization_assignment);
+	(* attribute is accessable from supertype
+	description : STRING; *)
+  SELF\position_in_organization_assignment.id RENAMED name_x                                  : identifier;
+  person_or_organization                                                                      : position_person_or_organization_or_person_in_organization_select;
+  SELF\position_in_organization_assignment.assigned_position_in_organization RENAMED position : Position;
+  DERIVE
+    SELF\applied_position_in_organization_assignment.items : SET [1:?] OF position_in_organization_item :=?;
+END_ENTITY;
+
+ENTITY Person_or_organization_or_person_in_organization_in_position_relationship
+	(* CONNOTATIONAL *) SUBTYPE OF (applied_position_in_organization_assignment);
+	(* attributes accessable from supertype
+  name : STRING;
+  description : OPTIONAL STRING; *)
+  relating : Person_or_organization_or_person_in_organization_in_position;
+  related : Person_or_organization_or_person_in_organization_in_position;
+END_ENTITY;
+
+ENTITY Position
+	(* CONNOTATIONAL *) SUBTYPE OF (position_in_organization);
+	(* attributes accessable from supertype position_in_organization
+  name : STRING;
+  description : OPTIONAL STRING; *)
+  address : OPTIONAL Address;
+  position_context : position_context_item;
+END_ENTITY;
+
+ENTITY Position_assignment
+	(* CONNOTATIONAL *) SUBTYPE OF (applied_position_in_organization_assignment);
+--GL - uncomment this when position_item will be extended. Now let's live with original select from MIM
+--  SELF\applied_position_in_organization_assignment.items                                      : SET[1:?] OF position_item;
+  SELF\position_in_organization_assignment.assigned_position_in_organization RENAMED position : Position;
+  (* It is IDENTICAL mapping *)
+  DERIVE
+  	role_x : position_in_organization_assignment := SELF;
+END_ENTITY;
+
+ENTITY Position_group
+	(* CONNOTATIONAL *) SUBTYPE OF (group);
+   name_x : STRING;
+  (* Overlaps with name_x *)
+  DERIVE
+   SELF\group.id : identifier := ?;
+--  description : OPTIONAL STRING; (* this attributes is accessable from supertype *)
+END_ENTITY;
+
+ENTITY Position_group_assignment
+	(* CONNOTATIONAL *) SUBTYPE OF (applied_position_in_organization_group_assignment);
+  SELF\applied_position_in_organization_group_assignment.items : SET[1:?] OF position_group_item;
+  SELF\group_assignment.assigned_group RENAMED position_group  : Position_group;
+  (* It is IDENTICAL mapping *)
+  DERIVE
+  	role_x : position_in_organization_assignment := SELF;
+END_ENTITY;
+
+ENTITY Position_group_relationship
+	(* CONNOTATIONAL *) SUBTYPE OF (applied_position_in_organization_assignment);
+  group                                                                                       : Position_group;
+  SELF\position_in_organization_assignment.assigned_position_in_organization RENAMED position : Position;
+ DERIVE
+  	SELF\position_in_organization_assignment.name : label :='position group relationship';
+  	(* Overlaps with attribute group *)
+  	SELF\applied_position_in_organization_assignment.items : SET [1:?] OF position_in_organization_item :=?;
+END_ENTITY;
+
+ENTITY Position_group_role
+	(* CONNOTATIONAL *) SUBTYPE OF (applied_position_in_organization_group_assignment);
+  name : STRING;
+  description : OPTIONAL STRING;
+  (* Overlaps with description *)
+ DERIVE 
+  SELF\group_assignment.role : object_role :=?;
+END_ENTITY;
+
+ENTITY Position_position_type_assignment
+	(* CONNOTATIONAL *) SUBTYPE OF (applied_position_in_organization_type_assignment);
+  SELF\position_in_organization_type_assignment.assigned_position_in_organization_type RENAMED assigned_position_type : Position_type;
+  assigned_to                                                                                                         : Position;
+ DERIVE
+ 	SELF\position_in_organization_type_assignment.description : text := 'Position position type assigment';
+ 	(* Overlaps with assigned_to *)
+ 	SELF\applied_position_in_organization_type_assignment.items : SET [1:?] OF position_in_organization_type_item :=?;
+END_ENTITY;
+
+ENTITY Position_relationship
+	(* CONNOTATIONAL *) SUBTYPE OF(position_in_organization_relationship);
+	(* attributes are accessable from supertype 
+  name : STRING;
+  description : OPTIONAL STRING; *)
+  SELF\position_in_organization_relationship.relating_position_in_organization RENAMED relating_position : Position;
+  SELF\position_in_organization_relationship.related_position_in_organization RENAMED related_position   : Position;
+END_ENTITY;
+
+ENTITY Position_type
+	(* CONNOTATIONAL *) SUBTYPE OF(position_in_organization_type);
+(* attributes are accessable from supertype 
+  name : STRING;
+  description : OPTIONAL STRING; *)
+  defined_by : Type_of_person;
+END_ENTITY;
+
+ENTITY Position_type_assignment
+	(* CONNOTATIONAL *) SUBTYPE OF(applied_position_in_organization_type_assignment);
+  SELF\applied_position_in_organization_type_assignment.items                                                : SET[1:?] OF position_type_item;
+  SELF\position_in_organization_type_assignment.assigned_position_in_organization_type RENAMED position_type : Position_type;
+ DERIVE
+ 	SELF\position_in_organization_type_assignment.description : text := 'Position type assigment';
+  (* It is IDENTICAL mapping *)
+  	role_x : position_in_organization_assignment := SELF;
+END_ENTITY;
+
+END_SCHEMA;  -- Position_in_organization_xim
+

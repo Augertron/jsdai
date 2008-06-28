@@ -1,0 +1,345 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping document_assignment(Document_assignment_arm, Document_assignment_mim);*)
+
+uof_mapping Document_Assignment(Document_Assignment);
+
+entity_mapping Document_assignment(Document_assignment, (applied_document_reference)(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment) *));
+
+mapping_constraints;
+((applied_document_reference <=
+document_reference))
+(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment) 
+((applied_document_usage_constraint_assignment <=
+       document_usage_constraint_assignment)) *)
+end_mapping_constraints;
+
+attribute_mapping role_x(role_x, (object_role.name)(document_usage_role.name));
+((applied_document_reference <=
+       document_reference
+       document_reference.role ->
+       object_role
+       object_role.name)
+       )
+(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment)        
+((applied_document_usage_constraint_assignment <=
+document_usage_constraint_assignment
+document_usage_constraint_assignment.role ->
+document_usage_role
+document_usage_role.name)
+       ) *)
+end_attribute_mapping;
+
+attribute_mapping is_assigned_to(is_assigned_to, ($PATH)($PATH), documented_element_select);
+(applied_document_reference
+applied_document_reference.items[i] ->
+       document_reference_item
+       )
+(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment)        
+(applied_document_usage_constraint_assignment
+applied_document_usage_constraint_assignment.items[i] ->
+       document_reference_item) *)
+end_attribute_mapping;
+
+attribute_mapping assigned_document_x(assigned_document_x, ($PATH)($PATH), Document_armx);
+(applied_document_reference <=
+document_reference
+document_reference.assigned_document ->
+document <-
+{document.kind -> document_type
+document_type.product_data_type = 'configuration controlled document'}
+document_product_association.relating_document
+document_product_association
+{document_product_association => document_product_equivalence}
+document_product_association.related_product ->
+product_or_formation_or_definition
+product_or_formation_or_definition = product
+{product <- product_related_product_category.products
+product_related_product_category <= product_category
+product_category.name='document'}
+       )
+(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment)        
+(applied_document_usage_constraint_assignment <=
+document_usage_constraint_assignment
+document_usage_constraint_assignment.assigned_document_usage ->
+document_usage_constraint
+document_usage_constraint.source ->
+document <-
+{document.kind -> document_type
+document_type.product_data_type = 'configuration controlled document'}
+document_product_association.relating_document
+document_product_association
+{document_product_association =>
+document_product_equivalence}
+document_product_association.related_product ->
+product_or_formation_or_definition
+product_or_formation_or_definition = product
+{product <- product_related_product_category.products
+product_related_product_category <= product_category
+product_category.name='document'}
+	) *)
+end_attribute_mapping;
+
+attribute_mapping assigned_document_x(assigned_document_x, $PATH, Document_version);
+(applied_document_reference <=
+document_reference
+document_reference.assigned_document ->
+document <-
+{document.kind -> document_type
+document_type.product_data_type = 'configuration controlled document version'}
+document_product_association.relating_document
+document_product_association
+{document_product_association => document_product_equivalence}
+document_product_association.related_product ->
+product_or_formation_or_definition
+product_or_formation_or_definition = product_definition_formation
+{product_definition_formation.of_product -> product
+product <- product_related_product_category.products
+product_related_product_category <= product_category
+product_category.name='document'}
+       )
+(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment)       
+(applied_document_usage_constraint_assignment <=
+document_usage_constraint_assignment
+document_usage_constraint_assignment.assigned_document_usage ->
+document_usage_constraint
+document_usage_constraint.source ->
+document <-
+{document.kind -> document_type
+document_type.product_data_type = 'configuration controlled document version'}
+document_product_association.relating_document
+document_product_association
+{document_product_association => document_product_equivalence}
+document_product_association.related_product ->
+product_or_formation_or_definition
+product_or_formation_or_definition = product_definition_formation
+{product_definition_formation.of_product -> product
+product <- product_related_product_category.products
+product_related_product_category <= product_category
+product_category.name='document'}
+      )*)
+end_attribute_mapping;
+
+attribute_mapping assigned_document_x(assigned_document_x, ($PATH)($PATH), Document_definition);
+(applied_document_reference <=
+document_reference
+document_reference.assigned_document ->
+document <-
+{document.kind -> document_type
+document_type.product_data_type = 'configuration controlled document definition'}
+document_product_association.relating_document
+document_product_association
+{document_product_association => document_product_equivalence}
+document_product_association.related_product ->
+product_or_formation_or_definition
+product_or_formation_or_definition = product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element}
+{product_definition.formation -> product_definition_formation
+product_definition_formation.of_product -> product
+product <- product_related_product_category.products
+product_related_product_category <= product_category
+product_category.name='document'})
+(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment) 
+(applied_document_usage_constraint_assignment <=
+document_usage_constraint_assignment
+document_usage_constraint_assignment.assigned_document_usage ->
+document_usage_constraint
+document_usage_constraint.source ->
+document <-
+{document.kind -> document_type
+document_type.product_data_type = 'configuration controlled document definition'}
+document_product_association.relating_document
+document_product_association
+{document_product_association => document_product_equivalence}
+document_product_association.related_product ->
+product_or_formation_or_definition
+product_or_formation_or_definition = product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+(application_context_element.name = 'physical document definition')
+(application_context_element.name = 'digital document definition')
+(application_context_element.name = 'generic document definition')}
+{product_definition.formation -> product_definition_formation
+product_definition_formation.of_product -> product
+product <- product_related_product_category.products
+product_related_product_category <= product_category
+product_category.name='document'}
+	)*)
+end_attribute_mapping;
+
+attribute_mapping assigned_document_x(assigned_document_x, ($PATH)($PATH), File);
+((applied_document_reference <=
+document_reference
+document_reference.assigned_document ->)
+document
+{document <- document_representation_type.represented_document
+(document_representation_type.name = 'digital')
+(document_representation_type.name = 'physical')}
+document => document_file 
+       )
+(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment)        
+((applied_document_usage_constraint_assignment <=
+document_usage_constraint_assignment
+document_usage_constraint_assignment.assigned_document_usage ->
+document_usage_constraint
+document_usage_constraint.source ->)
+document
+{document <- document_representation_type.represented_document
+(document_representation_type.name = 'digital')
+(document_representation_type.name = 'physical')}
+document => document_file 
+	)*)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Partial_document_assignment(Partial_document_assignment, applied_document_usage_constraint_assignment);
+
+mapping_constraints;
+applied_document_usage_constraint_assignment <=
+document_usage_constraint_assignment 
+     
+end_mapping_constraints;
+
+attribute_mapping document_portion(document_portion, [document_usage_constraint.subject_element]
+[document_usage_constraint.subject_element_value]
+       );
+applied_document_usage_constraint_assignment <=
+document_usage_constraint_assignment
+document_usage_constraint_assignment.assigned_document_usage ->
+document_usage_constraint
+{document_usage_constraint.subject_element = document_usage_constraint.subject_element_value}
+document_usage_constraint.subject_element
+end_attribute_mapping;
+
+(* ========================================== *)
+(* Alternatives moved from Document_assignment *)
+attribute_mapping role_x(role_x, document_usage_role.name);
+applied_document_usage_constraint_assignment <=
+document_usage_constraint_assignment
+document_usage_constraint_assignment.role ->
+document_usage_role
+document_usage_role.name
+end_attribute_mapping;
+
+attribute_mapping is_assigned_to(is_assigned_to, ($PATH)($PATH), documented_element_select);
+applied_document_usage_constraint_assignment
+applied_document_usage_constraint_assignment.items[i] ->
+document_reference_item
+end_attribute_mapping;
+
+attribute_mapping assigned_document(assigned_document, ($PATH)($PATH), Document_armx);
+applied_document_usage_constraint_assignment <=
+document_usage_constraint_assignment
+document_usage_constraint_assignment.assigned_document_usage ->
+document_usage_constraint
+document_usage_constraint.source ->
+document <-
+{document.kind -> document_type
+document_type.product_data_type = 'configuration controlled document'}
+document_product_association.relating_document
+document_product_association
+{document_product_association =>
+document_product_equivalence}
+document_product_association.related_product ->
+product_or_formation_or_definition
+product_or_formation_or_definition = product
+{product <- product_related_product_category.products
+product_related_product_category <= product_category
+product_category.name='document'}
+end_attribute_mapping;
+
+attribute_mapping assigned_document(assigned_document, $PATH, Document_version);
+applied_document_usage_constraint_assignment <=
+document_usage_constraint_assignment
+document_usage_constraint_assignment.assigned_document_usage ->
+document_usage_constraint
+document_usage_constraint.source ->
+document <-
+{document.kind -> document_type
+document_type.product_data_type = 'configuration controlled document version'}
+document_product_association.relating_document
+document_product_association
+{document_product_association => document_product_equivalence}
+document_product_association.related_product ->
+product_or_formation_or_definition
+product_or_formation_or_definition = product_definition_formation
+{product_definition_formation.of_product -> product
+product <- product_related_product_category.products
+product_related_product_category <= product_category
+product_category.name='document'}
+end_attribute_mapping;
+
+attribute_mapping assigned_document(assigned_document, ($PATH)($PATH), Document_definition);
+applied_document_usage_constraint_assignment <=
+document_usage_constraint_assignment
+document_usage_constraint_assignment.assigned_document_usage ->
+document_usage_constraint
+document_usage_constraint.source ->
+document <-
+{document.kind -> document_type
+document_type.product_data_type = 'configuration controlled document definition'}
+document_product_association.relating_document
+document_product_association
+{document_product_association => document_product_equivalence}
+document_product_association.related_product ->
+product_or_formation_or_definition
+product_or_formation_or_definition = product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+(application_context_element.name = 'physical document definition')
+(application_context_element.name = 'digital document definition')
+(application_context_element.name = 'generic document definition')}
+{product_definition.formation -> product_definition_formation
+product_definition_formation.of_product -> product
+product <- product_related_product_category.products
+product_related_product_category <= product_category
+product_category.name='document'}
+
+end_attribute_mapping;
+
+attribute_mapping assigned_document(assigned_document, ($PATH)($PATH), File);
+applied_document_usage_constraint_assignment <=
+document_usage_constraint_assignment
+document_usage_constraint_assignment.assigned_document_usage ->
+document_usage_constraint
+document_usage_constraint.source ->
+document
+{document <- document_representation_type.represented_document
+(document_representation_type.name = 'digital')
+(document_representation_type.name = 'physical')}
+document => document_file 
+end_attribute_mapping;
+
+(* ======================== *)
+(* ENDOF Alternatives moved from Document_assignment *)
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

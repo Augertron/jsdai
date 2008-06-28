@@ -1,0 +1,67 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from N - ISO/CD-TS - 10303- Information product - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Information_product_xim;
+
+USE FROM Product_view_definition_xim;    --  ISO/TS 10303-1019
+USE FROM File_identification_xim;	--  ISO/TS 10303-1127
+
+REFERENCE FROM Product_identification_xim(types_of_product);
+
+(* Note: further specializations are needed *)
+ENTITY Information_product
+  (* CONNOTATIONAL *) ABSTRACT SUPERTYPE 
+  	SUBTYPE OF (product_armx);
+  WHERE	
+ 	 WR1 : SIZEOF(['document', 'information'] * types_of_product(SELF)) = 0;
+END_ENTITY;
+
+ENTITY Information_version
+  (* CONNOTATIONAL *) SUBTYPE OF (product_definition_formation);
+  SELF\product_definition_formation.of_product : Information_product;
+END_ENTITY;
+
+ENTITY Information_definition
+  (* CONNOTATIONAL *) SUBTYPE OF (Product_view_definition);
+  SELF\Product_view_definition.defined_version : Information_version;
+END_ENTITY;
+
+(*
+Every Product_version referencing an Information_product is a
+Information_version. EXPRESS specification:
+*)
+RULE Information_product_version_constraint FOR
+(Product_definition_formation);
+WHERE
+  WR1: SIZEOF ( QUERY ( pv <* Product_definition_formation | ( NOT (
+  'INFORMATION_PRODUCT_XIM.' + 'INFORMATION_VERSION' IN TYPEOF
+  ( pv) ) ) AND ( 'INFORMATION_PRODUCT_XIM.' + 'INFORMATION_PRODUCT' IN TYPEOF (
+pv.of_product) ) ) ) =0 ;
+END_RULE; 
+
+END_SCHEMA;

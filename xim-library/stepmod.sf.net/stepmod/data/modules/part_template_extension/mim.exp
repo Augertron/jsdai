@@ -1,0 +1,117 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4102 - ISO/TS 10303-1718 Part template extension - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3526
+*)
+
+
+SCHEMA Part_template_extension_mim;
+    USE FROM Layered_2d_shape_mim;	-- ISO/TS 10303-1693
+    USE FROM Fill_area_style_mim; -- ISO/TS 10303-1672
+	USE FROM Fabrication_technology_mim;	-- ISO/TS 10303-1670
+	USE FROM Text_representation_mim;	-- ISO/TS 10303-1750
+	
+	USE FROM Presentation_definition_schema(text_literal);
+
+ SUBTYPE_CONSTRAINT pte_template_definition_subtypes FOR part_template_definition;   
+ 	(ONEOF (parametric_template,
+ 	part_string_template,
+    part_text_template));
+ END_SUBTYPE_CONSTRAINT;  
+
+ENTITY closed_curve_style_parameters
+  SUBTYPE OF(curve_style_parameters_representation);
+END_ENTITY;  
+
+ENTITY curve_style_parameters_representation
+  SUBTYPE OF(representation);
+END_ENTITY;  
+
+ENTITY curve_style_parameters_with_ends
+  SUBTYPE OF(curve_style_parameters_representation);
+END_ENTITY;  
+
+ENTITY default_trace_template
+  SUBTYPE OF (trace_template);
+END_ENTITY;
+
+ENTITY inter_stratum_feature_edge_segment_template
+  SUBTYPE OF (part_template_definition,shape_aspect_relationship);
+    SELF\shape_aspect_relationship.relating_shape_aspect : edge_segment_vertex;
+    SELF\shape_aspect_relationship.related_shape_aspect  : edge_segment_vertex;
+WHERE
+  WR1: SELF\shape_aspect_relationship.relating_shape_aspect :<>:
+       SELF\shape_aspect_relationship.related_shape_aspect;
+END_ENTITY;
+
+ENTITY inter_stratum_feature_edge_template
+  SUBTYPE OF (part_template_definition);
+END_ENTITY;
+
+ENTITY fill_area_template
+  SUBTYPE OF (parametric_template);
+END_ENTITY;
+
+ENTITY parametric_template
+  ABSTRACT SUPERTYPE OF (ONEOF (fill_area_template,
+    teardrop_template,
+    trace_template))
+  SUBTYPE OF (part_template_definition);
+END_ENTITY;
+  
+ENTITY part_string_template
+  SUBTYPE OF (part_template_definition);
+END_ENTITY;
+
+ENTITY part_text_template
+  SUBTYPE OF (part_template_definition);
+END_ENTITY;
+
+ENTITY planar_path_shape_representation_with_parameters
+  SUBTYPE OF (single_area_csg_2d_shape_representation);
+END_ENTITY;
+
+ENTITY path_area_with_parameters
+  SUBTYPE OF (complex_area, mapped_item);
+(* TODO  
+  WHERE
+    wr1: "xxx.curve" IN TYPEOF SELF/mapped_item.mapping_source;
+      -- the mapping source must be a curve (open or closed)
+  wr2: -- the mapping_source.mapped_representation must be
+curve_style_parameters_representation;
+  wrx: - don't reall care on mapping_source.mapping_origin. Best to make it the
+line-width
+*)
+END_ENTITY;
+
+ENTITY solid_character_glyph_2d_symbol
+  SUBTYPE OF (generic_character_glyph_symbol, csg_2d_shape_representation);
+END_ENTITY;
+  
+ENTITY snowball_template
+  SUBTYPE OF (teardrop_template);
+END_ENTITY;
+
+ENTITY teardrop_by_angle_template
+  SUBTYPE OF (teardrop_template);
+END_ENTITY;
+
+ENTITY teardrop_by_length_template
+  SUBTYPE OF (teardrop_template);
+END_ENTITY;
+
+ENTITY teardrop_template
+  ABSTRACT SUPERTYPE OF (ONEOF (snowball_template,
+    teardrop_by_angle_template,
+    teardrop_by_length_template))
+  SUBTYPE OF (parametric_template, single_stratum_template);
+END_ENTITY;
+  
+ENTITY trace_template
+  SUPERTYPE OF (default_trace_template)
+  SUBTYPE OF (parametric_template);
+END_ENTITY;
+	
+END_SCHEMA;
+
+

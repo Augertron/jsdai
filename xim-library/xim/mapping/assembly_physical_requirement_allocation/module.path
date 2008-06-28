@@ -1,0 +1,348 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping assembly_physical_requirement_allocation(Assembly_physical_requirement_allocation_arm, Assembly_physical_requirement_allocation_mim);*)
+
+entity_mapping requirement_assignment_armx(requirement_assignment_armx, requirement_assignment)
+extended;
+
+attribute_mapping assigned_to(assigned_to, , component_or_feature);
+
+					requirement_assigned_item *> apra_requirement_assigned_item
+				
+end_attribute_mapping;
+attribute_mapping assigned_to(assigned_to, , Assembly_component_armx);
+
+					requirement_assigned_item *> apra_requirement_assigned_item
+					apra_requirement_assigned_item = product_definition
+					product_definition =>
+					component_definition =>
+					assembly_component
+				
+end_attribute_mapping;
+attribute_mapping assigned_to(assigned_to, , Assembly_joint_armx);
+
+					requirement_assigned_item *> apra_requirement_assigned_item
+					apra_requirement_assigned_item = shape_aspect
+					shape_aspect => 
+					component_feature_joint =>
+					assembly_joint 
+				
+end_attribute_mapping;
+attribute_mapping assigned_to(assigned_to, , Assembly_joint_armx);
+
+					requirement_assigned_item *> apra_requirement_assigned_item
+					apra_requirement_assigned_item = shape_aspect
+					shape_aspect => 
+					component_feature_joint =>
+					assembly_joint 
+				
+end_attribute_mapping;
+attribute_mapping assigned_to(assigned_to, , Component_feature_armx);
+
+					requirement_assigned_item *> apra_requirement_assigned_item
+					apra_requirement_assigned_item = shape_aspect
+					shape_aspect => 
+					component_feature
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Assembly_requirement_allocation(Assembly_requirement_allocation, requirement_assignment);
+
+mapping_constraints;
+requirement_assignment <=
+characterized_object				
+{characterized_object.name = 'assembly requirement allocation'}
+
+end_mapping_constraints;
+
+attribute_mapping assigned_to(assigned_to, $PATH, component_or_feature);
+
+requirement_assignment <-
+requirement_assigned_object.assigned_group
+requirement_assigned_object
+requirement_assigned_object.items ->
+requirement_assigned_item					
+(requirement_assigned_item = product_definition =>
+component_definition)
+(requirement_assigned_item = shape_aspect)
+
+end_attribute_mapping;
+
+attribute_mapping assigned_to(assigned_to, $PATH, Assembly_component_armx);
+
+requirement_assignment <-
+requirement_assigned_object.assigned_group
+requirement_assigned_object
+requirement_assigned_object.items ->
+requirement_assigned_item = product_definition =>
+component_definition => assembly_component
+
+end_attribute_mapping;
+
+attribute_mapping assigned_to(assigned_to, $PATH, Assembly_joint_armx);
+
+requirement_assignment <-
+requirement_assigned_object.assigned_group
+requirement_assigned_object
+requirement_assigned_object.items ->
+requirement_assigned_item = shape_aspect 
+shape_aspect => 
+component_feature_joint =>
+assembly_joint
+
+end_attribute_mapping;
+
+attribute_mapping assigned_to(assigned_to, $PATH, Component_feature_armx);
+
+requirement_assignment <-
+requirement_assigned_object.assigned_group
+requirement_assigned_object
+requirement_assigned_object.items ->
+requirement_assigned_item					
+(requirement_assigned_item = product_definition =>
+component_definition)
+(requirement_assigned_item = shape_aspect => component_feature)
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Assembly_separation_requirement_allocation(Assembly_separation_requirement_allocation, requirement_assignment);
+
+mapping_constraints;
+requirement_assignment <=
+characterized_object				
+{[characterized_object.name = 'assembly requirement allocation']
+[characterized_object.description = 'assembly separation requirement']}
+
+end_mapping_constraints;
+
+attribute_mapping disjoint_assignment(disjoint_assignment, $PATH, component_or_feature);
+requirement_assignment <=
+group <-
+group_assignment.assigned_group
+{group_assignment.role -> object_role
+object_role.name = 'disjoint assignment'}
+group_assignment =>
+applied_group_assignment
+applied_group_assignment.items ->
+groupable_item
+(groupable_item = product_definition
+product_definition =>
+component_definition)
+(groupable_item = shape_aspect
+shape_aspect)
+
+end_attribute_mapping;
+
+attribute_mapping disjoint_assignment(disjoint_assignment, $PATH, Assembly_component_armx);
+requirement_assignment <=
+group <-
+group_assignment.assigned_group
+{group_assignment.role -> object_role
+object_role.name = 'disjoint assignment'}
+group_assignment =>
+applied_group_assignment
+applied_group_assignment.items ->
+groupable_item
+groupable_item = product_definition
+product_definition =>
+component_definition=> assembly_component
+
+end_attribute_mapping;
+
+attribute_mapping disjoint_assignment(disjoint_assignment, $PATH, Assembly_joint_armx);
+requirement_assignment <=
+group <-
+group_assignment.assigned_group
+{group_assignment.role -> object_role
+object_role.name = 'disjoint assignment'}
+group_assignment =>
+applied_group_assignment
+applied_group_assignment.items ->
+groupable_item
+(groupable_item = product_definition
+product_definition =>
+component_definition)
+(groupable_item = shape_aspect
+shape_aspect => 
+component_feature_joint =>
+assembly_joint)
+
+end_attribute_mapping;
+
+attribute_mapping disjoint_assignment(disjoint_assignment, $PATH, Component_feature_armx);
+requirement_assignment <=
+group <-
+group_assignment.assigned_group
+{group_assignment.role -> object_role
+object_role.name = 'disjoint assignment'}
+group_assignment =>
+applied_group_assignment
+applied_group_assignment.items ->
+groupable_item
+(groupable_item = product_definition
+product_definition =>
+component_definition)
+(groupable_item = shape_aspect
+shape_aspect => component_feature)
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping electromagnetic_compatibility_requirement_allocation_armx(electromagnetic_compatibility_requirement_allocation_armx, electromagnetic_compatibility_requirement_allocation);
+
+mapping_constraints;
+{electromagnetic_compatibility_requirement_allocation <=
+requirement_assignment <=
+characterized_object
+{characterized_object.name = 'assembly requirement allocation'}}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Interface_component_allocation(Interface_component_allocation, product_definition_relationship);
+
+mapping_constraints;
+{product_definition_relationship
+product_definition_relationship.name = 'interface component allocation'}
+
+end_mapping_constraints;
+
+attribute_mapping mating_solution(mating_solution, $PATH, Interface_component_armx);
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition
+{product_definition
+product_definition =>
+component_definition =>
+assembly_component =>
+physical_component =>
+interface_component}
+{product_definition <-
+product_definition_relationship.related_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'instantiated part'}
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+physical_unit}
+
+end_attribute_mapping;
+
+attribute_mapping mating_requirement(mating_requirement, $PATH, Mating_connector_usage);
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+{product_definition
+product_definition.description = 'mating connector'}
+product_definition =>
+product_definition_with_associated_documents
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Assembly_shield_allocation_armx(Assembly_shield_allocation_armx, assembly_shield_allocation);
+
+mapping_constraints;
+assembly_shield_allocation <=
+electromagnetic_compatibility_requirement_allocation
+
+end_mapping_constraints;
+
+attribute_mapping assigned_to(assigned_to, $PATH, Physical_shield_armx);
+assembly_shield_allocation <=
+				electromagnetic_compatibility_requirement_allocation <=
+				requirement_assignment <-
+				requirement_assigned_object.assigned_group
+				requirement_assigned_object
+				requirement_assigned_object.items ->
+				requirement_assigned_item
+				requirement_assigned_item = product_definition =>
+				component_definition =>
+				assembly_component =>
+				physical_shield
+				
+end_attribute_mapping;
+
+attribute_mapping assigned_requirement_property(assigned_requirement_property, $PATH, Predefined_requirement_view_definition_armx);
+					assembly_shield_allocation <=
+					electromagnetic_compatibility_requirement_allocation <=
+					requirement_assignment <-
+					assigned_requirement.assigned_group
+					assigned_requirement
+					assigned_requirement.items ->
+					product_definition =>
+					predefined_requirement_view_definition
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping thermal_requirement_allocation_armx(thermal_requirement_allocation_armx, thermal_requirement_allocation);
+
+mapping_constraints;
+thermal_requirement_allocation <=
+requirement_assignment <=
+characterized_object
+{characterized_object
+characterized_object.name = 'assembly requirement allocation'}
+
+end_mapping_constraints;
+
+attribute_mapping assigned_to(assigned_to, $PATH, Thermal_component);
+thermal_requirement_allocation <=
+requirement_assignment <-
+requirement_assigned_object.assigned_group
+requirement_assigned_object
+requirement_assigned_object.items ->
+requirement_assigned_item
+requirement_assigned_item = product_definition
+{product_definition
+product_definition.description = 'thermal component'}
+product_definition =>
+component_definition =>
+assembly_component =>
+thermal_component
+
+end_attribute_mapping;
+
+attribute_mapping assigned_requirement_property(assigned_requirement_property, $PATH, Predefined_requirement_view_definition_armx);
+					thermal_requirement_allocation <=
+					requirement_assignment <-
+					assigned_requirement.assigned_group
+					assigned_requirement
+					assigned_requirement.items ->
+					product_definition =>
+					predefined_requirement_view_definition
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

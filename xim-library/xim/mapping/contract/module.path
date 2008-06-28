@@ -1,0 +1,72 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping contract(Contract_arm, Contract_mim);*)
+
+uof_mapping Contract(Contract);
+
+entity_mapping Contract(Contract, contract);
+
+attribute_mapping id(id, contract.name);
+
+end_attribute_mapping;
+
+attribute_mapping purpose(purpose, contract.purpose);
+
+end_attribute_mapping;
+
+attribute_mapping kind(kind, contract_type.description);
+
+	contract.kind -> contract_type
+	contract_type.description
+	
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Contract_assignment(Contract_assignment, applied_contract_assignment);
+
+mapping_constraints;
+
+	applied_contract_assignment <= contract_assignment
+	
+end_mapping_constraints;
+
+attribute_mapping assigned_contract(assigned_contract, $PATH, Contract);
+
+	applied_contract_assignment <= contract_assignment       
+	contract_assignment
+	contract_assignment.assigned_contract -> contract
+	
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, contract_item);
+
+applied_contract_assignment.items[i] -> contract_item 
+	
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

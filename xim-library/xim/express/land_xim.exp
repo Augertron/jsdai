@@ -1,0 +1,117 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Land - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Land_xim;
+
+USE FROM Layered_interconnect_module_design_xim;
+
+USE FROM Land_mim;
+	
+	SUBTYPE_CONSTRAINT l_laminate_component_interface_terminal_armx_subtypes FOR Laminate_component_interface_terminal_armx; 
+		 (ONEOF (Component_termination_passage_interface_terminal,
+		 Land_interface_terminal));
+	END_SUBTYPE_CONSTRAINT;
+
+	SUBTYPE_CONSTRAINT l_laminate_component_join_terminal_armx_subtypes FOR Laminate_component_join_terminal_armx; 
+		 (ONEOF (Component_termination_passage_join_terminal,
+		 Land_join_terminal,
+		 Embedded_physical_component_terminal));
+	END_SUBTYPE_CONSTRAINT;
+
+	SUBTYPE_CONSTRAINT stratum_feature_template_component_subtypes FOR Stratum_feature_template_component_armx;   
+		(ONEOF (Area_component_armx,
+		Land_armx));
+	END_SUBTYPE_CONSTRAINT;
+
+  ENTITY Contact_size_dependent_land_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Land_armx, contact_size_dependent_land);
+      SELF\Definition_based_product_occurrence.derived_from : Default_attachment_size_based_land_physical_template_armx;
+    INVERSE
+      external_access_mechanism : SET[1:2] OF land_interface_terminal FOR associated_component;
+  END_ENTITY;
+
+  ENTITY Inter_stratum_feature_dependent_land_armx
+    ABSTRACT SUPERTYPE OF (ONEOF (Plated_passage_dependent_land_armx,
+      Unsupported_passage_dependent_land_armx))
+    SUBTYPE OF (Land_armx, inter_stratum_feature_dependent_land);
+    SELF\Definition_based_product_occurrence.derived_from : Default_passage_based_land_physical_template_armx;
+  END_ENTITY;
+
+  ENTITY Land_armx
+    SUPERTYPE OF (ONEOF (Contact_size_dependent_land_armx,
+ Inter_stratum_feature_dependent_land_armx))
+    (* CONNOTATIONAL *) SUBTYPE OF (Stratum_feature_template_component_armx, land);
+      alternate_land_definition                							: OPTIONAL Land_physical_template_armx;
+      SELF\Definition_based_product_occurrence.derived_from : OPTIONAL Land_physical_template_armx;
+    DERIVE  
+       functional: BOOLEAN :=
+         (SIZEOF(['LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.CONDUCTOR',
+           'LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.CONNECTED_FILLED_AREA'] *
+           TYPEOF(SELF\Stratum_feature_template_component_armx.implementation_or_resident_stratum)) = 1);
+    INVERSE
+      access_mechanism : SET[1:?] OF land_join_terminal FOR containing_shape(* TEMP-AC! *);
+    WHERE
+      WR1 : ('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.CONDUCTOR' IN 
+           TYPEOF(SELF\Stratum_feature_template_component_armx.implementation_or_resident_stratum)) OR
+           ('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.CONDUCTIVE_FILLED_AREA' IN 
+           TYPEOF(SELF\Stratum_feature_template_component_armx.implementation_or_resident_stratum));
+  END_ENTITY;
+
+  ENTITY Land_interface_terminal
+    (* CONNOTATIONAL *) SUBTYPE OF (Laminate_component_interface_terminal_armx);
+      SELF\Component_feature_armx.definition           : Land_template_interface_terminal;
+      SELF\Component_feature_armx.associated_component(* TEMP-CF *) : Contact_size_dependent_land_armx;
+    DERIVE
+      SELF\shape_aspect.description : text := 'land interface terminal';
+  END_ENTITY;
+
+  ENTITY Land_join_terminal
+    (* CONNOTATIONAL *) SUBTYPE OF (Laminate_component_join_terminal_armx);
+      SELF\Component_feature_armx.definition           : Land_template_join_terminal;
+      SELF\Component_feature_armx.associated_component(* TEMP-CF *) : Land_armx;
+    DERIVE
+      SELF\shape_aspect.description : text := 'land join terminal';
+  END_ENTITY;
+
+ENTITY Plated_passage_dependent_land_armx
+  (* CONNOTATIONAL *) SUBTYPE OF (Inter_stratum_feature_dependent_land_armx, plated_passage_dependent_land);
+    reference_plated_passage							: Plated_passage_armx;
+    SELF\Assembly_component_armx.derived_from	: Default_plated_passage_based_land_physical_template_armx;
+END_ENTITY;
+
+  ENTITY Unsupported_passage_dependent_land_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Inter_stratum_feature_dependent_land_armx, unsupported_passage_dependent_land);
+      reference_passage                        : Unsupported_passage_armx;
+      SELF\Definition_based_product_occurrence.derived_from : Default_unsupported_passage_based_land_physical_template_armx;
+  END_ENTITY;
+
+END_SCHEMA;
+
+
+
+

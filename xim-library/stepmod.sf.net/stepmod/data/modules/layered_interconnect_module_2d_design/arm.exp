@@ -1,0 +1,40 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4032 - ISO/TS 10303-1695 Layered interconnect module 2d design - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3477
+*)
+SCHEMA Layered_interconnect_module_2d_design_arm;
+
+USE FROM Layered_interconnect_module_design_arm;	-- ISO/TS 10303-1698
+
+  ENTITY Located_2d_inter_stratum_extent
+    SUBTYPE OF (Inter_stratum_extent);
+      location : Cartesian_point;
+  END_ENTITY;
+
+  ENTITY Stratum_feature_planar_shape_model
+    SUBTYPE OF (Single_area_csg_2d_model);
+      shape_characterized_component : Stratum_feature;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Representation.description);
+  END_ENTITY;
+
+  ENTITY Stratum_interconnect_module_planar_position;
+      stratum_component         : Interconnect_module_stratum_assembly_relationship;
+      stratum_shape             : Stratum_planar_shape_model;
+      interconnect_module_shape : Physical_unit_planar_shape_model;
+      transformation            : Axis_placement_2d;
+    UNIQUE
+   	  UR1 : stratum_component;
+  END_ENTITY;
+
+  ENTITY Stratum_planar_shape_model
+    SUBTYPE OF (Planar_projected_shape_model);
+      shape_characterized_component : Stratum;
+    UNIQUE
+      UR1 : shape_characterized_component;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Representation.description);
+  END_ENTITY;
+
+END_SCHEMA;

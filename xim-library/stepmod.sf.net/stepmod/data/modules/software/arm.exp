@@ -1,0 +1,50 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4185 - ISO/TS 10303-1746 Software - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3609
+*)
+
+
+
+SCHEMA Software_arm;
+
+	USE FROM Document_definition_arm;	-- ISO/TS 10303-1123
+	USE FROM Information_product_arm;	-- ISO/TS 10303-xxxx
+
+REFERENCE FROM product_identification_arm(types_of_product); -- ISO/TS 10303-1017 
+
+  ENTITY Software 
+    SUBTYPE OF (Information_product);
+    UNIQUE 
+      UR1: SELF\Product.id;
+  	WHERE 
+	  WR1 :  SIZEOF(['software', 'information'] * types_of_product(SELF)) = 2;
+  END_ENTITY;
+
+(*  A member of Software_definition may also be a member of
+    Information_definition_with_digital_file
+*)
+  ENTITY Software_definition 
+    SUBTYPE OF (Information_definition);
+    SELF\Product_view_definition.defined_version : Software_version;
+  END_ENTITY;
+
+  ENTITY Software_version
+    SUBTYPE OF (Information_version);
+    SELF\Product_version.of_product : Software;
+  END_ENTITY;
+
+RULE software_version_constraint FOR 
+(Product_version);
+WHERE
+  WR1: SIZEOF ( QUERY ( pv <* Product_version | ( NOT ( 'SOFTWARE_ARM.' + 'SOFTWARE_VERSION' IN TYPEOF ( pv) ) ) AND ( 'SOFTWARE_ARM.' + 'SOFTWARE' IN TYPEOF ( pv.of_product) ) ) ) =0 ;
+END_RULE; 
+
+RULE software_definition_constraint FOR 
+(Product_view_definition);
+WHERE
+  WR1: SIZEOF ( QUERY ( pvd <* Product_view_definition | ( NOT ( 'SOFTWARE_ARM.' + 'SOFTWARE_DEFINITION' IN TYPEOF (pvd) ) ) AND ( 'SOFTWARE_ARM.' + 'SOFTWARE_VERSION' IN TYPEOF ( pvd.defined_version) ) ) ) =0 ;
+END_RULE; 
+
+END_SCHEMA;
+

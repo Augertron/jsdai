@@ -1,0 +1,614 @@
+ (* Document WG12 N4855 date 2007-04-18. EXPRESS listing corresponding to part
+ 42  edition 3 IS as modified by TC1  - WG12 N4854*)
+
+ SCHEMA geometric_model_schema;
+    REFERENCE FROM geometry_schema;
+    REFERENCE FROM topology_schema;
+    REFERENCE FROM measure_schema(length_measure,
+                                  parameter_value,
+                                  plane_angle_measure,
+                                  plane_angle_unit,
+                                  positive_length_measure,
+                                  positive_plane_angle_measure);
+    REFERENCE FROM representation_schema(founded_item,
+                                        representation_item);
+ 
+ TYPE boolean_operand = SELECT
+   (solid_model, 
+    half_space_solid,
+    csg_primitive,
+    boolean_result,
+    half_space_2d);
+ END_TYPE;
+
+ TYPE boolean_operator = ENUMERATION OF 
+   (union, 
+    intersection, 
+    difference);
+ END_TYPE;
+
+ TYPE csg_select = SELECT
+   (boolean_result,
+    csg_primitive);
+ END_TYPE;
+
+ TYPE csg_primitive = SELECT
+   (sphere,
+    ellipsoid,
+    block,
+    right_angular_wedge,
+    faceted_primitive,
+    rectangular_pyramid,
+    torus,
+    right_circular_cone,
+    eccentric_cone,
+    right_circular_cylinder,
+    cyclide_segment_solid,
+    primitive_2d);
+ END_TYPE;
+
+ TYPE geometric_set_select = SELECT
+   (point,
+    curve,
+    surface);
+ END_TYPE;
+
+ TYPE surface_model = SELECT
+   (shell_based_surface_model, 
+    face_based_surface_model);
+ END_TYPE;
+
+ TYPE wireframe_model = SELECT
+   (shell_based_wireframe_model,
+    edge_based_wireframe_model);
+ END_TYPE;
+
+ ENTITY block
+   SUBTYPE OF (geometric_representation_item);
+   position : axis2_placement_3d;
+   x        : positive_length_measure;
+   y        : positive_length_measure;
+   z        : positive_length_measure;
+ END_ENTITY;
+
+ ENTITY boolean_result
+   SUBTYPE OF (geometric_representation_item);
+   operator        : boolean_operator;
+   first_operand   :  boolean_operand;
+   second_operand  :  boolean_operand;
+ END_ENTITY;
+
+ ENTITY box_domain
+   SUBTYPE OF (founded_item);
+   corner  : cartesian_point;
+   xlength : positive_length_measure;
+   ylength : positive_length_measure;
+   zlength : positive_length_measure;
+ WHERE
+   WR1: SIZEOF(QUERY(item <* USEDIN(SELF,'')|
+             NOT ('GEOMETRIC_MODEL_SCHEMA.BOXED_HALF_SPACE'
+                    IN TYPEOF(item)))) = 0;
+ END_ENTITY;
+
+ ENTITY boxed_half_space
+   SUBTYPE OF(half_space_solid);
+   enclosure : box_domain;
+ END_ENTITY;
+
+ ENTITY brep_2d
+  SUBTYPE OF (solid_model);
+  extent : face;
+  WHERE
+    WR1:  SIZEOF (['TOPOLOGY_SCHEMA.FACE_SURFACE',
+          'TOPOLOGY_SCHEMA.SUBFACE', 'TOPOLOGY_SCHEMA.ORIENTED_FACE'] *
+              TYPEOF (SELF.extent)) = 0;
+   WR2 : SIZEOF (QUERY (bnds <* extent.bounds |
+         NOT ('TOPOLOGY_SCHEMA.EDGE_LOOP' IN TYPEOF(bnds.bound))) ) = 0;
+   WR3 : SIZEOF (QUERY (bnds <* extent.bounds |
+         'TOPOLOGY_SCHEMA.FACE_OUTER_BOUND' IN TYPEOF(bnds))) = 1;
+   WR4 : SIZEOF(QUERY (elp_fbnds <* QUERY (bnds <* extent.bounds |
+         'TOPOLOGY_SCHEMA.EDGE_LOOP' IN TYPEOF(bnds.bound)) |
+          NOT (SIZEOF (QUERY (oe <* elp_fbnds.bound\path.edge_list | NOT
+          (('TOPOLOGY_SCHEMA.EDGE_CURVE' IN TYPEOF(oe.edge_element)) AND
+         (oe.edge_element\geometric_representation_item.dim = 2)))) =
+                0))) = 0;
+ END_ENTITY;
+
+ ENTITY brep_with_voids
+   SUBTYPE OF (manifold_solid_brep);
+   voids : SET [1:?] OF oriented_closed_shell;
+ END_ENTITY;
+
+ENTITY  circular_area
+  SUBTYPE OF (primitive_2d);
+    centre: cartesian_point;
+    radius: positive_length_measure;
+END_ENTITY;
+
+ ENTITY convex_hexahedron
+   SUBTYPE OF (faceted_primitive);
+  WHERE
+    WR1: SIZEOF(points) = 8 ;
+    WR2: above_plane(points[1], points[2], points[3], points[4]) = 0.0;
+    WR3: above_plane(points[5], points[8], points[7], points[6]) = 0.0;
+    WR4: above_plane(points[1], points[4], points[8], points[5]) = 0.0;
+    WR5: above_plane(points[4], points[3], points[7], points[8]) = 0.0;
+    WR6: above_plane(points[3], points[2], points[6], points[7]) = 0.0;
+    WR7: above_plane(points[1], points[5], points[6], points[2]) = 0.0;
+    WR8: same_side([points[1], points[2], points[3]],
+                     [points[5], points[6], points[7], points[8]]);
+    WR9: same_side([points[1], points[4], points[8]],
+                     [points[3], points[7], points[6], points[2]]);
+    WR10: same_side([points[1], points[2], points[5]],
+                      [points[3], points[7], points[8], points[4]]);
+    WR11: same_side([points[5], points[6], points[7]],
+                     [points[1], points[2], points[3], points[4]]);
+    WR12: same_side([points[3], points[7], points[6]],
+                     [points[1], points[4], points[8], points[5]]);
+    WR13: same_side([points[3], points[7], points[8]],
+                      [points[1], points[5], points[6], points[2]]);
+  END_ENTITY;
+
+ ENTITY csg_solid
+   SUBTYPE OF (solid_model);
+   tree_root_expression : csg_select;
+ END_ENTITY;
+
+ENTITY cyclide_segment_solid
+   SUBTYPE OF (geometric_representation_item);
+   position    : axis2_placement_3d;
+   radius1     : positive_length_measure;
+   radius2     : positive_length_measure;
+   cone_angle1 : plane_angle_measure;
+   cone_angle2 : plane_angle_measure;
+   turn_angle  : plane_angle_measure;
+END_ENTITY;
+
+ ENTITY eccentric_cone
+  SUBTYPE OF (geometric_representation_item);
+   position    : axis2_placement_3d;
+   semi_axis_1 : positive_length_measure;
+   semi_axis_2 : positive_length_measure;
+   height      : positive_length_measure;
+   x_offset    : length_measure;
+   y_offset    : length_measure;
+   ratio       : REAL;
+ WHERE
+  WR1 : ratio >= 0.0;
+ END_ENTITY;
+
+ ENTITY edge_based_wireframe_model
+   SUBTYPE OF (geometric_representation_item);
+   ebwm_boundary  : SET [1:?] OF connected_edge_set;
+ END_ENTITY;
+
+ ENTITY face_based_surface_model
+   SUBTYPE OF (geometric_representation_item);
+   fbsm_faces : SET [1:?] OF connected_face_set;
+ END_ENTITY;
+
+ ENTITY geometric_curve_set
+   SUBTYPE OF (geometric_set);
+ WHERE
+   WR1: SIZEOF(QUERY(temp <* SELF\geometric_set.elements |
+                            'GEOMETRY_SCHEMA.SURFACE' IN TYPEOF(temp))) = 0;
+ END_ENTITY;
+
+ ENTITY geometric_set
+   SUPERTYPE OF (ONEOF(geometric_curve_set,
+                       geometric_set_replica))
+   SUBTYPE OF (geometric_representation_item);
+   elements :  SET [1:?] OF geometric_set_select;
+ END_ENTITY;
+
+ ENTITY ellipsoid
+   SUBTYPE OF (geometric_representation_item);
+     position      : axis2_placement_3d;
+     semi_axis_1 : positive_length_measure;
+     semi_axis_2 : positive_length_measure;
+     semi_axis_3 : positive_length_measure;
+ END_ENTITY;
+
+ENTITY  elliptic_area
+  SUBTYPE OF (primitive_2d);
+    position : axis2_placement_2d;
+    semi_axis_1 : positive_length_measure;
+    semi_axis_2 : positive_length_measure;
+END_ENTITY;
+
+ ENTITY extruded_area_solid
+   SUBTYPE OF (swept_area_solid);
+   extruded_direction : direction;
+   depth              : positive_length_measure;
+ WHERE
+   WR1: dot_product(
+        (SELF\swept_area_solid.swept_area.basis_surface\
+        elementary_surface.position.p[3]), extruded_direction) <> 0.0;
+ END_ENTITY;
+
+ ENTITY extruded_face_solid
+   SUBTYPE OF (swept_face_solid);
+   extruded_direction : direction;
+   depth              : positive_length_measure;
+ WHERE
+   WR1: dot_product(
+        (SELF\swept_face_solid.swept_face.face_geometry\
+        elementary_surface.position.p[3]), extruded_direction) <> 0.0;
+ END_ENTITY;
+
+ ENTITY faceted_brep
+   SUBTYPE OF (manifold_solid_brep);
+ END_ENTITY;
+
+ ENTITY faceted_primitive
+   SUPERTYPE OF (ONEOF(tetrahedron, convex_hexahedron))
+   SUBTYPE OF (geometric_representation_item) ;
+     points : LIST[4:?] OF UNIQUE cartesian_point ;
+  WHERE
+    WR1: points[1].dim = 3 ;
+  END_ENTITY;
+
+  ENTITY geometric_set_replica
+   SUBTYPE OF (geometric_set); 
+     parent_set     : geometric_set; 
+     transformation : cartesian_transformation_operator; 
+   DERIVE 
+     SELF\geometric_set.elements : SET [1:?] OF geometric_set_select := 
+           build_transformed_set(transformation, parent_set); 
+   WHERE
+     WR1: acyclic_set_replica(SELF, parent_set);
+   END_ENTITY;
+
+ENTITY  half_space_2d
+  SUBTYPE OF (geometric_representation_item);
+    base_curve:  curve;
+    agreement_flag: BOOLEAN;
+END_ENTITY;
+
+ ENTITY half_space_solid
+   SUBTYPE OF(geometric_representation_item);
+   base_surface   : surface;
+   agreement_flag : BOOLEAN;
+ END_ENTITY;
+
+ ENTITY manifold_solid_brep
+   SUBTYPE OF (solid_model);
+   outer : closed_shell;
+ END_ENTITY;
+
+ ENTITY polygonal_area
+   SUBTYPE OF (primitive_2d);
+   bounds:  LIST [3:?] OF UNIQUE cartesian_point;
+ END_ENTITY;
+
+ ENTITY primitive_2d
+   SUPERTYPE  OF (ONEOF (circular_area, elliptic_area, rectangular_area,
+                            polygonal_area))
+   SUBTYPE OF (geometric_representation_item);
+   WHERE
+     WR1 : SELF\geometric_representation_item.dim = 2;
+ END_ENTITY;
+
+ ENTITY rectangle_domain
+   SUBTYPE OF (founded_item);
+   corner: cartesian_point;
+   xlength: positive_length_measure;
+   ylength: positive_length_measure;
+ WHERE
+   WR1: SIZEOF(QUERY(item <* USEDIN(SELF, '')| NOT
+   ('GEOMETRIC_MODEL_SCHEMA.RECTANGLED_HALF_SPACE' IN TYPEOF(item)))) = 0;
+ END_ENTITY;
+
+ENTITY rectangled_half_space
+  SUBTYPE OF (half_space_2d);
+    enclosure: rectangle_domain;
+END_ENTITY;
+
+ENTITY rectangular_area
+  SUBTYPE OF (primitive_2d);
+    position: axis2_placement_2d;
+    x: positive_length_measure;
+    y: positive_length_measure;
+END_ENTITY;
+
+ ENTITY rectangular_pyramid
+   SUBTYPE OF (geometric_representation_item);
+   position       : axis2_placement_3d;
+   xlength        : positive_length_measure;
+   ylength        : positive_length_measure;
+   height         : positive_length_measure;
+ END_ENTITY;
+
+ ENTITY revolved_area_solid
+   SUBTYPE OF (swept_area_solid);
+   axis  : axis1_placement;
+   angle : plane_angle_measure;
+ DERIVE
+  axis_line : line := representation_item('')||
+                    geometric_representation_item()|| curve()||
+                    line(axis.location, representation_item('')||
+                    geometric_representation_item()||
+                    vector(axis.z, 1.0));
+ END_ENTITY;
+
+ENTITY revolved_face_solid
+   SUBTYPE OF (swept_face_solid);
+   axis  : axis1_placement;
+   angle : plane_angle_measure;
+ DERIVE
+  axis_line : line := representation_item('')||
+                    geometric_representation_item()|| curve()||
+                    line(axis.location, representation_item('')||
+                    geometric_representation_item()||
+                    vector(axis.z, 1.0));
+ END_ENTITY;
+
+ ENTITY right_angular_wedge
+   SUBTYPE OF (geometric_representation_item);
+   position : axis2_placement_3d;
+   x        : positive_length_measure;
+   y        : positive_length_measure;
+   z        : positive_length_measure;
+   ltx      : length_measure;
+ WHERE
+   WR1: ((0.0 <= ltx) AND (ltx < x));
+ END_ENTITY;
+
+ ENTITY right_circular_cone
+   SUBTYPE OF (geometric_representation_item);
+   position   : axis1_placement;
+   height     : positive_length_measure;
+   radius     : length_measure;
+   semi_angle : plane_angle_measure;
+ WHERE
+   WR1: radius >= 0.0;
+ END_ENTITY;
+
+ ENTITY right_circular_cylinder
+   SUBTYPE OF (geometric_representation_item);
+   position   : axis1_placement;
+   height     : positive_length_measure;
+   radius     : positive_length_measure;
+ END_ENTITY;
+
+ ENTITY sectioned_spine
+   SUBTYPE OF (geometric_curve_set);
+      cross_sections   : LIST[2:?] OF curve;
+      spine_points     : LIST[2:?] OF point;
+   WHERE
+     WR1 : SIZEOF(SELF\geometric_set.elements) = 1;
+     WR2 : 'GEOMETRY_SCHEMA.CURVE' IN
+                     TYPEOF(SELF\geometric_set.elements[1]);
+     WR3 : SIZEOF(cross_sections) = SIZEOF(spine_points);
+     WR4 : SELF\geometric_representation_item.dim = 3;
+ END_ENTITY;
+
+ ENTITY shell_based_surface_model
+   SUBTYPE OF (geometric_representation_item);
+   sbsm_boundary  : SET [1:?] OF shell;
+ WHERE
+   WR1: constraints_geometry_shell_based_surface_model(SELF);
+ END_ENTITY;
+
+ ENTITY shell_based_wireframe_model
+   SUBTYPE OF (geometric_representation_item);
+   sbwm_boundary  : SET [1:?] OF shell;
+ WHERE
+   WR1: constraints_geometry_shell_based_wireframe_model(SELF);
+ END_ENTITY;
+
+ ENTITY solid_model
+   SUPERTYPE OF (ONEOF( csg_solid, manifold_solid_brep, swept_face_solid,
+                        swept_area_solid, swept_disk_solid, solid_replica,
+                        brep_2d, trimmed_volume))
+   SUBTYPE OF (geometric_representation_item);
+ END_ENTITY;
+
+ ENTITY solid_replica
+   SUBTYPE OF (solid_model);
+   parent_solid   : solid_model;
+   transformation : cartesian_transformation_operator_3d;
+ WHERE
+   WR1: acyclic_solid_replica(SELF, parent_solid);
+   WR2: parent_solid\geometric_representation_item.dim = 3;
+ END_ENTITY;
+
+
+ ENTITY sphere
+   SUBTYPE OF (geometric_representation_item);
+   radius : positive_length_measure;
+   centre : point;
+ END_ENTITY;
+
+ ENTITY surface_curve_swept_area_solid
+   SUBTYPE OF (swept_area_solid);
+      directrix          : curve;
+      start_param        : REAL;
+      end_param          : REAL;
+      reference_surface  : surface;
+   WHERE
+     WR1 : (NOT ('GEOMETRY_SCHEMA.SURFACE_CURVE' IN TYPEOF(directrix))) OR
+          (reference_surface IN (directrix\surface_curve.basis_surface));
+ END_ENTITY;
+
+ ENTITY surface_curve_swept_face_solid
+   SUBTYPE OF (swept_face_solid);
+      directrix          : curve;
+      start_param        : REAL;
+      end_param          : REAL;
+      reference_surface  : surface;
+   WHERE
+     WR1 : (NOT ('GEOMETRY_SCHEMA.SURFACE_CURVE' IN TYPEOF(directrix))) OR
+          (reference_surface IN (directrix\surface_curve.basis_surface));
+ END_ENTITY;
+
+ ENTITY swept_area_solid
+   SUPERTYPE OF (ONEOF(revolved_area_solid, extruded_area_solid,
+                       surface_curve_swept_area_solid))
+   SUBTYPE OF (solid_model);
+   swept_area :  curve_bounded_surface;
+ WHERE
+   WR1: 'GEOMETRY_SCHEMA.PLANE' IN TYPEOF(swept_area.basis_surface);
+ END_ENTITY;
+
+ ENTITY swept_disk_solid
+   SUBTYPE OF (solid_model);
+     directrix    : curve;
+     radius       : positive_length_measure;
+     inner_radius : OPTIONAL positive_length_measure;
+     start_param : REAL;
+     end_param   : REAL;
+   WHERE
+     WR1 : directrix.dim = 3;
+     WR2 : (NOT EXISTS(inner_radius)) OR (radius > inner_radius) ;
+ END_ENTITY;
+
+ ENTITY swept_face_solid
+   SUPERTYPE OF (ONEOF(extruded_face_solid, revolved_face_solid,
+                 surface_curve_swept_face_solid))
+   SUBTYPE OF (solid_model);
+   swept_face :  face_surface;
+ WHERE
+   WR1: 'GEOMETRY_SCHEMA.PLANE' IN TYPEOF(swept_face.face_geometry);
+ END_ENTITY;
+
+ ENTITY tetrahedron
+   SUBTYPE OF (faceted_primitive);
+  WHERE
+    WR1: SIZEOF(points) = 4 ;
+    WR2: above_plane(points[1], points[2], points[3], points[4]) <> 0.0;
+  END_ENTITY;
+
+ ENTITY torus
+   SUBTYPE OF (geometric_representation_item);
+   position     : axis1_placement;
+   major_radius : positive_length_measure;
+   minor_radius : positive_length_measure;
+ WHERE
+   WR1: major_radius > minor_radius;
+ END_ENTITY;
+
+ ENTITY trimmed_volume
+   SUBTYPE OF (solid_model);
+   basis_volume :  volume;
+     u1         :  parameter_value;
+     u2         :  parameter_value;
+     v1         :  parameter_value;
+     v2         :  parameter_value;
+     w1         :  parameter_value;
+     w2         :  parameter_value;
+   WHERE
+     WR1 : u1 <> u2;
+     WR2 : v1 <> v2;
+     WR3 : w1 <> w2;
+ END_ENTITY;
+
+ 
+ FUNCTION acyclic_set_replica(rep : geometric_set_replica;
+                           parent : geometric_set) : BOOLEAN;
+   IF NOT (('GEOMETRY_SCHEMA.GEOMETRIC_SET_REPLICA') IN TYPEOF(parent))
+        THEN  RETURN (TRUE);
+   END_IF;
+ (* Return TRUE if the parent is not of type geometric_set_replica *)
+   IF (parent :=: rep) THEN
+      RETURN (FALSE);
+  (* Return FALSE if the parent is the same geometric_set_replica,
+     otherwise, call function again with the parents own parent_set.  *)
+    ELSE RETURN(acyclic_set_replica(rep,
+                          parent\geometric_set_replica.parent_set));
+    END_IF;
+  END_FUNCTION;
+
+ FUNCTION acyclic_solid_replica(rep : solid_replica; parent :
+                    solid_model) : BOOLEAN;
+   IF NOT (('GEOMETRY_SCHEMA.SOLID_REPLICA') IN TYPEOF(parent)) THEN
+      RETURN (TRUE);
+   END_IF;
+ (* Return TRUE if the parent is not of type solid_replica. *)
+   IF (parent :=: rep) THEN
+      RETURN (FALSE);
+  (* Return FALSE if the parent is the same solid_replica, otherwise,
+   call function again with the parents own parent_solid.     *)
+    ELSE RETURN(acyclic_solid_replica(rep,
+                      parent\solid_replica.parent_solid));
+    END_IF;
+  END_FUNCTION;
+
+ FUNCTION build_transformed_set(tr: cartesian_transformation_operator;
+           gset : geometric_set) : SET [0:?] OF geometric_set_select;
+  LOCAL
+   s          : SET [1:?] OF geometric_set_select := gset.elements;
+   trset      : SET [0:?] OF geometric_set_select := [];
+  END_LOCAL;
+  REPEAT j := 1 TO SIZEOF(s);
+    IF ('GEOMETRY_SCHEMA.CURVE' IN TYPEOF(s[j])) THEN
+     trset := trset + dummy_gri || curve() ||curve_replica(s[j],tr); ELSE
+     IF ('GEOMETRY_SCHEMA.POINT' IN TYPEOF(s[j])) THEN
+       trset := trset + dummy_gri || point() || point_replica(s[j],tr);
+       ELSE
+       IF ('GEOMETRY_SCHEMA.SURFACE' IN TYPEOF(s[j])) THEN
+         trset := trset + dummy_gri || surface()  || surface_replica(s[j],
+           tr || cartesian_transformation_operator_3d (?));
+       END_IF;
+     END_IF;
+    END_IF;
+  END_REPEAT;
+  RETURN(trset);
+ END_FUNCTION;
+
+ FUNCTION constraints_geometry_shell_based_surface_model
+             (m: shell_based_surface_model): BOOLEAN;
+   LOCAL
+     result : BOOLEAN := TRUE;
+   END_LOCAL;
+   
+   REPEAT j := 1 TO SIZEOF(m.sbsm_boundary);
+     IF (NOT ('TOPOLOGY_SCHEMA.OPEN_SHELL' IN
+                     TYPEOF(m.sbsm_boundary[j])) AND
+        (NOT ('TOPOLOGY_SCHEMA.CLOSED_SHELL' IN
+           TYPEOF(m.sbsm_boundary[j]))))
+     THEN
+       result := FALSE;
+       RETURN(result);
+       (* A surface model is composed of OPEN_ and CLOSED_SHELLs. *)
+     END_IF;
+   END_REPEAT;
+   RETURN(result);
+ END_FUNCTION;
+
+ FUNCTION constraints_geometry_shell_based_wireframe_model
+                       (m : shell_based_wireframe_model) : BOOLEAN;
+   LOCAL
+     result : BOOLEAN := TRUE;
+   END_LOCAL;
+
+   REPEAT j := 1 TO SIZEOF(m.sbwm_boundary);
+     IF (NOT ('TOPOLOGY_SCHEMA.WIRE_SHELL' IN
+                    TYPEOF(m.sbwm_boundary[j])) AND
+        (NOT ('TOPOLOGY_SCHEMA.VERTEX_SHELL' IN
+                      TYPEOF(m.sbwm_boundary[j]))))
+     THEN
+       result := FALSE;
+       RETURN(result);
+       (* A wireframe model is composed of WIRE_ and VERTEX_SHELLs *)
+     END_IF;
+   END_REPEAT;
+   RETURN(result);
+ END_FUNCTION;
+
+ FUNCTION msb_shells(brep : manifold_solid_brep)    
+               : SET[1:?] OF closed_shell;   
+    LOCAL   
+      return_set: SET[1:?] OF closed_shell := [brep.outer];   
+    END_LOCAL;   
+
+    IF SIZEOF(QUERY(msbtype <* TYPEOF(brep) |   
+                 msbtype LIKE '*BREP_WITH_VOIDS'))  >= 1    
+          THEN   
+       return_set := return_set + brep\brep_with_voids.voids;   
+    END_IF;   
+   RETURN(return_set);   
+ END_FUNCTION; 
+ 
+ 
+ END_SCHEMA; -- end GEOMETRIC MODEL schema

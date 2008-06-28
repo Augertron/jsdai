@@ -1,0 +1,301 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping encoded_text_representation(Encoded_text_representation_arm, Encoded_text_representation_mim);*)
+
+
+entity_mapping encoded_text_format_armx(encoded_text_format_armx, encoded_text_format);
+
+mapping_constraints;
+
+				class =>
+				encoded_text_format
+			
+end_mapping_constraints;
+
+attribute_mapping version_identifier(version_identifier, identification_assignment.assigned_id);
+
+					encoded_text_format =
+					encoded_text_representation_identification_item
+					encoded_text_representation_identification_item <*
+					identification_item
+					identification_item <-
+					applied_identification_assignment.items [1]
+					applied_identification_assignment
+					applied_identification_assignment <=
+					identification_assignment
+					{identification_assignment
+					identification_assignment.role ->
+					identification_role
+					identification_role.name = 'encoded text format version identifier'}
+					identification_assignment.assigned_id
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping encoded_text_representation_item_armx(encoded_text_representation_item_armx, encoded_text_representation_item);
+
+mapping_constraints;
+
+				descriptive_representation_item =>
+				encoded_text_representation_item
+			
+end_mapping_constraints;
+
+attribute_mapping encoding(encoding, $PATH, Encoded_text_format);
+
+					encoded_text_representation_item =
+					encoded_text_representation_classification_item
+					encoded_text_representation_classification_item <*
+					classification_item
+					classification_item <-
+					applied_classification_assignment.items [1]
+					applied_classification_assignment
+					applied_classification_assignment <=
+					classification_assignment
+					{classification_assignment
+					classification_assignment.role ->
+					classification_role
+					classification_role.name = 'encoded text representation item encoding'}					
+					classification_assignment.assigned_class ->
+					group
+					group =>
+					class =>
+					encoded_text_format
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping String_representation_item_relationship(String_representation_item_relationship, string_representation_item_relationship);
+
+mapping_constraints;
+
+				representation_item_relationship =>
+				string_representation_item_relationship
+			
+end_mapping_constraints;
+
+attribute_mapping relating_representation_item(relating_representation_item, $PATH, descriptive_representation_item);
+
+					string_representation_item_relationship <=
+					representation_item_relationship
+					representation_item_relationship.relating_representation_item ->
+					representation_item
+					representation_item =>
+					descriptive_representation_item				
+				
+end_attribute_mapping;
+
+attribute_mapping related_representation_item(related_representation_item, $PATH, descriptive_representation_item);
+
+					string_representation_item_relationship <=
+					representation_item_relationship
+					representation_item_relationship.related_representation_item ->
+					representation_item
+					representation_item =>
+					descriptive_representation_item				
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping String_representation_item_composition(String_representation_item_composition, string_representation_item_composition);
+
+mapping_constraints;
+
+				representation_item_relationship =>
+				string_representation_item_relationship =>
+				string_representation_item_composition
+			
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping String_representation_item_sequence(String_representation_item_sequence, string_representation_item_sequence);
+
+mapping_constraints;
+
+				representation_item_relationship =>
+				string_representation_item_relationship =>
+				string_representation_item_sequence
+			
+end_mapping_constraints;
+
+end_entity_mapping;
+(* Entity with the same name is taken from AIM
+entity_mapping Uniform_resource_indicator_representation_item(Uniform_resource_indicator_representation_item, uniform_resource_indicator_representation_item);
+
+mapping_constraints;
+
+				representation_item =>
+				uniform_resource_indicator_representation_item
+			
+end_mapping_constraints;
+
+attribute_mapping uri(uri, representation_item.name);
+
+					uniform_resource_indicator_representation_item <=
+					representation_item
+					representation_item.name
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping template_specification_armx(template_specification_armx, template_specification);
+
+mapping_constraints;
+
+					class =>
+					template_specification
+			
+end_mapping_constraints;
+
+attribute_mapping description(description, group.description);
+
+					template_specification <=
+					class <=
+					group
+					group.description
+				
+end_attribute_mapping;
+
+attribute_mapping text(text, $PATH, Encoded_text_representation_item);
+
+					template_specification <=
+					class <=
+					group <-
+					classification_assignment.assigned_class 
+					classification_assignment
+					{classification_assignment
+					classification_assignment.role ->
+					classification_role
+					classification_role.name = 'template specification text'}
+					classification_assignment =>
+					applied_classification_assignment
+					applied_classification_assignment.items [1] ->
+					classification_item 
+					classification_item *>
+					encoded_text_representation_classification_item
+					encoded_text_representation_classification_item =
+					encoded_text_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping template(template, $PATH, descriptive_representation_item);
+
+					template_specification <=
+					class <=
+					group <-
+					classification_assignment.assigned_class 
+					classification_assignment
+					{classification_assignment
+					classification_assignment.role ->
+					classification_role
+					classification_role.name = 'template specification template'}
+					classification_assignment =>
+					applied_classification_assignment
+					applied_classification_assignment.items [1] ->
+					classification_item 
+					classification_item *>
+					encoded_text_representation_classification_item
+					encoded_text_representation_classification_item =
+					descriptive_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping template(template, $PATH, template_specification_item);
+
+					template_specification <=
+					class <=
+					group <-
+					classification_assignment.assigned_class 
+					classification_assignment
+					{classification_assignment
+					classification_assignment.role ->
+					classification_role
+					classification_role.name = 'template specification template'}
+					classification_assignment =>
+					applied_classification_assignment
+					applied_classification_assignment.items [1] ->
+					classification_item 
+					classification_item *>
+					encoded_text_representation_classification_item
+				
+end_attribute_mapping;
+
+attribute_mapping template(template, $PATH, Uniform_resource_indicator_representation_item);
+
+					template_specification <=
+					class <=
+					group <-
+					classification_assignment.assigned_class 
+					classification_assignment
+					{classification_assignment
+					classification_assignment.role ->
+					classification_role
+					classification_role.name = 'template specification template'}
+					classification_assignment =>
+					applied_classification_assignment
+					applied_classification_assignment.items [1] ->
+					classification_item 
+					classification_item *>
+					encoded_text_representation_classification_item
+					encoded_text_representation_classification_item =
+					uniform_resource_indicator_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping template(template, $PATH, Document_definition);
+
+					template_specification <=
+					class <=
+					group <-
+					classification_assignment.assigned_class 
+					classification_assignment
+					{classification_assignment
+					classification_assignment.role ->
+					classification_role
+					classification_role.name = 'template specification template'}
+					classification_assignment =>
+					applied_classification_assignment
+					applied_classification_assignment.items [1] ->
+					classification_item 
+					classification_item *>
+					encoded_text_representation_classification_item
+					encoded_text_representation_classification_item =
+					product_definition
+					{product_definition
+					product_definition.frame_of_reference ->
+					product_definition_context <=
+					application_context_element
+					(application_context_element.name = 'digital document definition')
+					(application_context_element.name = 'physical document definition')
+					(application_context_element.name = 'generic document definition')} 
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

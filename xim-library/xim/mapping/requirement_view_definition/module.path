@@ -1,0 +1,85 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping requirement_view_definition(Requirement_view_definition_arm, Requirement_view_definition_mim);*)
+
+uof_mapping Requirement_View_Definition(Requirement_View_Definition);
+
+entity_mapping Requirement_view_definition(Requirement_view_definition, product_definition);
+
+mapping_constraints;
+
+				product_definition
+				{product_definition
+				product_definition.formation ->
+				product_definition_formation
+				product_definition_formation.of_product ->
+				product <- 
+				product_related_product_category.products[i]
+				product_related_product_category <=
+				product_category 
+				product_category.name='requirement'}				
+			
+end_mapping_constraints;
+
+attribute_mapping defined_version(defined_version, $PATH, Requirement_version);
+
+        product_definition
+				product_definition.formation ->
+				product_definition_formation
+				{product_definition_formation.of_product ->
+				product <- 
+				product_related_product_category.products[i]
+				product_related_product_category <=
+				product_category 
+				product_category.name='requirement'}
+                          
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(* Entity with the same name is taken from AIM instead
+entity_mapping Identification_assignment(Identification_assignment, applied_identification_assignment)
+extended;
+
+attribute_mapping items(items, $PATH, Requirement_view_definition);
+
+					applied_identification_assignment
+					applied_identification_assignment.items[i] ->
+					product_definition
+					{product_definition
+					product_definition.formation ->
+					product_definition_formation
+					product_definition_formation.of_product ->
+					product <- 
+					product_related_product_category.products[i]
+					product_related_product_category <=
+					product_category
+					product_category.name='requirement'}
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+(*end_schema_mapping;*)

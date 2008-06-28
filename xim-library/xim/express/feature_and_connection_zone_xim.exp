@@ -1,0 +1,69 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Feature and connection zone - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Feature_and_connection_zone_xim; 
+
+USE FROM Shape_feature_xim;
+USE FROM Surface_conditions_xim; -- new
+USE FROM Feature_and_connection_zone_mim;
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+
+  ENTITY Shape_feature
+  	ABSTRACT SUPERTYPE
+       (* CONNOTATIONAL *) SUBTYPE OF (Shape_element);
+   		connection_area : OPTIONAL SET[1:?] OF Connection_zone;
+    DERIVE
+      surface_conditions : SET OF Surface_condition := 
+	         bag_to_set(USEDIN(SELF\Shape_element,'SURFACE_CONDITIONS_XIM.SURFACE_CONDITION_ASSOCIATION.DESCRIBED_ELEMENT'));		   		
+    UNIQUE
+      UR1 : SELF\Shape_aspect.name, SELF\Shape_element.containing_shape;
+  END_ENTITY;
+
+  ENTITY Connection_zone
+    ABSTRACT SUPERTYPE
+  	(* CONNOTATIONAL *) SUBTYPE OF (Shape_feature_occurrence);
+  	DERIVE
+      surface_conditions : SET OF Surface_condition := 
+	       bag_to_set(USEDIN(SELF\Shape_element, 'SURFACE_CONDITIONS_XIM.SURFACE_CONDITION_ASSOCIATION.DESCRIBED_ELEMENT'));  	
+  	  SELF\shape_aspect.description : text := 'connection zone';
+    WHERE
+      WR1 : SIZEOF(USEDIN(SELF, '')) > 0;
+  END_ENTITY;
+
+ ENTITY Feature_definition_with_connection_area
+    SUBTYPE OF (Shape_feature_definition_armx);
+    connection_area : SET [1:?] OF Connection_zone;
+  END_ENTITY;
+
+-- USE entity from MIM
+--  ENTITY Location_shape_model
+  
+END_SCHEMA;
+

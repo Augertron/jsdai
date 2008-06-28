@@ -1,0 +1,96 @@
+(*
+$Id$
+ISO TC184/SC4/WG12 N4774 - ISO/CD-TS 10303-1136 Text appearance - EXPRESS ARM
+Supersedes ISO TC184/SC4/WG12 N2696
+*) 
+
+
+SCHEMA Text_appearance_arm;
+
+USE FROM Basic_geometry_arm;   -- ISO/TS 10303-1652
+
+  TYPE composite_text_element_select = SELECT
+    (Composite_presentable_text, 
+     Text_literal);
+  END_TYPE; 
+
+  TYPE font_select = EXTENSIBLE GENERIC_ENTITY SELECT (
+    Draughting_pre_defined_text_font,
+    Externally_defined_text_font);
+  END_TYPE;
+
+  TYPE text_alignment = EXTENSIBLE ENUMERATION OF( 
+    top_right,
+    top_centre,
+    top_left,
+    centre_right,
+    centre_centre,
+    centre_left,
+    bottom_right,
+    bottom_centre,
+    bottom_left);
+  END_TYPE;
+
+  TYPE text_delineation = EXTENSIBLE ENUMERATION OF(
+    underline,
+    overline);
+  END_TYPE;
+
+  TYPE text_path = ENUMERATION OF(
+    left,
+    right,
+    up,
+    down);
+  END_TYPE;
+
+  ENTITY Composite_presentable_text
+    SUBTYPE OF (Detailed_geometric_model_element);
+      collected_text : LIST[2:?] OF composite_text_element_select;
+  END_ENTITY;
+
+  ENTITY Draughting_pre_defined_text_font;
+  END_ENTITY;
+
+  ENTITY Externally_defined_text_font;
+    name : STRING;
+  END_ENTITY; 
+
+  ENTITY Text_literal
+    SUPERTYPE OF (
+      Text_literal_with_extent ANDOR 
+      Text_literal_with_delineation ANDOR 
+      Text_literal_with_associated_curves ANDOR 
+      Text_literal_with_blanking_box)
+    SUBTYPE OF (Detailed_geometric_model_element);
+      alignment : text_alignment;
+      font : font_select;
+      literal : STRING;
+      path : text_path;
+      placement : Axis_placement;
+  END_ENTITY;
+
+  ENTITY Text_literal_with_associated_curves
+    SUBTYPE OF (Text_literal);
+      associated_curves : SET [1:?] OF Curve;
+  END_ENTITY;  
+
+  ENTITY Text_literal_with_blanking_box
+    SUBTYPE OF (Text_literal);
+  END_ENTITY;  
+
+  ENTITY Text_literal_with_delineation
+    SUBTYPE OF (Text_literal);
+      delineation: text_delineation;
+  END_ENTITY;  
+
+  ENTITY Text_literal_with_extent
+    SUBTYPE OF (Text_literal);
+      width : length_measure; 
+      height : length_measure;
+  END_ENTITY;  
+
+  SUBTYPE_CONSTRAINT ta_detailed_geometric_model_element_subtypes FOR Detailed_geometric_model_element;
+    ONEOF(Composite_presentable_text, Text_literal);
+  END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA;  

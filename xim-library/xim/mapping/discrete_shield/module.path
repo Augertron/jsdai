@@ -1,0 +1,118 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping shield(Shield_arm, Shield_mim);*)
+
+entity_mapping Physical_shield_armx(Physical_shield_armx, physical_shield);
+
+mapping_constraints;
+physical_shield <=
+assembly_component <=
+component_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping shielded_item(shielded_item, $PATH, Assembly_component_armx);
+physical_shield <=
+assembly_component <=
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'shielded item'}
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+component_definition =>
+assembly_component
+
+end_attribute_mapping;
+
+attribute_mapping shielded_item(shielded_item, $PATH, Placement_group_requirement_definition);
+physical_shield <=
+assembly_component <=					
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'shielded item'}
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition
+{product_definition.description = 'placement group'}
+product_definition =>
+component_definition =>
+group_product_definition
+
+end_attribute_mapping;
+
+attribute_mapping shielded_item(shielded_item, $PATH, Component_feature_armx);
+physical_shield <=
+assembly_component <=					
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'shielded item'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+component_feature
+
+end_attribute_mapping;
+
+attribute_mapping shielded_item(shielded_item, $PATH, Physical_connectivity_definition_armx);
+physical_shield <=
+assembly_component <=					
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'shielded item'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+physical_connectivity_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Routed_physical_shield_armx(Routed_physical_shield_armx, routed_physical_shield);
+
+mapping_constraints;
+routed_physical_shield <=
+physical_shield <=
+physical_component <=
+assembly_component <=
+component_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+(*end_schema_mapping;*)

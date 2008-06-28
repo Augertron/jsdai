@@ -1,0 +1,160 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Bare die - EXPRESS ARM 
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Bare_die_xim;
+
+USE FROM Part_feature_function_xim;
+	
+USE FROM Extended_geometric_tolerance_xim;
+
+USE FROM Functional_usage_view_xim;
+
+USE FROM Functional_assignment_to_part_xim;
+
+USE FROM Bare_die_mim;
+
+USE FROM Feature_and_connection_zone_mim;
+	
+
+	TYPE bd_material_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON material_item_select WITH
+		(Bare_die_terminal_armx,
+		Bare_die_template_terminal_armx);
+	END_TYPE;
+
+	TYPE derived_zone_shape_class = ENUMERATION OF(
+		area,
+		edge);
+	END_TYPE;
+	
+  ENTITY Bare_die_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_usage_view, bare_die);
+      least_material_condition_centroid_location   : OPTIONAL Cartesian_point;
+      maximum_height_above_seating_plane           : OPTIONAL length_measure_with_unit;
+      maximum_material_condition_centroid_location : OPTIONAL Cartesian_point;
+      implemented_function                         : Functional_unit_usage_view;
+    INVERSE
+      access_mechanisms : SET[2:?] OF minimally_defined_bare_die_terminal_armx FOR containing_shape(* TEMP-AD! *);
+      die_seating_plane : non_feature_shape_element FOR scope;
+    UNIQUE
+      UR1 : implemented_function;
+    WHERE
+      WR1 : SIZEOF(QUERY(pf <* USEDIN(SELF,
+ 'SHAPE_PROPERTY_ASSIGNMENT_XIM.Shape_element.containing_shape') | ('BARE_DIE_XIM.' + 'BARE_DIE_TOP_SURFACE_ARMX' IN TYPEOF(pf)))) <= 1;
+      WR2 : SIZEOF(QUERY(pf <* USEDIN(SELF,
+ 'SHAPE_PROPERTY_ASSIGNMENT_XIM.Shape_element.containing_shape') | ('BARE_DIE_XIM.' + 'BARE_DIE_BOTTOM_SURFACE_ARMX' IN TYPEOF(pf)))) <= 1;
+      WR3 : SIZEOF(QUERY(pf <* USEDIN(SELF,
+ 'SHAPE_PROPERTY_ASSIGNMENT_XIM.Shape_element.containing_shape') | ('BARE_DIE_XIM.' + 'BARE_DIE_EDGE_SURFACE_ARMX' IN TYPEOF(pf)))) <= 1;
+      WR4 : 'NON_FEATURE_SHAPE_ELEMENT_XIM.SEATING_PLANE_ARMX' IN TYPEOF(die_seating_plane);
+  END_ENTITY;
+
+  ENTITY Bare_die_bottom_surface_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Bare_die_surface_armx, bare_die_bottom_surface);
+  END_ENTITY;
+
+  ENTITY Bare_die_edge_segment_surface_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Bare_die_surface_armx, bare_die_edge_segment_surface);
+      composed_surface                        																	: Bare_die_edge_surface_armx;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED start_vertex	: Edge_segment_vertex_armx;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED end_vertex 		: Edge_segment_vertex_armx;
+    WHERE
+      WR1 : start_vertex :<>: end_vertex;
+      WR2 : SELF\Shape_element.containing_shape :=: composed_surface\Shape_element.containing_shape;
+  END_ENTITY;
+
+  ENTITY Bare_die_edge_surface_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Bare_die_surface_armx, bare_die_edge_surface);
+  END_ENTITY;
+
+  ENTITY Bare_die_surface_armx
+    ABSTRACT SUPERTYPE OF (ONEOF (Bare_die_top_surface_armx,
+ Bare_die_bottom_surface_armx,
+ Bare_die_edge_segment_surface_armx,
+ Bare_die_edge_surface_armx))
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_mounting_feature_armx, bare_die_surface);
+			SELF\Shape_element.containing_shape(* TEMP-PF! *) : Bare_die_armx;    
+  END_ENTITY;
+
+  ENTITY Bare_die_terminal_armx
+    SUBTYPE OF (Minimally_defined_bare_die_terminal_armx, Placed_feature_armx, bare_die_terminal);
+      SELF\Placed_feature_armx.definition : Bare_die_template_terminal_armx;
+  END_ENTITY;
+
+  ENTITY Bare_die_template_terminal_armx
+    SUBTYPE OF (Part_feature_template_definition_armx, Shape_feature, bare_die_template_terminal);
+      SELF\Shape_feature.connection_area : OPTIONAL SET[1:?] OF Connection_zone_in_usage_view;                
+      seating_plane_zone                 : OPTIONAL Connection_zone_bare_die_interface_plane_relationship;
+   INVERSE
+	  material : material_designation FOR definitions;      
+   WHERE  
+      WR1 : 'CONDUCTIVITY_MATERIAL_ASPECTS_XIM.'+ 'MATERIAL_IDENTIFICATION_WITH_CONDUCTIVITY_CLASSIFICATION' IN TYPEOF (material);
+  END_ENTITY;
+
+  ENTITY Bare_die_terminal_surface_constituent_relationship
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_constituent_relationship);
+      SELF\Shape_element_relationship.relating : Bare_die_surface_armx;
+      SELF\Shape_element_relationship.related  : Bare_die_terminal_armx;
+  END_ENTITY;
+
+  ENTITY Bare_die_top_surface_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Bare_die_surface_armx, bare_die_top_surface);
+  END_ENTITY;
+
+  ENTITY Connection_zone_bare_die_interface_plane_relationship
+  	(* CONNOTATIONAL *) SUBTYPE OF (connection_zone_interface_plane_relationship);
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED interface_plane	: Seating_plane_armx;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED mating_zone				: Connection_zone_in_usage_view;
+      derived_zone																																	: Connection_zone_in_usage_view;
+      derived_zone_shape_class                                                      : derived_zone_shape_class;
+    (* attribute is overlapping derived_zone_shape_class *)
+    DERIVE
+      SELF\shape_aspect_relationship.description : text := ?;
+      SELF\shape_aspect.of_shape : product_definition_shape := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+      SELF\shape_aspect.description : text := ?;
+      SELF\shape_aspect.name : label := ?;
+    INVERSE
+      associated_bare_die_terminal : SET[0:1] OF bare_die_template_terminal_armx FOR seating_plane_zone;
+    UNIQUE
+      UR1 : interface_plane,
+ mating_zone;
+  END_ENTITY; 
+
+  ENTITY Guided_wave_bare_die_terminal
+    (* CONNOTATIONAL *) SUBTYPE OF (Minimally_defined_bare_die_terminal_armx);
+  END_ENTITY;
+
+  ENTITY Minimally_defined_bare_die_terminal_armx
+    SUPERTYPE OF (Guided_wave_bare_die_terminal ANDOR
+ Bare_die_terminal_armx)
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_terminal, minimally_defined_bare_die_terminal);
+      SELF\Shape_element.containing_shape(* TEMP-PF! *) : Bare_die_armx;
+  END_ENTITY;
+
+END_SCHEMA;
+
+

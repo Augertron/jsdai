@@ -1,0 +1,465 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping physical_unit_shape_with_parameters(Physical_unit_shape_with_parameters_arm, Physical_unit_shape_with_parameters_mim);*)
+
+
+entity_mapping External_source_identification(External_source_identification, applied_external_identification_assignment)
+extended;
+
+attribute_mapping item(item, , Physical_unit_keepout_shape_model);
+
+				external_identification_item *> puswp_external_identification_item
+				puswp_external_identification_item = shape_representation 
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Physical_unit_keepout_shape_model(Physical_unit_keepout_shape_model, shape_representation);
+
+mapping_constraints;
+{shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit}
+
+end_mapping_constraints;
+
+attribute_mapping shape_characterized_definition(shape_characterized_definition, $PATH, physical_unit);
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit
+
+end_attribute_mapping;
+
+attribute_mapping shape_characterized_definition(shape_characterized_definition, $PATH, Part_usage_view);
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit
+
+end_attribute_mapping;
+
+attribute_mapping shape_characterized_definition(shape_characterized_definition, $PATH, Part_design_view);
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit
+
+end_attribute_mapping;
+
+attribute_mapping shape_environment(shape_environment, descriptive_representation_item, application_environment);
+shape_representation <=
+representation <-
+representation_relationship.rep_1 
+representation_relationship 
+representation_relationship.rep_2 ->
+representation 
+{representation.name = 'shape environment'}
+representation.items[i] ->
+representation_item
+{(representation_item.name = 'manufacturing')
+(representation_item.name = 'end user application')}
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping shape_material_condition(shape_material_condition, descriptive_representation_item, material_condition);
+shape_representation <=
+representation <-
+representation_relationship.rep_1 
+representation_relationship 
+representation_relationship.rep_2 ->
+representation 
+{representation.name = 'shape material condition'}
+representation.items[i] ->
+representation_item
+{(representation_item.name = 'maximum material condition')
+(representation_item.name = 'minimum material condition')
+(representation_item.name = 'nominal material condition')}
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping centroid_location(centroid_location, $PATH, Cartesian_point);
+shape_representation <=
+representation
+representation.items[i] ->
+representation_item
+representation_item =>
+geometric_representation_item =>
+point =>
+cartesian_point
+
+end_attribute_mapping;
+
+attribute_mapping shape_approximation_level(shape_approximation_level, descriptive_representation_item, shape_approximation_level);
+shape_representation <=
+representation <-
+representation_relationship.rep_1
+representation_relationship
+representation_relationship.rep_2 ->
+representation
+{representation.name = 'shape approximation level'}
+representation.items[i] ->
+representation_item
+{(representation_item.name = 'coarse')
+(representation_item.name = 'detailed')
+(representation_item.name = 'is unknown')}
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping shape_extent(shape_extent, descriptive_representation_item, shape_extent);
+shape_representation <=
+representation <-
+representation_relationship.rep_1
+representation_relationship
+representation_relationship.rep_2 ->
+representation
+{representation.name = 'shape extent'}
+representation.items[i] ->
+representation_item
+{(representation_item.name = 'envelope')
+(representation_item.name = 'over body')
+(representation_item.name = 'over lands')
+(representation_item.name = 'over breakout')}
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping shape_purpose(shape_purpose, descriptive_representation_item, predefined_keepout_purpose);
+shape_representation <=
+representation <-
+representation_relationship.rep_1 
+representation_relationship 
+representation_relationship.rep_2 ->
+representation 
+{representation.name = 'predefined keepout shape purpose'}
+representation.items[i] ->
+representation_item
+{(representation_item.name = 'thermal')
+(representation_item.name = 'generic clearance')
+(representation_item.name = 'shock')
+(representation_item.name = 'vibration')
+(representation_item.name = 'electromagnetic compatibility')}
+
+end_attribute_mapping;
+
+attribute_mapping constrained_design_object_category(constrained_design_object_category, characterized_object.description);
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_object
+characterized_object =>
+{characterized_object
+(characterized_object.description = 'assembly module assembly component category')
+(characterized_object.description = 'component feature category')
+(characterized_object.description = 'assembly ee material category')
+(characterized_object.description = 'interconnect ee material category')
+(characterized_object.description = 'interconnect module assembly component category')
+(characterized_object.description = 'via category')
+(characterized_object.description = 'inter stratum feature category')
+(characterized_object.description = 'cutout category')
+(characterized_object.description = 'fill area category')
+(characterized_object.description = 'laminate component category')
+(characterized_object.description = 'stratum feature category')}
+keepout_design_object_category
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Physical_unit_shape_model(Physical_unit_shape_model, shape_representation);
+
+mapping_constraints;
+shape_representation <=
+representation
+{representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit}
+
+end_mapping_constraints;
+
+attribute_mapping shape_characterized_definition(shape_characterized_definition, $PATH, physical_unit);
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit
+
+end_attribute_mapping;
+
+attribute_mapping shape_characterized_definition(shape_characterized_definition, $PATH, Part_usage_view);
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit
+
+end_attribute_mapping;
+
+attribute_mapping shape_characterized_definition(shape_characterized_definition, $PATH, Part_design_view);
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit
+
+end_attribute_mapping;
+
+attribute_mapping shape_environment(shape_environment, descriptive_representation_item, application_environment);
+shape_representation <=
+representation <-
+representation_relationship.rep_1 
+representation_relationship 
+representation_relationship.rep_2 ->
+representation 
+{representation.name = 'shape environment'}
+representation.items[i] ->
+representation_item
+{(representation_item.name = 'manufacturing')
+(representation_item.name = 'end user application')}
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping shape_material_condition(shape_material_condition, descriptive_representation_item, material_condition);
+shape_representation <=
+representation <-
+representation_relationship.rep_1 
+representation_relationship 
+representation_relationship.rep_2 ->
+representation 
+{representation.name = 'shape material condition'}
+representation.items[i] ->
+representation_item
+{(representation_item.name = 'maximum material condition')
+(representation_item.name = 'minimum material condition')
+(representation_item.name = 'nominal material condition')}
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping centroid_location(centroid_location, $PATH, Cartesian_point);
+shape_representation <=
+representation
+representation.items[i] ->
+representation_item
+{representation_item.name = 'centroid location'}
+representation_item =>
+geometric_representation_item =>
+point =>
+cartesian_point
+
+end_attribute_mapping;
+
+attribute_mapping mass_property_quality(mass_property_quality, descriptive_representation_item, mass_property_quality);
+shape_representation
+shape_representation <=
+representation <-
+representation_relationship.rep_1
+representation_relationship
+representation_relationship.rep_2 ->
+representation
+{representation.name = 'mass property quality'}
+representation.items[i] ->
+representation_item
+{(representation_item.name = 'high')
+(representation_item.name = 'medium')
+(representation_item.name = 'low')
+(representation_item.name = 'is unknown')}
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping shape_approximation_level(shape_approximation_level, descriptive_representation_item, shape_approximation_level);
+shape_representation <=
+representation <-
+representation_relationship.rep_1
+representation_relationship
+representation_relationship.rep_2 ->
+representation
+{representation.name = 'shape approximation level'}
+representation.items[i] ->
+representation_item
+{(representation_item.name = 'coarse')
+(representation_item.name = 'detailed')
+(representation_item.name = 'is unknown')}
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping shape_extent(shape_extent, descriptive_representation_item, shape_extent);
+shape_representation <=
+representation <-
+representation_relationship.rep_1
+representation_relationship
+representation_relationship.rep_2 ->
+representation
+{representation.name = 'shape extent'}
+representation.items[i] ->
+representation_item
+{(representation_item.name = 'envelope')
+(representation_item.name = 'over body')
+(representation_item.name = 'over lands')
+(representation_item.name = 'over breakout')}
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Requirement_assignment_armx(Requirement_assignment_armx, requirement_assignment)
+extended;
+
+attribute_mapping assigned_to(assigned_to, , Physical_unit_keepout_shape_model);
+
+					requirement_assigned_item *> puswp_requirement_assigned_item
+					puswp_requirement_assigned_item = 
+					shape_representation
+				
+end_attribute_mapping;
+
+attribute_mapping assigned_to(assigned_to, , Physical_unit_shape_model);
+
+					requirement_assigned_item *> puswp_requirement_assigned_item
+					puswp_requirement_assigned_item = 
+					shape_representation
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Usage_view_level_non_feature_shape_model(Usage_view_level_non_feature_shape_model, shape_representation)
+extended;
+
+attribute_mapping model_shape(model_shape, , Physical_unit_shape_model);
+
+					shape_representation
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Physical_unit_shape_representation_relationship(Physical_unit_shape_representation_relationship, shape_representation_relationship);
+
+mapping_constraints;
+{shape_representation_relationship <=
+representation_relationship
+[representation_relationship
+representation_relationship.name = 'physical unit shape representation relationship']}
+
+end_mapping_constraints;
+
+attribute_mapping principal_part_shape(principal_part_shape, $PATH, Physical_unit_shape_model);
+shape_representation_relationship <=
+representation_relationship
+representation_relationship.rep_1 ->
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping related_part_shape(related_part_shape, $PATH, Physical_unit_shape_model);
+shape_representation_relationship <=
+representation_relationship
+representation_relationship.rep_2 ->
+{representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+(*end_schema_mapping;*)

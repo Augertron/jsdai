@@ -1,0 +1,83 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping configuration_item(Configuration_item_arm, Configuration_item_mim);*)
+
+(*
+entity_mapping Product_configuration(Product_configuration, 
+				configuration_item
+			);
+
+attribute_mapping id(id, 
+					configuration_item.id
+				);
+
+end_attribute_mapping;
+
+attribute_mapping name(name, 
+					configuration_item.name
+				);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, 
+					configuration_item.description
+				);
+
+end_attribute_mapping;
+
+attribute_mapping item_context(item_context, $PATH, Product_concept);
+
+				configuration_item.item_concept -> product_concept
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Item_design_association(Item_design_association, 
+		configuration_design
+		);
+
+attribute_mapping configuration(configuration, $PATH, configuration_item);
+
+		configuration_design.configuration ->
+		configuration_item
+		
+end_attribute_mapping;
+
+attribute_mapping design(design, $PATH, product_definition_formation);
+
+    configuration_design.design -> configuration_design_item
+    configuration_design_item = product_definition_formation
+		
+end_attribute_mapping;
+
+attribute_mapping design(design, $PATH, Product_view_definition);
+
+		configuration_design.design -> configuration_design_item
+    configuration_design_item = product_definition
+		
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

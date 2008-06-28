@@ -1,0 +1,592 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Part template 2d shape - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Part_template_2d_shape_xim;
+
+USE FROM Component_grouping_xim;
+USE FROM Part_template_extension_xim;
+USE FROM Package_xim;
+
+--USE FROM Part_template_3d_shape_xim; -- ISO/TS 10303-1717
+USE FROM Physical_unit_2d_shape_xim; -- ISO/TS 10303-1726
+USE FROM Part_template_shape_with_parameters_xim;	-- ISO/TS 10303-1720
+
+USE FROM Lksoft_extensions_xim;
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+
+
+--USE FROM Physical_unit_3d_shape_xim; -- ISO/TS 10303-1728
+
+
+REFERENCE FROM Requirement_decomposition_xim(get_rvd);	-- ISO/TS 10303-1740
+REFERENCE FROM Fabrication_technology_xim(get_stack);	-- ISO/TS 10303-1670
+
+USE FROM Part_template_2d_shape_mim;
+
+	TYPE pt2ds_ee_product_definition_with_annotation_elements = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ee_product_definition_with_annotation_elements WITH 
+   	(Structured_template_armx);
+	END_TYPE; 
+
+   TYPE pt2ds_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
+      (Structured_template_armx,
+      Template_location_in_structured_template);
+   END_TYPE; 
+
+  	TYPE pt2ds_part_template_or_physical_unit_2d_shape_model_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON part_template_or_physical_unit_2d_shape_model_select WITH 
+    	(Part_template_planar_shape_model);
+  	END_TYPE;
+
+	TYPE pt2ds_physical_unit_shape_model_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON physical_unit_shape_model_select WITH 
+	    (Physical_unit_planar_shape_model);
+  	END_TYPE;
+
+	SUBTYPE_CONSTRAINT pt2ds_geometric_template_subtypes FOR Geometric_template_armx; 
+	    (ONEOF (Continuous_template_armx,
+		 Structured_template_armx));
+	END_SUBTYPE_CONSTRAINT;
+
+	SUBTYPE_CONSTRAINT pt2ds_stratum_stack_model_subtypes FOR Stratum_stack_model_armx;
+	    (ONEOF (Design_stack_model_armx,
+		 Library_stack_model_armx));
+	END_SUBTYPE_CONSTRAINT;
+	
+  TYPE template_arrangement = ENUMERATION OF
+    (top,
+     bottom,
+     symmetrical,
+     swappable);
+  END_TYPE;
+
+  TYPE location_stratum_technology_occurrence_or_stratum_technology = SELECT
+    (stratum_technology_occurrence_or_stratum_technology,
+    Template_location_in_structured_template);
+  END_TYPE;
+
+  TYPE stratum_technology_occurrence_or_stratum_technology = SELECT
+   (Stratum_technology_occurrence_armx,
+    Stratum_technology_armx);
+  END_TYPE;
+
+  TYPE template_location_placement_status = ENUMERATION OF
+    (is_fixed,
+	 must_be_moved_in_design,
+	 may_be_moved_in_design,
+	 is_unknown);
+  END_TYPE;
+
+  TYPE trace_class = ENUMERATION OF
+    (microstrip,
+     stripline,
+     co_planar_waveguide);
+  END_TYPE;
+
+
+  ENTITY Allocated_passage_minimum_annular_ring_armx
+    SUBTYPE OF (allocated_passage_minimum_annular_ring);
+      connected_minimum_annular_ring           : OPTIONAL length_measure_with_unit;
+      unconnected_minimum_annular_ring         : OPTIONAL length_measure_with_unit;
+      associated_passage_allocation            : Passage_technology_allocation_to_stack_model_armx;
+      associated_stratum_technology_occurrence : Stratum_technology_occurrence_armx;
+    WHERE
+      WR1 : EXISTS(connected_minimum_annular_ring) OR
+            EXISTS(unconnected_minimum_annular_ring);
+      WR2 : associated_stratum_technology_occurrence IN associated_passage_allocation\Stratum_sub_stack_armx.
+                                                        associated_stackup\Stratum_stack_model_armx.composing_occurrence;
+  END_ENTITY;
+
+  ENTITY Complex_passage_padstack_definition_armx
+   SUBTYPE OF (Stratum_stack_dependent_template_armx, Passage_padstack_definition_armx, complex_passage_padstack_definition);
+  END_ENTITY;
+
+  ENTITY Dependent_template_location_in_padstack_definition
+    SUBTYPE OF (Stratum_specific_template_location_armx);
+    reference_location : location_stratum_technology_occurrence_or_stratum_technology;    
+    SELF\Template_location_in_structured_template.assembly : Multi_stratum_structured_template_armx;
+    WHERE
+      WR1: SELF\Stratum_specific_template_location.bound_stratum :<>: reference_location;     
+      WR2: SELF <> reference_location;
+      WR3: SELF\Template_location_in_structured_template.assembly :=: reference_location.assembly;
+      WR4: NOT('FABRICATION_TECHNOLOGY_XIM.STRATUM_TECHNOLOGY_OCCURRENCE_ARMX' IN TYPEOF(reference_location)) OR
+           ((reference_location IN 
+           SELF\Template_location_in_structured_template.assembly.composing_occurrence) AND
+           ('FABRICATION_TECHNOLOGY_XIM.STRATUM_STACK_DEPENDENT_TEMPLATE_ARMX' IN TYPEOF
+          (SELF\Template_location_in_structured_template.assembly.composing_occurrence)));
+      WR5 : NOT('FABRICATION_TECHNOLOGY_XIM.STRATUM_TECHNOLOGY_OCCURRENCE_ARMX' IN 
+           TYPEOF(reference_location)) OR
+           ('FABRICATION_TECHNOLOGY_XIM.STRATUM_TECHNOLOGY_OCCURRENCE_ARMX' IN 
+           TYPEOF(bound_stratum));
+      WR6 : NOT('FABRICATION_TECHNOLOGY_XIM.STRATUM_TECHNOLOGY_OCCURRENCE_ARMX' IN 
+           TYPEOF(reference_location)) OR (SIZEOF 
+           (['FABRICATION_TECHNOLOGY_XIM.STRATUM_STACK_DEPENDENT_TEMPLATE_ARMX',
+           'FABRICATION_TECHNOLOGY_XIM.PASSAGE_PADSTACK_DEFINITION_ARMX'] * TYPEOF
+           (SELF\Template_location_in_structured_template.assembly)) = 2);
+  END_ENTITY;
+
+  ENTITY Design_stack_model_armx -- choose some of the Stratum_technology_occurrence
+    SUBTYPE OF(design_stack_model, Stratum_stack_model_armx);
+      model_thickness : OPTIONAL Length_tolerance_characteristic;    
+      reference_model : OPTIONAL Library_stack_model_armx; 
+    INVERSE
+      sub_stack: SET [1:?] OF Stratum_sub_stack_armx for associated_stackup;
+    WHERE
+      WR1: NOT EXISTS(reference_model) OR 
+          ((SELF\Stratum_stack_model_armx.composing_occurrence * reference_model\Stratum_stack_model_armx.composing_occurrence) = 
+           SELF\Stratum_stack_model_armx.composing_occurrence);
+  END_ENTITY;
+
+-- has many Stratum_technology_occurrence, more than may be actually used
+  ENTITY Library_stack_model_armx
+    SUBTYPE OF(library_stack_model, Stratum_stack_model_armx);
+    DERIVE
+      padstacks : SET[0:?] OF Padstack_definition_armx := bag_to_set(QUERY(p <* USEDIN(SELF,
+        'PART_TEMPLATE_2D_SHAPE_XIM.STRATUM_STACK_DEPENDENT_TEMPLATE_ARMX.STACK') | ('PART_TEMPLATE_2D_SHAPE_XIM.PADSTACK_DEFINITION_ARMX' IN TYPEOF(p))));    
+  END_ENTITY;
+
+  ENTITY Local_linear_stack_armx
+    SUBTYPE OF (Stratum_sub_stack_armx, local_linear_stack); --TODO - likely supertype will change.
+      SELF\Stratum_sub_stack_armx.stratum_technology_sequence : SET[1:?] OF Stratum_technology_occurrence_link_armx;
+      -- Attribute in XIM only - have no relevance to ARM
+      root_xim : OPTIONAL Sequential_stratum_technology_occurrence_group_xim;
+    WHERE
+      WR1: SIZEOF(get_stack(stratum_technology_sequence)) = (SIZEOF(stratum_technology_sequence) + 1);
+      WR2: sts_vertex_degree_check(stratum_technology_sequence, 2);
+  END_ENTITY;
+
+  ENTITY Padstack_definition_armx
+    SUPERTYPE OF (Passage_padstack_definition_armx)
+    SUBTYPE OF (Multi_stratum_structured_template_armx, padstack_definition);
+    WHERE
+      WR1 : SIZEOF(QUERY(prpc <* USEDIN(SELF\Product_view_definition.defined_version.of_product,
+ 'PRODUCT_DEFINITION_SCHEMA.PRODUCT_RELATED_PRODUCT_CATEGORY.PRODUCTS') |  (prpc\Product_category.name = 'template model'))) > 0;
+      WR2: NOT('PART_TEMPLATE_2D_SHAPE_XIM.PASSAGE_PADSTACK_DEFINITION_ARMX' IN TYPEOF(SELF)) XOR 
+          (SIZEOF(QUERY(tlict <* SELF\Structured_template_armx.templates |
+         ('PART_TEMPLATE_2D_SHAPE_XIM.INTER_STRATUM_FEATURE_TEMPLATE_LOCATION' IN TYPEOF(tlict)))) > 0);
+      WR3: SIZEOF(QUERY(tlict <* SELF\Structured_template_armx.templates |
+         (NOT ('PART_TEMPLATE_2D_SHAPE_XIM.INTER_STRATUM_FEATURE_TEMPLATE_LOCATION' IN TYPEOF(tlict))) AND
+          (NOT ('PART_TEMPLATE_2D_SHAPE_XIM.STRATUM_SPECIFIC_TEMPLATE_LOCATION_ARMX' IN TYPEOF(tlict))))) = 0;
+  END_ENTITY;
+
+  ENTITY Passage_padstack_definition_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Padstack_definition_armx, passage_padstack_definition);
+    INVERSE
+      reference_isft : Inter_stratum_feature_template_location FOR assembly;    
+    WHERE
+      WR1: NOT(('PART_TEMPLATE_2D_SHAPE_XIM.STRUCTURED_INTER_STRATUM_FEATURE_TEMPLATE_ARMX' IN TYPEOF(reference_isft.template)) XOR
+               ('PART_TEMPLATE_2D_SHAPE_XIM.COMPLEX_PASSAGE_PADSTACK_DEFINITION_ARMX' IN TYPEOF(SELF)));      
+  END_ENTITY;
+
+  ENTITY Passage_technology_allocation_to_stack_model_armx
+    SUBTYPE OF (Stratum_sub_stack_armx, passage_technology_allocation_to_stack_model);
+      allocated_technology            : Passage_technology_armx;
+      single_stratum_passage_location : OPTIONAL Stratum_technology_occurrence_armx;
+	  target_stratum                  : OPTIONAL Stratum_technology_occurrence_armx;
+      connected_minimum_annular_ring   : OPTIONAL length_measure_with_unit;
+      unconnected_minimum_annular_ring : OPTIONAL length_measure_with_unit;	   
+	DERIVE
+	   terminus_stratum                : SET OF Stratum_technology_occurrence_armx := pt2ds_get_terminus(SELF\Stratum_sub_stack_armx.stratum_technology_sequence);
+       SELF\property_definition.name : label := ?;
+       SELF\property_definition.description : text := ?;
+       SELF\property_definition.id : identifier := ?;
+    WHERE 
+      WR1: (NOT EXISTS(single_stratum_passage_location) OR
+        (single_stratum_passage_location IN
+        SELF\Stratum_sub_stack_armx.associated_stackup.composing_occurrence));
+      WR2: EXISTS(SELF\Stratum_sub_stack_armx.stratum_technology_sequence) XOR
+        EXISTS(single_stratum_passage_location);
+      WR3: SIZEOF(get_stack(SELF\Stratum_sub_stack_armx.stratum_technology_sequence)) = 
+                 (SIZEOF(SELF\Stratum_sub_stack_armx.stratum_technology_sequence) + 1);
+      WR4: sts_vertex_degree_check(SELF\Stratum_sub_stack.stratum_technology_sequence, 2);
+	  WR5: NOT EXISTS(single_stratum_passage_location) OR NOT EXISTS(target_stratum);
+	  WR6: NOT EXISTS(target_stratum) OR
+			  ((target_stratum IN SELF\Stratum_sub_stack_armx.associated_stackup.composing_occurrence) AND
+	           (target_stratum IN terminus_stratum));
+  END_ENTITY;
+
+  ENTITY Physical_unit_keepout_shape_allocation_to_stratum_stack_armx
+    SUBTYPE OF (physical_unit_keepout_shape_allocation_to_stratum_stack);
+      SELF\representation_relationship.rep_1 RENAMED keepout_shape : Physical_unit_keepout_shape_model;
+      stack_model : Library_stack_model_armx;
+      swappable : BOOLEAN; 
+      kept_out_layers : SET [1:?] OF Stratum_technology_occurrence;
+    DERIVE
+      -- Overlaps with stack_model
+      SELF\representation_relationship.rep_2 : representation := ?;
+      -- Overlaps with swappable
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.name : label := ?;
+      SELF\representation.context_of_items: representation_context := ?;
+      SELF\representation_relationship.name : label := ?;
+      SELF\representation_relationship.description : text := ?;
+    UNIQUE
+      UR1: keepout_shape, stack_model;
+    WHERE
+      WR1: keepout_shape\Physical_unit_keepout_shape_model.constrained_design_object_category
+        IN [keepout_product_design_object_category.interconnect_module_via,
+        keepout_product_design_object_category.interconnect_module_inter_stratum_feature,
+        keepout_product_design_object_category.interconnect_module_cutout,
+        keepout_product_design_object_category.interconnect_module_fill_area,
+        keepout_product_design_object_category.interconnect_module_stratum_feature];
+  END_ENTITY;  
+
+  ENTITY Single_stratum_special_symbol_template_armx
+    SUBTYPE OF (Single_stratum_structured_template_armx, Special_symbol_template_armx, single_stratum_special_symbol_template);
+  END_ENTITY;
+  
+  ENTITY Material_removal_structured_template_armx
+    SUBTYPE OF (Single_stratum_structured_template_armx, material_removal_structured_template);
+  WHERE
+    WR1 : SIZEOF(QUERY(tlict <* SELF\Structured_template_armx.templates |
+          SIZEOF(['FABRICATION_TECHNOLOGY_XIM.MATERIAL_REMOVAL_FEATURE_TEMPLATE_ARMX',
+           'PART_TEMPLATE_2D_SHAPE_XIM.MATERIAL_REMOVAL_STRUCTURED_TEMPLATE_ARMX'] * TYPEOF(tlict.template)) = 0)) = 0;
+  END_ENTITY;
+
+  ENTITY Multi_stratum_special_symbol_template_armx
+    SUBTYPE OF (Multi_stratum_structured_template_armx, Special_symbol_template_armx, multi_stratum_special_symbol_template);
+  END_ENTITY;
+  
+  ENTITY Multi_stratum_structured_template_armx
+    ABSTRACT SUPERTYPE OF (ONEOF (Padstack_definition_armx, Multi_stratum_special_symbol_template_armx)
+      ANDOR Stratum_stack_dependent_template_armx)
+    SUBTYPE OF (Structured_template_armx, multi_stratum_structured_template);
+      location : template_arrangement;
+  END_ENTITY;
+  
+  ENTITY Stratum_specific_template_location_armx
+  	SUBTYPE OF (Template_location_in_structured_template, stratum_specific_template_location);
+      bound_stratum : stratum_technology_occurrence_or_stratum_technology;
+      SELF\Template_location_in_structured_template.template : Single_stratum_template_armx;
+    DERIVE
+      -- Partially overlapps with bound_stratum (alternative Stratum_technology)
+      SELF\property_definition.definition  : characterized_definition :=?;
+      SELF\property_definition.name        : label :=?;
+      SELF\property_definition.description : text :=?;
+    WHERE
+      WR1: NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.DOCUMENTATION_LAYER_TECHNOLOGY' IN TYPEOF(bound_stratum)) OR
+           (NOT EXISTS(bound_stratum\Documentation_layer_technology.pre_defined_documentation_layer_purpose) OR
+           (NOT (bound_stratum\Documentation_layer_technology.pre_defined_documentation_layer_purpose = predefined_documentation_layer_purpose.soldermask) OR
+          ('FABRICATION_TECHNOLOGY_XIM.MATERIAL_REMOVAL_FEATURE_TEMPLATE_ARMX' IN TYPEOF(template))));
+      WR2: 
+          NOT(('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.STRATUM_TECHNOLOGY_OCCURRENCE_ARMX' IN TYPEOF(bound_stratum)) AND
+             ('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.DOCUMENTATION_LAYER_TECHNOLOGY' IN TYPEOF(bound_stratum\Stratum_technology_occurrence.definition))) OR
+           (NOT EXISTS(bound_stratum\Stratum_technology_occurrence_armx.definition\Documentation_layer_technology.pre_defined_documentation_layer_purpose) OR
+           (NOT (bound_stratum\Stratum_technology_occurrence_armx.definition\Documentation_layer_technology.pre_defined_documentation_layer_purpose = predefined_documentation_layer_purpose.soldermask) OR
+          ('FABRICATION_TECHNOLOGY_XIM.MATERIAL_REMOVAL_FEATURE_TEMPLATE_ARMX' IN TYPEOF(template))));
+      WR3 : NOT ('FABRICATION_TECHNOLOGY_XIM.STRATUM_TECHNOLOGY_OCCURRENCE_ARMX' IN TYPEOF(bound_stratum)) OR
+             ('PART_TEMPLATE_2D_SHAPE_XIM.STRATUM_STACK_DEPENDENT_TEMPLATE_ARMX' IN TYPEOF(SELF\Template_location_in_structured_template.assembly));
+  END_ENTITY;
+
+  ENTITY Stratum_sub_stack_armx 
+    ABSTRACT SUPERTYPE OF (ONEOF(Local_linear_stack_armx, 
+      Passage_technology_allocation_to_stack_model_armx))
+    SUBTYPE OF (Template_definition, stratum_sub_stack);      
+      stack_thickness             : OPTIONAL Length_tolerance_characteristic;          
+      stratum_technology_sequence : OPTIONAL SET[1:?] OF Stratum_technology_occurrence_link_armx;
+      associated_stackup          : Design_stack_model_armx;
+    WHERE
+      WR1: SIZEOF(QUERY(sts <* stratum_technology_sequence | 
+        NOT(associated_stackup :=: sts\Stratum_technology_occurrence_relationship_armx.scope)) ) = 0;        
+  END_ENTITY;
+  
+  ENTITY Structured_template_planar_shape_model
+    SUBTYPE OF (Part_template_planar_shape_model);
+    SELF\Part_template_shape_model.shape_characterized_definition : SET[1:1] OF Structured_template_armx;
+  END_ENTITY;
+
+  ENTITY Equivalent_stackup_model_definition_armx
+    SUBTYPE OF (Product_view_definition, equivalent_stackup_model_definition);
+     SELF\product_definition_relationship.relating_product_definition RENAMED primary_stackup_model   : Stratum_stack_model_armx;
+     SELF\product_definition_relationship.related_product_definition RENAMED equivalent_stackup_model : Stratum_stack_model_armx;
+     equivalent_sub_stacks : SET [1:?] OF Equivalent_sub_stack_definition_armx;
+    WHERE
+      WR1 : primary_stackup_model :<>: equivalent_stackup_model;
+      WR2 : SIZEOF(QUERY( ess <* equivalent_sub_stacks |
+               NOT (ess\Equivalent_sub_stack_definition_armx.equivalent_stack\Stratum_sub_stack_armx.associated_stackup :=: equivalent_stackup_model)
+                  )) = 0;
+      WR3:  acyclic_equivalent_stackup_model_definition(SELF,
+                    [equivalent_stackup_model],
+                    'PART_TEMPLATE_2D_SHAPE_XIM.EQUIVALENT_STACKUP_MODEL_DEFINITION_ARMX');
+  END_ENTITY;
+   
+  ENTITY Equivalent_sub_stack_definition_armx
+    SUBTYPE OF (Product_view_definition, equivalent_sub_stack_definition);
+      equivalent_stack : Local_linear_stack;
+      primary_sto : Stratum_technology_occurrence;
+      primary_sto_link : Stratum_technology_occurrence_link;
+    WHERE
+      WR1 : primary_sto IN [primary_sto_link\Stratum_technology_occurrence_relationship_armx.sto_1,
+                               primary_sto_link\Stratum_technology_occurrence_relationship_armx.sto_2]; 
+      WR2 : equivalent_stack\Stratum_sub_stack_armx.associated_stackup :<>: primary_sto_link\Stratum_technology_occurrence_relationship_armx.scope; 
+  END_ENTITY;   
+
+  ENTITY Impedance_requirement_occurrence_armx
+    SUBTYPE OF (Predefined_requirement_view_definition_armx, impedance_requirement_occurrence);
+      characterized_class       : trace_class;
+      characterized_class_range : Value_range_armx;
+      test_bench                : Impedance_measurement_setup_requirement_occurrence_armx;
+      test_method               : Test_specification;
+      tolerance                 : Tolerance_characteristic;
+   WHERE    
+      WR1: SELF\Product_view_definition.initial_context.life_cycle_stage = 'test'; 
+      WR2: NOT EXISTS(SELF\Product_view_definition.id);
+  END_ENTITY;
+
+  ENTITY Impedance_measurement_setup_requirement_occurrence_armx
+    SUBTYPE OF (Predefined_requirement_view_definition_armx, impedance_measurement_setup_requirement_occurrence);
+      characterized_stackup     : Stratum_sub_stack_armx;
+      measurement_method        : Process_specification;
+      measurement_stratum       : Stratum_technology_occurrence_armx;
+      reference_stratum         : SET [1:2] OF Stratum_technology_occurrence_armx;
+   DERIVE
+      associated_stratum : SET OF Stratum_technology_occurrence_armx :=
+      reference_stratum + measurement_stratum;
+   WHERE    
+      WR1: SELF\Product_view_definition.initial_context.life_cycle_stage = 'test'; 
+      WR2: NOT EXISTS(SELF\Product_view_definition.id);
+      WR3: SIZEOF([measurement_stratum] * reference_stratum) = 0;
+      WR4: SIZEOF(associated_stratum * characterized_stackup\Stratum_sub_stack_armx.associated_stackup\Stratum_stack_model_armx.composing_occurrence)
+           = SIZEOF(associated_stratum);
+  END_ENTITY;
+
+  ENTITY Inter_stratum_feature_template_location
+  	SUBTYPE OF (Template_location_in_structured_template);
+      SELF\Template_location_in_structured_template.assembly : Multi_stratum_structured_template_armx;
+      SELF\Template_location_in_structured_template.template : Inter_stratum_feature_template_armx;
+    WHERE
+      WR1: SIZEOF(['PART_TEMPLATE_EXTENSION_XIM.INTER_STRATUM_FEATURE_EDGE_SEGMENT_TEMPLATE_ARMX',
+                   'PART_TEMPLATE_EXTENSION_ARM.INTER_STRATUM_FEATURE_EDGE_TEMPLATE_ARMX'] * TYPEOF(template)) = 0;
+  END_ENTITY;
+
+  ENTITY Special_symbol_template_armx
+    ABSTRACT SUPERTYPE OF (ONEOF (Single_stratum_special_symbol_template_armx, Multi_stratum_special_symbol_template_armx))
+    SUBTYPE OF (Template_definition, special_symbol_template);
+  WHERE
+    WR1 : SIZEOF (QUERY(tp <* SELF\Structured_template_armx.templates |
+               ('FABRICATION_TECHNOLOGY_XIM.INTER_STRATUM_FEATURE_TEMPLATE_ARMX' IN TYPEOF(tp.template))
+              )) = 0; 
+    WR2 : TYPEOF(SELF) <> TYPEOF(SELF\Special_symbol_template_armx);
+  END_ENTITY;
+
+  ENTITY Part_template_keepout_shape_allocation_to_stratum_stack_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (part_template_keepout_shape_allocation_to_stratum_stack);
+      keepout_shape : Part_template_keepout_shape_model;
+      kept_out_layers : SET [1:?] OF Stratum_technology_occurrence_armx;
+    DERIVE
+      swappable : LOGICAL :=
+        (keepout_shape.shape_characterized_definition\Multi_stratum_structured_template_armx.location
+        = template_arrangement.swappable);        
+      stack_model : Library_stack_model_armx :=
+        keepout_shape.shape_characterized_definition\Stratum_stack_dependent_template.stack;
+      SELF\property_definition.name : label := ?;
+      SELF\characterized_object.name : label := ?;
+    UNIQUE
+      UR1 : keepout_shape, stack_model;
+    WHERE
+      WR1: keepout_shape.constrained_design_object_category
+       IN [keepout_product_design_object_category.interconnect_module_via,
+       keepout_product_design_object_category.interconnect_module_inter_stratum_feature,
+       keepout_product_design_object_category.interconnect_module_cutout,
+       keepout_product_design_object_category.interconnect_module_fill_area,
+       keepout_product_design_object_category.interconnect_module_stratum_feature];
+     WR2: 'PART_TEMPLATE_2D_SHAPE_XIM.STRATUM_STACK_DEPENDENT_TEMPLATE_ARMX' IN TYPEOF(keepout_shape.shape_characterized_definition);
+     WR3:  kept_out_layers = kept_out_layers * stack_model\Stratum_stack_model_armx.composing_occurrence;
+  END_ENTITY;  
+
+  ENTITY Part_template_planar_keepout_shape_model
+    (* CONNOTATIONAL *) SUBTYPE OF (Planar_shape_model, Non_feature_shape_model, Part_template_keepout_shape_model);
+      SELF\Non_feature_shape_model.model_shape : Part_template_planar_shape_model; 			    
+	DERIVE
+  		application_technology_constraint: SET[0:?] OF Requirement_view_definition :=
+		get_rvd(SELF, 'application technology constraint');
+	WHERE
+   		WR1 : SIZEOF(application_technology_constraint) <= 1;
+  END_ENTITY;
+
+  ENTITY Part_template_planar_shape_model
+    (* CONNOTATIONAL *) SUBTYPE OF (Planar_projected_shape_model, Part_template_shape_model);
+  END_ENTITY;
+
+  ENTITY Single_stratum_structured_template_armx
+    ABSTRACT SUPERTYPE OF (ONEOF (Material_removal_structured_template_armx, Single_stratum_special_symbol_template_armx))
+    SUBTYPE OF (Structured_template_armx, Single_stratum_template_armx, single_stratum_structured_template);
+  WHERE
+    WR1: SIZEOF (QUERY(tp <* SELF\Structured_template_armx.templates |
+               NOT ('FABRICATION_TECHNOLOGY_ARM.SINGLE_STRATUM_TEMPLATE_ARMX' IN TYPEOF(tp.template))
+              )) = 0;
+  END_ENTITY;
+
+  ENTITY Stratum_stack_dependent_template_armx
+    SUPERTYPE OF (ONEOF (Complex_passage_padstack_definition_armx, Structured_inter_stratum_feature_template_armx))  
+    SUBTYPE OF (Multi_stratum_structured_template_armx, stratum_stack_dependent_template);
+      stack : Library_stack_model_armx;      
+  WHERE
+    WR1 : SIZEOF(QUERY(temp <* SELF\Structured_template_armx.templates | 
+            ('PART_TEMPLATE_2D_SHAPE_XIM.STRATUM_SPECIFIC_TEMPLATE_LOCATION_ARMX' IN TYPEOF(temp))
+            AND (NOT ('FABRICATION_TECHNOLOGY_XIM.STRATUM_TECHNOLOGY_OCCURRENCE_ARMX' IN TYPEOF(temp\Stratum_specific_template_location_armx.bound_stratum))
+                  OR
+               NOT (temp\Stratum_specific_template_location_armx.bound_stratum IN stack\Stratum_stack_model_armx.composing_occurrence)
+            )
+          )) = 0;
+    WR2 : SIZEOF(['PART_TEMPLATE_2D_SHAPE_XIM.PADSTACK_DEFINITION_ARMX',
+           'PART_TEMPLATE_2D_SHAPE_XIM.MULTI_STRATUM_SPECIAL_SYMBOL_TEMPLATE_ARMX'] 
+          * TYPEOF(SELF)) > 0;          
+  END_ENTITY;
+
+  ENTITY Structured_inter_stratum_feature_template_armx
+    SUBTYPE OF (Inter_stratum_feature_template_armx, Stratum_stack_dependent_template_armx, structured_inter_stratum_feature_template);
+  END_ENTITY;
+
+  ENTITY Structured_template_armx
+    ABSTRACT SUPERTYPE OF (ONEOF (Single_stratum_structured_template_armx, Multi_stratum_structured_template_armx))
+    SUBTYPE OF (Geometric_template_armx, structured_template);
+  DERIVE
+    empty : LOGICAL := (SIZEOF(templates) = 0);  
+  INVERSE
+    SELF\Geometric_template_armx.shapes : SET [1:?] OF Structured_template_planar_shape_model FOR shape_characterized_definition;
+    templates : SET [0:?] OF Template_location_in_structured_template FOR assembly;
+  END_ENTITY;
+
+  ENTITY Template_location_in_structured_template
+    SUPERTYPE OF (ONEOF
+      (Inter_stratum_feature_template_location,
+       Stratum_specific_template_location_armx))
+   SUBTYPE OF (assembly_component_usage);
+    SELF\product_definition_relationship.relating_product_definition RENAMED assembly : Structured_template_armx;
+    SELF\product_definition_relationship.related_product_definition RENAMED template  : Template_definition;
+    SELF\assembly_component_usage.reference_designator RENAMED reference_designation  : STRING;
+    placement_status                                                                  : template_location_placement_status;
+  DERIVE
+    SELF\product_definition_relationship.id: identifier :=?;
+    SELF\product_definition_relationship.name: label :=?;
+    SELF\product_definition_relationship.description: text :=?;
+  INVERSE
+    transform : SET [0:?] OF Template_location_in_structured_template_transform FOR reference_location;
+  UNIQUE
+    UR1: assembly, reference_designation;
+  WHERE
+    WR1 : (SIZEOF(transform) > 0) XOR ('PART_TEMPLATE_EXTENSION_XIM.TEARDROP_TEMPLATE_ARMX' IN TYPEOF(template));    
+    WR2 : NOT ('FABRICATION_TECHNOLOGY_XIM.INTER_STRATUM_FEATURE_TEMPLATE_ARMX' IN TYPEOF(template)) OR
+           ('PART_TEMPLATE_2D_SHAPE_XIM.INTER_STRATUM_FEATURE_TEMPLATE_LOCATION' IN TYPEOF(SELF));
+    WR3 : SIZEOF(['PART_TEMPLATE_EXTENSION_XIM.TEARDROP_TEMPLATE_ARMX',
+                  'PART_TEMPLATE_SHAPE_WITH_PARAMETERS_XIM.GEOMETRIC_TEMPLATE_ARMX'] *
+                 TYPEOF(template)) > 0;           
+  END_ENTITY;
+
+  ENTITY Template_location_in_structured_template_transform
+    SUBTYPE OF (Geometric_placement);
+      SELF\Geometric_placement_operation.template_definition RENAMED template_shape : Part_template_planar_shape_model;
+      reference_location : Template_location_in_structured_template;
+      assembly_shape : Structured_template_planar_shape_model;
+      SELF\Geometric_placement.target RENAMED transform : axis2_placement_2d;
+    DERIVE
+      SELF\representation_item.name : label := ?;  
+    UNIQUE
+      UR1 : reference_location, assembly_shape;
+    WHERE
+      WR1 : assembly_shape.shape_characterized_definition[1] :=: reference_location.assembly;
+  END_ENTITY;
+
+FUNCTION acyclic_equivalent_stackup_model_definition
+  (relation : Equivalent_stackup_model_definition_armx; relatives : SET[1:?] OF
+  Stratum_stack_model_armx; specific_relation : STRING) : BOOLEAN; 
+LOCAL
+    x : SET OF Equivalent_stackup_model_definition_armx := [];
+END_LOCAL;
+
+    IF relation.primary_stackup_model IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+      x := QUERY(pd <* bag_to_set(USEDIN(relation.primary_stackup_model,
+        'PART_TEMPLATE_2D_SHAPE_XIM.' + 'EQUIVALENT_STACKUP_MODEL_DEFINITION_ARMX.' +
+        'EQUIVALENT_STACKUP_MODEL')) | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_equivalent_stackup_model_definition(x[i], relatives +
+        relation.primary_stackup_model, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+  RETURN (TRUE);
+END_FUNCTION; 
+
+ FUNCTION sts_vertex_degree_check(input : SET OF Stratum_technology_occurrence_link_armx;
+                                       n : INTEGER) : BOOLEAN;
+ LOCAL
+   psto : INTEGER := 0;
+   ssto : INTEGER := 0;
+   sto : SET OF Stratum_technology_occurrence_armx := get_stack(input);
+   i : INTEGER := 0;
+   j : INTEGER := 0;
+   pass : BOOLEAN := TRUE;
+ END_LOCAL;
+  REPEAT i := 1 TO SIZEOF(sto) BY 1;
+   REPEAT j := 1 TO SIZEOF(input) BY 1;
+     IF (input[j]\Stratum_technology_occurrence_relationship_armx.sto_1 :=: sto[i]) THEN 
+      psto := psto + 1;
+      IF (psto = n) THEN
+       pass := FALSE; 
+       ESCAPE; 
+      END_IF;
+     END_IF;  
+     IF (input[j]\Stratum_technology_occurrence_relationship_armx.sto_2 :=: sto[i]) THEN 
+      ssto := ssto + 1;  
+      IF (ssto = n) THEN 
+       pass := FALSE; 
+       ESCAPE; 
+      END_IF;
+     END_IF;  
+   END_REPEAT;                                     
+  END_REPEAT;                                     
+ RETURN(pass);
+ END_FUNCTION;     
+
+FUNCTION pt2ds_get_terminus(input : SET OF Stratum_technology_occurrence_link_armx) : SET OF Stratum_technology_occurrence_armx;
+LOCAL
+  sto : SET OF Stratum_technology_occurrence_armx := get_stack(input);
+  i : INTEGER := 0;
+  j : INTEGER := 0;
+  pstoo : SET OF Stratum_technology_occurrence_armx := [];
+  sstoo : SET OF Stratum_technology_occurrence_armx := [];
+END_LOCAL;
+  pstoo := sto;
+  sstoo := sto;
+ REPEAT i := 1 TO SIZEOF(sto) BY 1;
+  REPEAT j := 1 TO SIZEOF(input) BY 1;
+	IF (input[j]\Stratum_technology_occurrence_relationship_armx.sto_1 :=: sto[i]) THEN 
+	  pstoo := pstoo - sto[i];
+	END_IF;  
+	IF (input[j]\Stratum_technology_occurrence_relationship_armx.sto_2 :=: sto[i]) THEN 
+	  sstoo := sstoo - sto[i];
+	END_IF;  
+  END_REPEAT;                                     
+ END_REPEAT;                                     
+RETURN(pstoo + sstoo);
+END_FUNCTION;                                 
+                             
+END_SCHEMA;
+

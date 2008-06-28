@@ -1,0 +1,201 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping effectivity(Effectivity_arm, Effectivity_mim);*)
+
+uof_mapping Effectivity(Effectivity);
+
+entity_mapping Dated_effectivity(Dated_effectivity, 
+				dated_effectivity
+			);
+
+mapping_constraints;
+
+					dated_effectivity <= effectivity
+					
+end_mapping_constraints;
+
+attribute_mapping start_bound(start_bound, $PATH, Calendar_date);
+
+					dated_effectivity.effectivity_start_date -> date_time_or_event_occurrence
+					{date_time_or_event_occurrence = date_time_select
+					date_time_select = date
+					date => calendar_date}
+				
+end_attribute_mapping;
+
+attribute_mapping start_bound(start_bound, $PATH, date_and_time);
+
+					dated_effectivity.effectivity_start_date -> date_time_or_event_occurrence
+					{date_time_or_event_occurrence = date_time_select
+					date_time_select = date_and_time}
+				
+end_attribute_mapping;
+
+attribute_mapping start_bound(start_bound, $PATH, Event);
+
+					dated_effectivity.effectivity_start_date -> date_time_or_event_occurrence
+					{date_time_or_event_occurrence = event_occurrence}
+				
+end_attribute_mapping;
+
+attribute_mapping end_bound(end_bound, $PATH, Calendar_date);
+
+					dated_effectivity.effectivity_end_date -> date_time_or_event_occurrence
+					{date_time_or_event_occurrence = date_time_select
+					date_time_select = date
+					date => calendar_date}
+				
+end_attribute_mapping;
+
+attribute_mapping end_bound(end_bound, $PATH, date_and_time);
+
+					dated_effectivity.effectivity_end_date -> date_time_or_event_occurrence
+					{date_time_or_event_occurrence = date_time_select
+					date_time_select = date_and_time}
+				
+end_attribute_mapping;
+
+attribute_mapping end_bound(end_bound, $PATH, Event);
+
+					dated_effectivity.effectivity_end_date -> date_time_or_event_occurrence
+					{date_time_or_event_occurrence = event_occurrence}
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Effectivity(Effectivity, effectivity);
+
+attribute_mapping id(id, effectivity.id);
+
+end_attribute_mapping;
+
+attribute_mapping name(name, effectivity.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, effectivity.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Effectivity_relationship(Effectivity_relationship, 
+				effectivity_relationship
+			);
+
+attribute_mapping relation_type(relation_type, 
+					effectivity_relationship.name
+				);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, 
+					effectivity_relationship.description
+				);
+
+end_attribute_mapping;
+
+attribute_mapping relating_effectivity(relating_effectivity, $PATH, Effectivity);
+
+					effectivity_relationship.relating_effectivity -> effectivity
+				
+end_attribute_mapping;
+
+attribute_mapping related_effectivity(related_effectivity, $PATH, Effectivity);
+
+					effectivity_relationship.related_effectivity -> effectivity
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Lot_effectivity(Lot_effectivity, 
+				lot_effectivity
+			);
+
+mapping_constraints;
+
+					lot_effectivity <= effectivity
+					
+end_mapping_constraints;
+
+attribute_mapping lot_id(lot_id, 
+					lot_effectivity.effectivity_lot_id
+				);
+
+end_attribute_mapping;
+
+attribute_mapping lot_size(lot_size, $PATH, measure_with_unit);
+
+					lot_effectivity.effectivity_lot_size -> measure_with_unit
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Serial_effectivity(Serial_effectivity, 
+				serial_numbered_effectivity
+			);
+
+mapping_constraints;
+
+					serial_numbered_effectivity <= effectivity
+					
+end_mapping_constraints;
+
+attribute_mapping start_id(start_id, 
+					serial_numbered_effectivity.effectivity_start_id
+				);
+
+end_attribute_mapping;
+
+attribute_mapping end_id(end_id, 
+					serial_numbered_effectivity.effectivity_end_id
+				);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Time_interval_effectivity(Time_interval_effectivity, 
+				time_interval_based_effectivity
+			);
+
+mapping_constraints;
+
+					time_interval_based_effectivity <= effectivity
+					
+end_mapping_constraints;
+
+attribute_mapping effectivity_period(effectivity_period, $PATH, Time_interval);
+
+					time_interval_based_effectivity.effectivity_period -> time_interval 
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

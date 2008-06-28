@@ -1,0 +1,41 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4089 - ISO/TS 10303-1714 Part feature location - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3516
+*)
+
+SCHEMA Part_feature_location_arm;
+
+	USE FROM Shape_feature_arm;	-- ISO/TS 10303-xxxx
+	
+	TYPE feature_or_non_feature_usage = EXTENSIBLE GENERIC_ENTITY SELECT;
+	END_TYPE;
+
+	TYPE usage_concept = EXTENSIBLE GENERIC_ENTITY SELECT;
+	END_TYPE;
+
+  ENTITY Usage_concept_usage_relationship
+     SUBTYPE OF (Geometric_placement_operation);
+       SELF\Geometric_placement_operation.template_definition RENAMED associated_shape_definition : Geometric_model;
+       associated_usage                                                                           : usage_concept;
+       associating_usage_shape                                                                    : feature_or_non_feature_usage;
+     INVERSE
+       composed_model : SET[1:1] OF Geometric_model FOR items;
+     WHERE
+       WR1 : (  ('NON_FEATURE_SHAPE_ELEMENT_ARM.NON_FEATURE_SHAPE_MODEL' IN TYPEOF(associated_shape_definition)) AND 
+                ('NON_FEATURE_SHAPE_ELEMENT_ARM.NON_FEATURE_SHAPE_MODEL' IN TYPEOF(associating_usage_shape))) OR 
+             (('ELEMENTAL_GEOMETRIC_SHAPE_ARM.GEOMETRIC_MODEL' IN TYPEOF(associated_shape_definition)) AND 
+              ('ELEMENTAL_GEOMETRIC_SHAPE_ARM.GEOMETRIC_MODEL' IN TYPEOF(associating_usage_shape)));
+       WR2 : NOT ( ('PART_FEATURE_LOCATION_ARM.GEOMETRIC_OPERATOR_TRANSFORMATION' IN
+               TYPEOF(SELF)) AND ('PART_FEATURE_LOCATION_ARM.CARTESIAN_TRANSFORMATION_2D' IN 
+               TYPEOF(SELF\Geometric_operator_transformation.target))) OR 
+             ('NON_FEATURE_SHAPE_ELEMENT_ARM.NON_FEATURE_SHAPE_MODEL' IN TYPEOF(associating_usage_shape));  
+       WR3 : associating_usage_shape = composed_model[1]; 
+       WR4 : NOT EXISTS(SELF\Representation_item.name);
+       WR5 : ('CONTEXTUAL_SHAPE_POSITIONING_ARM.GEOMETRIC_PLACEMENT' IN TYPEOF(SELF)) OR
+             ('CONTEXTUAL_SHAPE_POSITIONING_ARM.GEOMETRIC_OPERATOR_TRANSFORMATION' IN TYPEOF(SELF));
+       WR6 : NOT('CONTEXTUAL_SHAPE_POSITIONING_ARM.GEOMETRIC_PLACEMENT_MODEL' IN TYPEOF(composed_model[1]));
+  END_ENTITY;
+
+END_SCHEMA;
+

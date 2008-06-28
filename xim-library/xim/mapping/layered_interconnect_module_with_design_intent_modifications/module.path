@@ -1,0 +1,505 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping layered_interconnect_module_with_design_intent_modifications(Layered_interconnect_module_with_design_intent_modifications_arm, Layered_interconnect_module_with_design_intent_modifications_mim);*)
+
+
+entity_mapping Design_intent_modification(Design_intent_modification, shape_modification);
+
+mapping_constraints;
+shape_modification <=
+shape_aspect
+
+end_mapping_constraints;
+
+attribute_mapping modification_causal_item(modification_causal_item, $PATH, Assembly_component_armx);
+shape_modification <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'modification causal feature'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+!{shape_aspect =>
+component_feature}
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component
+
+end_attribute_mapping;
+
+attribute_mapping modification_causal_item(modification_causal_item, $PATH, Component_external_reference);
+shape_modification <=
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+{representation
+representation.name = 'component external reference'}
+representation
+
+end_attribute_mapping;
+
+attribute_mapping modification_causal_item(modification_causal_item, $PATH, Component_feature_armx);
+shape_modification <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'modification causal feature'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+component_feature
+
+end_attribute_mapping;
+
+attribute_mapping modification_causal_item(modification_causal_item, $PATH, Component_feature_external_reference);
+shape_modification <=
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+{representation
+representation.name = 'modification causal feature'}
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'component feature external reference'}
+representation_item =>
+descriptive_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping modification_causal_item(modification_causal_item, $PATH, Predefined_requirement_view_definition_armx);
+shape_modification <=
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+{property_definition
+property_definition.name = 'modification causal item'}
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'modification causal item'}
+property_definition_relationship.relating_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition
+product_definition =>
+predefined_requirement_view_definition
+
+end_attribute_mapping;
+
+attribute_mapping modification_causal_item(modification_causal_item, $PATH, Inter_stratum_feature_armx);
+shape_modification <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'modification causal feature'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+laminate_component =>
+inter_stratum_feature
+
+end_attribute_mapping;
+
+attribute_mapping modification_causal_item(modification_causal_item, $PATH, Laminate_component_armx);
+shape_modification <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'modification causal feature'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+laminate_component
+
+end_attribute_mapping;
+
+attribute_mapping modification_causal_item(modification_causal_item, $PATH, Part_feature);
+shape_modification <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'modification causal feature'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+
+end_attribute_mapping;
+
+attribute_mapping modification_causal_item(modification_causal_item, $PATH, Stratum_armx);
+shape_modification <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'modification causal feature'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+stratum
+
+end_attribute_mapping;
+
+attribute_mapping design_intent(design_intent, $PATH, Stratum_feature_armx);
+shape_modification <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'design intent modification'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+stratum_feature
+
+end_attribute_mapping;
+
+attribute_mapping modification_causal_item(modification_causal_item, $PATH, Stratum_feature_armx);
+shape_modification <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'modification causal feature'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+stratum_feature
+
+end_attribute_mapping;
+
+attribute_mapping design_intent(design_intent, $PATH, Stratum_feature_template_component_armx);
+shape_modification <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'design intent modification'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+laminate_component =>
+stratum_feature_template_component
+
+end_attribute_mapping;
+
+attribute_mapping modification_causal_item(modification_causal_item, $PATH, Stratum_surface_armx);
+shape_modification <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'modification causal feature'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+stratum_surface
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Design_intent_modification_sequence(Design_intent_modification_sequence, shape_aspect_relationship);
+
+mapping_constraints;
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'shape modification sequence'}
+
+end_mapping_constraints;
+
+attribute_mapping precedent_modification(precedent_modification, $PATH, design_intent_modification_or_material_removal_component);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+(shape_aspect => 
+shape_modification) 
+(shape_aspect 
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+laminate_component =>
+material_removal_laminate_component)
+(shape_aspect 
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+laminate_component =>
+material_addition_laminate_component)
+
+end_attribute_mapping;
+
+attribute_mapping precedent_modification(precedent_modification, $PATH, Design_intent_modification);
+shape_aspect_relationship
+					shape_aspect_relationship.relating_shape_aspect ->
+					shape_aspect => 
+					shape_modification 
+					
+end_attribute_mapping;
+
+attribute_mapping precedent_modification(precedent_modification, $PATH, Material_removal_laminate_component_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect 
+				shape_aspect.of_shape ->
+				product_definition_shape =>
+				assembly_component =>
+				laminate_component =>
+				material_removal_laminate_component
+				
+end_attribute_mapping;
+
+attribute_mapping precedent_modification(precedent_modification, $PATH, Material_addition_laminate_component_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect 
+				shape_aspect.of_shape ->
+				product_definition_shape =>
+				assembly_component =>
+				laminate_component =>
+				material_addition_laminate_component
+				
+end_attribute_mapping;
+
+attribute_mapping subsequent_modification(subsequent_modification, $PATH, design_intent_modification_or_material_removal_component);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+(shape_aspect => 
+shape_modification) 
+(shape_aspect 
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+laminate_component =>
+material_removal_laminate_component)
+(shape_aspect 
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+laminate_component =>
+material_addition_laminate_component)
+
+end_attribute_mapping;
+
+attribute_mapping subsequent_modification(subsequent_modification, $PATH, Design_intent_modification);
+shape_aspect_relationship
+				shape_aspect_relationship.related_shape_aspect ->
+				shape_aspect => 
+				shape_modification
+				
+end_attribute_mapping;
+
+attribute_mapping subsequent_modification(subsequent_modification, $PATH, Material_removal_laminate_component_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.related_shape_aspect ->
+				shape_aspect 
+				shape_aspect.of_shape ->
+				product_definition_shape =>
+				assembly_component =>
+				laminate_component =>
+				material_removal_laminate_component
+				
+end_attribute_mapping;
+
+attribute_mapping subsequent_modification(subsequent_modification, $PATH, Material_addition_laminate_component_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.related_shape_aspect ->
+				shape_aspect 
+				shape_aspect.of_shape ->
+				product_definition_shape =>
+				assembly_component =>
+				laminate_component =>
+				material_addition_laminate_component
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Electrical_isolation_removal_structure(Electrical_isolation_removal_structure, shape_modification);
+
+mapping_constraints;
+shape_modification <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'electrical isolation removal'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Filled_area_material_removal_structure(Filled_area_material_removal_structure, shape_modification);
+
+mapping_constraints;
+shape_modification <=
+shape_aspect
+{shape_aspect
+(shape_aspect.description = 'electrical isolation removal')
+(shape_aspect.description = 'thermal isolation removal')}
+
+end_mapping_constraints;
+
+attribute_mapping design_intent(design_intent, $PATH, Conductive_filled_area);
+shape_modification <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'design intent'}
+shape_aspect_relationship.relating_shape_aspect ->
+{shape_aspect
+(shape_aspect.description = 'conductive filled area')
+(shape_aspect.description = 'connected filled area')}
+shape_aspect =>
+stratum_feature
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Material_addition_feature(Material_addition_feature, shape_modification);
+
+mapping_constraints;
+shape_modification <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'material addition feature'}
+
+end_mapping_constraints;
+
+attribute_mapping material_addition_shape(material_addition_shape, $PATH, Material_addition_feature_template_armx);
+shape_modification <=
+shape_aspect
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'material addition shape'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+material_addition_feature_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Material_removal_feature(Material_removal_feature, shape_modification);
+
+mapping_constraints;
+shape_modification <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'material removal feature'}
+
+end_mapping_constraints;
+
+attribute_mapping material_removal_shape(material_removal_shape, $PATH, Material_removal_feature_template_armx);
+shape_modification <=
+shape_aspect
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'material removal shape'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+material_removal_feature_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Material_shape_modification(Material_shape_modification, shape_modification);
+
+mapping_constraints;
+shape_modification <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'material shape'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Requirement_assignment_armx(Requirement_assignment_armx, requirement_assignment)
+extended;
+
+attribute_mapping assigned_to(assigned_to, , Electrical_isolation_removal_structure);
+
+					requirement_assigned_item *> limwdim_requirement_assigned_item
+					limwdim_requirement_assigned_item = 
+					shape_modification
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Thermal_isolation_removal_structure(Thermal_isolation_removal_structure, shape_modification);
+
+mapping_constraints;
+shape_modification <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'thermal isolation removal'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

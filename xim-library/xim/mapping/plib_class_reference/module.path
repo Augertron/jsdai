@@ -1,0 +1,116 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping plib_class_reference(Plib_class_reference_arm, Plib_class_reference_mim);*)
+
+uof_mapping Plib_Class_Reference(Plib_Class_Reference);
+
+entity_mapping Plib_class_reference(Plib_class_reference, externally_defined_class);
+
+mapping_constraints;
+externally_defined_class <=
+[class <=
+group]
+[externally_defined_item
+{externally_defined_item.source ->
+external_source =>
+known_source <=
+pre_defined_item
+pre_defined_item.name = 'ISO 13584 library'}]
+     
+end_mapping_constraints;
+
+attribute_mapping code(code, externally_defined_item.item_id);
+
+externally_defined_class <=
+externally_defined_item
+{externally_defined_item
+externally_defined_item.source ->
+external_source =>
+known_source <=
+pre_defined_item
+pre_defined_item.name = 'ISO 13584 library'}
+externally_defined_item.item_id
+
+end_attribute_mapping;
+
+attribute_mapping supplier_bsu(supplier_bsu, organization.id);
+
+externally_defined_class
+{externally_defined_class <=
+externally_defined_item
+externally_defined_item.source ->
+external_source =>
+known_source <=
+pre_defined_item
+pre_defined_item.name = 'ISO 13584 library'}
+externally_defined_class <=
+class
+organization_item = class
+organization_item <-
+applied_organization_assignment.items[i]
+applied_organization_assignment <=
+organization_assignment 
+{organization_assignment.role ->
+organization_role
+organization_role.name = 'class supplier'}
+organization_assignment.assigned_organization ->
+organization
+organization.id
+
+end_attribute_mapping;
+
+attribute_mapping version(version, identification_assignment.assigned_id);
+
+externally_defined_class
+{externally_defined_class <=
+externally_defined_item
+externally_defined_item.source ->
+external_source =>
+known_source <=
+pre_defined_item
+pre_defined_item.name = 'ISO 13584 library'}
+external_identification_item = externally_defined_class
+external_identification_item <-
+applied_external_identification_assignment.items[i]
+applied_external_identification_assignment <=
+external_identification_assignment
+{external_identification_assignment
+external_identification_assignment.source ->
+external_source =>
+known_source <=
+pre_defined_item
+pre_defined_item.name = 'ISO 13584 library'}
+external_identification_assignment <=
+identification_assignment
+{identification_assignment.role ->
+identification_role
+identification_role.name = 'version'}
+identification_assignment.assigned_id
+
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

@@ -1,0 +1,40 @@
+(*
+ $Id$
+ ISO TC184/SC4/WG12 N4741 - ISO/CD-TS 10303-1129 External properties - EXPRESS ARM
+ Supersedes ISO TC184/SC4/WG12 N2610
+*)
+
+SCHEMA External_properties_arm;
+
+USE FROM External_library_arm; -- ISO/CD-TS 10303-1778
+
+USE FROM Identification_assignment_arm; -- ISO/TS 10303-1021
+
+USE FROM Independent_property_arm; -- ISO/TS 10303-1036
+
+USE FROM Plib_class_reference_arm; -- ISO/CD-TS 10303-1291
+
+
+  TYPE external_property_select = SELECT (Plib_property_reference, External_library_property);
+  END_TYPE;
+
+  ENTITY External_library_property
+    SUBTYPE OF (Independent_property);
+      external_id  : STRING;    
+      source       : External_source;
+    DERIVE
+      library_type : STRING := source.id;
+  END_ENTITY;
+
+  ENTITY Plib_property_reference
+    SUBTYPE OF (Independent_property);
+      code       : STRING;
+      version    : STRING;
+      name_scope : Plib_class_reference;
+  END_ENTITY;
+
+  SUBTYPE_CONSTRAINT plib_or_external FOR Independent_property;
+    ONEOF(Plib_property_reference, External_library_property);
+  END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA;

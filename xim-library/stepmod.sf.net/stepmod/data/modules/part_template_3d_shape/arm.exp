@@ -1,0 +1,64 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4098 - ISO/TS 10303-1717 Part template 3d shape - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3522
+*)
+
+SCHEMA Part_template_3d_shape_arm;
+
+	USE FROM Edge_shape_feature_arm;	-- ISO/TS 10303-1673
+	USE FROM Part_template_extension_arm;	-- ISO/TS 10303-1718
+
+REFERENCE FROM Requirement_decomposition_arm(get_rvd);	-- ISO/TS 10303-1740
+
+
+	TYPE pt3ds_physical_unit_shape_model_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON physical_unit_shape_model_select WITH 
+	    (Part_template_3d_shape_model);
+  	END_TYPE; 
+
+ 	  TYPE pt3ds_part_template_or_physical_unit_3d_shape_model_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON part_template_or_physical_unit_3d_shape_model_select WITH
+	    (Part_template_3d_shape_model);
+	  END_TYPE;
+
+  ENTITY Edge_segment_cross_section
+    SUBTYPE OF (Shape_definition_3d_intersection);
+      SELF\Shape_definition_3d_intersection.surface_intersection_result : Edge_shape_model;
+      SELF\Shape_definition_3d_intersection.projected_volume            : Part_template_3d_shape_model;
+    DERIVE
+      cross_section_reference                                           : edge_segment_vertex := 
+       SELF\Shape_definition_3d_intersection.projected_volume\Part_template_shape_model.shape_characterized_definition[1]\
+       Inter_stratum_feature_edge_segment_template.start_vertex;
+      associated_template                                               : Template_definition := 
+       SELF\Shape_definition_3d_intersection.projected_volume\Part_template_shape_model.shape_characterized_definition[1];
+    INVERSE
+      referencing_template : inter_stratum_feature_edge_segment_template_with_cross_section FOR cross_section;
+    WHERE
+      WR1 : associated_template :=: referencing_template;
+  END_ENTITY;
+
+  ENTITY Inter_stratum_feature_edge_segment_template_with_cross_section
+    SUBTYPE OF (Inter_stratum_feature_edge_segment_template);
+      cross_section  : Edge_segment_cross_section;
+  END_ENTITY;
+
+  ENTITY Part_template_3d_keepout_shape_model
+    SUBTYPE OF (Non_feature_shape_model,
+    	Part_template_keepout_shape_model);
+	DERIVE
+  		application_technology_constraint: SET[0:?] OF Requirement_view_definition :=
+		  get_rvd(SELF, 'application technology constraint');
+	WHERE
+   		WR1 : (SIZEOF(application_technology_constraint) <= 1);
+   		WR2 : NOT EXISTS(SELF\Representation.name);
+   		WR3 : NOT EXISTS(SELF\Representation.description);
+  END_ENTITY;
+
+  ENTITY Part_template_3d_shape_model
+    SUBTYPE OF (Part_template_shape_model);
+	WHERE
+   		WR1 : NOT EXISTS(SELF\Representation.name);
+   		WR2 : NOT EXISTS(SELF\Representation.description);
+  END_ENTITY;
+
+
+END_SCHEMA;

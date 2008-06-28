@@ -1,0 +1,99 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4128 - ISO/TS 10303-1727 Physical unit 3d shape - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3564
+*)
+
+SCHEMA Physical_unit_3d_shape_arm;
+
+USE FROM Non_feature_shape_element_arm;	-- ISO/TS 10303-1706
+
+REFERENCE FROM Requirement_decomposition_arm(get_rvd);	-- ISO/TS 10303-1740
+
+  TYPE pu3ds_view_shape_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON view_shape_select WITH 
+    (Physical_unit_shape_model);
+  END_TYPE; 
+
+  TYPE predefined_3d_purpose = ENUMERATION OF
+    (analysis_input,
+     analysis_output,
+     shock_analysis_input,
+     shock_analysis_output,
+     design,
+     vibration_analysis_input,
+     vibration_analysis_output,
+     electromagnetic_compatibility_analysis_input,
+     electromagnetic_compatibility_analysis_output,
+     thermal_analysis_input,
+     thermal_analysis_output);
+  END_TYPE;
+
+  TYPE pu3ds_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH  
+    (Physical_unit_3d_shape_model);
+  END_TYPE;
+
+  TYPE pu3ds_physical_unit_shape_model_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON physical_unit_shape_model_select WITH 
+    (Physical_unit_3d_shape_model);
+  END_TYPE;
+
+  TYPE shape_class = ENUMERATION OF
+    (extrusion,
+     manhattan_block,
+     other,
+     is_unknown);
+  END_TYPE;
+
+  TYPE pu3ds_shape_location = ENUMERATION OF
+    (above,
+     below);
+  END_TYPE;
+
+  TYPE pu3ds_shape_side = ENUMERATION OF
+    (same_side,
+     opposite_side,
+     both_sides);
+  END_TYPE;
+
+  TYPE pu3ds_component_application = ENUMERATION OF
+    (compliant_components_permitted,
+     no_components_permitted);
+  END_TYPE;
+  
+  ENTITY Physical_unit_3d_keepout_shape_model   
+    SUBTYPE OF (Usage_view_level_non_feature_shape_model, Physical_unit_keepout_shape_model);
+      shape_classification                                      : shape_class;
+      SELF\Usage_view_level_non_feature_shape_model.model_shape : Physical_unit_3d_shape_model;
+      component_application                                     : pu3ds_component_application;
+      shape_distance_from_seating_plane                         : OPTIONAL Length_tolerance_characteristic;
+      shape_location_with_respect_to_seating_plane              : OPTIONAL pu3ds_shape_location;
+      side                                                      : OPTIONAL pu3ds_shape_side;
+	DERIVE
+      application_technology_constraint: SET[0:?] OF Requirement_view_definition :=
+      get_rvd(SELF, 'application technology constraint');
+	WHERE
+	  WR1 : (SIZEOF(application_technology_constraint) <= 1);
+   	  WR2 : NOT EXISTS(SELF\Representation.name);
+   	  WR3 : NOT EXISTS(SELF\Representation.description);
+   	  WR4 : NOT (EXISTS(shape_distance_from_seating_plane) XOR EXISTS(shape_location_with_respect_to_seating_plane));
+   	  WR5 : NOT ('PACKAGE_ARM.PACKAGE' IN TYPEOF(model_shape.shape_characterized_definition)) OR
+            EXISTS(shape_distance_from_seating_plane);
+      WR6 : NOT EXISTS(side) OR ('PACKAGE_ARM.PACKAGE' IN TYPEOF(model_shape.shape_characterized_definition));
+  END_ENTITY;
+
+  ENTITY Physical_unit_3d_shape_model
+    SUBTYPE OF (Physical_unit_shape_model);
+      shape_purpose                     : OPTIONAL predefined_3d_purpose;
+      shape_classification              : shape_class;
+	DERIVE
+      application_technology_constraint: SET[0:?] OF Requirement_view_definition :=
+        get_rvd(SELF, 'application technology constraint');
+    INVERSE
+	  external_shape_purpose : SET [0:1] OF External_source_identification FOR item;      
+	WHERE
+	  WR1 : (EXISTS (shape_purpose)) XOR ((SIZEOF(external_shape_purpose)) = 1);
+   	  WR2 : (SIZEOF(application_technology_constraint) <= 1);
+      WR3 : NOT EXISTS(SELF\Representation.name);
+      WR4 : NOT EXISTS(SELF\Representation.description);
+  END_ENTITY;
+
+END_SCHEMA;

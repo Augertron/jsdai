@@ -1,0 +1,399 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Printed physical layout template - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Printed_physical_layout_template_xim;
+
+USE FROM Functional_usage_view_xim;
+
+USE FROM Printed_physical_layout_template_mim;
+
+USE FROM Part_template_2d_shape_xim; -- ISO/CD-TS 10303-1716
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+
+
+	TYPE pplt_usage_concept = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON usage_concept WITH 
+		(Printed_part_template_terminal_armx);
+	END_TYPE;
+
+SUBTYPE_CONSTRAINT pplt_template_definition_subtypes FOR Template_definition; 
+	ONEOF (Printed_part_template_armx,
+	 Non_conductive_cross_section_template_armx);
+END_SUBTYPE_CONSTRAINT;
+
+  TYPE printed_part_template_terminal_class = ENUMERATION OF
+    (curve_edge_segment,
+     surface_point,
+     area_edge_segment,
+     surface_area);
+  END_TYPE;
+
+  ENTITY Basic_multi_stratum_printed_part_template_armx 
+    SUBTYPE OF (Printed_part_template_armx, basic_multi_stratum_printed_part_template);
+      material_stack     : Library_stack_model_armx;
+      reference_template : Stratum_feature_template_armx;
+  END_ENTITY;
+
+  ENTITY Functional_usage_view_to_printed_part_template_terminal_assignment
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED physical_usage_view_terminal		: Printed_part_template_terminal_armx;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED functional_usage_view_terminal	: Scalar_terminal_definition;
+    DERIVE
+      SELF\shape_aspect_relationship.description : text := ?;
+      SELF\shape_aspect_relationship.name : label := ?;
+    UNIQUE
+      UR1 : functional_usage_view_terminal,
+ physical_usage_view_terminal;
+  END_ENTITY;
+
+  ENTITY Non_conductive_cross_section_template_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Template_definition, non_conductive_cross_section_template);
+      template_technology : OPTIONAL SET[1:?] OF Stratum_technology_armx;
+      nominal_width       : length_measure_with_unit;
+    DERIVE
+      SELF\Product_view_definition.name_x : STRING := '';
+  END_ENTITY;
+
+  ENTITY Multi_stratum_printed_part_template_armx
+    SUBTYPE OF (Structured_printed_part_template_armx, Multi_stratum_structured_template_armx, multi_stratum_printed_part_template);
+  END_ENTITY;
+  
+  ENTITY Printed_connector_template_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Printed_part_template_armx, printed_connector_template);
+    INVERSE
+      characterized_connector_terminal_relationship : SET[1:?] OF printed_connector_template_terminal_relationship_armx FOR connector;
+  END_ENTITY;
+
+  ENTITY Printed_connector_template_terminal_relationship_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (printed_connector_template_terminal_relationship);
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED join_terminal     : Printed_part_template_join_terminal;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED interface_terminal : Printed_part_template_interface_terminal;
+      SELF\shape_aspect.of_shape RENAMED connector : Printed_connector_template_armx;
+    DERIVE
+      SELF\shape_aspect.description : text := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+      SELF\shape_aspect.name : label := ?;
+      SELF\shape_aspect_relationship.name : label := ?;
+    UNIQUE
+      UR1 : join_terminal;
+    WHERE
+      WR1: join_terminal\Printed_part_template_terminal.associated_definition :=: connector;
+      WR2: interface_terminal.associated_definition :=: connector;
+  END_ENTITY;
+
+  ENTITY Printed_part_cross_section_template_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Printed_part_template_armx, printed_part_cross_section_template);
+      horizontal_material_link                 : OPTIONAL SET[1:?] OF Printed_part_template_material_link_armx;
+      vertical_material_link                   : OPTIONAL SET[1:?] OF Printed_part_template_material_link_armx;
+      transmission_line_model                  : Analytical_model_definition_armx;
+      maximum_transmission_line_characteristic : OPTIONAL SET[1:?] OF Analytical_model_application;
+      minimum_transmission_line_characteristic : OPTIONAL SET[1:?] OF Analytical_model_application;
+      width                                    : Length_tolerance_characteristic;
+      unit_length                              : length_measure_with_unit;
+    DERIVE
+      SELF\Product_view_definition.name_x : STRING := '';
+    INVERSE
+      SELF\Printed_part_template_armx.access_mechanisms : SET[1:?] OF Printed_part_cross_section_template_terminal_armx FOR associated_definition;
+    WHERE
+      WR1 : SIZEOF(QUERY(hml <* horizontal_material_link | NOT (hml.precedent_material\Shape_element.element_name IN ['right']))) = 0;
+      WR2 : SIZEOF(QUERY(hml <* horizontal_material_link | NOT (hml.subsequent_material\Shape_element.element_name IN ['left']))) = 0;
+      WR3 : SIZEOF(QUERY(hml <* vertical_material_link | NOT (hml.precedent_material\Shape_element.element_name IN ['bottom']))) = 0;
+      WR4 : SIZEOF(QUERY(hml <* vertical_material_link | NOT (hml.precedent_material\Shape_element.element_name IN ['top']))) = 0;
+      WR5 : SIZEOF(QUERY(hml <* horizontal_material_link |
+              (SIZEOF(QUERY(vml <* vertical_material_link |
+                          (vml :=: hml)
+                    )) > 0)
+                  )) = 0;
+      WR7 : EXISTS(horizontal_material_link) OR EXISTS(vertical_material_link);
+      WR8 : NOT ('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.PRINTED_CONNECTOR_TEMPLATE_ARMX' IN TYPEOF(SELF));
+      
+  END_ENTITY;
+
+  ENTITY Printed_part_cross_section_template_terminal_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Printed_part_template_terminal_armx, printed_part_cross_section_template_terminal);
+      SELF\Printed_part_template_terminal_armx.associated_definition       : Printed_part_cross_section_template_armx;
+      material_to_left_of_terminal   : OPTIONAL Printed_part_template_material_link_armx;
+      material_to_right_of_terminal  : OPTIONAL Printed_part_template_material_link_armx;
+      material_to_top_of_terminal    : OPTIONAL Printed_part_template_material_link_armx;
+      material_to_bottom_of_terminal : OPTIONAL Printed_part_template_material_link_armx;
+    UNIQUE
+      UR1 : associated_definition,
+ material_to_left_of_terminal,
+ material_to_right_of_terminal,
+ material_to_top_of_terminal,
+ material_to_bottom_of_terminal;
+    WHERE
+      WR1 : (SELF\Printed_part_template_terminal_armx.connection_zone_category = curve_edge_segment) OR (SELF\Printed_part_template_terminal_armx.connection_zone_category = area_edge_segment);
+      WR2 : NOT (EXISTS(material_to_left_of_terminal) AND EXISTS(material_to_right_of_terminal)) OR (material_to_left_of_terminal :<>: material_to_right_of_terminal);
+      WR3 : NOT (EXISTS(material_to_left_of_terminal) AND EXISTS(material_to_top_of_terminal)) OR (material_to_left_of_terminal :<>: material_to_top_of_terminal);
+      WR4 : NOT (EXISTS(material_to_left_of_terminal) AND EXISTS(material_to_bottom_of_terminal)) OR (material_to_left_of_terminal :<>: material_to_bottom_of_terminal);
+      WR5 : NOT (EXISTS(material_to_right_of_terminal) AND EXISTS(material_to_top_of_terminal)) OR (material_to_right_of_terminal :<>: material_to_top_of_terminal);
+      WR6 : NOT (EXISTS(material_to_right_of_terminal) AND EXISTS(material_to_bottom_of_terminal)) OR (material_to_right_of_terminal :<>: material_to_bottom_of_terminal);
+      WR7 : NOT (EXISTS(material_to_top_of_terminal) AND EXISTS(material_to_bottom_of_terminal)) OR (material_to_top_of_terminal :<>: material_to_bottom_of_terminal);
+      WR8 : NOT EXISTS(material_to_left_of_terminal) OR  
+                      (material_to_left_of_terminal\Printed_part_template_material_link.precedent_material\Shape_element.element_name = 'right');
+      WR9 : NOT EXISTS(material_to_right_of_terminal) OR
+                      (material_to_right_of_terminal\Printed_part_template_material_link.subsequent_material\Shape_element.element_name = 'left');
+     WR10 : NOT EXISTS(material_to_bottom_of_terminal) OR
+                      (material_to_bottom_of_terminal\Printed_part_template_material_link.subsequent_material\Shape_element.element_name = 'top');
+     WR11 : NOT EXISTS(material_to_top_of_terminal) OR
+                      (material_to_top_of_terminal\Printed_part_template_material_link.precedent_material\Shape_element.element_name = 'bottom');      
+  END_ENTITY;
+
+  ENTITY Printed_part_template_armx
+   ABSTRACT SUPERTYPE OF (ONEOF (Basic_multi_stratum_printed_part_template_armx,
+    Structured_printed_part_template_armx, Printed_part_cross_section_template_armx) ANDOR Printed_connector_template_armx)
+      SUBTYPE OF (Template_definition, printed_part_template);
+         implemented_function : OPTIONAL Functional_unit_usage_view;
+      INVERSE
+        access_mechanisms : SET [1:?] OF Printed_part_template_terminal_armx FOR containing_shape;
+      WHERE
+        WR1: (SIZEOF(QUERY(prpc <* USEDIN(defined_version.of_product,
+            'PRODUCT_IDENTIFICATION_XIM.PRODUCT_CATEGORY_ASSIGNMENT.PRODUCTS')
+              | (prpc.category\Product_category.name = 'printed part'))) >= 0) OR 
+            ('LAYOUT_MACRO_DEFINITION_XIM.LAYOUT_MACRO_FLOOR_PLAN_TEMPLATE' IN TYPEOF(SELF));
+        WR2 : NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+  ENTITY Printed_part_template_connected_terminals_definition_armx
+    SUBTYPE OF (printed_part_template_connected_terminals_definition);
+      connected_terminals : SET[2:?] OF Printed_part_template_terminal_armx;
+    DERIVE
+      scope : Printed_part_template_armx := connected_terminals[1].associated_definition;
+      SELF\shape_aspect.of_shape : product_definition_shape := ?;
+      SELF\shape_aspect.description : text := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+    UNIQUE
+      UR1 : SELF\shape_aspect.name, scope;
+    WHERE
+      WR1 : SIZEOF(QUERY(t <* connected_terminals | t.associated_definition :<>: scope)) = 0;
+  END_ENTITY;
+
+  ENTITY Printed_part_template_interface_terminal
+    SUBTYPE OF (Printed_part_template_terminal_armx);
+      SELF\Printed_part_template_terminal_armx.associated_definition : Printed_connector_template_armx;
+    DERIVE
+      SELF\shape_aspect.description : text := 'interface terminal';
+    INVERSE
+      external_connector_function : SET[1:?] OF printed_connector_template_terminal_relationship_armx FOR interface_terminal;
+  END_ENTITY;
+
+  ENTITY Printed_part_template_join_terminal
+    (* CONNOTATIONAL *) SUBTYPE OF (Printed_part_template_terminal_armx);
+    DERIVE
+      SELF\shape_aspect.description : text := 'join terminal';
+    INVERSE
+      internal_connector_function : SET[0:1] OF printed_connector_template_terminal_relationship_armx FOR join_terminal;
+  END_ENTITY;
+
+  ENTITY Printed_part_template_material_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (printed_part_template_material, Item_shape); -- Item_shape added in order to be able to implement inverse "boundary".
+      width             : OPTIONAL Length_tolerance_characteristic;
+      required_material : Stratum_technology_armx;
+    INVERSE 
+      boundary : SET[0:4] OF template_material_cross_section_boundary_armx FOR associated_definition(* TEMP-AD *);
+    WHERE
+      WR1 : SIZEOF(QUERY(temp <* (USEDIN(SELF,
+ 'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_xim.TEMPLATE_MATERIAL_CROSS_SECTION_BOUNDARY_ARMX.' + 'ASSOCIATED_DEFINITION')) | temp\Shape_aspect.name = 'top')) <= 1;
+      WR2 : SIZEOF(QUERY(temp <* (USEDIN(SELF,
+ 'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_xim.TEMPLATE_MATERIAL_CROSS_SECTION_BOUNDARY_ARMX.' + 'ASSOCIATED_DEFINITION')) | temp\Shape_aspect.name = 'bottom')) <= 1;
+      WR3 : SIZEOF(QUERY(temp <* (USEDIN(SELF,
+ 'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_xim.TEMPLATE_MATERIAL_CROSS_SECTION_BOUNDARY_ARMX.' + 'ASSOCIATED_DEFINITION')) | temp\Shape_aspect.name = 'left')) <= 1;
+      WR4 : SIZEOF(QUERY(temp <* (USEDIN(SELF,
+ 'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_xim.TEMPLATE_MATERIAL_CROSS_SECTION_BOUNDARY_ARMX.' + 'ASSOCIATED_DEFINITION')) | temp\Shape_aspect.name = 'right')) <= 1;
+  END_ENTITY;
+
+  ENTITY Printed_part_template_material_link_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (printed_part_template_material_link);
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED precedent_material	: Template_material_cross_section_boundary_armx;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED subsequent_material	: Template_material_cross_section_boundary_armx;
+    DERIVE
+      SELF\shape_aspect.of_shape : product_definition_shape := ?;
+      SELF\shape_aspect.description : text := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+      SELF\shape_aspect.name : label := ?;
+    UNIQUE
+      UR1 : precedent_material,
+ subsequent_material;
+    WHERE
+      WR1 : precedent_material :<>: subsequent_material;
+      WR2 : precedent_material\Shape_aspect.name IN ['bottom', 'right'];
+      WR3 : subsequent_material\Shape_aspect.name IN ['top', 'left'];
+      WR4 : NOT((precedent_material\Shape_element.element_name IN ['bottom']) XOR (subsequent_material\Shape_element.element_name IN ['top']));
+      WR5 : NOT((precedent_material\Shape_element.element_name IN ['right']) XOR (subsequent_material\Shape_element.element_name IN ['left']));      
+      WR6 : acyclic_printed_part_template_material_link(SELF,
+        [subsequent_material], 
+        'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.PRINTED_PART_TEMPLATE_MATERIAL_LINK_ARMX');
+  END_ENTITY;
+
+  ENTITY Printed_part_template_terminal_armx
+     ABSTRACT SUPERTYPE OF (((ONEOF (Printed_part_template_join_terminal, Printed_part_template_interface_terminal))
+      ANDOR (Printed_part_cross_section_template_terminal_armx)) ANDOR Structured_printed_part_template_terminal_armx)
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_feature, printed_part_template_terminal);
+      SELF\Shape_element.containing_shape RENAMED associated_definition	: Printed_part_template_armx;
+      connection_zone_category	                                        : printed_part_template_terminal_class;
+      SELF\Shape_feature.connection_area                                : OPTIONAL SET[1:?] OF Connection_zone_in_layout_template;
+      SELF\Shape_aspect.name		                                    : STRING; --ee_name;
+    INVERSE
+      connection_requirement         : SET[0:1] OF printed_part_template_connected_terminals_definition_armx FOR connected_terminals;
+      functional_usage_view_terminal : SET[0:1] OF functional_usage_view_to_printed_part_template_terminal_assignment FOR physical_usage_view_terminal;
+    UNIQUE
+      UR1 : SELF\Shape_aspect.name,
+ associated_definition;
+  END_ENTITY;
+
+  ENTITY Printed_tiebar_template_armx
+    SUBTYPE OF (Structured_printed_part_template_armx, printed_tiebar_template);
+      DERIVE
+        terminal_location : SET OF axis2_placement_2d :=  pplt_get_tl_ap2d(SELF);
+        passage_component_location : SET OF axis2_placement_2d :=  pplt_get_pcl_ap2d(SELF);
+        tiebar_shape_model : SET OF shape_representation := pplt_get_gm(SELF); 
+      INVERSE
+        SELF\Printed_part_template_armx.access_mechanisms : SET [2:?] OF Printed_part_template_join_terminal FOR associated_definition;
+      WHERE
+        WR1: SIZEOF(['PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.PRINTED_CONNECTOR_TEMPLATE_ARMX',
+                     'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.NON_CONDUCTIVE_CROSS_SECTION_TEMPLATE_ARMX',
+                     'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.PRINTED_PART_CROSS_SECTION_TEMPLATE_ARMX'] * TYPEOF(SELF)) = 0;
+        WR2: SIZEOF(QUERY(am <* SELF\Printed_part_template_armx.access_mechanisms |
+             NOT('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.PRINTED_PART_TEMPLATE_JOIN_TERMINAL' IN TYPEOF(am))
+              )) = 0;        
+        WR3: (SIZEOF(passage_component_location) = 0) OR
+          (SIZEOF(QUERY(pcl <* passage_component_location |
+          (SIZEOF(QUERY(tsm <* tiebar_shape_model |
+          (ap2d_geometrically_in_tiebar(pcl,tsm)) )) > 0)
+          )) = SIZEOF(passage_component_location));
+        WR4: SIZEOF(QUERY(t <* SELF\Structured_template.templates | 'FABRICATION_TECHNOLOGY_ARM.STRATUM_FEATURE_TEMPLATE' IN TYPEOF(t\Template_location_in_structured_template.template))) > 0;
+        WR5: SIZEOF(QUERY(spptt <* SELF\Printed_part_template.access_mechanisms | 
+          NOT(SIZEOF(USEDIN(spptt,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION.CONNECTED_TERMINALS')) = 1)
+          )) = 0;
+        WR6: SIZEOF(QUERY(spptt1 <* SELF\Printed_part_template.access_mechanisms |
+          NOT(SIZEOF(QUERY(spptt2 <* SELF\Printed_part_template.access_mechanisms | 
+          (bag_to_set(USEDIN(spptt1,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION.CONNECTED_TERMINALS')) =
+          bag_to_set(USEDIN(spptt2,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION.CONNECTED_TERMINALS'))))) 
+          = SIZEOF(SELF\Printed_part_template.access_mechanisms)))) = 0;
+        WR7: SIZEOF(QUERY(tl <* terminal_location |
+          (SIZEOF(QUERY(pcl <* passage_component_location |
+          ((tl :=: pcl) OR 
+          (SIZEOF(QUERY(tsm <* tiebar_shape_model |
+          (ap2d_geometrically_in_tiebar(tl,tsm)))) > 0)))) > 0)
+          )) = SIZEOF(terminal_location);
+  END_ENTITY;
+
+  ENTITY Single_stratum_printed_part_template_armx
+    SUBTYPE OF (Structured_printed_part_template_armx, Single_stratum_structured_template_armx, single_stratum_printed_part_template);
+  END_ENTITY;
+
+  ENTITY Structured_printed_part_template_armx
+    ABSTRACT SUPERTYPE OF (ONEOF (Single_stratum_printed_part_template_armx, 
+      Multi_stratum_printed_part_template_armx))
+    SUBTYPE OF (Printed_part_template_armx, Structured_template_armx);
+    WHERE
+      WR1 : SIZEOF(QUERY(t <* access_mechanisms |
+            NOT ('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.STRUCTURED_PRINTED_PART_TEMPLATE_TERMINAL_ARMX'
+                  IN TYPEOF(t)))) = 0;
+      WR2 : SIZEOF(QUERY(t <* SELF\Structured_template_armx.templates |
+            'PART_TEMPLATE_2D_SHAPE_XIM.STRUCTURED_TEMPLATE_ARMX' IN TYPEOF(t.template))) = 0;
+  END_ENTITY;
+
+  ENTITY Structured_printed_part_template_terminal_armx
+    SUBTYPE OF (Printed_part_template_terminal_armx, structured_printed_part_template_terminal);
+      SELF\Printed_part_template_terminal_armx.associated_definition : Structured_printed_part_template_armx;
+      associated_composition_relationship : Template_location_in_structured_template;    
+    WHERE
+      WR1 : associated_composition_relationship.assembly :=: associated_definition;
+(* used attribute has been deleted      
+      WR2 : SIZEOF(QUERY(t <* SELF\Placed_feature_armx.feature_shape |
+             NOT (associated_composition_relationship.template IN t.composed_model[1]\Part_template_shape_model.shape_characterized_definition))) = 0;
+*)             
+      WR2 : TYPEOF(SELF) <> TYPEOF(SELF\Structured_printed_part_template_terminal_armx);
+  END_ENTITY;
+
+  ENTITY Template_material_cross_section_boundary_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, template_material_cross_section_boundary);
+      associated_definition : Printed_part_template_material_armx;
+    UNIQUE
+      UR1 : associated_definition, SELF\Shape_aspect.name;
+    WHERE
+      WR1 : SELF\Shape_aspect.name IN ['top',  'bottom',  'left',  'right'];
+  END_ENTITY;
+
+  FUNCTION acyclic_printed_part_template_material_link
+    (relation : Printed_part_template_material_link_armx; 
+    relatives : SET[1:?] OF Template_material_cross_section_boundary_armx; 
+    specific_relation : STRING) : BOOLEAN; 
+  LOCAL
+     x : SET OF Printed_part_template_material_link_armx := [];
+  END_LOCAL;
+    IF relation.precedent_material IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+	x := QUERY(pd <* bag_to_set(USEDIN(relation.precedent_material,    
+      'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.' +
+      'PRINTED_PART_TEMPLATE_MATERIAL_LINK_ARMX.' +
+      'SUBSEQUENT_MATERIAL')) | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_printed_part_template_material_link(x[i], relatives +
+		relation.precedent_material, specific_relation) THEN        
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION;
+
+  FUNCTION pplt_get_pcl_ap2d(input : Printed_tiebar_template) : SET OF axis2_placement_2d; 
+    LOCAL
+	  ap2d : SET OF axis2_placement_2d := [];  --this gives us access to the information base
+    END_LOCAL;
+	RETURN(ap2d);
+  END_FUNCTION;
+
+  FUNCTION ap2d_geometrically_in_tiebar(input_1 : axis2_placement_2d;
+                                        input_2 : shape_representation) : LOGICAL;
+    RETURN(TRUE);
+  END_FUNCTION;
+
+  FUNCTION pplt_get_tl_ap2d(input : Printed_tiebar_template) : SET OF axis2_placement_2d; 
+    LOCAL
+	  ap2d : SET OF axis2_placement_2d := [];  --this gives us access to the information base
+    END_LOCAL;
+	RETURN(ap2d);
+  END_FUNCTION;
+
+  FUNCTION pplt_get_gm(input : Printed_tiebar_template) : SET OF shape_representation; 
+    LOCAL
+	  gm : SET OF shape_representation := [];  --this gives us access to the information base
+    END_LOCAL;
+	RETURN(gm);
+  END_FUNCTION;
+  
+END_SCHEMA;
+
+
+
+

@@ -1,0 +1,145 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Functional decomposition to design - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Functional_decomposition_to_design_xim;
+
+USE FROM Design_management_xim;
+
+USE FROM Physical_unit_design_view_xim;
+
+USE FROM Network_functional_design_view_xim;
+
+USE FROM Functional_decomposition_to_design_mim;
+
+	SUBTYPE_CONSTRAINT change_design_object_management_relationship_subtypes FOR Change_design_object_management_relationship;             
+	    (ONEOF (Terminal_swap_specification,
+	 	Gate_path_swap_specification,
+	 	Component_swap_specification));
+	END_SUBTYPE_CONSTRAINT;
+
+    TYPE fdtd_managed_design_object_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON managed_design_object WITH
+   		(Design_functional_unit_allocation_to_assembly_component,
+         Design_functional_unit_allocation_to_reference_functional_unit);
+    END_TYPE;
+
+  ENTITY Component_swap_specification
+    (* CONNOTATIONAL *) SUBTYPE OF (Change_design_object_management_relationship);
+      SELF\Change_design_object_management_relationship.current_design_object  : Design_functional_unit_allocation_to_assembly_component;
+      SELF\Change_design_object_management_relationship.previous_design_object : Design_functional_unit_allocation_to_assembly_component;
+  END_ENTITY;
+
+  ENTITY Design_composition_path_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (design_composition_path);
+      path_element           : SET[1:?] OF Functional_unit_armx;
+      design_functional_unit : Functional_unit_armx;
+    DERIVE
+      SELF\product_definition.frame_of_reference : product_definition_context := ?;
+      SELF\product_definition.formation : product_definition_formation := ?;
+      SELF\product_definition.description : text := ?;
+      SELF\product_definition.id : identifier := ?;
+  END_ENTITY;
+
+
+  ENTITY Design_functional_unit_allocation_to_assembly_component
+  	(* CONNOTATIONAL *) SUBTYPE OF (product_definition_relationship);
+      SELF\product_definition_relationship.relating_product_definition RENAMED functional_design_definition_path 	: Design_composition_path_armx;
+      SELF\product_definition_relationship.related_product_definition RENAMED implementation                    	: Assembly_component_armx;
+      global_swappable                  																			: BOOLEAN;
+      local_swappable                   																			: BOOLEAN;
+      of_property                       																			: OPTIONAL SET[1:?] OF Property_value_representation;
+      SELF\product_definition_relationship.id RENAMED path_alias  													: identifier;
+      SELF\product_definition_relationship.description RENAMED swap_code                         					: text;
+    UNIQUE
+      UR1 : implementation,
+ path_alias;
+  END_ENTITY;
+
+  ENTITY Design_functional_unit_allocation_to_reference_functional_unit
+  	(* CONNOTATIONAL *) SUBTYPE OF (product_definition_relationship);
+      SELF\product_definition_relationship.related_product_definition RENAMED reference_definition_path	: Reference_composition_path_armx;
+      SELF\product_definition_relationship.relating_product_definition RENAMED design_definition_path	: Design_composition_path_armx;
+    DERIVE
+      SELF\product_definition_relationship.id : identifier := ?;
+  END_ENTITY;
+
+  ENTITY Gate_path_swap_specification
+    (* CONNOTATIONAL *) SUBTYPE OF (Change_design_object_management_relationship);
+      SELF\Change_design_object_management_relationship.current_design_object  : Design_functional_unit_allocation_to_reference_functional_unit;
+      SELF\Change_design_object_management_relationship.previous_design_object : Design_functional_unit_allocation_to_reference_functional_unit;
+  END_ENTITY;
+
+  ENTITY Reference_composition_path_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (reference_composition_path);
+      path_element              : SET[1:?] OF Functional_unit_armx;
+      reference_functional_unit : Functional_unit_armx;
+    DERIVE
+      SELF\product_definition.frame_of_reference : product_definition_context := ?;
+      SELF\product_definition.formation : product_definition_formation := ?;
+      SELF\product_definition.description : text := ?;
+      SELF\product_definition.id : identifier := ?;
+  END_ENTITY;
+
+  ENTITY Reference_functional_unit_assignment_to_part
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+      functional_design_definition_path 														: Reference_composition_path_armx;
+      implementation                    														: Part_view_definition;
+      of_property                       														: OPTIONAL SET[1:?] OF Property_value_representation;
+      SELF\shape_aspect_relationship.description RENAMED path_alias	: text; --ee_name;
+      swap_code                         														: OPTIONAL STRING;
+    DERIVE
+      SELF\shape_aspect_relationship.related_shape_aspect : shape_aspect := ?;
+      SELF\shape_aspect_relationship.relating_shape_aspect : shape_aspect := ?;
+      SELF\shape_aspect_relationship.name : label := ?;
+    UNIQUE
+      UR1 : implementation,
+ path_alias;
+  END_ENTITY; 
+
+  ENTITY Reference_functional_unit_assignment_to_template
+  	(* CONNOTATIONAL *) SUBTYPE OF (product_definition_relationship);
+      SELF\product_definition_relationship.relating_product_definition RENAMED functional_design_definition_path : Reference_composition_path_armx;
+      SELF\product_definition_relationship.related_product_definition RENAMED implementation                     : Template_definition;
+      of_property                                                                                                : OPTIONAL SET[1:?] OF Property_value_representation;
+      SELF\product_definition_relationship.description RENAMED path_alias                                        : text;
+      swap_code                                                                                                  : OPTIONAL STRING;
+    DERIVE
+      SELF\product_definition_relationship.id : identifier := ?;
+    UNIQUE
+      UR1 : implementation,
+ path_alias;
+  END_ENTITY; 
+
+  ENTITY Terminal_swap_specification
+    (* CONNOTATIONAL *) SUBTYPE OF (Change_design_object_management_relationship);
+      SELF\Change_design_object_management_relationship.previous_design_object : Functional_unit_terminal_node_assignment;
+      SELF\Change_design_object_management_relationship.current_design_object  : Functional_unit_terminal_node_assignment;
+  END_ENTITY;
+
+END_SCHEMA;
+
+

@@ -1,0 +1,34 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4152 - ISO/TS 10303-1735 Pre defined datum 2d symbol - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3549
+*)
+
+SCHEMA Pre_defined_datum_2d_symbol_arm;
+
+	USE FROM Extended_geometric_tolerance_arm;	-- ISO/TS 10303-1666
+	USE FROM Layered_2d_shape_arm;	-- ISO/TS 10303-1693
+
+	ENTITY Pre_defined_datum_2d_symbol
+	  ABSTRACT SUPERTYPE OF (ONEOF(Pre_defined_parallel_datum_axis_2d_symbol, 
+	  	Pre_defined_perpendicular_datum_axis_2d_symbol,  
+	  	Pre_defined_perpendicular_datum_plane_2d_symbol))
+	  SUBTYPE OF (Planar_shape_model);	  	
+		associated_element : Datum_axis;
+	WHERE
+      WR1 : NOT EXISTS(SELF\Representation.description);
+	END_ENTITY;
+
+  ENTITY Pre_defined_parallel_datum_axis_2d_symbol
+    SUBTYPE OF (Pre_defined_datum_2d_symbol);
+  END_ENTITY;
+
+  ENTITY Pre_defined_perpendicular_datum_axis_2d_symbol
+    SUBTYPE OF (Pre_defined_datum_2d_symbol);
+  END_ENTITY;
+
+  ENTITY Pre_defined_perpendicular_datum_plane_2d_symbol
+    SUBTYPE OF (Pre_defined_datum_2d_symbol);
+  END_ENTITY;
+
+END_SCHEMA;

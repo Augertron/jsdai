@@ -1,0 +1,647 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping assembly_technology(Assembly_technology_arm, Assembly_technology_mim);*)
+
+
+entity_mapping Assembled_with_bonding(Assembled_with_bonding, assembly_joint);
+
+mapping_constraints;
+[assembly_joint <=
+component_feature_joint <=
+shape_aspect_relationship
+shape_aspect_relationship.name = 'assembled with bonding']
+[shape_aspect]
+
+end_mapping_constraints;
+
+attribute_mapping default_bond_definition(default_bond_definition, $PATH, Assembly_bond_definition_armx);
+assembly_joint <=
+component_feature_joint <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'default definition usage'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+assembly_bond_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Assembled_with_fasteners(Assembled_with_fasteners, assembly_joint);
+
+mapping_constraints;
+assembly_joint <=
+component_feature_joint <=
+[shape_aspect_relationship
+shape_aspect_relationship.name = 'assembled with fasteners']
+[shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+assembly_group_component]
+
+end_mapping_constraints;
+
+attribute_mapping associated_assembly(associated_assembly, $PATH, Assembly_group_component_armx);
+assembly_joint <=
+component_feature_joint <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+assembly_group_component
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Assembly_bond_definition_armx(Assembly_bond_definition_armx, assembly_bond_definition);
+
+mapping_constraints;
+assembly_bond_definition <=
+shape_aspect
+{shape_aspect.of_shape ->
+product_definition_shape <=
+property_definition
+property_definition.definition ->
+characterized_definition = characterized_product_definition
+characterized_product_definition = product_definition
+product_definition.name = 'assembly bond model'}
+
+end_mapping_constraints;
+
+attribute_mapping name(name, shape_aspect.name);
+assembly_bond_definition <=
+shape_aspect
+shape_aspect.name
+
+end_attribute_mapping;
+
+attribute_mapping analytical_assembly_bond_representation(analytical_assembly_bond_representation, $PATH, Analytical_model_application);
+assembly_bond_definition <=
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+analytical_representation
+
+end_attribute_mapping;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Externally_defined_view_definition);
+assembly_bond_definition <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape <=
+property_definition
+property_definition.definition ->
+characterized_definition = characterized_product_definition
+characterized_product_definition = product_definition
+product_definition =>
+externally_defined_product_definition
+
+end_attribute_mapping;
+
+attribute_mapping bonded_feature_1(bonded_feature_1, $PATH, Connection_zone_in_layout_template);
+assembly_bond_definition <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'bonded feature 1'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+shape_aspect =>
+instanced_feature
+
+end_attribute_mapping;
+
+attribute_mapping bonded_feature_1(bonded_feature_1, $PATH, Connection_zone_in_usage_view);
+assembly_bond_definition <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'bonded feature 1'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+shape_aspect
+{shape_aspect
+shape_aspect.name = 'connection zone in usage view'}
+
+end_attribute_mapping;
+
+attribute_mapping bonded_feature_1(bonded_feature_1, $PATH, Default_attachment_size_based_land_physical_template_armx);
+assembly_bond_definition <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'bonded feature 1'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+land_physical_template =>
+default_attachment_size_based_land_physical_template
+
+end_attribute_mapping;
+
+attribute_mapping bonded_feature_1(bonded_feature_1, $PATH, Feature_definition_with_connection_area);
+assembly_bond_definition <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'bonded feature 1'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape <=
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_object
+characterized_object =>
+shape_feature_definition
+
+end_attribute_mapping;
+
+attribute_mapping bonded_feature_1(bonded_feature_1, $PATH, Part_feature);
+assembly_bond_definition <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'bonded feature 1'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+
+end_attribute_mapping;
+
+attribute_mapping bonded_feature_2(bonded_feature_2, $PATH, Connection_zone_in_layout_template);
+assembly_bond_definition <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'bonded feature 2'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+shape_aspect =>
+instanced_feature
+
+end_attribute_mapping;
+
+attribute_mapping bonded_feature_2(bonded_feature_2, $PATH, Connection_zone_in_usage_view);
+assembly_bond_definition <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'bonded feature 2'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+shape_aspect
+{shape_aspect
+shape_aspect.name = 'connection zone in usage view'}
+
+end_attribute_mapping;
+
+attribute_mapping bonded_feature_2(bonded_feature_2, $PATH, Default_attachment_size_based_land_physical_template_armx);
+assembly_bond_definition <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'bonded feature 2'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+land_physical_template =>
+default_attachment_size_based_land_physical_template
+
+end_attribute_mapping;
+
+attribute_mapping bonded_feature_2(bonded_feature_2, $PATH, Feature_definition_with_connection_area);
+assembly_bond_definition <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'bonded feature 2'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape <=
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_object
+characterized_object =>
+shape_feature_definition
+
+end_attribute_mapping;
+
+attribute_mapping bonded_feature_2(bonded_feature_2, $PATH, Part_feature);
+assembly_bond_definition <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'bonded feature 2'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Assembly_joint_armx(Assembly_joint_armx, assembly_joint);
+
+mapping_constraints;
+assembly_joint <= 
+component_feature_joint <=
+[shape_aspect_relationship] 
+[shape_aspect]
+			
+end_mapping_constraints;
+(* Removed attributes
+attribute_mapping description(description, shape_aspect_relationship.description);
+
+					assembly_joint <=
+					component_feature_joint <= 
+					shape_aspect_relationship
+					shape_aspect_relationship.description
+					
+end_attribute_mapping;
+
+attribute_mapping name(name, shape_aspect.name);
+assembly_joint <=
+component_feature_joint <=
+shape_aspect
+shape_aspect.name
+
+end_attribute_mapping;
+*)
+attribute_mapping associated_assembly(associated_assembly, $PATH, Assembly_group_component_armx);
+assembly_joint <=
+component_feature_joint <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+assembly_group_component
+
+end_attribute_mapping;
+
+attribute_mapping associated_assembly(associated_assembly, $PATH, Assembly_module);
+assembly_joint <=
+component_feature_joint <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+physical_unit
+
+end_attribute_mapping;
+(* Problematic case not correctly supported by mapping compiler *)
+attribute_mapping assembly_feature_1(assembly_feature_1, $PATH, assembled_feature_select);
+assembly_joint <=
+component_feature_joint <=
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+component_feature
+
+end_attribute_mapping;
+
+attribute_mapping assembly_feature_1(assembly_feature_1, $PATH, Bare_die_component_terminal);
+assembly_joint <=
+component_feature_joint <=
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+component_feature =>
+physical_component_feature =>
+physical_component_terminal
+
+end_attribute_mapping;
+
+attribute_mapping assembly_feature_1(assembly_feature_1, $PATH, Component_mounting_feature_armx);
+assembly_joint <=
+component_feature_joint <=
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+component_feature =>
+physical_component_feature =>
+component_mounting_feature
+
+end_attribute_mapping;
+
+attribute_mapping assembly_feature_1(assembly_feature_1, $PATH, Packaged_component_join_terminal);
+assembly_joint <=
+component_feature_joint <=
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+component_feature =>
+physical_component_feature =>
+physical_component_terminal
+
+end_attribute_mapping;
+(* Problematic case not correctly supported by mapping compiler
+attribute_mapping assembly_feature_2(assembly_feature_2, $PATH, assembled_feature_select);
+assembly_joint <=
+component_feature_joint <=
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect =>
+component_feature
+
+end_attribute_mapping;
+*)
+attribute_mapping assembly_feature_2(assembly_feature_2, $PATH, Bare_die_component_terminal);
+assembly_joint <=
+component_feature_joint <=
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect =>
+component_feature =>
+physical_component_feature =>
+physical_component_terminal
+
+end_attribute_mapping;
+
+attribute_mapping assembly_feature_2(assembly_feature_2, $PATH, Component_mounting_feature_armx);
+assembly_joint <=
+component_feature_joint <=
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect =>
+component_feature =>
+physical_component_feature =>
+component_mounting_feature
+
+end_attribute_mapping;
+
+attribute_mapping assembly_feature_2(assembly_feature_2, $PATH, Packaged_component_join_terminal);
+assembly_joint <=
+component_feature_joint <=
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect =>
+component_feature =>
+physical_component_feature =>
+physical_component_terminal
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Assembly_technology_specification(Assembly_technology_specification, specification_definition);
+
+mapping_constraints;
+specification_definition <=
+product_definition
+{product_definition.name = 'assembly technology specification'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Assigned_property(Assigned_property, property_definition)
+extended;
+
+attribute_mapping described_element(described_element, $PATH, Assembly_bond_definition_armx);
+
+					characterized_definition
+					characterized_definition = shape_definition
+					shape_definition
+					shape_definition = shape_aspect
+					shape_aspect =>
+					assembly_bond_definition
+			
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Component_mating_constraint_condition_armx(Component_mating_constraint_condition_armx, component_mating_constraint_condition);
+
+mapping_constraints;
+component_mating_constraint_condition <=
+shape_aspect
+
+end_mapping_constraints;
+
+attribute_mapping constrained_degree_of_freedom(constrained_degree_of_freedom, representation_item.name);
+component_mating_constraint_condition <=
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+{property_definition_representation
+property_definition_representation.description = 'constrained degrees of freedom'}
+property_definition_representation.used_representation ->
+representation 
+{representation
+representation.name = 'degrees of freedom'}
+representation.items[i] ->
+{(representation_item.name = 'x')
+(representation_item.name = 'y')
+(representation_item.name = 'z')
+(representation_item.name = 'u')
+(representation_item.name = 'v')
+(representation_item.name = 'w')}
+
+end_attribute_mapping;
+
+attribute_mapping name(name, shape_aspect.name);
+component_mating_constraint_condition <=
+shape_aspect
+shape_aspect.name
+
+end_attribute_mapping;
+
+attribute_mapping constraining_joint(constraining_joint, $PATH, Assembly_joint_armx);
+component_mating_constraint_condition <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'constraining joint'}
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect =>
+component_feature_joint =>
+assembly_joint
+
+end_attribute_mapping;
+
+attribute_mapping of_context(of_context, $PATH, Part_design_view);
+component_mating_constraint_condition <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+physical_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Connection_zone_based_assembly_joint_armx(Connection_zone_based_assembly_joint_armx, connection_zone_based_assembly_joint);
+
+mapping_constraints;
+connection_zone_based_assembly_joint<=
+assembly_joint <=
+component_feature_joint <=
+shape_aspect
+
+end_mapping_constraints;
+
+attribute_mapping zone_1(zone_1, $PATH, Connection_zone_in_design_view);
+connection_zone_based_assembly_joint <=
+assembly_joint <=
+component_feature_joint <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'zone 1'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+{shape_aspect.description = 'connection zone'}
+
+end_attribute_mapping;
+
+attribute_mapping zone_2(zone_2, $PATH, Connection_zone_in_design_view);
+connection_zone_based_assembly_joint <=
+assembly_joint <=
+component_feature_joint <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'zone 2'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+{shape_aspect.description = 'connection zone'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Default_assembly_bond_shape_model(Default_assembly_bond_shape_model, shape_representation);
+
+mapping_constraints;
+shape_representation <=
+representation
+{representation.description = 'default assembly bond shape model'}
+
+end_mapping_constraints;
+
+attribute_mapping shape_characterized_definition(shape_characterized_definition, $PATH, Assembly_bond_definition_armx);
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect =>
+assembly_bond_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping External_source_identification(External_source_identification, applied_external_identification_assignment)
+extended;
+
+attribute_mapping item(item, , Assembly_bond_definition_armx);
+
+				external_identification_item *> at_external_identification_item
+				at_external_identification_item = assembly_bond_definition
+			
+end_attribute_mapping;
+
+end_entity_mapping;
+(*
+entity_mapping Material_identification(Material_identification, material_designation)
+extended;
+
+attribute_mapping items(items, $PATH, Assembly_bond_definition_armx);
+ characterized_definition
+				characterized_definition <-
+				property_definition.definition
+				property_definition =>
+				product_definition_shape <-
+				shape_aspect.of_shape
+				shape_aspect => assembly_bond_definition
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Requirement_assignment_armx(Requirement_assignment_armx, requirement_assignment)
+extended;
+
+attribute_mapping assigned_to(assigned_to, , Assembly_joint_armx);
+
+					requirement_assigned_item *> at_requirement_assigned_item
+					at_requirement_assigned_item = 
+					assembly_joint
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

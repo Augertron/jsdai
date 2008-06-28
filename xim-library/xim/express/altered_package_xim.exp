@@ -1,0 +1,88 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Altered package - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Altered_package_xim;
+
+USE FROM Package_xim;
+
+USE FROM Altered_package_mim;
+
+	REFERENCE FROM Specification_document_xim(get_document_definition);	-- ISO/TS 10303-1747
+
+	TYPE ap_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
+	   (Surface_prepped_terminal);
+	END_TYPE; 
+
+  TYPE predefined_geometric_status = ENUMERATION OF
+    (undefined,
+     standard_datum_condition,
+     perpendicular_primary_datum_axis,
+     perpendicular_primary_datum_plane);
+  END_TYPE;
+
+  ENTITY Altered_package
+    (* CONNOTATIONAL *) SUBTYPE OF (Package_armx);
+      of_geometric_status          : OPTIONAL predefined_geometric_status;
+      modified_terminal_separation : OPTIONAL length_measure_with_unit;
+      package_to_be_altered        : Package_armx;
+    DERIVE
+      SELF\Product_view_definition.name_x : STRING := '';
+    INVERSE
+	  of_external_geometric_status : SET [0:1] OF External_source_identification FOR items;      
+	WHERE
+	  WR1: (EXISTS (of_geometric_status)) XOR ((SIZEOF(of_external_geometric_status)) = 1);
+  END_ENTITY;
+
+  ENTITY Altered_package_terminal_armx
+    ABSTRACT SUPERTYPE OF ((Shape_formed_terminal_armx ANDOR
+ Surface_prepped_terminal_armx) ANDOR
+ Length_trimmed_terminal_armx)
+    (* CONNOTATIONAL *) SUBTYPE OF (Package_terminal_armx, altered_package_terminal);
+      terminal_to_be_altered                  : Package_terminal_armx;
+      SELF\Shape_element.containing_shape(* TEMP-PF! *) : Altered_package;
+  END_ENTITY;
+
+  ENTITY Length_trimmed_terminal_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Altered_package_terminal_armx, length_trimmed_terminal);
+      trimmed_length : Length_tolerance_characteristic;
+  END_ENTITY;
+           
+  ENTITY Shape_formed_terminal_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Altered_package_terminal_armx, shape_formed_terminal);
+  END_ENTITY;
+
+  ENTITY Surface_prepped_terminal_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Altered_package_terminal_armx, surface_prepped_terminal);
+	DERIVE
+	  surface_preparation: SET[1:1] OF Document_definition :=
+  			get_document_definition(SELF, 'surface preparation', 
+  			'SPECIFICATION_DOCUMENT_XIM.SURFACE_FINISH_SPECIFICATION');
+  END_ENTITY;
+
+END_SCHEMA;
+

@@ -1,0 +1,196 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Physical connectivity definition - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Physical_connectivity_definition_xim;
+
+USE FROM Part_external_reference_xim;
+
+USE FROM Requirement_decomposition_xim;
+
+USE FROM Physical_component_feature_xim;
+
+REFERENCE FROM Requirement_decomposition_xim(get_rvd);		
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+
+USE FROM Physical_connectivity_definition_mim;
+
+	TYPE pcd_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
+	    (Physical_connectivity_element_armx,
+	    Physical_connectivity_definition_armx,
+	    Physical_connectivity_definition_relationship);
+	END_TYPE; 
+
+	TYPE pcd_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
+		(Physical_connectivity_element_armx,
+		 Physical_connectivity_definition_armx);
+	END_TYPE;
+
+	TYPE termination_or_junction = EXTENSIBLE GENERIC_ENTITY SELECT
+    	(Component_terminal_abstract,
+    	 Topological_junction);
+  	END_TYPE;
+
+  ENTITY Physical_connectivity_definition_armx
+    SUPERTYPE OF (Physical_connectivity_structure_definition)
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element, physical_connectivity_definition);
+      associated_terminals  : SET[2:?] OF Physical_component_terminal_armx;
+      SELF\Shape_element.containing_shape RENAMED associated_definition : Physical_unit_network_definition_armx;      
+    DERIVE
+      SELF\shape_aspect.description : text := ?;
+    UNIQUE
+      UR1 : SELF\Shape_element.element_name, associated_definition;
+  END_ENTITY;
+
+  ENTITY Physical_connectivity_definition_relationship
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED first_definition	: Physical_connectivity_definition_armx;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED second_definition : Physical_connectivity_definition_armx;
+      SELF\shape_aspect_relationship.description RENAMED purpose                    : STRING;
+    DERIVE
+      SELF\shape_aspect_relationship.name : label := 'physical connectivity definition relationship';
+    INVERSE
+      requirement : SET[1:1] OF Requirement_assignment_armx FOR assigned_to;
+  END_ENTITY;
+
+  ENTITY Physical_connectivity_element_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (physical_connectivity_element);
+      start_terminus       : termination_or_junction;
+      end_terminus         : termination_or_junction;
+      connectivity_context : Physical_connectivity_structure_definition;
+    DERIVE
+      SELF\shape_aspect.of_shape : product_definition_shape := ?;
+      SELF\shape_aspect_relationship.related_shape_aspect : shape_aspect := ?;
+      SELF\shape_aspect_relationship.description : text := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+      SELF\shape_aspect_relationship.relating_shape_aspect : shape_aspect := ?;
+    UNIQUE
+      UR1 : name, connectivity_context;
+    WHERE
+      WR1 : start_terminus <> end_terminus;
+  END_ENTITY;
+
+  ENTITY Physical_connectivity_make_from_relationship
+  	(* CONNOTATIONAL *) SUBTYPE OF (make_from_connectivity_relationship);
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED reusable_definition	: Physical_connectivity_definition_armx;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED resultant_definition	: Physical_connectivity_definition_armx;
+    DERIVE
+      SELF\shape_aspect_relationship.description : text := ?;
+      SELF\shape_aspect_relationship.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Physical_connectivity_structure_definition
+    (* CONNOTATIONAL *) SUBTYPE OF (Physical_connectivity_definition_armx);
+    DERIVE
+      structural_terminal_nodes : SET OF Physical_component_terminal_armx := get_pct(structural_element);
+      structural_junction_nodes : SET OF Topological_junction := get_tj(structural_element);
+      tree_structure : LOGICAL := ((SIZEOF(structural_terminal_nodes) + SIZEOF(structural_junction_nodes)) = (SIZEOF(structural_element) + 1));
+    INVERSE
+      structural_element : SET[1:?] OF Physical_connectivity_element_armx FOR connectivity_context;
+    WHERE
+      WR1 : SIZEOF(QUERY(stn <* structural_terminal_nodes |
+                   NOT(stn IN SELF\Physical_connectivity_definition_armx.associated_terminals)
+                   )) = 0;
+      WR2 : SIZEOF(structural_terminal_nodes) = 
+            SIZEOF(SELF\Physical_connectivity_definition_armx.associated_terminals);      
+      
+  END_ENTITY;
+
+  ENTITY Physical_unit_network_definition_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_design_view, physical_unit_network_definition);
+    DERIVE
+	terminals : SET [0:?] OF Component_terminal_abstract := 
+      get_terminals(bag_to_set(USEDIN(SELF,'PHYSICAL_CONNECTIVITY_DEFINITION_XIM.PHYSICAL_CONNECTIVITY_DEFINITION.ASSOCIATED_DEFINITION')));      
+    WHERE
+      WR1 : NOT ('PHYSICAL_CONNECTIVITY_DEFINITION_XIM.PART_VIEW_DEFINITION' IN TYPEOF(SELF)) OR 
+                ('PHYSICAL_CONNECTIVITY_DEFINITION_XIM.PART_DESIGN_VIEW' IN TYPEOF(SELF));
+      WR2 : NOT (SIZEOF(terminals) > 1) OR
+           SIZEOF(QUERY(t <* terminals | NOT(SIZEOF(USEDIN(t, 'PHYSICAL_CONNECTIVITY_DEFINITION_XIM.' + 
+                          'PHYSICAL_CONNECTIVITY_DEFINITION_ARMX.ASSOCIATED_TERMINALS')) = 1))) = 0;
+  END_ENTITY;
+
+  ENTITY Topological_junction
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect);
+      scope : Physical_connectivity_structure_definition;
+    DERIVE
+      SELF\shape_aspect.of_shape : product_definition_shape := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+      SELF\shape_aspect.description : text := ?;
+    UNIQUE
+      UR1 : name, scope;
+  END_ENTITY; 
+
+  FUNCTION get_terminals(input : SET OF Physical_connectivity_definition_armx) : SET OF Component_terminal_abstract;
+  LOCAL
+   ct : SET OF Component_terminal_abstract := [];
+    i : INTEGER := 0;
+  END_LOCAL;
+  REPEAT  i := 1 TO SIZEOF(input) BY 1;
+   ct := ct + input[i].associated_terminals;
+  END_REPEAT;
+  RETURN(ct);
+  END_FUNCTION;
+  
+FUNCTION get_pct(input : SET OF Physical_connectivity_element_armx) : SET OF Physical_component_terminal_armx;
+  LOCAL
+   pct : SET OF Physical_component_terminal_armx := [];
+    i : INTEGER := 0;
+  END_LOCAL;
+  REPEAT  i := 1 TO SIZEOF(input) BY 1;
+   IF ('PHYSICAL_COMPONENT_FEATURE_XIM.PHYSICAL_COMPONENT_TERMINAL_ARMX' IN TYPEOF(input[i].start_terminus)) THEN
+   pct := pct + input[i].start_terminus;
+   END_IF;
+   IF ('PHYSICAL_COMPONENT_FEATURE_XIM.PHYSICAL_COMPONENT_TERMINAL_ARMX' IN TYPEOF(input[i].end_terminus)) THEN
+   pct := pct + input[i].end_terminus;
+   END_IF;
+  END_REPEAT;
+  RETURN(pct);
+  END_FUNCTION;
+
+
+  FUNCTION get_tj(input : SET OF Physical_connectivity_element_armx) : SET OF Topological_junction;
+  LOCAL
+   tj : SET OF Topological_junction := [];
+    i : INTEGER := 0;
+  END_LOCAL;
+  REPEAT  i := 1 TO SIZEOF(input) BY 1;
+   IF ('PHYSICAL_CONNECTIVITY_DEFINITION_XIM.TOPOLOGICAL_JUNCTION' IN TYPEOF(input[i].start_terminus)) THEN
+   tj := tj + input[i].start_terminus;
+   END_IF;
+   IF ('PHYSICAL_CONNECTIVITY_DEFINITION_XIM.TOPOLOGICAL_JUNCTION' IN TYPEOF(input[i].end_terminus)) THEN
+   tj := tj + input[i].end_terminus;
+   END_IF;
+  END_REPEAT;
+  RETURN(tj);
+  END_FUNCTION;
+
+  
+  
+END_SCHEMA;
+

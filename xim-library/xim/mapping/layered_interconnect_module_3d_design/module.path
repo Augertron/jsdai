@@ -1,0 +1,246 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping layered_interconnect_module_3d_design(Layered_interconnect_module_3d_design_arm, Layered_interconnect_module_3d_design_mim);*)
+
+entity_mapping Located_3d_inter_stratum_extent(Located_3d_inter_stratum_extent, product_definition_relationship);
+
+mapping_constraints;
+{product_definition_relationship
+product_definition_relationship.name = 'inter stratum extent'}
+
+end_mapping_constraints;
+
+attribute_mapping location(location, $PATH, cartesian_point);
+product_definition_relationship
+characterized_product_definition = product_definition_relationship
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+{[representation =>
+shape_representation]
+[representation
+representation.name = '3d parameters']}
+representation
+representation.items[i] ->
+representation_item =>
+geometric_representation_item
+{geometric_representation_item
+geometric_representation_item.dim = 3}
+geometric_representation_item =>
+point =>
+cartesian_point
+
+end_attribute_mapping;
+
+attribute_mapping direction(direction, $PATH, Direction);
+product_definition_relationship
+characterized_product_definition = product_definition_relationship
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+{[representation =>
+shape_representation]
+[representation
+representation.name = '3d parameters']}
+representation
+representation.items[i] ->
+representation_item =>
+geometric_representation_item
+{geometric_representation_item
+geometric_representation_item.dim = 3}
+geometric_representation_item =>
+direction
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Stratum_3d_shape_model(Stratum_3d_shape_model, shape_representation);
+
+mapping_constraints;
+{shape_representation <=
+representation
+[representation.description = 's3dsm']
+[representation
+representation.context_of_items ->
+representation_context =>
+geometric_representation_context
+geometric_representation_context.coordinate_space_dimension = 3]
+[representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+stratum]}
+
+end_mapping_constraints;
+
+attribute_mapping shape_characterized_component(shape_characterized_component, $PATH, Stratum_armx);
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+stratum
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Stratum_feature_3d_shape_model(Stratum_feature_3d_shape_model, shape_representation);
+
+mapping_constraints;
+{shape_representation <=
+representation				
+[representation.name = '3d bound volume shape']
+[representation.description = 'sf3dsm']}
+
+end_mapping_constraints;
+
+attribute_mapping shape_characterized_component(shape_characterized_component, $PATH, Stratum_feature_armx);
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect =>
+stratum_feature
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Stratum_interconnect_module_3d_position(Stratum_interconnect_module_3d_position, mapped_item);
+
+mapping_constraints;
+{mapped_item <=
+representation_item
+representation_item.name = '3d positioned stratum shape in interconnect module'}
+
+end_mapping_constraints;
+
+attribute_mapping transformation(transformation, $PATH, axis2_placement_3d);
+mapped_item
+mapped_item.mapping_target ->
+representation_item =>
+geometric_representation_item =>
+placement =>
+axis2_placement_3d
+
+end_attribute_mapping;
+
+attribute_mapping stratum_component(stratum_component, $PATH, Interconnect_module_stratum_assembly_relationship);
+mapped_item
+mapped_item.mapping_target ->
+representation_item
+{representation_item =>
+geometric_representation_item =>
+placement =>
+axis2_placement_3d}
+representation_item <-
+representation.items[i]
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+{property_definition =>
+product_definition_shape}
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name =  'interconnect module stratum assembly relationship'}
+product_definition_relationship =>
+product_definition_usage =>
+assembly_component_usage
+
+end_attribute_mapping;
+
+attribute_mapping interconnect_module_shape(interconnect_module_shape, $PATH, Physical_unit_3d_shape_model);
+mapped_item <=
+representation_item <-
+representation.items[i]
+{[representation.name = '3d bound volume shape']
+[representation.description = 'pu3dsm']
+[representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition
+{property_definition.name = 'interconnect module'}
+property_definition =>
+product_definition_shape =>
+physical_unit]}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping stratum_shape(stratum_shape, $PATH, Stratum_3d_shape_model);
+mapped_item
+mapped_item.mapping_source ->
+representation_map
+{representation_map
+representation_map.mapping_origin ->
+representation_item
+[representation_item.name = 'origin']
+[representation_item =>
+geometric_representation_item =>
+placement =>
+axis2_placement_3d]}
+representation_map.mapped_representation ->
+{[representation.name = '3d bound volume shape']
+[representation.description = 's3dsm']}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+(*end_schema_mapping;*)

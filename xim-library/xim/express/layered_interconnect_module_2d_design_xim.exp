@@ -1,0 +1,63 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Layered interconnect module 2d design - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+SCHEMA Layered_interconnect_module_2d_design_xim;
+
+USE FROM Layered_interconnect_module_design_xim;
+
+  ENTITY Located_2d_inter_stratum_extent
+    SUBTYPE OF (Inter_stratum_extent);
+      location : cartesian_point;
+  END_ENTITY;
+
+  ENTITY Stratum_feature_planar_shape_model
+    (* CONNOTATIONAL *) SUBTYPE OF (single_area_csg_2d_shape_representation);
+      shape_characterized_component : Stratum_feature_armx;
+  END_ENTITY;
+
+  ENTITY Stratum_interconnect_module_planar_position
+  	(* CONNOTATIONAL *) SUBTYPE OF (mapped_item);
+      stratum_component																				: Interconnect_module_stratum_assembly_relationship;
+      stratum_shape																						: Stratum_planar_shape_model;
+      interconnect_module_shape 															: Physical_unit_planar_shape_model;
+      SELF\mapped_item.mapping_target RENAMED transformation	: axis2_placement_2d;
+   DERIVE
+     SELF\mapped_item.mapping_source : representation_map := ?;
+     SELF\representation_item.name : label := ?;
+   UNIQUE
+   	UR1 : stratum_component;
+  END_ENTITY;
+
+  ENTITY Stratum_planar_shape_model
+    (* CONNOTATIONAL *) SUBTYPE OF (Planar_projected_shape_model);
+      shape_characterized_component : Stratum_armx;
+    UNIQUE
+    	UR1 : shape_characterized_component;
+  END_ENTITY;
+
+END_SCHEMA;
+

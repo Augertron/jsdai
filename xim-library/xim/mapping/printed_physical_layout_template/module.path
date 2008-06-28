@@ -1,0 +1,874 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping printed_physical_layout_template(Printed_physical_layout_template_arm, Printed_physical_layout_template_mim);*)
+
+entity_mapping Basic_multi_stratum_printed_part_template_armx(Basic_multi_stratum_printed_part_template_armx, basic_multi_stratum_printed_part_template);
+
+mapping_constraints;
+basic_multi_stratum_printed_part_template <=
+printed_part_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping material_stack(material_stack, $PATH, Library_stack_model_armx);
+basic_multi_stratum_printed_part_template <=
+printed_part_template <=
+part_template_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'material stack'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+part_template_definition =>
+stratum_stack_model =>
+library_stack_model
+
+end_attribute_mapping;
+
+attribute_mapping reference_template(material_stack, $PATH, Stratum_feature_template_armx);
+basic_multi_stratum_printed_part_template <=
+printed_part_template <=
+part_template_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'reference template'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Printed_tiebar_template_armx(Printed_tiebar_template_armx, printed_tiebar_template);
+
+mapping_constraints;
+printed_tiebar_template <=
+structured_printed_part_template <=
+structured_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Single_stratum_printed_part_template_armx(Single_stratum_printed_part_template_armx, single_stratum_printed_part_template);
+
+mapping_constraints;
+single_stratum_printed_part_template <=
+single_stratum_structured_template <=
+structured_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Functional_usage_view_to_printed_part_template_terminal_assignment(Functional_usage_view_to_printed_part_template_terminal_assignment, shape_aspect_relationship);
+
+mapping_constraints;
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'functional terminal allocation'}
+
+end_mapping_constraints;
+
+attribute_mapping physical_usage_view_terminal(physical_usage_view_terminal, $PATH, Printed_part_template_terminal);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+{shape_aspect
+(shape_aspect.description = 'interface terminal')
+(shape_aspect.description = 'join terminal')}
+shape_aspect =>
+printed_part_template_terminal
+
+end_attribute_mapping;
+
+attribute_mapping functional_usage_view_terminal(functional_usage_view_terminal, $PATH, Scalar_terminal_definition);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+{shape_aspect
+shape_aspect.description = 'scalar terminal'}
+shape_aspect =>
+functional_unit_terminal_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Multi_stratum_printed_part_template_armx(Multi_stratum_printed_part_template_armx, multi_stratum_printed_part_template);
+
+mapping_constraints;
+			multi_stratum_printed_part_template <=
+			multi_stratum_structured_template <=
+			structured_template <=
+			geometric_template <=
+			part_template_definition <=
+			product_definition
+			
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Non_conductive_cross_section_template_armx(Non_conductive_cross_section_template_armx, non_conductive_cross_section_template);
+
+mapping_constraints;
+non_conductive_cross_section_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping nominal_width(nominal_width, $PATH, length_measure_with_unit);
+non_conductive_cross_section_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'nominal width'}
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping template_technology(template_technology, $PATH, Stratum_technology_armx);
+non_conductive_cross_section_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'technology usage'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+stratum_technology
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Printed_connector_template_armx(Printed_connector_template_armx, printed_connector_template);
+
+mapping_constraints;
+printed_connector_template <=
+printed_part_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Printed_connector_template_terminal_relationship_armx(Printed_connector_template_terminal_relationship_armx, printed_connector_template_terminal_relationship);
+
+mapping_constraints;
+printed_connector_template_terminal_relationship <=
+[shape_aspect]
+[shape_aspect_relationship]
+
+end_mapping_constraints;
+
+attribute_mapping connector(connector, $PATH, Printed_connector_template_armx);
+printed_connector_template_terminal_relationship <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+printed_part_template =>
+printed_connector_template
+
+end_attribute_mapping;
+
+attribute_mapping interface_terminal(interface_terminal, $PATH, Printed_part_template_interface_terminal);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+{shape_aspect
+shape_aspect.description = 'interface terminal'}
+shape_aspect =>
+printed_part_template_terminal
+
+end_attribute_mapping;
+
+attribute_mapping join_terminal(join_terminal, $PATH, Printed_part_template_join_terminal);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+{shape_aspect
+shape_aspect.description = 'join terminal'}
+shape_aspect =>
+printed_part_template_terminal
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Printed_part_cross_section_template_armx(Printed_part_cross_section_template_armx, printed_part_cross_section_template);
+
+mapping_constraints;
+printed_part_cross_section_template <=
+printed_part_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping transmission_line_model(transmission_line_model, $PATH, Analytical_model_definition_armx);
+printed_part_cross_section_template <=
+printed_part_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+analytical_model
+
+end_attribute_mapping;
+
+attribute_mapping maximum_transmission_line_characteristic(maximum_transmission_line_characteristic, $PATH, Analytical_model_application);
+printed_part_cross_section_template <=
+printed_part_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition
+property_definition.name = 'maximum transmission line characteristic'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+analytical_representation
+
+end_attribute_mapping;
+
+attribute_mapping minimum_transmission_line_characteristic(minimum_transmission_line_characteristic, $PATH, Analytical_model_application);
+printed_part_cross_section_template <=
+printed_part_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition
+property_definition.name = 'minimum transmission line characteristic'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+analytical_representation
+
+end_attribute_mapping;
+
+attribute_mapping width(width, $PATH, Length_tolerance_characteristic);
+printed_part_cross_section_template <=
+printed_part_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition
+property_definition.name = 'width'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+
+end_attribute_mapping;
+
+attribute_mapping unit_length(unit_length, $PATH, length_measure_with_unit);
+printed_part_cross_section_template <=
+printed_part_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition
+property_definition.name = 'unit length'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+
+attribute_mapping horizontal_material_link(horizontal_material_link, $PATH, Printed_part_template_material_link);
+printed_part_cross_section_template <=
+printed_part_template <=
+part_template_definition <=
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'horizontal material link'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+printed_part_template_material_link
+
+end_attribute_mapping;
+
+attribute_mapping vertical_material_link(vertical_material_link, $PATH, Printed_part_template_material_link);
+printed_part_cross_section_template <=
+printed_part_template <=
+part_template_definition <=
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'vertical material link'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+printed_part_template_material_link
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Printed_part_cross_section_template_terminal_armx(Printed_part_cross_section_template_terminal_armx, printed_part_cross_section_template_terminal);
+
+mapping_constraints;
+printed_part_cross_section_template_terminal <=
+{printed_part_template_terminal
+groupable_item = printed_part_template_terminal
+groupable_item <-
+applied_group_assignment.items[i]
+applied_group_assignment <=
+group_assignment
+group_assignment.assigned_group ->
+{group =>
+printed_part_template_terminal_connection_zone_category}
+group
+group.name
+{(group.name = 'area edge segment')
+(group.name = 'curve edge segment')}}
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Printed_part_cross_section_template_armx);
+printed_part_cross_section_template_terminal <=
+printed_part_template_terminal <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+printed_part_template =>
+printed_part_cross_section_template
+
+end_attribute_mapping;
+
+attribute_mapping material_to_left_of_terminal(material_to_left_of_terminal, $PATH, Printed_part_template_material_link);
+printed_part_cross_section_template_terminal <=
+printed_part_template_terminal <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'material to left of terminal'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+printed_part_template_material_link
+
+end_attribute_mapping;
+
+attribute_mapping material_to_right_of_terminal(material_to_right_of_terminal, $PATH, Printed_part_template_material_link);
+printed_part_cross_section_template_terminal <=
+printed_part_template_terminal <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'material to right of terminal'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+printed_part_template_material_link
+
+end_attribute_mapping;
+
+attribute_mapping material_to_top_of_terminal(material_to_top_of_terminal, $PATH, Printed_part_template_material_link);
+printed_part_cross_section_template_terminal <=
+printed_part_template_terminal <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'material to top of terminal'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+printed_part_template_material_link
+
+end_attribute_mapping;
+
+attribute_mapping material_to_bottom_of_terminal(material_to_bottom_of_terminal, $PATH, Printed_part_template_material_link);
+printed_part_cross_section_template_terminal <=
+printed_part_template_terminal <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'material to bottom of terminal'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+printed_part_template_material_link
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Printed_part_template_armx(Printed_part_template_armx, printed_part_template);
+
+mapping_constraints;
+printed_part_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping implemented_function(implemented_function, $PATH, Functional_unit_usage_view);
+printed_part_template <=
+part_template_definition <=
+product_definition  <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship.name = 'implemented function'}
+product_definition_relationship.relating_product_definition ->
+product_definition
+{product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'functional design usage'}
+product_definition =>
+functional_unit
+
+end_attribute_mapping;
+(* REMOVED
+attribute_mapping printed_part_template_stack(printed_part_template_stack, $PATH, Printed_part_template_link);
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'printed part template stack'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+stratum_technology_link =>
+printed_part_template_link
+
+end_attribute_mapping;
+
+attribute_mapping of_stratum_technology(of_stratum_technology, $PATH, Stratum_technology_armx);
+part_template_definition <=
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'of stratum technology'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+stratum_technology
+
+end_attribute_mapping;
+
+attribute_mapping material_stack(material_stack, $PATH, Stratum_technology_link_armx);
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'material stack'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+stratum_technology_link
+
+end_attribute_mapping;
+*)
+end_entity_mapping;
+
+entity_mapping Printed_part_template_connected_terminals_definition_armx(Printed_part_template_connected_terminals_definition_armx, printed_part_template_connected_terminals_definition);
+
+mapping_constraints;
+printed_part_template_connected_terminals_definition <=
+shape_aspect
+
+end_mapping_constraints;
+
+attribute_mapping name(name, shape_aspect.name);
+printed_part_template_connected_terminals_definition <=
+shape_aspect
+shape_aspect.name
+
+end_attribute_mapping;
+
+attribute_mapping connected_terminals(connected_terminals, $PATH, Printed_part_template_terminal);
+printed_part_template_connected_terminals_definition <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.description = 'member connected terminal'}
+shape_aspect_relationship.related_shape_aspect ->
+{shape_aspect
+(shape_aspect.description = 'interface terminal')
+(shape_aspect.description = 'join terminal')}
+shape_aspect =>
+printed_part_template_terminal
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Printed_part_template_interface_terminal(Printed_part_template_interface_terminal, printed_part_template_terminal);
+
+mapping_constraints;
+printed_part_template_terminal <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'interface terminal'}
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Printed_connector_template_armx);
+printed_part_template_terminal <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+printed_part_template =>
+printed_connector_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Printed_part_template_join_terminal(Printed_part_template_join_terminal, printed_part_template_terminal);
+
+mapping_constraints;
+printed_part_template_terminal <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'join terminal'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Printed_part_template_material_armx(Printed_part_template_material_armx, printed_part_template_material);
+
+mapping_constraints;
+printed_part_template_material <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping width(width, $PATH, Length_tolerance_characteristic);
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'width'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation.used_representation ->
+representation
+
+end_attribute_mapping;
+
+attribute_mapping required_material(required_material, $PATH, Stratum_technology_armx);
+printed_part_template_material <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'technology usage'}
+property_definition_relationship
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+stratum_technology
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Printed_part_template_material_link_armx(Printed_part_template_material_link_armx, printed_part_template_material_link);
+
+mapping_constraints;
+{[printed_part_template_material_link <=
+shape_aspect]
+[printed_part_template_material_link <=
+shape_aspect_relationship]}
+
+end_mapping_constraints;
+
+attribute_mapping precedent_material(precedent_material, $PATH, Template_material_cross_section_boundary);
+printed_part_template_material_link <=
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+template_material_cross_section_boundary
+
+end_attribute_mapping;
+
+attribute_mapping subsequent_material(subsequent_material, $PATH, Template_material_cross_section_boundary);
+printed_part_template_material_link <=
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect =>
+template_material_cross_section_boundary
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Printed_part_template_terminal_armx(Printed_part_template_terminal_armx, printed_part_template_terminal);
+
+mapping_constraints;
+printed_part_template_terminal <=
+shape_aspect
+{shape_aspect
+(shape_aspect.description = 'interface terminal')
+(shape_aspect.description = 'join terminal')}
+
+end_mapping_constraints;
+
+attribute_mapping connection_zone_category(connection_zone_category, group.name);
+printed_part_template_terminal
+groupable_item = printed_part_template_terminal
+groupable_item <-
+applied_group_assignment.items[i]
+applied_group_assignment <=
+group_assignment
+group_assignment.assigned_group ->
+{group =>
+printed_part_template_terminal_connection_zone_category}
+group
+group.name
+{(group.name = 'area edge segment')
+(group.name = 'curve edge segment')
+(group.name = 'surface area')
+(group.name = 'surface point')}
+
+end_attribute_mapping;
+
+attribute_mapping connection_area(connection_area, $PATH, Connection_zone_in_layout_template);
+printed_part_template_terminal <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'connection area'}
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+shape_aspect =>
+instanced_feature
+
+end_attribute_mapping;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Printed_part_template_armx);
+printed_part_template_terminal <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+printed_part_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Structured_printed_part_template_armx(Structured_printed_part_template_armx, structured_printed_part_template);
+
+mapping_constraints;
+structured_printed_part_template <=
+printed_part_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Structured_printed_part_template_terminal_armx(Structured_printed_part_template_terminal_armx, structured_printed_part_template_terminal);
+
+mapping_constraints;
+structured_printed_part_template_terminal <=
+printed_part_template_terminal <=
+shape_aspect
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Structured_printed_part_template_armx);
+structured_printed_part_template_terminal <=
+printed_part_template_terminal <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+printed_part_template =>
+structured_printed_part_template
+
+end_attribute_mapping;
+
+attribute_mapping associated_composition_relationship(associated_composition_relationship, $PATH, Template_location_in_structured_template);
+structured_printed_part_template_terminal <=
+printed_part_template_terminal <=
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.related_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'associated composition relationship'}
+property_definition_relationship.relating_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'tlist'}
+product_definition_relationship =>
+product_definition_usage =>
+assembly_component_usage
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Template_material_cross_section_boundary_armx(Template_material_cross_section_boundary_armx, template_material_cross_section_boundary);
+
+mapping_constraints;
+template_material_cross_section_boundary <=
+shape_aspect
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Printed_part_template_material);
+template_material_cross_section_boundary <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape <=
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition
+product_definition =>
+printed_part_template_material
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Usage_concept_usage_relationship_armx(Usage_concept_usage_relationship_armx, usage_concept_usage_relationship)
+extended;
+
+attribute_mapping associated_usage(associated_usage, $PATH, Printed_part_template_terminal);
+
+usage_concept_usage_relationship <=
+item_identified_representation_usage
+item_identified_representation_usage.definition ->
+represented_definition 
+represented_definition = shape_aspect                
+shape_aspect
+shape_aspect =>
+printed_part_template_terminal
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

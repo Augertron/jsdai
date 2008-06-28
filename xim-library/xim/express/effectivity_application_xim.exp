@@ -1,0 +1,100 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N3224 - ISO/TS 10303-1059 Effectivity application - EXPRESS MIM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+(* Based on AIM *)
+
+SCHEMA Effectivity_application_xim;
+
+USE FROM Effectivity_xim; -- ISO/TS 10303-1057
+
+USE FROM basic_attribute_schema   -- ISO 10303-41
+  (object_role,
+   role_association,
+   role_select); 
+USE FROM management_resources_schema   -- ISO 10303-41
+  (effectivity_assignment); 
+
+USE FROM Effectivity_application_mim;
+
+(** GL - moved from pre_defined_product_....specializations *)
+USE FROM External_item_identification_assignment_xim; -- needed by the inverse at Externally_defined_effectivity_or_ineffectivity_assignment__aea
+
+CONSTANT
+Pre_defined_effectivity_or_ineffectivity_assignment_types : SET OF STRING := [
+	'actual',
+	'planned',
+	'required'];
+END_CONSTANT;
+
+TYPE ea_external_identification_item_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH (
+	  Externally_defined_effectivity_or_ineffectivity_assignment__aea);
+END_TYPE;
+
+ENTITY Pre_defined_effectivity_or_ineffectivity_assignment__aea
+	ABSTRACT SUPERTYPE OF (ONEOF (Applied_effectivity_assignment__actual,
+                                Applied_effectivity_assignment__planned,
+                                Applied_effectivity_assignment__required))
+  SUBTYPE OF (applied_effectivity_assignment);
+  WHERE
+    WR1: SELF\effectivity_assignment.role.name IN Pre_defined_effectivity_or_ineffectivity_assignment_types;
+END_ENTITY;
+
+ENTITY Externally_defined_effectivity_or_ineffectivity_assignment__aea
+  SUBTYPE OF (applied_effectivity_assignment);
+INVERSE
+  source : External_source_identification FOR item;
+WHERE
+  WR1: NOT (SELF\effectivity_assignment.role.name IN Pre_defined_effectivity_or_ineffectivity_assignment_types);
+END_ENTITY;
+
+ENTITY Applied_effectivity_assignment__actual
+  SUBTYPE OF (Pre_defined_effectivity_or_ineffectivity_assignment__aea);
+DERIVE
+  SELF\effectivity_assignment.role : object_role := object_role('actual', ?);
+END_ENTITY;
+
+ENTITY Applied_effectivity_assignment__planned
+  SUBTYPE OF (Pre_defined_effectivity_or_ineffectivity_assignment__aea);
+DERIVE
+  SELF\effectivity_assignment.role : object_role := object_role('planned', ?);
+END_ENTITY;
+
+ENTITY Applied_effectivity_assignment__required
+  SUBTYPE OF (Pre_defined_effectivity_or_ineffectivity_assignment__aea);
+DERIVE
+  SELF\effectivity_assignment.role : object_role := object_role('required', ?);
+END_ENTITY;
+
+SUBTYPE_CONSTRAINT ea_applied_effectivity_assignment_subtypes FOR applied_effectivity_assignment;
+	ABSTRACT SUPERTYPE;
+    ONEOF (Pre_defined_effectivity_or_ineffectivity_assignment__aea,
+           Externally_defined_effectivity_or_ineffectivity_assignment__aea);
+END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA;  -- Effectivity_application_xim
+

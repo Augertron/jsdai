@@ -1,0 +1,164 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping physical_unit_2d_design_view(Physical_unit_2d_design_view_arm, Physical_unit_2d_design_view_mim);*)
+
+
+entity_mapping Assembly_component_2d_shape_model(Assembly_component_2d_shape_model, shape_representation);
+
+mapping_constraints;
+{shape_representation <=
+representation				
+[representation.id = 'ac2dsm']
+[representation.name = 'ppsm']
+[representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+assembly_component]}
+
+end_mapping_constraints;
+
+attribute_mapping shape_characterized_component(shape_characterized_component, $PATH, Assembly_component_armx);
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+assembly_component
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Component_2d_location_armx(Component_2d_location_armx, component_2d_location);
+
+mapping_constraints;
+component_2d_location <=
+[context_dependent_shape_representation]
+[shape_representation_relationship]
+[representation_relationship_with_transformation]
+[definitional_representation_relationship]
+
+end_mapping_constraints;
+
+attribute_mapping placement_fixed(placement_fixed, $PATH);
+component_2d_location <=
+context_dependent_shape_representation
+context_dependent_shape_representation.description
+{(context_dependent_shape_representation.description = 'placement fixed')
+(context_dependent_shape_representation.description = 'placement not fixed')}
+
+end_attribute_mapping;
+
+attribute_mapping transformation(transformation, $PATH, cartesian_transformation_operator_2d);
+component_2d_location <=
+representation_relationship_with_transformation
+representation_relationship_with_transformation.transformation_operator ->
+transformation = functionally_defined_transformation
+functionally_defined_transformation =>
+cartesian_transformation_operator =>
+cartesian_transformation_operator_2d
+
+end_attribute_mapping;
+
+attribute_mapping component_model(component_model, $PATH, shape_representation);
+component_2d_location <= 
+representation_relationship_with_transformation <= 
+representation_relationship
+representation_relationship.rep_1 ->
+representation => 
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping assembly_model(assembly_model, $PATH, Physical_unit_planar_shape_model);
+component_2d_location <= 
+representation_relationship_with_transformation <= 
+representation_relationship
+representation_relationship.rep_2 ->
+representation
+{[representation.name = 'ppsm'] 
+[representation.description = 'pupsm']} 
+representation => 
+shape_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Component_part_2d_geometric_representation_relationship(Component_part_2d_geometric_representation_relationship, shape_representation_relationship);
+
+mapping_constraints;
+{shape_representation_relationship <=
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'component part planar shape'}}
+
+end_mapping_constraints;
+
+attribute_mapping component_shape(component_shape, $PATH, Assembly_component_2d_shape_model);
+shape_representation_relationship <=
+representation_relationship
+representation_relationship.rep_2 ->
+{[representation.id = 'ac2dsm']
+[representation.name = 'ppsm']}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping part_shape(part_shape, $PATH, Part_template_planar_shape_model);
+shape_representation_relationship <=
+representation_relationship
+representation_relationship.rep_1 ->
+{[representation.name = 'ppsm']
+(* [representation.description = 'ptpsm'] *)
+}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping part_shape(part_shape, $PATH, Physical_unit_planar_shape_model);
+shape_representation_relationship <=
+representation_relationship
+representation_relationship.rep_1 ->
+{[representation.name = 'ppsm']
+[representation.description = 'pupsm']}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+(*end_schema_mapping;*)

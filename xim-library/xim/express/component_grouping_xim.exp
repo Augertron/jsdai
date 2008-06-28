@@ -1,0 +1,183 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Component grouping - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Component_grouping_xim;
+
+USE FROM Interface_component_xim;	
+
+USE FROM Component_grouping_mim;
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+
+(** ALL entities in principle has 2 mapping alternatives - component_defintiion and component_definition related. 
+component_definition is by purpose skipped, since it should vanish in order to be compliant with other modules anyway *)
+
+  ENTITY Array_placement_group_armx
+    ABSTRACT SUPERTYPE OF(ONEOF (Linear_array_placement_group_component_armx,
+		Rectangular_array_placement_group_component_armx))
+    (* CONNOTATIONAL *) SUBTYPE OF (Assembly_group_component_armx, array_placement_group);
+  END_ENTITY;
+
+  ENTITY Assembly_component_placement_link
+  	(* CONNOTATIONAL *) SUBTYPE OF (assembly_group_component_definition_placement_link);
+      SELF\product_definition_relationship.relating_product_definition RENAMED precedent_element  : Assembly_component_armx;
+      SELF\product_definition_relationship.related_product_definition RENAMED subsequent_element : Assembly_component_armx;
+    DERIVE
+      SELF\product_definition.frame_of_reference : product_definition_context := ?;
+      SELF\product_definition.description : text := ?;
+      SELF\product_definition.formation : product_definition_formation := ?;
+      SELF\product_definition.id : identifier := ?;
+    INVERSE
+      referenced_by : linear_array_placement_group_component_armx FOR element;
+    WHERE
+      WR1:  acyclic_assembly_component_placement_link(SELF,
+         [subsequent_element],
+         'COMPONENT_GROUPING_XIM.ASSEMBLY_COMPONENT_PLACEMENT_LINK');
+  END_ENTITY;
+
+  ENTITY Assembly_group_component_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Assembly_component_armx, Single_instance, assembly_group_component);
+    INVERSE
+      components : SET[1:?] OF next_assembly_usage_occurrence FOR relating_product_definition;
+    WHERE
+      WR1: SIZEOF(QUERY(co <* components | NOT(('PHYSICAL_UNIT_DESIGN_VIEW_XIM.ASSEMBLY_COMPONENT_ARMX') IN TYPEOF(co\product_definition_relationship.related_product_definition)))) = 0;      
+  END_ENTITY;
+
+  ENTITY Interfaced_group_component_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Assembly_group_component_armx, interfaced_group_component);
+      group_interface_component : SET[1:?] OF Interface_component_armx;
+  END_ENTITY;
+
+  ENTITY Linear_array_placement_group_component_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Array_placement_group_armx, linear_array_placement_group_component);
+      element                               : SET[1:?] OF Assembly_component_placement_link;
+      initial_node_positive_x_displacement  : length_measure_with_unit;
+      terminus_node_positive_x_displacement : length_measure_with_unit;
+      location_uncertainty                  : length_measure_with_unit;
+    WHERE  
+      WR1 : (1 + SIZEOF(element)) = cg_get_sz_ac(element);
+  END_ENTITY;
+
+  ENTITY Linear_array_placement_group_component_link
+  	(* CONNOTATIONAL *) SUBTYPE OF (linear_array_component_definition_link);
+      SELF\product_definition_relationship.relating_product_definition RENAMED precedent_element : Linear_array_placement_group_component_armx;
+      SELF\product_definition_relationship.related_product_definition RENAMED subsequent_element : Linear_array_placement_group_component_armx;
+    DERIVE
+      SELF\product_definition.frame_of_reference : product_definition_context := ?;
+      SELF\product_definition.description : text := ?;
+      SELF\product_definition.formation : product_definition_formation := ?;
+      SELF\product_definition.id : identifier := ?;
+    INVERSE
+      referenced_by : rectangular_array_placement_group_component_armx FOR element;
+    WHERE
+      WR1:  acyclic_linear_array_placement_group_component_link(SELF,
+         [subsequent_element],
+         'COMPONENT_GROUPING_XIM.LINEAR_ARRAY_PLACEMENT_GROUP_COMPONENT_LINK');
+  END_ENTITY;
+
+  ENTITY Rectangular_array_placement_group_component_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Array_placement_group_armx, rectangular_array_placement_group_component);
+      element                              : SET[1:?] OF Linear_array_placement_group_component_link;
+      initial_row_positive_y_displacement  : length_measure_with_unit;
+      terminus_row_positive_y_displacement : length_measure_with_unit;
+      location_uncertainty                 : length_measure_with_unit;
+    WHERE
+      WR1 : (1 + SIZEOF(element)) = cg_get_sz_lapgc(element);
+  END_ENTITY;
+
+FUNCTION acyclic_assembly_component_placement_link
+  (relation : Assembly_component_placement_link; relatives : SET[1:?] OF
+  Assembly_component_armx; specific_relation : STRING) : BOOLEAN; 
+LOCAL
+    x : SET OF Assembly_component_placement_link;
+END_LOCAL;
+
+    IF relation.precedent_element IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+      x := QUERY(pd <* bag_to_set(USEDIN(relation.precedent_element,
+        'COMPONENT_GROUPING_XIM.' + 'ASSEMBLY_COMPONENT_PLACEMENT_LINK.' +
+        'subsequent_element')) | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_assembly_component_placement_link(x[i], relatives +
+        relation.precedent_element, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+  RETURN (TRUE);
+END_FUNCTION; 
+
+FUNCTION acyclic_linear_array_placement_group_component_link
+  (relation : Linear_array_placement_group_component_link; relatives :
+  SET[1:?] OF Linear_array_placement_group_component_armx; specific_relation : STRING): BOOLEAN; 
+LOCAL
+      x : SET OF Linear_array_placement_group_component_link;
+END_LOCAL;
+
+    IF relation.precedent_element IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+     x := QUERY(pd <* bag_to_set(USEDIN(relation.precedent_element,
+       'COMPONENT_GROUPING_XIM.' +
+       'LINEAR_ARRAY_PLACEMENT_GROUP_COMPONENT_LINK.' + 'SUBSEQUENT_ELEMENT'))
+       | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_linear_array_placement_group_component_link(x[i], relatives
+        + relation.precedent_element, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+  RETURN (TRUE);
+END_FUNCTION; 
+
+FUNCTION cg_get_sz_ac (input : SET[1:?] OF Assembly_component_placement_link) : INTEGER;
+LOCAL
+    ac : SET OF Assembly_component_armx := [];
+END_LOCAL;
+    REPEAT i := 1 TO HIINDEX(input);
+      ac := ac + input[i]\Assembly_component_placement_link.precedent_element +
+      input[i]\Assembly_component_placement_link.subsequent_element;
+    END_REPEAT;
+  RETURN (SIZEOF(ac));
+END_FUNCTION; 
+
+FUNCTION cg_get_sz_lapgc (input : SET[1:?] OF Linear_array_placement_group_component_link) : INTEGER;
+LOCAL
+  ac : SET OF Linear_array_placement_group_component_armx := [];
+END_LOCAL;
+    REPEAT i := 1 TO HIINDEX(input);
+      ac := ac +
+        input[i]\Linear_array_placement_group_component_link.precedent_element +
+        input[i]\Linear_array_placement_group_component_link.subsequent_element;
+    END_REPEAT;
+  RETURN (SIZEOF(ac));
+END_FUNCTION; 
+
+END_SCHEMA;
+

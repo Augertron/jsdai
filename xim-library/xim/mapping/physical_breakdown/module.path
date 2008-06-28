@@ -1,0 +1,223 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping physical_breakdown(Physical_breakdown_arm, Physical_breakdown_mim);*)
+
+uof_mapping Physical_Breakdown(Physical_Breakdown);
+
+entity_mapping Physical_breakdown(Physical_breakdown, product);
+
+mapping_constraints;
+
+				product
+				{product <-
+				product_related_product_category.products[i]
+				product_related_product_category <=
+				product_category
+				product_category.name='physical breakdown'}
+			
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Physical_element_usage_armx(Physical_element_usage_armx, physical_element_usage);
+
+mapping_constraints;
+
+				physical_element_usage <=
+				breakdown_element_usage
+			
+end_mapping_constraints;
+
+attribute_mapping child_element(child_element, $PATH, Physical_element_definition);
+
+					physical_element_usage <=
+					breakdown_element_usage <=
+					product_definition_relationship
+					product_definition_relationship.related_product_definition ->
+					product_definition
+					{product_definition
+					product_definition.frame_of_reference ->
+					product_definition_context <= 
+					application_context_element
+					application_context_element.name = 'conceptual definition'}
+				
+end_attribute_mapping;
+
+attribute_mapping parent_element(parent_element, $PATH, Physical_element_definition);
+
+					physical_element_usage <=
+					breakdown_element_usage <=
+					product_definition_relationship
+					product_definition_relationship.relating_product_definition ->
+					product_definition
+					{product_definition
+					product_definition.frame_of_reference ->
+					product_definition_context <= 
+					application_context_element
+					application_context_element.name = 'conceptual definition'}
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Physical_breakdown_version(Physical_breakdown_version, product_definition_formation
+			);
+
+attribute_mapping of_product(of_product, $PATH, Physical_breakdown);
+
+					product_definition_formation
+					product_definition_formation.of_product ->
+					product
+					{product <-
+					product_related_product_category.products[i]
+					product_related_product_category <=
+					product_category
+					product_category.name='physical breakdown'}
+
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+uof_mapping Physical_Element(Physical_Element);
+
+entity_mapping Physical_element(Physical_element, product);
+
+mapping_constraints;
+
+				product
+				{product <-
+				product_related_product_category.products[i]
+				product_related_product_category <=
+				product_category
+				product_category.name='conceptual product'}
+			
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Breakdown_element_definition(Breakdown_element_definition, product_definition)
+extended;
+
+mapping_constraints;
+
+				(product_definition
+				{product_definition
+				product_definition.frame_of_reference ->
+				product_definition_context <= 
+				application_context_element
+				application_context_element.name = 'conceptual definition'})
+			
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Physical_element_definition(Physical_element_definition, product_definition);
+
+mapping_constraints;
+
+				product_definition
+				{product_definition
+				product_definition.frame_of_reference ->
+				product_definition_context <= 
+				application_context_element
+				application_context_element.name = 'conceptual definition'}
+			
+end_mapping_constraints;
+
+attribute_mapping defined_version(defined_version, $PATH, Physical_element_version);
+
+					product_definition
+					{product_definition
+					product_definition.frame_of_reference ->
+					product_definition_context <= 
+					application_context_element
+					application_context_element.name = 'conceptual definition'}
+					product_definition.formation ->
+					product_definition_formation
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Physical_element_version(Physical_element_version, 
+				product_definition_formation
+			);
+
+attribute_mapping of_product(of_product, $PATH, Physical_element);
+
+					product_definition_formation
+					product_definition_formation.of_product ->
+					product
+					{product <-
+					product_related_product_category.products[i]
+					product_related_product_category <=
+					product_category
+					product_category.name='conceptual product'}
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+
+entity_mapping Physical_breakdown_context_armx(Physical_breakdown_context_armx, physical_breakdown_context);
+
+mapping_constraints;
+
+				physical_breakdown_context <=
+				breakdown_context
+			
+end_mapping_constraints;
+
+attribute_mapping breakdown(breakdown, $PATH, Physical_breakdown_version);
+
+					[physical_breakdown_context <=
+					breakdown_context <=
+					product_definition_relationship
+					product_definition_relationship.relating_product_definition ->
+					product_definition
+					product_definition.formation ->
+					product_definition_formation]					
+				
+end_attribute_mapping;
+
+attribute_mapping breakdown_element(breakdown_element, $PATH, Physical_element_definition);
+
+					physical_breakdown_context <=
+					breakdown_context <=
+					product_definition_relationship
+					product_definition_relationship.related_product_definition ->
+					product_definition
+					{product_definition
+					product_definition.frame_of_reference ->
+					product_definition_context <= 
+					application_context_element
+					application_context_element.name = 'conceptual definition'}
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

@@ -1,0 +1,240 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Physical unit usage view - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Physical_unit_usage_view_xim;
+
+USE FROM Item_definition_structure_xim;
+
+USE FROM Shape_composition_xim;
+
+USE FROM Feature_and_connection_zone_xim;
+
+USE FROM Analytical_model_xim;
+
+USE FROM Part_feature_location_xim;
+
+USE FROM Requirement_assignment_xim;
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+
+USE FROM Physical_unit_usage_view_mim;
+
+  TYPE material_state_change_enumeration = ENUMERATION OF
+    (material_addition,
+     material_removal);
+  END_TYPE;
+
+	TYPE puuv_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
+	    (Part_feature,
+	    Part_view_definition);
+	END_TYPE; 
+
+	TYPE puuv_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
+		(Part_feature);
+	END_TYPE;
+
+	TYPE puuv_usage_concept = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON usage_concept WITH 
+		(Part_feature);
+	END_TYPE;
+
+  ENTITY Derived_part_view_definition_relationship
+    SUBTYPE OF(Product_definition_relationship);
+     SELF\product_definition_relationship.relating_product_definition : Part_view_definition;
+     SELF\product_definition_relationship.related_product_definition  : Part_view_definition;
+    DERIVE
+      SELF\product_definition_relationship.name                       : label              := 'derived part view definition relationship';
+    WHERE
+     WR1: SIZEOF(get_derived_shape_element(SELF\product_definition_relationship.related_product_definition)) > 0;
+     WR2: SIZEOF(QUERY(gdrse <* get_derived_shape_element(SELF\product_definition_relationship.related_product_definition) |
+             (SIZEOF(QUERY(se <* gdrse.derived_from |
+              SELF\product_definition_relationship.relating_product_definition <> se.containing_shape.described_element
+              )) = 0)
+             )) = SIZEOF(get_derived_shape_element(SELF\product_definition_relationship.related_product_definition));
+  END_ENTITY;
+	
+  ENTITY Connection_zone_in_usage_view
+  	(* CONNOTATIONAL *) SUBTYPE OF (Connection_zone);
+  	DERIVE
+  		associated_definition : Part_usage_view := containing_shape.described_element;
+  		SELF\Shape_element.element_name : STRING := '';
+  END_ENTITY; 
+
+  ENTITY Connection_zone_map_identification_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (connection_zone_map_identification);
+      SELF\Representation_relationship.rep_1 RENAMED reference_connection_zone_shape : Usage_view_connection_zone_terminal_shape_relationship;
+      SELF\Representation_relationship.rep_2 RENAMED mapped_connection_zone_shape    : Usage_view_connection_zone_terminal_shape_relationship;
+    DERIVE
+      SELF\shape_aspect.of_shape : product_definition_shape := ?;
+      SELF\shape_aspect.description : text := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+      SELF\shape_aspect.name : label := ?;
+    UNIQUE
+      UR1 : reference_connection_zone_shape,
+ mapped_connection_zone_shape;
+    WHERE
+      WR1 : reference_connection_zone_shape <> mapped_connection_zone_shape;
+      WR2 : reference_connection_zone_shape.associated_connection_zone_shape_definition <> mapped_connection_zone_shape.associated_connection_zone_shape_definition;
+  END_ENTITY;
+
+  ENTITY Part_feature
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_feature);
+      SELF\Shape_element.containing_shape RENAMED associated_definition : Part_usage_view;
+      material_state_change   : OPTIONAL material_state_change_enumeration;
+      precedent_feature       : OPTIONAL Part_feature;
+    DERIVE
+      SELF\shape_aspect.description : text := 'part generic feature';
+    INVERSE
+      subsequent_feature      : SET [0:1] OF Part_feature for precedent_feature;
+    WHERE
+      WR1:  NOT EXISTS(precedent_feature) OR
+            (NOT (SIZEOF(subsequent_feature) = 1) OR
+            (acyclic_part_feature_precedence_relationship(SELF,
+             [subsequent_feature[1]],
+             'PHYSICAL_UNIT_USAGE_VIEW_XIM.PART_FEATURE')));
+  END_ENTITY;
+
+  ENTITY Part_feature_make_from_relationship
+  	(* CONNOTATIONAL *) SUBTYPE OF (Shape_element_relationship, make_from_part_feature_relationship);
+      associated_make_from : Product_definition_relationship;
+      SELF\Shape_element_relationship.relating RENAMED reusable_feature	: Part_feature;
+      SELF\Shape_element_relationship.related RENAMED resultant_feature	: Part_feature;
+    UNIQUE
+      UR1 : reusable_feature,
+ resultant_feature;
+    WHERE
+      WR1 : reusable_feature :<>: resultant_feature;
+      WR2 : reusable_feature.associated_definition :<>: resultant_feature.associated_definition;
+  END_ENTITY;
+
+
+  ENTITY Part_feature_template_definition_armx
+    SUBTYPE OF (Shape_feature_definition_armx, part_feature_template_definition);
+    DERIVE
+      surface_conditions : SET OF Surface_condition := 
+	       bag_to_set(USEDIN(SELF\Shape_feature_definition.of_shape,'SURFACE_CONDITIONS_XIM.SURFACE_CONDITION_ASSOCIATION.DESCRIBED_ELEMENT'));	  
+      SELF\group.name : label := ?;
+    UNIQUE
+      UR1 : id; 
+  END_ENTITY;
+
+  ENTITY Part_feature_template_shape_model
+    SUBTYPE OF (Shape_representation);
+--    INVERSE 
+--      shape_characterized_template : Part_feature_template_definition_armx FOR feature_model;
+    WHERE
+      WR1 : NOT (SIZEOF(USEDIN(SELF, '')) > 1) OR 
+       (SIZEOF(QUERY(foo <* USEDIN(SELF,'') | 
+       NOT(SIZEOF(['PHYSICAL_UNIT_USAGE_VIEW_XIM.USAGE_CONCEPT_USAGE_RELATIONSHIP_ARMX',
+        'PHYSICAL_UNIT_USAGE_VIEW_XIM.SHAPE_DESCRIPTION_ASSOCIATION'] * TYPEOF(foo))= 1)
+        )) 
+        = 0);
+      --DESC: If self is useding more than once (one for Part_feature_template_definition) then the other USEDIN shall be a UCUR.
+      WR2 : NOT EXISTS(SELF\Representation.description);
+      WR3:((SIZEOF(USEDIN(SELF,
+       'SHAPE_PROPERTY_ASSIGNMENT_XIM.SHAPE_DESCRIPTION_ASSOCIATION.REPRESENTATION'))=0) OR
+       (SIZEOF(QUERY(sda <* USEDIN(SELF,
+       'SHAPE_PROPERTY_ASSIGNMENT_XIM.SHAPE_DESCRIPTION_ASSOCIATION.REPRESENTATION') | 
+       NOT (('SHAPE_PROPERTY_ASSIGNMENT_XIM.' +'ITEM_SHAPE' IN
+       TYPEOF(sda.represented_characteristic)) AND 
+       ('PHYSICAL_UNIT_USAGE_VIEW_XIM.' +'PART_FEATURE_TEMPLATE_DEFINITION' IN
+       TYPEOF(sda.represented_characteristic.described_element)))
+       )) = 0));
+      
+  END_ENTITY;
+
+  ENTITY Part_usage_view
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_view_definition, Item_shape, physical_unit);
+    DERIVE
+    	SELF\Item_shape.described_element : shapeable_item := SELF;
+  END_ENTITY;
+
+  ENTITY Usage_view_connection_zone_terminal_shape_relationship_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (usage_view_connection_zone_terminal_shape_relationship);
+      SELF\Representation_relationship.rep_1 RENAMED associating_terminal_shape                  : Part_feature_template_shape_model;
+      associated_usage                            : Connection_zone_in_usage_view;
+      SELF\Representation_relationship.rep_2 RENAMED associated_connection_zone_shape_definition : Shape_representation;
+      associated_usage_placement                  : axis2_placement;
+    DERIVE
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+      SELF\representation_relationship_with_transformation.transformation_operator : transformation := ?;
+      SELF\representation.name : label := ?;
+    WHERE
+      WR1 : associating_terminal_shape :<>: associated_connection_zone_shape_definition;
+  END_ENTITY;
+
+  FUNCTION acyclic_part_feature_precedence_relationship
+    (relation : Part_feature; relatives : SET[1:?] OF
+      Part_feature; specific_relation : STRING) : BOOLEAN; 
+    LOCAL
+      x : SET OF Part_feature;
+    END_LOCAL;
+    IF relation.precedent_feature IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+      x := QUERY(pd <* bag_to_set(USEDIN(relation.precedent_feature,
+        'PHYSICAL_UNIT_USAGE_VIEW_ARM.' + 'PART_FEATURE.' +
+        'SUBSEQUENT_FEATURE')) | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_part_feature_precedence_relationship(x[i], relatives +
+        relation.precedent_feature, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION; 
+
+RULE unique_assembly_component_usage FOR (assembly_component_usage);
+   LOCAL
+     gee : SET OF Product_view_definition := [];
+     gei : SET OF Product_view_definition := [];
+   END_LOCAL;
+   REPEAT i := 1 to SIZEOF(assembly_component_usage) by 1;
+     gee  := gee + assembly_component_usage[i]\Product_definition_relationship.related_product_definition;
+     gei  := gei + assembly_component_usage[i]\Product_definition_relationship.relating_product_definition;
+   END_REPEAT;  
+  WHERE
+   WR1 : SIZEOF(gee) = SIZEOF(gei);
+  END_RULE;
+
+FUNCTION get_derived_shape_element( input : Part_view_definition) : SET OF Derived_shape_element;
+LOCAL
+ is : SET OF Item_shape := bag_to_set(USEDIN(input, 'SHAPE_PROPERTY_ASSIGNMENT_XIM.ITEM_SHAPE.DESCRIBED_ELEMENT'));
+ se : SET OF Shape_element := [];
+END_LOCAL; 
+REPEAT i := 1 to SIZEOF(is) by 1;
+   se  := se + bag_to_set(USEDIN(is[i], 'SHAPE_PROPERTY_ASSIGNMENT_XIM.SHAPE_ELEMENT.CONTAINING_SHAPE'));
+END_REPEAT;  
+
+RETURN(QUERY(dse <* se | 'DERIVED_SHAPE_ELEMENT_XIM.DERIVED_SHAPE_ELEMENT' IN TYPEOF(se)));
+END_FUNCTION;
+
+END_SCHEMA;
+
+

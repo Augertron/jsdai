@@ -1,0 +1,133 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+Derived from ISO TC184/SC4/WG12 N4251 - ISO/TS 10303-1027 Contextual shape positioning - EXPRESS ARM
+by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+(** Based on ARM module *)
+ 
+SCHEMA Contextual_shape_positioning_xim;
+
+USE FROM Extended_basic_geometry_xim; -- ISO/TS 10303-1667
+USE FROM Shape_property_assignment_xim;    --  ISO/TS 10303-1032
+
+
+TYPE template_instance = SELECT
+   (Geometric_placement_operation, 
+    Geometric_model_relationship_with_transformation);
+END_TYPE; 
+
+TYPE template_definition_select = EXTENSIBLE SELECT (Shape_representation);
+-- not sure on Styled_model
+END_TYPE; 
+
+ENTITY Contextual_shape_representation
+  (* CONNOTATIONAL *) SUBTYPE OF (context_dependent_shape_representation);
+   SELF\context_dependent_shape_representation.represented_product_relation RENAMED contextual_shape     : Contextual_item_shape;
+   SELF\context_dependent_shape_representation.representation_relation RENAMED representing_relationship : Shape_representation_relationship;
+ DERIVE
+   context_representation : Shape_representation := representing_relationship.rep_2 ;
+   positioned_representation : Shape_representation := representing_relationship.rep_1 ;
+END_ENTITY;
+
+ENTITY Geometric_composition_with_operator_transformation
+  (* CONNOTATIONAL *) SUBTYPE OF (Geometric_relationship_with_operator_transformation,
+Definitional_representation_relationship);
+END_ENTITY;
+
+ENTITY Geometric_composition_with_placement_transformation
+   (* CONNOTATIONAL *) SUBTYPE OF (Geometric_relationship_with_placement_transformation,
+Definitional_representation_relationship);
+END_ENTITY; 
+
+ENTITY Geometric_placement
+  (* CONNOTATIONAL *) SUBTYPE OF (Geometric_placement_operation);
+   SELF\mapped_item.mapping_target RENAMED target : axis2_placement;
+END_ENTITY; 
+
+ENTITY Geometric_placement_model
+  (* CONNOTATIONAL *) SUBTYPE OF (Shape_representation);
+  SELF\Representation.items : SET[1:1] OF Geometric_placement_operation;
+END_ENTITY;
+
+ENTITY Geometric_placement_operation
+  ABSTRACT SUPERTYPE OF ( ONEOF (Geometric_placement,
+    Geometric_operator_transformation))
+  (* CONNOTATIONAL *) SUBTYPE OF (mapped_item);
+   source : axis2_placement;  
+   template_definition : template_definition_select;
+   DERIVE
+    (* Overlaps with both attributes *)
+    SELF\mapped_item.mapping_source : representation_map := representation_map(source, template_definition);
+END_ENTITY; 
+
+ENTITY Geometric_model_relationship_with_transformation
+  ABSTRACT SUPERTYPE OF (ONEOF (Geometric_relationship_with_placement_transformation,
+Geometric_relationship_with_operator_transformation))
+  (* CONNOTATIONAL *) SUBTYPE OF (representation_relationship_with_transformation, shape_representation_relationship);
+WHERE  
+  WR1: rep_1.context_of_items :<>: rep_2.context_of_items;
+END_ENTITY;
+-- wr1: both Geometric_representations must belong to different geometric contexts
+
+ENTITY Geometric_operator_transformation
+  (* CONNOTATIONAL *) SUBTYPE OF (Geometric_placement_operation);
+   SELF\mapped_item.mapping_target RENAMED target : Cartesian_transformation_operator;
+END_ENTITY; 
+
+ENTITY Geometric_relationship_with_operator_transformation
+  (* CONNOTATIONAL *) SUBTYPE OF (Geometric_model_relationship_with_transformation);
+  SELF\representation_relationship_with_transformation.transformation_operator RENAMED transformation: Cartesian_transformation_operator;
+WHERE
+  WR1:  rep_1.context_of_items\geometric_representation_context.dimension_count :=:
+        rep_2.context_of_items\geometric_representation_context.dimension_count;
+END_ENTITY;
+-- wr1: both geometric_representations must have the same dimensionality.
+
+ENTITY Geometric_relationship_with_placement_transformation
+  (* CONNOTATIONAL *) SUBTYPE OF (Geometric_model_relationship_with_transformation);
+  source: axis2_placement;
+  target: axis2_placement;
+  DERIVE
+   (* Overlaps with source and target *)
+    SELF\representation_relationship_with_transformation.transformation_operator : transformation :=?;
+WHERE
+  WR1:  rep_1.context_of_items\geometric_representation_context.dimension_count :=:
+        rep_2.context_of_items\geometric_representation_context.dimension_count;
+END_ENTITY;
+-- wr1: both geometric_representations must have the same dimensionality.
+-- Note: case that target is a cartesian_transformation is not supported here
+-- since this is already covered in
+-- Geometric_inclusion_with_cartesian_transformation
+
+ENTITY Shape_placement_association
+  (* CONNOTATIONAL *)SUBTYPE OF (Shape_description_association);
+  SELF\Shape_description_association.representation : Geometric_placement_model;
+  SELF\Shape_description_association.represented_characteristic : Contextual_item_shape;
+END_ENTITY;
+
+END_SCHEMA;  -- Contextual_shape_positioning_arm
+
+

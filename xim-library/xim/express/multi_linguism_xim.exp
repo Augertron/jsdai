@@ -1,0 +1,72 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N3242 - ISO/TS 10303-1105 Multi linguism - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+(* Based on ARM *)
+SCHEMA Multi_linguism_xim;
+
+USE FROM Multi_linguism_mim;
+
+USE FROM support_resource_schema(label);
+
+USE FROM management_resources_schema(
+  attribute_type,
+  attribute_value_role,
+  classification_role);
+
+USE FROM representation_schema(representation_item);
+
+(* The main reason to keep those entities - their entity mappings have some mapping constraints not satisfied otherwise *)
+ENTITY Language_indication
+	(* CONNOTATIONAL *) SUBTYPE OF (attribute_language_assignment);
+   considered_instance                                                                  : attribute_language_item;
+   SELF\attribute_classification_assignment.attribute_name RENAMED considered_attribute : STRING;
+   SELF\attribute_classification_assignment.assigned_class RENAMED used_language        :  Language;
+   DERIVE
+   	 language: Language := used_language;
+   	 (* Overlaps with considered_instance, can't be redeclared just because of cardinality *)
+     SELF\attribute_language_assignment.items : SET [1:?] OF attribute_language_item := ?;
+     SELF\attribute_classification_assignment.role : classification_role := ?;
+END_ENTITY;
+
+ENTITY Attribute_translation_assignment
+	(* CONNOTATIONAL *) SUBTYPE OF (multi_language_attribute_assignment);
+   considered_instance                                                         : attribute_language_item;
+   SELF\attribute_value_assignment.attribute_name RENAMED considered_attribute : STRING;
+   SELF\attribute_value_assignment.attribute_value RENAMED translation_text    : STRING;
+   translation_language_x                                                      : Language;	
+DERIVE
+	(* Overlaps with considered_instance and could not be redeclared, just because of cardinality *)
+  SELF\multi_language_attribute_assignment.items : SET [1:?] OF representation_item := ?;
+  (* This attribute participates in some entity mapping constraints *)
+  SELF\attribute_value_assignment.role : attribute_value_role := ?;
+UNIQUE
+  UR1: considered_instance, considered_attribute, translation_language;
+END_ENTITY;
+
+END_SCHEMA; -- Multi_linguism_xim
+

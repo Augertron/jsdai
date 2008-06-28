@@ -1,0 +1,376 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4164 - ISO/TS 10303-1739 Production rule - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3588 
+*)
+
+SCHEMA Production_rule_arm;
+
+REFERENCE FROM Product_identification_arm(types_of_product); -- ISO/TS 10303-1017 
+
+	USE FROM Specification_document_arm;    --  ISO/TS 10303-1747
+	USE FROM Software_arm;	-- ISO/TS 10303-1746
+
+	USE FROM Date_time_assignment_arm; -- ISO/TS 10303-1014
+	USE FROM Activity_arm; -- ISO/TS 10303-1047
+
+USE FROM Identification_assignment_arm;
+USE FROM Product_identification_arm;
+
+REFERENCE FROM Specification_document_arm(get_document_definition);	-- ISO/TS 10303-1747
+REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
+
+
+TYPE pr_identification_item = SELECT BASED_ON identification_item WITH 
+   (Rule_set);
+END_TYPE; 
+
+TYPE pr_organization_or_person_in_organization_item = SELECT BASED_ON organization_or_person_in_organization_item WITH
+   (Rule_action);
+END_TYPE;
+
+
+TYPE clause_select = SELECT (Simple_clause, Complex_clause);
+END_TYPE;
+
+TYPE constants = EXTENSIBLE SELECT (any_number_value, any_string_value, Logical_representation_item);
+END_TYPE;
+
+TYPE function_symbol = SELECT (any_string_value, built_in_functions);
+END_TYPE;
+
+TYPE built_in_functions = EXTENSIBLE ENUMERATION OF (attr_val);
+END_TYPE;
+
+TYPE expression_syntax = EXTENSIBLE ENUMERATION OF (express);
+END_TYPE;
+
+TYPE pr_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
+   (Rule_set);
+END_TYPE; 
+
+TYPE predicate_symbol = STRING;
+END_TYPE;
+
+TYPE scope_select = SELECT (Rule_definition, Rule_set, Rule_set_group);
+END_TYPE;
+
+TYPE term_select = SELECT (Symbol, constants, Func, Scalar_variable, Row_value, Row_variable); 
+END_TYPE;
+
+
+ENTITY Abstract_variable
+  ABSTRACT SUPERTYPE OF (ONEOF (Scalar_variable, Row_variable));
+  name : STRING;
+  scope : scope_select;
+ UNIQUE 
+  UR1 : name, scope;
+END_ENTITY;
+
+ENTITY Atomic_formula
+  ABSTRACT SUPERTYPE OF (ONEOF (Rule_condition, Ground_fact));
+  predicate_symbol : predicate_symbol;  
+  terms : LIST OF term_select;
+END_ENTITY;
+
+ENTITY Attribute_assertion
+  SUBTYPE OF (Fact_type);
+   entity_type : STRING;
+   attribute : STRING;
+END_ENTITY; 
+
+ENTITY Back_chaining_rule
+  SUBTYPE OF (Rule_definition);
+  head : Rule_condition;
+  body : LIST OF Rule_condition;
+ WHERE
+  WR1: SELF.head.positive = TRUE;
+  WR2:  local_vars_of(SELF.head) <= local_vars_of(SELF.body);
+END_ENTITY;
+
+ENTITY Complex_clause
+  ABSTRACT SUPERTYPE OF (ONEOF (Complex_conjunctive_clause, Complex_disjunctive_clause));
+  clauses : LIST [2:?] OF clause_select;
+END_ENTITY;
+
+ENTITY Complex_conjunctive_clause
+  SUBTYPE OF (Complex_clause); 
+END_ENTITY;
+
+ENTITY Complex_disjunctive_clause
+  SUBTYPE OF (Complex_clause); 
+END_ENTITY;
+
+ENTITY Entity_assertion
+  SUBTYPE OF (Fact_type);
+END_ENTITY;
+
+ENTITY Enum_reference_prefix;
+ prefix : STRING;
+END_ENTITY;
+
+ENTITY Extent;
+  source : STRING;
+  variable_id : OPTIONAL STRING;
+  query_expression : STRING;
+  syntax : OPTIONAL expression_syntax;
+END_ENTITY;
+
+ENTITY Fact_type
+  ABSTRACT SUPERTYPE OF (ONEOF (Entity_assertion, Attribute_assertion));
+   source : Extent;
+   predicate_symbol : STRING;
+END_ENTITY;
+
+ENTITY Forward_chaining_rule
+  SUBTYPE OF (Rule_definition);
+  premise : clause_Select; 
+  conclusion : Literal_conjunction;
+  WHERE
+  WR1:  local_vars_of(SELF.conclusion) <= local_vars_of(SELF.premise);
+END_ENTITY;
+
+ENTITY Func;
+ func_sym : function_symbol;
+ terms : LIST OF term_select;
+END_ENTITY;
+
+ENTITY Global_assignment;
+  variable : Abstract_variable;
+  val : term_select;
+ WHERE
+  WR1: NOT(contains_variable(SELF.val));
+END_ENTITY;
+
+ENTITY Ground_fact
+ SUBTYPE OF (Atomic_formula);
+ WHERE
+  WR1: SIZEOF(QUERY(r <* SELF\Atomic_formula.terms | contains_variable(r))) = 0;
+END_ENTITY;
+
+ENTITY Literal_conjunction
+  SUBTYPE OF (Simple_clause);
+END_ENTITY;
+
+ENTITY Literal_disjunction
+  SUBTYPE OF (Simple_clause);
+END_ENTITY;
+
+ENTITY Row_value;
+  values : LIST OF term_select;
+ WHERE
+  WR1: SIZEOF(QUERY(v <* SELF.values | contains_variable(v))) = 0;
+  WR2: SIZEOF(QUERY(v <* SELF.values | 'PRODUCTION_RULE_ARM.ROW_VALUE' IN TYPEOF(v))) = 0;
+END_ENTITY;
+
+ENTITY Row_variable
+ SUBTYPE OF (Abstract_variable);
+END_ENTITY;
+
+ENTITY Rule_action
+   ABSTRACT SUPERTYPE OF (ONEOF (Rule_submission,
+                                 Rule_adoption,
+                                 Rule_rejection,
+                                 Rule_supersedence,
+                                 Rule_creation,
+                                 Rule_expiration,
+                                 Rule_change_request,
+                                 Rule_request,
+                                 Rule_modification));
+   subject_rule : Rule_version;
+DERIVE
+   subject_action_assignment : SET[0:?] OF Organization_or_person_in_organization_assignment := 
+         bag_to_set(QUERY(temp <* USEDIN ( SELF , 'PERSON_ORGANIZATION_ASSIGNMENT_ARM.' + 
+                                       'ORGANIZATION_OR_PERSON_IN_ORGANIZATION_ASSIGNMENT.ITEMS' ) 
+                    | ( temp.role = 'subject action assignment')));
+  UNIQUE
+   UR1: SELF\Rule_action.subject_rule, SELF\Rule_action.subject_action_assignment;
+  WHERE
+   WR1: EXISTS (subject_action_assignment) AND (SIZEOF(subject_action_assignment) = 1 );
+END_ENTITY;
+
+ENTITY Rule_adoption
+   SUBTYPE OF (Rule_action);
+END_ENTITY;
+
+ENTITY Rule_change_request
+   SUBTYPE OF (Rule_action);
+   change_reason : STRING;
+END_ENTITY;
+
+ENTITY Rule_condition
+ SUBTYPE OF (Atomic_formula);
+  positive : BOOLEAN;
+END_ENTITY;
+
+ENTITY Rule_creation
+    SUBTYPE OF (Rule_action);
+END_ENTITY;
+  
+ENTITY Rule_definition
+  ABSTRACT SUPERTYPE OF (ONEOF (Forward_chaining_rule, Back_chaining_rule))
+  SUBTYPE OF (Rule_software_definition);
+END_ENTITY; 
+
+ENTITY Rule_expiration
+   SUBTYPE OF (Rule_action);
+   expiration_rationale : STRING;
+END_ENTITY;
+
+ENTITY Rule_justification
+   SUBTYPE OF (Rule_action);
+   justified_action : Rule_action;
+   justification_rationale : STRING;
+WHERE
+   WR1: SELF <> justified_action ;
+END_ENTITY;
+
+ENTITY Rule_modification
+   SUBTYPE OF (Rule_action);
+   modification_rationale : Rule_change_request;
+END_ENTITY;
+
+ENTITY Rule_priority;
+   priority : INTEGER;
+   prioritized_rule : Rule_definition;
+WHERE
+   WR1: priority >= 0 ;
+END_ENTITY;
+
+ENTITY Rule_product
+   SUBTYPE OF (Software);
+WHERE
+   WR1: SIZEOF ( [ 'rule' ] * types_of_product ( SELF ) ) = 1 ;
+END_ENTITY;
+
+ENTITY Rule_rejection
+   SUBTYPE OF (Rule_action);
+   rejection_reason : STRING;
+END_ENTITY;
+
+ENTITY Rule_request
+   SUBTYPE OF (Rule_action);
+END_ENTITY;
+
+ENTITY Rule_set
+   SUBTYPE OF (Rule_software_definition);
+   conflict_resolution_strategy : OPTIONAL STRING;
+   rule_member : SET[1:?] OF Rule_priority;
+ DERIVE  
+   engine: SET[1:1] OF Document_definition :=
+		get_document_definition(SELF, 'engine', 
+		'SPECIFICATION_DOCUMENT_ARM.LANGUAGE_REFERENCE_MANUAL');
+ INVERSE
+   purpose : Identification_assignment FOR items;
+ WHERE
+   WR1: purpose.role = 'purpose' ;
+END_ENTITY;
+
+ENTITY Rule_set_group
+  SUBTYPE OF (Rule_software_definition);
+  elements : SET[2:?] OF Rule_set;
+END_ENTITY;
+
+ENTITY Rule_software_definition
+   SUPERTYPE OF (ONEOF (Rule_definition,
+                       Rule_set_group,
+                       Rule_set))
+   SUBTYPE OF (Software_definition);
+   SELF\Product_view_definition.defined_version : Rule_version;
+END_ENTITY;
+
+ENTITY Rule_submission
+   SUBTYPE OF (Rule_action);
+   submission_rationale : STRING;
+END_ENTITY;
+
+ENTITY Rule_supersedence
+   SUBTYPE OF (Rule_action);
+   superseded_rule : Rule_version;
+END_ENTITY;
+
+ENTITY Rule_version
+   SUBTYPE OF (Software_version);
+   SELF\Product_version.of_product : Rule_product;
+INVERSE
+   management_action : SET[1:?] OF Rule_action FOR subject_rule;
+   product_definition : SET[1:?] OF Rule_software_definition FOR defined_version;
+END_ENTITY;
+
+ENTITY Scalar_variable
+ SUBTYPE OF (Abstract_variable);
+END_ENTITY;
+
+ENTITY Simple_clause
+  ABSTRACT SUPERTYPE OF (ONEOF (Literal_conjunction, Literal_disjunction));
+  formulas : LIST [1:?] OF Rule_condition;
+END_ENTITY;
+
+ENTITY Symbol
+  SUBTYPE OF(Representation_item);
+ UNIQUE
+  UR1 : SELF\Representation_item.name;
+END_ENTITY;
+
+FUNCTION contains_variable (x : Term_select) : BOOLEAN;
+  IF ('PRODUCTION_RULE_ARM.ABSTRACT_VARIABLE' IN TYPEOF(x)) THEN RETURN (TRUE);
+      ELSE IF (('PRODUCTION_RULE_ARM.FUNC' IN TYPEOF(X)) AND
+              (SIZEOF(QUERY(y <* x.terms | contains_variable(y))) > 0)) 
+              THEN RETURN (TRUE);
+              ELSE RETURN (FALSE);
+           END_IF;
+  END_IF;
+END_FUNCTION;
+
+FUNCTION local_vars_aux (thing : GENERIC; accum : SET [0:?] OF Scalar_variable) 
+                                                : SET [0:?] OF Scalar_variable;
+  LOCAL i,j,k : INTEGER; END_LOCAL;
+  IF (('PRODUCTION_RULE_ARM.ABSTRACT_VARIABLE' IN TYPEOF(thing)) AND 
+      ('PRODUCTION_RULE_ARM.RULE_DEFINITION' IN (TYPEOF(thing.scope))))
+   THEN accum := accum + thing;
+   ELSE IF ('PRODUCTION_RULE_ARM.RULE_CONDITION' IN TYPEOF(thing))
+        THEN REPEAT i := 1 TO HIINDEX(thing\Atomic_formula.terms);
+                accum := local_vars_aux(thing\Atomic_formula.terms[i],accum);
+             END_REPEAT;
+        ELSE IF ('PRODUCTION_RULE_ARM.SIMPLE_CLAUSE' IN TYPEOF(thing))
+             THEN REPEAT j := 1 TO HIINDEX(thing.formulas);
+                        accum := local_vars_aux(thing.formulas[j],accum);
+                  END_REPEAT;
+             ELSE IF ('PRODUCTION_RULE_ARM.COMPLEX_CLAUSE' IN TYPEOF(thing))
+                  THEN REPEAT k := 1 TO HIINDEX(thing.clauses);
+                        accum := local_vars_aux(thing.clauses[k],accum);
+                       END_REPEAT;
+                  END_IF;
+             END_IF;
+        END_IF;
+  END_IF;
+  RETURN(accum);
+END_FUNCTION;
+
+FUNCTION local_vars_of (thing : GENERIC) : SET [0:?] OF Scalar_variable;
+  LOCAL
+    accum : SET [0:?] OF Scalar_variable := [];
+  END_LOCAL;
+  RETURN (local_vars_aux(thing, accum));
+END_FUNCTION;
+
+RULE max_one_entity_prefix FOR (Enum_reference_prefix);
+ WHERE
+   SIZEOF(QUERY(x <* Enum_reference_prefix | TRUE)) <= 1;
+END_RULE;
+
+RULE rule_software_definition_constraint FOR (Product_view_definition);
+WHERE
+   WR1: SIZEOF (QUERY ( pvd <* Product_view_definition | ( NOT('PRODUCTION_RULE_ARM.' + 'RULE_SOFTWARE_DEFINITION' 
+                       IN TYPEOF(pvd))) 
+                       AND ('PRODUCTION_RULE_ARM.' + 'RULE_VERSION' IN TYPEOF (pvd . defined_version)))) = 0 ;
+END_RULE; 
+
+RULE rule_version_constraint FOR (Product_version);
+WHERE
+   WR1: SIZEOF (QUERY(pv <* Product_version | (NOT('PRODUCTION_RULE_ARM.' + 'RULE_VERSION' IN TYPEOF(pv))) 
+                      AND ( 'PRODUCTION_RULE_ARM.' + 'RULE_PRODUCT' IN TYPEOF(pv.of_product)))) = 0 ;
+END_RULE;
+
+END_SCHEMA; 
+

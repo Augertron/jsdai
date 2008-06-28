@@ -1,0 +1,27 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3961 - ISO/TS 10303-1671 Feature and connection zone - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3409
+*)
+
+
+SCHEMA Feature_and_connection_zone_mim;
+	USE FROM Shape_feature_mim; -- ISO/TS 10303-1764
+	USE FROM Surface_conditions_mim; -- new
+	
+ENTITY connection_zone_interface_plane_relationship
+  SUBTYPE OF (shape_aspect, shape_aspect_relationship);
+UNIQUE
+  UR1: SELF\shape_aspect_relationship.name;
+END_ENTITY;
+
+ENTITY location_shape_representation
+  SUBTYPE OF (shape_representation);
+  WHERE
+    WR1 : SIZEOF(SELF.items)= 1 ;
+    WR2 : SIZEOF(QUERY(i <* SELF.items | 'GEOMETRY_SCHEMA.' + 'POINT' IN TYPEOF(i)))= 1 ;
+END_ENTITY; -- location_shape_representation
+	
+END_SCHEMA;
+
+

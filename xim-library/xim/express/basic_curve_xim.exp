@@ -1,0 +1,73 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+Derived from ISO TC184/SC4/WG12 N3901 - ISO/TS 10303-1651 Basic curve - EXPRESS ARM/MIM
+by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+(* It is mixture of ARM and AIM *)
+
+
+SCHEMA Basic_curve_xim;
+	USE FROM Basic_geometry_xim;
+	USE FROM External_item_identification_assignment_xim;
+
+	USE FROM geometry_schema
+		(trimmed_curve,
+		line,
+		composite_curve,
+		composite_curve_segment,
+		pcurve,
+		surface_curve);
+
+    USE FROM support_resource_schema(label);
+
+	SUBTYPE_CONSTRAINT curve_subtypes FOR Curve;         
+	    ONEOF (Composite_curve,
+		Trimmed_curve);    
+	END_SUBTYPE_CONSTRAINT;
+
+(* Stuff below is from ARM *)
+  ENTITY Closed_curve
+    (* CONNOTATIONAL *) SUBTYPE OF (composite_curve);
+  END_ENTITY;
+
+	ENTITY Measurement_path
+     (* CONNOTATIONAL *) SUBTYPE OF (Representation);	
+	   SELF\representation.context_of_items RENAMED defined_in : Geometric_representation_context;
+	   DERIVE
+	   (* Need to fix this attribute *)
+	     defined_by : Curve := QUERY ( c <* SELF\Representation.items |
+       'GEOMETRY_SCHEMA.' +
+       'CURVE' IN
+       TYPEOF (c));
+
+       SELF\representation.items : SET [1:?] OF representation_item := ?;
+       SELF\representation.name : label := ?;
+	END_ENTITY;
+	
+	
+END_SCHEMA;
+
+

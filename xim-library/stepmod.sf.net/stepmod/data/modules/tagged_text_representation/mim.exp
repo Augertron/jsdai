@@ -1,0 +1,53 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N5010 - ISO/CD-TS 10303-1366 Tagged text representation - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3823
+*)
+
+SCHEMA Tagged_text_representation_mim;
+
+USE FROM Foundation_representation_mim;    --  ISO/TS 10303-1006
+
+USE FROM representation_schema(
+ compound_representation_item,
+ mapped_item);
+
+TYPE string_representation_item_select = SELECT(
+    descriptive_representation_item,
+    included_text_block,
+    structured_text_composition);
+END_TYPE; 
+
+ENTITY included_text_block
+  SUBTYPE of (mapped_item);
+  WHERE
+   WR1 : 'TAGGED_TEXT_REPRESENTATION_MIM.STRUCTURED_TEXT_REPRESENTATION' IN TYPEOF(SELF\mapped_item.mapping_source.mapped_representation);
+END_ENTITY;
+
+ENTITY structured_text_composition
+  SUBTYPE OF (compound_representation_item);
+END_ENTITY;
+
+ENTITY structured_text_representation
+  SUBTYPE OF (representation);
+  SELF\Representation.items : SET [1:?] OF string_representation_item_select; 
+END_ENTITY;
+
+ENTITY tagged_text_item
+  SUBTYPE OF (descriptive_representation_item);
+END_ENTITY;
+
+ENTITY tagged_text_format
+  SUBTYPE OF (representation_context);
+END_ENTITY;
+
+ENTITY uniform_resource_identifier
+  SUBTYPE OF (descriptive_representation_item);
+END_ENTITY;
+
+SUBTYPE_CONSTRAINT ttr_descriptive_representation_item_subtypes FOR descriptive_representation_item;
+  ONEOF (tagged_text_item,
+         uniform_resource_identifier);
+END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA;

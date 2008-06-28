@@ -1,0 +1,75 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+ Derived from ISO TC184/SC4/WG12 N3052 - ISO/TS 10303-1216 Functional breakdown - EXPRESS ARM
+ by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+
+SCHEMA Functional_breakdown_xim;
+
+USE FROM Product_breakdown_xim;    -- ISO/TS 10303-1248
+
+USE FROM functional_breakdown_mim;
+
+ENTITY Functional_breakdown
+  (* CONNOTATIONAL *) SUBTYPE OF (Breakdown);
+END_ENTITY;
+
+ENTITY Functional_breakdown_context_armx
+  (* CONNOTATIONAL *) SUBTYPE OF (Breakdown_context_armx, functional_breakdown_context);
+  SELF\Breakdown_context_armx.breakdown : Functional_breakdown_version;
+  SELF\Breakdown_context_armx.breakdown_element : Functional_element_definition;
+END_ENTITY;
+
+ENTITY Functional_breakdown_version
+  (* CONNOTATIONAL *) SUBTYPE OF (Breakdown_version);
+  SELF\Breakdown_version.of_product : Functional_breakdown;
+END_ENTITY;
+
+ENTITY Functional_element
+  (* CONNOTATIONAL *) SUBTYPE OF (Breakdown_element);
+END_ENTITY;
+
+ENTITY Functional_element_definition
+  (* CONNOTATIONAL *) SUBTYPE OF (Breakdown_element_definition);
+  SELF\Breakdown_element_definition.formation : Functional_element_version;
+  (* GL added to reflect restrictions from mapping *)
+  WHERE
+    WR1: SELF\Product_view_definition.initial_context\product_definition_context.name = 'functional definition';
+END_ENTITY;
+
+ENTITY Functional_element_usage_armx
+  (* CONNOTATIONAL *) SUBTYPE OF (Breakdown_element_usage_armx, functional_element_usage);
+  SELF\Breakdown_element_usage_armx.parent_element : Functional_element_definition;
+  SELF\Breakdown_element_usage_armx.child_element : Functional_element_definition;
+END_ENTITY;
+
+ENTITY Functional_element_version
+  (* CONNOTATIONAL *) SUBTYPE OF (Breakdown_element_version);
+  SELF\Breakdown_element_version.of_product : Functional_element;
+END_ENTITY;
+
+END_SCHEMA;  -- Functional_breakdown_xim
+

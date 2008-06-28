@@ -1,0 +1,399 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Ap210 electronic assembly interconnect and packaging design - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Ap210_electronic_assembly_interconnect_and_packaging_design_xim;
+
+USE FROM Ap210_device_functional_and_physical_characterization_xim;
+USE FROM Ap210_interconnect_technology_constraints_xim;
+USE FROM Ap210_assembly_technology_constraints_xim;
+USE FROM Ap210_assembly_functional_requirements_xim;
+USE FROM Ap210_assembly_physical_requirements_xim;
+USE FROM Ap210_interconnect_functional_requirements_xim;
+USE FROM Ap210_interconnect_physical_requirements_xim;
+USE FROM Ap210_assembly_physical_design_xim;
+USE FROM Ap210_interconnect_design_for_microwave_xim;
+USE FROM Ap210_production_rule_xim;
+USE FROM Ap210_functional_decomposition_xim;
+USE FROM Ap210_package_functional_and_physical_characterization_xim;
+USE FROM Ap210_laminate_assembly_design_xim;
+USE FROM Ap210_connection_zone_based_model_extraction_xim;
+USE FROM Ap210_functional_specification_xim;
+USE FROM Ap210_physical_unit_physical_characterization_xim;
+USE FROM Ap210_packaged_part_white_box_model_xim;
+USE FROM Ap210_printed_part_functional_and_physical_characterization_xim;
+USE FROM Ap210_assembly_functional_interface_requirements_xim;
+USE FROM Ap210_assembly_physical_interface_requirements_xim;
+USE FROM Ap210_assembly_requirement_allocation_xim;
+USE FROM Ap210_interconnect_requirement_allocation_xim;
+USE FROM Ap210_functional_requirement_allocation_xim;
+
+USE FROM drawing_definition_mim; -- 1309
+USE FROM dimension_and_tolerance_callouts_xim; -- 1362 
+USE FROM text_representation_xim; -- 1750
+
+
+USE FROM Ap210_datum_difference_based_model_definition_xim;
+
+  SUBTYPE_CONSTRAINT ap210_eaiapd_restrict_product_subtypes FOR Product;
+    ABSTRACT SUPERTYPE;
+    ONEOF (Document, Information_product, Part, Requirement, Substance, Template);
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT ap210_eaiapd_restrict_product_view_definition_subtypes FOR Product_view_definition;
+          ONEOF (Part_view_definition, Requirement_view_definition,
+     Document_definition, Functional_unit_network_node_definition,
+     Information_definition, Product_occurrence, Substance_view_definition,
+     Template_definition);
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT ap210_eaiapd_restrict_information_product_subtypes FOR Information_product;
+    ONEOF (Software, Analytical_model);
+  END_SUBTYPE_CONSTRAINT;
+
+(** Need a CC having both Assembly_2d_shape and Interconnect_2d_shape_xim *)
+SUBTYPE_CONSTRAINT component_2d_location_armx_subtypes FOR Component_2d_location_armx;         
+    ONEOF (Component_2d_edge_location,
+ Component_2d_embedded_location,
+ Component_2d_stacked_location,
+ Component_2d_surface_location);    
+END_SUBTYPE_CONSTRAINT;
+
+(** Design_specific_assignment_to_assembly_usage_view_xim, 
+Design_specific_assignment_to_interconnect_usage_view_xim  and
+Assembly_module_macro_definition_xim needs to be brought together for this *)  
+SUBTYPE_CONSTRAINT component_feature_to_physical_usage_view_assignment_subtypes FOR Component_feature_to_physical_usage_view_assignment;     
+ONEOF (Component_terminal_to_assembly_module_macro_terminal_assignment,
+ Component_terminal_to_assembly_module_interface_terminal_assignment,
+ Component_terminal_to_interconnect_module_macro_terminal_assignment,
+ Component_terminal_to_interconnect_module_interface_terminal_assignment,
+ Component_terminal_to_pca_terminal_assignment);
+END_SUBTYPE_CONSTRAINT;
+
+(** Subtypes are totally mixed and appear in various schemas - most likely this constraint will remain in some CC *)
+SUBTYPE_CONSTRAINT geometric_representation_relationship_subtypes FOR Shape_representation_relationship;     
+(ONEOF (Component_part_2d_geometric_representation_relationship, -- Physical_unit_2d_design_view_xim
+ Component_part_2d_non_planar_geometric_representation_relationship, -- Interconnect_non_planar_shape_xim
+ Component_part_3d_geometric_representation_relationship, -- Physical_unit_3d_design_view_xim
+ Shape_definition_3d_intersection_armx, -- layered_3d_shape
+ shape_definition_3d_plane_projection -- layered_3d_shape
+ ));    
+END_SUBTYPE_CONSTRAINT;
+
+(** Since this includes both pca and pca - I guess it will be it top most schema *)
+SUBTYPE_CONSTRAINT part_terminal_subtypes FOR Part_terminal; 
+ONEOF (Minimally_defined_bare_die_terminal_armx, -- *pca*
+ Assembly_module_terminal_armx, -- *pca*
+ Cable_terminal_armx, -- *pca*
+ Interconnect_module_terminal_armx, -- *PCB*
+ Packaged_part_terminal_armx); -- *pca*
+END_SUBTYPE_CONSTRAINT;
+
+(** It most likely should be in TOP AP210 schema *)
+SUBTYPE_CONSTRAINT part_design_view_subtypes FOR Part_design_view;  
+    ONEOF (Assembly_module,
+ Interconnect_module);
+END_SUBTYPE_CONSTRAINT;
+
+TYPE ap210_managed_design_object_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON managed_design_object_armx WITH 
+(Adjacent_stratum_surface_embedded_physical_component_surface_definition,
+ applied_identification_assignment,
+ Alternate_product_relationship,
+ Analytical_model_definition_armx,
+ Analytical_model_make_from_relationship_armx,
+ Analytical_model_port_armx,
+ Analytical_model_port_assignment_armx,
+ Analytical_model_application,
+ Assembly_bond_definition_armx,
+ Assembly_component_armx,
+ Assembly_component_placement_link,
+ assembly_component_usage,
+ Assembly_item_number_armx,
+ Assembly_joint_armx,
+ Bond_assembly_position,
+ Boundary_size_characteristic,
+ Bus_element_link_armx,
+ Bus_structural_definition_armx,
+ geometric_representation_context,
+ Certification,
+ Representation_item,
+ Component_2d_location_armx,
+ Component_3d_location_armx,
+ Component_external_reference,
+ Component_feature_armx,
+ Component_feature_external_reference,
+ Component_feature_make_from_relationship,
+ Component_feature_relationship_armx,
+ Component_feature_to_layout_feature_relationship,
+ Component_feature_to_physical_usage_view_assignment,
+ Component_group_assignment,
+ Component_make_from_relationship,
+ Component_mounting_clearance_relationship,
+ Component_non_planar_location,
+ Component_overlap_relationship,
+ Component_placement_restriction_assignment,
+ Component_to_physical_usage_view_assignment,
+ Composite_curve_segment,
+ Composite_signal_property_relationship_armx,
+ Conductive_interconnect_element_terminal_link_armx,
+ Configuration_controlled_message,
+ Conical_tolerance_zone_boundary_and_surface_relationship,
+ Conical_tolerance_zone_boundary_diametrical_size_characteristic,
+ Connection_zone,
+ Connectivity_allocation,
+ Connectivity_allocation_to_physical_network,
+ Connection_zone_bare_die_interface_plane_relationship,
+ Connection_zone_package_interface_plane_relationship,
+ Connection_zone_map_identification,
+ Property_value_representation,
+ Curve_appearance,
+ Curve_style_parameters,
+-- Curve_style_font,
+-- Curve_style_font_and_scaling,
+ measure_with_unit,
+ Calendar_date,
+ date_and_time,
+ Datum_axis_and_tolerance_zone_orienting_relationship,
+ Datum_axis_related_orientation,
+ Datum_based_direction_vector,
+ Datum_based_length_measure,
+ Datum_based_vector_orientation,
+ Datum_difference_functional_unit_usage_view_terminal_assignment_armx,
+ Single_datum, 
+ Datum, 
+ Design_composition_path_armx,
+ Design_functional_unit_allocation_to_assembly_joint,
+ Design_functional_unit_allocation_to_fabrication_joint,
+ Assembly_connection_zone_position_relationship,
+ Interconnect_connection_zone_position_relationship,
+ Design_view_terminal_component_shape_relationship,
+ Device_2d_position,
+ Device_3d_position,
+ Device_terminal_map_armx,
+ Device_terminal_map_relationship,
+ Geometric_dimension, 
+ Dimensional_characteristic_representation,
+ Dimension_qualifier,
+ Dimension_set,
+ Direct_stratum_component_join_implementation_armx,
+ Direction,
+ Datum_based_direction_element,
+ Approval,
+ Document_definition,
+ material_designation,
+ Product,
+ Product_category,
+ Product_category_hierarchy,
+ configuration_item,
+ Product_definition,
+ Product_concept,
+ Product_specific_parameter_value_assignment_armx,
+ product_definition_formation,
+ Predefined_requirement_view_definition_armx,
+ Text_representation_item,
+ Product_definition_relationship,
+ Equivalent_functional_terminals_assignment,
+ Equivalent_functional_unit_definition_assignment,
+ Evaluated_characteristic_armx,
+ Externally_defined_curve_font_armx,
+ Externally_defined_hatch_style,
+-- Externally_defined_tile,
+ Externally_defined_tile_style,
+ External_source_identification,
+ Fabrication_joint_armx,
+-- Fill_area,
+-- Appearance_assignment,
+ fill_area_style_hatching,
+ fill_area_style_tiles,
+ externally_defined_text_font,
+ Frozen_assignment_armx,
+ Functional_specification_armx,
+ Functional_terminal_group,
+ Functional_terminal_group_assignment,
+ Functional_unit,
+ Functional_unit_network_node_definition,
+ Functional_unit_network_terminal_definition_bus_assignment,
+ Functional_unit_network_terminal_definition_node_assignment,
+ Functional_unit_terminal,
+ Functional_unit_terminal_bus_assignment,
+ Functional_unit_terminal_node_assignment,
+ Functional_unit_usage_view_terminal_definition,
+ Functional_usage_view_to_part_terminal_assignment,
+ Functional_usage_view_to_printed_part_template_terminal_assignment,
+ Geometric_tolerance_armx,
+ Geometric_tolerance_qualifier,
+ Interconnect_module_product_assembly_view_fabrication_joint,
+ Interconnect_module_stratum_assembly_relationship,
+ Interface_component_allocation,
+ Interface_mounted_join_armx,
+ Internal_stratum_access,
+ Inter_stratum_extent,
+ Inter_stratum_join_implementation,
+ Join_relationship,
+ Junction_vertex_allocation,
+ Layer_connection_point_armx,
+ Layout_junction_armx,
+ Layout_spacing_requirement_non_conforming_design_object,
+ Line_width_class,
+ Linear_array_placement_group_component_link,
+ Located_interconnect_module_thickness_requirement,
+ Marking,
+ Mating_connector_usage,
+ Mating_connector_placement_relationship,
+ Mating_connector_termination,
+ Model_parameter_armx,
+ general_property_relationship, 
+ Next_higher_assembly_interface_requirement,
+ Operational_requirement_occurrence_relationship_armx,
+ Requirement_view_definition_relationship_armx,
+ Organization,
+ Package_external_reference,
+ Package_terminal_external_reference,
+ Packaged_connector_terminal_relationship_armx,
+ Parameter_assignment_armx,
+ Parameter_assignment_override_armx,
+ Part_connected_terminals_definition_armx,
+ Part_device,
+ Part_device_terminal,
+ Part_template_shape_representation_relationship,
+ Part_terminal_external_reference,
+ Passage_technology_armx,
+ Person,
+ person_and_organization,
+ Physical_connectivity_abstraction_map,
+ Physical_connectivity_definition_armx,
+ Physical_connectivity_definition_relationship,
+ Physical_connectivity_element_armx,
+ Physical_connectivity_make_from_relationship,
+ Physical_unit_shape_representation_relationship,
+ Connector_based_interconnect_definition_armx,
+ Generic_physical_network,
+ Physical_node_requirement_to_implementing_component_allocation_armx,
+ Part_definition_relationship,
+ Pitch_class,
+ Placement_group_requirement_definition,
+ Placement_group_area_assignment,
+ Planned_characteristic,
+ Effectivity,
+ Analog_port_variable_armx,
+ Positional_boundary_and_profile_boundary_member_relationship,
+ Positional_boundary_definition,
+ Positional_boundary_member_definition,
+ Positional_boundary_offset,
+ Printed_connector_template_terminal_relationship_armx,
+ Printed_part_template_connected_terminals_definition_armx,
+ Printed_part_template_material_armx,
+ Printed_part_template_material_link_armx,
+ product_definition_formation_relationship,
+ Projected_zone_and_base_relationship,
+ Projected_zone_height_characteristic,
+ promissory_usage_occurrence,
+ Reference_composition_path_armx,
+ Reference_functional_unit_assignment_to_part,
+ Requirement_assignment_armx,
+ Requirement_collection_relationship,
+ Restraint_condition,
+  Complex_clause_armx,
+-- Rule_conclusion_definition,
+ Func_armx,
+ Rule_justification,
+-- Rule_premise_definition,
+ Rule_priority,
+ Simple_clause_armx,
+ Runout_tolerance_zone_orienting_relationship,
+ Runout_zone_orientation_armx,
+ Security_classification,
+ Scalar_terminal_definition_link_armx,
+ Separate_geometric_tolerance_requirement,
+ Shape_representation,
+ Shape_dimension_representation,
+ Shape_element,
+ Shape_element_locating_relationship,
+ Shape_element_relationship,
+ geometric_representation_item,
+ Signal,
+ Signal_property,
+ Signal_specification,
+ Simultaneous_geometric_tolerance_requirement,
+ solid_curve_font,
+-- fill_area_style_colour,
+ Specification_allocation,
+ Dielectric_crossover_area_armx,
+ Stratum_feature_conductive_join_armx,
+ Stratum_concept_to_physical_usage_view_assignment,
+ Stratum_feature_shape_stratum_average_surface_shape_relationship,
+ Stratum_feature_shape_stratum_surface_shape_relationship,
+-- Stratum_feature_styled_area_representation,
+ Stratum_interconnect_module_3d_position,
+ Stratum_interconnect_module_planar_position,
+ Stratum_average_surface,
+ Stratum_surface_armx,
+ Stratum_technology_armx,
+ Stratum_technology_occurrence_link_armx,
+-- Structured_text,
+-- Structured_text_id_in_document,
+-- Styled_curve_occurrence,
+ assembly_component_usage_substitute,
+ specified_higher_usage_occurrence,
+ Sub_model_placement_2d,
+ Sub_model_placement_3d,
+ Supplied_part_relationship_armx,
+ Terminal_pair_port_equivalence_relationship,
+ Termination_constraint,
+ Thermal_isolation_requirement,
+ Tolerance_zone_and_viewing_plane_orienting_relationship,
+ Tolerance_zone_definition,
+ Tolerance_zone_boundary_member_offset,
+ Tolerance_zone_definition,
+ Tolerance_zone_form,
+ Tolerance_zone_per_unit_size_specification,
+ Topological_junction,
+ Transmission_line_functional_unit_terminal_allocation,
+ True_profile,
+ Usage_concept_usage_relationship_armx,
+ Usage_view_connection_zone_terminal_shape_relationship,
+ Vector,
+ Viewing_plane_based_orientation,
+ Viewing_plane_definition,
+ action_directive,
+ versioned_action_request,
+ organization_or_person_in_organization_assignment_select
+);
+  END_TYPE;
+
+RULE Physical_unit_network_definition_constraint FOR 
+(Physical_unit_network_definition_armx);
+WHERE
+  WR1: SIZEOF ( QUERY ( fund <* Physical_unit_network_definition_armx | 
+('ASSEMBLY_MODULE_DESIGN_XIM.' + 'ASSEMBLY_MODULE' IN TYPEOF (fund)) OR
+  (SIZEOF(USEDIN(fund,'Physical_unit_shape_with_parameters_xim.' + 
+'PHYSICAL_UNIT_SHAPE_MODEL.SHAPE_CHARACTERIZED_DEFINITION')) = 0)
+    )) = SIZEOF(Physical_unit_network_definition_armx);
+END_RULE;
+
+END_SCHEMA;
+

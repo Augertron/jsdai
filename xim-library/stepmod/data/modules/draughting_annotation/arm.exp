@@ -1,0 +1,66 @@
+--=======================================  
+-- Draughting_annotation for
+--  aic_draughting_annotation; --  ISO 10303-504
+
+SCHEMA Draughting_annotation_arm;
+
+USE FROM Draughting_element_arm;
+
+TYPE da_draughting_callout_content_select = SELECT BASED_ON draughting_callout_content_select WITH 
+   (Annotation_subfigure, 
+    Annotation_symbol);
+END_TYPE; 
+
+TYPE symbol_definition_select = SELECT
+   (Dimension_symbol, 
+    General_symbol, 
+    Geometric_tolerance_symbol, 
+    Marker, 
+    Surface_condition_symbol, 
+    Terminator);
+END_TYPE; 
+
+ENTITY Draughting_annotation_occurrence -- This entity maps to draughting_annotation_occurrence from 504, the only entity comming from original Draughting_annotation module
+  SUBTYPE OF (Representation);
+END_ENTITY;
+
+ENTITY Annotation_subfigure -- AIM is annotation_subfigure_occurrence 504/ From Annotated_presentation
+  SUBTYPE OF (Annotation_element);
+END_ENTITY;
+
+ENTITY General_symbol -- AIM is draughting_symbol_representation 504 -- From ex Annotated_presentation
+  SUBTYPE of (Representation);
+END_ENTITY;
+
+ENTITY Annotation_symbol -- From annotated_presentation, p46
+  SUBTYPE OF (Annotation_element);
+  symbol_definition : symbol_definition_select;
+END_ENTITY;
+
+ENTITY Dimension_symbol; -- maps to pre_defined_dimension_symbol from annotated_presentation_mim
+END_ENTITY;
+
+ENTITY Surface_condition_symbol; -- maps to pre_defined_surface_condition_symbol from annotated_presentation_mim
+END_ENTITY;
+
+ENTITY Geometric_tolerance_symbol; -- maps to pre_defined_geometrical_tolerance_symbol from annonated_presentation
+END_ENTITY;
+
+(*
+ENTITY Draughting_subfigure_representation
+  SUBTYPE OF (General_symbol);
+END_ENTITY;
+*)
+(*
+ENTITY Draughting_text_literal_with_delineation
+  SUBTYPE OF (Presentable_text_item);
+END_ENTITY;
+*)
+
+SUBTYPE_CONSTRAINT alternate_annotation_elements FOR Annotation_element;
+  ONEOF (Annotation_subfigure,
+         Annotation_symbol,
+         Fill_area);
+END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA;

@@ -1,0 +1,94 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N4293 - ISO/TS 10303-1345 Item definition structure - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+(* based on ARM *)
+
+SCHEMA Item_definition_structure_xim;
+
+USE FROM Effectivity_application_xim;
+
+USE FROM Part_occurrence_xim;
+
+USE FROM Product_structure_xim;
+
+ REFERENCE FROM Product_identification_xim(
+	types_of_product);
+
+
+TYPE effectivity_for_replacement  = SELECT BASED_ON effectivity_item WITH
+      (Part_definition_relationship);
+END_TYPE;
+
+(** This entity is supposed to be used in complex with Next_assembly_usage_occurrence_relationship_armx.
+*)
+ENTITY Assembled_part_association
+(* CONNOTATIONAL *)SUBTYPE OF (Part_occurrence_definition_relationship, assembly_component_usage);
+  SELF\Product_definition_relationship.relating_product_definition RENAMED relating_view : Assembly_definition_armx;
+END_ENTITY;
+
+ENTITY Assembly_definition_armx
+(* CONNOTATIONAL *) SUBTYPE OF (Part_view_definition);
+WHERE
+WR1: 'assembly' IN types_of_product(SELF\Product_definition.formation.of_product);
+END_ENTITY;
+
+ENTITY Geometrical_relationship
+(* CONNOTATIONAL *) SUBTYPE OF (Part_definition_relationship);
+  definition_placement: template_instance;
+DERIVE
+  SELF\Product_definition_relationship.name : STRING := 'geometrical relationship';
+END_ENTITY;
+
+ENTITY Part_definition_relationship
+(* CONNOTATIONAL *) SUBTYPE OF (product_definition_relationship);
+  SELF\Product_definition_relationship.relating_product_definition RENAMED relating_view : Part_view_definition;
+  SELF\Product_definition_relationship.related_product_definition  RENAMED related_view  : Part_view_definition;
+END_ENTITY;
+
+RULE Definition_replacement_requires_effectivity_assignment FOR 
+	(Part_definition_relationship);
+WHERE 
+WR1: SIZEOF( QUERY( pdr <* Part_definition_relationship | 
+	(pdr\Product_definition_relationship.name = 'definition replacement') AND 
+	(SIZEOF( USEDIN(pdr,'EFFECTIVITY_APPLICATION_XIM.EFFECTIVITY_ASSIGNMENT.ITEMS') ) = 0) ))
+	 = 0; 
+END_RULE; 
+
+RULE Mandatory_part_occurrence_definition_relationship FOR (Assembly_component_usage);
+LOCAL
+  assemblies_of_parts: SET OF Assembly_component_usage := [];
+END_LOCAL;
+  assemblies_of_parts := QUERY(acr <* Assembly_component_usage |
+	'ITEM_DEFINITION_STRUCTURE_MIM.PART_VIEW_DEFINITION' IN TYPEOF(acr\Product_definition_relationship.relating_product_definition));
+WHERE
+WR1: SIZEOF(QUERY(ar <* assemblies_of_parts | 
+	NOT ('Item_definition_structure_xim.ASSEMBLED_PART_ASSOCIATION' IN TYPEOF(ar)) ))= 0;
+END_RULE;
+
+END_SCHEMA;
+

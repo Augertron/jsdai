@@ -1,0 +1,50 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4233 - ISO/TS 10303-1763 Integral shield - EXPRESS ARM
+*)
+
+SCHEMA Integral_shield_arm;
+
+USE FROM Layered_interconnect_module_with_printed_component_design_arm;	-- ISO/TS 10303-1700
+
+USE FROM Requirement_assignment_arm; -- ISO/TS 10303-1233
+
+ TYPE laminate_shieldable_item = SELECT 
+    (Component_external_reference, 
+    Component_feature, 
+    Component_feature_external_reference,
+   	Component_group_external_reference, 
+   	Generic_physical_network,
+  	Physical_connectivity_definition, 
+  	Physical_connectivity_definition_external_reference, 
+  	Stratum_feature_template_component); 
+ END_TYPE; 
+
+ ENTITY Component_group_external_reference; 
+	name					: STRING;
+	associated_definition	: STRING;
+	UNIQUE
+		UR1: name, associated_definition; 
+ END_ENTITY; 
+
+  ENTITY Integral_shield 
+    SUBTYPE OF (Laminate_component); 
+      shielded_item : SET[1:?] OF laminate_shieldable_item; 
+  END_ENTITY; 
+ 
+ ENTITY Physical_connectivity_definition_external_reference; 
+	  name					: STRING;
+	  associated_definition	: STRING;
+	UNIQUE
+	  UR1: name, associated_definition;
+ END_ENTITY; 
+ 
+  ENTITY Routed_shield 
+    SUBTYPE OF (Integral_shield); 
+      routed_centreline_shape                  : Curve;
+      SELF\Definition_based_product_occurrence.derived_from : Printed_part_cross_section_template;
+      component_extent                         : Inter_stratum_extent;
+      curve_parameters                         : Curve_style_parameters;
+  END_ENTITY; 
+
+END_SCHEMA;

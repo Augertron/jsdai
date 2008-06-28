@@ -1,0 +1,83 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N4233 - ISO/TS 10303-1763 Integral shield - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Integral_shield_xim;
+
+USE FROM Layered_interconnect_module_with_printed_component_design_xim;	-- ISO/TS 10303-1700
+-- USE FROM Assembly_physical_requirement_allocation_xim;
+
+USE FROM integral_shield_mim;
+USE FROM Requirement_assignment_xim; -- ISO/TS 10303-1233
+
+ TYPE laminate_shieldable_item = SELECT 
+    (Component_external_reference, 
+    Component_feature_armx,
+    Component_feature_external_reference, 
+   	Component_group_external_reference, 
+   	Generic_physical_network,
+  	Physical_connectivity_definition_armx, 
+  	Physical_connectivity_definition_external_reference, 
+  	Stratum_feature_template_component_armx); 
+ END_TYPE; 
+
+ ENTITY Component_group_external_reference
+ 	(* CONNOTATIONAL *) SUBTYPE OF (representation); 
+	name_x								: STRING;
+	associated_definition	: STRING;
+    DERIVE
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+	UNIQUE
+		UR1: name, associated_definition; 
+ END_ENTITY; 
+ 
+ ENTITY Physical_connectivity_definition_external_reference
+ 	(* CONNOTATIONAL *) SUBTYPE OF (representation);
+	  name_x								: STRING;
+	  associated_definition	: STRING;
+    DERIVE
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+	UNIQUE
+	  UR1: name, associated_definition;
+ END_ENTITY; 
+ 
+  ENTITY Routed_shield_armx 
+    (* CONNOTATIONAL *) SUBTYPE OF (Integral_shield_armx, routed_shield); 
+      routed_centreline_shape                  : Curve;
+      SELF\Definition_based_product_occurrence.derived_from : Printed_part_cross_section_template_armx;
+      component_extent                         : Inter_stratum_extent;
+      curve_parameters                         : Curve_style_parameters;      
+  END_ENTITY; 
+  
+  ENTITY Integral_shield_armx 
+    (* CONNOTATIONAL *) SUBTYPE OF (Laminate_component_armx, integral_shield); 
+      shielded_item : SET[1:?] OF laminate_shieldable_item; 
+  END_ENTITY; 
+
+END_SCHEMA;

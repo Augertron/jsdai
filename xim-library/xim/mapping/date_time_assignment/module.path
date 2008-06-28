@@ -1,0 +1,78 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping date_time_assignment(Date_time_assignment_arm, Date_time_assignment_mim);*)
+
+uof_mapping Date_time_assignment(Date_time_assignment);
+
+entity_mapping Date_or_date_time_assignment(Date_or_date_time_assignment, ((date_assignment))((date_and_time_assignment)));
+
+attribute_mapping assigned_date(assigned_date, $PATH, Calendar_date);
+
+			   (date_assignment
+				 date_assignment.assigned_date -> date 
+				 {date => calendar_date})
+			 
+end_attribute_mapping;
+
+attribute_mapping assigned_date(assigned_date, $PATH, date_and_time);
+
+				 (date_and_time_assignment
+				 date_and_time_assignment.assigned_date_and_time -> date_and_time
+				 {date_and_time.date_component -> date => calendar_date}
+				 {date_and_time.time_component -> local_time}) 
+			 
+end_attribute_mapping;
+
+attribute_mapping role(role, (
+			   (date_role.name)
+			 )(
+			   (date_time_role.name)
+			 ));
+(
+					 (date_assignment
+					date_assignment.role -> date_role
+					date_role.name)
+			 )(
+(date_and_time_assignment
+			 		date_and_time_assignment.role -> date_time_role
+					date_time_role.name)
+			 )
+end_attribute_mapping;
+
+attribute_mapping items(items, ($PATH)($PATH), date_and_time_item,);
+(
+					(date_assignment=>
+					 applied_date_assignment
+					 applied_date_assignment.items[i] -> date_item)
+				)(
+(date_and_time_assignment=>
+			 		 applied_date_and_time_assignment
+					 applied_date_and_time_assignment.items[i] -> date_and_time_item)
+				)
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

@@ -1,0 +1,114 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N4230 - ISO/TS 10303-1762 Generic product occurrence - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Generic_product_occurrence_xim;
+
+USE FROM Assembly_structure_xim;	-- ISO/TS 10303-1026
+USE FROM Product_view_definition_relationship_xim;	-- ISO/TS 10303-1041
+USE FROM Extended_measure_representation_xim;	-- ISO/TS 10303-1106	
+USE FROM Specified_product_xim;	-- ISO/TS 10303-1104	
+
+USE FROM Generic_product_occurrence_mim;
+
+TYPE extended_value_with_unit = EXTENSIBLE SELECT (
+     measure_with_unit, 
+     Value_limit, 
+     Value_range);
+END_TYPE;
+
+	ENTITY Definition_based_product_occurrence
+		ABSTRACT SUPERTYPE
+		SUBTYPE OF (Product_occurrence);
+  		derived_from: Product_view_definition;
+  	DERIVE
+		SELF\Product_view_definition.defined_version : product_definition_formation := derived_from.defined_version;
+	END_ENTITY;
+
+  ENTITY Product_occurrence
+    ABSTRACT SUPERTYPE OF ((ONEOF (Definition_based_product_occurrence,
+         Specification_based_product_occurrence)) AND 
+         ONEOF (Product_occurrence_with_quantity, 
+         Single_instance))
+    SUBTYPE OF (Product_view_definition);
+    DERIVE
+      SELF\Product_view_definition.additional_characterization : STRING :=?;    
+      SELF\Product_view_definition.initial_context : product_definition_context := ?;  
+    INVERSE
+      occurrence_contexts: SET[1:?] OF product_definition_relationship FOR related_product_definition;
+    WHERE
+      WR1: SIZEOF(QUERY( oc <* occurrence_contexts |
+            NOT( NOT('PRODUCT_STRUCTURE_SCHEMA.ASSEMBLY_COMPONENT_USAGE' IN TYPEOF(oc)) OR
+                 NOT ('PRODUCT_STRUCTURE_SCHEMA.QUANTIFIED_ASSEMBLY_COMPONENT_USAGE' IN TYPEOF(oc)))
+               )) = 0;
+  END_ENTITY;
+
+ENTITY Product_occurrence_with_quantity
+    ABSTRACT SUPERTYPE OF (ONEOF (Quantified_instance, Selected_instance))
+  SUBTYPE OF (Product_occurrence);
+  occurrence_quantity : OPTIONAL extended_value_with_unit;
+  DERIVE
+    SELF\Product_view_definition.additional_characterization : STRING := 'single instance';
+END_ENTITY;
+
+ENTITY Quantified_instance
+  SUBTYPE OF (Product_occurrence_with_quantity);
+  SELF\Product_occurrence_with_quantity.occurrence_quantity : measure_with_unit;
+  DERIVE
+    SELF\Product_view_definition.additional_characterization : STRING := 'quantified instance';
+END_ENTITY;
+
+ENTITY Selected_instance
+  SUBTYPE OF (Product_occurrence_with_quantity);
+  quantity_criterion : OPTIONAL STRING;
+  DERIVE
+    SELF\Product_view_definition.additional_characterization : STRING := 'selected instance';
+END_ENTITY;
+
+ENTITY Single_instance
+  SUBTYPE OF (Product_occurrence);
+  DERIVE
+    SELF\Product_view_definition.additional_characterization : STRING := 'single instance';
+END_ENTITY;
+
+ENTITY Specification_based_product_occurrence
+  ABSTRACT SUPERTYPE 
+  SUBTYPE OF (Product_occurrence);
+  SELF\Product_view_definition.defined_version : Specification_based_product_version;
+END_ENTITY;
+-- IP1: further specializations of this entity have to ensure that:
+
+SUBTYPE_CONSTRAINT alternate_product_instance FOR Product_occurrence;
+  ONEOF (Single_instance,
+         Quantified_instance,
+         Selected_instance) 
+  AND
+  ONEOF (Definition_based_product_occurrence,
+         Specification_based_product_occurrence);
+END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA; -- Generic_product_occurrence_xim

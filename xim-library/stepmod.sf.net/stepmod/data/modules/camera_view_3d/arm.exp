@@ -1,0 +1,71 @@
+(*
+ $Id$
+ ISO TC184/SC4/WG12 N4672 - ISO/CD-TS 10303-1316 Camera view 3d - EXPRESS ARM
+*)
+
+SCHEMA Camera_view_3d_arm;
+
+USE FROM Presentation_hierarchy_arm; -- ISO/CD-TS 10303-1330
+
+USE FROM Colour_arm; -- ISO/TS 10303-1002
+
+  TYPE clipping_mode = ENUMERATION OF
+    (union, intersection);
+  END_TYPE;
+
+  TYPE light_type = ENUMERATION OF
+    (ambient, directional, spot, positional);
+  END_TYPE;
+
+  TYPE clipping_element = SELECT 
+    (Plane, Clipping_operator);
+  END_TYPE;
+
+  TYPE cv3_view_element_select = SELECT BASED_ON view_element_select WITH 
+    (Model_image_3d);
+  END_TYPE; 
+
+  TYPE view_projection_type = ENUMERATION OF 
+    (central,
+     parallel);
+  END_TYPE; 
+
+  ENTITY Camera_model_d3
+    SUBTYPE OF (Detailed_geometric_model_element);
+      clipping : OPTIONAL Clipping_operator; 
+      hidden_element_appearance : OPTIONAL Appearance_assignment; 
+      hidden_line_removal : OPTIONAL BOOLEAN; 
+      sources : OPTIONAL SET[1:?] OF Light_source;      
+      view_projection : view_projection_type; 
+      view_window : Planar_box; 
+    WHERE
+      WR1: NOT EXISTS(hidden_element_appearance) OR EXISTS(hidden_line_removal);
+  END_ENTITY;   
+
+  ENTITY Clipping_operator
+    SUBTYPE OF (Detailed_geometric_model_element);
+      elements : SET [1:?] OF clipping_element;
+      operator : clipping_mode;
+  END_ENTITY;
+
+  ENTITY Light_source
+    SUBTYPE OF (Detailed_geometric_model_element);
+      colour : OPTIONAL Colour;
+      light_type : light_type;
+  END_ENTITY;
+ 
+  ENTITY Model_image_3d
+    SUBTYPE OF (Detailed_geometric_model_element);
+       is_displaying : presented_model_select; 
+       source : Camera_model_d3;
+       target : Planar_box;
+  END_ENTITY;   
+  
+  SUBTYPE_CONSTRAINT cv3d_detailed_geometric_model_element_subtypes FOR Detailed_geometric_model_element;
+  ONEOF (Clipping_operator,
+         Model_image_3d,
+         Light_source,
+         Camera_model_d3);
+  END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA;

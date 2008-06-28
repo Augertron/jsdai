@@ -1,0 +1,43 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3919 - ISO/TS 10303-1657 Component feature - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3325
+*)
+SCHEMA Component_feature_mim;
+
+	USE FROM Physical_unit_design_view_mim;	-- ISO/TS 10303-1728
+
+TYPE cf_groupable_item = SELECT BASED_ON groupable_item WITH 
+   (component_feature);
+END_TYPE; 
+
+ENTITY component_feature
+  SUBTYPE OF (shape_aspect);
+    SELF\shape_aspect.of_shape : assembly_component;
+END_ENTITY;
+
+ENTITY component_feature_joint
+  SUBTYPE OF (shape_aspect_relationship, shape_aspect);
+    SELF\shape_aspect_relationship.related_shape_aspect  : component_feature;
+    SELF\shape_aspect_relationship.relating_shape_aspect : component_feature;
+END_ENTITY;
+
+ENTITY component_feature_relationship
+  SUBTYPE OF (shape_aspect_relationship);
+    SELF\shape_aspect_relationship.related_shape_aspect  : component_feature;
+    SELF\shape_aspect_relationship.relating_shape_aspect : component_feature;
+WHERE
+  WR1: SELF\shape_aspect_relationship.related_shape_aspect :<>:
+       SELF\shape_aspect_relationship.relating_shape_aspect;
+END_ENTITY; 
+
+ENTITY component_terminal
+  SUBTYPE OF (component_feature);
+END_ENTITY;
+
+ENTITY make_from_feature_relationship
+ SUBTYPE OF (component_feature_relationship);
+END_ENTITY;
+
+END_SCHEMA;
+

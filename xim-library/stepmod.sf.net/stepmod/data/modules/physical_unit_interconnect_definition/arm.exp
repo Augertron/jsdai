@@ -1,0 +1,62 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4134 - ISO/TS 10303-1729 Physical unit interconnect definition - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3570
+*)
+
+SCHEMA Physical_unit_interconnect_definition_arm;
+
+	USE FROM Part_occurrence_arm;	-- ISO/TS 10303-1715
+
+ENTITY Connector_based_interconnect_definition;
+   name                    : STRING; 
+   associated_definition   : Physical_unit_interconnect_definition;
+   connector_in_uv_1       : Next_assembly_usage;
+   connector_in_uv_2       : Next_assembly_usage;
+   component_1             : Next_assembly_usage;
+   component_2             : Next_assembly_usage;   
+  UNIQUE
+    UR1 : name, associated_definition;
+WHERE
+  WR1: 'ASSEMBLY_MODULE_WITH_PACKAGED_CONNECTOR_COMPONENT_ARM.PACKAGED_CONNECTOR_COMPONENT' IN 
+        TYPEOF(connector_in_uv_1\Product_occurrence_definition_relationship.related_view);      
+  WR2: 'ASSEMBLY_MODULE_WITH_PACKAGED_CONNECTOR_COMPONENT_ARM.PACKAGED_CONNECTOR_COMPONENT' IN 
+        TYPEOF(connector_in_uv_2\Product_occurrence_definition_relationship.related_view);
+  WR3: 'PHYSICAL_UNIT_USAGE_VIEW_ARM.PART_USAGE_VIEW' IN 
+        TYPEOF(connector_in_uv_1\Product_occurrence_definition_relationship.relating_view);
+  WR4: 'PHYSICAL_UNIT_USAGE_VIEW_ARM.PART_USAGE_VIEW' IN 
+        TYPEOF(connector_in_uv_2\Product_occurrence_definition_relationship.relating_view);
+  WR5: EXISTS(connector_in_uv_1\Assembly_component_relationship.location_indicator);
+  WR6: EXISTS(connector_in_uv_2\Assembly_component_relationship.location_indicator);
+  WR7: EXISTS(component_1\Assembly_component_relationship.location_indicator);
+  WR8: EXISTS(component_2\Assembly_component_relationship.location_indicator);
+ WR9: component_1\Product_occurrence_definition_relationship.related_view\Definition_based_product_occurrence.derived_from = 
+       connector_in_uv_1\Product_occurrence_definition_relationship.relating_view;
+ WR10: component_2\Product_occurrence_definition_relationship.related_view\Definition_based_product_occurrence.derived_from = 
+       connector_in_uv_2\Product_occurrence_definition_relationship.relating_view;
+ WR11: component_1 <> component_2;
+ WR12: component_1 <> connector_in_uv_1;
+ WR13: connector_in_uv_1 <> component_2;
+ WR14: component_1 <> connector_in_uv_2;
+ WR15: connector_in_uv_2 <> component_2;
+ WR16: 'PHYSICAL_UNIT_INTERCONNECT_DEFINITION_ARM.DEFINITION_BASED_PART_OCCURRENCE' IN 
+        TYPEOF(component_1\Product_occurrence_definition_relationship.related_view);      
+ WR17: 'PHYSICAL_UNIT_INTERCONNECT_DEFINITION_ARM.DEFINITION_BASED_PART_OCCURRENCE' IN 
+        TYPEOF(component_2\Product_occurrence_definition_relationship.related_view);
+ WR18: associated_definition = component_1\Product_occurrence_definition_relationship.relating_view;
+ WR19: associated_definition = component_2\Product_occurrence_definition_relationship.relating_view;
+END_ENTITY;
+
+  ENTITY Physical_unit_interconnect_definition
+    SUBTYPE OF (Part_view_definition);
+  WHERE
+    WR1 : SIZEOF(QUERY(nauo <* USEDIN(SELF, 'ASSEMBLY_STRUCTURE_ARM.PRODUCT_OCCURRENCE_DEFINITION_RELATIONSHIP.RELATING_VIEW') |
+                 (('PHYSICAL_UNIT_DESIGN_VIEW_ARM.NEXT_ASSEMBLY_USAGE_OCCURRENCE_RELATIONSHIP' IN TYPEOF(nauo)) XOR
+                  ('ASSEMBLY_STRUCTURE_ARM.NEXT_ASSEMBLY_USAGE' IN TYPEOF(nauo)))                 
+                 )) = 0;
+  END_ENTITY;
+
+END_SCHEMA;
+
+
+

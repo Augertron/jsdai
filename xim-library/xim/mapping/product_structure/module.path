@@ -1,0 +1,71 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping product_structure(Product_structure_arm, Product_structure_mim);*)
+
+uof_mapping Product_structure(Product_structure);
+
+entity_mapping Alternate_part_relationship(Alternate_part_relationship, alternate_product_relationship);
+
+attribute_mapping alternate_product(alternate_product, $PATH, Part);
+alternate_product_relationship.alternate -> product
+           {product <-
+           product_related_product_category.products
+           product_related_product_category <=
+           product_category
+           (product_category.name='part')
+					 (product_category.name='raw material')
+					 (product_category.name='tool')}
+			 
+end_attribute_mapping;
+
+attribute_mapping base_product(base_product, $PATH, Part);
+alternate_product_relationship.base -> product
+           {product <-
+           product_related_product_category.products
+           product_related_product_category <=
+           product_category
+           (product_category.name='part')
+					 (product_category.name='raw material')
+					 (product_category.name='tool')}
+			 
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+
+entity_mapping Assigned_property(Assigned_property, property_definition)
+extended;
+
+attribute_mapping described_element(described_element, $PATH, Product_definition_relationship);
+
+		 property_definition
+property_definition.definition -> characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition = product_definition_relationship
+		 
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

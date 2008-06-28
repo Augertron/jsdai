@@ -1,0 +1,81 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping certification(Certification_arm, Certification_mim);*)
+
+uof_mapping Certification(Certification);
+
+entity_mapping Certification(Certification, certification);
+
+attribute_mapping name(name, certification.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, certification.purpose);
+
+end_attribute_mapping;
+
+attribute_mapping kind(kind, certification_type.description);
+certification
+			 	 certification.kind -> certification_type
+				 certification_type.description
+			  
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Certification_assignment(Certification_assignment, applied_certification_assignment);
+
+mapping_constraints;
+
+			 		applied_certification_assignment <= certification_assignment
+			
+end_mapping_constraints;
+
+attribute_mapping assigned_certification(assigned_certification, $PATH, Certification);
+
+			 		applied_certification_assignment <= certification_assignment
+			 		certification_assignment.assigned_certification -> certification
+			 
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, certification_item);
+
+					applied_certification_assignment.items[i] -> certification_item 
+			 
+end_attribute_mapping;
+
+attribute_mapping role(role, object_role.name);
+
+					applied_certification_assignment <= certification_assignment
+					certification_assignment = role_select
+					role_select <- role_association.item_with_role
+					role_association.role -> object_role
+					object_role.name
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

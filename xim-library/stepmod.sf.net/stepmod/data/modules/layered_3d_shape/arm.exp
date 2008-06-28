@@ -1,0 +1,51 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4029 - ISO/TS 10303-1694 Layered 3d shape - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3471
+*)
+
+SCHEMA Layered_3d_shape_arm;
+
+USE FROM Layered_2d_shape_arm; -- ISO/TS 10303-1693
+USE FROM Physical_unit_3d_shape_arm;	-- ISO/TS 10303-1727
+USE FROM Advanced_boundary_representation_arm;	-- ISO/TS 10303-1514
+USE FROM Curve_swept_solid_arm;	-- ISO/TS 10303-1659
+USE FROM Geometrically_bounded_surface_arm;	-- ISO/TS 10303-1507	
+	
+  SUBTYPE_CONSTRAINT l3ds_geometric_representation_relationship_subtypes FOR Geometric_model_relationship;     
+    (ONEOF (Shape_definition_3d_intersection,
+     Shape_definition_3d_plane_projection));    
+  END_SUBTYPE_CONSTRAINT;
+
+  TYPE l3ds_feature_or_non_feature_usage = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON feature_or_non_feature_usage WITH 
+    (part_template_or_physical_unit_3d_shape_model_select);
+  END_TYPE;
+
+  TYPE part_template_or_physical_unit_3d_shape_model_select = EXTENSIBLE GENERIC_ENTITY SELECT
+    (Physical_unit_3d_shape_model);
+  END_TYPE;
+
+  ENTITY Shape_definition_3d_intersection
+    SUBTYPE OF (Geometric_model_relationship);
+      orientation_intersection_plane                                              : Axis_placement_3d;
+      planar_shape_origin                                                         : Axis_placement_2d;
+      SELF\Geometric_model_relationship.rep_1 RENAMED surface_intersection_result : Planar_shape_model;
+      SELF\Geometric_model_relationship.rep_2 RENAMED projected_volume            : Geometric_model;
+    WHERE
+      WR1 : NOT ('LAYERED_3D_SHAPE_ARM.PLANAR_SHAPE_MODEL' IN TYPEOF(projected_volume));
+      WR2 : NOT EXISTS(SELF\Representation_relationship.relation_type);
+  END_ENTITY;
+
+  ENTITY Shape_definition_3d_plane_projection
+    SUBTYPE OF (Geometric_model_relationship);
+      viewing_plane                                                             : Axis_placement_3d;
+      planar_shape_origin                                                       : Axis_placement_2d;
+      SELF\Geometric_model_relationship.rep_1 RENAMED surface_projection_result : Planar_shape_model;
+      SELF\Geometric_model_relationship.rep_2 RENAMED projected_volume          : Geometric_model;
+    WHERE
+      WR1 : NOT ('LAYERED_3D_SHAPE_ARM.PLANAR_SHAPE_MODEL' IN TYPEOF(projected_volume));
+      WR2 : NOT EXISTS(SELF\Representation_relationship.relation_type);
+  END_ENTITY;
+
+END_SCHEMA;
+

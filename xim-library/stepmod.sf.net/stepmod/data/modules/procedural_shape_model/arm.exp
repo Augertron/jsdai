@@ -1,0 +1,57 @@
+(*
+ $Id$
+ ISO TC184/SC4/WG12 N4786 - ISO/CD-TS 10303-1317 Procedural shape model - EXPRESS ARM
+*)
+
+SCHEMA Procedural_shape_model_arm;
+
+USE FROM Elemental_geometric_shape_arm; -- ISO/CD-TS 10303-1004
+
+USE FROM Elemental_topology_arm; -- ISO/TS 10303-1005
+
+  TYPE shape_model_element = SELECT
+    (Detailed_topological_model_element,
+     Detailed_geometric_model_element);
+  END_TYPE;
+
+  ENTITY Explicit_procedural_shape_representation_relationship
+    SUBTYPE OF (Representation_relationship);
+      SELF\Representation_relationship.rep_1 : Procedural_shape_representation; 
+      SELF\Representation_relationship.rep_2 : Geometric_model; 
+    WHERE
+      WR1 : NOT('PROCEDURAL_SHAPE_MODEL_ARM.PROCEDURAL_SHAPE_REPRESENTATION' 
+           in TYPEOF(rep_2));
+  END_ENTITY;
+
+  ENTITY Explicit_procedural_geometric_representation_item_relationship;
+      relating_item : Procedural_shape_representation_sequence; 
+      related_item  : Detailed_geometric_model_element;
+    WHERE
+      WR1 : NOT('PROCEDURAL_SHAPE_MODEL_ARM.PROCEDURAL_SHAPE_REPRESENTATION_SEQUENCE' 
+            IN TYPEOF(related_item)); 
+  END_ENTITY;
+
+  ENTITY Indirectly_selected_shape_elements
+    SUBTYPE OF (User_selected_shape_elements);
+      indirectly_selected_items : SET[1:?] OF shape_model_element;
+  END_ENTITY;
+ 
+  ENTITY Procedural_shape_representation
+    SUBTYPE OF (Geometric_model);
+      SELF\Representation.items: SET[1:?] OF Procedural_shape_representation_sequence;
+  END_ENTITY;
+   
+  ENTITY Procedural_shape_representation_sequence
+    SUBTYPE OF (Detailed_geometric_model_element);
+      elements            : LIST [1:?] OF shape_model_element;
+      suppressed_elements : SET[0:?] OF shape_model_element;
+      rationale           : STRING;
+  END_ENTITY;
+
+  ENTITY User_selected_shape_elements
+    SUBTYPE OF(Representation_item);
+      selected_items : SET[1:?] OF shape_model_element; 
+  END_ENTITY;
+
+END_SCHEMA;
+

@@ -1,0 +1,43 @@
+(*
+ $Id$
+ ISO TC184/SC4/WG12 N4721 - ISO/CD-TS 10303-1004 Elemental geometric shape - EXPRESS MIM
+ Supersedes ISO TC184/SC4/WG12 N4249
+*)
+
+   
+SCHEMA Elemental_geometric_shape_mim;
+  
+USE FROM Foundation_representation_mim; -- ISO/TS 10303-1006
+
+USE FROM Identification_assignment_mim; -- ISO 10303-1021
+
+USE FROM qualified_measure_schema
+	(measure_representation_item); -- ISO 10303-45
+
+USE FROM geometry_schema -- ISO 10303-42
+      (cartesian_point,
+       direction,
+       axis2_placement_2d,
+       axis2_placement_3d,
+       geometric_representation_context,
+       geometric_representation_item,
+       cartesian_transformation_operator_2d,
+       cartesian_transformation_operator_3d);
+
+USE FROM product_property_representation_schema -- ISO 10303-41
+      (shape_representation);
+
+USE FROM representation_schema -- ISO 10303-43
+      (item_defined_transformation,
+	value_representation_item);
+
+  TYPE representation_identification_item = SELECT BASED_ON identification_item WITH 
+    (shape_representation);
+  END_TYPE; 
+
+  TYPE representation_version_item = SELECT BASED_ON versionable_item WITH 
+    (shape_representation);
+  END_TYPE;
+
+END_SCHEMA;
+

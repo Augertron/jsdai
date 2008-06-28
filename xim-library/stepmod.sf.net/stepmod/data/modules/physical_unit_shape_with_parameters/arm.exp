@@ -1,0 +1,108 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4137 - ISO/TS 10303-1730 Physical unit shape with parameters - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3576
+*)
+
+SCHEMA Physical_unit_shape_with_parameters_arm;
+
+USE FROM Physical_unit_usage_view_arm;	-- ISO/TS 10303-1732
+USE FROM Shape_parameters_arm;	-- ISO/TS 10303-1743
+
+REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
+
+  TYPE mass_property_quality = ENUMERATION OF
+    (high,
+     medium,
+     low,
+     is_unknown);
+  END_TYPE;
+
+  TYPE puswp_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH  
+    (Physical_unit_keepout_shape_model);
+  END_TYPE;
+
+  TYPE puswp_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
+    (Physical_unit_keepout_shape_model,
+     Physical_unit_shape_model);
+  END_TYPE; 
+
+  TYPE shape_approximation_level = ENUMERATION OF
+    (coarse,
+     detailed,
+     is_unknown);
+  END_TYPE;
+
+  TYPE shape_extent = ENUMERATION OF
+    (envelope,
+     over_body,
+     over_lands,
+     over_breakout);
+  END_TYPE;
+
+  SUBTYPE_CONSTRAINT puswp_geometric_model_subtypes FOR Geometric_model;     
+    (ONEOF (Physical_unit_keepout_shape_model,
+     Physical_unit_shape_model));    
+  END_SUBTYPE_CONSTRAINT;
+
+
+  ENTITY Physical_unit_keepout_shape_model
+    ABSTRACT SUPERTYPE
+    SUBTYPE OF (Geometric_model);    
+	  constrained_design_object_category : keepout_product_design_object_category;    
+      shape_characterized_definition     : Part_usage_view;
+      shape_material_condition           : material_condition;
+      shape_purpose                      : OPTIONAL predefined_keepout_purpose;
+      shape_environment                  : application_environment;
+      shape_extent                       : shape_extent;			
+      shape_approximation_level          : shape_approximation_level;
+      centroid_location                  : OPTIONAL Cartesian_point;
+    DERIVE
+      principal_part_shape : SET [0:1] OF Geometric_model_relationship :=
+        bag_to_set(QUERY( gmr <* USEDIN(SELF,
+        'EXTENDED_BASIC_GEOMETRY_ARM.GEOMETRIC_MODEL_RELATIONSHIP.REP_2') |
+        (gmr\Representation_relationship.relation_type = 'principal part shape')));      
+    INVERSE
+	  external_shape_purpose : SET [0:1] OF External_source_identification FOR item;      
+	WHERE
+	  WR1: (EXISTS (shape_purpose)) XOR ((SIZEOF(external_shape_purpose)) = 1);
+	  WR2 : SIZEOF(principal_part_shape) < 2;
+  END_ENTITY;
+
+  ENTITY Physical_unit_shape_model
+    ABSTRACT SUPERTYPE
+    SUBTYPE OF (Geometric_model);    
+      shape_characterized_definition : physical_unit;
+      shape_material_condition       : material_condition;      
+      centroid_location              : OPTIONAL Cartesian_point;      
+      shape_environment              : application_environment;      
+      shape_extent                   : shape_extent;      
+      shape_approximation_level      : shape_approximation_level;
+      mass_property_quality          : mass_property_quality;
+    DERIVE
+      principal_part_shape : SET [0:1] OF Geometric_model_relationship :=
+        bag_to_set(QUERY( gmr <* USEDIN(SELF,
+        'EXTENDED_BASIC_GEOMETRY_ARM.GEOMETRIC_MODEL_RELATIONSHIP.REP_2') |
+        (gmr\Representation_relationship.relation_type = 'principal part shape')));      
+    WHERE
+      WR1 : NOT ('PACKAGED_PART_BLACK_BOX_MODEL_ARM.PACKAGED_PART' IN TYPEOF(shape_characterized_definition));
+      WR2 : SIZEOF(USEDIN(SELF, 'SHAPE_PROPERTY_ASSIGNMENT_ARM.SHAPE_DESCRIPTION_ASSOCIATION.REPRESENTATION'))=0;            
+      WR3 : SIZEOF(principal_part_shape) < 2;
+  END_ENTITY;
+
+  ENTITY Physical_unit_shape_representation_relationship
+  	SUBTYPE OF (Geometric_model_relationship);
+      SELF\Geometric_model_relationship.rep_1 RENAMED principal_part_shape : Physical_unit_shape_model;
+      SELF\Geometric_model_relationship.rep_2 RENAMED related_part_shape   : Physical_unit_shape_model;
+    UNIQUE
+      UR1 : principal_part_shape, related_part_shape;
+    WHERE
+      WR1 : principal_part_shape :<>: related_part_shape;
+      WR2 : NOT EXISTS(SELF\Representation_relationship.relation_type);
+      WR3 : principal_part_shape\Geometric_model.context_of_items :=: related_part_shape\Geometric_model.context_of_items;
+      WR4 : principal_part_shape\Physical_unit_shape_model.shape_characterized_definition :=:
+            related_part_shape\Physical_unit_shape_model.shape_characterized_definition;
+  END_ENTITY;
+
+END_SCHEMA;
+

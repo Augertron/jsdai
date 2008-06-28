@@ -1,0 +1,65 @@
+(*
+$Id$
+ISO TC184/SC4/WG12 N4834 - ISO/CD-TS 10303-1106 Extended measure representation - EXPRESS ARM
+Supersedes ISO TC184/SC4/WG12 N4269
+*) 
+
+
+SCHEMA Extended_measure_representation_arm;
+
+USE FROM Qualified_measure_arm; -- ISO/CD-TS 10303-1782
+
+  ENTITY Measure_item_with_precision
+    SUBTYPE OF (Measure_item);
+      significant_digits : INTEGER;
+  END_ENTITY;
+
+  ENTITY Value_limit
+    SUBTYPE OF (Numerical_item_with_unit, Qualified_representation_item);
+      SELF\Qualified_representation_item.qualifiers : SET[1:1] OF Pre_defined_type_qualifier;
+    WHERE
+      WR1:SELF\Qualified_representation_item.qualifiers[1]\Type_qualifier.name in ['minimum', 'maximum'];
+  END_ENTITY;   
+
+  ENTITY Value_list
+    SUBTYPE OF (Measure_item);
+      values : LIST[1:?] OF Measure_item;
+  END_ENTITY;
+
+  ENTITY Value_range
+    SUBTYPE OF (Measure_item);
+      lower_limit : Numerical_item_with_unit;
+      upper_limit : Numerical_item_with_unit;
+  END_ENTITY;
+
+  ENTITY Value_range_with_global_unit
+    SUBTYPE OF (Measure_item);
+      lower_limit : Numerical_item_with_global_unit;
+      upper_limit : Numerical_item_with_global_unit;
+  END_ENTITY;
+
+  ENTITY Value_set
+    SUBTYPE OF (Measure_item);
+      values : SET[1:?] OF Measure_item;
+  END_ENTITY;
+
+  ENTITY Value_with_tolerances
+    SUBTYPE OF (Measure_item);
+      item_value : Numerical_item_with_unit;
+      lower_limit : REAL;
+      upper_limit : REAL;
+  END_ENTITY;
+
+  SUBTYPE_CONSTRAINT alternate_measure_items FOR Measure_item;
+    ABSTRACT SUPERTYPE;
+    ONEOF (Measure_item_with_precision,
+           Numerical_item_with_global_unit,
+           Numerical_item_with_unit,
+           Value_list,
+           Value_range,
+           Value_range_with_global_unit,
+           Value_set,
+           Value_with_tolerances);
+  END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA;

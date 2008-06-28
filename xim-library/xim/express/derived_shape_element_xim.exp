@@ -1,0 +1,65 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+Derived from ISO TC184/SC4/WG12 N4278 - ISO/TS 10303-1130 Derived shape element - EXPRESS ARM
+by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+(* Schema is based on ARM *)
+
+SCHEMA Derived_shape_element_xim;
+
+USE FROM Basic_geometry_xim;    
+
+USE FROM Shape_property_assignment_xim;    -- ISO/TS 10303-1032
+
+USE FROM Value_with_unit_xim;    -- ISO/TS 10303-1054
+
+USE FROM shape_aspect_definition_schema(
+	derived_shape_aspect,
+	parallel_offset);
+
+ENTITY Derived_geometry
+  (* CONNOTATIONAL *)SUBTYPE OF (derived_shape_aspect);
+  derived_from : SET[1:?] OF Shape_element;
+  geometry : constructive_element_select;
+  SELF\Shape_aspect.description RENAMED role : STRING;
+DERIVE
+  SELF\shape_aspect.of_shape : product_definition_shape := ?;
+  SELF\shape_aspect.product_definitional : LOGICAL := ?;
+  SELF\shape_aspect.name : label := ?;
+END_ENTITY;
+
+ENTITY Derived_shape_element
+  (* CONNOTATIONAL *)SUBTYPE OF (derived_shape_aspect, Shape_element);
+  derived_from : SET[1:?] OF Shape_element;
+  SELF\Shape_aspect.description RENAMED role : STRING;
+END_ENTITY;
+
+ENTITY Offset_shape_element
+  (* CONNOTATIONAL *) SUBTYPE OF (Derived_shape_element, parallel_offset);
+END_ENTITY;
+
+END_SCHEMA;  -- Derived_shape_element_xim
+

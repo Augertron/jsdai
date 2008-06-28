@@ -1,0 +1,119 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping inertia_characteristics(Inertia_characteristics_arm, Inertia_characteristics_mim);*)
+
+uof_mapping Inertia_characteristics(Inertia_characteristics);
+
+entity_mapping Centre_of_mass(Centre_of_mass, representation);
+
+mapping_constraints;
+
+ {representation.name = 'centre of mass'}
+ 
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Inertia_matrix_item(Inertia_matrix_item, compound_representation_item);
+
+mapping_constraints;
+
+ compound_representation_item <= representation_item
+ {representation_item.name = 'moments of inertia matrix'}
+ 
+end_mapping_constraints;
+
+attribute_mapping inertia_values(inertia_values, measure_with_unit.value_component);
+
+[compound_representation_item.item_element -> compound_item_definition
+compound_item_definition = list_representation_item
+list_representation_item[1] -> (* 29a eilute *)
+representation_item =>]
+[compound_representation_item.item_element -> compound_item_definition
+compound_item_definition = list_representation_item
+list_representation_item[2] ->
+representation_item =>]
+[compound_representation_item.item_element -> compound_item_definition
+compound_item_definition = list_representation_item
+list_representation_item[3] ->
+representation_item =>]
+[compound_representation_item.item_element -> compound_item_definition
+compound_item_definition = list_representation_item
+list_representation_item[4] ->
+representation_item =>]
+[compound_representation_item.item_element -> compound_item_definition
+compound_item_definition = list_representation_item
+list_representation_item[5] ->
+representation_item =>]
+[compound_representation_item.item_element -> compound_item_definition
+compound_item_definition = list_representation_item
+list_representation_item[6] ->
+representation_item =>]
+measure_representation_item <= measure_with_unit
+measure_with_unit.value_component
+
+
+end_attribute_mapping;
+
+attribute_mapping common_unit(common_unit, $PATH, Unit);
+
+[compound_representation_item.item_element -> compound_item_definition
+compound_item_definition = list_representation_item
+list_representation_item[1] -> (* 29a eilute *)
+representation_item =>]
+[compound_representation_item.item_element -> compound_item_definition
+compound_item_definition = list_representation_item
+list_representation_item[2] ->
+representation_item =>]
+[compound_representation_item.item_element -> compound_item_definition
+compound_item_definition = list_representation_item
+list_representation_item[3] ->
+representation_item =>]
+[compound_representation_item.item_element -> compound_item_definition
+compound_item_definition = list_representation_item
+list_representation_item[4] ->
+representation_item =>]
+[compound_representation_item.item_element -> compound_item_definition
+compound_item_definition = list_representation_item
+list_representation_item[5] ->
+representation_item =>]
+[compound_representation_item.item_element -> compound_item_definition
+compound_item_definition = list_representation_item
+list_representation_item[6] ->
+representation_item =>]
+measure_representation_item <= measure_with_unit
+measure_with_unit.unit_component ->
+ unit
+ 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Moments_of_inertia(Moments_of_inertia, moments_of_inertia_representation
+);
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

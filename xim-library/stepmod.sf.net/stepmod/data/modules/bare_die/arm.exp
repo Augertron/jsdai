@@ -1,0 +1,123 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3897 - ISO/TS 10303-1650 Bare die - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3315
+*)
+
+SCHEMA Bare_die_arm;
+
+	USE FROM Extended_geometric_tolerance_arm;	-- ISO/TS 10303-1666
+	USE FROM Functional_assignment_to_part_arm;	-- ISO/TS 10303-1674
+	USE FROM Part_feature_function_arm;	-- ISO/TS 10303-1712
+	USE FROM Functional_usage_view_arm;	-- ISO/TS 10303-1705
+
+	TYPE bd_ee_product_definition_with_annotation_elements = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ee_product_definition_with_annotation_elements WITH 
+	   	(Bare_die);
+	END_TYPE; 
+
+	TYPE bd_material_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON material_item_select WITH
+		(Bare_die_terminal,
+		 Bare_die_template_terminal);
+	END_TYPE;
+
+	TYPE derived_zone_shape_class = ENUMERATION OF(
+		area,
+		edge);
+	END_TYPE;
+	
+  ENTITY Bare_die
+    SUBTYPE OF (Part_usage_view);
+      least_material_condition_centroid_location   : OPTIONAL Cartesian_point;
+      maximum_height_above_seating_plane           : OPTIONAL Length_data_element;
+      maximum_material_condition_centroid_location : OPTIONAL Cartesian_point;
+      implemented_function                         : Functional_unit_usage_view;
+    INVERSE
+      access_mechanisms : SET[2:?] OF minimally_defined_bare_die_terminal FOR associated_definition;
+      die_seating_plane : non_feature_shape_element FOR scope;
+    WHERE
+      WR1 : SIZEOF(QUERY(pf <* USEDIN(SELF,
+ 'SHAPE_PROPERTY_ASSIGNMENT_ARM.SHAPE_ELEMENT.CONTAINING_SHAPE') | ('BARE_DIE_ARM.' + 'BARE_DIE_TOP_SURFACE' IN TYPEOF(pf)))) <= 1;
+      WR2 : SIZEOF(QUERY(pf <* USEDIN(SELF,
+ 'SHAPE_PROPERTY_ASSIGNMENT_ARM.SHAPE_ELEMENT.CONTAINING_SHAPE') | ('BARE_DIE_ARM.' + 'BARE_DIE_BOTTOM_SURFACE' IN TYPEOF(pf)))) <= 1;
+      WR3 : SIZEOF(QUERY(pf <* USEDIN(SELF,
+ 'SHAPE_PROPERTY_ASSIGNMENT_ARM.SHAPE_ELEMENT.CONTAINING_SHAPE') | ('BARE_DIE_ARM.' + 'BARE_DIE_EDGE_SURFACE' IN TYPEOF(pf)))) <= 1;
+      WR4 : 'NON_FEATURE_SHAPE_ELEMENT_ARM.SEATING_PLANE' IN TYPEOF(die_seating_plane);
+  END_ENTITY;
+
+  ENTITY Bare_die_bottom_surface
+    SUBTYPE OF (Bare_die_surface);
+  END_ENTITY;
+
+  ENTITY Bare_die_edge_segment_surface
+    SUBTYPE OF (Bare_die_surface);
+      composed_surface                        : Bare_die_edge_surface;
+      start_vertex                            : Edge_segment_vertex;
+      end_vertex                              : Edge_segment_vertex;
+    WHERE
+      WR1 : start_vertex :<>: end_vertex;
+      WR2 : SELF\Shape_element.containing_shape :=: composed_surface\Shape_element.containing_shape;
+  END_ENTITY;
+
+  ENTITY Bare_die_edge_surface
+    SUBTYPE OF (Bare_die_surface);
+  END_ENTITY;
+
+  ENTITY Bare_die_surface
+    ABSTRACT SUPERTYPE OF (ONEOF (Bare_die_top_surface,
+ Bare_die_bottom_surface,
+ Bare_die_edge_segment_surface,
+ Bare_die_edge_surface))
+    SUBTYPE OF (Part_mounting_feature);
+			SELF\Part_feature.associated_definition : Bare_die;    
+  END_ENTITY;
+
+  ENTITY Bare_die_terminal
+    SUBTYPE OF (Minimally_defined_bare_die_terminal, Placed_feature);
+      SELF\Placed_feature.definition : Bare_die_template_terminal;
+  END_ENTITY;
+
+  ENTITY Bare_die_template_terminal
+    SUBTYPE OF (Part_feature_template_definition, Shape_feature);
+      SELF\Shape_feature.connection_area : OPTIONAL SET[1:?] OF Connection_zone_in_usage_view;            
+      seating_plane_zone                 : OPTIONAL Connection_zone_bare_die_interface_plane_relationship;
+   INVERSE
+	  material : material_identification FOR items;      
+   WHERE  
+      WR1 : 'CONDUCTIVITY_MATERIAL_ASPECTS_ARM.'+ 'MATERIAL_IDENTIFICATION_WITH_CONDUCTIVITY_CLASSIFICATION' IN TYPEOF (material);
+  END_ENTITY;
+
+  ENTITY Bare_die_terminal_surface_constituent_relationship
+    SUBTYPE OF (Shape_element_constituent_relationship);
+      SELF\Shape_element_relationship.relating : Bare_die_surface;
+      SELF\Shape_element_relationship.related  : Bare_die_terminal;
+  END_ENTITY;
+
+  ENTITY Bare_die_top_surface
+    SUBTYPE OF (Bare_die_surface);
+  END_ENTITY;
+
+  ENTITY Connection_zone_bare_die_interface_plane_relationship;
+      interface_plane          : Seating_plane;
+      mating_zone              : Connection_zone_in_usage_view;
+      derived_zone             : Connection_zone_in_usage_view;
+      derived_zone_shape_class : derived_zone_shape_class;
+    INVERSE
+      associated_bare_die_terminal : SET[0:1] OF bare_die_template_terminal FOR seating_plane_zone;
+    UNIQUE
+      UR1 : interface_plane,
+ mating_zone;
+  END_ENTITY; 
+
+  ENTITY Guided_wave_bare_die_terminal
+    SUBTYPE OF (Minimally_defined_bare_die_terminal);
+  END_ENTITY;
+
+  ENTITY Minimally_defined_bare_die_terminal
+    SUPERTYPE OF (guided_wave_bare_die_terminal ANDOR
+ Bare_die_terminal)
+    SUBTYPE OF (Part_terminal);
+      SELF\Part_feature.associated_definition : Bare_die;
+  END_ENTITY;
+
+END_SCHEMA;
+

@@ -1,0 +1,168 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4771 - ISO/CD-TS 10303-1770 Part and zone laminate tables - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4379
+*)
+
+SCHEMA Part_and_zone_laminate_tables_arm;
+
+USE FROM Composite_constituent_shape_arm; -- ISO/CD-TS 10303-1767
+
+USE FROM Ply_orientation_specification_arm; -- ISO/CD-TS 10303-1772
+
+USE FROM Shape_property_assignment_arm; -- ISO/CD-TS 10303-1032
+
+USE FROM Stock_material_arm; -- ISO/CD-TS 10303-1771
+
+
+  TYPE component_class_for_assembly = SELECT 
+    (Composite_assembly,
+     Filament_laminate,
+     Ply,
+     Ply_laminate,
+     Processed_core);
+  END_TYPE;
+
+  TYPE thickness_laminate_table_component = SELECT 
+    (Filament_laminate,
+     Ply,
+     Processed_core);
+  END_TYPE;
+
+  ENTITY Composite_assembly
+    SUBTYPE OF (Constituent_part);
+      layup_part : Composite_assembly_table;
+      shape      : OPTIONAL composite_assembly_shape;
+  END_ENTITY;
+
+  ENTITY Composite_assembly_sequence_definition;
+    components_in_sequence : BAG [1:?] OF component_class_for_assembly;
+  END_ENTITY;
+
+  ENTITY Composite_assembly_table
+    SUBTYPE OF (Part_laminate_table);
+      sequence_groups : LIST [2:?] OF Composite_assembly_sequence_definition;
+  END_ENTITY;
+
+  ENTITY Constituent_part
+    SUPERTYPE OF (ONEOF(Ply, Ply_piece, Ply_laminate, Filament_laminate, Processed_core, Composite_assembly))
+    SUBTYPE OF (Part_view_definition);
+      SELF\Product_view_definition.id RENAMED constituent_part_identification  : STRING;
+      weight                                                                   : OPTIONAL Mass_data_element;  
+  END_ENTITY;
+
+  ENTITY Edge_zone_shape
+    SUBTYPE OF (Zone_structural_makeup_shape_representation);
+      boundary : boundary_class_zone;
+  END_ENTITY;
+
+  ENTITY Filament_laminate
+    SUBTYPE OF (Constituent_part);
+      made_from : Filament_assembly;
+      shape     : OPTIONAL Filament_laminate_shape;
+  END_ENTITY;
+
+  ENTITY Filament_laminate_shape;
+    cross_section : Shape_description_association;
+  END_ENTITY;
+
+  ENTITY Laminate_table
+    SUPERTYPE OF (ONEOF(Part_laminate_table, Zone_structural_makeup))
+    SUBTYPE OF (Part_view_definition);
+      basis             : Reinforcement_orientation_basis;
+      resulting_surface : OPTIONAL Surface;
+      base_surface      : OPTIONAL Surface_with_direction;
+  END_ENTITY;
+
+  ENTITY Part_laminate_table
+    SUPERTYPE OF (ONEOF(Composite_assembly_table, Ply_laminate_table))
+    SUBTYPE OF (Laminate_table);
+  END_ENTITY;
+
+  ENTITY Percentage_laminate_table
+    SUBTYPE OF (Zone_structural_makeup);
+      table_components : SET [1:?] OF Percentage_ply;
+      total_thickness  : Length_data_element;
+  END_ENTITY;
+
+  ENTITY Percentage_ply;
+    strength_orientation  : OPTIONAL Ply_orientation_angle;
+    material              : Stock_material;
+    makeup_and_properties : OPTIONAL Zone_structural_makeup;
+    volume_percent        : Ratio_data_element;
+  END_ENTITY;
+
+  ENTITY Ply
+    SUBTYPE OF (Constituent_part);
+      constituents         : OPTIONAL LIST [1:?] OF Ply_piece;
+      ply_thickness        : Length_data_element;
+      material_orientation : Direction_of_fiber_orientation_within_a_ply;
+      material_type        : ply_stock_material;
+      shape                : OPTIONAL Ply_shape;
+    DERIVE
+      material_orientation_angle : Ply_orientation_angle := material_orientation.orientations[1]; -- new
+  END_ENTITY;
+
+  ENTITY Ply_laminate
+    SUBTYPE OF (Constituent_part);
+      shape     : OPTIONAL ply_laminate_shape;
+      ply_table : Ply_laminate_table;
+  END_ENTITY;
+
+  ENTITY Ply_laminate_sequence_definition;
+    plies_in_sequence : SET [1:?] OF Ply;
+  END_ENTITY;
+
+  ENTITY Ply_laminate_table
+    SUBTYPE OF (Part_laminate_table);
+      sequence : LIST [2:?] OF Ply_laminate_sequence_definition;
+  END_ENTITY;
+
+  ENTITY Ply_piece
+    SUBTYPE OF (Constituent_part);
+      shape        : OPTIONAL ply_piece_shape;
+      warp_surface : LOGICAL;
+  END_ENTITY;
+
+  ENTITY Point_zone_shape
+    SUBTYPE OF (Zone_structural_makeup_shape_representation);
+      location : point_select;
+  END_ENTITY;
+
+  ENTITY Processed_core
+    SUBTYPE OF (Constituent_part);
+      added_material           : OPTIONAL LIST [0:?] OF Ply;
+      cell_direction           : Direction_of_fiber_orientation_within_a_ply;
+      made_from_stock          : Stock_core;
+      made_from_processed_core : OPTIONAL SET [1:?] OF Processed_core;
+      shape                    : OPTIONAL core_shape;
+    DERIVE
+      cell_orientation_angle   : Ply_orientation_angle := cell_direction.orientations[1]; -- new
+  END_ENTITY;
+
+  ENTITY Smeared_material
+    SUBTYPE OF (Zone_structural_makeup);
+      total_thickness : Length_data_element;
+  END_ENTITY;
+
+  ENTITY Surface_with_direction;
+    defining_surface   : Surface;
+    material_direction : Direction;
+  END_ENTITY;
+
+  ENTITY Thickness_laminate_table
+    SUBTYPE OF (Zone_structural_makeup);
+      table_components : LIST [2:?] OF thickness_laminate_table_component;
+  END_ENTITY;
+
+  ENTITY Zone_structural_makeup
+    SUPERTYPE OF (ONEOF((Thickness_laminate_table AND Smeared_material), (Percentage_laminate_table AND Smeared_material), Thickness_laminate_table, Percentage_laminate_table, Smeared_material))
+    SUBTYPE OF (Laminate_table);
+      boundary : OPTIONAL Zone_structural_makeup_shape_representation;
+  END_ENTITY;
+
+  ENTITY Zone_structural_makeup_shape_representation
+    SUPERTYPE OF (ONEOF(Point_zone_shape, Edge_zone_shape));
+  END_ENTITY;
+
+END_SCHEMA;

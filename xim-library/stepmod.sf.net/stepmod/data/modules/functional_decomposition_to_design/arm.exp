@@ -1,0 +1,93 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3975 - ISO/TS 10303-1676 Functional decomposition to design - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3420
+*)
+
+SCHEMA Functional_decomposition_to_design_arm;
+
+	USE FROM Design_management_arm;	-- ISO/TS 10303-1661
+	USE FROM Physical_unit_design_view_arm;	-- ISO/TS 10303-1728
+	USE FROM Network_functional_design_view_arm;	-- ISO/TS 10303-1704	
+
+    TYPE fdtd_managed_design_object = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON managed_design_object WITH
+   		(Design_functional_unit_allocation_to_assembly_component,
+         Design_functional_unit_allocation_to_reference_functional_unit);
+    END_TYPE;
+
+	SUBTYPE_CONSTRAINT change_design_object_management_relationship_subtypes FOR Change_design_object_management_relationship;             
+	    (ONEOF (Terminal_swap_specification,
+	 	Gate_path_swap_specification,
+	 	Component_swap_specification));
+	END_SUBTYPE_CONSTRAINT;
+
+  ENTITY Component_swap_specification
+    SUBTYPE OF (Change_design_object_management_relationship);
+      SELF\Change_design_object_management_relationship.current_design_object  : Design_functional_unit_allocation_to_assembly_component;
+      SELF\Change_design_object_management_relationship.previous_design_object : Design_functional_unit_allocation_to_assembly_component;
+  END_ENTITY;
+
+  ENTITY Design_composition_path;
+      path_element           : SET[1:?] OF Functional_unit;
+      design_functional_unit : Functional_unit;
+  END_ENTITY;
+
+  ENTITY Design_functional_unit_allocation_to_assembly_component;
+      functional_design_definition_path : Design_composition_path;
+      implementation                    : Assembly_component;
+      global_swappable                  : BOOLEAN;
+      local_swappable                   : BOOLEAN;
+      of_property                       : OPTIONAL SET[1:?] OF Property_value_representation;
+      path_alias                        : STRING; 
+      swap_code                         : STRING;
+    UNIQUE
+      UR1 : implementation,
+ path_alias;
+  END_ENTITY;
+
+  ENTITY Design_functional_unit_allocation_to_reference_functional_unit;
+      reference_definition_path : Reference_composition_path;
+      design_definition_path    : Design_composition_path;
+  END_ENTITY;
+
+  ENTITY Gate_path_swap_specification
+    SUBTYPE OF (Change_design_object_management_relationship);
+      SELF\Change_design_object_management_relationship.current_design_object  : Design_functional_unit_allocation_to_reference_functional_unit;
+      SELF\Change_design_object_management_relationship.previous_design_object : Design_functional_unit_allocation_to_reference_functional_unit;
+  END_ENTITY;
+
+  ENTITY Reference_composition_path;
+      path_element              : SET[1:?] OF Functional_unit;
+      reference_functional_unit : Functional_unit;
+  END_ENTITY;
+
+  ENTITY Reference_functional_unit_assignment_to_template;
+      functional_design_definition_path : Reference_composition_path;
+      implementation                    : Template_definition;
+      of_property                       : OPTIONAL SET[1:?] OF Property_value_representation;
+      path_alias                        : STRING; 
+      swap_code                         : OPTIONAL STRING;
+    UNIQUE
+      UR1 : implementation,
+ path_alias;
+  END_ENTITY; 
+
+  ENTITY Reference_functional_unit_assignment_to_part;
+      functional_design_definition_path : Reference_composition_path;
+      implementation                    : Part_view_definition;
+      of_property                       : OPTIONAL SET[1:?] OF Property_value_representation;
+      path_alias                        : STRING; 
+      swap_code                         : OPTIONAL STRING;
+    UNIQUE
+      UR1 : implementation,
+ path_alias;
+  END_ENTITY; 
+
+  ENTITY Terminal_swap_specification
+    SUBTYPE OF (Change_design_object_management_relationship);
+      SELF\Change_design_object_management_relationship.previous_design_object : Functional_unit_terminal_node_assignment;
+      SELF\Change_design_object_management_relationship.current_design_object  : Functional_unit_terminal_node_assignment;
+  END_ENTITY;
+
+END_SCHEMA;
+

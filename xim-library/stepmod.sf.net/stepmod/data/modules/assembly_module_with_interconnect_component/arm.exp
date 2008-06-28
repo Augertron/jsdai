@@ -1,0 +1,70 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3876 - ISO/TS 10303-1643 Assembly module with interconnect component - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3306
+*)
+
+SCHEMA Assembly_module_with_interconnect_component_arm;
+
+	USE FROM Assembly_module_design_arm;	-- ISO/TS 10303-1636
+	USE FROM Interconnect_module_usage_view_arm;	-- ISO/TS 10303-1686
+	USE FROM Interface_component_arm;	-- ISO/TS 10303-1691
+
+ 	TYPE amwic_assembled_feature_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON assembled_feature_select WITH   
+    (Interconnect_component_join_terminal,
+     Interconnect_component_interface_terminal,
+     Interconnect_module_component_surface_feature,
+     Interconnect_module_component_terminal);
+  END_TYPE;
+
+ 	TYPE conductive_interconnect_terminal_or_interconnect_component_join_terminal = SELECT
+ 		(Interconnect_component_interface_terminal,
+     	Interconnect_component_join_terminal,
+     	Movable_packaged_component_join_terminal);
+	END_TYPE;
+
+  ENTITY Design_view_terminal_component_shape_relationship;
+      associating_component_shape          : Geometric_model;
+      associated_usage                     : conductive_interconnect_terminal_or_interconnect_component_join_terminal;
+      associated_terminal_shape_definition : Geometric_model;
+      associated_usage_placement           : Axis_placement;
+  END_ENTITY;
+
+  ENTITY Interconnect_component_interface_terminal
+    SUBTYPE OF (Physical_component_interface_terminal);
+      connection : OPTIONAL Connection_zone_in_design_view;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Shape_element.description);
+  END_ENTITY;
+
+  ENTITY Interconnect_component_join_terminal
+    SUBTYPE OF (Physical_component_terminal, Shape_feature);
+      SELF\Shape_feature.connection_area          : OPTIONAL SET[1:1] OF Connection_zone_in_design_view;
+      SELF\Component_feature.associated_component : Physical_component;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Shape_element.description);
+  END_ENTITY;
+
+  ENTITY Interconnect_module_component
+    SUBTYPE OF (Physical_component, Single_instance);
+      SELF\Definition_based_product_occurrence.derived_from : Interconnect_module_usage_view;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+  ENTITY Interconnect_module_component_surface_feature
+    SUBTYPE OF (Physical_component_feature);
+      SELF\Component_feature.definition : Interconnect_module_surface_feature;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Shape_element.description);
+  END_ENTITY;
+
+  ENTITY Interconnect_module_component_terminal
+    SUBTYPE OF (Physical_component_terminal);
+      SELF\Component_feature.definition           : Interconnect_module_terminal;
+      SELF\Component_feature.associated_component : Interconnect_module_component;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Shape_element.description);
+  END_ENTITY;
+
+END_SCHEMA;

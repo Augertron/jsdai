@@ -1,0 +1,218 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4500 - ISO/CD-TS 10303-1264 Risk - EXPRESS MIM
+*) 
+
+SCHEMA Risk_mim;
+
+USE FROM action_schema;
+
+USE FROM Activity_method_assignment_mim;
+
+USE FROM Activity_method_mim;
+
+USE FROM Activity_mim;
+
+USE FROM Approval_mim;
+
+USE FROM Classification_assignment_mim;
+
+USE FROM Condition_mim;
+
+USE FROM Date_time_assignment_mim;
+
+USE FROM Document_assignment_mim;
+
+USE FROM Event_mim;
+
+USE FROM Justification_mim;
+
+USE FROM Person_organization_assignment_mim;
+
+USE FROM Person_organization_mim;
+
+USE FROM Probability_distribution_mim;
+
+USE FROM Probability_mim;
+
+USE FROM Product_identification_mim;
+
+USE FROM product_property_definition_schema
+  (characterized_object);
+
+USE FROM Property_assignment_mim;
+
+USE FROM representation_schema
+  (representation);
+
+USE FROM Resource_item_mim;
+
+USE FROM risk_schema;
+
+USE FROM State_definition_mim;
+
+TYPE risk_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
+  (risk_evaluation,
+   risk_reduction);
+END_TYPE;
+
+TYPE risk_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
+  (risk_analysis,
+   risk_assessment,
+   risk_communication,
+   risk_control,
+   risk_criteria,
+   risk_estimation,
+   risk_evaluation,
+   risk_identification,
+   risk_perception,
+   risk_reduction,
+   risk_source_assignment,
+   risk_treatment);
+END_TYPE;
+
+TYPE risk_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
+  (risk_perception,
+   risk_reduction);
+END_TYPE;
+
+TYPE risk_classification_item = EXTENSIBLE SELECT BASED_ON classification_item WITH
+  (risk,
+   risk_consequence,
+   risk_impact_assignment,
+   risk_perception,
+   risk_perception_relationship,
+   risk_probability_assignment,
+   risk_relationship,
+   risk_stakeholder);
+END_TYPE;
+
+TYPE risk_condition_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_action_method_items WITH
+  (risk_status);
+END_TYPE;
+
+TYPE risk_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_and_time_item WITH
+  (risk,
+   risk_analysis,
+   risk_assessment,
+   risk_attitude,
+   risk_communication,
+   risk_consequence,
+   risk_context,
+   risk_control,
+   risk_criteria,
+   risk_evaluation,
+   risk_identification,
+   risk_impact_assignment,
+   risk_perception,
+   risk_perception_relationship,
+   risk_probability,
+   risk_probability_assignment,
+   risk_reduction,
+   risk_relationship,
+   risk_source_assignment,
+   risk_status,
+   risk_treatment);
+END_TYPE;
+
+TYPE risk_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_item WITH
+  (risk,
+   risk_analysis,
+   risk_assessment,
+   risk_attitude,
+   risk_communication,
+   risk_consequence,
+   risk_context,
+   risk_control,
+   risk_criteria,
+   risk_evaluation,
+   risk_identification,
+   risk_impact_assignment,
+   risk_perception,
+   risk_perception_relationship,
+   risk_probability,
+   risk_probability_assignment,
+   risk_reduction,
+   risk_relationship,
+   risk_source_assignment,
+   risk_status,
+   risk_treatment);
+END_TYPE;
+
+TYPE risk_document_reference_item = EXTENSIBLE SELECT BASED_ON document_reference_item WITH
+  (risk,
+   risk_criteria,
+   risk_source_assignment);
+END_TYPE;
+
+TYPE risk_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_item WITH
+  (risk_reduction,
+   risk_treatment);
+END_TYPE;
+
+TYPE risk_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_item WITH
+  (risk,
+   risk_analysis,
+   risk_assessment,
+   risk_attitude,
+   risk_communication,
+   risk_consequence,
+   risk_context,
+   risk_control,
+   risk_criteria,
+   risk_evaluation,
+   risk_identification,
+   risk_impact_assignment,
+   risk_perception,
+   risk_perception_relationship,
+   risk_probability,
+   risk_probability_assignment,
+   risk_reduction,
+   risk_relationship,
+   risk_source_assignment,
+   risk_stakeholder,
+   risk_status,
+   risk_treatment);
+END_TYPE;
+
+TYPE risk_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_and_organization_item WITH
+  (risk,
+   risk_analysis,
+   risk_assessment,
+   risk_attitude,
+   risk_communication,
+   risk_consequence,
+   risk_context,
+   risk_control,
+   risk_criteria,
+   risk_evaluation,
+   risk_identification,
+   risk_impact_assignment,
+   risk_perception,
+   risk_perception_relationship,
+   risk_probability,
+   risk_probability_assignment,
+   risk_reduction,
+   risk_relationship,
+   risk_source_assignment,
+   risk_stakeholder,
+   risk_status,
+   risk_treatment);
+END_TYPE;
+
+ENTITY risk_characterized_object
+SUBTYPE OF (characterized_object, risk);
+END_ENTITY;
+
+ENTITY risk_level_relationship
+SUBTYPE OF (risk_perception_relationship);
+  SELF\risk_perception_relationship.related_risk_perception : risk_level;
+  SELF\risk_perception_relationship.relating_risk_perception : risk_level;
+END_ENTITY;
+
+ENTITY risk_relationship_characterized_object
+SUBTYPE OF (characterized_object, risk_relationship);
+END_ENTITY;
+
+END_SCHEMA;
+

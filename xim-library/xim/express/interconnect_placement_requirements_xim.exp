@@ -1,0 +1,313 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Interconnect placement requirements - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Interconnect_placement_requirements_xim;
+
+USE FROM Land_xim;
+
+USE FROM Interconnect_placement_requirements_mim;
+
+	TYPE assembly_or_interconnect_design_object_select = EXTENSIBLE SELECT
+    (Assembly_component_armx,
+     Component_feature_armx,
+     interconnect_module_design_object_select);
+	END_TYPE;
+
+	TYPE interconnect_module_design_object_select = EXTENSIBLE SELECT 
+    (Via_armx,
+     Cutout_armx,
+     Component_termination_passage_armx,
+     Land_armx,
+     Conductor,
+     Conductive_filled_area,
+     Stratum_feature_armx,
+     Stratum_armx,
+     Laminate_component_armx,
+     Inter_stratum_feature_armx,
+     Printed_component_armx);
+  END_TYPE;
+
+  TYPE interconnect_module_design_object_category_armx = EXTENSIBLE ENUMERATION OF
+    (assembly_component_category,
+     embedded_physical_component_terminal_category,
+     interconnect_module_via,
+     interconnect_module_inter_stratum_feature,
+     interconnect_module_cutout,
+     interconnect_module_fill_area,
+     interconnect_module_stratum_feature);
+  END_TYPE;
+
+  TYPE interconnect_module_design_object_category_or_group = SELECT(
+     interconnect_module_design_object_category_armx,
+     group);
+  END_TYPE;    
+  
+	TYPE ipr_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
+	    (Interconnect_module_constraint_region,
+	    Stratum_constraint_region);
+	END_TYPE; 
+
+  TYPE pca_product_design_object_category = ENUMERATION OF
+    (assembly_component_category,
+     assembly_module_category,
+     assembly_module_component_category,
+     assembly_module_component_terminal_category,
+     assembly_module_macro_component_category,
+     assembly_module_macro_component_join_terminal_category,
+     bare_die_component_category,
+     bare_die_component_terminal_category,
+     bonded_conductive_base_blind_via_category,
+     buried_via_category,
+     cable_component_category,
+     component_feature_category,
+     component_mounting_feature_category,
+     component_termination_passage_category,
+     component_termination_passage_interface_terminal_category,
+     component_termination_passage_join_terminal_category,
+     conductive_interconnect_element_terminal_category,
+     conductive_interconnect_element_with_pre_defined_transitions_category,
+     conductive_interconnect_element_with_user_defined_single_transition_category,
+     connected_area_component_category,
+     contact_size_dependent_land_category,
+     cutout_category,
+     cutout_edge_segment_category,
+     dielectric_material_passage_category,
+     electrical_isolation_laminate_component_category,
+     embedded_physical_component_terminal_category,
+     fiducial_category,
+     fill_area_category,
+     inter_stratum_feature_category,
+     interconnect_component_interface_terminal_category,
+     interconnect_component_join_terminal_category,
+     interconnect_module_component_category,
+     interconnect_module_component_stratum_based_terminal_category,
+     interconnect_module_component_surface_feature_category,
+     interconnect_module_component_terminal_category,
+     interconnect_module_edge_category,
+     interconnect_module_edge_segment_category,
+     interconnect_module_macro_component_category,
+     interconnect_module_macro_component_join_terminal_category,
+     interface_access_material_removal_laminate_component_category,
+     interface_access_stratum_feature_template_component_category,
+     interface_component_category,
+     interfacial_connection_category,
+     internal_probe_access_area_category,
+     laminate_component_category,
+     generic_laminate_text_component_category,
+     laminate_text_string_component_category,
+     land_category,
+     land_interface_terminal_category,
+     land_join_terminal_category,
+     material_removal_laminate_component_category,
+     minimally_defined_component_terminal_category,
+     movable_packaged_component_join_terminal_category,
+     multi_layer_material_removal_laminate_component_category,
+     multi_stratum_special_symbol_component_category,
+     non_conductive_base_blind_via_category,
+     packaged_component_category,
+     packaged_component_join_terminal_category,
+     packaged_connector_component_category,
+     packaged_connector_component_interface_terminal_category,
+     partially_plated_cutout_category,
+     partially_plated_interconnect_module_edge_category,
+     physical_component_category,
+     physical_connectivity_interrupting_cutout_category,
+     physical_laminate_component_category,
+     physical_network_supporting_inter_stratum_feature_category,
+     plated_conductive_base_blind_via_category,
+     plated_cutout_category,
+     plated_cutout_edge_segment_category,
+     plated_interconnect_module_edge_category,
+     plated_interconnect_module_edge_segment_category,
+     plated_passage_category,
+     plated_passage_or_unsupported_passage_category,
+     primary_stratum_indicator_symbol_category,
+     printed_component_join_terminal_category,
+     printed_connector_component_interface_terminal_category,
+     probe_access_area_category,
+     routed_interconnect_component_category,
+     routed_physical_component_category,
+     single_stratum_special_symbol_component_category,
+     stratum_feature_category,
+     stratum_feature_template_component_category,
+     thermal_isolation_laminate_component_category,
+     unrouted_conductive_interconnect_element_category,
+     unsupported_passage_category,
+     via_category,
+     via_terminal_category);
+  END_TYPE;
+
+  TYPE pca_product_design_object_category_or_group = SELECT(
+     pca_product_design_object_category,
+     Stratum_armx,
+     Group);
+  END_TYPE;    
+  
+  TYPE spacing_type = ENUMERATION OF
+    (nearest_boundary,
+     centroid,
+     furthest_boundary);
+  END_TYPE;
+
+	SUBTYPE_CONSTRAINT ipr_non_feature_shape_element_subtypes FOR Non_feature_shape_element; 
+	    (ONEOF (
+	     Derived_non_feature_shape_element,
+		 Directed_axis,
+		 Positional_boundary_armx,
+		 Positional_boundary_member_armx,
+		 Tolerance_zone_boundary_armx,
+		 Tolerance_zone_boundary_member,
+		 Viewing_plane_armx,
+		 Seating_plane_armx,
+		 Template_material_cross_section_boundary_armx,
+		 Interconnect_module_constraint_region,
+		 Stratum_constraint_region,
+		 Reference_graphic_registration_mark_armx,
+		 Mounting_restriction_area_armx,
+		 Mounting_restriction_volume_armx));
+	END_SUBTYPE_CONSTRAINT;
+
+ 	SUBTYPE_CONSTRAINT ipr_predefined_requirement_view_definition_armx_subtypes FOR Predefined_requirement_view_definition_armx;     
+		(ONEOF (Assembly_spacing_requirement_occurrence_armx,
+ 	  	Assembly_group_spacing_requirement_occurrence_armx,
+ 	  	Layout_spacing_requirement_occurrence_armx,
+		Item_restricted_requirement_occurrence_armx));
+	END_SUBTYPE_CONSTRAINT;
+
+  ENTITY Interconnect_module_constraint_region
+    (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, group_shape_aspect);
+      keepout                                          : BOOLEAN;
+      non_conformant_interconnect_module_design_object : OPTIONAL SET[1:?] OF interconnect_module_design_object_select;
+      SELF\Non_feature_shape_element.scope             : Interconnect_module;
+      design_specific_purpose                          : STRING; --ee_name;
+      associated_stratum_extent                        : SET[1:?] OF Inter_stratum_extent;
+      constrained_design_object_category               : interconnect_module_design_object_category_or_group;
+    DERIVE
+      SELF\shape_aspect.description : text := 'interconnect module constraint region';
+    INVERSE
+      precedent_version_constraint_region : SET[0:1] OF non_feature_shape_element_relationship FOR related;
+      requirement : SET[1:1] OF requirement_assignment_armx FOR assigned_to;
+    WHERE
+      WR1 : NOT (SIZEOF(precedent_version_constraint_region) = 1) OR ('INTERCONNECT_PLACEMENT_REQUIREMENTS_XIM.INTERCONNECT_MODULE_CONSTRAINT_REGION' IN TYPEOF(precedent_version_constraint_region[1]\Non_feature_shape_element_relationship.relating));
+      WR2 : valid_non_conformant_design_object_context(non_conformant_interconnect_module_design_object, scope);      
+  END_ENTITY;
+
+  ENTITY Stratum_constraint_region
+    SUBTYPE OF (Non_feature_shape_element);
+      keepout                                          : BOOLEAN;
+      non_conformant_stratum                           : OPTIONAL SET[1:?] OF Stratum;
+      SELF\Non_feature_shape_element.scope             : Interconnect_module;
+      design_specific_purpose                          : STRING; 
+      constrained_stratum                              : SET[1:?] OF Stratum;
+    INVERSE
+      precedent_version_constraint_region : SET[0:1] OF non_feature_shape_element_relationship FOR related;
+      requirement : SET[1:1] OF requirement_assignment_armx FOR assigned_to;
+    WHERE
+      WR1 : NOT (SIZEOF(precedent_version_constraint_region) = 1) OR ('INTERCONNECT_PLACEMENT_REQUIREMENTS_XIM.STRATUM_CONSTRAINT_REGION' IN TYPEOF(precedent_version_constraint_region[1]\Non_feature_shape_element_relationship.relating));
+      WR2 : NOT EXISTS(SELF\Shape_element.description);
+      WR3 : valid_non_conformant_stratum_context(non_conformant_stratum, scope);
+  END_ENTITY;
+  
+  ENTITY Layer_qualified_layout_spacing_requirement_occurrence_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Layout_spacing_requirement_occurrence_armx, layer_qualified_layout_spacing_requirement_occurrence);
+      layer_context : SET[1:?] OF Inter_stratum_extent;
+  END_ENTITY;
+
+  ENTITY Layout_spacing_requirement_occurrence_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Predefined_requirement_view_definition_armx, layout_spacing_requirement_occurrence);
+      design_object_category_1                                                            : pca_product_design_object_category_or_group;
+      design_object_category_2                                                            : pca_product_design_object_category_or_group;
+      SELF\Predefined_requirement_view_definition_armx.required_characteristic RENAMED spacing : Length_tolerance_characteristic;
+      of_spacing_type                                                                     : spacing_type;
+  END_ENTITY;
+
+  ENTITY Layout_spacing_requirement_non_conforming_design_object
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+  	-- SEDS not written yet, SET is impossible, since AIM is singular
+      non_conformant_design_object	: SET[1:?] OF assembly_or_interconnect_design_object_select;
+      design_object_1              : assembly_or_interconnect_design_object_select;
+      design_object_2              : assembly_or_interconnect_design_object_select;
+      design_requirement           : Layout_spacing_requirement_occurrence_armx;
+      violation_value              : OPTIONAL Length_measure_with_unit;
+      violation_shape              : OPTIONAL shape_representation;
+      intersection_violation       : LOGICAL;
+     DERIVE
+       SELF\shape_aspect_relationship.related_shape_aspect: shape_aspect := ?;
+       SELF\shape_aspect_relationship.description : text := ?;
+       SELF\shape_aspect_relationship.name : label := ?;
+    WHERE
+     WR1: EXISTS(violation_value) OR EXISTS(violation_shape);           (* Overlaps with non_conformant_design_object *) 
+  END_ENTITY;
+
+  FUNCTION valid_non_conformant_design_object_context(input1 : SET OF interconnect_module_design_object_select;
+                  input2 : Interconnect_module) : BOOLEAN;
+  LOCAL
+    vdr : SET OF product_definition_relationship := [];
+    valid : BOOLEAN := TRUE;
+    pvd : SET OF Product_view_definition := [];
+  END_LOCAL;
+
+   REPEAT i := 1 to HIINDEX(input1);
+    IF ('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.LAMINATE_COMPONENT_ARMX' IN TYPEOF(input1[i]))
+    THEN
+       vdr := input1[i]\Assembly_component_armx.occurrence_contexts;
+       pvd := [];
+      REPEAT j := 1 to HIINDEX(vdr);
+       pvd := pvd + vdr[j]\product_definition_relationship.relating_product_definition;
+      END_REPEAT;
+       IF NOT (input2 IN pvd) 
+         THEN valid := FALSE; 
+       END_IF;
+    END_IF;
+   END_REPEAT;
+   
+    RETURN(valid);
+  END_FUNCTION;
+
+  FUNCTION valid_non_conformant_stratum_context(input1 : SET OF Stratum_armx;
+                  input2 : Interconnect_module) : BOOLEAN;
+  LOCAL
+    imsar : SET OF Interconnect_module_stratum_assembly_relationship := [];
+    valid : BOOLEAN := TRUE;
+    i, j : INTEGER := 0;
+    pvd : SET OF Product_view_definition := [];
+  END_LOCAL;
+   REPEAT i := 1 to HIINDEX(input1);
+       imsar := input1[i]\Stratum_armx.assembly;
+       pvd := [];
+      REPEAT j := 1 to HIINDEX(pvd);
+       pvd := pvd + imsar[j]\Interconnect_module_stratum_assembly_relationship.assembly;
+      END_REPEAT;
+       IF NOT (input2 IN pvd) 
+         THEN valid := FALSE; 
+       END_IF;
+   END_REPEAT;
+    RETURN(valid);
+  END_FUNCTION;
+
+END_SCHEMA;

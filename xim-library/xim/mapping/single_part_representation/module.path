@@ -1,0 +1,239 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping single_part_representation(Single_part_representation_arm, Single_part_representation_mim);*)
+
+uof_mapping Single_part_representation(Single_part_representation);
+end_uof_mapping;
+
+
+entity_mapping Assigned_property(Assigned_property, property_definition)
+extended;
+
+attribute_mapping described_element(described_element, $PATH, Part_view_definition);
+
+		 property_definition
+property_definition.definition -> characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition = product_definition
+		 {product_definition.frame_of_reference -> product_definition_context
+product_definition_context <= application_context_element
+application_context_element.name = 'part definition'} 
+		 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Document_assignment(Document_assignment, (applied_document_reference)(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment) *))
+extended;
+
+attribute_mapping is_assigned_to(is_assigned_to, $PATH, Part);
+
+		 applied_document_reference.items[i] -> document_reference_item
+		 document_reference_item *> spr_document_reference_item
+		 spr_document_reference_item = product
+          {product <-
+           product_related_product_category.products
+           product_related_product_category <=
+           product_category
+           (product_category.name='part')
+					 (product_category.name='raw material')
+					 (product_category.name='tool')}
+		 
+end_attribute_mapping;
+
+attribute_mapping is_assigned_to(is_assigned_to, $PATH, Part_version);
+
+		 applied_document_reference.items[i] -> document_reference_item
+		 document_reference_item *> spr_document_reference_item
+		 spr_document_reference_item = product_definition_formation
+           {product_definition_formation.of_product ->
+           product
+           product <-
+           product_related_product_category.products[i]
+           product_related_product_category <=
+           product_category
+           (product_category.name='part')
+					 (product_category.name='raw material')
+					 (product_category.name='tool')}
+		 
+end_attribute_mapping;
+
+attribute_mapping is_assigned_to(is_assigned_to, $PATH, Part_view_definition);
+
+		 applied_document_reference.items[i] -> document_reference_item
+		 document_reference_item *> spr_document_reference_item
+		 spr_document_reference_item = product_definition
+		 {product_definition.frame_of_reference -> product_definition_context
+product_definition_context <= application_context_element
+application_context_element.name = 'part definition'} 
+		 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping organization_or_person_in_organization_assignment_select(organization_or_person_in_organization_assignment_select, ( 
+			(applied_organization_assignment)
+			)( 
+			(applied_person_and_organization_assignment)
+			))
+extended;
+
+attribute_mapping items(items, , Document);
+(
+           organization_item *> spr_organization_item 
+           spr_organization_item = product
+           {product <-
+           product_related_product_category.products
+           product_related_product_category <=
+           product_category
+           product_category.name='document'}
+         )(
+           person_and_organization_item *> spr_person_and_organization_item 
+           spr_person_and_organization_item = product
+           {product <-
+           product_related_product_category.products
+           product_related_product_category <=
+           product_category
+           product_category.name='document'}
+         )
+end_attribute_mapping;
+
+attribute_mapping items(items, , Document_definition);
+(
+           organization_item *> spr_organization_item 
+           spr_organization_item = product_definition
+           {product_definition.frame_of_reference ->
+           product_definition_context <=
+           application_context_element
+           (application_context_element.name = 'digital document definition')
+           (application_context_element.name = 'physical document definition')
+           (application_context_element.name = 'generic document definition')} 
+         )(
+           person_and_organization_item *> spr_person_and_organization_item 
+           spr_person_and_organization_item = product_definition
+           {product_definition.frame_of_reference ->
+           product_definition_context <=
+           application_context_element
+           (application_context_element.name = 'digital document definition')
+           (application_context_element.name = 'physical document definition')
+           (application_context_element.name = 'generic document definition')} 
+         )
+end_attribute_mapping;
+
+attribute_mapping items(items, , Document_version);
+(
+           organization_item *> spr_organization_item 
+           spr_organization_item = product_definition_formation
+           {product_definition_formation.of_product ->
+           product
+           product <-
+           product_related_product_category.products[i]
+           product_related_product_category <=
+           product_category
+           product_category.name='document' }
+         )(
+           person_and_organization_item *> spr_person_and_organization_item 
+           spr_person_and_organization_item = product_definition_formation
+           {product_definition_formation.of_product ->
+           product
+           product <-
+           product_related_product_category.products[i]
+           product_related_product_category <=
+           product_category
+           product_category.name='document' }
+         )
+end_attribute_mapping;
+
+attribute_mapping items(items, , Part);
+(
+           organization_item *> spr_organization_item 
+           spr_organization_item = product
+           {product <-
+           product_related_product_category.products
+           product_related_product_category <=
+           product_category
+           (product_category.name='part')
+					 (product_category.name='raw material')
+					 (product_category.name='tool')}
+					)(
+           person_and_organization_item *> spr_person_and_organization_item 
+           spr_person_and_organization_item = product
+           {product <-
+           product_related_product_category.products
+           product_related_product_category <=
+           product_category
+           (product_category.name='part')
+					 (product_category.name='raw material')
+					 (product_category.name='tool')}
+         )
+end_attribute_mapping;
+
+attribute_mapping items(items, , Part_version);
+(
+           organization_item *> spr_organization_item 
+           spr_organization_item = product_definition_formation
+           {product_definition_formation.of_product ->
+           product
+           product <-
+           product_related_product_category.products[i]
+           product_related_product_category <=
+           product_category
+           (product_category.name='part')
+					 (product_category.name='raw material')
+					 (product_category.name='tool')}
+         )(
+           person_and_organization_item *> spr_person_and_organization_item 
+           spr_person_and_organization_item = product_definition_formation
+           {product_definition_formation.of_product ->
+           product
+           product <-
+           product_related_product_category.products[i]
+           product_related_product_category <=
+           product_category
+           (product_category.name='part')
+					 (product_category.name='raw material')
+					 (product_category.name='tool')}
+         )
+end_attribute_mapping;
+
+attribute_mapping items(items, , Part_view_definition);
+(
+           organization_item *> spr_organization_item 
+           spr_organization_item = product_definition
+           {product_definition.frame_of_reference ->
+           product_definition_context <=
+           application_context_element
+           application_context_element.name = 'part definition'} 
+         )(
+           person_and_organization_item *> spr_person_and_organization_item 
+           spr_person_and_organization_item = product_definition
+           {product_definition.frame_of_reference ->
+           product_definition_context <=
+           application_context_element
+           application_context_element.name = 'part definition'} 
+         )
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

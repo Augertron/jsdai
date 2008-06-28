@@ -1,0 +1,166 @@
+(*
+ $Id$
+ ISO TC184/SC4/WG3 N1311 - ISO/TS 10303-1352 Catalog data information and shape representation - EXPRESS MIM
+*)
+
+SCHEMA Catalog_data_information_and_shape_representation_mim;
+
+USE FROM Advanced_boundary_representation_mim;
+
+USE FROM Constructive_solid_geometry_3d_mim;
+
+USE FROM Edge_based_wireframe_mim;
+
+USE FROM Faceted_boundary_representation_mim;
+
+USE FROM Geometric_tolerance_mim;
+
+USE FROM Geometric_validation_property_representation_mim;
+
+USE FROM Geometrically_bounded_surface_mim;
+
+USE FROM Geometrically_bounded_wireframe_mim;
+
+USE FROM Manifold_surface_mim;
+
+USE FROM representation_schema(founded_item);
+
+USE FROM Shell_based_wireframe_mim;
+
+USE FROM Surface_conditions_mim;
+
+USE FROM topology_schema(topological_representation_item);
+
+USE FROM Wireframe_2d_mim;
+
+USE FROM Catalog_data_information_mim;
+
+REFERENCE FROM Catalog_data_information_mim
+	(allowed_translations);
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (type_check_function); 
+
+TYPE attribute_language_item_236cc2 = EXTENSIBLE SELECT BASED_ON attribute_language_item_236cc1 WITH
+	(geometric_tolerance,
+	topological_representation_item);
+END_TYPE;
+
+TYPE multi_language_attribute_item_236cc2 = EXTENSIBLE SELECT BASED_ON multi_language_attribute_item_236cc1 WITH
+	(geometric_tolerance,
+	topological_representation_item);
+END_TYPE;
+
+RULE dependent_instantiable_dimensional_size FOR
+    (dimensional_size);
+WHERE
+ WR1: SIZEOF ( QUERY ( d <* dimensional_size | NOT ( SIZEOF (
+     USEDIN ( d , '' ) ) >0 ) ) ) =0;
+END_RULE;
+
+RULE dependent_instantiable_tolerance_value FOR
+    (tolerance_value);
+WHERE
+ WR1: SIZEOF ( QUERY ( t <* tolerance_value | NOT ( SIZEOF (
+     USEDIN ( t , '' ) ) >0 ) ) ) =0;
+END_RULE;
+
+RULE restrict_multi_language_for_geometric_tolerance FOR
+    (geometric_tolerance);
+WHERE
+ WR1: SIZEOF ( QUERY ( ent <* geometric_tolerance | 
+	NOT allowed_translations (ent, ['description', 'name']) ))=0;
+END_RULE;
+
+RULE restrict_multi_language_for_topological_representation_item FOR
+    (topological_representation_item);
+WHERE
+ WR1: SIZEOF ( QUERY ( ent <* topological_representation_item |
+	NOT allowed_translations (ent, ['name']) ))=0;
+END_RULE;
+
+RULE restrict_representation_item_for_hybrid_geometric_model_3d FOR
+    (shape_representation);
+WHERE
+WR1: SIZEOF ( QUERY ( sr <* shape_representation | 
+	( sr. name ='hybrid 3d shape representation' ) AND 
+	( SIZEOF ( QUERY ( i <* sr. items | 
+	NOT ( 'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.GEOMETRIC_REPRESENTATION_ITEM' IN TYPEOF ( i ) ) ) ) >0 )) ) =0;
+END_RULE;
+
+RULE restrict_zone_boundary FOR
+    (tolerance_zone_definition);
+WHERE
+WR1: SIZEOF ( QUERY ( tzd <* tolerance_zone_definition | 
+	SIZEOF( tzd. boundaries ) >2 ) ) =0;
+END_RULE;
+
+RULE subtype_exclusiveness_founded_item FOR
+    (founded_item);
+WHERE
+ WR1: SIZEOF ( QUERY ( fi <* founded_item | NOT (
+     type_check_function ( fi , 
+	['CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.COMPOSITE_CURVE_SEGMENT' , 
+	'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.SURFACE_PATCH' , 
+	'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.VIEW_VOLUME'] , 3
+     ) ) ) ) =0;
+END_RULE;
+
+RULE subtype_exclusiveness_representation FOR
+    (representation);
+WHERE
+ WR1: SIZEOF ( QUERY ( r <* representation | NOT (
+     type_check_function ( r ,
+	['CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.CONSTRUCTIVE_GEOMETRY_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.CONTACT_RATIO_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.DEFAULT_TOLERANCE_TABLE' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.DEFINITIONAL_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.HARDNESS_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.MECHANICAL_DESIGN_GEOMETRIC_PRESENTATION_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.MOMENTS_OF_INERTIA_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.PRESENTATION_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.SHAPE_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.SURFACE_TEXTURE_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.SYMBOL_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.TACTILE_APPEARANCE_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.TEXT_STRING_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.VISUAL_APPEARANCE_REPRESENTATION'] , 3 ) ) ) ) =0;
+END_RULE;
+
+RULE subtype_exclusiveness_shape_aspect_relationship FOR
+    (shape_aspect_relationship);
+WHERE
+ WR1: SIZEOF ( QUERY ( sar <* shape_aspect_relationship | NOT (
+     type_check_function ( sar , 
+	['CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.DIMENSIONAL_LOCATION' , 
+	'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.SHAPE_ASPECT_ASSOCIATIVITY' , 
+	'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.SHAPE_ASPECT_DERIVING_RELATIONSHIP'] , 3 )
+     ) ) ) =0;
+END_RULE;
+
+RULE subtype_exclusiveness_shape_representation_geometry FOR
+    (shape_representation);
+WHERE
+WR1: SIZEOF ( QUERY ( sr <* shape_representation | NOT (
+     type_check_function ( sr , 
+	['CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.ADVANCED_BREP_SHAPE_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.CSG_SHAPE_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.EDGE_BASED_WIREFRAME_SHAPE_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.FACETED_BREP_SHAPE_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.GEOMETRICALLY_BOUNDED_2D_WIREFRAME_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.GEOMETRICALLY_BOUNDED_SURFACE_SHAPE_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.GEOMETRICALLY_BOUNDED_WIREFRAME_SHAPE_REPRESENTATION' ,
+     'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.MANIFOLD_SURFACE_SHAPE_REPRESENTATION'] , 3 ) ) ) ) =0;
+END_RULE;
+
+RULE subtype_mandatory_founded_item FOR
+    (founded_item);
+WHERE
+ WR1: SIZEOF ( QUERY ( fi <* founded_item | NOT (
+     type_check_function ( fi , 
+	['CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.COMPOSITE_CURVE_SEGMENT' , 
+	'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.SURFACE_PATCH' , 
+	'CATALOG_DATA_INFORMATION_AND_SHAPE_REPRESENTATION' + '.VIEW_VOLUME'] , 0) ) ) ) =0;
+END_RULE;
+
+END_SCHEMA;

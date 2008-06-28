@@ -1,0 +1,638 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping interconnect_module_to_assembly_module_relationship(Interconnect_module_to_assembly_module_relationship_arm, Interconnect_module_to_assembly_module_relationship_mim);*)
+
+
+entity_mapping Assembly_requirement_for_interconnect_relationship(Assembly_requirement_for_interconnect_relationship, product_definition_relationship);
+
+attribute_mapping relating_view(relating_view, $PATH, Assembly_module);
+product_definition_relationship
+					product_definition_relationship.relating_product_definition -> 
+					product_definition =>
+					physical_unit
+				
+end_attribute_mapping;
+
+attribute_mapping related_view(related_view, $PATH, Interconnect_module);
+product_definition_relationship
+					product_definition_relationship.relating_product_definition -> 
+					product_definition =>
+					physical_unit
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Component_based_annotation_symbol_placement_relationship(Component_based_annotation_symbol_placement_relationship, shape_aspect_relationship);
+
+mapping_constraints;
+shape_aspect_relationship
+{shape_aspect_relationship.name = 'component based annotation symbol placement'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component
+
+end_mapping_constraints;
+
+attribute_mapping related_stratum_concept(related_stratum_concept, $PATH, Multi_stratum_special_symbol_component_armx);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+assembly_group_component =>
+structured_layout_component =>
+multi_stratum_special_symbol_component
+end_attribute_mapping;
+
+attribute_mapping related_stratum_concept(related_stratum_concept, $PATH, Single_stratum_special_symbol_component_armx);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+assembly_group_component =>
+structured_layout_component =>
+single_stratum_special_symbol_component
+end_attribute_mapping;
+
+attribute_mapping related_stratum_concept(related_stratum_concept, $PATH, special_symbol_component);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+assembly_group_component =>
+structured_layout_component =>
+(single_stratum_special_symbol_component)
+(multi_stratum_special_symbol_component)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Component_based_annotation_text_relationship(Component_based_annotation_text_relationship, shape_aspect_relationship);
+
+mapping_constraints;
+shape_aspect_relationship
+{shape_aspect_relationship.name = 'component based annotation text'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component
+
+end_mapping_constraints;
+
+attribute_mapping message_type(message_type, descriptive_representation_item);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'message type'}
+representation_item =>
+descriptive_representation_item
+{descriptive_representation_item
+(descriptive_representation_item.description = 'component reference designation')
+(descriptive_representation_item.description = 'terminal designation')}
+
+end_attribute_mapping;
+
+attribute_mapping related_stratum_concept(related_stratum_concept, $PATH, Laminate_text_string_component_armx);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+assembly_group_component =>
+array_placement_group =>
+laminate_text_string_component
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Component_feature_to_layout_feature_relationship(Component_feature_to_layout_feature_relationship, shape_aspect_relationship);
+
+mapping_constraints;
+shape_aspect_relationship
+{shape_aspect_relationship
+(shape_aspect_relationship.name = 'component feature to layout feature')
+(shape_aspect_relationship.name = 'component based annotation text')
+(shape_aspect_relationship.name = 'component based annotation symbol placement')}
+
+end_mapping_constraints;
+
+attribute_mapping relating_feature(relating_feature, $PATH, component_or_component_feature);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+
+end_attribute_mapping;
+
+attribute_mapping relating_feature(relating_feature, $PATH, Assembly_component_armx);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape -> 
+product_definition_shape => 
+assembly_component
+
+end_attribute_mapping;
+
+attribute_mapping relating_feature(relating_feature, $PATH, Component_external_reference);
+shape_aspect_relationship
+					shape_aspect_relationship.relating_shape_aspect ->
+					shape_aspect
+					shape_aspect.of_shape -> product_definition_shape <=
+					property_definition
+					property_definition.definition -> characterized_definition 
+					characterized_definition <- 
+						property_definition.definition 
+						property_definition <- 
+						property_definition_representation.definition 
+						property_definition_representation 
+						property_definition_representation.used_representation -> 
+						representation 
+				
+end_attribute_mapping;
+
+attribute_mapping relating_feature(relating_feature, $PATH, Component_feature_armx);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect => component_feature
+
+end_attribute_mapping;
+
+attribute_mapping relating_feature(relating_feature, $PATH, Component_feature_external_reference);
+shape_aspect_relationship
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape -> product_definition_shape <=
+				property_definition
+				property_definition.definition -> characterized_definition 
+				characterized_definition <- 
+					property_definition.definition 
+					property_definition <- 
+					property_definition_representation.definition 
+					property_definition_representation 
+					property_definition_representation.used_representation -> 
+					representation 
+					representation.items[i] -> 
+					representation_item => 
+					descriptive_representation_item 
+				
+end_attribute_mapping;
+
+attribute_mapping related_stratum_concept(related_stratum_concept, $PATH, stratum_concept);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+
+end_attribute_mapping;
+
+attribute_mapping related_stratum_concept(related_stratum_concept, $PATH, Laminate_component_armx);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape -> 
+product_definition_shape => 
+assembly_component =>
+laminate_component
+
+end_attribute_mapping;
+
+attribute_mapping related_stratum_concept(related_stratum_concept, $PATH, Inter_stratum_feature_armx);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape -> 
+product_definition_shape => 
+assembly_component => 
+laminate_component =>
+inter_stratum_feature
+
+end_attribute_mapping;
+
+attribute_mapping related_stratum_concept(related_stratum_concept, $PATH, Stratum_feature_armx);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect => stratum_feature
+
+end_attribute_mapping;
+
+attribute_mapping related_stratum_concept(related_stratum_concept, $PATH, Stratum_armx);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape -> 
+product_definition_shape => 
+stratum
+
+end_attribute_mapping;
+
+attribute_mapping related_stratum_concept(related_stratum_concept, $PATH, Stratum_surface_armx);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect => stratum_surface
+
+end_attribute_mapping;
+
+attribute_mapping related_stratum_concept(related_stratum_concept, $PATH, Structured_template_armx);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape -> 
+product_definition_shape => 
+part_template_definition =>
+geometric_template =>
+structured_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Embedded_physical_component_terminal(Embedded_physical_component_terminal, laminate_component_join_terminal)
+extended;
+
+attribute_mapping associated_component(associated_component, $PATH, Bare_die_component_armx);
+
+*> physical_component =>
+bare_die_component 				
+
+end_attribute_mapping;
+
+attribute_mapping associated_component(associated_component, $PATH, Packaged_component_armx);
+
+*> physical_component =>
+packaged_component
+
+end_attribute_mapping;
+
+attribute_mapping definition(definition, $PATH, Bare_die_terminal_armx);
+
+*> shape_aspect =>
+minimally_defined_bare_die_terminal =>
+bare_die_terminal
+
+end_attribute_mapping;
+
+attribute_mapping definition(definition, $PATH, Packaged_part_terminal_armx);
+
+				*> shape_aspect
+				{(shape_aspect.description = 'interface terminal')
+				(shape_aspect.description = 'join terminal')}
+				shape_aspect =>
+				packaged_part_terminal
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Item_restricted_requirement_occurrence_armx(Item_restricted_requirement_occurrence_armx, item_restricted_requirement_occurrence)
+extended;
+
+attribute_mapping basis(basis, , Component_external_reference);
+
+				groupable_item
+				groupable_item = shape_aspect
+				shape_aspect			
+				shape_aspect.of_shape ->
+				product_definition_shape <=
+				property_definition
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				
+end_attribute_mapping;
+
+attribute_mapping basis(basis, , Assembly_component_armx);
+
+				groupable_item
+				groupable_item = shape_aspect
+				shape_aspect			
+				shape_aspect.of_shape ->
+				product_definition_shape =>
+				assembly_component
+				
+end_attribute_mapping;
+
+
+attribute_mapping basis(basis, , Component_feature_armx);
+
+				groupable_item
+				groupable_item = shape_aspect
+				shape_aspect => component_feature				
+end_attribute_mapping;
+
+attribute_mapping basis(basis, , Component_feature_external_reference);
+
+				groupable_item
+				groupable_item = shape_aspect
+				shape_aspect			
+				shape_aspect.of_shape ->
+				product_definition_shape <=
+				property_definition
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				representation.items[i] ->
+				representation_item
+				representation_item => descriptive_representation_item
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Material_removal_laminate_component_armx(Material_removal_laminate_component_armx, material_removal_laminate_component)
+extended;
+(* It is too generic and dangerous to be left
+attribute_mapping causal_item(causal_item, , restriction_basis_item);
+
+(material_removal_laminate_component <=
+laminate_component <=
+assembly_component <=
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'causal item'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect)
+(material_removal_laminate_component <=
+laminate_component <=
+assembly_component <=
+product_definition_shape
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation)
+(material_removal_laminate_component <=
+laminate_component <=
+assembly_component <=
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'causal item'}
+product_definition_relationship.relating_product_definition ->
+product_definition)
+				
+end_attribute_mapping;
+*)
+attribute_mapping causal_item(causal_item, , Assembly_component_armx);
+
+material_removal_laminate_component <=
+laminate_component <=
+assembly_component <=
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'causal item'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+component_definition =>
+assembly_component
+				
+end_attribute_mapping;
+
+attribute_mapping causal_item(causal_item, , Component_external_reference);
+
+material_removal_laminate_component <=
+laminate_component <=
+assembly_component <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+				
+end_attribute_mapping;
+
+attribute_mapping causal_item(causal_item, , Component_feature_armx);
+
+material_removal_laminate_component <=
+laminate_component <=
+assembly_component <=
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'causal item'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect => 
+component_feature				
+end_attribute_mapping;
+
+attribute_mapping causal_item(causal_item, , Component_feature_external_reference);
+
+material_removal_laminate_component <=
+laminate_component <=
+assembly_component <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item
+representation_item => descriptive_representation_item
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Stratum_feature_template_component_armx(Stratum_feature_template_component_armx, stratum_feature_template_component)
+extended;
+(* It is too generic and dangerous to be left
+attribute_mapping causal_item(causal_item, , restriction_basis_item);
+
+(stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'causal item'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect)
+(stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation)
+(stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'causal item'}
+product_definition_relationship.relating_product_definition ->
+product_definition)
+				
+end_attribute_mapping;
+*)
+attribute_mapping causal_item(causal_item, , Assembly_component_armx);
+
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'causal item'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+component_definition =>
+assembly_component
+				
+end_attribute_mapping;
+
+attribute_mapping causal_item(causal_item, , Component_external_reference);
+
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+				
+end_attribute_mapping;
+
+attribute_mapping causal_item(causal_item, , Component_feature_armx);
+
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'causal item'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect => 
+component_feature				
+end_attribute_mapping;
+
+attribute_mapping causal_item(causal_item, , Component_feature_external_reference);
+
+stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item
+representation_item => descriptive_representation_item
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Requirement_assignment_armx(Requirement_assignment_armx, requirement_assignment)
+extended;
+
+attribute_mapping assigned_to(assigned_to, , Component_feature_to_layout_feature_relationship);
+
+					requirement_assigned_item *> imtamr_requirement_assigned_item
+					imtamr_requirement_assigned_item = 
+					shape_aspect_relationship
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Document_assignment(Document_assignment, applied_document_reference)
+extended;
+
+attribute_mapping is_assigned_to(is_assigned_to, , Component_external_reference);
+						document_reference_item *> imtamr_document_reference_item
+						imtamr_document_reference_item = representation
+end_attribute_mapping;
+
+attribute_mapping is_assigned_to(is_assigned_to, , Component_feature_armx);
+						document_reference_item *> imtamr_document_reference_item
+						imtamr_document_reference_item = component_feature
+end_attribute_mapping;
+
+attribute_mapping is_assigned_to(is_assigned_to, , Component_feature_external_reference);
+						document_reference_item *> imtamr_document_reference_item
+						imtamr_document_reference_item = descriptive_representation_item
+end_attribute_mapping;
+
+end_entity_mapping;
+
+(*end_schema_mapping;*)

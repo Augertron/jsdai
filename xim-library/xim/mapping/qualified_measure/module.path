@@ -1,0 +1,61 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping characteristic(Characteristic_arm, Characteristic_mim);*)
+
+entity_mapping Pre_defined_type_qualifier(Pre_defined_type_qualifier, type_qualifier);
+
+mapping_constraints;
+  	{(type_qualifier.name = 'minimum')
+  	 (type_qualifier.name = 'maximum')
+  	 (type_qualifier.name = 'nominal')
+  	 (type_qualifier.name = 'specified')
+  	 (type_qualifier.name = 'typical')
+  	 (type_qualifier.name = 'calculated')
+  	 (type_qualifier.name = 'designed')
+  	 (type_qualifier.name = 'estimated')
+  	 (type_qualifier.name = 'measured')
+  	 (type_qualifier.name = 'required')
+  	 (type_qualifier.name = 'set point')
+   	 (type_qualifier.name = 'set point')
+   	 (type_qualifier.name = 'basic')
+   	 (type_qualifier.name = 'lower deviation')
+   	 (type_qualifier.name = 'upper deviation')}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Qualified_numerical_item_with_unit(Qualified_numerical_item_with_unit, [measure_representation_item][qualified_representation_item]);
+(* GL - added constraints to distinguish it from Value_limit *)
+mapping_constraints;
+     qualified_representation_item.qualifiers[i] -> 
+     value_qualifier = type_qualifier 
+     type_qualifier
+     !{(type_qualifier.name = 'maximum') 
+     (type_qualifier.name = 'minimum')}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+(*end_schema_mapping;*)

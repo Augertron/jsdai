@@ -1,0 +1,1398 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4041 - ISO/TS 10303-1698 Layered interconnect module design - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3483
+*)
+
+SCHEMA Layered_interconnect_module_design_arm;
+
+USE FROM Component_grouping_arm;	-- ISO/TS 10303-1656
+USE FROM Edge_shape_feature_arm;	-- ISO/TS 10303-1673
+USE FROM Interconnect_physical_requirement_allocation_arm;	-- ISO/TS 10303-1689
+USE FROM Footprint_definition_arm;	-- ISO/TS 10303-1646
+USE FROM Physical_connectivity_definition_arm;	-- ISO/TS 10303-1755
+USE FROM Interconnect_module_connection_routing_arm;
+USE FROM Assembly_component_placement_requirements_arm;	-- ISO/TS 10303-1634	
+
+REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
+
+  TYPE area_component_templates = SELECT (
+    Stratum_feature_template, -- when area_component comes from library
+    Fill_area_template); -- when area_component is defined in place
+  END_TYPE;
+
+  TYPE design_or_documentation_stratum = SELECT ( 
+    Design_layer_stratum,
+    Documentation_layer_stratum);
+  END_TYPE;
+
+  TYPE limd_groupable_item = SELECT BASED_ON groupable_item WITH 
+    (Generic_physical_network,
+     Stratum);
+  END_TYPE; 
+
+  TYPE limd_restriction_basis_item = EXTENSIBLE SELECT BASED_ON restriction_basis_item WITH 
+    (stratum_concept,
+     Stratum);
+  END_TYPE; 
+
+  TYPE stratum_feature_or_stratum = SELECT (
+    Stratum_feature,
+    Stratum);
+  END_TYPE;
+
+  TYPE stratum_feature_template_component_or_stratum = SELECT
+    (Stratum_feature_template_component, Stratum);
+  END_TYPE;
+    
+  SUBTYPE_CONSTRAINT limd_assembly_component_subtypes FOR Assembly_component; 
+    (ONEOF (Physical_component,
+     Laminate_component));
+  END_SUBTYPE_CONSTRAINT;
+	
+  SUBTYPE_CONSTRAINT array_placement_group_subtypes FOR Array_placement_group; 
+    (ONEOF (Laminate_text_string_component,
+     Linear_array_placement_group_component,
+     Rectangular_array_placement_group_component));
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT component_feature_subtypes FOR Component_feature;     
+    ONEOF (Physical_component_feature,
+           Laminate_component_feature);
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT component_terminal_subtypes FOR Component_terminal;     
+    ONEOF (Physical_component_terminal,
+           Laminate_component_join_terminal);
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT inter_stratum_feature_subtypes FOR Inter_stratum_feature;     
+    ONEOF (Cutout,
+           Interconnect_module_edge);
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT interconnect_module_terminal_subtypes FOR Interconnect_module_terminal;     
+    (ONEOF (Interconnect_module_interface_terminal,
+            Interconnect_module_macro_terminal));
+  END_SUBTYPE_CONSTRAINT; 
+
+  SUBTYPE_CONSTRAINT limd_part_view_definition_subtypes FOR Part_view_definition; 
+    (ONEOF (Part_usage_view,
+            Part_design_view,
+            Stratum));
+  END_SUBTYPE_CONSTRAINT; 
+	
+  SUBTYPE_CONSTRAINT limd_template_definition_subtypes FOR Template_definition; 
+    (ONEOF (
+       ONEOF(Printed_part_template, Special_symbol_template) ANDOR  Geometric_template, 
+             Non_conductive_cross_section_template,
+             Part_string_template, 
+             Parametric_template,
+             Part_text_template,
+             Stratum_stack_model,
+             Stratum_sub_stack));
+  END_SUBTYPE_CONSTRAINT;
+
+  TYPE material_removal_feature_template_or_parametric_template = SELECT
+   (Material_removal_feature_template, Parametric_template);
+  END_TYPE;
+
+  TYPE special_symbol_component = SELECT
+    (Single_stratum_special_symbol_component, Multi_stratum_special_symbol_component);
+  END_TYPE;
+
+  TYPE stratum_feature_template_or_parametric_template = SELECT
+    (Stratum_feature_template, Parametric_template);
+  END_TYPE;
+
+  TYPE bare_die_component_or_packaged_component = EXTENSIBLE GENERIC_ENTITY SELECT;
+  END_TYPE;
+
+  TYPE bare_die_terminal_or_packaged_part_terminal = EXTENSIBLE GENERIC_ENTITY SELECT;
+  END_TYPE;
+
+  TYPE component_feature_or_stratum_surface = EXTENSIBLE GENERIC_ENTITY SELECT
+    (Component_feature,
+    Stratum_surface);
+  END_TYPE;
+
+  TYPE limd_ee_product_definition_with_annotation_elements = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ee_product_definition_with_annotation_elements WITH 
+    (Template_definition,
+     Part_usage_view,
+     Part_design_view,
+     Stratum);
+  END_TYPE; 
+
+  TYPE limd_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH  
+    (Stratum_feature_based_derived_pattern,
+     Stratum,
+     Laminate_component);
+  END_TYPE;
+
+  TYPE limd_feature_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON feature_select WITH 
+    (Printed_part_template_terminal,
+     Land_template_terminal,
+     Component_termination_passage_template_terminal,
+     Via_template_terminal,
+     Part_terminal_external_reference);
+  END_TYPE; 
+
+  TYPE limd_physical_feature_or_part_template = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON physical_feature_or_part_template WITH 
+    (Part_feature,
+     Physical_component_feature,
+     Laminate_component);
+  END_TYPE;
+
+  TYPE limd_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
+    (Stratum_feature_conductive_join,
+     Dielectric_crossover_area,
+     Interconnect_module);
+  END_TYPE; 
+
+  TYPE limd_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
+    (stratum_concept,
+     Stratum);
+  END_TYPE;
+
+  TYPE limd_trace_junction_or_via_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON trace_junction_or_via WITH 
+    (Inter_stratum_join_relationship);
+  END_TYPE;
+
+  TYPE limd_usage_concept = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON usage_concept WITH 
+    (Component_termination_passage_template_terminal,
+     Via_template_terminal);
+  END_TYPE;
+
+  TYPE material_or_specification = SELECT
+    (Predefined_requirement_view_definition,
+     Material_identification);
+  END_TYPE;
+
+  TYPE stratum_concept = EXTENSIBLE GENERIC_ENTITY SELECT
+    (Laminate_component,
+     Inter_stratum_feature,
+     Stratum_feature,
+     Stratum,
+     Stratum_surface,
+     Structured_layout_component);
+  END_TYPE;
+
+  TYPE stratum_surface_designation = ENUMERATION OF
+    (average_surface,
+     primary_surface,
+     secondary_surface);
+  END_TYPE;
+
+  ENTITY Adjacent_stratum_surface_embedded_physical_component_surface_definition;
+      name            : STRING;
+      precedent_item  : component_feature_or_stratum_surface;
+      subsequent_item : component_feature_or_stratum_surface;
+    UNIQUE
+      UR1 : name;
+      UR2 : precedent_item, subsequent_item;
+    WHERE
+      WR1 : precedent_item <> subsequent_item;
+      WR2 : NOT ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.COMPONENT_FEATURE' IN TYPEOF(precedent_item)) OR 
+        (SIZEOF(['LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.BARE_DIE_SURFACE',
+               'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.PACKAGE_BODY_SURFACE',
+               'INTERCONNECT_MODULE_USAGE_VIEW_ARM.INTERCONNECT_MODULE_SECONDARY_SURFACE'] * TYPEOF(precedent_item.definition)) = 1);
+      WR3 : NOT ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.COMPONENT_FEATURE' IN TYPEOF(subsequent_item)) OR 
+        (SIZEOF(['LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.BARE_DIE_SURFACE',
+                 'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.PACKAGE_BODY_SURFACE',
+                 'INTERCONNECT_MODULE_USAGE_VIEW_ARM.INTERCONNECT_MODULE_PRIMARY_SURFACE'] * TYPEOF(subsequent_item.definition)) = 1);
+      WR4 : NOT ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_SURFACE' IN TYPEOF(precedent_item)) OR 
+                (precedent_item.name = stratum_surface_designation.secondary_surface);
+      WR5 : NOT ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_SURFACE' IN TYPEOF(subsequent_item)) OR 
+                (precedent_item.name = stratum_surface_designation.primary_surface);                 
+  END_ENTITY;
+
+  ENTITY Area_component
+    SUPERTYPE OF (Connected_area_component)
+    SUBTYPE OF (Stratum_feature_template_component);
+      explicitly_created : BOOLEAN;    
+      is_base : BOOLEAN;
+      replaced_component : OPTIONAL Area_component;
+      SELF\Definition_based_product_occurrence.derived_from : area_component_templates;
+    DERIVE
+      is_final : LOGICAL := (SIZEOF(replaced_by) = 0);
+    INVERSE
+      replaced_by : SET [0:?] OF Area_component FOR replaced_component;
+    WHERE
+      WR1: NOT(is_final XOR ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE' IN TYPEOF(implementation_or_resident_stratum)));
+      WR2: is_final OR (SIZEOF(QUERY(rp <* replaced_by | SELF\Stratum_feature_template_component.resident_stratum :<>: 
+        get_resident_stratum(rp))) = 0);      
+      WR3: NOT(SELF IN replaced_by);
+      WR4: NOT(replaced_component IN replaced_by);
+      WR5: is_final XOR (SIZEOF(USEDIN(SELF,'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.MATERIAL_REMOVAL_LAMINATE_COMPONENT.DESIGN_INTENT')) > 0);
+      WR6: NOT EXISTS(replaced_component) OR 
+			(NOT (SIZEOF(replaced_by) > 0) OR
+             ((SIZEOF(QUERY(rb <* replaced_by |
+              (acyclic_area_component(SELF,[rb], 'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.AREA_COMPONENT'))))) 
+              = (SIZEOF(replaced_by))
+             )
+            );
+  END_ENTITY;
+
+  ENTITY Breakout_occurrence
+    SUBTYPE OF (Footprint_occurrence);
+      SELF\Definition_based_product_occurrence.derived_from : Breakout_footprint_definition;
+      associated_footprint : Footprint_occurrence;
+    WHERE
+      WR1: associated_footprint <> SELF;
+      WR2: derived_from.reference_footprint = associated_footprint.derived_from;
+  END_ENTITY;
+
+  ENTITY Component_termination_passage
+    SUBTYPE OF (Plated_passage);
+      SELF\Definition_based_product_occurrence.derived_from : Component_termination_passage_template;
+    INVERSE
+      access_mechanism           : SET[1:?] OF component_termination_passage_join_terminal FOR containing_shape;
+      interface_access_mechanism : component_termination_passage_interface_terminal FOR associated_component;
+  END_ENTITY;
+
+  ENTITY Component_termination_passage_interface_terminal
+    SUBTYPE OF (Laminate_component_interface_terminal);
+      SELF\Component_feature.definition           : Component_termination_passage_template_interface_terminal;
+      SELF\Component_feature.associated_component : Component_termination_passage;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Shape_element.description);
+  END_ENTITY;
+
+  ENTITY Component_termination_passage_join_terminal
+    SUBTYPE OF (Laminate_component_join_terminal);
+      SELF\Component_feature.definition           : Component_termination_passage_template_join_terminal;
+      SELF\Component_feature.associated_component : Component_termination_passage;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Shape_element.description);
+  END_ENTITY;
+
+  ENTITY Conductive_filled_area
+    SUPERTYPE OF (Connected_filled_area)
+    SUBTYPE OF (Stratum_feature);
+    WHERE
+      WR1 : NOT EXISTS(SELF\Shape_element.description);
+  END_ENTITY;
+
+  ENTITY Conductive_interconnect_element
+    ABSTRACT SUPERTYPE OF (ONEOF (Unrouted_conductive_interconnect_element, Conductive_interconnect_element_with_pre_defined_transitions))
+    SUBTYPE OF (Stratum_feature_template_component);
+    INVERSE
+      access_mechanisms : SET [2:?] OF Conductive_interconnect_element_terminal FOR associated_component;
+      connected_points : SET [1:?] OF Conductive_interconnect_element_terminal_link FOR associated_element;
+    WHERE
+      WR1: NOT EXISTS(SELF\Product_view_definition.name);
+      WR2: NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.PROBE_ACCESS_AREA' IN TYPEOF(SELF));
+      WR3: NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.FIDUCIAL' IN TYPEOF(SELF));
+      WR4: correlated_terminals(SELF\Conductive_interconnect_element.access_mechanisms,
+         connected_points);      
+      WR5 : (1 + SIZEOF(connected_points)) = limd_get_sz_cp(connected_points);         
+  END_ENTITY;
+
+  ENTITY Conductive_interconnect_element_terminal
+    SUBTYPE OF (Laminate_component_feature, Shape_feature);
+      SELF\Component_feature.associated_component : Conductive_interconnect_element;
+      SELF\Shape_feature.connection_area          : OPTIONAL SET[1:1] OF Connection_zone_in_design_view;
+      location                                    : Layer_connection_point;
+    UNIQUE
+      UR1 : SELF\Component_feature.element_name, SELF\Component_feature.associated_component;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Shape_element.description);
+  END_ENTITY;
+
+  ENTITY Conductive_interconnect_element_terminal_link;
+      associated_element : Conductive_interconnect_element;
+      precedent_point    : Conductive_interconnect_element_terminal;
+      subsequent_point   : Conductive_interconnect_element_terminal;
+    UNIQUE
+      UR1 : precedent_point, subsequent_point;
+    WHERE
+      WR1 : precedent_point <> subsequent_point;
+      WR2 : precedent_point.associated_component = associated_element;
+      WR3 : subsequent_point.associated_component = associated_element;
+      WR4 : acyclic_conductive_interconnect_element_terminal_link(SELF,
+        [subsequent_point], 
+        'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.CONDUCTIVE_INTERCONNECT_ELEMENT_TERMINAL_LINK');
+  END_ENTITY;
+
+  ENTITY Conductive_interconnect_element_with_pre_defined_transitions
+    SUBTYPE OF (Conductive_interconnect_element);
+      centreline_shape                                                           : Planar_path_shape_model_with_parameters;
+      SELF\Definition_based_product_occurrence.derived_from                      : Trace_template;
+      SELF\Stratum_feature_template_component.implementation_or_resident_stratum : Stratum_feature;
+    WHERE
+      WR1: SIZEOF(connected_points) = SIZEOF(SELF\Conductive_interconnect_element.access_mechanisms) - 1;
+      WR2: SIZEOF(['LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.CONDUCTOR',
+            'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.CONDUCTIVE_FILLED_AREA'] *
+            TYPEOF(SELF\Stratum_feature_template_component.implementation_or_resident_stratum)) = 1;
+      WR3: centreline_shape.parameters = derived_from.trace_style;            
+      WR4 : SIZEOF(QUERY(ciet <* SELF\Conductive_interconnect_element.access_mechanisms |
+             NOT(ciet.location.resident_design_layer_stratum = 
+            SELF\Stratum_feature_template_component.implementation_or_resident_stratum.resident_stratum)
+                  )) = 0;
+  END_ENTITY;
+
+  ENTITY Conductor
+    SUBTYPE OF (Stratum_feature);
+      SELF\Stratum_feature.resident_stratum : Design_layer_stratum;
+      implementation_requirement            : SET [1:?] OF Intra_stratum_join_relationship;
+    INVERSE
+      join_component : SET [0:?] OF Single_stratum_printed_component FOR stratum_feature_implementation;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Shape_element.description);
+      WR2 : SIZEOF(implementation_requirement) - SIZEOF(join_component) = 1;
+      WR3 : (SIZEOF(join_component) = 0) OR
+             (SIZEOF(QUERY(jc <* join_component |
+             ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.TIEBAR_PRINTED_COMPONENT' IN TYPEOF(jc\Assembly_component.occurrence_contexts[1]\Product_occurrence_definition_relationship.relating_view)) AND
+             (SIZEOF(jc\Single_stratum_printed_component.stratum_feature_implementation) :<>: 1)
+             )) = 0);
+  END_ENTITY;
+
+  ENTITY Connected_area_component
+    SUBTYPE OF (Area_component);
+      associated_layer_connection_point : SET[1:?] OF Layer_connection_point;
+  END_ENTITY;
+
+  ENTITY Connected_filled_area
+    SUBTYPE OF (Conductive_filled_area);
+      SELF\Stratum_feature.resident_stratum : Design_layer_stratum;
+      implementation_requirement            : SET [1:?] OF Intra_stratum_join_relationship;
+    INVERSE
+      join_component : SET [0:?] OF Single_stratum_printed_component FOR stratum_feature_implementation;
+    WHERE
+      WR1 : SIZEOF(implementation_requirement) - SIZEOF(join_component) = 1;
+      WR2 : (SIZEOF(join_component) = 0) OR
+             (SIZEOF(QUERY(jc <* join_component |
+             ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.TIEBAR_PRINTED_COMPONENT' IN TYPEOF(jc\Assembly_component.occurrence_contexts[1]\Product_occurrence_definition_relationship.relating_view)) AND
+             (SIZEOF(jc\Single_stratum_printed_component.stratum_feature_implementation) :<>: 1)
+              )) = 0);
+  END_ENTITY;
+
+  ENTITY Cutout
+    SUPERTYPE OF (ONEOF (Physical_connectivity_interrupting_cutout,
+      Plated_cutout,
+      Partially_plated_cutout))
+    SUBTYPE OF (Inter_stratum_feature);
+    vertical_reference : OPTIONAL Interconnect_module_edge;
+    WHERE
+      WR1: NOT EXISTS(SELF\Product_view_definition.name);
+      WR2: SIZEOF(QUERY(shape <* SELF\Inter_stratum_feature.derived_from\Geometric_template.shapes |
+        NOT ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_ARM.SINGLE_BOUNDARY_CSG_2D_MODEL' IN TYPEOF(shape)))) = 0;      
+      WR3: EXISTS(SELF\Inter_stratum_feature.vertical_extent) XOR EXISTS(vertical_reference);
+  END_ENTITY;
+
+  ENTITY Cutout_edge_segment
+    SUPERTYPE OF (Plated_cutout_edge_segment)
+    SUBTYPE OF (Inter_stratum_feature);
+      composed_cutout                             : Cutout;
+      start_vertex                                : Edge_segment_vertex;
+      end_vertex                                  : Edge_segment_vertex;
+      SELF\Inter_stratum_feature.derived_from : Inter_stratum_feature_edge_segment_template;
+    WHERE
+      WR1 : start_vertex :<>: end_vertex;
+  END_ENTITY;
+
+  ENTITY Dependent_thermal_isolation_removal_component
+    SUBTYPE OF (Material_removal_structured_component);
+      SELF\Definition_based_product_occurrence.derived_from : Dependent_thermal_isolation_removal_template;
+      associated_land : Land;
+    WHERE
+      WR1 : associated_land\Definition_based_product_occurrence.derived_from :=:
+            SELF\Definition_based_product_occurrence.derived_from\Dependent_thermal_isolation_removal_template.associated_item;
+  END_ENTITY;
+
+  ENTITY Derived_stratum
+     SUBTYPE OF (Stratum);
+       derived_from : design_or_documentation_stratum;
+  END_ENTITY;
+
+  ENTITY Design_layer_stratum
+    SUBTYPE OF (Stratum);
+      primary_design_layer_stratum : BOOLEAN;
+    INVERSE
+      existence_dependence : SET[1:?] OF layer_connection_point FOR resident_design_layer_stratum;
+    WHERE
+      WR1 : (NOT (primary_design_layer_stratum) AND (SIZEOF(QUERY(imps <* USEDIN(SELF,
+        'DESIGN_SPECIFIC_ASSIGNMENT_TO_INTERCONNECT_USAGE_VIEW_ARM.STRATUM_CONCEPT_TO_PHYSICAL_USAGE_VIEW_ASSIGNMENT.' + 'ASSIGNED_DESIGN_OBJECT') | ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.INTERCONNECT_MODULE_PRIMARY_SURFACE' IN TYPEOF(imps.defined_part_feature)))) = 0)) OR ((primary_design_layer_stratum) AND (SIZEOF(QUERY(imps <* USEDIN(SELF,
+        'DESIGN_SPECIFIC_ASSIGNMENT_TO_INTERCONNECT_USAGE_VIEW_ARM.STRATUM_CONCEPT_TO_PHYSICAL_USAGE_VIEW_ASSIGNMENT.' + 'ASSIGNED_DESIGN_OBJECT') | ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.INTERCONNECT_MODULE_PRIMARY_SURFACE' IN TYPEOF(imps.defined_part_feature)))) = 1));
+      WR2: 'FABRICATION_TECHNOLOGY_ARM.DESIGN_LAYER_TECHNOLOGY' IN TYPEOF(SELF\Stratum.of_technology);
+  END_ENTITY;
+
+  ENTITY Dielectric_material_passage
+    SUBTYPE OF (Inter_stratum_feature);
+      feature_material  : OPTIONAL material_or_specification;
+      precedent_passage : Cutout;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+  ENTITY Documentation_layer_stratum
+    SUBTYPE OF (Stratum);
+    WHERE
+      WR1: 'FABRICATION_TECHNOLOGY_ARM.DOCUMENTATION_LAYER_TECHNOLOGY' IN TYPEOF(SELF\Stratum.of_technology);
+  END_ENTITY;
+
+  ENTITY Electrical_isolation_laminate_component
+    SUBTYPE OF (Material_removal_laminate_component);
+      SELF\Definition_based_product_occurrence.derived_from : Electrical_isolation_removal_template;
+  END_ENTITY;
+
+  ENTITY Embedded_physical_component_terminal
+    SUBTYPE OF (Laminate_component_join_terminal);
+      SELF\Component_feature.definition           : bare_die_terminal_or_packaged_part_terminal;
+      SELF\Component_feature.associated_component : bare_die_component_or_packaged_component;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Shape_element.description);
+  END_ENTITY;
+
+  ENTITY Fiducial
+    SUBTYPE OF (Laminate_component);
+  END_ENTITY;
+
+  ENTITY Fiducial_stratum_feature
+    SUBTYPE OF (Stratum_feature);
+  END_ENTITY;
+
+  ENTITY Footprint_occurrence
+    SUBTYPE OF (Structured_layout_component);
+      SELF\Definition_based_product_occurrence.derived_from : Generic_footprint_definition;
+  END_ENTITY;
+
+  ENTITY Footprint_occurrence_sub_assembly_relationship
+	SUBTYPE OF (Structured_layout_component_sub_assembly_relationship);
+      SELF\Structured_layout_component_sub_assembly_relationship.relating_view : Footprint_occurrence;	
+      SELF\Structured_layout_component_sub_assembly_relationship.related_view : Laminate_component;
+      SELF\Structured_layout_component_sub_assembly_relationship.first_location RENAMED terminal_location : Part_feature_based_template_location;
+      SELF\Structured_layout_component_sub_assembly_relationship.second_location RENAMED sub_assembly_reference_designation : Template_location_in_structured_template; 
+   UNIQUE
+      UR1 : sub_assembly_reference_designation,
+       relating_view,
+       terminal_location;
+    WHERE
+      WR1 : terminal_location.assembly :=: relating_view.derived_from;
+      WR2 : terminal_location.template :=: sub_assembly_reference_designation.assembly;
+      WR3 : 'PART_TEMPLATE_2D_SHAPE_ARM.PADSTACK_DEFINITION' IN TYPEOF(sub_assembly_reference_designation.assembly);
+  END_ENTITY;
+
+  ENTITY Generic_physical_network
+    ABSTRACT SUPERTYPE OF (ONEOF(Unrouted_physical_network, Routed_physical_network));
+      name                                         : STRING;
+      current_associated_definition                : Interconnect_module;
+      prior_associated_definition                  : OPTIONAL SET[1:?] OF Interconnect_module;      
+      connectivity_requirement_element             : SET[1:?] OF Laminate_component_join_terminal;
+      reference_connected_terminals                : OPTIONAL Part_connected_terminals_definition;    
+      unrouted_connectivity_requirement_element    : OPTIONAL SET[1:?] OF Unrouted_join_relationship;
+    UNIQUE
+      UR1 : name, current_associated_definition;
+ 		WHERE
+      WR1 : NOT (EXISTS(prior_associated_definition)) OR NOT (current_associated_definition IN prior_associated_definition); 
+  END_ENTITY; 
+
+  ENTITY Interface_access_material_removal_laminate_component
+    SUBTYPE OF (Material_removal_laminate_component);
+      accessed_interface : Laminate_component_interface_terminal;
+  END_ENTITY;
+
+  ENTITY Inter_stratum_extent
+    SUBTYPE OF (Part_definition_relationship);
+      SELF\View_definition_relationship.relating_view RENAMED from_stratum : Stratum;
+      SELF\View_definition_relationship.related_view RENAMED to_stratum    : Stratum;
+      included_stratum : SET [1:?] OF Stratum;
+    WHERE
+      WR1 : NOT EXISTS(SELF\View_definition_relationship.relation_type);
+      WR2 : from_stratum IN included_stratum;
+      WR3 : to_stratum IN included_stratum;
+      WR4 : EXISTS(from_stratum\Stratum.assembly[1]\Interconnect_module_stratum_assembly_relationship.assembly\Interconnect_module.used_stack_model);
+  END_ENTITY;
+
+  ENTITY Inter_stratum_feature
+		ABSTRACT SUPERTYPE OF (ONEOF (Unsupported_passage,
+			Plated_inter_stratum_feature))  
+    SUBTYPE OF (Laminate_component);
+      feature_of_size                                       : BOOLEAN;
+      vertical_extent                                       : OPTIONAL Passage_technology_allocation_to_stack_model;
+      SELF\Definition_based_product_occurrence.derived_from : Inter_stratum_feature_template;
+    WHERE
+      WR1: NOT EXISTS(vertical_extent) OR (SIZEOF(QUERY(pvd <* get_assemblies(SELF) |
+         NOT(('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.INTERCONNECT_MODULE' IN TYPEOF(pvd)) AND             
+              (vertical_extent\Stratum_sub_stack.associated_stackup =
+                   pvd\Interconnect_module.used_stack_model))
+                   )) = 0);
+  END_ENTITY;
+
+  ENTITY Inter_stratum_join_relationship
+    SUBTYPE OF (Routed_join_relationship);
+      points_to_be_connected : SET[2:?] OF Layer_connection_point;
+    DERIVE
+      associated_stratum : BAG OF Design_layer_stratum := limd_get_lcp_resident_stratum(points_to_be_connected);
+    WHERE
+      WR1 : SIZEOF(associated_stratum) = SIZEOF(bag_to_set(associated_stratum));      
+  END_ENTITY;
+
+  ENTITY Interconnect_connection_zone_position_relationship;
+      associating_design_view_shape               : Geometric_model;
+      associated_usage                            : Connection_zone_in_design_view;
+      associated_connection_zone_shape_definition : Geometric_model;
+      associated_usage_placement                  : Axis_placement;
+      associating_design_view                     : Interconnect_module;
+  END_ENTITY;
+
+  ENTITY Interconnect_module
+  	SUPERTYPE OF (Pcb)
+    SUBTYPE OF (Assembly_definition, Part_design_view);
+      used_stack_model : OPTIONAL Design_stack_model;
+    INVERSE
+      requirements : SET[0:?] OF Requirement_assignment FOR assigned_to;
+    WHERE
+      WR1 : (SIZEOF(USEDIN(SELF,'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.INTERCONNECT_MODULE_STRATUM_ASSEMBLY_RELATIONSHIP.' + 'ASSEMBLY')) = 0)
+      OR
+      (SIZEOF(QUERY(imsar <* USEDIN(SELF, 'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.INTERCONNECT_MODULE_STRATUM_ASSEMBLY_RELATIONSHIP.' + 'ASSEMBLY') | 
+              (('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.DESIGN_LAYER_STRATUM' IN TYPEOF(imsar.component)) AND 
+               (imsar.component\Design_layer_stratum.primary_design_layer_stratum = TRUE)))) = 1);
+      WR2: NOT EXISTS (SELF\Product_view_definition.additional_characterization);
+      WR3 : SIZEOF(QUERY(vdr <* USEDIN(SELF, 'PRODUCT_VIEW_DEFINITION_RELATIONSHIP_ARM.VIEW_DEFINITION_RELATIONSHIP.' + 'RELATING_VIEW') | 
+              (('ASSEMBLY_STRUCTURE_ARM.ASSEMBLY_COMPONENT_RELATIONSHIP' IN TYPEOF(vdr)) AND
+              ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.INTERCONNECT_MODULE_EDGE' IN TYPEOF(vdr.related_view)))
+                  )) = 1;
+  END_ENTITY;
+
+  ENTITY Interconnect_module_edge
+    SUPERTYPE OF (ONEOF (Partially_plated_interconnect_module_edge,
+      Plated_interconnect_module_edge))
+    SUBTYPE OF (Inter_stratum_feature);
+    WHERE
+      WR1: SIZEOF(QUERY(shape <* SELF\Inter_stratum_feature.derived_from\Geometric_template.shapes |
+        NOT ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_ARM.SINGLE_BOUNDARY_CSG_2D_MODEL' IN TYPEOF(shape)))) = 0;
+      WR2: NOT EXISTS(SELF\Inter_stratum_feature.vertical_extent);
+  END_ENTITY;
+
+  ENTITY Interconnect_module_edge_segment
+    SUPERTYPE OF (ONEOF(Plated_interconnect_module_edge_segment,
+                        Unplated_interconnect_module_edge_segment))
+    SUBTYPE OF (Inter_stratum_feature);
+      composed_edge                               : Interconnect_module_edge;
+      start_vertex                                : Edge_segment_vertex;
+      end_vertex                                  : Edge_segment_vertex;
+      SELF\Inter_stratum_feature.derived_from : Inter_stratum_feature_edge_segment_template;
+    WHERE
+      WR1 : start_vertex :<>: end_vertex;
+  END_ENTITY;
+
+  ENTITY Interconnect_module_macro_terminal
+    SUBTYPE OF (Interconnect_module_terminal);
+    INVERSE
+      defining_terminal : component_feature_to_physical_usage_view_assignment FOR defined_part_feature;
+    WHERE
+      WR1 : SIZEOF(['LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.COMPONENT_TERMINATION_PASSAGE_JOIN_TERMINAL',
+        'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.VIA_TERMINAL',
+        'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.PRINTED_COMPONENT_JOIN_TERMINAL',
+        'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.CONDUCTIVE_INTERCONNECT_ELEMENT_TERMINAL',
+        'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.LAND_JOIN_TERMINAL'] * TYPEOF(defining_terminal.assigned_design_object)) = 1;
+  END_ENTITY;
+
+  ENTITY Interconnect_module_stratum_assembly_relationship;
+      assembly              : Interconnect_module;
+      component             : Stratum;
+      reference_designation : STRING; 
+    UNIQUE
+      UR1 : assembly, reference_designation;
+  END_ENTITY;
+
+  ENTITY Interface_access_stratum_feature_template_component
+    SUBTYPE OF (Stratum_feature_template_component);
+      accessed_interface : Laminate_component_interface_terminal;
+  END_ENTITY;
+
+  ENTITY Internal_probe_access_area
+    SUBTYPE OF (Probe_access_area);
+      stratum_feature_implementation : Stratum_feature;
+    INVERSE
+      internal_access : internal_stratum_access FOR connected_probe;
+    WHERE
+     WR1 : NOT EXISTS(SELF\Probe_access_area.stratum_feature_material_stackup) 
+             OR
+            (stratum_feature_implementation :=: 
+             SELF\Probe_access_area.stratum_feature_material_stackup\Stratum_feature_based_derived_pattern.reference_stratum_feature);                   
+  END_ENTITY;
+
+  ENTITY Internal_stratum_access;
+      connected_probe       : Internal_probe_access_area;
+      inter_stratum_feature : Via;
+    UNIQUE
+      UR1 : connected_probe, inter_stratum_feature;
+  END_ENTITY;
+
+  ENTITY Intra_stratum_join_relationship
+    SUBTYPE OF (Routed_join_relationship);
+      points_to_be_connected : SET[2:?] OF Layer_connection_point;
+    DERIVE
+      associated_stratum : Design_layer_stratum := points_to_be_connected[1].resident_design_layer_stratum;
+    INVERSE
+      ordered_implementation : SET[0:1] OF conductor FOR implementation_requirement;
+      random_implementation  : SET[0:1] OF connected_filled_area FOR implementation_requirement;
+    WHERE
+      WR1 : (SIZEOF(ordered_implementation) = 1) XOR (SIZEOF(random_implementation) = 1);      
+      WR2 : SIZEOF(QUERY(ptbc <* points_to_be_connected |
+            NOT(ptbc.resident_design_layer_stratum = associated_stratum)
+              )) = 0;
+  END_ENTITY;
+
+  ENTITY Join_relationship
+    ABSTRACT SUPERTYPE OF (ONEOF (Routed_join_relationship,
+	 	Unrouted_join_relationship));
+      associated_layout : Interconnect_module;
+  END_ENTITY;
+
+  ENTITY Laminate_component
+		SUPERTYPE OF (ONEOF (Material_removal_laminate_component,
+			Stratum_feature_template_component ANDOR Probe_access_area,
+			Inter_stratum_feature,
+			Generic_laminate_text_component,
+			Laminate_text_string_component) ANDOR
+			Fiducial)
+    SUBTYPE OF (Assembly_component, Single_instance);
+      SELF\Definition_based_product_occurrence.derived_from : Template_definition;
+    INVERSE
+	  cad_layer						: SET[0:1] OF External_source_identification FOR item;      	  
+    WHERE
+      WR1:('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.INTERCONNECT_MODULE' IN TYPEOF(SELF\Assembly_component.occurrence_contexts[1]\Product_occurrence_definition_relationship.relating_view))
+         OR
+        ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRUCTURED_LAYOUT_COMPONENT_SUB_ASSEMBLY_RELATIONSHIP' IN TYPEOF(SELF\Assembly_component.occurrence_contexts[1]));
+  END_ENTITY;
+
+  ENTITY Laminate_component_feature
+    ABSTRACT SUPERTYPE OF (ONEOF (Conductive_interconnect_element_terminal,
+      Laminate_component_interface_terminal,
+      Laminate_component_join_terminal,
+      Via_terminal))
+    SUBTYPE OF (Component_feature);
+  END_ENTITY;
+
+  ENTITY Laminate_component_interface_terminal
+    ABSTRACT SUPERTYPE 
+    SUBTYPE OF (Laminate_component_feature);
+  END_ENTITY;
+
+  ENTITY Laminate_component_join_terminal
+    ABSTRACT SUPERTYPE 
+    SUBTYPE OF (Laminate_component_feature,
+      Component_terminal);
+    INVERSE
+      node_implementation : SET[0:1] OF Generic_physical_network FOR connectivity_requirement_element;
+  END_ENTITY;
+
+  ENTITY Laminate_group_component_make_from_relationship
+    SUBTYPE OF (Component_make_from_relationship);
+      SELF\Component_make_from_relationship.reusable_component  : Assembly_group_component;
+      SELF\Component_make_from_relationship.resultant_component : Assembly_group_component;
+      stratum_mapping                                           : SET[1:?] OF Part_definition_relationship;
+    WHERE
+     WR1: SIZEOF(QUERY(sar <* SELF\Component_make_from_relationship.reusable_component.components | NOT ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.LAMINATE_COMPONENT' IN TYPEOF(sar\Product_occurrence_definition_relationship.related_view)))) = 0;
+     WR2: SIZEOF(QUERY(sar <* SELF\Component_make_from_relationship.resultant_component.components | NOT ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.LAMINATE_COMPONENT' IN TYPEOF(sar\Product_occurrence_definition_relationship.related_view)))) = 0;
+
+  END_ENTITY;
+
+  ENTITY Layer_stack_region
+    SUBTYPE OF (Instanced_feature);
+      applied_stack                       : SET [1:?] OF Local_linear_stack;
+      SELF\Shape_element.containing_shape : Interconnect_module;
+    WHERE
+      WR1: SIZEOF(SELF\Shape_feature_definition.feature_model) = 1;
+  END_ENTITY;
+
+  ENTITY Generic_laminate_text_component
+    ABSTRACT SUPERTYPE OF (ONEOF (Additive_laminate_text_component,
+      Material_removal_laminate_text_component))
+    SUBTYPE OF (Laminate_component);
+      SELF\Definition_based_product_occurrence.derived_from : Part_text_template;
+	DERIVE
+      of_character : STRING(1) := SELF\Definition_based_product_occurrence.derived_from\Part_text_template.of_character\Character_glyph_symbol.character;      
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+  ENTITY Laminate_text_string_component
+    SUBTYPE OF (Array_placement_group, Laminate_component);
+      SELF\Definition_based_product_occurrence.derived_from : Part_string_template;
+      message_contents            : Text_literal_with_extent;
+    WHERE
+      WR1 : SIZEOF(QUERY(sar <* SELF\Assembly_group_component.components | 
+            NOT ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.GENERIC_LAMINATE_TEXT_COMPONENT' IN  TYPEOF(sar.related_view)) )) = 0;  
+      WR2 : NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+  ENTITY Layer_connection_point
+    ABSTRACT SUPERTYPE
+    SUBTYPE OF (Shape_element);
+      SELF\Shape_element.element_name : STRING;
+      location_2d                   : OPTIONAL Cartesian_point;
+      location_3d                   : OPTIONAL Cartesian_point;
+      SELF\Shape_element.containing_shape RENAMED resident_design_layer_stratum : Design_layer_stratum;
+    DERIVE
+      aggregate_join    : SET[1:?] OF join_relationship := 
+           make_aggregate_join(
+               inter_join_path,
+               intra_join_path,
+               embedded_physical_component_path,
+               unrouted_join_path);
+      reference_network : Generic_physical_network := aggregate_join[1].network_topology;
+    INVERSE
+      inter_join_path         : SET[0:1] OF Inter_stratum_join_relationship FOR points_to_be_connected;
+      intra_join_path         : SET [0:?] OF Intra_stratum_join_relationship FOR points_to_be_connected;
+      embedded_physical_component_path : SET[0:?] OF Stratum_embedded_physical_component_join_relationship FOR point_to_be_connected;
+      unrouted_join_path         : SET [0:1] OF Unrouted_join_relationship FOR unrouted_lcp;
+    UNIQUE
+      UR1 : SELF\Shape_element.element_name, resident_design_layer_stratum;
+    WHERE
+      WR1 : EXISTS(location_2d) OR EXISTS(location_3d);
+      WR2 : NOT (EXISTS(location_2d)) OR ((SIZEOF(location_2d\Cartesian_point.coordinates)) = 2);
+      WR3 : NOT (EXISTS(location_3d)) OR ((SIZEOF(location_3d\Cartesian_point.coordinates)) = 3);
+      WR4 : EXISTS(reference_network); 
+      WR5 : NOT EXISTS (SELF\Shape_element.description);
+      WR6 : SIZEOF(QUERY(ijp <* intra_join_path | NOT(resident_design_layer_stratum :=: ijp.associated_stratum)
+                  )) = 0;
+  END_ENTITY;
+
+  ENTITY Layout_junction;
+      name                  : STRING;  
+      associated_definition : Interconnect_module;
+      net                   : Generic_physical_network;
+      location              : Cartesian_point;
+    UNIQUE
+      UR1 : location, net;
+      UR2 : name, net;
+    WHERE
+      WR1 : associated_definition :=: net.current_associated_definition;
+  END_ENTITY;
+
+  ENTITY Library_reference_view_definition_relationship
+    SUBTYPE OF (View_definition_relationship);
+    WHERE
+      WR1 : NOT EXISTS(SELF\View_definition_relationship.relation_type);
+  END_ENTITY;
+
+  ENTITY Material_removal_laminate_component
+    SUPERTYPE OF (Electrical_isolation_laminate_component)
+    SUBTYPE OF (Laminate_component);
+      causal_item                                           : OPTIONAL limd_restriction_basis_item;
+      design_intent                                         : SET[1:?] OF stratum_feature_template_component_or_stratum;
+      SELF\Definition_based_product_occurrence.derived_from : material_removal_feature_template_or_parametric_template;
+      explicitly_created                                    : BOOLEAN;
+    WHERE
+      WR1:   SIZEOF(QUERY(sa <* design_intent | NOT(
+         NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM' IN TYPEOF(sa)) OR
+           (SIZEOF(design_intent) = 1)))) = 0;
+  END_ENTITY;
+
+  ENTITY Material_removal_structured_component
+    SUBTYPE OF (Structured_layout_component);
+      SELF\Definition_based_product_occurrence.derived_from : Material_removal_structured_template;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+  ENTITY Multi_layer_material_removal_laminate_component
+    SUBTYPE OF (Material_removal_laminate_component);
+      derived_layer_geometry : Stratum_feature_based_derived_pattern;
+  END_ENTITY;
+
+  ENTITY Multi_stratum_special_symbol_component
+    SUBTYPE OF (Structured_layout_component);
+      SELF\Definition_based_product_occurrence.derived_from : Multi_stratum_special_symbol_template;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+  ENTITY Multi_layer_stratum_feature_template_component
+    SUBTYPE OF (Stratum_feature_template_component);
+      derived_layer_geometry : Stratum_feature_based_derived_pattern;
+    WHERE
+      WR1: SELF\Stratum_feature_template_component.implementation_or_resident_stratum\Stratum_feature.resident_stratum
+        :=: derived_layer_geometry.reference_stratum_feature.resident_stratum;
+  END_ENTITY;
+
+  ENTITY Material_removal_laminate_text_component
+    SUBTYPE OF (Generic_laminate_text_component);
+      design_intent : SET [1:?] OF stratum_feature_template_component_or_stratum;
+    WHERE
+      WR1: SIZEOF(QUERY(sa <* design_intent | NOT(
+         NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM' IN TYPEOF(sa)) OR
+           (SIZEOF(design_intent) = 1)))) = 0;
+  END_ENTITY;
+
+  ENTITY Padstack_occurrence
+    SUBTYPE OF (Structured_layout_component);
+      SELF\Definition_based_product_occurrence.derived_from : Padstack_definition;
+    INVERSE
+      SELF\Assembly_group_component.components : SET [1:?] OF Structured_layout_component_sub_assembly_relationship FOR relating_view;
+    WHERE
+      WR1 : SIZEOF(QUERY(sar <* components |
+            EXISTS(sar.second_location)
+                  )) = 0;
+  END_ENTITY;
+
+  ENTITY Partially_plated_cutout
+    SUBTYPE OF (Cutout);
+    INVERSE
+      plated_segment   : SET[1:?] OF Plated_cutout_edge_segment FOR composed_cutout;
+      unplated_segment : SET[1:?] OF Unplated_cutout_edge_segment FOR composed_cutout;
+  END_ENTITY;
+  
+  ENTITY Partially_plated_interconnect_module_edge
+    SUBTYPE OF (Interconnect_module_edge);
+    INVERSE
+      plated_segment   : SET[1:?] OF Plated_interconnect_module_edge_segment FOR composed_edge;
+      unplated_segment : SET[1:?] OF Unplated_interconnect_module_edge_segment FOR composed_edge;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+  ENTITY Pcb
+    SUBTYPE OF (Interconnect_module);
+      SELF\Interconnect_module.used_stack_model : Design_stack_model;    
+      SELF\Part_design_view.usage_view          : OPTIONAL Pcb_usage_view;
+  END_ENTITY;
+
+  ENTITY Physical_connectivity_interrupting_cutout
+    SUBTYPE OF (Cutout);
+      interrupted_connectivity_element : SET[1:?] OF Conductive_interconnect_element;
+  END_ENTITY;
+
+  ENTITY Plated_cutout
+    SUBTYPE OF (Cutout, Plated_inter_stratum_feature);
+  END_ENTITY;
+
+  ENTITY Plated_cutout_edge_segment
+    SUBTYPE OF (Cutout_edge_segment, Plated_inter_stratum_feature);
+      SELF\Cutout_edge_segment.composed_cutout : Partially_plated_cutout;
+  END_ENTITY;
+
+  ENTITY Plated_inter_stratum_feature
+    ABSTRACT SUPERTYPE OF (ONEOF (Plated_cutout,
+		 Plated_interconnect_module_edge,
+		 Plated_cutout_edge_segment,
+		 Plated_interconnect_module_edge_segment,
+		 Plated_passage))
+    SUBTYPE OF (Inter_stratum_feature);
+    WHERE
+      WR1 : SELF\Inter_stratum_feature.vertical_extent.allocated_technology.plated_passage = TRUE;
+  END_ENTITY;
+
+  ENTITY Plated_interconnect_module_edge
+    SUBTYPE OF (Interconnect_module_edge, Plated_inter_stratum_feature);
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+  ENTITY Plated_interconnect_module_edge_segment
+    SUBTYPE OF (Plated_inter_stratum_feature, Interconnect_module_edge_segment);
+      SELF\Interconnect_module_edge_segment.composed_edge : Partially_plated_interconnect_module_edge;
+  END_ENTITY;
+
+  ENTITY Plated_passage
+    SUPERTYPE OF (ONEOF (Component_termination_passage, Via))
+    SUBTYPE OF (Plated_inter_stratum_feature);
+      SELF\Inter_stratum_feature.vertical_extent : Passage_technology_allocation_to_stack_model;    
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+  ENTITY Additive_laminate_text_component
+    SUBTYPE OF (Generic_laminate_text_component);
+      stratum_feature_implementation : SET [1:?] OF Stratum_feature;
+    WHERE
+      WR1: SIZEOF(QUERY(sf <* stratum_feature_implementation | sf.resident_stratum :<>: stratum_feature_implementation[1].resident_stratum)) = 0;
+  END_ENTITY;
+
+  ENTITY Primary_stratum_indicator_symbol
+    SUBTYPE OF (Single_stratum_special_symbol_component);
+  END_ENTITY;
+
+  ENTITY Probe_access_area
+    SUPERTYPE OF (Internal_probe_access_area)
+    SUBTYPE OF (Laminate_component, Shape_feature);
+    	SELF\Definition_based_product_occurrence.derived_from : Stratum_feature_template;
+        probed_layout_item                                    : stratum_feature_or_stratum;
+        SELF\Shape_feature.connection_area                    : SET[1:1] OF Connection_zone_in_design_view;
+    	stratum_feature_material_stackup                      : OPTIONAL Stratum_feature_based_derived_pattern;
+    DERIVE
+      SELF\Shape_element.containing_shape : Probe_access_area := SELF;
+      SELF\Shape_feature.element_name : STRING := '';      
+    INVERSE
+      network : Routed_physical_network FOR probe;
+    WHERE
+      WR1 :       SELF\Shape_element.id = SELF\Item_shape.id;
+      WR2 : NOT (EXISTS(stratum_feature_material_stackup) AND 
+                 NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.INTERNAL_PROBE_ACCESS_AREA' IN TYPEOF(SELF)))
+             OR
+            (('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE' IN TYPEOF(probed_layout_item))
+             AND
+            (probed_layout_item :=: stratum_feature_material_stackup\Stratum_feature_based_derived_pattern.reference_stratum_feature));             
+  END_ENTITY;
+
+  ENTITY Region_based_derived_pattern;
+    extent            : Inter_stratum_extent;
+    reference_stratum : design_or_documentation_stratum;
+    region            : Csg_2d_model;
+  END_ENTITY;
+
+  ENTITY Routed_join_relationship
+    ABSTRACT SUPERTYPE OF (ONEOF (
+        Inter_stratum_join_relationship,
+		Intra_stratum_join_relationship,
+	 	Stratum_embedded_physical_component_join_relationship))
+    SUBTYPE OF (Join_relationship);
+    INVERSE
+      network_topology : Routed_physical_network FOR routed_connectivity_requirement_element;
+  END_ENTITY;
+
+  ENTITY Routed_physical_network
+    SUBTYPE OF (Generic_physical_network);
+      routed_connectivity_requirement_element 	                     : SET[1:?] OF Routed_join_relationship;
+      probe                                                          : OPTIONAL SET[1:?] OF Probe_access_area;
+    DERIVE
+    	complete	: BOOLEAN := NOT EXISTS(unrouted_connectivity_requirement_element);
+        valid_net   : LOGICAL := (SIZEOF(SELF\Generic_physical_network.connectivity_requirement_element) > 1 );
+    WHERE
+      WR1 : SIZEOF(QUERY(cre <* SELF\Generic_physical_network.connectivity_requirement_element | NOT 
+      (NOT ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.LAND_JOIN_TERMINAL' IN TYPEOF(cre)) OR 
+           (SIZEOF(TYPEOF(cre\Component_feature.associated_component) * 
+            ['LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.CONTACT_SIZE_DEPENDENT_LAND']) = 1)))) = 0;
+      WR2: NOT EXISTS(SELF\Generic_physical_network.reference_connected_terminals) OR
+                     (SELF\Generic_physical_network.reference_connected_terminals.associated_definition = 
+                      SELF\Generic_physical_network.current_associated_definition\Part_design_view.usage_view);
+  END_ENTITY; 
+
+  ENTITY Single_stratum_special_symbol_component
+    SUPERTYPE OF (Primary_stratum_indicator_symbol)
+    SUBTYPE OF (Structured_layout_component);
+      SELF\Definition_based_product_occurrence.derived_from : Single_stratum_special_symbol_template;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+  ENTITY Stratum
+    SUPERTYPE OF (ONEOF (Documentation_layer_stratum, Design_layer_stratum))
+    SUBTYPE OF (Part_view_definition, Item_shape);
+      SELF\Product_view_definition.id : STRING;
+      definition                      : Stratum_technology_occurrence;
+    DERIVE
+      of_average_surface 	: SET[0:1] OF stratum_average_surface := 
+        QUERY(tmp <* of_surface | 'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_AVERAGE_SURFACE' IN TYPEOF(tmp));
+      SELF\Item_shape.described_element : shapeable_item := SELF;
+      base_component : SET [0:?] OF Area_component := get_base_component(SELF);                     
+      of_product_version : SET [1:?] OF product_version := 
+          bag_to_set(QUERY(pv <* USEDIN(assembly[1].assembly.defined_version.of_product, 'PRODUCT_VERSION_ARM.PRODUCT_VERSION.OF_PRODUCT') | 
+                (SIZEOF(QUERY( pd <* USEDIN(pv, 'PRODUCT_VIEW_DEFINITION_ARM.PRODUCT_VIEW_DEFINITION.DEFINED_VERSION') |
+                     (SIZEOF(QUERY(nauo <* USEDIN(pd, 'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.INTERCONNECT_MODULE_STRATUM_ASSEMBLY_RELATIONSHIP.ASSEMBLY') | (SELF = nauo.component))) = 1)
+                     )) = 1)
+               ));
+      of_technology : Stratum_technology := definition\Stratum_technology_occurrence.definition;                     
+    INVERSE
+      of_surface         	: SET[0:3] OF stratum_surface FOR of_stratum;
+      assembly           	: SET[1:?] OF interconnect_module_stratum_assembly_relationship FOR component;
+	  stratum_usage			: SET[0:1] OF External_source_identification FOR item;      
+	  material_product      : SET [0:1] OF Make_from_relationship FOR related_view;
+    WHERE
+      WR1: SIZEOF(QUERY(tmp <* of_surface | tmp\Stratum_surface.name = stratum_surface_designation.average_surface)) <= 1;
+      WR2: NOT(SIZEOF(QUERY(tmp <* of_surface | tmp\Stratum_surface.name = stratum_surface_designation.average_surface)) = 1) OR
+              (SIZEOF(of_surface) = 3);              
+      WR3: SIZEOF(QUERY(tmp <* of_surface | tmp\Stratum_surface.name = stratum_surface_designation.primary_surface)) <= 1;
+      WR4: SIZEOF(QUERY(tmp <* of_surface | tmp\Stratum_surface.name = stratum_surface_designation.secondary_surface)) <= 1;
+      WR5: NOT(SIZEOF(QUERY(tmp <* of_surface | tmp\Stratum_surface.name = stratum_surface_designation.secondary_surface)) = 1) OR
+              (SIZEOF(QUERY(tmp <* of_surface | tmp\Stratum_surface.name = stratum_surface_designation.primary_surface)) = 1);
+      WR6: NOT EXISTS (SELF\Product_view_definition.additional_characterization);
+      WR7: SIZEOF(QUERY(asse <* assembly |
+                  NOT(asse.assembly.defined_version.of_product = assembly[1].assembly.defined_version.of_product)
+           )) = 0;
+      WR8: SIZEOF(of_product_version) = SIZEOF(assembly);
+      WR9: SELF\Product_view_definition.defined_version IN of_product_version;
+      WR10: NOT ( SIZEOF(material_product)= 1) OR (material_product[1].relating_view IN               
+            of_technology\Stratum_technology.stratum_material[1].items);   
+      WR11: SIZEOF(base_component) < 2;
+  END_ENTITY;
+
+  ENTITY Stratum_average_surface
+    SUBTYPE OF (Stratum_surface);
+    WHERE
+      WR1 : SELF\Stratum_surface.name = stratum_surface_designation.average_surface;
+  END_ENTITY;
+
+  ENTITY Stratum_embedded_physical_component_join_relationship
+    SUBTYPE OF (Routed_join_relationship);
+      terminal_to_be_connected : SET[1:?] OF Embedded_physical_component_terminal;
+      point_to_be_connected    : SET[1:?] OF Layer_connection_point;
+    DERIVE
+      associated_component : Assembly_component := terminal_to_be_connected[1]\Component_feature.associated_component;
+    WHERE
+      WR1 : SIZEOF(QUERY(t <* terminal_to_be_connected | t.associated_component <> associated_component)) = 0;
+  END_ENTITY;
+
+  ENTITY Stratum_feature
+    SUPERTYPE OF (ONEOF (Conductor,
+      Conductive_filled_area) ANDOR (Fiducial_stratum_feature))    
+    SUBTYPE OF (Shape_element); 			
+      SELF\Shape_element.containing_shape RENAMED resident_stratum  : design_or_documentation_stratum;
+      SELF\Shape_element.element_name                               : STRING;
+      feature_of_size                                               : BOOLEAN;
+    UNIQUE
+      UR1 : SELF\Shape_element.element_name, resident_stratum;
+    WHERE
+      WR1 : SIZEOF(query ( ac <* USEDIN(SELF,'') |
+                  ('PHYSICAL_UNIT_DESIGN_VIEW_ARM.ASSEMBLY_COMPONENT' IN TYPEOF(ac))
+                   AND
+                  (get_assemblies(ac) <> get_ims(resident_stratum))
+                  ))
+                  = 0;      
+  END_ENTITY;
+
+  ENTITY Stratum_feature_based_derived_pattern;
+      extent                    : Inter_stratum_extent;
+      reference_stratum_feature : Stratum_feature;
+    INVERSE
+      layer_usage	: SET[0:1] OF External_source_identification FOR item;
+    WHERE
+      WR1: reference_stratum_feature\Stratum_feature.resident_stratum IN extent\Inter_stratum_extent.included_stratum;
+      WR2: SIZEOF(['LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.DESIGN_LAYER_STRATUM',
+                   'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.DOCUMENTATION_LAYER_STRATUM'] * TYPEOF(reference_stratum_feature\Stratum_feature.resident_stratum)) = 1;
+      WR3: SIZEOF(QUERY(ds <* extent\Inter_Stratum_extent.included_stratum |
+             NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.DERIVED_STRATUM' IN TYPEOF(ds))
+                 )) = 1;
+  END_ENTITY;
+
+  ENTITY Stratum_feature_template_component
+    SUBTYPE OF (Laminate_component);
+      SELF\Definition_based_product_occurrence.derived_from : stratum_feature_template_or_parametric_template;
+      implementation_or_resident_stratum : stratum_feature_or_stratum; 
+      causal_item : OPTIONAL limd_restriction_basis_item;
+    DERIVE
+      resident_stratum : Stratum := get_resident_stratum(SELF);
+    WHERE
+      WR1: NOT EXISTS(SELF\Product_view_definition.name);
+      WR2: ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.CONDUCTIVE_INTERCONNECT_ELEMENT_WITH_PRE_DEFINED_TRANSITIONS' IN TYPEOF(SELF)) OR
+        NOT('PART_TEMPLATE_EXTENSION_ARM.TRACE_TEMPLATE' IN TYPEOF(derived_from));        
+  END_ENTITY;
+
+  ENTITY Stratum_surface;
+      name       : stratum_surface_designation;  
+      of_stratum : Stratum;
+      of_technology : OPTIONAL Stratum_surface_technology;
+    UNIQUE
+      UR1 : name, of_stratum;
+  END_ENTITY;
+
+  ENTITY Structured_layout_component
+    ABSTRACT SUPERTYPE OF (ONEOF (Footprint_occurrence, 
+            Material_removal_structured_component,
+			Multi_stratum_special_symbol_component,
+            Padstack_occurrence, 
+            Single_stratum_special_symbol_component))
+    SUBTYPE OF (Assembly_group_component);
+      SELF\Definition_based_product_occurrence.derived_from : Structured_template;
+    WHERE
+      WR1 : SIZEOF(TYPEOF(SELF) *
+        ['LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.LAMINATE_COMPONENT',
+        'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.PHYSICAL_COMPONENT']) = 0;
+      WR2: SIZEOF(QUERY(agc <* SELF\Assembly_group_component.components |
+        NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRUCTURED_LAYOUT_COMPONENT_SUB_ASSEMBLY_RELATIONSHIP' IN TYPEOF(agc)))) = 0;
+  END_ENTITY;
+
+  ENTITY Structured_layout_component_sub_assembly_relationship
+    SUPERTYPE OF (Footprint_occurrence_sub_assembly_relationship)
+    SUBTYPE OF (Next_assembly_usage_occurrence_relationship);
+      SELF\Product_occurrence_definition_relationship.relating_view : Structured_layout_component;
+      SELF\Product_occurrence_definition_relationship.related_view : Assembly_component;
+      first_location : Template_location_in_structured_template;
+      second_location : OPTIONAL Template_location_in_structured_template;
+      overriding_shape : OPTIONAL Part_template_shape_model;
+      design_specific_placement : BOOLEAN;
+    DERIVE
+      first_location_overridden : LOGICAL := NOT EXISTS(second_location) AND
+                  (SELF\Product_occurrence_definition_relationship.related_view\Assembly_component.derived_from
+                   :<>: first_location.template);      
+      second_location_overridden : LOGICAL := EXISTS(second_location) AND
+                  (SELF\Product_occurrence_definition_relationship.related_view\Assembly_component.derived_from
+                   :<>: second_location.template);
+    UNIQUE
+      UR1 : first_location, second_location,relating_view,related_view;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Assembly_component_relationship.location_indicator);
+      WR2 : first_location_overridden OR 
+           (SELF\Product_occurrence_definition_relationship.relating_view\Assembly_component.derived_from :=: first_location.assembly);
+      WR3 : first_location :<>: second_location;
+      WR4 : NOT first_location_overridden OR ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.PADSTACK_OCCURRENCE' IN TYPEOF(relating_view));
+      WR5 : NOT second_location_overridden OR ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.FOOTPRINT_OCCURRENCE' IN TYPEOF(relating_view));
+      WR6 : NOT (first_location_overridden AND second_location_overridden);
+      WR7: NOT (EXISTS(overriding_shape) XOR (first_location_overridden OR second_location_overridden));
+      WR8: NOT EXISTS(overriding_shape) OR (related_view.derived_from IN overriding_shape.shape_characterized_definition);
+      WR9: NOT ((first_location\Template_location_in_structured_template.placement_status = template_location_placement_status.is_fixed) AND 
+                 design_specific_placement);
+  END_ENTITY;
+
+  ENTITY Unplated_cutout_edge_segment
+    SUBTYPE OF (Cutout_edge_segment);
+      SELF\Cutout_edge_segment.composed_cutout : Partially_plated_cutout;
+    WHERE
+      WR1 : NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.PLATED_INTER_STRATUM_FEATURE' IN TYPEOF(SELF));
+  END_ENTITY;
+
+  ENTITY Unplated_interconnect_module_edge_segment
+    SUBTYPE OF (Interconnect_module_edge_segment);
+      SELF\Interconnect_module_edge_segment.composed_edge : Partially_plated_interconnect_module_edge;
+    WHERE
+      WR1 : NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.PLATED_INTER_STRATUM_FEATURE' IN TYPEOF(SELF));
+  END_ENTITY;
+
+  ENTITY Unrouted_conductive_interconnect_element
+    SUBTYPE OF (Conductive_interconnect_element);
+      SELF\Stratum_feature_template_component.implementation_or_resident_stratum : Stratum;
+  END_ENTITY;
+
+  ENTITY Unrouted_join_relationship
+    SUBTYPE OF (Join_relationship);
+      unrouted_terminals : OPTIONAL SET[1:?] OF Laminate_component_join_terminal;
+      unrouted_lcp       : OPTIONAL SET[1:?] OF Layer_connection_point;
+      unrouted_junction  : OPTIONAL SET[1:?] OF Layout_junction;
+      unrouted_paa       : OPTIONAL SET[1:?] OF Probe_access_area;
+      unrouted_via       : OPTIONAL SET[1:?] OF Via_terminal;
+    INVERSE
+      network_topology : Generic_physical_network FOR unrouted_connectivity_requirement_element;
+    WHERE
+      WR1: (SIZEOF(unrouted_terminals) + SIZEOF(unrouted_lcp) + SIZEOF(unrouted_paa) + SIZEOF(unrouted_via) + SIZEOF(unrouted_junction)) > 0;
+  END_ENTITY;
+
+  ENTITY Unrouted_physical_network
+    SUBTYPE OF (Generic_physical_network);
+  END_ENTITY; 
+
+  ENTITY Unsupported_passage
+    SUBTYPE OF (Inter_stratum_feature);
+      SELF\Definition_based_product_occurrence.derived_from : Unsupported_passage_template;
+      SELF\Inter_stratum_feature.vertical_extent : Passage_technology_allocation_to_stack_model;    
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+  ENTITY Via
+    ABSTRACT SUPERTYPE
+    SUBTYPE OF (Plated_passage);
+      SELF\Definition_based_product_occurrence.derived_from : Via_template;
+  END_ENTITY;
+
+  ENTITY Via_terminal
+    SUBTYPE OF (Laminate_component_feature);
+      SELF\Component_feature.definition           : Via_template_terminal;
+      SELF\Component_feature.associated_component : Via;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Shape_element.description);
+  END_ENTITY;
+
+RULE limd_unique_stratum FOR (Stratum, Interconnect_module, Stratum_technology_occurrence);
+ LOCAL
+      s : BAG OF Stratum := [];
+      imsar : BAG OF Interconnect_module_stratum_assembly_relationship := [];
+      sto : BAG OF Stratum_technology_occurrence := [];
+	  pass : BOOLEAN := TRUE;
+ END_LOCAL;
+ REPEAT i := 1 to SIZEOF(Interconnect_module) by 1;
+    imsar := bag_to_set(USEDIN(Interconnect_module[i], 
+                        'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.INTERCONNECT_MODULE_STRATUM_ASSEMBLY_RELATIONSHIP.ASSEMBLY'));
+	REPEAT j := 1 to SIZEOF(imsar) by 1;
+	   s := s + imsar[j].component;
+    END_REPEAT;
+	REPEAT j := 1 to SIZEOF(s) by 1;
+	   sto := sto + s[j].definition;
+    END_REPEAT;
+	
+	IF (SIZEOF(sto) < SIZEOF(s))
+	THEN
+	  pass := FALSE;
+	  ESCAPE;
+	END_IF;
+	
+ END_REPEAT;
+
+    WHERE
+     WR1 : pass;
+END_RULE;
+  
+(*
+  desc: for each interconnect_module in a data set, no more than one stratum shall reference the same stratum_technology_occurrence as a definition.
+*)
+
+  FUNCTION acyclic_area_component
+    (relation : Area_component; relatives : SET[1:?] OF 
+    Area_component; specific_relation : STRING) : BOOLEAN; 
+  LOCAL
+     x : SET OF Area_component;
+  END_LOCAL;
+
+    IF relation.replaced_component IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(pd <* bag_to_set(USEDIN(relation.replaced_component,
+      'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.' +
+      'AREA_COMPONENT.' +
+      'REPLACED_BY')) | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_area_component(x[i], relatives +
+        relation.replaced_component, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION;
+  
+  FUNCTION acyclic_conductive_interconnect_element_terminal_link
+    (relation : Conductive_interconnect_element_terminal_link; 
+    relatives : SET[1:?] OF Conductive_interconnect_element_terminal; 
+    specific_relation : STRING) : BOOLEAN; 
+  LOCAL
+     x : SET OF Conductive_interconnect_element_terminal_link := [];
+  END_LOCAL;
+
+    IF relation.precedent_point IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(pd <* bag_to_set(USEDIN(relation.precedent_point,
+      'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.' +
+      'CONDUCTIVE_INTERCONNECT_ELEMENT_TERMINAL_LINK.' +
+      'SUBSEQUENT_POINT')) | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_conductive_interconnect_element_terminal_link(x[i], relatives +
+        relation.precedent_point, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION; 
+  
+  FUNCTION correlated_terminals(
+    input1 : SET OF Conductive_interconnect_element_terminal ;
+    input2 : SET OF Conductive_interconnect_element_terminal_link
+  ) : LOGICAL;
+
+    LOCAL
+      pass : LOGICAL := FALSE;
+      ciet : SET OF conductive_interconnect_element_terminal := [];
+    END_LOCAL;
+
+    REPEAT i := 1 TO SIZEOF(input2) BY 1;
+      ciet := ciet + input2[i].precedent_point;
+      ciet := ciet + input2[i].subsequent_point;
+    END_REPEAT;
+    pass := (input1 = ciet);
+   
+   IF (pass = UNKNOWN) THEN
+    RETURN(FALSE);
+   END_IF;
+
+    RETURN(pass);
+  END_FUNCTION;
+
+  FUNCTION get_base_component(input : Stratum): SET OF Area_component;
+    LOCAL
+      sf : SET OF Stratum_feature := bag_to_set(USEDIN(input,'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE.RESIDENT_STRATUM'));
+      sftc : SET OF Stratum_feature_template_component := bag_to_set(
+             USEDIN(input,'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE_TEMPLATE_COMPONENT.IMPLEMENTATION_OR_RESIDENT_STRATUM'));
+      i : INTEGER := 0;
+      ac: SET OF Area_component;
+    END_LOCAL;
+    REPEAT i := 1 TO HIINDEX(sf) BY 1;
+      ac := bag_to_set(QUERY(temp <* USEDIN(sf[i],
+                     'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE_TEMPLATE_COMPONENT.IMPLEMENTATION_OR_RESIDENT_STRATUM') | 
+                      (('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.AREA_COMPONENT' IN TYPEOF(temp)) AND
+                       (temp.is_base = TRUE))));
+    END_REPEAT;
+    REPEAT i := 1 to HIINDEX(sftc) BY 1;
+      IF(('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.AREA_COMPONENT' IN TYPEOF(sftc[i])) AND
+         (sftc[i].is_base = TRUE))
+      THEN
+       ac := ac + sftc[i];
+      END_IF;
+    END_REPEAT;
+    RETURN(ac);
+  END_FUNCTION;
+
+  FUNCTION limd_get_sz_cp (
+    input : SET[1:?] OF Conductive_interconnect_element_terminal_link) : INTEGER;
+  LOCAL
+    ac : SET OF Conductive_interconnect_element_terminal := [];
+  END_LOCAL;
+    REPEAT i := 1 TO HIINDEX(input);
+      ac := ac +
+      input[i]\Conductive_interconnect_element_terminal_link.precedent_point +
+      input[i]\Conductive_interconnect_element_terminal_link.subsequent_point;
+    END_REPEAT;
+    RETURN (SIZEOF(ac));
+  END_FUNCTION;
+
+  FUNCTION make_aggregate_join(
+    input1 : SET OF Inter_stratum_join_relationship ;
+    input2 : SET OF Intra_stratum_join_relationship ;
+    input3 : SET OF Stratum_embedded_physical_component_join_relationship;
+    input4 : SET OF Unrouted_join_relationship) : SET OF Join_relationship;
+
+    LOCAL
+      v1 : SET OF join_relationship := input1;
+    END_LOCAL;
+
+    v1 := v1 + input2 + input3 + input4;
+    RETURN(v1);
+  END_FUNCTION;
+
+  FUNCTION get_assemblies(input : Assembly_component) : SET OF Product_view_definition;
+    LOCAL
+      acr : SET OF Assembly_component_relationship := input\Assembly_component.occurrence_contexts;
+      pvd : SET OF Product_view_definition := [];
+    END_LOCAL;
+
+    REPEAT i := 1 TO HIINDEX(acr) BY 1;
+      IF NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.' +
+        'STRUCTURED_LAYOUT_COMPONENT' IN
+        TYPEOF(acr[i]\Product_occurrence_definition_relationship.relating_view))
+      THEN
+        pvd := pvd + acr[i]\Product_occurrence_definition_relationship.relating_view; 
+      ELSE
+        pvd := pvd + get_assemblies(acr[i]\Product_occurrence_definition_relationship.relating_view);
+      END_IF;
+    END_REPEAT;
+
+    RETURN (pvd);
+  END_FUNCTION;
+
+  FUNCTION get_ims(input : Stratum) : SET OF Product_view_definition;
+    LOCAL
+      imsar : SET OF Interconnect_module_stratum_assembly_relationship := input.assembly;
+      pvd : SET OF Product_view_definition := [];
+    END_LOCAL;
+    REPEAT i := 1 TO HIINDEX(imsar) BY 1;
+      pvd := pvd + imsar[i].assembly; 
+    END_REPEAT;
+    RETURN (pvd);
+  END_FUNCTION;
+
+  FUNCTION get_resident_stratum(input: Stratum_feature_template_component) : Stratum;
+    IF 'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE' IN TYPEOF(input.implementation_or_resident_stratum)
+      THEN RETURN(input.implementation_or_resident_stratum.resident_stratum);
+      ELSE 
+        IF 'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM' IN TYPEOF(input.implementation_or_resident_stratum)
+          THEN RETURN(input.implementation_or_resident_stratum);
+        END_IF;  
+    END_IF;
+    RETURN(?); 
+  END_FUNCTION;
+
+  FUNCTION limd_get_lcp_resident_stratum(input: SET OF Layer_connection_point) : BAG OF Design_layer_stratum;
+  LOCAL
+   s : BAG OF Design_layer_stratum := [];
+  END_LOCAL;
+  
+    REPEAT i := 1 to SIZEOF(input) BY 1;
+       s := s + input[i]\Layer_connection_point.resident_design_layer_stratum;
+    END_REPEAT;
+       
+    RETURN(s); 
+  END_FUNCTION;
+
+END_SCHEMA;
+

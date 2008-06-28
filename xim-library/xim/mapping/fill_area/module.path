@@ -1,0 +1,234 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping fill_area(Fill_area_arm, Fill_area_mim);*)
+
+
+entity_mapping User_defined_hatch_style(User_defined_hatch_style, fill_area_style_hatching);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping hatch_line_angle(hatch_line_angle, fill_area_style_hatching.hatch_line_angle, plane_angle_measure_with_unit);
+
+end_attribute_mapping;
+
+attribute_mapping pattern_start(pattern_start, $PATH, Cartesian_point);
+fill_area_style_hatching
+fill_area_style_hatching.pattern_start ->
+cartesian_point
+
+end_attribute_mapping;
+
+attribute_mapping point_of_reference_hatch_line(point_of_reference_hatch_line, $PATH, Cartesian_point);
+fill_area_style_hatching
+fill_area_style_hatching.point_of_reference_hatch_line ->
+cartesian_point
+
+end_attribute_mapping;
+
+attribute_mapping hatch_line_appearance(hatch_line_appearance, $PATH, Curve_appearance);
+fill_area_style_hatching
+fill_area_style_hatching.hatch_line_appearance ->
+curve_style
+
+end_attribute_mapping;
+
+attribute_mapping start_of_next_hatch_line(start_of_next_hatch_line, $PATH, Vector);
+fill_area_style_hatching
+fill_area_style_hatching.start_of_next_hatch_line ->
+one_direction_repeat_factor
+one_direction_repeat_factor.repeat_factor ->
+vector
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping User_defined_tile_style(User_defined_tile_style, fill_area_style_tiles);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping tiling_scale(tiling_scale, fill_area_style_tiles.tiling_scale);
+
+end_attribute_mapping;
+
+attribute_mapping first_direction_repeat_factor(first_direction_repeat_factor, $PATH, Vector);
+fill_area_style_tiles
+fill_area_style_tiles.tiling_pattern ->
+two_direction_repeat_factor
+two_direction_repeat_factor <=
+one_direction_repeat_factor
+one_direction_repeat_factor.repeat_factor ->
+vector
+
+end_attribute_mapping;
+
+attribute_mapping second_direction_repeat_factor(second_direction_repeat_factor, $PATH, Vector);
+fill_area_style_tiles
+fill_area_style_tiles.tiling_pattern ->
+two_direction_repeat_factor
+two_direction_repeat_factor.second_repeat_factor ->
+vector
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Externally_defined_hatch_style(Externally_defined_hatch_style, externally_defined_hatch_style);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Externally_defined_tile_style(Externally_defined_tile_style, externally_defined_tile_style);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Fill_area(Fill_area, annotation_fill_area_occurrence);
+
+attribute_mapping boundary(boundary, $PATH, Annotation_curve);
+annotation_fill_area_occurrence <=
+       annotation_occurrence <=
+       styled_item
+       styled_item.item ->
+       representation_item =>
+       geometric_representation_item =>
+       annotation_fill_area
+       annotation_fill_area.boundaries[i] ->
+       curve <=
+       geometric_representation_item <=
+       representation_item <-
+       styled_item.item
+       styled_item =>
+       annotation_occurrence =>
+       annotation_curve_occurrence
+end_attribute_mapping;
+
+attribute_mapping reference_point(reference_point, $PATH, point_select);
+annotation_fill_area_occurrence
+       annotation_fill_area_occurrence.fill_style_target -> 
+       point
+end_attribute_mapping;
+
+attribute_mapping reference_point(reference_point, $PATH, Cartesian_point);
+annotation_fill_area_occurrence
+       annotation_fill_area_occurrence.fill_style_target -> 
+       point => 
+       cartesian_point
+       
+end_attribute_mapping;
+
+attribute_mapping reference_point(reference_point, $PATH, Point_on_curve);
+annotation_fill_area_occurrence
+       annotation_fill_area_occurrence.fill_style_target -> 
+       point =>
+       point_on_curve
+end_attribute_mapping;
+
+attribute_mapping reference_point(reference_point, ($PATH)($PATH), Point_on_surface);
+((annotation_fill_area_occurrence
+       annotation_fill_area_occurrence.fill_style_target -> 
+       point =>
+       point_on_surface)
+       )((annotation_fill_area_occurrence
+       annotation_fill_area_occurrence.fill_style_target -> 
+       point =>
+       degenerate_pcurve)
+       )
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Hatch_style(Hatch_style, ((fill_area_style_hatching))((externally_defined_hatch_style)));
+
+end_entity_mapping;
+
+entity_mapping Tile_style(Tile_style, ((fill_area_style_tiles))((externally_defined_tile_style)
+     ));
+
+end_entity_mapping;
+
+entity_mapping Solid_fill_area(Solid_fill_area, fill_area_style_colour);
+
+end_entity_mapping;
+
+entity_mapping Appearance_assignment(Appearance_assignment, presentation_style_assignment)
+extended;
+
+attribute_mapping appearance_components(appearance_components, ($PATH)($PATH), Hatch_style);
+((presentation_style_select = fill_area_style
+		   fill_area_style
+		   fill_area_style.fill_styles[i] ->
+		   fill_style_select
+		   fill_style_select = fill_area_style_hatching
+		   fill_area_style_hatching)
+		   )((presentation_style_select = fill_area_style
+		   fill_area_style
+		   fill_area_style.fill_styles[i] ->
+		   fill_style_select
+		   fill_style_select = externally_defined_hatch_style
+		   externally_defined_hatch_style)
+		   )
+end_attribute_mapping;
+
+attribute_mapping appearance_components(appearance_components, $PATH, fill_area_style_colour);
+ 
+		 presentation_style_select = fill_area_style
+		 fill_area_style
+		 fill_area_style.fill_styles[i] ->
+		 fill_style_select
+		 fill_style_select = fill_area_style_colour
+		 fill_area_style_colour
+		   
+end_attribute_mapping;
+
+attribute_mapping appearance_components(appearance_components, ($PATH)($PATH), Tile_style);
+( 
+	 (presentation_style_select = fill_area_style
+	 fill_area_style
+	 fill_area_style.fill_styles[i] ->
+	 fill_style_select
+	 fill_style_select = fill_area_style_tiles
+	 fill_area_style_tiles)
+       )( 
+	 (presentation_style_select = fill_area_style
+	 fill_area_style
+	 fill_area_style.fill_styles[i] ->
+	 fill_style_select
+	 fill_style_select = externally_defined_tile_style
+	 externally_defined_tile_style)
+       )
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

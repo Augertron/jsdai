@@ -1,0 +1,207 @@
+(* Genenerated from: ../../irs/wg12n587.exp *)
+
+SCHEMA kinematic_motion_representation_schema;
+
+REFERENCE FROM geometry_schema
+    (cartesian_point,
+     curve);
+
+REFERENCE FROM measure_schema
+    (length_measure,
+     measure_with_unit,
+     parameter_value,
+     plane_angle_measure);
+
+REFERENCE FROM representation_schema
+    (functionally_defined_transformation,
+     representation_item);
+
+REFERENCE FROM kinematic_structure_schema
+    (rotation_about_direction,
+     spatial_rotation,
+     ypr_rotation);
+
+TYPE motion_parameter_measure = SELECT
+  (parameter_value,
+   measure_with_unit);
+END_TYPE;
+
+ENTITY translation;
+  x : length_measure;
+  y : length_measure;
+  z : length_measure;
+END_ENTITY;
+
+ENTITY transform
+  SUBTYPE OF (functionally_defined_transformation);
+  rotation_component    : spatial_rotation;
+  translation_component : translation;
+END_ENTITY;
+
+ENTITY path_node;
+  control_transform : transform;
+  t_parameter       : motion_parameter_measure;
+END_ENTITY;
+
+ENTITY kinematic_path
+  SUPERTYPE OF (ONEOF (path_element, composite_path))
+  SUBTYPE OF (representation_item);
+END_ENTITY;
+
+ENTITY path_element_connection;
+  previous_element     : path_element;
+  next_element         : path_element;
+WHERE
+  WR1: previous_element.node_to = next_element.node_from;
+  WR2: compare_unit_components (previous_element.node_to.t_parameter,
+                                next_element.node_from.t_parameter);
+END_ENTITY;
+
+ENTITY composite_path
+  SUBTYPE OF (kinematic_path);
+  elements : SET [1 : ?] OF path_element_connection;
+  t_start  : motion_parameter_measure;
+  t_end    : motion_parameter_measure;
+WHERE
+  WR1: increasing_measure_value (t_start, t_end);
+  WR2: compare_unit_components (t_start, t_end);
+  WR3: connected_in_simple_path (elements);
+END_ENTITY;
+
+ENTITY path_element
+  SUPERTYPE OF (ONEOF (point_to_point_path,
+                       circular_path,
+                       linear_path,
+                       curve_based_path))
+  SUBTYPE OF (kinematic_path);
+  node_from : path_node;
+  node_to   : path_node;
+WHERE
+  WR1: compare_unit_components (node_from.t_parameter,
+                                node_to.t_parameter);
+  WR2: increasing_measure_value (node_from.t_parameter,
+                                 node_to.t_parameter);
+END_ENTITY;
+
+ENTITY point_to_point_path
+  SUBTYPE OF (path_element);
+END_ENTITY;
+
+ENTITY circular_path
+  SUBTYPE OF (path_element);
+  via_point : cartesian_point;
+WHERE
+  WR1: SELF\path_element.node_to.control_transform.translation_component <>
+       SELF\path_element.node_from.control_transform.translation_component;
+  WR2: non_coincident_coordinates (via_point,
+         SELF\path_element.node_from.control_transform.translation_component)
+       AND
+       non_coincident_coordinates (via_point,
+         SELF\path_element.node_to.control_transform.translation_component);
+END_ENTITY;
+
+ENTITY linear_path
+  SUBTYPE OF (path_element);
+END_ENTITY;
+
+ENTITY curve_based_path
+  SUBTYPE OF (path_element);
+  path_curve : curve;
+WHERE
+  WR1: SELF\path_element.node_to.control_transform.translation_component <>
+       SELF\path_element.node_from.control_transform.translation_component;
+END_ENTITY;
+
+FUNCTION connected_in_simple_path (connections : SET OF path_element_connection)
+                                               : BOOLEAN;
+  LOCAL
+     connection_set : SET [0 : ?] OF path_element_connection;
+     nec0           : INTEGER;
+     pec0           : INTEGER;
+     necbranch      : INTEGER;
+     pecbranch      : INTEGER;
+  END_LOCAL;
+
+  IF SIZEOF (connections) > 1 THEN
+    connection_set := QUERY (pec1 <* connections |
+                        SIZEOF (QUERY (pec2 <* connections - pec1 |
+                          pec1.next_element :=: pec2.previous_element)) = 0);
+    nec0 := SIZEOF (connection_set);
+
+    connection_set := QUERY (pec1 <* connections |
+                        SIZEOF (QUERY (pec2 <* connections - pec1 |
+                          pec2.next_element :=: pec1.previous_element)) = 0);
+    pec0 := SIZEOF (connection_set);
+
+    connection_set := QUERY (pec1 <* connections |
+                        SIZEOF (QUERY (pec2 <* connections - pec1 |
+                          pec1.next_element :=: pec2.previous_element)) > 1);
+    necbranch := SIZEOF (connection_set);
+
+    connection_set := QUERY (pec1 <* connections |
+                        SIZEOF (QUERY (pec2 <* connections - pec1 |
+                          pec2.next_element :=: pec1.previous_element)) > 1);
+    pecbranch := SIZEOF (connection_set);
+
+    IF ((nec0 <> 1) OR (pec0 <> 1) OR (necbranch > 0) OR (pecbranch > 0)) THEN
+      RETURN (FALSE);
+    ELSE
+      RETURN (TRUE);
+    END_IF;
+  ELSE
+    RETURN (TRUE);
+  END_IF;
+END_FUNCTION;
+
+FUNCTION compare_unit_components (parm1 : motion_parameter_measure;
+                                  parm2 : motion_parameter_measure) : BOOLEAN;
+   IF (('MEASURE_SCHEMA.PARAMETER_VALUE' IN TYPEOF (parm1)) AND
+       ('MEASURE_SCHEMA.PARAMETER_VALUE' IN TYPEOF (parm2))) THEN
+         RETURN (TRUE);
+   ELSE
+     IF (('MEASURE_SCHEMA.MEASURE_WITH_UNIT' IN TYPEOF (parm1)) AND
+         ('MEASURE_SCHEMA.MEASURE_WITH_UNIT' IN TYPEOF (parm2))) THEN
+        IF (parm1.unit_component :=: parm2.unit_component) THEN
+           RETURN (TRUE);
+        ELSE
+           RETURN (FALSE);
+        END_IF;
+     ELSE
+       RETURN (FALSE);
+     END_IF;
+  END_IF;
+END_FUNCTION;
+
+FUNCTION increasing_measure_value (parm1 : motion_parameter_measure;
+                                   parm2 : motion_parameter_measure) : BOOLEAN;
+  IF ('MEASURE_SCHEMA.PARAMETER_VALUE' IN TYPEOF (parm1)) THEN
+    IF (parm1 < parm2)  THEN
+      RETURN (TRUE);
+    ELSE
+      RETURN (FALSE);
+    END_IF;
+  ELSE
+    IF ('MEASURE_SCHEMA.MEASURE_WITH_UNIT' IN TYPEOF (parm1)) THEN
+      IF (parm1.value_component < parm2.value_component) THEN
+        RETURN (TRUE);
+      ELSE
+        RETURN (FALSE);
+      END_IF;
+    ELSE
+      RETURN (FALSE);
+    END_IF;
+  END_IF;
+END_FUNCTION;
+
+FUNCTION non_coincident_coordinates (crtpt : cartesian_point;
+                                     trltn : translation) : BOOLEAN;
+  IF ((crtpt.coordinates[1] = trltn.x) AND
+      (crtpt.coordinates[2] = trltn.y) AND
+      (crtpt.coordinates[3] = trltn.z)) THEN
+    RETURN (FALSE);
+  ELSE
+    RETURN (TRUE);
+  END_IF;
+END_FUNCTION;
+
+END_SCHEMA;   -- end kinematic_motion_representation_schema

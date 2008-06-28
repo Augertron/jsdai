@@ -1,0 +1,371 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping interconnect_physical_requirement_allocation(Interconnect_physical_requirement_allocation_arm, Interconnect_physical_requirement_allocation_mim);*)
+
+entity_mapping Dependent_electrical_isolation_removal_template_armx(Dependent_electrical_isolation_removal_template_armx, dependent_electrical_isolation_removal_template);
+
+mapping_constraints;
+dependent_electrical_isolation_removal_template <=
+electrical_isolation_removal_template <=
+material_removal_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping associated_item(associated_item, $PATH, land_physical_template_or_inter_stratum_feature_template);
+dependent_electrical_isolation_removal_template <=
+electrical_isolation_removal_template <=
+material_removal_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'associated item'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+part_template_definition
+(part_template_definition =>
+geometric_template =>
+inter_stratum_feature_template)
+(part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+land_physical_template)
+
+end_attribute_mapping;
+
+attribute_mapping associated_item(associated_item, $PATH, Inter_stratum_feature_template_armx);
+dependent_electrical_isolation_removal_template <=
+electrical_isolation_removal_template <=
+material_removal_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'associated item'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+part_template_definition =>
+geometric_template =>
+inter_stratum_feature_template
+
+end_attribute_mapping;
+
+attribute_mapping associated_item(associated_item, $PATH, Land_physical_template_armx);
+dependent_electrical_isolation_removal_template <=
+electrical_isolation_removal_template <=
+material_removal_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'associated item'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+land_physical_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Dependent_thermal_isolation_removal_template_armx(Dependent_thermal_isolation_removal_template_armx, dependent_thermal_isolation_removal_template);
+
+mapping_constraints;
+dependent_thermal_isolation_removal_template <=
+thermal_isolation_removal_template <=
+material_removal_structured_template <=
+single_stratum_structured_template <=
+structured_template <=
+geometric_template <=
+part_template_definition <=				
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping associated_item(associated_item, $PATH, Land_physical_template_armx);
+dependent_thermal_isolation_removal_template <=
+thermal_isolation_removal_template <=
+material_removal_structured_template <=
+single_stratum_structured_template <=
+structured_template <=
+geometric_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'associated item'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+land_physical_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Electrical_isolation_removal_template_armx(Electrical_isolation_removal_template_armx, electrical_isolation_removal_template);
+
+mapping_constraints;
+electrical_isolation_removal_template <=
+material_removal_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Electrical_isolation_requirement(Electrical_isolation_requirement, product_definition);
+
+mapping_constraints;
+
+				product_definition
+				{product_definition
+				product_definition.formation ->
+				product_definition_formation
+				product_definition_formation.of_product ->
+				product <- 
+				product_related_product_category.products[i]
+				product_related_product_category <=
+				product_category 
+				product_category.name='requirement'}
+				{product_definition.name = 'electrical isolation requirement'}				
+			
+end_mapping_constraints;
+
+attribute_mapping effective_voltage_withstand_capacity_requirement(effective_voltage_withstand_capacity_requirement, $PATH, Value_limit);
+						product_definition
+						characterized_product_definition = product_definition
+						characterized_product_definition
+						characterized_definition = characterized_product_definition
+						characterized_definition <-
+						property_definition.definition
+						property_definition
+						{property_definition
+						property_definition.name = 'effective voltage withstand capacity requirement'}
+						property_definition <-
+						property_definition_representation.definition
+						property_definition_representation.used_representation ->
+						representation
+						representation.items[i] ->
+						representation_item =>
+						[measure_representation_item]
+						[qualified_representation_item]
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_shield_allocation_armx(Interconnect_shield_allocation_armx, interconnect_shield_allocation);
+
+mapping_constraints;
+interconnect_shield_allocation <=
+requirement_assignment
+
+end_mapping_constraints;
+
+attribute_mapping assigned_to(assigned_to, $PATH, Integral_shield_armx);
+				interconnect_shield_allocation <=
+				requirement_assignment <-
+				requirement_assigned_object.assigned_group
+				requirement_assigned_object
+				requirement_assigned_object.items ->
+				requirement_assigned_item
+				requirement_assigned_item = product_definition =>
+				component_definition =>
+				assembly_component =>
+				laminate_component =>
+				integral_shield
+				
+end_attribute_mapping;
+
+attribute_mapping assigned_requirement_property(assigned_requirement_property, $PATH, Predefined_requirement_view_definition_armx);
+					interconnect_shield_allocation <=
+					requirement_assignment <-
+					assigned_requirement.assigned_group
+					assigned_requirement
+					assigned_requirement.items ->
+					product_definition =>
+					predefined_requirement_view_definition
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Thermal_isolation_removal_template_armx(Thermal_isolation_removal_template_armx, thermal_isolation_removal_template);
+
+mapping_constraints;
+				thermal_isolation_removal_template <=
+				material_removal_structured_template <=
+				single_stratum_structured_template <=
+				structured_template <=
+				geometric_template <=
+				part_template_definition <=				
+				product_definition
+			
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Thermal_isolation_requirement(Thermal_isolation_requirement, product_definition);
+
+mapping_constraints;
+
+				product_definition
+				{product_definition
+				product_definition.formation ->
+				product_definition_formation
+				product_definition_formation.of_product ->
+				product <- 
+				product_related_product_category.products[i]
+				product_related_product_category <=
+				product_category 
+				product_category.name='requirement'}
+				{product_definition.name = 'thermal isolation requirement'}				
+			
+end_mapping_constraints;
+
+attribute_mapping thermal_bar_width(thermal_bar_width, $PATH, Length_tolerance_characteristic);
+product_definition
+						characterized_product_definition = product_definition
+						characterized_product_definition
+						characterized_definition = characterized_product_definition
+						characterized_definition <-
+						property_definition.definition
+						property_definition
+						{property_definition
+						property_definition.name = 'thermal bar width'}
+						property_definition <-
+						property_definition_representation.definition
+						property_definition_representation.used_representation ->
+						representation
+end_attribute_mapping;
+
+attribute_mapping number_of_bars(number_of_bars, $PATH);
+product_definition
+						characterized_product_definition = product_definition
+						characterized_product_definition
+						characterized_definition = characterized_product_definition
+						characterized_definition <-
+						property_definition.definition
+						property_definition
+						{property_definition
+						property_definition.name = 'number of bars'}
+						property_definition.description
+end_attribute_mapping;
+
+attribute_mapping effective_current_capacity_requirement(effective_current_capacity_requirement, $PATH, Value_limit);
+						product_definition
+						characterized_product_definition = product_definition
+						characterized_product_definition
+						characterized_definition = characterized_product_definition
+						characterized_definition <-
+						property_definition.definition
+						property_definition
+						{property_definition
+						property_definition.name = 'effective current capacity requirement'}
+						property_definition <-
+						property_definition_representation.definition
+						property_definition_representation.used_representation ->
+						representation
+						representation.items[i] ->
+						representation_item =>
+						[measure_representation_item]
+						[qualified_representation_item]
+end_attribute_mapping;
+
+attribute_mapping effective_thermal_resistance_requirement(effective_thermal_resistance_requirement, $PATH, Value_limit);
+						product_definition
+						characterized_product_definition = product_definition
+						characterized_product_definition
+						characterized_definition = characterized_product_definition
+						characterized_definition <-
+						property_definition.definition
+						property_definition
+						{property_definition
+						property_definition.name = 'effective thermal resistance requirement'}
+						property_definition <-
+						property_definition_representation.definition
+						property_definition_representation.used_representation ->
+						representation
+						representation.items[i] ->
+						representation_item =>
+						[measure_representation_item]
+						[qualified_representation_item]
+end_attribute_mapping;
+
+attribute_mapping angular_orientation_requirement(angular_orientation_requirement, $PATH, Value_range);
+product_definition
+						characterized_product_definition = product_definition
+						characterized_product_definition
+						characterized_definition = characterized_product_definition
+						characterized_definition <-
+						property_definition.definition
+						property_definition
+						{property_definition
+						property_definition.name = 'effective thermal resistance requirement'}
+						property_definition <-
+						property_definition_representation.definition
+						property_definition_representation.used_representation ->
+						representation
+						representation.items[i] ->
+						representation_item =>
+						compound_representation_item =>
+						value_range
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

@@ -1,0 +1,79 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from N - ISO/CD-TS - 10303- tagged_text_representation - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Tagged_text_representation_xim;
+
+USE FROM Class_xim;    --  ISO/TS 10303-1070
+USE FROM Foundation_representation_xim;    --  ISO/TS 10303-1006
+
+USE FROM Tagged_text_representation_mim;
+
+REFERENCE FROM representation_schema (compound_item_definition);
+
+SUBTYPE_CONSTRAINT ttr_string_representation_item_subtypes FOR descriptive_representation_item;
+  ONEOF (Tagged_text_item_armx,
+         Uniform_resource_identifier_armx);
+END_SUBTYPE_CONSTRAINT;
+
+ENTITY Included_text_block_armx
+  (* CONNOTATIONAL *) SUBTYPE OF (included_text_block);
+  source : Structured_text_representation_armx;
+END_ENTITY;
+
+ ENTITY Structured_text_composition_armx
+   (* CONNOTATIONAL *) SUBTYPE OF (structured_text_composition);
+   (* Some ARM constraints are lost here, but it would be hard to make XIM and MIM fully compatible *)
+  SELF\compound_representation_item.item_element RENAMED content :  compound_item_definition;
+ END_ENTITY;
+
+ENTITY Structured_text_representation_armx
+  (* CONNOTATIONAL *) SUBTYPE OF (structured_text_representation);
+  SELF\Representation.items : SET [1:?] OF string_representation_item_select; 
+END_ENTITY;
+
+ENTITY Tagged_text_item_armx
+  (* CONNOTATIONAL *) SUBTYPE OF (tagged_text_item);
+WHERE
+  WR1: SIZEOF (QUERY (using_rep <* USEDIN(SELF,
+       'FOUNDATION_REPRESENTATION_XIM.REPRESENTATION.ITEMS') |
+  NOT ('TAGGED_TEXT_REPRESENTATION_XIM.TAGGED_TEXT_FORMAT_ARMX' IN
+  TYPEOF (using_rep.context_of_items))
+       )) = 0;
+END_ENTITY;
+-- WR1: The context of any representation referencing a
+-- Tagged_text_item shall be a Tagged_text_format.
+
+ENTITY Tagged_text_format_armx
+  (* CONNOTATIONAL *) SUBTYPE OF (tagged_text_format);
+END_ENTITY;
+
+ENTITY Uniform_resource_identifier_armx
+  (* CONNOTATIONAL *) SUBTYPE OF (uniform_resource_identifier);
+END_ENTITY;
+
+END_SCHEMA;

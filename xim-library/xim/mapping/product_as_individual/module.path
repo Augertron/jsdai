@@ -1,0 +1,204 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping product_as_individual(Product_as_individual_arm, Product_as_individual_mim);*)
+
+uof_mapping Product_As_Individual(Product_As_Individual);
+
+entity_mapping Product_as_planned_armx(Product_as_planned_armx, product_as_planned);
+
+end_entity_mapping;
+
+entity_mapping Product_as_realized(Product_as_realized, product_definition_formation);
+mapping_constraints;
+
+      	product_definition_formation
+      	!{product_definition_formation =>
+      	product_as_planned}
+      	{product_definition_formation.of_product -> product
+			  product
+	      product <- product_related_product_category.products[i]
+	      product_related_product_category <= product_category 
+	      product_category.name='physically realized product'}
+    
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Product_design_to_individual_armx(Product_design_to_individual_armx, product_design_to_individual);
+
+attribute_mapping individual_product(individual_product, $PATH, Product_as_individual);
+
+        product_design_to_individual
+        product_design_to_individual.individual_product -> 
+        product_as_individual <=
+        product
+        {product <- product_related_product_category.products[i]
+        product_related_product_category <= product_category 
+        product_category.name='physically realized product'}
+end_attribute_mapping;
+
+attribute_mapping product_design(product_design, $PATH, Part);
+
+        product_design_to_individual
+        product_design_to_individual.product_design -> product        
+      
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Product_planned_to_realized_armx(Product_planned_to_realized_armx, product_planned_to_realized);
+
+attribute_mapping planned_product(planned_product, $PATH, Product_as_planned_armx);
+product_definition_formation_relationship => product_planned_to_realized 
+      product_planned_to_realized 
+      product_planned_to_realized.planned_product -> product_as_planned
+end_attribute_mapping;
+
+attribute_mapping realized_product(realized_product, $PATH, Product_as_realized);
+product_definition_formation_relationship => product_planned_to_realized 
+      product_planned_to_realized 
+      product_planned_to_realized.realized_product -> 
+			product_as_realized
+			{product_as_realized <=
+			product_as_individual_version <=
+      product_definition_formation}
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(* Entity with the same name is taken from AIM instead
+entity_mapping Identification_assignment(Identification_assignment, applied_identification_assignment)
+extended;
+
+attribute_mapping items(items, $PATH, Product_as_individual);
+
+        *> product
+      
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, Product_as_individual_version);
+
+        *> product_definition_formation
+      
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, Product_as_individual_view);
+
+        *> product_definition
+      
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Product_as_individual(Product_as_individual, product);
+
+mapping_constraints;
+
+			product
+      {product <- product_related_product_category.products[i]
+      product_related_product_category <= product_category 
+      product_category.name='physically realized product'}
+    
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Product_as_individual_version(Product_as_individual_version, product_definition_formation);
+
+mapping_constraints;
+
+      product_definition_formation
+      {product_definition_formation.of_product -> product
+      product <- product_related_product_category.products[i]
+      product_related_product_category <= product_category 
+      product_category.name='physically realized product'}
+    
+end_mapping_constraints;
+
+attribute_mapping of_product(of_product, $PATH, Product_as_individual);
+
+        product_definition_formation
+        product_definition_formation.of_product -> product
+        {product <- product_related_product_category.products[i]
+        product_related_product_category <= product_category 
+        product_category.name='physically realized product'}
+      
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Product_as_individual_view(Product_as_individual_view, product_definition);
+
+mapping_constraints;
+
+      product_definition
+      {product_definition.formation -> product_definition_formation
+      product_definition_formation.of_product -> product
+      product <- product_related_product_category.products[i]
+      product_related_product_category <= product_category 
+      product_category.name='physically realized product'}
+    
+end_mapping_constraints;
+
+attribute_mapping defined_version(defined_version, $PATH, Product_as_individual_version);
+
+        product_definition
+        product_definition.formation -> product_definition_formation
+        {product_definition_formation
+        product_definition_formation.of_product -> product
+        product <- product_related_product_category.products[i]
+        product_related_product_category <= product_category 
+        product_category.name='physically realized product'}
+      
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Product_design_version_to_individual_armx(Product_design_version_to_individual_armx, product_design_version_to_individual);
+
+attribute_mapping product_design_version(product_design_version, $PATH, Part_version);
+
+        product_design_version_to_individual
+        product_design_version_to_individual.product_design_version -> product_definition_formation
+      
+end_attribute_mapping;
+
+attribute_mapping individual_product(individual_product, $PATH, Product_as_individual_version);
+
+        product_design_version_to_individual
+        product_design_version_to_individual.individual_product -> 
+        product_as_individual_version <=
+        product_definition_formation
+        {product_definition_formation.of_product -> product
+        product <- product_related_product_category.products[i]
+        product_related_product_category <=
+        product_category 
+        product_category.name='physically realized product'}
+      
+end_attribute_mapping;
+
+end_entity_mapping;
+
+(*end_schema_mapping;*)

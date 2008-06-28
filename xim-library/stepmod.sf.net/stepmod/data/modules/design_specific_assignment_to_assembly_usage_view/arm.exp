@@ -1,0 +1,48 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3933 - ISO/TS 10303-1662 Design specific assignment to assembly usage view - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3390
+*)
+
+SCHEMA Design_specific_assignment_to_assembly_usage_view_arm;
+
+USE FROM Assembly_module_with_interconnect_component_arm;	-- ISO/TS 10303-1643
+USE FROM Assembly_module_with_subassembly_arm;	-- ISO/TS 10303-1641
+
+  SUBTYPE_CONSTRAINT dsatauv_component_feature_to_physical_usage_view_assignment_subtypes FOR Component_feature_to_physical_usage_view_assignment;     
+    ONEOF (Component_terminal_to_assembly_module_interface_terminal_assignment,
+      Component_terminal_to_pca_terminal_assignment);
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT dsatauv_physical_component_terminal_subtypes FOR Physical_component_terminal; 
+    (ONEOF (Assembly_module_component_terminal,
+    Bare_die_component_terminal,
+    Interconnect_component_join_terminal,
+    Interconnect_module_component_terminal,
+    Minimally_defined_component_terminal,
+    Packaged_component_join_terminal));
+  END_SUBTYPE_CONSTRAINT;
+
+  TYPE pca_interface_select = SELECT
+    (Interconnect_module_component_terminal,
+    Physical_component_interface_terminal,
+    Assembly_module_component_terminal);
+  END_TYPE;
+ 
+  ENTITY Component_terminal_to_assembly_module_interface_terminal_assignment
+    SUBTYPE OF (Component_feature_to_physical_usage_view_assignment);
+      SELF\Component_feature_to_physical_usage_view_assignment.defined_part_feature RENAMED usage_view_terminal : Assembly_module_interface_terminal;
+      SELF\Component_feature_to_physical_usage_view_assignment.assigned_design_object RENAMED assigned_terminal : pca_interface_select;
+    UNIQUE
+      UR1 : usage_view_terminal;
+  END_ENTITY;
+
+  ENTITY Component_terminal_to_pca_terminal_assignment
+    SUBTYPE OF (Component_feature_to_physical_usage_view_assignment);
+      SELF\Component_feature_to_physical_usage_view_assignment.defined_part_feature RENAMED usage_view_terminal : Pca_terminal;
+      SELF\Component_feature_to_physical_usage_view_assignment.assigned_design_object RENAMED assigned_terminal : pca_interface_select;
+    UNIQUE
+      UR1 : usage_view_terminal;
+  END_ENTITY;
+
+END_SCHEMA;

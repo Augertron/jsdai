@@ -1,0 +1,73 @@
+(* EXTRACTED FROM DOCUMENT ISO TC184/SC4/WG12 N2837 - EXPRESS CODE FOR THE
+   IS VERSION OF ISO 10303-55: 'PROCEDURAL & HYBRID REPRESENTATION' *)
+
+SCHEMA procedural_model_schema;
+
+REFERENCE FROM support_resource_schema                  -- ISO 10303-41
+  (text);
+
+REFERENCE FROM representation_schema                    -- ISO 10303-43
+  (item_in_context,
+   representation,
+   representation_item,
+   representation_item_relationship,
+   representation_relationship,
+   using_representations);
+
+REFERENCE FROM variational_representation_schema        -- ISO 10303-108
+  (variational_representation);
+
+ENTITY explicit_procedural_representation_relationship
+  SUBTYPE OF (representation_relationship);
+  SELF\representation_relationship.rep_1 : procedural_representation;
+WHERE
+  WR1 : (NOT ('PROCEDURAL_MODEL_SCHEMA.PROCEDURAL_REPRESENTATION' 
+    IN TYPEOF(SELF\representation_relationship.rep_2))) AND 
+    (NOT ('VARIATIONAL_REPRESENTATION_SCHEMA.VARIATIONAL_REPRESENTATION'
+    IN TYPEOF(SELF\representation_relationship.rep_2)));
+  WR2 : SELF\representation_relationship.rep_1.context_of_items :=:
+    SELF\representation_relationship.rep_2.context_of_items;
+END_ENTITY; 
+
+ENTITY explicit_procedural_representation_item_relationship
+  SUBTYPE OF (representation_item_relationship);
+  SELF\representation_item_relationship.relating_representation_item :
+    procedural_representation_sequence;
+WHERE
+  WR1 : NOT ('PROCEDURAL_MODEL_SCHEMA.PROCEDURAL_REPRESENTATION_SEQUENCE'
+    IN TYPEOF(
+      SELF\representation_item_relationship.related_representation_item));
+  WR2 : SIZEOF(QUERY(q <* using_representations(
+    SELF\representation_item_relationship.related_representation_item) |
+    item_in_context(
+      SELF\representation_item_relationship.relating_representation_item,
+      q.context_of_items))) > 0;
+END_ENTITY; 
+
+ENTITY procedural_representation
+  SUBTYPE OF (representation);
+  SELF\representation.items : 
+    SET[1:?] OF procedural_representation_sequence;
+END_ENTITY; 
+
+ENTITY procedural_representation_sequence
+  SUBTYPE OF (representation_item);
+  elements         : LIST[1:?] OF representation_item;
+  suppressed_items : SET[0:?] OF representation_item;
+  rationale        : text;
+WHERE
+  WR1: SIZEOF(QUERY(q <* suppressed_items | NOT (q IN elements))) = 0;
+END_ENTITY;
+
+ENTITY user_selected_elements
+  SUBTYPE OF (representation_item);
+  picked_items : SET[1:?] OF representation_item;
+END_ENTITY; 
+
+ENTITY indirectly_selected_elements
+  SUBTYPE OF (user_selected_elements);
+  indirectly_picked_items : SET[1:?] OF representation_item;
+END_ENTITY; 
+
+END_SCHEMA; -- procedural_model_schema
+

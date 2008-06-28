@@ -1,0 +1,27 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3928 - ISO/TS 10303-1660 Datum difference based model - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3385
+*)
+
+
+SCHEMA Datum_difference_based_model_mim;
+	USE FROM Extended_geometric_tolerance_mim;	-- ISO/TS 10303-1666
+	USE FROM Functional_usage_view_mim;	-- ISO/TS 10303-1705
+
+	SUBTYPE_CONSTRAINT ddbm_model_parameter_subtypes FOR model_parameter; 
+		ONEOF (datum_difference_based_model_parameter,
+	 	schema_based_model_parameter);
+	END_SUBTYPE_CONSTRAINT;
+	
+ENTITY datum_difference_based_model_parameter
+  SUBTYPE OF (model_parameter);
+END_ENTITY;
+
+ENTITY datum_difference_functional_unit_usage_view_terminal_assignment
+  SUBTYPE OF (shape_aspect_relationship);
+    SELF\shape_aspect_relationship.relating_shape_aspect : datum_difference;  
+    SELF\shape_aspect_relationship.related_shape_aspect  : functional_unit_terminal_definition;
+END_ENTITY;
+	
+END_SCHEMA;

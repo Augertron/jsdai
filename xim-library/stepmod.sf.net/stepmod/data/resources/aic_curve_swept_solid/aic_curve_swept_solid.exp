@@ -1,0 +1,119 @@
+ (* First draft of Curve Swept Solid AIC EXPRESS definitions - not yet verified
+ by compiler *)
+ SCHEMA aic_curve_swept_solid;
+ 
+  USE FROM measure_schema; -- 	
+
+  USE FROM aic_topologically_bounded_surface; -- ISO 10303-511
+
+  USE FROM geometry_schema  -- ISO 10303-42
+  (axis2_placement_2d,
+                           axis2_placement_3d,
+                           bezier_curve,
+                           bezier_surface,
+                           b_spline_curve_with_knots,
+                           b_spline_curve,
+                           b_spline_surface,
+                           b_spline_surface_with_knots,
+			   bounded_surface_curve,
+                           cartesian_point,
+                           circle,
+                           composite_curve_on_surface,
+                           conical_surface,
+                           cylindrical_surface,
+                           degenerate_toroidal_surface,
+                           direction,
+                           ellipse,
+                           geometric_representation_context,
+                           hyperbola,
+                           line,
+                           parabola,
+                           pcurve,
+                           plane,
+                           polyline,
+                           quasi_uniform_curve,
+                           quasi_uniform_surface,
+			   outer_boundary_curve,
+                           rational_b_spline_curve,
+                           rational_b_spline_surface,
+                           spherical_surface,
+                           surface_curve,
+                           surface_of_linear_extrusion,
+                           surface_of_revolution,
+                           swept_surface,
+		           trimmed_curve,		
+                           toroidal_surface,
+                           uniform_curve,
+                           uniform_surface,
+                           vector);
+
+  USE FROM geometric_model_schema  -- ISO  10303-42
+      (extruded_area_solid,
+       revolved_area_solid,
+       surface_curve_swept_area_solid,
+       swept_disk_solid);
+
+  USE FROM representation_schema(mapped_item);   -- ISO  10303-43
+
+  USE FROM product_property_representation_schema   -- ISO  10303-41
+      (shape_representation);
+
+ ENTITY curve_swept_solid_shape_representation
+ SUBTYPE OF (shape_representation);
+ WHERE
+  WR1: SIZEOF (QUERY (it <* SELF.items |
+          NOT (SIZEOF (['AIC_CURVE_SWEPT_SOLID.SWEPT_AREA_SOLID',
+                'AIC_CURVE_SWEPT_SOLID.SWEPT_DISK_SOLID',
+                'AIC_CURVE_SWEPT_SOLID.MAPPED_ITEM',
+                'AIC_CURVE_SWEPT_SOLID.AXIS2_PLACEMENT_3D'] *
+                   TYPEOF(it)) = 1))) = 0;
+   WR2: SIZEOF (QUERY (it <* SELF.items |
+         SIZEOF(['AIC_CURVE_SWEPT_SOLID.SWEPT_AREA_SOLID',
+                'AIC_CURVE_SWEPT_SOLID.SWEPT_DISK_SOLID',
+          'AIC_CURVE_SWEPT_SOLID.MAPPED_ITEM'] * TYPEOF(it)) =1 )) > 0;
+   WR3: SIZEOF (QUERY (mi <*  QUERY (it <* items |
+                 'AIC_CURVE_SWEPT_SOLID.MAPPED_ITEM' IN TYPEOF(it)) |
+   NOT ('AIC_CURVE_SWEPT_SOLID.CURVE_SWEPT_SOLID_SHAPE_REPRESENTATION' IN
+             TYPEOF(mi\mapped_item.mapping_source.
+                           mapped_representation)))) = 0;
+   WR4: SIZEOF (QUERY (scsas <* QUERY (it <* SELF.items |
+        'AIC_CURVE_SWEPT_SOLID.SURFACE_CURVE_SWEPT_AREA_SOLID' IN
+              TYPEOF(it)) |
+          NOT(('AIC_CURVE_SWEPT_SOLID.SURFACE_CURVE' IN
+                   TYPEOF(scsas.directrix)) OR
+                   ('AIC_CURVE_SWEPT_SOLID.PCURVE' IN
+                   TYPEOF(scsas.directrix))))) = 0;
+ END_ENTITY;
+(* Formal propositions:
+ WR1: Each item im the items set shall be a swept_area_solid,
+      a swept_disk_solid, a mapped_item or an axis2_placement_3d.
+ WR2: At least one of the items in the items set shall be a
+      swept_area_solid, a swept_disk_solid, or a mapped_item.
+ WR3: If there is a mapped_item in a curve_swept_solid_shape_representation the
+     mapping_source shall be a curve_swept_solid_shape_representation.
+ WR4: If there is a surface_curve_swept_area_solid in a
+      curve_swept_solid_shape_representation the directrix shall be either a
+      pcurve or a surface_curve.
+*)
+ENTITY ruled_surface_swept_area_solid
+  SUBTYPE OF(surface_curve_swept_area_solid);
+  WHERE
+  WR1: ('AIC_CURVE_SWEPT_SOLID.B_SPLINE_SURFACE' IN TYPEOF(SELF.reference_surface)) AND
+         (SELF.reference_surface\b_spline_surface.u_degree = 1);         
+  WR2: ('AIC_CURVE_SWEPT_SOLID.PCURVE' IN TYPEOF(SELF.directrix)) OR
+        (('AIC_CURVE_SWEPT_SOLID.B_SPLINE_CURVE' IN TYPEOF(SELF.directrix\surface_curve.curve_3d))
+         AND
+         (SELF.directrix\surface_curve.curve_3d\b_spline_curve.degree =
+         SELF.reference_surface\b_spline_surface.v_degree));
+END_ENTITY;
+(* Formal propositions:
+  WR1: The reference_surface of a ruled_surface_swept_area_solid shall be a
+       b_spline_surface of u_degree 1.
+  NOTE: This ensures that the reference surface has the form of a ruled
+        surface bounded by two b_spline_curves.
+  WR2: The directrix shall be either a pcurve or surface curve. If the directrix
+       is a surface_curve the curve_3d shall be a b_spline_curve of the same
+       degree as the boundary curves of the ruled surface that is the
+       reference_surface.
+*)
+END_SCHEMA; -- end AIC_CURVE_SWEPT_SOLID SCHEMA

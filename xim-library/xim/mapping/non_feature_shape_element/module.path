@@ -1,0 +1,544 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping non_feature_shape_element(Non_feature_shape_element_arm, Non_feature_shape_element_mim);*)
+
+entity_mapping Interface_plane_armx(Interface_plane_armx, interface_plane);
+
+mapping_constraints;
+interface_plane <=
+shape_aspect
+{[shape_aspect
+shape_aspect.product_definitional = .FALSE.]}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Seating_plane_armx(Seating_plane_armx, seating_plane);
+
+mapping_constraints;
+seating_plane <=
+shape_aspect
+{[shape_aspect
+shape_aspect.product_definitional = .FALSE.]}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Non_feature_shape_element(Non_feature_shape_element, shape_aspect);
+
+mapping_constraints;
+{shape_aspect
+shape_aspect.product_definitional = .FALSE.}
+
+end_mapping_constraints;
+
+attribute_mapping scope(scope, $PATH, ee_product_definition_with_annotation_elements);
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Non_feature_shape_element_relationship(Non_feature_shape_element_relationship, shape_aspect_relationship);
+
+mapping_constraints;
+{shape_aspect_relationship.name = 'non feature shape element relationship'}
+
+end_mapping_constraints;
+
+attribute_mapping related(related, $PATH, Non_feature_shape_element);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+
+end_attribute_mapping;
+
+attribute_mapping relating(relating, $PATH, Non_feature_shape_element);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Non_feature_shape_model(Non_feature_shape_model, shape_representation);
+
+mapping_constraints;
+{[{shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect
+{shape_aspect
+shape_aspect.product_definitional = .FALSE.}}]
+[shape_representation <=
+representation
+(representation.id ='nfsm')
+(representation.id ='uvlnfsm')
+(representation.id ='dvlnfsm')]}
+
+end_mapping_constraints;
+
+attribute_mapping model_shape(model_shape, $PATH, shape_definition);
+shape_representation <=
+representation <-
+representation_relationship.rep_2
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'model shape'}
+representation_relationship.rep_1 ->
+representation
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping associated_element(associated_element, $PATH, Non_feature_shape_element);
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect
+{shape_aspect
+shape_aspect.product_definitional = .FALSE.}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping reference_graphic_registration_mark_armx(reference_graphic_registration_mark_armx, reference_graphic_registration_mark);
+
+mapping_constraints;
+reference_graphic_registration_mark <=
+shape_aspect				
+{shape_aspect.product_definitional = .FALSE.}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+(* Removed entity
+entity_mapping Non_feature_shape_composition_relationship__rrwt(Non_feature_shape_composition_relationship__rrwt, representation_relationship_with_transformation);
+
+mapping_constraints;
+representation_relationship_with_transformation <=
+{representation_relationship
+representation_relationship.description = 'non feature shape annotation'}
+
+end_mapping_constraints;
+
+attribute_mapping related_feature_shape_placement(related_feature_shape_placement, $PATH, cartesian_transformation_operator_2d);
+representation_relationship_with_transformation
+representation_relationship_with_transformation.transformation_operator ->
+transformation
+transformation = functionally_defined_transformation
+functionally_defined_transformation =>
+cartesian_transformation_operator
+
+end_attribute_mapping;
+
+attribute_mapping resultant_feature_shape(resultant_feature_shape, $PATH, Non_feature_shape_model);
+representation_relationship_with_transformation <=
+representation_relationship
+representation_relationship.rep_2 ->
+representation
+{[{representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect
+{shape_aspect
+shape_aspect.product_definitional = .FALSE.}}]
+[(representation.id ='nfsm')
+(representation.id ='uvlnfsm')
+(representation.id ='dvlnfsm')]}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping related_feature_shape(related_feature_shape, $PATH, Non_feature_shape_model);
+representation_relationship_with_transformation <=
+representation_relationship
+representation_relationship.rep_1 ->
+representation
+{[{representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect
+{shape_aspect
+shape_aspect.product_definitional = .FALSE.}}]
+[(representation.id ='nfsm')
+(representation.id ='uvlnfsm')
+(representation.id ='dvlnfsm')]}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Non_feature_shape_composition_relationship__mi(Non_feature_shape_composition_relationship__mi, mapped_item);
+
+mapping_constraints;
+mapped_item
+{mapped_item <=
+representation_item
+representation_item.name = 'non feature shape annotation'}
+
+end_mapping_constraints;
+
+attribute_mapping related_feature_shape_placement(related_feature_shape_placement, $PATH, axis2_placement);
+(mapped_item
+mapped_item.mapping_target ->
+representation_item =>
+geometric_representation_item =>
+placement)
+
+end_attribute_mapping;
+
+attribute_mapping resultant_feature_shape(resultant_feature_shape, $PATH, Non_feature_shape_model);
+mapped_item <=
+representation_item <-
+representation.items[i]
+representation
+{[{representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect
+{shape_aspect
+shape_aspect.product_definitional = .FALSE.}}]
+[(representation.id ='nfsm')
+(representation.id ='uvlnfsm')
+(representation.id ='dvlnfsm')]}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping related_feature_shape(related_feature_shape, $PATH, Non_feature_shape_model);
+mapped_item
+mapped_item.mapping_source ->
+representation_map
+{representation_map
+representation_map.mapping_origin ->
+representation_item
+{representation_item
+representation_item.name = 'origin'}
+representation_item =>
+geometric_representation_item =>
+placement
+(placement =>
+axis2_placement_2d)
+(placement =>
+axis2_placement_3d)}
+representation_map.mapped_representation ->
+representation
+{[{representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect
+{shape_aspect
+shape_aspect.product_definitional = .FALSE.}}]
+[(representation.id ='nfsm')
+(representation.id ='uvlnfsm')
+(representation.id ='dvlnfsm')]}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+
+entity_mapping Usage_view_level_non_feature_shape_model(Usage_view_level_non_feature_shape_model, shape_representation);
+				
+mapping_constraints;
+					shape_representation <=
+					representation
+					{representation.id = 'uvlnfsm'}
+end_mapping_constraints;
+
+attribute_mapping associated_element(associated_element, $PATH, View_level_non_feature_shape_element);
+shape_representation <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'vlnfse'}
+end_attribute_mapping;
+
+attribute_mapping model_shape(model_shape, $PATH, view_shape_select);
+
+					shape_representation <=
+					representation
+					{representation.id = 'uvlnfsm'}
+					representation <-
+					representation_relationship.rep_2
+					representation_relationship
+					{representation_relationship
+					representation_relationship.name = 'model shape'}
+					representation_relationship.rep_1 ->
+					representation =>
+					shape_representation
+				
+end_attribute_mapping;
+
+attribute_mapping model_shape(model_shape, $PATH, Physical_unit_shape_model);
+
+					shape_representation <=
+					representation
+					{representation.id = 'uvlnfsm'}
+					representation <-
+					representation_relationship.rep_2
+					representation_relationship
+					{representation_relationship
+					representation_relationship.name = 'model shape'}
+					representation_relationship.rep_1 ->
+					representation =>
+					shape_representation
+				
+end_attribute_mapping;
+
+(* Alternative is no accessable here
+attribute_mapping model_shape(model_shape, $PATH, Part_template_3d_shape_model);
+shape_representation <=
+representation
+{representation.id = 'uvlnfsm'}
+representation <-
+representation_relationship.rep_2
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'model shape'}
+representation_relationship.rep_1 ->
+{[representation
+representation.name = '3d bound volume shape']
+[representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+part_template_definition]}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping model_shape(model_shape, $PATH, Physical_unit_3d_shape_model);
+shape_representation <=
+representation <-
+representation_relationship.rep_2
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'model shape'}
+representation_relationship.rep_1 ->
+{[representation =>
+shape_representation]
+[representation.name = '3d bound volume shape']
+[representation.description = 'pupsm']
+[representation.context_of_items ->
+representation_context =>
+geometric_representation_context
+geometric_representation_context.coordinate_space_dimension = 3]
+[representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit]}
+
+end_attribute_mapping;
+
+attribute_mapping model_shape(model_shape, $PATH, Part_template_non_planar_2d_shape_model);
+shape_representation <=
+representation <-
+representation_relationship.rep_2
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'model shape'}
+representation_relationship.rep_1 ->
+{[representation.name = 'part template non planar 2d shape']
+[representation.description = 'ptnp2dsm']
+[representation =>
+shape_representation =>
+manifold_surface_shape_representation]}
+
+end_attribute_mapping;
+
+attribute_mapping model_shape(model_shape, $PATH, Part_template_planar_shape_model);
+shape_representation <=
+representation <-
+representation_relationship.rep_2
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'model shape'}
+representation_relationship.rep_1 ->
+{[representation =>
+shape_representation]
+[representation.name = 'ppsm']
+[representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+part_template_definition]}
+
+end_attribute_mapping;
+
+attribute_mapping model_shape(model_shape, $PATH, Physical_unit_planar_shape_model);
+shape_representation <=
+representation <-
+representation_relationship.rep_2
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'model shape'}
+representation_relationship.rep_1 ->
+{[representation =>
+shape_representation]
+[representation.name = 'ppsm']
+[representation.description = 'pupsm']
+[representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit]}
+
+end_attribute_mapping;
+*)
+end_entity_mapping;
+
+entity_mapping Design_view_level_non_feature_shape_model(Design_view_level_non_feature_shape_model, shape_representation);
+
+mapping_constraints;
+					shape_representation <=
+					representation
+					{representation.id = 'dvlnfsm'}
+end_mapping_constraints;
+
+attribute_mapping model_shape(model_shape, $PATH, Physical_unit_shape_model);
+shape_representation <=
+representation <-
+representation_relationship.rep_2
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'model shape'}
+representation_relationship.rep_1 ->
+{[representation =>
+shape_representation]
+[representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit]}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping View_level_non_feature_shape_element(View_level_non_feature_shape_element, shape_aspect);
+
+mapping_constraints;
+{shape_aspect
+				shape_aspect.description = 'vlnfse'}
+			
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Usage_concept_usage_relationship_armx(Usage_concept_usage_relationship_armx, usage_concept_usage_relationship)
+extended;
+
+attribute_mapping associated_usage(associated_usage, $PATH, Non_feature_shape_element);
+
+usage_concept_usage_relationship <=
+item_identified_representation_usage
+item_identified_representation_usage.definition ->
+represented_definition 
+represented_definition = shape_aspect                
+shape_aspect
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

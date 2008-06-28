@@ -1,0 +1,135 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping activity(Activity_arm, Activity_mim);*)
+
+uof_mapping Activity(Activity);
+
+entity_mapping Activity(Activity, executed_action);
+
+attribute_mapping name(name, action.name);
+executed_action
+				 executed_action <= action
+				 action.name
+end_attribute_mapping;
+
+attribute_mapping description(description, action.description);
+executed_action
+				 executed_action <= action
+				 action.description
+end_attribute_mapping;
+
+attribute_mapping chosen_method(chosen_method, $PATH, Action_method);
+executed_action
+				 executed_action <= action
+         action.chosen_method -> action_method
+         action_method
+       
+end_attribute_mapping;
+
+attribute_mapping id(id, id_attribute.attribute_value);
+executed_action
+				 executed_action <= action
+				 action <- id_attribute.identified_item
+				 id_attribute.attribute_value
+end_attribute_mapping;
+
+attribute_mapping id_x(id_x, id_attribute.attribute_value);
+executed_action
+				 executed_action <= action
+				 action <- id_attribute.identified_item
+				 id_attribute.attribute_value
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Activity_relationship(Activity_relationship, action_relationship);
+
+attribute_mapping description(description, action_relationship.description);
+
+end_attribute_mapping;
+
+attribute_mapping name(name, action_relationship.name);
+
+end_attribute_mapping;
+
+attribute_mapping related_activity(related_activity, $PATH, Activity);
+
+				 action_relationship
+         action_relationship.related_action -> action
+         action => executed_action
+       
+end_attribute_mapping;
+
+attribute_mapping relating_activity(relating_activity, $PATH, Activity);
+action_relationship
+         action_relationship.relating_action -> action
+         action => executed_action
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Activity_status(Activity_status, action_status);
+
+attribute_mapping assigned_activity(assigned_activity, $PATH, Activity);
+
+				 action_status
+				 action_status.assigned_action -> executed_action
+				 
+end_attribute_mapping;
+
+attribute_mapping status(status, action_status.status);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Applied_activity_assignment(Applied_activity_assignment, applied_action_assignment);
+
+attribute_mapping assigned_activity(assigned_activity, $PATH, Activity);
+applied_action_assignment 
+				 applied_action_assignment <= action_assignment
+				 action_assignment
+				 action_assignment.assigned_action -> action
+				 action => executed_action
+				 
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, action_items);
+applied_action_assignment
+				 applied_action_assignment.items[i] -> action_items
+				 
+end_attribute_mapping;
+
+attribute_mapping role(role, object_role.name);
+applied_action_assignment 
+				 applied_action_assignment <= action_assignment
+				 action_assignment.role -> object_role
+				 object_role.name
+				 
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

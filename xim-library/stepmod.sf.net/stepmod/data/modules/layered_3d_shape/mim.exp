@@ -1,0 +1,27 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4030 - ISO/TS 10303-1694 Layered 3d shape - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3472
+*)
+
+SCHEMA Layered_3d_shape_mim;
+USE FROM Layered_2d_shape_mim; -- ISO/TS 10303-1693
+USE FROM Physical_unit_3d_shape_mim;	-- ISO/TS 10303-1727
+USE FROM Advanced_boundary_representation_mim;	-- ISO/TS 10303-1514
+USE FROM Curve_swept_solid_mim;	-- ISO/TS 10303-1659
+USE FROM Geometrically_bounded_surface_mim;	-- ISO/TS 10303-1507	
+	
+USE FROM representation_schema(representation_relationship_with_transformation);
+
+  ENTITY shape_definition_3d_intersection
+    SUBTYPE OF (representation, 
+                shape_representation_relationship, 
+                representation_relationship_with_transformation);
+      SELF\representation_relationship_with_transformation.transformation_operator : item_defined_transformation;
+    UNIQUE
+      UR1: SELF\representation_relationship.rep_1, SELF\representation_relationship.rep_2;
+    WHERE
+      WR1: SELF\representation_relationship.rep_1 :<>: SELF\representation_relationship.rep_2;
+  END_ENTITY; 
+	
+END_SCHEMA;

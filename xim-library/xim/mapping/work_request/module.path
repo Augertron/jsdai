@@ -1,0 +1,110 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping work_request(Work_request_arm, Work_request_mim);*)
+
+uof_mapping Work_request(Work_request);
+
+entity_mapping Activity_method_assignment(Activity_method_assignment, action_request_solution);
+
+attribute_mapping assigned_method(assigned_method, $PATH, Action_method);
+action_request_solution
+				 action_request_solution.method -> action_method
+				 action_method
+end_attribute_mapping;
+
+attribute_mapping associated_request(associated_request, $PATH, versioned_action_request);
+action_request_solution
+				 action_request_solution.request -> versioned_action_request
+				 versioned_action_request
+end_attribute_mapping;
+
+attribute_mapping relation_type(relation_type, action_request_solution.name);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Affected_items_assignment(Affected_items_assignment, applied_action_request_assignment);
+
+mapping_constraints;
+applied_action_request_assignment
+			   applied_action_request_assignment <= action_request_assignment
+end_mapping_constraints;
+
+attribute_mapping assigned_work_request(assigned_work_request, $PATH, versioned_action_request);
+
+				 applied_action_request_assignment <= action_request_assignment
+				 action_request_assignment.assigned_action_request -> versioned_action_request
+				 
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, action_request_item);
+
+				 applied_action_request_assignment.items[i] -> action_request_item
+				 
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+
+entity_mapping Work_request(Work_request, versioned_action_request);
+
+attribute_mapping request_id(request_id, versioned_action_request.id);
+
+end_attribute_mapping;
+
+attribute_mapping version_id(version_id, versioned_action_request.version);
+
+end_attribute_mapping;
+
+attribute_mapping purpose(purpose, versioned_action_request.purpose);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, versioned_action_request.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Work_request_status(Work_request_status, action_request_status);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping status(status, action_request_status.status);
+
+end_attribute_mapping;
+
+attribute_mapping work_request(work_request, $PATH, versioned_action_request);
+
+				action_request_status
+				action_request_status.assigned_request -> versioned_action_request
+        versioned_action_request
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

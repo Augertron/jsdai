@@ -1,0 +1,76 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3939 - ISO/TS 10303-1664 Device marking - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3396
+*)
+
+SCHEMA Device_marking_arm;
+
+USE FROM Part_template_2d_shape_arm;	-- ISO/TS 10303-1716
+USE FROM Part_template_non_planar_shape_arm;	-- ISO/TS 10303-1719
+	
+REFERENCE FROM Specification_document_arm(get_document_definition);	-- ISO/TS 10303-1747
+
+  TYPE dm_material_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON material_item_select WITH
+    (Marking);
+  END_TYPE;
+
+  TYPE dm_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
+    (Marking);
+  END_TYPE; 
+
+  TYPE marked_message_select = SELECT
+    (Configuration_controlled_message,
+     Text_representation_item);
+  END_TYPE;
+
+  TYPE marking_shape_select = SELECT
+    (Part_template_3d_shape_model,
+     Physical_unit_3d_shape_model,
+     Part_template_non_planar_2d_shape_model,
+     Part_template_planar_shape_model,
+     Physical_unit_planar_shape_model);
+  END_TYPE;
+
+  TYPE message_source_select = SELECT
+    (Organization,
+     Approval,
+     Product_version);
+  END_TYPE;
+
+  TYPE message_type = ENUMERATION OF
+    (part_number,
+     manufacturer_code,
+     revision_identifier,
+     approval_date);
+  END_TYPE;
+    
+  ENTITY Configuration_controlled_message;
+    message_source             : message_source_select;
+    message_content            : STRING;
+    message_type_specification : message_type;
+  END_ENTITY;
+
+  ENTITY Marking;
+      marked_message              : marked_message_select;
+      marked_device_shape         : marking_shape_select;
+      placement                   : Axis_placement;
+      message_representation      : Geometric_model;
+      message_representation_text : Text_literal_with_extent;
+	DERIVE
+		marking_specification: SET[0:?] OF Document_definition :=
+  			get_document_definition(SELF, 'marking specification', 
+  			'SPECIFICATION_DOCUMENT_ARM.SPECIFICATION_DEFINITION');
+	INVERSE
+		marking_material : material_identification FOR items;
+    WHERE
+      WR1 : SIZEOF(QUERY(st <* message_representation\Geometric_model.items | (st = message_representation_text))) = 1;
+      WR2 : SIZEOF(QUERY(ap <* marked_device_shape\Geometric_model.items | (ap = placement))) = 1;
+      WR3 : SIZEOF(TYPEOF(marked_device_shape) * ['DEVICE_MARKING_ARM.PHYSICAL_UNIT_3D_SHAPE_MODEL',
+        'DEVICE_MARKING_ARM.PHYSICAL_UNIT_PLANAR_SHAPE_MODEL']) = 1;
+      WR4 : 'CONDUCTIVITY_MATERIAL_ASPECTS_ARM.'+ 'MATERIAL_IDENTIFICATION_WITH_CONDUCTIVITY_CLASSIFICATION' IN TYPEOF (marking_material);
+   	  WR5 : EXISTS (marking_specification) AND (SIZEOF(marking_specification) = 1);
+  END_ENTITY;
+
+END_SCHEMA;
+

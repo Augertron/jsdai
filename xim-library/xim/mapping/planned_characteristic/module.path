@@ -1,0 +1,181 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping planned_characteristic(Planned_characteristic_arm, Planned_characteristic_mim);*)
+
+
+entity_mapping Evaluated_characteristic_armx(Evaluated_characteristic_armx, evaluated_characteristic);
+
+mapping_constraints;
+evaluated_characteristic <=
+[representation_relationship]
+[representation]
+
+end_mapping_constraints;
+
+attribute_mapping evaluation_result(evaluation_result, representation_relationship.name);
+evaluated_characteristic <=
+representation_relationship
+representation_relationship.name
+{(representation_relationship.name = 'pass')
+(representation_relationship.name = 'fail')
+(representation_relationship.name = 'undefined')}
+
+end_attribute_mapping;
+
+attribute_mapping product_data_status(product_data_status, representation_relationship.description);
+evaluated_characteristic <=
+representation_relationship
+representation_relationship.description
+{(representation_relationship.description = 'valid')
+(representation_relationship.description = 'invalid')
+(representation_relationship.description = 'not evaluatable')
+(representation_relationship.description = 'to be evaluated')}
+
+end_attribute_mapping;
+
+attribute_mapping planned_product_data(planned_product_data, $PATH, Planned_characteristic);
+evaluated_characteristic <=
+representation_relationship
+representation_relationship.rep_1 ->
+representation
+{representation.name = 'planned characteristic'}
+
+end_attribute_mapping;
+
+attribute_mapping product_characterization_data(product_characterization_data, $PATH, Property_value_representation);
+evaluated_characteristic <=
+representation_relationship
+representation_relationship.rep_2 ->
+representation 
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Evaluation_view_definition(Evaluation_view_definition, evaluation_product_definition);
+
+mapping_constraints;
+evaluation_product_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping evaluated_product_definition(evaluated_product_definition, $PATH, Product_view_definition);
+evaluation_product_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+{product_definition_relationship.name = 'evaluated product definition'}
+product_definition_relationship.relating_product_definition ->
+product_definition
+
+end_attribute_mapping;
+
+attribute_mapping evaluation_data(evaluation_data, $PATH, Evaluated_characteristic);
+evaluation_product_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+evaluated_characteristic
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Planned_characteristic(Planned_characteristic, representation);
+
+mapping_constraints;
+representation
+{representation.name = 'planned characteristic'}
+
+end_mapping_constraints;
+
+attribute_mapping planned_coordinated_characteristic(planned_coordinated_characteristic, $PATH, Property_value_representation);
+representation <-
+				representation_relationship.rep_1	
+				representation_relationship
+				representation_relationship.rep_2 ->
+				representation
+				
+end_attribute_mapping;
+
+attribute_mapping reference_requirement(reference_requirement, $PATH, Requirement_assignment_armx);
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition = characterized_object
+characterized_object =>
+requirement_assignment
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Rule_based_evaluated_characteristic(Rule_based_evaluated_characteristic, evaluated_characteristic);
+
+mapping_constraints;
+{[evaluated_characteristic <=
+representation]
+[representation
+representation.name = 'rule based evaluated characteristic']
+[evaluated_characteristic <=
+representation_relationship]}
+
+end_mapping_constraints;
+
+attribute_mapping evaluating_rule(evaluating_rule, $PATH, Rule_version);
+evaluated_characteristic <=
+representation <-
+representation_relationship.rep_2
+{representation_relationship
+representation_relationship.name = 'evaluating rule'}
+representation_relationship.rep_1 ->
+representation <-
+property_definition_representation.used_representation
+property_definition_representation.definition ->
+represented_definition = property_definition
+property_definition.definition ->
+characterized_definition = characterized_product_definition
+characterized_product_definition = product_definition
+product_definition
+{product_definition =>
+rule_software_definition =>
+rule_definition}
+product_definition.formation ->
+product_definition_formation
+{product_definition_formation.description = 'rule version'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

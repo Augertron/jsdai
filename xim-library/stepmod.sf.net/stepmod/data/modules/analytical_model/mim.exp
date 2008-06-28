@@ -1,0 +1,128 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3832 - ISO/TS 10303-1603 Analytical model - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3289
+*)
+
+
+SCHEMA Analytical_model_mim;
+
+USE FROM Model_parameter_mim;	-- ISO/TS 10303-1703
+USE FROM Software_mim;	-- ISO/TS 10303-1746
+USE FROM Document_structure_mim;	-- ISO/TS 10303-1124
+USE FROM Product_view_definition_relationship_mim;	-- ISO/TS 10303-1041	
+
+USE FROM date_time_schema
+	(date_time_role,
+	date_role);
+
+  TYPE am_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH 
+    (analytical_model_definition);
+  END_TYPE; 
+	
+  TYPE am_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH 
+    (digital_analytical_model_vector_port);
+  END_TYPE;
+	
+  ENTITY across_port_variable
+    SUBTYPE OF (port_variable);
+  END_ENTITY;
+
+  ENTITY analog_analytical_model_port
+    SUBTYPE OF (analytical_model_port);
+  END_ENTITY;
+
+  ENTITY analog_port_variable 
+    SUBTYPE OF (representation, representation_item);
+  END_ENTITY;
+
+  ENTITY analytical_model
+    SUBTYPE OF (representation);
+    UNIQUE
+      UR1: SELF\representation.name;
+  END_ENTITY;
+
+  ENTITY analytical_model_definition
+    SUBTYPE OF (product_definition);
+  END_ENTITY;
+
+  ENTITY analytical_model_make_from_relationship
+    SUBTYPE OF (product_definition_relationship);
+      SELF\product_definition_relationship.relating_product_definition : analytical_model_definition;
+      SELF\product_definition_relationship.related_product_definition  : analytical_model_definition;
+    UNIQUE
+      UR1: SELF\product_definition_relationship.relating_product_definition, 
+        SELF\product_definition_relationship.related_product_definition;
+  END_ENTITY;
+
+  ENTITY analytical_model_parameter 
+    SUBTYPE OF (model_parameter);
+  END_ENTITY;
+
+  ENTITY analytical_model_port
+    SUPERTYPE OF (analytical_model_vector_port ANDOR (ONEOF(
+      analog_analytical_model_port, digital_analytical_model_port)))
+    SUBTYPE OF (representation);
+  END_ENTITY;
+
+  ENTITY analytical_model_port_assignment
+    SUBTYPE OF (property_definition_representation, representation_relationship);
+      SELF\property_definition_representation.used_representation : analytical_model_port;
+      SELF\representation_relationship.rep_1 : analytical_representation;
+    DERIVE  
+      SELF\representation_relationship.rep_2 : analytical_model_port := SELF\property_definition_representation.used_representation;
+  END_ENTITY;
+
+  ENTITY analytical_model_scalar_port
+    SUBTYPE OF (analytical_model_vector_port);
+  END_ENTITY;
+
+  ENTITY analytical_model_vector_port
+    SUBTYPE OF (analytical_model_port, compound_representation_item);
+  END_ENTITY;
+
+  ENTITY analytical_representation
+    SUBTYPE OF (representation);
+    UNIQUE
+      UR1: SELF\representation.name;
+  END_ENTITY;
+
+  ENTITY digital_analytical_model_port
+    SUBTYPE OF (analytical_model_port);
+  END_ENTITY;
+
+  ENTITY digital_analytical_model_scalar_port
+    SUBTYPE OF (digital_analytical_model_vector_port, analytical_model_scalar_port);
+  END_ENTITY;
+
+  ENTITY digital_analytical_model_vector_port
+    SUBTYPE OF (analytical_model_vector_port);
+  END_ENTITY;
+
+  ENTITY make_from_model_port_relationship
+    SUBTYPE OF (representation, representation_relationship);
+      SELF\representation_relationship.rep_1 : analytical_model_port;
+      SELF\representation_relationship.rep_2 : analytical_model_port;
+    UNIQUE
+      UR1: SELF\representation_relationship.rep_1, 
+        SELF\representation_relationship.rep_2;
+    WHERE
+      WR1: rep_1 :<>: rep_2;
+  END_ENTITY;
+
+  ENTITY port_variable
+    SUPERTYPE OF (ONEOF(across_port_variable, through_port_variable, transform_port_variable))
+    SUBTYPE OF (representation, representation_item);
+  END_ENTITY;
+
+  ENTITY through_port_variable
+    SUBTYPE OF (port_variable);
+  END_ENTITY;
+	
+  ENTITY transform_port_variable
+    SUBTYPE OF (port_variable);
+  END_ENTITY;
+
+END_SCHEMA;
+
+

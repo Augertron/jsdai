@@ -1,0 +1,454 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping explicit_draughting(Explicit_draughting_arm, Explicit_draughting_mim);*)
+
+
+entity_mapping Datum_feature_callout_armx(Datum_feature_callout_armx, datum_feature_callout);
+
+end_entity_mapping;
+
+entity_mapping Datum_target_callout_armx(Datum_target_callout_armx, datum_target_callout);
+
+end_entity_mapping;
+
+entity_mapping Dimension(Dimension, (angular_dimension)
+(curve_dimension)
+(diameter_dimension)
+(leader_directed_dimension)
+(linear_dimension)
+(ordinate_dimension)
+(radius_dimension)
+);
+
+mapping_constraints;
+(angular_dimension <=
+dimension_curve_directed_callout)
+(curve_dimension <=
+dimension_curve_directed_callout)
+(diameter_dimension <=
+dimension_curve_directed_callout )
+(leader_directed_dimension <=
+leader_directed_callout)
+(linear_dimension <=
+dimension_curve_directed_callout)
+(ordinate_dimension <=
+projection_directed_callout)
+(radius_dimension <=
+dimension_curve_directed_callout)
+end_mapping_constraints;
+
+attribute_mapping id(id, representation_item.name);
+(angular_dimension <= dimension_curve_directed_callout <=)
+(curve_dimension <= dimension_curve_directed_callout <=)
+(diameter_dimension <= dimension_curve_directed_callout <= )
+(leader_directed_dimension <= leader_directed_callout <=)
+(linear_dimension <= dimension_curve_directed_callout <=)
+(ordinate_dimension <= projection_directed_callout <=)
+(radius_dimension <= dimension_curve_directed_callout <=)
+
+draughting_callout <=
+{draughting_callout =>
+draughting_elements}
+geometric_representation_item <=
+representation_item 
+representation_item.name
+end_attribute_mapping;
+
+attribute_mapping primary_callout(primary_callout, $PATH, Dimension_callout_armx);
+((angular_dimension <= dimension_curve_directed_callout 
+dimension_curve_directed_callout <= draughting_callout)
+(curve_dimension <= dimension_curve_directed_callout 
+dimension_curve_directed_callout <= draughting_callout)
+(diameter_dimension <= dimension_curve_directed_callout
+dimension_curve_directed_callout <= draughting_callout)
+(leader_directed_dimension <= leader_directed_callout 
+leader_directed_callout <= draughting_callout)
+(linear_dimension <= dimension_curve_directed_callout 
+dimension_curve_directed_callout <= draughting_callout)
+(ordinate_dimension <= projection_directed_callout
+projection_directed_callout <= draughting_callout)
+(radius_dimension <= dimension_curve_directed_callout 
+dimension_curve_directed_callout <= draughting_callout)
+draughting_callout <-
+{draughting_callout =>
+draughting_elements}
+draughting_callout_relationship.relating_draughting_callout
+draughting_callout_relationship
+{draughting_callout_relationship =>
+dimension_callout_relationship}
+{draughting_callout_relationship.name = 'primary'}
+draughting_callout_relationship.related_draughting_callout ->
+draughting_callout)
+end_attribute_mapping;
+
+attribute_mapping secondary_callout(secondary_callout, ($PATH)($PATH), Dimension_callout_armx);
+(((angular_dimension <=
+dimension_curve_directed_callout <= 
+draughting_callout)
+(curve_dimension <=
+dimension_curve_directed_callout <= 
+draughting_callout)
+(diameter_dimension <=
+dimension_curve_directed_callout <= 
+draughting_callout)
+(leader_directed_dimension <=
+leader_directed_callout <= 
+draughting_callout)
+(linear_dimension <=
+dimension_curve_directed_callout <= 
+draughting_callout)
+(ordinate_dimension <=
+projection_directed_callout <= 
+draughting_callout)
+(radius_dimension <=
+dimension_curve_directed_callout <= 
+draughting_callout)
+draughting_callout <-
+{draughting_callout =>
+draughting_elements}
+draughting_callout_relationship.relating_draughting_callout
+draughting_callout_relationship
+{draughting_callout_relationship =>
+dimension_callout_relationship}
+{draughting_callout_relationship.name = 'primary'}
+draughting_callout_relationship.related_draughting_callout ->
+draughting_callout =>
+draughting_elements))(((angular_dimension <=
+dimension_curve_directed_callout <= draughting_callout)
+(curve_dimension <=
+dimension_curve_directed_callout <= draughting_callout)
+(diameter_dimension <=
+dimension_curve_directed_callout <= draughting_callout)
+(leader_directed_dimension <=
+leader_directed_callout <= draughting_callout)
+(linear_dimension <=
+dimension_curve_directed_callout <= draughting_callout)
+(ordinate_dimension <=
+projection_directed_callout <= draughting_callout)
+(radius_dimension <=
+dimension_curve_directed_callout <= draughting_callout)
+draughting_callout <-
+{draughting_callout =>
+draughting_elements}
+draughting_callout_relationship.relating_draughting_callout
+draughting_callout_relationship
+{draughting_callout_relationship =>
+dimension_callout_relationship}
+{draughting_callout_relationship.name = 'primary'}
+draughting_callout_relationship.related_draughting_callout ->
+draughting_callout =>
+structured_dimension_callout))
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Dimension_callout_armx(Dimension_callout_armx, ((draughting_elements))((structured_dimension_callout)));
+
+mapping_constraints;
+((draughting_elements <=
+draughting_callout))((structured_dimension_callout <=
+draughting_callout))
+end_mapping_constraints;
+
+attribute_mapping callout_element(callout_element, $PATH, dimension_callout_select);
+draughting_elements <=
+draughting_callout
+draughting_callout.contents[i] ->
+draughting_callout_element
+end_attribute_mapping;
+
+attribute_mapping callout_element(callout_element, ($PATH)($PATH), Dimension_symbol);
+((draughting_elements <=
+draughting_callout
+draughting_callout.contents[i] ->
+draughting_callout_element
+draughting_callout_element = annotation_symbol_occurrence
+annotation_symbol_occurrence)
+)((structured_dimension_callout  <=
+draughting_callout
+draughting_callout.contents[i] ->
+draughting_callout_element
+draughting_callout_element = annotation_symbol_occurrence
+annotation_symbol_occurrence)
+)
+end_attribute_mapping;
+
+attribute_mapping callout_element(callout_element, ($PATH)($PATH), Text);
+((draughting_elements <=
+draughting_callout
+draughting_callout.contents[i] ->
+draughting_callout_element
+draughting_callout_element = annotation_text_occurrence
+annotation_text_occurrence))((structured_dimension_callout  <=
+draughting_callout
+draughting_callout.contents[i] ->
+draughting_callout_element
+draughting_callout_element = annotation_text_occurrence
+annotation_text_occurrence))
+end_attribute_mapping;
+
+attribute_mapping is_displaying(is_displaying, ($PATH)($PATH)($PATH)($PATH), Geometric_dimension);
+((draughting_elements <= draughting_callout)
+draughting_callout <=
+{draughting_callout
+draughting_callout.contents[i] ->
+draughting_callout_element
+draughting_callout_element = annotation_text_occurrence
+annotation_text_occurrence <=
+annotation_occurrence <=
+styled_item
+styled_item.item ->
+representation_item =>
+geometric_representation_item =>
+text_literal =>
+dimension_text_associativity}
+geometric_representation_item <=
+representation_item <-
+mapped_item.mapping_target
+mapped_item
+{mapped_item =>
+dimension_text_associativity <=
+text_literal}
+mapped_item.mapping_source ->
+representation_map
+representation_map.mapped_representation ->
+representation =>
+shape_representation =>
+shape_dimension_representation <-
+dimensional_characteristic_representation.representation
+dimensional_characteristic_representation
+dimensional_characteristic_representation.dimension ->
+dimensional_characteristic
+(dimensional_characteristic = dimensional_location
+dimensional_location)
+)(
+(structured_dimension_callout <= draughting_callout)
+draughting_callout <=
+{draughting_callout
+draughting_callout.contents[i] ->
+draughting_callout_element
+draughting_callout_element = annotation_text_occurrence
+annotation_text_occurrence <=
+annotation_occurrence <=
+styled_item
+styled_item.item ->
+representation_item =>
+geometric_representation_item =>
+text_literal =>
+dimension_text_associativity}
+geometric_representation_item <=
+representation_item <-
+mapped_item.mapping_target
+mapped_item
+{mapped_item =>
+dimension_text_associativity <=
+text_literal}
+mapped_item.mapping_source ->
+representation_map
+representation_map.mapped_representation ->
+representation =>
+shape_representation =>
+shape_dimension_representation <-
+dimensional_characteristic_representation.representation
+dimensional_characteristic_representation
+dimensional_characteristic_representation.dimension ->
+dimensional_characteristic
+(dimensional_characteristic = dimensional_location
+dimensional_location)
+)((draughting_elements <= draughting_callout)
+draughting_callout <=
+{draughting_callout
+draughting_callout.contents[i] ->
+draughting_callout_element
+draughting_callout_element = annotation_text_occurrence
+annotation_text_occurrence <=
+annotation_occurrence <=
+styled_item
+styled_item.item ->
+representation_item =>
+geometric_representation_item =>
+text_literal =>
+dimension_text_associativity}
+geometric_representation_item <=
+representation_item <-
+mapped_item.mapping_target
+mapped_item
+{mapped_item =>
+dimension_text_associativity <=
+text_literal}
+mapped_item.mapping_source ->
+representation_map
+representation_map.mapped_representation ->
+representation =>
+shape_representation =>
+shape_dimension_representation <-
+dimensional_characteristic_representation.representation
+dimensional_characteristic_representation
+dimensional_characteristic_representation.dimension ->
+dimensional_characteristic
+(dimensional_characteristic = dimensional_size
+dimensional_size))(
+(structured_dimension_callout <= draughting_callout)
+draughting_callout <=
+{draughting_callout
+draughting_callout.contents[i] ->
+draughting_callout_element
+draughting_callout_element = annotation_text_occurrence
+annotation_text_occurrence <=
+annotation_occurrence <=
+styled_item
+styled_item.item ->
+representation_item =>
+geometric_representation_item =>
+text_literal =>
+dimension_text_associativity}
+geometric_representation_item <=
+representation_item <-
+mapped_item.mapping_target
+mapped_item
+{mapped_item =>
+dimension_text_associativity <=
+text_literal}
+mapped_item.mapping_source ->
+representation_map
+representation_map.mapped_representation ->
+representation =>
+shape_representation =>
+shape_dimension_representation <-
+dimensional_characteristic_representation.representation
+dimensional_characteristic_representation
+dimensional_characteristic_representation.dimension ->
+dimensional_characteristic
+(dimensional_characteristic = dimensional_size
+dimensional_size))
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Dimension_curve_armx(Dimension_curve_armx, dimension_curve);
+
+attribute_mapping terminator(terminator, $PATH, Terminator);
+dimension_curve <=
+annotation_curve_occurrence <-
+terminator_symbol.annotated_curve
+terminator_symbol <=
+{terminator_symbol =>
+dimension_curve_terminator}
+annotation_symbol_occurrence <= 
+annotation_occurrence
+{annotation_occurrence =>
+draughting_annotation_occurrence}
+annotation_occurrence <=
+styled_item
+styled_item.item ->
+representation_item =>
+geometric_representation_item =>
+defined_symbol
+defined_symbol.definition ->
+defined_symbol_select
+defined_symbol_select = pre_defined_symbol
+pre_defined_symbol =>
+pre_defined_terminator_symbol
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Dimension_sequence_pair(Dimension_sequence_pair, dimension_pair);
+
+mapping_constraints;
+dimension_pair <=
+draughting_callout_relationship
+{(draughting_callout_relationship.name = 'chained')
+(draughting_callout_relationship.name = 'parallel')} 
+
+end_mapping_constraints;
+
+attribute_mapping predecessor(predecessor, $PATH, Dimension);
+dimension_pair <=
+draughting_callout_relationship 
+draughting_callout_relationship.relating_draughting_callout -> 
+draughting_callout =>
+{draughting_callout =>
+draughting_elements}
+(dimension_curve_directed_callout => 
+angular_dimension)
+(dimension_curve_directed_callout => 
+curve_dimension)
+(dimension_curve_directed_callout => 
+diameter_dimension)
+(dimension_curve_directed_callout =>
+linear_dimension)
+(projection_directed_callout => 
+ordinate_dimension)
+(dimension_curve_directed_callout => 
+radius_dimension)
+end_attribute_mapping;
+
+attribute_mapping successor(successor, $PATH, Dimension);
+dimension_pair <=
+draughting_callout_relationship 
+draughting_callout_relationship.related_draughting_callout -> 
+draughting_callout =>
+{draughting_callout =>
+draughting_elements}
+(dimension_curve_directed_callout => 
+angular_dimension)
+(dimension_curve_directed_callout => 
+curve_dimension)
+(dimension_curve_directed_callout => 
+diameter_dimension)
+(dimension_curve_directed_callout =>
+linear_dimension)
+(projection_directed_callout => 
+ordinate_dimension)
+(dimension_curve_directed_callout => 
+radius_dimension) 
+ 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Geometric_tolerance_callout(Geometric_tolerance_callout, geometrical_tolerance_callout);
+
+mapping_constraints;
+geometrical_tolerance_callout <=
+draughting_callout
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Projection_curve_armx(Projection_curve_armx, projection_curve);
+
+end_entity_mapping;
+
+entity_mapping Surface_condition_callout_armx(Surface_condition_callout_armx, pre_defined_surface_condition_symbol);
+
+mapping_constraints;
+pre_defined_surface_condition_symbol <=
+pre_defined_symbol
+end_mapping_constraints;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

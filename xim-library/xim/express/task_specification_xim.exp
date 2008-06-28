@@ -1,0 +1,319 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+ Derived from ISO TC184/SC4/WG12 N3181 - ISO/TS 10303-1262 Task specification - EXPRESS ARM
+ by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+
+SCHEMA Task_specification_xim;
+
+USE FROM Activity_method_xim;    -- ISO/TS 10303-1049
+
+USE FROM Activity_method_assignment_xim;    -- ISO/TS 10303-1249
+
+USE FROM Classification_assignment_xim;    -- ISO/TS 10303-1114
+(*
+USE FROM Condition_xim;    -- ISO/TS 10303-1253
+ 
+USE FROM State_definition_xim;    -- ISO/TS 10303-1255
+
+USE FROM State_observed_xim;    -- ISO/TS 10303-1256
+*)
+USE FROM Task_specification_mim;
+
+USE FROM support_resource_schema(text);
+
+USE FROM method_definition_schema(relationship_with_condition);
+
+(** GL - needed by the inverse at Externally_defined_task_element_assignment
+USE FROM External_item_identification_assignment_xim; *)
+
+CONSTANT
+Pre_defined_task_element_assignment_types : SET OF STRING := [
+	'input',
+	'output'];
+END_CONSTANT;
+
+TYPE constraint_context = EXTENSIBLE GENERIC_ENTITY SELECT
+   (task_element, 
+    Task_method_version_armx);
+END_TYPE; 
+(* 
+TYPE ts_external_identification_item_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH (
+	  Externally_defined_task_element_assignment);
+END_TYPE;
+*)
+
+TYPE method_or_method_version = SELECT
+   (Task_method_armx, 
+    Task_method_version_armx);
+END_TYPE; 
+(*
+TYPE state_or_state_definition_select = SELECT
+   (Applied_state_assignment, 
+    Applied_state_definition_assignment, 
+    State, 
+    state_type);
+END_TYPE;
+*)
+TYPE task_classification_item_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON task_classification_item WITH 
+   (action_method, 
+    action_method_relationship, 
+    applied_action_method_assignment, 
+--    Task_element_state_relationship, 
+    Task_method_armx, 
+--    Task_method_state_relationship, 
+    task_objective
+--    Task_objective_state_relationship
+    );
+END_TYPE; 
+
+TYPE task_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items;
+END_TYPE; 
+
+ENTITY Advisory_task_step
+  SUBTYPE OF (Task_step_armx, advisory_task_element);
+END_ENTITY;
+
+ENTITY Concurrent_elements
+  SUBTYPE OF (Structured_task_element, concurrent_task_element);
+  elements : SET[2:?] OF task_element;
+END_ENTITY;
+
+ENTITY Decision_point
+  SUBTYPE OF (Structured_task_element, action_method_to_select_from);
+  condition : Condition;
+  true_case_element : OPTIONAL task_element;
+  false_case_element : OPTIONAL task_element;
+  unknown_case_element : OPTIONAL task_element;
+END_ENTITY;
+
+ENTITY Element_constraint
+  SUBTYPE OF (task_element_relationship);
+  applies_in : OPTIONAL constraint_context;
+END_ENTITY;
+
+ENTITY Looping_element_armx
+  SUPERTYPE OF (ONEOF (Repeat_count,
+                       Repeat_until,
+                       Repeat_while))
+  SUBTYPE OF (Structured_task_element, looping_element);
+  repeated_element : task_element;
+END_ENTITY;
+
+ENTITY Repeat_count
+  SUBTYPE OF (Looping_element_armx, relationship_condition);
+  count : INTEGER;
+  DERIVE
+  -- overlaps with count
+    SELF\relationship_condition.condition_description : text :=?;
+  -- first element has to be SELF, maybe rewrite as WR if needed later  
+    SELF\relationship_condition.applicable_relationships : SET [1:?] OF relationship_with_condition := ?;
+END_ENTITY;
+
+ENTITY Repeat_until
+  SUBTYPE OF (Looping_element_armx, relationship_condition);
+  condition : Condition;
+  DERIVE
+  -- first element has to be SELF, maybe rewrite as WR if needed later  
+  -- second element is overlapping with attribute condition
+    SELF\relationship_condition.applicable_relationships : SET [1:?] OF relationship_with_condition := ?;
+END_ENTITY;
+
+ENTITY Repeat_while
+  SUBTYPE OF (Looping_element_armx, relationship_condition);
+  condition : Condition;
+  DERIVE
+  -- first element has to be SELF, maybe rewrite as WR if needed later  
+  -- second element is overlapping with attribute condition
+    SELF\relationship_condition.applicable_relationships : SET [1:?] OF relationship_with_condition := ?;
+END_ENTITY;
+
+ENTITY Simultaneous_elements
+  SUBTYPE OF (Concurrent_elements, simultaneous_task_element);
+END_ENTITY;
+
+-- done
+ENTITY Structured_task_element
+  ABSTRACT SUPERTYPE OF (ONEOF (Concurrent_elements,
+                                Decision_point,
+                                Looping_element_armx,
+                                Task_element_sequence_armx))
+  SUBTYPE OF (task_element);
+END_ENTITY;
+
+SUBTYPE_CONSTRAINT task_element_subtypes FOR task_element;
+    ABSTRACT SUPERTYPE;
+    					(ONEOF (end_task,
+                                exit_loop,
+                                Structured_task_element,
+--                                Task_element_levels, -- See comment for this entity
+                                task_invocation,
+                                task_step));
+END_SUBTYPE_CONSTRAINT;
+
+ENTITY Task_element_assignment
+  SUBTYPE OF (applied_action_method_assignment);
+  SELF\action_method_assignment.assigned_action_method RENAMED assigned_task_element : task_element;
+  SELF\applied_action_method_assignment.items : SET[1:?] OF task_item;
+  WHERE
+    (** GL - added constraint from the mapping *)
+    WR1: action_method_assignment.role.name = 'Task element assignment';    
+END_ENTITY;
+
+(** It is really a problem - SEDS??? - I declare it as no subtype of task_element as this is not possible *)
+ENTITY Task_element_levels
+  SUBTYPE OF (task_element, action_method_to_select_from);
+  alternatives : SET[2:?] OF task_element;
+END_ENTITY;
+
+ENTITY Task_element_sequence_armx
+  SUBTYPE OF (Structured_task_element, task_element_sequence);
+  elements : LIST[2:?] OF Task_element;
+END_ENTITY;
+(*
+ENTITY Task_element_state_relationship
+  SUBTYPE OF (applied_action_method_assignment);
+  SELF\applied_action_method_assignment.items RENAMED state : state_or_state_definition_select;
+  SELF\action_method_assignment.assigned_action_method  RENAMED task_element : Task_element_armx;
+END_ENTITY;
+*)
+ENTITY Task_invocation_armx
+  SUBTYPE OF (task_invocation);
+  task_method : method_or_method_version;
+END_ENTITY;
+
+ENTITY Task_method_armx
+  SUBTYPE OF (task_method);
+  objective : OPTIONAL SET[1:?] OF task_objective; (** Originally it is mandatory SET[0:?] **)
+END_ENTITY;
+
+ENTITY Task_method_assignment
+  SUBTYPE OF (applied_action_method_assignment);
+  SELF\action_method_assignment.assigned_action_method RENAMED assigned_activity_method : Task_method_armx;
+  SELF\applied_action_method_assignment.items : SET[1:?] OF task_item;
+END_ENTITY;
+
+ENTITY Task_method_relationship_armx
+  SUBTYPE OF (task_method_relationship);
+  SELF\action_method_relationship.relating_method : Task_method_armx;
+  SELF\action_method_relationship.related_method : Task_method_armx;
+END_ENTITY;
+(*
+ENTITY Task_method_state_relationship
+  SUBTYPE OF (applied_action_method_assignment);
+  state : state_or_state_definition_select;
+  SELF\action_method_assignment.assigned_action_method RENAMED task_method : Task_method_version_armx;
+  DERIVE
+    -- overlaps with attribute state
+    SELF\applied_action_method_assignment.items : action_method_items :=?;
+END_ENTITY;
+*)
+ENTITY Task_method_version_armx
+  SUBTYPE OF (task_method_version);
+  content : OPTIONAL task_element;
+  of_task_method : Task_method_armx;
+END_ENTITY;
+
+ENTITY Task_method_version_assignment
+  SUBTYPE OF (applied_action_method_assignment);
+  SELF\action_method_assignment.assigned_action_method RENAMED assigned_task_method : Task_method_version_armx;
+  SELF\applied_action_method_assignment.items : SET[1:?] OF task_item;
+END_ENTITY;
+
+ENTITY Task_method_version_relationship_armx
+  SUBTYPE OF (task_method_version_relationship);
+  SELF\action_method_relationship.relating_method RENAMED relating_task_method : Task_method_version_armx;
+  SELF\action_method_relationship.related_method RENAMED related_task_method : Task_method_version_armx;
+END_ENTITY;
+(* Take entity from MIM instead 
+ENTITY Task_objective;
+  name : STRING;
+  description : STRING;
+END_ENTITY;
+*)
+(*
+ENTITY Task_objective_state_relationship
+  SUBTYPE OF (applied_action_method_assignment);
+  state : state_or_state_definition_select;
+  SELF\action_method_assignment.assigned_action_method  RENAMED task_objective : task_objective;
+  DERIVE
+    -- overlaps
+    SELF\applied_action_method_assignment.items : action_method_items :=?;
+END_ENTITY;
+*)
+ENTITY Task_step_armx
+  SUBTYPE OF (task_step);
+  SELF\action_method.description RENAMED step_text : STRING;
+END_ENTITY;
+
+(** GL - moved from pre_defined_product_...specializations *)
+ENTITY Pre_defined_task_element_assignment
+	ABSTRACT SUPERTYPE OF (ONEOF (task_element_assignment__input,
+							task_element_assignment__output))
+  SUBTYPE OF (task_element_assignment);
+  WHERE
+    WR1: SELF\action_method_assignment.role.name IN Pre_defined_task_element_assignment_types;
+END_ENTITY;
+(* Agreed to remove as unused and causing problems on mapping
+ENTITY Externally_defined_task_element_assignment
+  SUBTYPE OF (Task_element_assignment);
+INVERSE
+  source : External_source_identification FOR item;
+WHERE
+  WR1: NOT (SELF\action_method_assignment.role.name IN Pre_defined_task_element_assignment_types);
+END_ENTITY;
+*)
+ENTITY Task_element_assignment__input
+  SUBTYPE OF (Pre_defined_task_element_assignment);
+DERIVE
+   SELF\action_method_assignment.role : action_method_role := action_method_role('input', ?);
+END_ENTITY;
+
+ENTITY Task_element_assignment__output
+  SUBTYPE OF (Pre_defined_task_element_assignment);
+DERIVE
+   SELF\action_method_assignment.role : action_method_role := action_method_role('output', ?);
+END_ENTITY;
+(*
+SUBTYPE_CONSTRAINT ts_task_element_assignment_subtypes FOR task_element_assignment;
+	ABSTRACT SUPERTYPE;
+    ONEOF (Pre_defined_task_element_assignment,
+           Externally_defined_task_element_assignment);
+END_SUBTYPE_CONSTRAINT;
+*)
+SUBTYPE_CONSTRAINT restrict_activity_method_relationship FOR action_method_relationship;
+  ONEOF (task_element_relationship,
+         task_method_relationship,
+         task_method_version_relationship);
+END_SUBTYPE_CONSTRAINT;
+
+SUBTYPE_CONSTRAINT restrict_activity_method_subtypes FOR action_method;
+  ONEOF (task_element,
+         task_method,
+         task_method_version);
+END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA;  -- Task_specification_xim

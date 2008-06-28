@@ -1,0 +1,632 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping specification_control(Specification_control_arm, Specification_control_mim);*)
+
+uof_mapping Specification_Control(Specification_Control);
+
+entity_mapping Breakdown_node_relationship(Breakdown_node_relationship, product_definition_usage);
+
+attribute_mapping relating(relating, $PATH, Physical_element_definition);
+
+product_definition_usage <= product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'conceptual definition'}
+
+end_attribute_mapping;
+
+attribute_mapping relating(relating, $PATH, Functional_element_definition);
+
+product_definition_usage <= product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'functional definition'}
+
+end_attribute_mapping;
+
+attribute_mapping relating(relating, $PATH, Alternative_solution);
+
+product_definition_usage <= product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'alternative definition'}
+
+end_attribute_mapping;
+
+attribute_mapping related(related, $PATH, Physical_element_definition);
+
+product_definition_usage <= product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'conceptual definition'}
+
+end_attribute_mapping;
+
+attribute_mapping related(related, $PATH, Functional_element_definition);
+
+product_definition_usage <= product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'functional definition'}
+
+end_attribute_mapping;
+
+attribute_mapping relation_type(relation_type, product_definition_relationship.name);
+
+product_definition_usage <= product_definition_relationship
+product_definition_relationship.name
+
+end_attribute_mapping;
+
+attribute_mapping description(description, product_definition_relationship.description);
+
+product_definition_usage <= product_definition_relationship
+product_definition_relationship.description
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Class_breakdown_association(Class_breakdown_association, configuration_design);
+
+attribute_mapping considered_class(considered_class, $PATH, Product_class_armx);
+
+configuration_design.configuration -> configuration_item
+{(configuration_item.name = 'functional structure item')
+(configuration_item.name = 'conceptual structure item')}
+configuration_item.item_concept ->
+product_concept =>
+product_class
+
+end_attribute_mapping;
+
+attribute_mapping breakdown_element(breakdown_element, $PATH, Functional_element_definition);
+
+configuration_design
+{configuration_design.configuration -> configuration_item
+configuration_item.name = 'functional structure item'}
+configuration_design.design -> configuration_design_item
+configuration_design_item = product_definition
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'functional definition'}
+
+end_attribute_mapping;
+
+attribute_mapping breakdown_element(breakdown_element, $PATH, Physical_element_definition);
+
+configuration_design
+{configuration_design.configuration -> configuration_item
+configuration_item.name = 'conceptual structure item'}
+configuration_design.design -> configuration_design_item
+configuration_design_item = product_definition
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'conceptual definition'}
+
+end_attribute_mapping;
+
+attribute_mapping relation_type(relation_type, configuration_design.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, configuration_design.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Design_constraint_context_association(Design_constraint_context_association, configuration_design);
+
+mapping_constraints;
+
+{configuration_design.name = 'design constraint usage'}
+
+end_mapping_constraints;
+
+attribute_mapping constraint_definition(constraint_definition, $PATH, Design_constraint_definition);
+
+configuration_design.design ->
+configuration_design_item
+configuration_design_item = product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'design constraint definition'}
+
+end_attribute_mapping;
+
+attribute_mapping constraint_context(constraint_context, $PATH, Product_class_armx);
+
+configuration_design
+{configuration_design.name = 'design constraint usage'}
+configuration_design.configuration ->
+configuration_item
+{configuration_item.name = 'design constraint usage'}
+configuration_item.item_concept ->
+product_concept => 
+product_class 
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Design_constraint_definition(Design_constraint_definition, product_definition);
+
+mapping_constraints;
+
+product_definition.frame_of_reference -> product_definition_context
+product_definition_context <= application_context_element
+{application_context_element.name = 'design constraint definition'}
+
+end_mapping_constraints;
+
+attribute_mapping defined_version(defined_version, $PATH, Requirement_version);
+product_definition.formation -> product_definition_formation
+{product_definition_formation.of_product -> product
+product <- product_related_product_category.products[i]
+product_related_product_category <= product_category
+product_category.name = 'requirement'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Design_constraint_association(Design_constraint_association, product_definition_relationship);
+
+mapping_constraints;
+
+{product_definition_relationship.name = 'design constraint association'}
+
+end_mapping_constraints;
+
+attribute_mapping constraint_definition(constraint_definition, $PATH, Design_constraint_definition);
+
+product_definition_relationship.relating_product_definition -> product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'design constraint definition'}
+
+end_attribute_mapping;
+
+attribute_mapping constrained_object(constrained_object, $PATH, Alternative_solution);
+
+product_definition_relationship.related_product_definition -> product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'alternative definition'}
+
+end_attribute_mapping;
+
+attribute_mapping constrained_object(constrained_object, $PATH, Functional_element_definition);
+
+product_definition_relationship.related_product_definition -> product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'functional definition'}
+
+end_attribute_mapping;
+
+attribute_mapping constrained_object(constrained_object, $PATH, Physical_element_definition);
+
+product_definition_relationship.related_product_definition -> product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'conceptual definition'}
+
+end_attribute_mapping;
+
+attribute_mapping name(name, product_definition_relationship.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Part_function_association(Part_function_association, product_definition_relationship);
+
+attribute_mapping relating_view(relating_view, $PATH, Functional_element_definition);
+
+product_definition_relationship.relating_product_definition -> product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'functional definition'}
+
+end_attribute_mapping;
+
+attribute_mapping related_view(related_view, $PATH, Part_view_definition);
+
+product_definition_relationship.related_product_definition -> product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'part definition'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Part_occurrence_relationship(Part_occurrence_relationship, (product_definition_relationship)(product_definition_substitute));
+
+attribute_mapping relating_view(relating_view, ($PATH)($PATH), Definition_based_part_occurrence);
+(
+product_definition_relationship.relating_product_definition -> product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'part occurrence'}
+)(
+product_definition_substitute
+product_definition_substitute.context_relationship ->
+product_definition_relationship.relating_product_definition -> 
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'part occurrence'}
+)
+end_attribute_mapping;
+
+attribute_mapping relating_view(relating_view, ($PATH)($PATH), Specification_based_part_occurrence);
+(
+product_definition_relationship.relating_product_definition -> product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'part occurrence'}
+)(
+product_definition_substitute
+product_definition_substitute.context_relationship ->
+product_definition_relationship.relating_product_definition -> 
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'part occurrence'}
+)
+end_attribute_mapping;
+
+attribute_mapping related_view(related_view, ($PATH)($PATH), Definition_based_part_occurrence);
+(
+product_definition_relationship.related_product_definition -> product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'part occurrence'}
+)(
+product_definition_substitute
+product_definition_substitute.substitute_definition -> product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'part occurrence'}
+)
+end_attribute_mapping;
+
+attribute_mapping related_view(related_view, ($PATH)($PATH), Specification_based_part_occurrence);
+(
+product_definition_relationship.related_product_definition -> product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'part occurrence'}
+)(
+product_definition_substitute
+product_definition_substitute.substitute_definition -> product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'part occurrence'}
+)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Replaced_usage_relationship(Replaced_usage_relationship, product_definition_substitute);
+
+attribute_mapping usage_context(usage_context, $PATH, instance_usage_context_select);
+
+					product_definition_substitute
+					product_definition_substitute.substitute_definition ->
+					product_definition
+					product_definition.frame_of_reference ->
+					product_definition_context
+					product_definition_context =>
+					instance_usage_context_assignment.items[i] ->
+					instance_usage_context_select 
+				
+end_attribute_mapping;
+
+attribute_mapping usage_context(usage_context, $PATH, Solution_element);
+
+product_definition_substitute
+product_definition_substitute.context_relationship ->
+product_definition_relationship                         (* NEW Line *)
+{product_definition_relationship.name = 'realization'}  (* Moved line *)
+{product_definition_relationship =>                     (* Modified line *)
+product_definition_usage}                               (* Modified line *)
+
+end_attribute_mapping;
+
+attribute_mapping usage_context(usage_context, $PATH, Collected_item_association);
+
+product_definition_substitute
+product_definition_substitute.context_relationship ->
+product_definition_relationship
+{product_definition_relationship.name = 'collection membership'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Specification_category_breakdown_influence(Specification_category_breakdown_influence, class_usage_effectivity_context_assignment);
+
+attribute_mapping influencing_category(influencing_category, $PATH, Class_category_association);
+
+class_usage_effectivity_context_assignment <=
+effectivity_context_assignment
+{effectivity_context_assignment.role ->
+effectivity_context_role
+effectivity_context_role.name = 'class usage influence'}
+effectivity_context_assignment.assigned_effectivity_assignment ->
+effectivity_assignment =>
+{effectivity_assignment.assigned_effectivity ->
+|effectivity|
+effectivity.id = 'class usage'}
+applied_effectivity_assignment
+applied_effectivity_assignment.items[i] ->
+effectivity_item
+effectivity_item = product_concept_feature_category_usage
+product_concept_feature_category_usage
+
+end_attribute_mapping;
+
+attribute_mapping influenced_breakdown_node(influenced_breakdown_node, $PATH, Physical_element_definition);
+
+class_usage_effectivity_context_assignment
+class_usage_effectivity_context_assignment.items[1] -> class_usage_effectivity_context_item
+class_usage_effectivity_context_item = product_definition
+{product_definition.formation -> (* ADDED line *)
+product_definition_formation     (* ADDED line *)
+product_definition_formation.of_product -> product
+product <-
+product_related_product_category.products[i]
+product_related_product_category <= product_category
+product_category.name='conceptual product'}
+
+end_attribute_mapping;
+
+attribute_mapping influenced_breakdown_node(influenced_breakdown_node, $PATH, Functional_element_definition);
+
+class_usage_effectivity_context_assignment
+class_usage_effectivity_context_assignment.items[1] -> class_usage_effectivity_context_item
+class_usage_effectivity_context_item = product_definition
+{product_definition.formation -> (* ADDED line *)
+product_definition_formation     (* ADDED line *)
+product_definition_formation.of_product -> product
+product <-
+product_related_product_category.products[i]
+product_related_product_category <= product_category
+product_category.name='functional product'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+
+entity_mapping Configuration(Configuration, configured_effectivity_assignment)
+extended;
+(* Removed from XIMs
+attribute_mapping configured_element(configured_element, $PATH, Alternative_solution);
+
+	 configured_effectivity_assignment
+	 configured_effectivity_assignment.items[1] -> configured_effectivity_item
+	 configured_effectivity_item = product_definition
+	 product_definition
+	 {product_definition.frame_of_reference ->
+	 product_definition_context <=
+	 application_context_element
+	 application_context_element.name = 'alternative definition'}
+	 
+end_attribute_mapping;
+*)
+attribute_mapping is_solution_for(is_solution_for, $PATH, Class_condition_association);
+
+	 configured_effectivity_assignment <=
+	 effectivity_assignment <- effectivity_context_assignment.assigned_effectivity_assignment
+	 {effectivity_context_assignment.role -> effectivity_context_role
+	 effectivity_context_role.name = 'specification based condition'}
+	 effectivity_context_assignment => configured_effectivity_context_assignment
+	 configured_effectivity_context_assignment.items[1] -> configured_effectivity_context_item
+	 configured_effectivity_context_item = product_concept_feature_association
+		
+end_attribute_mapping;
+
+attribute_mapping is_solution_for(is_solution_for, $PATH, Class_specification_association);
+
+	 configured_effectivity_assignment <=
+	 effectivity_assignment <- effectivity_context_assignment.assigned_effectivity_assignment
+	 {effectivity_context_assignment.role -> effectivity_context_role
+	 effectivity_context_role.name = 'specification based condition'}
+	 effectivity_context_assignment => configured_effectivity_context_assignment
+	 configured_effectivity_context_assignment.items[1] -> configured_effectivity_context_item
+	 configured_effectivity_context_item = product_concept_feature_association
+	 
+end_attribute_mapping;
+
+attribute_mapping configuration_type(configuration_type, object_role.description);
+
+	 configured_effectivity_assignment <= effectivity_assignment
+	 effectivity_assignment.role -> object_role
+	 object_role.description
+	 {(object_role.description = 'design')
+	 (object_role.description = 'usage')}
+	 
+end_attribute_mapping;
+
+attribute_mapping inheritance_type(inheritance_type, object_role.name);
+
+	 configured_effectivity_assignment <= effectivity_assignment
+   effectivity_assignment.role -> object_role
+	 object_role.name
+	 {(object_role.name = 'exception')
+	 (object_role.name = 'inherited')
+	 (object_role.name = 'local')}
+	 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Design_constraint_relationship(Design_constraint_relationship, product_definition_relationship);
+
+attribute_mapping relating_view(relating_view, $PATH, Design_constraint_definition);
+
+product_definition_relationship.relating_product_definition -> product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'design constraint definition'}
+
+end_attribute_mapping;
+
+attribute_mapping related_view(related_view, $PATH, Design_constraint_definition);
+
+product_definition_relationship.related_product_definition -> product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'design constraint definition'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Complex_node_relationship(Complex_node_relationship, product_definition_formation_relationship);
+
+attribute_mapping relating(relating, $PATH, Physical_element_definition);
+
+product_definition_formation_relationship.relating_product_definition_formation ->
+product_definition_formation
+{product_definition_formation.of_product -> product
+product <-
+product_related_product_category.products[i]
+product_related_product_category <= product_category
+product_category.name='conceptual product'}
+
+end_attribute_mapping;
+
+attribute_mapping relating(relating, $PATH, Functional_element_definition);
+
+product_definition_formation_relationship.relating_product_definition_formation ->
+product_definition_formation
+{product_definition_formation.of_product -> product
+product <-
+product_related_product_category.products[i]
+product_related_product_category <= product_category
+product_category.name='functionality'}
+
+end_attribute_mapping;
+
+attribute_mapping relating(relating, $PATH, Alternative_solution);
+
+product_definition_formation_relationship.relating_product_definition_formation ->
+product_definition_formation
+{product_definition_formation.of_product -> product
+product <-
+product_related_product_category.products[i]
+product_related_product_category <= product_category
+product_category.name='alternative solution'}
+
+end_attribute_mapping;
+
+attribute_mapping related(related, $PATH, Physical_element_definition);
+
+product_definition_formation_relationship.related_product_definition_formation ->
+product_definition_formation
+{product_definition_formation.of_product -> product
+product <-
+product_related_product_category.products[i]
+product_related_product_category <= product_category
+product_category.name='conceptual product'}
+
+end_attribute_mapping;
+
+attribute_mapping related(related, $PATH, Functional_element_definition);
+
+product_definition_formation_relationship.related_product_definition_formation ->
+product_definition_formation
+{product_definition_formation.of_product -> product
+product <-
+product_related_product_category.products[i]
+product_related_product_category <= product_category
+product_category.name='functionality'}
+
+end_attribute_mapping;
+
+attribute_mapping related(related, $PATH, Alternative_solution);
+
+product_definition_formation_relationship.related_product_definition_formation ->
+product_definition_formation
+{product_definition_formation.of_product -> product
+product <-
+product_related_product_category.products[i]
+product_related_product_category <= product_category
+product_category.name='alternative solution'}
+
+end_attribute_mapping;
+
+attribute_mapping relation_type(relation_type, product_definition_formation_relationship.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, product_definition_formation_relationship.description);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

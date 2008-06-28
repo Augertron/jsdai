@@ -1,0 +1,673 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3957 - ISO/TS 10303-1670 Fabrication technology - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3663
+*)
+
+SCHEMA Fabrication_technology_arm;
+USE FROM Constructive_solid_geometry_2d_arm; 	-- ISO/TS 10303-1731
+USE FROM Extended_geometric_tolerance_arm;  -- ISO/TS 10303-1666
+USE FROM Part_template_shape_with_parameters_arm; -- ISO/TS 10303-1720
+
+REFERENCE FROM Specification_document_arm(get_document_definition);	-- ISO/TS 10303-1747
+REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
+	
+
+  TYPE ft_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
+    (Passage_technology,
+     Stratum_technology);
+  END_TYPE; 
+	
+  TYPE ft_material_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON material_item_select WITH
+	(Passage_technology,
+	Stratum_technology);
+  END_TYPE;
+
+  TYPE ft_property_assignment_select = SELECT BASED_ON property_assignment_select WITH 
+    (Stratum_technology, 
+     Passage_technology);
+  END_TYPE; 
+
+  TYPE ft_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
+    (Passage_technology,
+     Stratum_technology,
+     Stratum_technology_occurrence);
+  END_TYPE; 
+ 
+  TYPE ft_terminus_condition = EXTENSIBLE ENUMERATION OF
+    (bilateral_bond,
+     bilateral_complete_removal,
+     unilateral_bond);
+  END_TYPE;
+
+  SUBTYPE_CONSTRAINT ft_shape_feature_subtypes FOR Shape_feature; 
+    (ONEOF (Via_template_terminal,
+            Component_termination_passage_template_terminal,
+            Land_template_terminal));
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT ft_template_definition_subtypes FOR Template_definition; 
+    (ONEOF (Geometric_template,
+            Single_stratum_template,
+            Stratum_stack_model));
+  END_SUBTYPE_CONSTRAINT;
+
+  TYPE land_template_terminal_class = ENUMERATION OF
+    (surface_point_class,
+     edge_curve_class,
+     edge_point_class,
+     surface_area_class);
+  END_TYPE;
+
+  TYPE layer_position_type = ENUMERATION OF
+    (secondary,
+     all,
+     external,
+     primary,
+     internal);
+  END_TYPE;
+
+  TYPE predefined_design_layer_purpose = ENUMERATION OF
+    (other_signal,
+     lands_only,
+     power_or_ground,
+     embedded_passive_capacitor_dielectric,
+     embedded_passive_resistor);
+  END_TYPE;
+
+  TYPE mt_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH  
+    (Land_physical_template,
+     Design_layer_technology,
+     Documentation_layer_technology);
+  END_TYPE;
+
+  TYPE mt_usage_concept = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON usage_concept WITH 
+    (Land_template_terminal);
+  END_TYPE;
+
+  TYPE predefined_documentation_layer_purpose = ENUMERATION OF
+    (soldermask,
+     solderpaste,
+     silkscreen,
+     generic_layer,
+     glue,
+     gluemask,
+     pastemask,
+     finish_coating);
+  END_TYPE;
+
+  TYPE stiffness_class = ENUMERATION OF
+    (fluid_like_with_constant_thickness,
+     fluid_like_with_varying_thickness,
+     stiff_laminate);
+  END_TYPE;
+
+  TYPE up_or_down = ENUMERATION OF
+    (independent, 
+     precedent, 
+     subsequent);
+  END_TYPE;
+  
+  ENTITY Blind_passage_template
+    SUBTYPE OF (Unsupported_passage_template);
+      bottom_distance_from_datum_reference : Shape_dimension_representation;    
+      datum_reference_layer                : Stratum_technology_occurrence;
+      datum_reference_side                 : Stratum_technology_occurrence_link;
+      of_measure_orientation               : measure_orientation;
+  END_ENTITY;
+
+  ENTITY Component_termination_passage_template
+    SUBTYPE OF (Continuous_template, Inter_stratum_feature_template);
+      SELF\Inter_stratum_feature_template.of_passage_technology : Default_component_termination_passage_definition;
+    INVERSE
+      access_mechanisms : SET[2:?] OF component_termination_passage_template_terminal FOR associated_definition;
+  END_ENTITY;
+
+  ENTITY Component_termination_passage_template_interface_terminal
+    SUBTYPE OF (Component_termination_passage_template_terminal);
+  END_ENTITY;
+
+  ENTITY Component_termination_passage_template_join_terminal
+    SUBTYPE OF (Component_termination_passage_template_terminal);
+      disallowed_inter_stratum_extent : OPTIONAL SET[1:?] OF Stratum_technology_occurrence_link;
+  END_ENTITY;
+
+  ENTITY Component_termination_passage_template_terminal
+    ABSTRACT SUPERTYPE OF (ONEOF (Component_termination_passage_template_interface_terminal,
+      Component_termination_passage_template_join_terminal))
+    SUBTYPE OF (Shape_feature);
+      SELF\Shape_element.containing_shape RENAMED associated_definition : Component_termination_passage_template;
+      SELF\Shape_feature.connection_area                                : OPTIONAL SET[1:?] OF Connection_zone_in_layout_template;
+    UNIQUE
+      UR1 : SELF\Shape_element.element_name, associated_definition;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Shape_element.description);
+  END_ENTITY;
+  
+  ENTITY Continuous_template
+    SUBTYPE OF (Geometric_template);
+    WHERE
+      WR1 : SIZEOF(QUERY(s <* SELF\Geometric_template.shapes |
+          NOT 
+          (SIZEOF(['CONSTRUCTIVE_SOLID_GEOMETRY_2D_ARM.SINGLE_AREA_CSG_2D_MODEL',
+                   'PART_TEMPLATE_EXTENSION_ARM.PLANAR_PATH_SHAPE_MODEL_WITH_PARAMETERS'] * TYPEOF(s))
+           = 1)
+          )) = 0;
+  END_ENTITY;
+
+  ENTITY Copy_stratum_technology_occurrence_relationship
+    SUBTYPE OF (Derived_stratum_technology_occurrence_relationship);
+  END_ENTITY;
+
+  ENTITY Counterbore_passage_template
+    SUBTYPE OF (Unsupported_passage_template);
+      smaller_passage : Unsupported_passage_template;
+      larger_passage  : Blind_passage_template;
+  END_ENTITY;
+
+  ENTITY Countersunk_passage_template
+    SUBTYPE OF (Unsupported_passage_template);
+      constant_diameter_passage : Unsupported_passage_template;
+      tapered_passage           : Blind_passage_template;
+  END_ENTITY;
+
+  ENTITY Default_attachment_size_based_land_physical_template
+    SUBTYPE OF (Land_physical_template, Shape_feature);
+    DERIVE
+      SELF\Shape_element.containing_shape : Default_attachment_size_based_land_physical_template := SELF;
+      SELF\Shape_feature.element_name : STRING := '';      
+    INVERSE
+      interface_access_mechanisms : SET[1:?] OF land_template_interface_terminal FOR associated_definition;
+    WHERE
+      WR1 : NOT (SIZEOF(interface_access_mechanisms[1].connection_area) > 0) OR 
+                 ('minimum attachment region size' IN 
+                  ft_get_zone_name(interface_access_mechanisms[1].connection_area));
+      WR2 : NOT (SIZEOF(interface_access_mechanisms[1].connection_area) > 1) OR 
+                 (SIZEOF(['maximum attachment region size','heel area', 'toe area'] * 
+                  ft_get_zone_name(interface_access_mechanisms[1].connection_area)) = 1);
+      WR3 : NOT (SIZEOF(interface_access_mechanisms[1].connection_area) > 2) OR 
+                 (SIZEOF(['maximum attachment region size','heel area', 'toe area'] * 
+                  ft_get_zone_name(interface_access_mechanisms[1].connection_area)) = 2);
+      WR4 : NOT (SIZEOF(interface_access_mechanisms[1].connection_area) > 3) OR 
+                 (SIZEOF(['maximum attachment region size','heel area', 'toe area'] * 
+                  ft_get_zone_name(interface_access_mechanisms[1].connection_area)) = 3);
+      WR5 : NOT EXISTS(SELF\Shape_feature.connection_area);
+      WR6 : SIZEOF(interface_access_mechanisms) = 1;   
+      WR7 : SELF\Shape_element.id = SELF\Item_shape.id;      
+  END_ENTITY;
+
+  ENTITY Default_component_termination_passage_definition
+    SUBTYPE OF (Passage_technology);
+      allowed_component_terminal_extent                        : Length_tolerance_characteristic;
+      SELF\Passage_technology.as_finished_deposition_thickness : Length_tolerance_characteristic;
+      SELF\Passage_technology.as_finished_passage_extent       : Length_tolerance_characteristic;
+    INVERSE
+      SELF\Passage_technology.deposition_material : SET [1:1] OF Passage_deposition_material_identification FOR items;
+    WHERE
+      WR1 : 'CONDUCTIVITY_MATERIAL_ASPECTS_ARM.'+ 'MATERIAL_IDENTIFICATION_WITH_CONDUCTIVITY_CLASSIFICATION' IN TYPEOF (deposition_material[1]);
+  END_ENTITY;
+
+  ENTITY Default_passage_based_land_physical_template
+    ABSTRACT SUPERTYPE OF (ONEOF (Default_plated_passage_based_land_physical_template,
+    Default_unsupported_passage_based_land_physical_template))
+    SUBTYPE OF (Land_physical_template);
+    of_passage_technology         : Passage_technology;
+  END_ENTITY;
+
+  ENTITY Default_plated_passage_based_land_physical_template
+	SUBTYPE OF (Default_passage_based_land_physical_template);
+	WHERE
+	  WR1 : SELF\Default_passage_based_land_physical_template.of_passage_technology.plated_passage = TRUE;
+  END_ENTITY;
+
+  ENTITY Default_tapered_blind_via_definition
+    SUBTYPE OF (Default_via_definition);
+      as_finished_interior_passage_extent      : Length_tolerance_characteristic;
+    WHERE
+      WR1: less(as_finished_interior_passage_extent, SELF\default_via_definition.as_finished_passage_extent);
+  END_ENTITY;
+
+  ENTITY Default_unsupported_passage_based_land_physical_template
+    SUBTYPE OF (Default_passage_based_land_physical_template);
+      SELF\Default_passage_based_land_physical_template.of_passage_technology : Default_unsupported_passage_definition;
+  END_ENTITY;
+
+  ENTITY Default_unsupported_passage_definition
+    SUBTYPE OF (Passage_technology);
+      SELF\Passage_technology.as_finished_passage_extent : Length_tolerance_characteristic;
+  END_ENTITY;
+
+  ENTITY Default_via_definition
+    SUBTYPE OF (Passage_technology);
+      SELF\Passage_technology.as_finished_deposition_thickness : Length_tolerance_characteristic;
+      SELF\Passage_technology.as_finished_passage_extent       : Length_tolerance_characteristic;
+    INVERSE
+      SELF\Passage_technology.deposition_material : SET [1:1] OF Passage_deposition_material_identification FOR items;
+    WHERE
+      WR1 : 'CONDUCTIVITY_MATERIAL_ASPECTS_ARM.'+ 'MATERIAL_IDENTIFICATION_WITH_CONDUCTIVITY_CLASSIFICATION' IN TYPEOF (deposition_material[1]);
+  END_ENTITY;
+
+  ENTITY Derived_stratum_technology_occurrence_relationship
+    ABSTRACT SUPERTYPE OF (ONEOF (
+      Copy_stratum_technology_occurrence_relationship,
+      Inverse_copy_stratum_technology_occurrence_relationship))
+    SUBTYPE OF (Stratum_technology_occurrence_relationship);
+  END_ENTITY;
+
+  ENTITY Design_layer_technology
+    SUBTYPE OF (Stratum_technology);
+      design_layer_purpose                                     : OPTIONAL predefined_design_layer_purpose;
+      SELF\Stratum_technology.minimum_finished_feature_size    : Length_data_element;
+      SELF\Stratum_technology.minimum_finished_feature_spacing : Length_data_element;
+    INVERSE
+	  externally_defined_design_layer_purpose : SET [0:1] OF External_source_identification FOR item;      
+   WHERE
+	WR1 : (SIZEOF([SELF\Stratum_technology.stratum_material[1]\Material_identification_with_conductivity_classification.electrical_conductivity_classification,
+           SELF\Stratum_technology.stratum_material[1]\Material_identification_with_conductivity_classification.thermal_conductivity_classification] *
+           ['conductive']) >= 1) OR
+       (SELF\Stratum_technology.stratum_material[1]\Material_identification_with_conductivity_classification.magnetic_permeability_classification IN ['highly permeable']) OR
+       (SELF\Stratum_technology.stratum_material[1]\Material_identification_with_conductivity_classification.optical_insertion_loss_classification IN ['vacuum', 'very low loss', 'low loss']);
+    WR2 : (EXISTS (design_layer_purpose)) XOR ((SIZEOF(externally_defined_design_layer_purpose)) = 1);       
+  END_ENTITY;
+
+  ENTITY Documentation_layer_technology
+    SUBTYPE OF (Stratum_technology);
+      pre_defined_documentation_layer_purpose : OPTIONAL predefined_documentation_layer_purpose;
+    INVERSE
+	  externally_defined_documentation_layer_purpose : SET [0:1] OF External_source_identification FOR item;      
+	WHERE
+	  WR1: (EXISTS (pre_defined_documentation_layer_purpose)) XOR ((SIZEOF(externally_defined_documentation_layer_purpose)) = 1);
+  END_ENTITY;
+
+  ENTITY Filled_unsupported_passage_template 
+    SUBTYPE OF (Unsupported_passage_template);
+    INVERSE
+      fill_material : SET[1:1] OF Material_identification FOR items;
+    WHERE
+      WR1: 'CONDUCTIVITY_MATERIAL_ASPECTS_ARM.'+ 'MATERIAL_IDENTIFICATION_WITH_CONDUCTIVITY_CLASSIFICATION' IN TYPEOF(fill_material[1]);
+  END_ENTITY;
+
+  ENTITY Inter_stratum_feature_template
+    SUPERTYPE OF (ONEOF(Component_termination_passage_template,
+      Unsupported_passage_template,
+      Via_template))
+    SUBTYPE OF (Geometric_template);
+      of_passage_technology : Passage_technology;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+  ENTITY Inverse_copy_stratum_technology_occurrence_relationship
+    SUBTYPE OF (Derived_stratum_technology_occurrence_relationship);
+  END_ENTITY;
+
+  ENTITY Land_physical_template
+    SUPERTYPE OF (ONEOF (Default_passage_based_land_physical_template,
+		 Default_attachment_size_based_land_physical_template))
+    SUBTYPE OF (Stratum_feature_template);
+    INVERSE
+      access_mechanisms                                   : SET[1:?] OF land_template_terminal FOR containing_shape;
+      pre_defined_classification_code                     : SET[0:1] OF External_source_identification FOR item;      
+    WHERE
+      WR1 : SIZEOF(QUERY(ltjt <* access_mechanisms | NOT ('FABRICATION_TECHNOLOGY_ARM.LAND_TEMPLATE_JOIN_TERMINAL' IN TYPEOF(ltjt)))) = 0;
+      WR2 : SIZEOF(QUERY(s <* SELF\Geometric_template.shapes |
+             NOT ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_ARM.SINGLE_AREA_CSG_2D_MODEL' IN TYPEOF(s)))) = 0;
+      WR3 : SIZEOF(SELF\Geometric_template.shapes) > 0;
+  END_ENTITY;
+
+  ENTITY Land_template_interface_terminal
+    SUBTYPE OF (Land_template_terminal);
+      SELF\Land_template_terminal.associated_definition : Default_attachment_size_based_land_physical_template;
+  END_ENTITY;
+
+  ENTITY Land_template_join_terminal
+    SUBTYPE OF (Land_template_terminal);
+  END_ENTITY;
+
+  ENTITY Land_template_terminal
+    ABSTRACT SUPERTYPE OF (ONEOF (Land_template_join_terminal, Land_template_interface_terminal))
+    SUBTYPE OF (Shape_feature);
+      SELF\Shape_element.containing_shape RENAMED associated_definition : Land_physical_template;
+      SELF\Shape_feature.connection_area : OPTIONAL SET[1:?] OF Connection_zone_in_layout_template;      
+      connection_zone_category           : OPTIONAL SET[1:?] OF land_template_terminal_class;
+    UNIQUE
+      UR1 : SELF\Shape_element.element_name, associated_definition;
+    WHERE
+      WR1 : NOT (EXISTS(SELF\Shape_feature.connection_area)) OR EXISTS(connection_zone_category);
+      WR2 : NOT (EXISTS(SELF\Shape_feature.connection_area)) OR (SIZEOF(SELF\Shape_feature.connection_area) = SIZEOF(connection_zone_category));
+      WR3 : NOT EXISTS(SELF\Shape_element.description);
+      WR4 : SIZEOF(QUERY(ca <* connection_area |
+            NOT(associated_definition = ca\Connection_zone_in_layout_template.containing_shape)
+            )) = 0;
+  END_ENTITY;
+
+  ENTITY Material_removal_feature_template
+    SUBTYPE OF (Single_stratum_continuous_template);
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.name);
+      WR2 : SIZEOF(SELF\Geometric_template.shapes) > 0;
+  END_ENTITY;
+
+  ENTITY Passage_deposition_material_identification
+    SUBTYPE OF (Material_identification);
+    SELF\Material_identification.items : SET [1:?] OF Passage_technology;
+  END_ENTITY;
+
+  ENTITY Passage_filling_material_identification
+    SUBTYPE OF (Material_identification);
+    SELF\Material_identification.items : SET [1:?] OF Passage_technology;
+  END_ENTITY;
+  
+  ENTITY Passage_technology
+    SUPERTYPE OF (ONEOF (Default_via_definition,
+ 			Default_component_termination_passage_definition,
+ 			Default_unsupported_passage_definition))
+    SUBTYPE OF (Characterizable_object, Item_shape);	
+      as_finished_deposition_thickness  : OPTIONAL Length_tolerance_characteristic;
+      as_finished_passage_extent        : OPTIONAL Length_tolerance_characteristic;      
+      maximum_aspect_ratio              : OPTIONAL REAL;      
+      minimum_finished_size             : OPTIONAL Length_data_element;      
+      plated_passage                    : BOOLEAN;
+      passage_terminus_condition        : OPTIONAL ft_terminus_condition;
+      minimum_fabrication_allowance     : OPTIONAL Length_data_element;
+    DERIVE
+      SELF\Item_shape.described_element : Passage_technology := SELF;     	 
+		specification: SET[0:1] OF Document_definition :=
+  			get_document_definition(SELF, 'specification', 
+  			'SPECIFICATION_DOCUMENT_ARM.PROCESS_SPECIFICATION');
+    INVERSE
+      deposition_material : SET [0:1] OF Passage_deposition_material_identification FOR items;
+      fill_material : SET [0:1] OF Passage_filling_material_identification FOR items;
+    UNIQUE
+       UR1: SELF\Characterizable_object.name;
+    WHERE
+       WR1: NOT (SIZEOF(deposition_material) = 1) OR
+            ('CONDUCTIVITY_MATERIAL_ASPECTS_ARM.'+ 'MATERIAL_IDENTIFICATION_WITH_CONDUCTIVITY_CLASSIFICATION' IN TYPEOF (deposition_material[1]));
+       WR2: NOT plated_passage OR (SIZEOF(deposition_material) = 1);
+       WR3: NOT EXISTS(as_finished_deposition_thickness) OR (SIZEOF(deposition_material) = 1);
+       WR4: NOT plated_passage OR
+            (SIZEOF([deposition_material[1].electrical_conductivity_classification,
+                    deposition_material[1].thermal_conductivity_classification] *
+                   ['conductive']) >= 1);
+       WR5: NOT ((passage_terminus_condition = ft_terminus_condition.bilateral_bond) OR
+                 (passage_terminus_condition = ft_terminus_condition.unilateral_bond)) OR
+            plated_passage;                  
+  END_ENTITY;
+
+  ENTITY Single_stratum_continuous_template
+    ABSTRACT SUPERTYPE OF (ONEOF (Stratum_feature_template,
+                                Material_removal_feature_template))  
+    SUBTYPE OF (Continuous_template, Single_stratum_template);
+  END_ENTITY;
+
+  ENTITY Single_stratum_template
+    ABSTRACT SUPERTYPE OF (Single_stratum_continuous_template)
+    SUBTYPE OF (Template_definition);
+  END_ENTITY;
+
+  ENTITY Stratum_feature_template
+    SUPERTYPE OF (Land_physical_template)
+    SUBTYPE OF (Single_stratum_continuous_template);
+    WHERE
+      WR1 : NOT EXISTS(SELF\Product_view_definition.name);
+  END_ENTITY;
+
+  ENTITY Stratum_stack_model
+    ABSTRACT SUPERTYPE
+    SUBTYPE OF(Template_definition);
+    DERIVE
+      composing_occurrence : SET [1:?] OF Stratum_technology_occurrence := get_stack(composing_link);
+    INVERSE
+      composing_link : SET[1:?] OF Stratum_technology_occurrence_relationship FOR scope;
+    WHERE
+      WR1 : SIZEOF(QUERY( cl <* composing_link |
+            NOT('FABRICATION_ARM.STRATUM_TECHNOLOGY_OCCURRENCE_LINK' IN TYPEOF(cl))
+                  )) = 0;  
+  END_ENTITY;
+
+  ENTITY Stratum_technology
+    SUPERTYPE OF (ONEOF (Design_layer_technology, Documentation_layer_technology))
+    SUBTYPE OF (Characterizable_object, Item_shape);
+      layer_position                   : layer_position_type;
+      stratum_thickness                : Length_tolerance_characteristic;
+      minimum_finished_feature_size    : OPTIONAL Length_data_element;
+      laminate_stiffness_class         : OPTIONAL stiffness_class;
+      minimum_finished_feature_spacing : OPTIONAL Length_data_element;
+      maximum_feature_size_requirement : OPTIONAL Length_data_element;
+      minimum_aspect_ratio             : OPTIONAL REAL;
+	DERIVE
+      SELF\Item_shape.described_element : Stratum_technology := SELF;
+		specification: SET[0:1] OF Document_definition :=
+  			get_document_definition(SELF, 'specification', 
+  			'SPECIFICATION_DOCUMENT_ARM.PROCESS_SPECIFICATION');
+		surface_specification: SET[0:1] OF Document_definition :=
+  			get_document_definition(SELF, 'surface specification', 
+  			'SPECIFICATION_DOCUMENT_ARM.SURFACE_FINISH_SPECIFICATION');
+    INVERSE
+	  stratum_material : SET[1:1] OF material_identification FOR items;
+	  surface_technology : SET[0:2] OF Stratum_surface_technology FOR associated_technology;      
+    UNIQUE
+      UR1 : SELF\Characterizable_object.name;
+    WHERE
+      WR1 : NOT (layer_position = layer_position_type.primary) OR ('FABRICATION_TECHNOLOGY_ARM.DESIGN_LAYER_TECHNOLOGY' IN TYPEOF(SELF));
+      WR2 : NOT (layer_position = layer_position_type.secondary) OR ('FABRICATION_TECHNOLOGY_ARM.DESIGN_LAYER_TECHNOLOGY' IN TYPEOF(SELF));
+	  WR3 : 'CONDUCTIVITY_MATERIAL_ASPECTS_ARM.'+ 'MATERIAL_IDENTIFICATION_WITH_CONDUCTIVITY_CLASSIFICATION' IN TYPEOF (stratum_material);
+	  WR4 : NOT((SIZEOF(surface_technology) > 0 ) AND (SIZEOF(surface_specification) = 1));
+  END_ENTITY;
+
+  ENTITY Stratum_surface_technology
+    SUBTYPE OF (Shape_element);
+    SELF\Shape_element.containing_shape RENAMED associated_technology : Stratum_technology;
+    DERIVE
+      surface_specification: SET[0:1] OF Document_definition :=
+        get_document_definition(SELF, 'surface specification',  	
+                                      'SPECIFICATION_DOCUMENT_ARM.SURFACE_FINISH_SPECIFICATION');
+    WHERE
+      WR1 : (SIZEOF(USEDIN(SELF,'SURFACE_CONDITIONS_ARM.SURFACE_CONDITION_ASSOCIATION.DESCRIBED_ELEMENT')) > 0) OR 
+            (SIZEOF(get_document_definition(SELF, 'surface specification', 'SPECIFICATION_DOCUMENT_ARM.SURFACE_FINISH_SPECIFICATION')) = 1);
+  END_ENTITY;
+
+  ENTITY Stratum_technology_occurrence;
+      name       : STRING; 
+      definition : Stratum_technology;
+      primary    : OPTIONAL Stratum_surface_technology;
+      rotation   : OPTIONAL Angle_data_element;
+    UNIQUE
+      UR1: name;  
+  END_ENTITY;
+
+  ENTITY Stratum_technology_occurrence_link
+    SUBTYPE OF(Stratum_technology_occurrence_relationship);
+      base_stratum_technology_occurrence : OPTIONAL up_or_down;  
+    WHERE
+      WR1 : NOT (SELF\Stratum_technology_occurrence_relationship.sto_1 :=: SELF\Stratum_technology_occurrence_relationship.sto_2) OR 
+                (SIZEOF(SELF\Stratum_technology_occurrence_relationship.scope\Stratum_stack_model.composing_link) = 1);
+  END_ENTITY;
+
+  ENTITY Stratum_technology_occurrence_relationship
+    ABSTRACT SUPERTYPE OF (ONEOF
+      (Derived_stratum_technology_occurrence_relationship,
+       Stratum_technology_occurrence_link,
+       Stratum_technology_occurrence_swap_relationship,
+       Stratum_technology_occurrence_feature_constraint));
+      sto_1 : Stratum_technology_occurrence;
+      sto_2 : Stratum_technology_occurrence;
+      scope : Stratum_stack_model;
+    WHERE
+      WR1 : acyclic_stratum_technology_occurrence_relationship(SELF, [sto_2], 
+           'FABRICATION_TECHNOLOGY_ARM.STRATUM_TECHNOLOGY_OCCURRENCE_RELATIONSHIP');
+  END_ENTITY;
+
+  ENTITY Stratum_technology_occurrence_swap_relationship
+    SUBTYPE OF (Stratum_technology_occurrence_relationship);
+    UNIQUE
+      UR1 : SELF\Stratum_technology_occurrence_relationship.sto_1, SELF\Stratum_technology_occurrence_relationship.scope;
+      UR2 : SELF\Stratum_technology_occurrence_relationship.sto_2, SELF\Stratum_technology_occurrence_relationship.scope;
+    WHERE
+      WR1 : SELF\Stratum_technology_occurrence_relationship.sto_1 <> SELF\Stratum_technology_occurrence_relationship.sto_2;
+      WR2 : (SELF\Stratum_technology_occurrence_relationship.sto_1 IN SELF\Stratum_technology_occurrence_relationship.scope\Stratum_stack_model.composing_occurrence) AND
+         (SELF\Stratum_technology_occurrence_relationship.sto_2 IN SELF\Stratum_technology_occurrence_relationship.scope\Stratum_stack_model.composing_occurrence);
+  END_ENTITY;
+
+  ENTITY Stratum_technology_occurrence_feature_constraint
+    SUBTYPE OF (Stratum_technology_occurrence_relationship);
+      difference_distance   : OPTIONAL Length_measure;    
+      intersection_distance : OPTIONAL Length_measure;
+      distance_unit         : OPTIONAL Length_unit;
+    WHERE
+      WR1: NOT (EXISTS (difference_distance) OR EXISTS(intersection_distance)) XOR
+           EXISTS(distance_unit);
+  END_ENTITY;
+  
+  ENTITY Stratum_technology_swap_relationship;
+      primary_stratum_technology   : Stratum_technology;
+      secondary_stratum_technology : Stratum_technology;
+    UNIQUE
+      UR1: primary_stratum_technology;
+      UR2: secondary_stratum_technology;
+    WHERE 
+      WR1 : NOT (('FABRICATION_TECHNOLOGY_ARM.DOCUMENTATION_LAYER_TECHNOLOGY' IN TYPEOF(primary_stratum_technology)) AND
+              EXISTS(primary_stratum_technology\Documentation_layer_technology.pre_defined_documentation_layer_purpose))
+          OR
+          (primary_stratum_technology\Documentation_layer_technology.pre_defined_documentation_layer_purpose =
+           secondary_stratum_technology\Documentation_layer_technology.pre_defined_documentation_layer_purpose);
+      WR2: TYPEOF(primary_stratum_technology) = TYPEOF(secondary_stratum_technology);
+      WR3: primary_stratum_technology\Stratum_technology.layer_position = layer_position_type.primary;
+      WR4: secondary_stratum_technology\Stratum_technology.layer_position = layer_position_type.secondary;
+      WR5: primary_stratum_technology <> secondary_stratum_technology;
+      WR6: acyclic_stratum_technology_swap_relationship(SELF,
+        [secondary_stratum_technology], 
+       'FABRICATION_TECHNOLOGY_ARM.STRATUM_TECHNOLOGY_SWAP_RELATIONSHIP');
+  END_ENTITY;
+
+  ENTITY Unsupported_passage_template
+    SUPERTYPE OF (ONEOF (Counterbore_passage_template,
+      Countersunk_passage_template,
+      Blind_passage_template))
+    SUBTYPE OF (Continuous_template, Inter_stratum_feature_template);
+      SELF\Inter_stratum_feature_template.of_passage_technology : Default_unsupported_passage_definition;
+  END_ENTITY;
+
+  ENTITY Via_template
+    SUBTYPE OF (Continuous_template, Inter_stratum_feature_template);
+      SELF\Inter_stratum_feature_template.of_passage_technology : Default_via_definition;
+    INVERSE
+      access_mechanisms : SET[0:?] OF via_template_terminal FOR containing_shape;
+  END_ENTITY;
+
+  ENTITY Via_template_terminal
+    SUBTYPE OF (Shape_feature);
+      SELF\Shape_element.containing_shape RENAMED associated_definition : Via_template;
+      disallowed_inter_stratum_extent                                   : OPTIONAL SET [1:?] OF Stratum_technology_occurrence_link;
+      SELF\Shape_feature.connection_area : OPTIONAL SET[1:?] OF Connection_zone_in_layout_template;      
+    UNIQUE
+      UR1 : SELF\Shape_element.element_name, associated_definition;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Shape_element.description);
+  END_ENTITY;
+
+
+  FUNCTION acyclic_stratum_technology_occurrence_relationship
+    (relation : Stratum_technology_occurrence_relationship; 
+    relatives : SET[1:?] OF Stratum_technology_occurrence; 
+    specific_relation : STRING) : BOOLEAN; 
+  LOCAL
+     x : SET OF Stratum_technology_occurrence_relationship := [];
+  END_LOCAL;
+    IF relation.sto_1 IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(pd <* bag_to_set(USEDIN(relation.sto_1,
+      'FABRICATION_TECHNOLOGY_ARM.' +
+      'STRATUM_TECHNOLOGY_OCCURRENCE_RELATIONSHIP.' +
+      'STO_2')) | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_Stratum_technology_occurrence_relationship(x[i], relatives +
+        relation.sto_1, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION;
+
+  FUNCTION acyclic_stratum_technology_swap_relationship
+    (relation : Stratum_technology_swap_relationship; 
+    relatives : SET[1:?] OF Stratum_technology; 
+    specific_relation : STRING) : BOOLEAN; 
+  LOCAL
+     x : SET OF Stratum_technology_swap_relationship := [];
+  END_LOCAL;
+
+    IF relation.primary_stratum_technology IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(pd <* bag_to_set(USEDIN(relation.primary_stratum_technology,
+      'FABRICATION_TECHNOLOGY_ARM.' +
+      'STRATUM_TECHNOLOGY_SWAP_RELATIONSHIP.' +
+      'SECONDARY_STRATUM_TECHNOLOGY')) | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_stratum_technology_swap_relationship(x[i], relatives +
+        relation.primary_stratum_technology, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION; 
+
+  FUNCTION ft_get_zone_name(input : SET OF Connection_zone_in_layout_template) : SET OF STRING;
+    LOCAL
+      s : SET OF STRING := [];
+    END_LOCAL;
+    REPEAT  i := 1 TO SIZEOF(input) BY 1;
+      s := s + input[i]\Characterizable_object.name;
+    END_REPEAT;
+    RETURN(s);
+  END_FUNCTION;
+  
+  FUNCTION get_electrical_conductivity(mi : SET[0:?] OF Material_identification) : BOOLEAN;
+	REPEAT i := 1 to SIZEOF(mi) by 1;
+	  IF ('CONDUCTIVITY_MATERIAL_ASPECTS_ARM.'+'MATERIAL_IDENTIFICATION_WITH_CONDUCTIVITY_CLASSIFICATION' 
+	  	IN TYPEOF (mi[i])) THEN
+		  IF((EXISTS(mi[i].electrical_conductivity_classification)) AND 
+		    (mi[i].electrical_conductivity_classification IN ['conductive', 'semi conductive', 'super conductive'])) THEN
+	  		RETURN (TRUE);
+	  	  END_IF;	
+      END_IF;
+	END_REPEAT;
+	RETURN (FALSE);
+  END_FUNCTION;
+
+  FUNCTION get_stack(input : SET OF Stratum_technology_occurrence_link) : SET OF Stratum_technology_occurrence;
+    LOCAL
+      sto : SET OF Stratum_technology_occurrence := [];
+      i : INTEGER := 0;
+    END_LOCAL;
+    REPEAT  i := 1 TO SIZEOF(input) BY 1;
+      sto := sto + input[i]\Stratum_technology_occurrence_relationship.sto_1 + input[i]\Stratum_technology_occurrence_relationship.sto_2;
+    END_REPEAT;
+    RETURN(sto);
+  END_FUNCTION;
+
+  FUNCTION less(input1 : Length_tolerance_characteristic;
+              input2 : Length_tolerance_characteristic) : BOOLEAN;
+    RETURN(TRUE);
+  END_FUNCTION;
+
+  RULE unique_land_physical_template FOR (Land_physical_template);
+    LOCAL
+      esi : BAG OF External_source_identification := [];
+      iid : BAG OF String := [];
+      itype : BAG OF String := [];
+    END_LOCAL;
+    REPEAT i := 1 to SIZEOF(Land_physical_template) by 1;
+      esi  := esi + Land_physical_template[i].pre_defined_classification_code[1];
+      iid := iid + Land_physical_template[i].pre_defined_classification_code[1]\External_source_identification.source_id;
+      itype := itype + Land_physical_template[i].pre_defined_classification_code[1]\External_source_identification.source_type;
+    END_REPEAT;  
+    WHERE
+     WR1 : (SIZEOF(esi) = SIZEOF(bag_to_set(esi))) AND
+           (SIZEOF(iid) = SIZEOF(bag_to_set(iid))) AND
+           (1 = SIZEOF(bag_to_set(itype)));
+  END_RULE;
+
+END_SCHEMA;

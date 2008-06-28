@@ -1,0 +1,64 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO/TC184/SC4 WG12N2610 - ISO/TS 10303-1129 external_properties - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA External_properties_xim;
+
+USE FROM Independent_property_xim;
+
+USE FROM Plib_class_reference_xim;
+
+USE FROM external_properties_mim;
+
+USE FROM external_reference_schema(
+	externally_defined_item,
+	external_source);
+
+TYPE external_property_select = SELECT (Plib_property_reference, External_library_property);
+END_TYPE;
+
+ENTITY External_library_property
+SUBTYPE OF (externally_defined_general_property);
+  SELF\externally_defined_item.item_id RENAMED external_id: STRING;
+  library_type: STRING;
+  (* overlapping with library_type *)
+  DERIVE
+    SELF\externally_defined_item.source : external_source :=?;
+END_ENTITY;
+
+ENTITY Plib_property_reference
+SUBTYPE OF (externally_defined_general_property);
+  SELF\externally_defined_item.item_id RENAMED code: STRING;
+  version: STRING;
+  name_scope: Plib_class_reference;
+END_ENTITY;
+
+SUBTYPE_CONSTRAINT plib_or_external FOR externally_defined_general_property;
+ONEOF(Plib_property_reference, External_library_property);
+END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA;

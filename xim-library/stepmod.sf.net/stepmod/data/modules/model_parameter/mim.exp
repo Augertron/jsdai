@@ -1,0 +1,74 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4057 - ISO/TS 10303-1703 Model parameter - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3493
+*)
+
+SCHEMA Model_parameter_mim;
+USE FROM Activity_method_assignment_mim;
+USE FROM Characteristic_mim;	-- ISO/TS 10303-1654
+USE FROM Classification_with_attributes_mim;	-- ISO/TS 10303-1111
+USE FROM Independent_property_representation_mim;	-- ISO/TS 10303-1038
+USE FROM Group_mim;	-- ISO/TS 10303-1113	
+
+USE FROM product_property_definition_schema(characterized_definition);  -- ISO 10303-41
+
+  TYPE mp_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH 
+    (test_method_based_parameter_assignment);
+  END_TYPE;   
+
+  TYPE mp_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON groupable_item WITH 
+    (group_relationship);
+  END_TYPE; 
+
+  TYPE mp_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH 
+    (model_parameter);
+  END_TYPE; 
+
+  ENTITY category_model_parameter 
+    SUBTYPE OF (model_parameter);
+  END_ENTITY;
+
+  ENTITY default_value_property_definition_representation
+    SUBTYPE OF (property_definition_representation);
+  END_ENTITY;
+
+  ENTITY model_parameter 
+    SUBTYPE OF (general_property);
+  END_ENTITY;
+
+  ENTITY parameter_assignment_override
+    SUBTYPE OF (representation, representation_relationship);
+      SELF\representation_relationship.rep_1 : parameter_assignment;
+      SELF\representation_relationship.rep_2 : parameter_assignment;
+    UNIQUE
+      UR1: SELF\representation_relationship.rep_1, SELF\representation_relationship.rep_2;
+    WHERE
+      WR1: SELF\representation_relationship.rep_1 <> 
+        SELF\representation_relationship.rep_2;
+  END_ENTITY; 
+
+  ENTITY parameter_assignment
+    SUBTYPE OF (property_definition_representation, representation);
+  END_ENTITY; 
+
+  ENTITY product_specific_parameter_value_assignment
+    SUBTYPE OF (characterized_object,
+                product_related_product_category); 
+  END_ENTITY;
+
+  ENTITY schema_based_model_parameter 
+    SUBTYPE OF (model_parameter);
+  END_ENTITY;
+
+  ENTITY valid_range_property_definition_representation
+    SUBTYPE OF (property_definition_representation);
+  END_ENTITY;
+
+  ENTITY test_method_based_parameter_assignment 
+    SUBTYPE OF (parameter_assignment);
+  END_ENTITY;
+
+END_SCHEMA;
+
+

@@ -1,0 +1,962 @@
+<?xml version="1.0"?>
+<!--
+/*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ */
+-->
+
+<project name="xim-library" default="build.all" basedir=".">
+ 
+  <!-- properties provided from the master and local properties files -->
+  <property file="local.properties"/>
+  <property file="properties"/>
+  <property file="${user.home}/.ant-global.properties"/>
+
+  <!-- Default values for these properties -->
+  <property name="depmod" value="true"/>
+  <property name="jsdai.vendor" value="LKSoftWare GmbH"/>
+  <property name="stepmod.version.major" value="0"/>
+  <property name="stepmod.version.middle" value="0"/>
+  <property name="stepmod.version.minor" value="0"/>
+
+  <!-- modifiable properties -->
+  
+  <property name="jsdai.dir" location="../jsdai"/> <!-- Location of jsdai. Used by -build.core module -->
+  <property name="jsdai.out.dir" location="${jsdai.dir}/out"/>
+  <property name="out.dir" location="out"/>
+  <property name="jsdai.lib.dir" location="${jsdai.out.dir}"/>
+  <property name="lib.dir" location="${jsdai.dir}/lib"/>
+  <property name="cvs.dir" location="."/> <!-- Directory for CVS checkout -->
+  <property name="cvs.rsh" value="ssh"/>
+
+  <property name="stepmod.dir" location="stepmod.sf.net"/><!--Location of where stepmod is (will be) checked out. HAS TO BE ROOT-->
+  <property name="lksoft.stepmod.dir" location="."/><!--Location of lksoft stepmod module in cvs, modules/stepmod takein into account-->
+
+  <property name="build.dir.top" location="build"/>
+  <property name="cxclasses.dir" location="src/jsdai"/>
+  <property name="baseclasses.dir" location="${cxclasses.dir}"/>
+  <property name="mapping.dir" location="xim/mapping"/>
+
+  <property name="javac.optimize.flag" value="yes"/>
+  <property name="javac.debug.flag" value="yes"/>
+  <property name="additional.express.compiler.params" value=""/>
+  <property name="additional.express.doc.params" value=""/>
+  <property name="mappingParser.jvmargs" value="-Xms96M -Xmx700M"/>
+
+  <!-- elementary targets -->
+  <target name="-static.environment">
+	<!-- classpath -->
+	<path id="classpath">
+	  <fileset dir="${lib.dir}">
+		<include name="commons-collections.jar"/>
+        <include name="commons-lang-1.0.1.jar"/>
+		<!-- Needed by Mapping -->
+		<include name="antlr.jar"/>
+	  </fileset>
+	  <fileset dir="${jsdai.lib.dir}">
+		<include name="jsdai_doc.jar"/>
+		<include name="jsdai_express.jar"/>
+		<include name="jsdai_runtime.jar"/>
+		<include name="jsdai_tools.jar"/>
+		<!-- Needed by Mapping -->
+		<include name="jsdai_mappingUtils.jar"/>
+	  </fileset>
+    
+	  <fileset dir="${jsdai.out.dir}">
+		<include name="SExtended_dictionary_schema.zip"/>
+	  </fileset>
+	</path>
+
+	<!-- Tries to find the correct jdk home -->
+	<property environment="env"/>
+	<property name="jdk.home.asis" location="${java.home}"/>
+	<property name="jdk.home.without.jre" location="${java.home}/.."/>
+	<condition property="jdk.home" value="${alternate.jdk.home}">
+		<isset property="alternate.jdk.home"/>
+	</condition>
+	<condition property="jdk.home" value="${env.JAVA_HOME}">
+		<isset property="env.JAVA_HOME"/>
+	</condition>
+	<condition property="jdk.home" value="${jdk.home.asis}">
+		<and>
+			<not><isset property="env.JAVA_HOME"/></not>
+			<not><contains string="${java.home}" substring="jre"/></not>
+		</and>
+	</condition>
+	<condition property="jdk.home" value="${jdk.home.without.jre}">
+		<and>
+			<not><isset property="env.JAVA_HOME"/></not>
+			<contains string="${java.home}" substring="jre"/>
+		</and>
+	</condition>
+	<property name="alternate.jdk.home" value="${jdk.home}"/>
+  </target>
+
+  <target name="-environment" depends="-static.environment">
+	<property name="build.dir" location="build_xim"/>
+	<property name="output.jar.name" value="jsdai_xim.jar"/>
+	<property name="output.doc.name" value="${output.jar.name}.api_ref.zip"/>
+	<property name="express.list.creator" location="xim_list.xml"/>
+	<property name="express.complex.creator" location="ap210_xim_complex.xml"/>
+	<property name="doc.index.name" value="XIM index"/>
+	<property name="doc.title" value="XIM Schemas"/>
+	<property name="library.name" value="JSDAI STEPMOD Library"/>
+	<property name="library.implementation" value="${library.name}"/>
+
+	<!-- derived and/or unmodifiable properties -->
+	<property name="output.jar.file" location="${out.dir}/${output.jar.name}"/>
+	<property name="output.doc.file" location="${out.dir}/${output.doc.name}"/>
+	<property name="express.list" location="${build.dir}/express_list.txt"/>
+	<property name="express.complex" location="${build.dir}/express.ce"/>
+	<property name="express.compiler.dir" location="${build.dir}/ec"/>
+	<property name="repos.dir" location="${build.dir}/REPOSITORIES"/>
+	<!-- ExpressDoc will use the original repository because it does not modify it -->
+	<!--property name="expressdoc.subdir" value="expressdoc"/>
+	<property name="expressdoc.dir" location="${build.dir}/${expressdoc.subdir}"/-->
+	<property name="expressdoc.dir" location="${build.dir}"/>
+	<property name="runtimespecific.subdir" value="runtimespecific"/>
+	<property name="runtimespecific.dir" location="${build.dir}/${runtimespecific.subdir}"/>
+	<property name="api.ref.dir" location="${build.dir}/api_ref"/>
+	<property name="package.temp.dir" location="${build.dir}/temp"/>
+	<property name="jsdai.properties.dir" location="${build.dir}"/>
+	<property name="compiled.schema.list" location="${build.dir}/list.txt"/>
+    <tstamp>
+        <format property="env.BUILD_ID" pattern="yyyyMMdd-hhmm"/>
+    </tstamp>
+  </target>
+
+  <!-- This is recommended target name. Target update is for backward compatibiltiy only -->
+  <!--target name="update.stepmod" depends="prepare.dirs, -static.environment"/--> 
+  <target name="update.stepmod" depends=""/>
+
+  <target name="empty.dirs" depends="-environment">
+    <delete dir="${build.dir}"/>
+    <mkdir dir="${build.dir}"/>
+    <delete dir="${express.compiler.dir}"/>
+    <mkdir dir="${express.compiler.dir}"/>
+    <delete dir="${repos.dir}"/>
+    <mkdir dir="${repos.dir}"/>
+    <delete dir="${api.ref.dir}"/>
+    <mkdir dir="${api.ref.dir}"/>
+    <delete dir="${package.temp.dir}"/>
+    <mkdir dir="${package.temp.dir}"/>
+  </target>
+
+  <target name="create.express.list" depends="-environment">
+    <delete file="${express.list}"/>
+    <ant antfile="${express.list.creator}" inheritall="true"/>
+  </target>
+
+  <target name="create.express.complex" depends="-environment">
+    <delete file="${express.complex}"/>
+    <ant antfile="${express.complex.creator}" inheritall="true"/>
+
+  </target>
+  
+  <target name="create.jsdai.properties" depends="empty.dirs">
+    <propertyfile file="${jsdai.properties.dir}/jsdai.properties" comment="Generated by Ant">
+      <entry key="repositories" value="${repos.dir}"/>
+      <entry key="new.repository.format" value="SDAI"/>
+      <entry key="mapping.schema.AP210_ELECTRONIC_ASSEMBLY_INTERCONNECT_AND_PACKAGING_DESIGN_MIM"
+			 value="AP210_ELECTRONIC_ASSEMBLY_INTERCONNECT_AND_PACKAGING_DESIGN_XIM_MAPPING_DATA"/>
+      <entry key="mapping.schema.IDA_STEP_AIM_SCHEMA"
+			 value="IDA_STEP_SCHEMA_XIM_MAPPING_DATA"/>
+      <entry key="jsdai.SAp210_electronic_assembly_interconnect_and_packaging_design_xim" 
+			 value="AP210_ELECTRONIC_ASSEMBLY_INTERCONNECT_AND_PACKAGING_DESIGN_MIM;"/>
+      <entry key="jsdai.SIda_step_schema_xim" 
+			 value="IDA_STEP_AIM_SCHEMA;"/>
+    </propertyfile>
+  </target>
+  
+  <target name="unzip.repo" depends="empty.dirs">
+    <unzip dest="${repos.dir}" src="${jsdai.out.dir}/lib.zip">
+      <patternset>
+        <include name="REPOSITORIES/**"/>
+      </patternset>
+    </unzip>
+    
+    <move todir="${repos.dir}">
+      <fileset dir="${repos.dir}/REPOSITORIES"/>
+    </move>
+    
+    <delete dir="${repos.dir}/REPOSITORIES"/>
+
+	<!--unzip src="${core.lib.dir}/SExtended_dictionary_schema.zip" dest="${express.compiler.dir}">
+	  <patternset>
+		<include name="jsdai/repository.properties"/>
+	  </patternset>
+	</unzip-->
+  </target>
+
+  <target name="compile.express" depends="unzip.repo, create.express.list, create.express.complex, create.jsdai.properties, update.stepmod">
+    <java fork="yes"
+		  dir="${express.compiler.dir}"
+		  classname="jsdai.expressCompiler.Main" 
+		  classpathref="classpath" failonerror="yes">
+      
+	  <sysproperty key="jsdai.properties" value="${jsdai.properties.dir}"/>
+      <jvmarg line="-Xmx500M"/>
+      <arg line="-is"/>
+      <arg value="-files"/>
+      <arg file="${express.list}"/>
+      <arg value="-complex"/>
+      <arg file="${express.complex}"/>
+      <arg value="-list_models"/>
+      <arg file="${compiled.schema.list}"/>
+      <arg line="${additional.express.compiler.params}"/>
+    </java>
+  </target>
+  
+  <target name="generate.java" depends="unzip.repo, create.express.list, create.express.complex, create.jsdai.properties,
+										update.stepmod, -generate.java.only, -prepare.repository.forks, -remove.extra.declarations"/>
+
+  <target name="-generate.java.only">
+	<java fork="yes"
+		  dir="${express.compiler.dir}"
+		  classname="jsdai.expressCompiler.Main" 
+		  classpathref="classpath" failonerror="yes">
+	  
+	  <sysproperty key="jsdai.properties" value="${jsdai.properties.dir}"/>
+	  <jvmarg line="-Xmx1000M"/>
+	  <arg line="-java"/>
+	  <arg line="-is"/>
+	  <arg value="-binaries"/>
+	  <arg value="-files"/>
+	  <arg file="${express.list}"/>
+	  <arg value="-complex"/>
+	  <arg file="${express.complex}"/>
+	  <arg value="-list_models"/>
+	  <arg file="${compiled.schema.list}"/>
+	  <arg value="-compilation_sn"/>
+	  <arg value="20"/>
+	  <arg value="-index_file"/>
+	  <arg line="${additional.express.compiler.params}"/>
+	</java>
+  </target>
+
+  <target name="-prepare.repository.forks">
+	<!--mkdir dir="${expressdoc.dir}/REPOSITORIES"/>
+    <propertyfile file="${expressdoc.dir}/jsdai.properties" comment="Generated by Ant">
+      <entry key="repositories" value="${expressdoc.dir}${file.separator}REPOSITORIES"/>
+      <entry key="new.repository.format" value="SDAI"/>
+    </propertyfile>
+	<copy file="${repos.dir}/ExpressCompilerRepo.sdai" todir="${expressdoc.dir}/REPOSITORIES" overwrite="yes"/-->
+	<mkdir dir="${runtimespecific.dir}/REPOSITORIES"/>
+    <propertyfile file="${runtimespecific.dir}/jsdai.properties" comment="Generated by Ant">
+      <entry key="repositories" value="${runtimespecific.dir}${file.separator}REPOSITORIES"/>
+      <entry key="new.repository.format" value="SDAI"/>
+    </propertyfile>
+	<copy file="${repos.dir}/ExpressCompilerRepo.sdai" todir="${runtimespecific.dir}/REPOSITORIES" overwrite="yes"/>
+  </target>
+
+  <target name="-remove.extra.declarations" if="retain.declarations">
+	<java fork="yes" dir="${express.compiler.dir}" classname="jsdai.tools.RemoveDeclarations" classpathref="classpath" failonerror="yes">
+	  <jvmarg line="${mappingParser.jvmargs}"/>
+	  <sysproperty key="jsdai.properties" value="${runtimespecific.dir}"/>
+	  <arg line="${retain.declarations}"/>
+	  <arg value="-write_binaries"/>
+	  <arg file="${express.compiler.dir}"/>
+	  <arg value="-track"/>
+	  <arg file="${express.compiler.dir}/jsdai/repository.properties"/>
+	</java>
+  </target>
+
+  <target name="-unpack.core.doc" unless="no.doc" depends="-environment">
+	<unzip src="${jsdai.out.dir}/jsdai_doc.zip" dest="${api.ref.dir}">
+	  <patternset>
+		<include name="jsdai_doc/api_ref/**"/>
+	  </patternset>
+	</unzip>
+    <move todir="${api.ref.dir}">
+      <fileset dir="${api.ref.dir}/jsdai_doc/api_ref"/>
+    </move>
+	<delete dir="${api.ref.dir}/jsdai_doc"/>
+  </target>
+  
+  <target name="-generate.doc.only" unless="no.doc" depends="-environment">
+	<java fork="yes"
+		  dir="${build.dir}"
+		  classname="jsdai.tools.ExpressDoc" 
+		  classpathref="classpath" failonerror="yes">
+	  
+	  <sysproperty key="jsdai.properties" value="${expressdoc.dir}"/>
+	  <jvmarg line="-Xmx500M"/>
+	  <arg line="-original_expressions"/>
+	  <arg line="-location ExpressCompilerRepo"/>
+	  <arg value="-output"/>
+	  <arg file="${api.ref.dir}"/>
+	  <arg value="-complex_schema"/>
+	  <arg line="-complex_index"/>
+	  <arg value="${doc.index.name}"/>
+	  <arg value="-title"/>
+	  <arg value="${doc.title}"/>
+	  <arg value="-include_list"/>
+	  <arg file="${compiled.schema.list}"/>
+	  <arg value="-generate_summary"/>
+	  <arg line="${additional.express.doc.params}"/>
+	</java>
+  </target>
+
+  <target name="generate.doc" depends="generate.java, -generate.doc.only"/>
+  
+  <target name="compile.java" depends="generate.java, compile.java.only" />
+  
+  <target name="compile.java.only" depends="-environment">
+	<javac
+		failonerror="yes"
+		destdir="${package.temp.dir}"
+		srcdir="${express.compiler.dir}"
+		
+		debug="${javac.debug.flag}"
+		optimize="${javac.optimize.flag}"
+		classpathref="classpath"
+		fork="true"
+		memoryinitialsize="128m"
+		memorymaximumsize="800m">
+
+	  <include name="*/**"/>      
+	</javac>
+  </target>
+
+  <target name="compile.java.cxclasses" unless="no.cx">
+	<javac failonerror="yes"
+		   destdir="${package.temp.dir}"
+		   srcdir="${cxclasses.dir}/.."
+		   
+		   debug="${javac.debug.flag}"
+		   optimize="${javac.optimize.flag}"
+		   classpathref="classpath"
+		   fork="true"
+		   memoryinitialsize="128m"
+		   memorymaximumsize="600m">
+
+	  <include name="jsdai/S*/Cx**"/>
+	  <include name="jsdai/libutil/**"/>
+	</javac>
+  </target>
+
+  <target name="generate.xim.library" depends="unzip.repo, create.express.list, create.express.complex, create.jsdai.properties,
+											   update.stepmod, -generate.java.only, -prepare.repository.forks, -remove.extra.declarations,
+											   copy.baseclasses, compile.mapping, compile.java.only, compile.java.cxclasses,
+											   package.library.only, -unpack.core.doc, -generate.doc.only, package.doc.only"/>
+
+  <target name="compile.xim.library" depends="compile.java.only, compile.java.cxclasses, package.library.only" />
+
+  <target name="generate.mappingTEST" depends="compile.mapping, compile.java.only, package.library.only" />
+  
+  <target name="compile.mapping" unless="no.mapping" depends="-environment">
+	<java fork="yes" 
+		  dir="${jsdai.lib.dir}"
+		  classname="jsdai.mappingUtils.paths.MappingPath"
+		  classpathref="classpath" failonerror="yes">
+	  <sysproperty key="jsdai.properties" value="${runtimespecific.dir}"/>
+	  <jvmarg line="${mappingParser.jvmargs}"/>
+	  <arg value="-missing-for-schemas"/>
+	  <arg value=".+_xim"/>
+	  <arg value="-track"/>
+	  <arg file="${express.compiler.dir}/jsdai/repository.properties"/>
+	  <arg file="${mapping.dir}/clause5-1_modular.path"/>
+	  <arg file="${mapping.dir}/ap210_xim.extra"/>
+	</java>
+	<java fork="yes" dir="${jsdai.lib.dir}"
+		  classname="jsdai.mappingCompiler.tools.ReplaceUsageOfDerivedAttributes"
+		  classpathref="classpath" failonerror="yes">
+	  <sysproperty key="jsdai.properties" value="${runtimespecific.dir}"/>
+	  <arg value="ExpressCompilerRepo"/>
+	  <arg value="AP210_ELECTRONIC_ASSEMBLY_INTERCONNECT_AND_PACKAGING_DESIGN_XIM_MAPPING_DATA"/>
+	</java>
+	<java fork="yes" dir="${jsdai.lib.dir}" classname="jsdai.mappingUtils.MappingData"
+	  classpathref="classpath" failonerror="yes">
+	  <sysproperty key="jsdai.properties" value="${runtimespecific.dir}"/>
+	  <arg value="superclass-attribute-mapping"/>
+	  <arg line="-model AP210_ELECTRONIC_ASSEMBLY_INTERCONNECT_AND_PACKAGING_DESIGN_XIM_MAPPING_DATA"/>
+	</java>
+	<java fork="yes" dir="${jsdai.lib.dir}" classname="jsdai.mappingUtils.MappingData"
+		  classpathref="classpath" failonerror="yes">
+	  <sysproperty key="jsdai.properties" value="${runtimespecific.dir}"/>
+	  <arg value="copy"/>
+	  <arg line="-model AP210_ELECTRONIC_ASSEMBLY_INTERCONNECT_AND_PACKAGING_DESIGN_XIM_MAPPING_DATA"/>
+	  <arg value="-binary"/>
+	  <arg file="${express.compiler.dir}/jsdai/MAp210_electronic_assembly_interconnect_and_packaging_design_xim/"/>
+	</java>
+	<!-- Creating schema instances-->
+	<java fork="yes" dir="${jsdai.lib.dir}" classname="jsdai.mappingUtils.MappingData"
+		  classpathref="classpath" failonerror="yes">
+	  <sysproperty key="jsdai.properties" value="${runtimespecific.dir}"/>
+	  <jvmarg line="${mappingParser.jvmargs}"/>				
+	  <arg value="schema-instance"/>
+	  <arg line="-model AP210_ELECTRONIC_ASSEMBLY_INTERCONNECT_AND_PACKAGING_DESIGN_XIM_MAPPING_DATA"/>
+	  <arg value="-track"/>
+	  <arg file="${express.compiler.dir}/jsdai/repository.properties"/>
+	</java>
+	<!-- IDA STEP -->
+	<java fork="yes" 
+		  dir="${jsdai.lib.dir}"
+		  classname="jsdai.mappingUtils.paths.MappingPath"
+		  classpathref="classpath" failonerror="yes">
+	  <sysproperty key="jsdai.properties" value="${runtimespecific.dir}"/>
+	  <jvmarg line="${mappingParser.jvmargs}"/>
+	  <arg value="-missing-for-schemas"/>
+	  <arg value=".+_xim"/>
+	  <arg value="-track"/>
+	  <arg file="${express.compiler.dir}/jsdai/repository.properties"/>
+	  <arg file="${mapping.dir}/clause5-1_modular_ida_step.path"/>
+	  <arg file="${mapping.dir}/ap210_xim.extra"/>
+	</java>
+	<java fork="yes" dir="${jsdai.lib.dir}"
+		  classname="jsdai.mappingCompiler.tools.ReplaceUsageOfDerivedAttributes"
+		  classpathref="classpath" failonerror="yes">
+	  <sysproperty key="jsdai.properties" value="${runtimespecific.dir}"/>
+	  <arg value="ExpressCompilerRepo"/>
+	  <arg value="IDA_STEP_SCHEMA_XIM_MAPPING_DATA"/>
+	</java>
+	<java fork="yes" dir="${jsdai.lib.dir}" classname="jsdai.mappingUtils.MappingData"
+		  classpathref="classpath" failonerror="yes">
+	  <sysproperty key="jsdai.properties" value="${runtimespecific.dir}"/>
+	  <arg value="superclass-attribute-mapping"/>
+	  <arg line="-model IDA_STEP_SCHEMA_XIM_MAPPING_DATA"/>
+	</java>
+	<java fork="yes" dir="${jsdai.lib.dir}" classname="jsdai.mappingUtils.MappingData"
+		  classpathref="classpath" failonerror="yes">
+	  <sysproperty key="jsdai.properties" value="${runtimespecific.dir}"/>
+	  <arg value="copy"/>
+	  <arg line="-model IDA_STEP_SCHEMA_XIM_MAPPING_DATA"/>
+	  <arg value="-binary"/>
+	  <arg file="${express.compiler.dir}/jsdai/MIda_step_schema_xim/"/>
+	</java>
+	<!-- Creating schema instances-->
+	<java fork="yes" dir="${jsdai.lib.dir}" classname="jsdai.mappingUtils.MappingData"
+		  classpathref="classpath" failonerror="yes">
+	  <sysproperty key="jsdai.properties" value="${runtimespecific.dir}"/>
+	  <jvmarg line="${mappingParser.jvmargs}"/>				
+	  <arg value="schema-instance"/>
+	  <arg line="-model IDA_STEP_SCHEMA_XIM_MAPPING_DATA"/>
+	  <arg value="-track"/>
+	  <arg file="${express.compiler.dir}/jsdai/repository.properties"/>
+	</java>
+	
+  </target>
+
+  <target name="copy.baseclasses" unless="no.cx" depends="-environment">
+	<copy todir="${express.compiler.dir}/jsdai" overwrite="yes">
+	  <fileset dir="${baseclasses.dir}">
+		<include name="SPre_defined_product_data_management_specializations_xim/S*.java"/>
+		<include name="SPhysical_unit_2d_design_view_xim/S*.java"/>
+		<include name="SPhysical_unit_3d_design_view_xim/S*.java"/>
+		<include name="SPhysical_unit_non_planar_design_view_xim/S*.java"/>
+		<include name="SAssembly_module_with_macro_component_xim/S*.java"/>
+		<include name="SAssembly_module_with_cable_component_xim/S*.java"/>
+		<include name="SInterconnect_module_with_macros_xim/S*.java"/>
+		<include name="SAssembly_module_with_interconnect_component_xim/S*.java"/>
+		<include name="SAssembly_module_with_packaged_connector_component_xim/S*.java"/>
+		<include name="SAssembly_module_with_subassembly_xim/S*.java"/>
+		<include name="SCable_xim/S*.java"/>
+		<include name="SFill_area_style_xim/S*.java"/>
+		<include name="SComponent_feature_xim/S*.java"/>
+		<include name="SAssembly_module_macro_definition_xim/S*.java"/>
+		<include name="SFeature_and_connection_zone_xim/S*.java"/>
+		<include name="SConnectivity_allocation_to_physical_network_xim/S*.java"/>
+		<include name="SElectrical_network_definition_xim/S*.java"/>
+		<include name="SFunctional_decomposition_to_design_xim/S*.java"/>
+		<include name="SFunctional_unit_requirement_allocation_xim/S*.java"/>
+		<include name="SDesign_specific_assignment_to_assembly_usage_view_xim/S*.java"/>
+		<include name="SDesign_specific_assignment_to_interconnect_usage_view_xim/S*.java"/>
+		<include name="SInterconnect_module_to_assembly_module_relationship_xim/S*.java"/>
+		<include name="SFabrication_requirement_xim/S*.java"/>
+		<include name="SLayout_macro_definition_xim/S*.java"/>
+		<include name="SNon_feature_shape_element_xim/S*.java"/>
+		<include name="SPackaged_connector_model_xim/S*.java"/>
+		<include name="SPart_external_reference_xim/S*.java"/>
+		<include name="SPart_feature_function_xim/S*.java"/>
+		<include name="SPart_feature_grouping_xim/S*.java"/>
+		<include name="SPart_feature_location_xim/S*.java"/>
+		<include name="SPart_template_extension_xim/S*.java"/>
+		<include name="SFunctional_assignment_to_part_xim/S*.java"/>
+		<include name="SPhysical_component_feature_xim/S*.java"/> 
+		<include name="SPhysical_node_requirement_to_implementing_component_allocation_xim/S*.java"/>
+		<include name="SPhysical_unit_interconnect_definition_xim/S*.java"/>
+		<include name="SPre_defined_datum_symbol_xim/S*.java"/>
+		<include name="SPre_defined_datum_2d_symbol_xim/S*.java"/>
+		<include name="SPre_defined_datum_3d_symbol_xim/S*.java"/>
+		<include name="SAssembly_module_with_cable_component_2d_xim/S*.java"/>
+		<include name="SAssembly_module_with_cable_component_3d_xim/S*.java"/>
+		<include name="SShape_composition_xim/S*.java"/>
+		<include name="SShape_parameters_xim/S*.java"/>
+		<include name="SDiscrete_shield_xim/S*.java"/> 
+		<include name="SIntegral_shield_xim/S*.java"/> 
+		<include name="SSoftware_xim/S*.java"/> 
+		<include name="SInformation_product_xim/S*.java"/> 
+		<include name="SGeneric_product_occurrence_xim/S*.java"/> 
+		<include name="STest_requirement_allocation_xim/S*.java"/>
+		<include name="SThermal_network_definition_xim/S*.java"/>
+		<include name="SVia_component_xim/S*.java"/>
+		<include name="SAltered_package_xim/S*.java"/>
+		<include name="SAltered_part_xim/S*.java"/>
+		<include name="SAnalytical_model_xim/S*.java"/>
+		<include name="SComponent_grouping_xim/S*.java"/>
+		<include name="SAssembly_component_placement_requirements_xim/S*.java"/>
+		<include name="SAssembly_functional_interface_requirement_xim/S*.java"/>
+		<include name="SInterface_component_xim/S*.java"/>
+		<include name="SAssembly_module_design_xim/S*.java"/>
+		<include name="SAssembly_module_usage_view_xim/S*.java"/>
+		<include name="SAssembly_physical_interface_requirement_xim/S*.java"/>
+		<include name="SAssembly_physical_requirement_allocation_xim/S*.java"/>
+		<include name="SAssembly_2d_shape_xim/S*.java"/>
+		<include name="SAssembly_3d_shape_xim/S*.java"/>
+		<include name="SAssembly_technology_xim/S*.java"/>
+		<include name="SBare_die_xim/S*.java"/>
+		<include name="SCharacteristic_xim/S*.java"/>
+		<include name="SDatum_difference_based_model_xim/S*.java"/>
+		<include name="SDesign_management_xim/S*.java"/>
+		<include name="SDevice_marking_xim/S*.java"/>
+		<include name="SSpecification_document_xim/S*.java"/>
+		<include name="SFabrication_joint_xim/S*.java"/>
+		<include name="SEdge_shape_feature_xim/S*.java"/>
+		<include name="SFunctional_decomposition_to_assembly_design_xim/S*.java"/>
+		<include name="SFunctional_decomposition_to_interconnect_design_xim/S*.java"/>
+		<include name="SNetwork_functional_design_view_xim/S*.java"/>
+		<include name="SFunctional_decomposition_with_nodal_representation_to_packaged_mapping_xim/S*.java"/>
+		<include name="SPhysical_connectivity_definition_xim/S*.java"/>
+		<include name="SFunctional_specification_xim/S*.java"/>
+		<include name="SFunctional_usage_view_xim/S*.java"/>
+		<include name="SExtended_geometric_tolerance_xim/S*.java"/>
+		<include name="SInterconnect_module_connection_routing_xim/S*.java"/>
+		<include name="SLayered_interconnect_module_design_xim/S*.java"/>
+		<include name="SLayered_interconnect_module_with_printed_component_design_xim/S*.java"/>
+		<include name="SInterconnect_module_usage_view_xim/S*.java"/>
+		<include name="SInterconnect_physical_requirement_allocation_xim/S*.java"/>
+		<include name="SInterconnect_placement_requirements_xim/S*.java"/>
+		<include name="SInterconnect_non_planar_shape_xim/S*.java"/>
+		<include name="SInterconnect_2d_shape_xim/S*.java"/>
+<!--<include name="SInterconnect_3d_shape_xim/S*.java"/> -->
+		<include name="SLand_xim/S*.java"/>
+		<include name="SFabrication_technology_xim/S*.java"/>
+		<include name="SPackage_xim/S*.java"/>
+		<include name="SPackaged_part_black_box_model_xim/S*.java"/>
+		<include name="SPackaged_part_white_box_model_xim/S*.java"/>
+		<include name="SPhysical_layout_template_xim/S*.java"/>
+		<include name="SPart_template_shape_with_parameters_xim/S*.java"/>
+		<include name="SPart_template_2d_shape_xim/S*.java"/>
+		<include name="SFootprint_definition_xim/S*.java"/>		
+		<include name="SPart_template_non_planar_shape_xim/S*.java"/>
+		<include name="SPart_template_3d_shape_xim/S*.java"/>
+		<include name="SPhysical_unit_usage_view_xim/S*.java"/>
+		<include name="SPhysical_unit_design_view_xim/S*.java"/>
+		<include name="SPhysical_unit_3d_shape_xim/S*.java"/>
+		<include name="SPhysical_unit_2d_shape_xim/S*.java"/>
+		<include name="SPhysical_unit_shape_with_parameters_xim/S*.java"/>
+		<include name="SPlanned_characteristic_xim/S*.java"/>
+		<include name="SPrinted_physical_layout_template_xim/S*.java"/>
+		<include name="SProduct_identification_extension_xim/S*.java"/> 
+		<include name="SProduction_rule_xim/S*.java"/>
+		<include name="SRequirement_decomposition_xim/S*.java"/>
+		<include name="SSequential_laminate_assembly_design_xim/S*.java"/>
+		<include name="SLayered_2d_shape_xim/S*.java"/>
+		<include name="SLayered_3d_shape_xim/S*.java"/>
+		<include name="SSignal_xim/S*.java"/>
+<!--		<include name="SLayered_interconnect_module_with_design_intent_modifications_xim/S*.java"/> -->
+		<include name="SStratum_non_planar_shape_xim/S*.java"/>
+		<include name="SLayered_interconnect_module_2d_design_xim/S*.java"/>
+		<include name="SLayered_interconnect_module_3d_design_xim/S*.java"/>
+		<include name="SStyled_curve_xim/S*.java"/>
+		<include name="SText_representation_xim/S*.java"/>
+		<include name="SModel_parameter_xim/S*.java"/>
+		<include name="SChemical_substance_xim/S*.java"/>
+		<include name="SAp210_electronic_assembly_interconnect_and_packaging_design_xim/S*.java"/>
+		<include name="SAp210_device_functional_and_physical_characterization_xim/S*.java"/>
+		<include name="SAp210_interconnect_technology_constraints_xim/S*.java"/>
+		<include name="SAp210_assembly_technology_constraints_xim/S*.java"/>
+		<include name="SAp210_assembly_functional_requirements_xim/S*.java"/>
+		<include name="SAp210_assembly_physical_requirements_xim/S*.java"/>
+		<include name="SAp210_interconnect_functional_requirements_xim/S*.java"/>
+		<include name="SAp210_interconnect_physical_requirements_xim/S*.java"/>
+		<include name="SAp210_assembly_physical_design_xim/S*.java"/>
+		<include name="SAp210_interconnect_design_xim/S*.java"/>
+		<include name="SAp210_interconnect_design_for_microwave_xim/S*.java"/>
+		<include name="SAp210_production_rule_xim/S*.java"/>
+		<include name="SAp210_functional_decomposition_xim/S*.java"/>
+		<include name="SAp210_package_functional_and_physical_characterization_xim/S*.java"/>
+		<include name="SAp210_laminate_assembly_design_xim/S*.java"/>
+		<include name="SAp210_connection_zone_based_model_extraction_xim/S*.java"/>
+		<include name="SAp210_functional_specification_xim/S*.java"/>
+		<include name="SAp210_physical_unit_physical_characterization_xim/S*.java"/>
+		<include name="SAp210_packaged_part_white_box_model_xim/S*.java"/>
+		<include name="SAp210_printed_part_functional_and_physical_characterization_xim/S*.java"/>
+		<include name="SAp210_assembly_functional_interface_requirements_xim/S*.java"/>
+		<include name="SAp210_assembly_physical_interface_requirements_xim/S*.java"/>
+		<include name="SAp210_assembly_requirement_allocation_xim/S*.java"/>
+		<include name="SAp210_interconnect_requirement_allocation_xim/S*.java"/>
+		<include name="SAp210_functional_requirement_allocation_xim/S*.java"/>
+		<include name="SDesign_product_data_management_xim/S*.java"/>
+		<include name="SExtended_basic_geometry_xim/S*.java"/>
+	  <include name="SShape_feature_xim/S*.java"/>
+		<include name="SValue_with_unit_extension_xim/S*.java"/>
+		<include name="SActivity_relationship_specialization_xim/S*.java"/>
+		<include name="SAp210_datum_difference_based_model_definition_xim/S*.java"/>
+		<include name="STest_select_product_xim/S*.java"/>
+		<include name="SCurve_swept_solid_xim/S*.java"/>
+		<include name="SPart_occurrence_xim/S*.java"/>
+		<include name="SGroup_xim/S*.java"/>
+		<include name="SActivity_xim/S*.java"/>
+		<include name="SActivity_method_xim/S*.java"/>
+		<include name="SAdvanced_boundary_representation_xim/S*.java"/>
+		<include name="SAlias_identification_xim/S*.java"/>
+		<include name="SApproval_xim/S*.java"/>
+		<include name="SAssembly_structure_xim/S*.java"/>
+		<include name="SCertification_xim/S*.java"/>
+		<include name="SClass_xim/S*.java"/>
+		<include name="SClassification_assignment_xim/S*.java"/>
+		<include name="SClassification_with_attributes_xim/S*.java"/>
+		<include name="SConfiguration_effectivity_xim/S*.java"/>
+		<include name="SConfiguration_item_xim/S*.java"/>
+		<include name="SContextual_shape_positioning_xim/S*.java"/>
+		<include name="SContract_xim/S*.java"/>
+		<include name="SDate_time_xim/S*.java"/>
+		<include name="SDate_time_assignment_xim/S*.java"/>
+		<include name="SDerived_shape_element_xim/S*.java"/> 
+		<include name="SDimension_tolerance_xim/S*.java"/>
+		<include name="SDocument_and_version_identification_xim/S*.java"/>
+		<include name="SDocument_assignment_xim/S*.java"/>
+		<include name="SDocument_definition_xim/S*.java"/>
+		<include name="SDocument_structure_xim/S*.java"/>
+		<include name="SEffectivity_application_xim/S*.java"/>
+		<include name="SEffectivity_xim/S*.java"/>
+		<include name="SElemental_geometric_shape_xim/S*.java"/>
+		<include name="SEvent_xim/S*.java"/>
+		<include name="SEvent_assignment_xim/S*.java"/>
+		<include name="SExtended_measure_representation_xim/S*.java"/>
+		<include name="SExternal_class_xim/S*.java"/>
+		<include name="SExternal_item_identification_assignment_xim/S*.java"/>
+		<include name="SExternal_model_xim/S*.java"/>
+		<include name="SFile_identification_xim/S*.java"/>
+		<include name="SFoundation_representation_xim/S*.java"/>
+		<include name="SGeometrically_bounded_surface_xim/S*.java"/>
+		<include name="SGeometric_tolerance_xim/S*.java"/>
+		<include name="SIdentification_assignment_xim/S*.java"/>
+		<include name="SIndependent_property_xim/S*.java"/>
+		<include name="SIndependent_property_representation_xim/S*.java"/>
+		<include name="SItem_definition_structure_xim/S*.java"/>
+		<include name="SManifold_surface_xim/S*.java"/>
+		<include name="SMeasure_representation_xim/S*.java"/>
+		<include name="SMulti_linguism_xim/S*.java"/>
+		<include name="SName_assignment_xim/S*.java"/>
+		<include name="SPart_and_version_identification_xim/S*.java"/>
+		<include name="SPart_definition_relationship_xim/S*.java"/>
+		<include name="SPart_view_definition_xim/S*.java"/>
+		<include name="SPerson_organization_xim/S*.java"/>
+		<include name="SPerson_organization_assignment_xim/S*.java"/>
+		<include name="SPlib_class_reference_xim/S*.java"/>
+		<include name="SProcess_property_assignment_xim/S*.java"/>
+		<include name="SProduct_categorization_xim/S*.java"/>
+		<include name="SProduct_concept_identification_xim/S*.java"/>
+		<include name="SProduct_identification_xim/S*.java"/>
+		<include name="SProduct_replacement_xim/S*.java"/>
+		<include name="SProduct_structure_xim/S*.java"/>
+		<include name="SProduct_version_xim/S*.java"/>
+		<include name="SProduct_version_relationship_xim/S*.java"/>
+		<include name="SProduct_view_definition_xim/S*.java"/>
+		<include name="SProduct_view_definition_properties_xim/S*.java"/>
+		<include name="SProduct_view_definition_relationship_xim/S*.java"/>
+		<include name="SProject_xim/S*.java"/>
+		<include name="SProperty_assignment_xim/S*.java"/>
+		<include name="SRequirement_assignment_xim/S*.java"/>
+		<include name="SRequirement_identification_and_version_xim/S*.java"/>
+		<include name="SRequirement_view_definition_xim/S*.java"/>
+		<include name="SRequirement_view_definition_relationship_xim/S*.java"/>
+		<include name="SSecurity_classification_xim/S*.java"/>
+		<include name="SShape_property_assignment_xim/S*.java"/>
+		<include name="SSingle_part_representation_xim/S*.java"/>
+		<include name="STime_interval_xim/S*.java"/>
+		<include name="SValue_with_unit_xim/S*.java"/>
+		<include name="SWork_order_xim/S*.java"/>
+		<include name="SWork_request_xim/S*.java"/>
+		<include name="SBasic_geometry_xim/S*.java"/>
+		<include name="SBasic_curve_xim/S*.java"/>
+		<include name="SArea_2d_xim/S*.java"/>
+		<include name="SManifold_subsurface_xim/S*.java"/>
+		<include name="SConductivity_material_aspects_xim/S*.java"/>
+		<include name="SGeneric_material_aspects_xim/S*.java"/>
+		<include name="SDefault_tolerance_xim/S*.java"/>
+		<include name="SConstructive_solid_geometry_2d_xim/S*.java"/>
+		<include name="SWireframe_2d_xim/S*.java"/>
+		<include name="SCurve_appearance_xim/S*.java"/>
+		<include name="SColour_xim/S*.java"/>
+		<include name="SAssociative_text_xim/S*.java"/>
+		<include name="SAppearance_assignment_xim/S*.java"/>
+		<include name="SConstruction_geometry_xim/S*.java"/>
+		<include name="SText_appearance_xim/S*.java"/>		
+		<include name="SActivity_method_assignment_xim/S*.java"/>		
+		<include name="SProduct_data_management_xim/S*.java"/>		
+		<include name="SLayer_assignment_xim/S*.java"/>		
+		<include name="SGeneral_surface_appearance_xim/S*.java"/>		
+		<include name="SManagement_resource_information_xim/S*.java"/>		
+		<include name="STime_interval_assignment_xim/S*.java"/>		
+		<include name="SDocument_properties_xim/S*.java"/>		
+		<include name="STagged_text_representation_xim/S*.java"/>		
+		<include name="SIncomplete_data_reference_mechanism_xim/S*.java"/>		
+		<include name="SDocument_management_xim/S*.java"/>		
+		<!-- FOR IDA STEP -->
+		<include name="SAlternative_solution_xim/S*.java"/>
+		<include name="SConstructive_solid_geometry_3d_xim/S*.java"/>
+		<include name="SConstruction_history_xim/S*.java"/>
+		<include name="SProduct_class_xim/S*.java"/>
+		<include name="SSurface_conditions_xim/S*.java"/>
+		<include name="SPart_collection_xim/S*.java"/>
+		<include name="SProduct_breakdown_xim/S*.java"/>
+		<include name="SZonal_breakdown_xim/S*.java"/>		
+		<include name="SSpecification_based_configuration_xim/S*.java"/>
+
+		<include name="SSpecification_control_xim/S*.java"/>
+		<include name="SDrawing_structure_and_administration_xim/S*.java"/>
+		<include name="SExternal_properties_xim/S*.java"/>
+		<include name="SFaceted_boundary_representation_xim/S*.java"/>
+		<include name="SPosition_in_organization_xim/S*.java"/>
+		<include name="SProduct_as_individual_xim/S*.java"/>
+		<include name="SPhysical_breakdown_xim/S*.java"/>
+		<include name="SFunctional_breakdown_xim/S*.java"/>
+		<include name="SSpecified_product_xim/S*.java"/>
+		<include name="SGeometrically_bounded_wireframe_xim/S*.java"/>
+
+		<include name="SElemental_topology_xim/S*.java"/>
+		<include name="SProduct_placement_xim/S*.java"/>
+		<include name="SType_of_person_xim/S*.java"/>
+		<include name="SExperience_xim/S*.java"/>
+		<include name="SQualifications_xim/S*.java"/>
+		<include name="SActivity_as_realized_xim/S*.java"/>
+		<include name="SResource_item_xim/S*.java"/>
+		<include name="SRequired_resource_xim/S*.java"/>
+		<include name="SResource_as_realized_xim/S*.java"/>
+		<include name="SResource_management_xim/S*.java"/>
+		<include name="SLocation_assignment_xim/S*.java"/>
+		<include name="SLocation_xim/S*.java"/>
+		<include name="SManufacturing_configuration_effectivity_xim/S*.java"/>
+		<include name="SInertia_characteristics_xim/S*.java"/>
+		<include name="SDimension_and_tolerance_callouts_xim/S*.java"/>
+		<include name="SProduct_occurrence_xim/S*.java"/>
+		<include name="SAnnotated_presentation_xim/S*.java"/>
+		<include name="SWork_breakdown_xim/S*.java"/>
+		<include name="SScheme_xim/S*.java"/>
+
+		<include name="SIda_step_schema_xim/S*.java"/>
+		<include name="SMixed_complex_types/S*.java"/>
+
+	  </fileset>
+	</copy>
+  </target>
+	  
+  <target name="package.library" depends="compile.java, package.library.only" />
+  
+  <target name="package.library.only" depends="-environment">
+    <copy todir="${package.temp.dir}/jsdai" file="${express.compiler.dir}/jsdai/repository.properties" overwrite="yes"/>
+
+    <move todir="${package.temp.dir}">
+      <fileset dir="${express.compiler.dir}">
+        <include name="**"/>
+        <exclude name="**/*.java"/>
+        <exclude name="jsdai/repository.properties"/>
+      </fileset>
+    </move>
+
+    <!--unzip dest="${package.temp.dir}" src="${core.lib.dir}/SExtended_dictionary_schema.zip">
+      <patternset>
+		<include name="**"/>
+		<exclude name="**/repository.properties"/>
+	  </patternset>
+    </unzip-->
+    
+    <jar jarfile="${output.jar.file}"
+		 basedir="${package.temp.dir}"
+		 includes="**">
+	  <metainf dir="${build.dir.top}">
+		<include name="stepmod.version"/>
+	  </metainf>
+	  <manifest>
+		<attribute name="Specification-Title" value="${library.name}"/>
+		<attribute name="Specification-Version" 
+				   value="${stepmod.version.major}.${stepmod.version.middle}.${stepmod.version.minor}"/>
+		<attribute name="Specification-Vendor" value="${jsdai.vendor}"/>
+		<attribute name="Implementation-Title" value="${library.implementation}"/>
+		<attribute name="Implementation-Version" value="${env.BUILD_ID}"/> 
+		<attribute name="Implementation-Vendor" value="${jsdai.vendor}"/>
+	  </manifest>
+	</jar>
+
+	<zip zipfile="${output.jar.file}.src.zip">
+	  <fileset dir="${repos.dir}">
+		<exclude name="application/**"/>
+	  </fileset>
+	  <fileset dir="${build.dir}">
+		<!--include name="${expressdoc.subdir}/REPOSITORIES/**"/>
+		<exclude name="${expressdoc.subdir}/REPOSITORIES/application/**"/-->
+		<include name="${runtimespecific.subdir}/REPOSITORIES/**"/>
+		<exclude name="${runtimespecific.subdir}/REPOSITORIES/application/**"/>
+	  </fileset>
+	  <fileset dir="${express.compiler.dir}"/>
+	</zip>
+
+  </target>
+
+  <target name="package.doc.only" depends="-environment">
+	<delete file="${output.doc.file}"/>
+	<zip zipfile="${output.doc.file}" basedir="${api.ref.dir}"/>
+  </target>
+
+  <target name="package.doc" depends="generate.doc, package.doc.only"/>
+  
+  <target name="generate.library" depends="package.library, -generate.doc.only, package.doc.only"/>
+
+  <!-- meta targets -->
+  <target name="clean" depends="-clean.jsdai" description="Clean working and resulting items">
+	<delete dir="${build.dir.top}"/>
+	<delete dir="${out.dir}"/>
+  </target>
+
+  <target name="-set.properties">
+	<condition property="dependency.isset">
+	  <istrue value="${depmod}"/>
+	</condition>
+  </target>
+
+  <target name="prepare.dirs" depends="-set.properties">
+	<mkdir dir="${build.dir.top}"/>
+	<mkdir dir="${out.dir}"/>
+  </target>
+
+  <target name="-do.cvs.versions" unless="stepmod.versions.ready">
+	<cvs output="${build.dir.top}/stepmod.version" dest="${lksoft.stepmod.dir}" quiet="true" cvsrsh="${cvs.rsh}">
+	  <commandline>
+		<argument value="-Q"/>
+		<argument value="status"/>
+	  </commandline>
+	</cvs>
+  </target>
+
+  <target name="-cvs.versions" depends="prepare.dirs">
+	<available property="stepmod.versions.ready" file="${build.dir.top}/stepmod.version"/>
+	<antcall target="-do.cvs.versions" inheritall="true" inheritrefs="true"/>
+  </target>
+
+  <target name="-base.environment" depends="-static.environment">
+  	<property name="base.build.dir" location="${build.dir.top}/base"/>
+  	<property name="src.dir" location="src"/>
+
+	<mkdir dir="${base.build.dir}"/>
+  </target>
+
+  <target name="build.tools.jar" depends="-base.environment, update.stepmod">
+  	<javac srcdir="${src.dir}" destdir="${base.build.dir}" classpathref="classpath"
+  		   debug="${javac.debug.flag}" optimize="${javac.optimize.flag}" includes="jsdai/tools/**"/>
+  	<property name="tools.name" value="JSDAI STEPMOD Tools"/>
+    <jar jarfile="${out.dir}/jsdai_stepmod_tools.jar" basedir="${base.build.dir}"
+		 includes="jsdai/tools/**">
+	  <metainf dir="${build.dir.top}">
+		<include name="stepmod.version"/>
+	  </metainf>
+	  <manifest>
+		<attribute name="Specification-Title" value="${tools.name}"/>
+		<attribute name="Specification-Version" 
+				   value="${stepmod.version.major}.${stepmod.version.middle}.${stepmod.version.minor}"/>
+		<attribute name="Specification-Vendor" value="${jsdai.vendor}"/>
+		<attribute name="Implementation-Title" value="${tools.name}"/>
+		<attribute name="Implementation-Version" value="${env.BUILD_ID}"/> 
+		<attribute name="Implementation-Vendor" value="${jsdai.vendor}"/>
+	  </manifest>
+	</jar>
+  </target>
+
+  <target name="build.base" depends="build.tools.jar" description="Build base jars"/>
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: -pack200-xim-library
+         - - - - - - - - - - - - - - - - - -->
+    <target name="-pack200-xim-library" depends="-static.environment">
+        <exec executable="${alternate.jdk.home}/bin/pack200">
+        	<arg value="-J-Xmx256m"/>
+        	<arg file="${out.dir}/${output.jar.name}.pack.gz"/>
+        	<arg file="${out.dir}/${output.jar.name}"/>
+        </exec>
+    </target>
+
+  <target name="build" depends="-build.jsdai, -cvs.versions, update.stepmod, build.base" description="Build stepmod related files">
+	<echo level="info">${line.separator}Building JSDAI XIM Full Library</echo>
+	<antcall target="generate.xim.library" inheritall="true" inheritrefs="true">
+	  <param name="build.dir" location="${build.dir.top}/build_xim_full"/>
+	  <param name="output.jar.name" value="jsdai_xim_full.jar"/>
+	  <param name="output.doc.name" value="jsdai_xim_full_api_ref.zip"/>
+	  <param name="express.list.creator" location="xim_ida_step_list.xml"/>
+	  <param name="express.complex.creator" location="ap210_xim_complex.xml"/>
+	  <param name="additional.express.compiler.params"
+			 value="-ee -special_class_suffix Base -special_class_suffix_match .+_xim|mixed_complex_types"/>
+	  <param name="retain.declarations"
+			 value="-exclude ap210_electronic_assembly_interconnect_and_packaging_design_.+
+					-exclude ida_step_.+
+					-exclude ap203_configuration_controlled_3d_design_of_mechanical_parts_and_assemblies_.*
+					-exclude ap233_system_engineering_and_design_.*
+					-exclude ap239_product_life_cycle_support_.*
+					-exclude automotive_design.*"/>
+	  <param name="doc.index.name" value="XIM index"/>
+	  <param name="doc.title" value="XIM Schemas"/>
+	  <param name="library.name" value="JSDAI XIM Full Library"/>
+	</antcall>
+  	<antcall target="-pack200-xim-library">
+  	  <param name="output.jar.name" value="jsdai_xim_full.jar"/>
+  	</antcall>
+	<echo level="info">${line.separator}Building JSDAI STEPMOD MIM Library</echo>
+	<antcall target="generate.library" inheritall="true" inheritrefs="true">
+	  <param name="build.dir" location="${build.dir.top}/build_mim"/>
+	  <param name="output.jar.name" value="module_mim.jar"/>
+	  <param name="output.doc.name" value="module_mim_html.zip"/>
+	  <param name="express.list.creator" location="aim_FULL_list.xml"/>
+	  <param name="express.complex.creator" location="empty_complex.xml"/>
+	  <param name="additional.express.compiler.params" value="-oc -oe"/>
+	  <param name="additional.express.doc.params" value="-noJava"/>
+	  <param name="doc.index.name" value="MIM index"/>
+	  <param name="doc.title" value="MIM Schemas"/>
+	  <param name="library.name" value="JSDAI STEPMOD MIM Library"/>
+	</antcall>
+	<echo level="info">${line.separator}Building JSDAI STEPMOD ARM Library</echo>
+	<antcall target="generate.library" inheritall="true" inheritrefs="true">
+	  <param name="build.dir" location="${build.dir.top}/build_arm"/>
+	  <param name="output.jar.name" value="module_arm.jar"/>
+	  <param name="output.doc.name" value="module_arm_html.zip"/>
+      <param name="express.list.creator" location="arm_FULL_list.xml"/>
+      <param name="express.complex.creator" location="empty_complex.xml"/>
+	  <param name="additional.express.compiler.params" value="-oc -oe"/>
+	  <param name="additional.express.doc.params" value="-noJava"/>
+	  <param name="doc.index.name" value="ARM index"/>
+	  <param name="doc.title" value="ARM Schemas"/>
+	  <param name="library.name" value="JSDAI STEPMOD ARM Library"/>
+	</antcall>
+  </target>
+
+  <target name="-clean.jsdai" if="dependency.isset" depends="-set.properties">
+    <ant inheritall="false" dir="${jsdai.dir}" antfile="build.xml" target="clean"/>
+  </target>
+
+  <target name="-build.jsdai" if="dependency.isset" depends="-set.properties">
+	<ant inheritall="false" dir="${jsdai.dir}" antfile="build.xml" target="build"/>
+  </target>
+
+  <target name="build.all" depends="clean, -build.jsdai, build"
+		  description="Makes clean build (equivalent to clean+build)"/>
+
+</project>

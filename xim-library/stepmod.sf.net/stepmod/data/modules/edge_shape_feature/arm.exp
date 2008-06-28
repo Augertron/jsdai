@@ -1,0 +1,55 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3966 - ISO/TS 10303-1673 Edge shape feature - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3414
+*)
+
+SCHEMA Edge_shape_feature_arm;
+
+	USE FROM Layered_3d_shape_arm;	-- ISO/TS 10303-1694
+	USE FROM Characteristic_arm;	-- ISO/TS 10303-1654	
+
+  TYPE board_side = ENUMERATION OF (primary, secondary); 
+  END_TYPE;
+
+  ENTITY Bevel_edge_feature_shape_model
+    SUBTYPE OF (Edge_shape_model);
+      bevel_width : Length_tolerance_characteristic;
+      bevel_angle : Tolerance_characteristic;
+    WHERE
+      WR1 : ('CHARACTERISTIC_ARM.STATISTICAL_TOLERANCE_CHARACTERISTIC' IN TYPEOF(bevel_angle)) OR
+        ('CHARACTERISTIC_ARM.SYMMETRICAL_TOLERANCE_CHARACTERISTIC' IN TYPEOF(bevel_angle)) OR
+        (SIZEOF(QUERY(it <* bevel_angle\Representation.items |
+          NOT('VALUE_WITH_UNIT_EXTENSION_ARM.ANGLE_DATA_ELEMENT' IN TYPEOF(bevel_angle\Representation.items))
+         )) = 0);
+      WR2 : NOT('CHARACTERISTIC_ARM.SYMMETRICAL_TOLERANCE_CHARACTERISTIC' IN TYPEOF(bevel_angle)) OR
+        (SIZEOF(QUERY(it <* bevel_angle\Representation.items |
+        ('VALUE_WITH_UNIT_EXTENSION_ARM.ANGLE_DATA_ELEMENT' IN TYPEOF(bevel_angle\Representation.items))
+           )) = 1);
+  END_ENTITY;
+
+  ENTITY Edge_shape_model
+    ABSTRACT SUPERTYPE OF (ONEOF (Bevel_edge_feature_shape_model,
+ Step_edge_feature_shape_model,
+ Radius_edge_feature_shape_model))
+    SUBTYPE OF (Planar_shape_model);
+      applied_surface : board_side;
+    WHERE
+      WR1 : SIZEOF(QUERY(escss <* USEDIN(SELF,
+ 'LAYERED_3D_SHAPE_ARM.SHAPE_DEFINITION_3D_INTERSECTION.SURFACE_INTERSECTION_RESULT') | NOT ('PART_TEMPLATE_3D_SHAPE_ARM.EDGE_SEGMENT_CROSS_SECTION' IN TYPEOF(escss)))) = 0;
+      WR2 : NOT EXISTS(SELF\Representation.name);
+  END_ENTITY;
+
+  ENTITY Radius_edge_feature_shape_model
+    SUBTYPE OF (Edge_shape_model);
+      radius_length : Length_tolerance_characteristic;
+  END_ENTITY;
+
+  ENTITY Step_edge_feature_shape_model
+    SUBTYPE OF (Edge_shape_model);
+      step_width : Length_tolerance_characteristic;
+      step_depth : Length_tolerance_characteristic;
+  END_ENTITY;
+
+END_SCHEMA;
+

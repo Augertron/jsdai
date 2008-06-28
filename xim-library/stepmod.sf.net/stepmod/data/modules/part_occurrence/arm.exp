@@ -1,0 +1,34 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4961 - ISO/CD-TS 10303-1715 Part occurrence - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4092
+*)
+
+SCHEMA Part_occurrence_arm;
+USE FROM Assembly_structure_arm;	-- ISO/TS 10303-1026
+USE FROM Generic_product_occurrence_arm;	-- ISO/CD-TS 10303-1762
+USE FROM Part_view_definition_arm;	-- ISO/TS 10303-1023
+
+  ENTITY Definition_based_part_occurrence
+    SUBTYPE OF (Definition_based_product_occurrence, Part_occurrence);
+      SELF\Definition_based_product_occurrence.derived_from : Part_view_definition;
+  END_ENTITY;
+
+  ENTITY Part_occurrence
+    ABSTRACT SUPERTYPE SUBTYPE OF (Product_occurrence);
+      SELF\Product_view_definition.defined_version : Part_version;
+  END_ENTITY;
+
+  ENTITY Part_occurrence_definition_relationship
+    SUBTYPE OF (Product_occurrence_definition_relationship);
+      SELF\Product_occurrence_definition_relationship.relating_view : Part_view_definition;
+      SELF\Product_occurrence_definition_relationship.related_view  : Part_occurrence;
+    DERIVE
+      id : STRING := SELF\Product_occurrence_definition_relationship.related_view\Product_view_definition.id;
+  END_ENTITY;
+
+  ENTITY Specification_based_part_occurrence
+    SUBTYPE OF (Specification_based_product_occurrence, Part_occurrence);
+  END_ENTITY;
+
+END_SCHEMA; 

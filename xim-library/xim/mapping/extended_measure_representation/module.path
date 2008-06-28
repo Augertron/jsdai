@@ -1,0 +1,261 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping extended_measure_representation(Extended_measure_representation_arm, Extended_measure_representation_mim);*)
+
+
+entity_mapping Value_limit(Value_limit, [measure_representation_item]
+      [qualified_representation_item]
+);
+
+attribute_mapping qualifiers(qualifiers, type_qualifier.name
+);
+qualified_representation_item 
+     qualified_representation_item.qualifiers[i] -> 
+     value_qualifier = type_qualifier 
+     type_qualifier
+     {(type_qualifier.name = 'maximum') 
+     (type_qualifier.name = 'minimum')}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Value_list(Value_list, compound_representation_item);
+
+attribute_mapping values(values, ($PATH)($PATH)($PATH)($PATH)($PATH)($PATH), measure_representation_item);
+(compound_representation_item 
+        compound_representation_item.item_element ->
+        compound_item_definition = list_representation_item
+        list_representation_item[i] ->  
+        representation_item =>
+	[measure_representation_item]
+      [qualified_representation_item]
+)(compound_representation_item 
+        compound_representation_item.item_element ->
+        compound_item_definition = list_representation_item
+        list_representation_item[i] ->  
+        representation_item =>
+	value_representation_item
+)(compound_representation_item 
+        compound_representation_item.item_element ->
+        compound_item_definition = list_representation_item
+        list_representation_item[i] ->  
+        representation_item =>
+	compound_representation_item =>
+	value_range 
+)(compound_representation_item 
+        compound_representation_item.item_element ->
+        compound_item_definition = list_representation_item
+        list_representation_item[i] ->  
+        representation_item =>
+	measure_representation_item
+)(compound_representation_item 
+        compound_representation_item.item_element ->
+        compound_item_definition = list_representation_item
+        list_representation_item[i] ->  
+        representation_item =>
+	value_representation_item
+)(compound_representation_item 
+        compound_representation_item.item_element ->
+        compound_item_definition = list_representation_item
+        list_representation_item[i] ->  
+        representation_item =>
+	compound_representation_item
+)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Value_set(Value_set, compound_representation_item);
+
+attribute_mapping values(values, ($PATH)($PATH)($PATH)($PATH)($PATH)($PATH), measure_representation_item);
+(compound_representation_item 
+        compound_representation_item.item_element ->
+        compound_item_definition = set_representation_item
+        set_representation_item[i] ->  
+        representation_item =>
+	[measure_representation_item]
+      [qualified_representation_item]
+)(compound_representation_item 
+        compound_representation_item.item_element ->
+        compound_item_definition = set_representation_item
+        set_representation_item[i] ->  
+        representation_item =>
+	value_representation_item
+)(compound_representation_item 
+        compound_representation_item.item_element ->
+        compound_item_definition = set_representation_item
+        set_representation_item[i] ->  
+        representation_item =>
+	compound_representation_item =>
+	value_range 
+)(compound_representation_item 
+        compound_representation_item.item_element ->
+        compound_item_definition = set_representation_item
+        set_representation_item[i] ->  
+        representation_item =>
+	measure_representation_item
+)(compound_representation_item 
+        compound_representation_item.item_element ->
+        compound_item_definition = set_representation_item
+        set_representation_item[i] ->  
+        representation_item =>
+	value_representation_item
+)(compound_representation_item 
+        compound_representation_item.item_element ->
+        compound_item_definition = set_representation_item
+        set_representation_item[i] ->  
+        representation_item =>
+	compound_representation_item
+)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Value_range_armx(Value_range_armx, value_range);
+
+mapping_constraints;
+value_range <=
+    compound_representation_item
+
+end_mapping_constraints;
+
+attribute_mapping lower_limit(lower_limit, $PATH, measure_representation_item);
+value_range <=
+    compound_representation_item
+    compound_representation_item.item_element ->
+    set_representation_item 
+    set_representation_item[i] ->  
+    representation_item  
+    {representation_item.name = 'lower limit'}  
+    representation_item => measure_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping upper_limit(upper_limit, $PATH, measure_representation_item);
+value_range <=
+    compound_representation_item
+    compound_representation_item.item_element ->
+    set_representation_item 
+    set_representation_item[i] ->  
+    representation_item 
+    {representation_item.name = 'upper limit'}  
+    representation_item => measure_representation_item
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Value_range_with_global_unit(Value_range_with_global_unit, value_range);
+
+mapping_constraints;
+value_range <=
+    compound_representation_item
+
+end_mapping_constraints;
+
+attribute_mapping lower_limit(lower_limit, $PATH, value_representation_item);
+value_range <=
+    compound_representation_item
+    compound_representation_item.item_element ->
+    set_representation_item 
+    set_representation_item[i] ->  
+    representation_item  
+    {representation_item.name = 'lower limit'}  
+    representation_item =>  value_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping upper_limit(upper_limit, $PATH, value_representation_item);
+value_range <=
+    compound_representation_item
+    compound_representation_item.item_element ->
+    set_representation_item 
+    set_representation_item[i] ->  
+    representation_item
+    {representation_item.name = 'upper limit'}  
+    representation_item =>  value_representation_item
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(* measure_representation_item is used instead from AIM
+entity_mapping Measure_item(Measure_item, (/SUBTYPE(Value_limit)/)
+(/SUBTYPE(Value_limit_with_global_unit)/)
+(/SUBTYPE(Value_range)/)
+(/SUBTYPE(Value_range_with_global_unit)/)
+(/SUBTYPE(Value_list)/)
+(/SUBTYPE(Value_with_tolerances)/)
+)
+extended;
+
+end_entity_mapping;
+*)
+entity_mapping Measure_item_with_precision(Measure_item_with_precision, [measure_representation_item]
+[qualified_representation_item]);
+
+attribute_mapping significant_digits(significant_digits, precision_qualifier.precision_value);
+qualified_representation_item 
+qualified_representation_item.qualifiers[i] ->
+value_qualifier = precision_qualifier
+precision_qualifier.precision_value
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Value_with_tolerances(Value_with_tolerances, [qualified_representation_item]
+[measure_representation_item]);
+
+attribute_mapping item_value(item_value, $IDENTICAL_MAPPING, measure_representation_item);
+
+end_attribute_mapping;
+
+attribute_mapping lower_limit(lower_limit, qualitative_uncertainty.uncertainty_value);
+
+qualified_representation_item 
+qualified_representation_item.qualifiers[i] ->
+value_qualifier = uncertainty_qualifier
+{uncertainty_qualifier.measure_name='lower limit'}
+uncertainty_qualifier =>
+standard_uncertainty
+standard_uncertainty.uncertainty_value
+
+end_attribute_mapping;
+
+attribute_mapping upper_limit(upper_limit, qualitative_uncertainty.uncertainty_value);
+
+qualified_representation_item 
+qualified_representation_item.qualifiers[i] ->
+value_qualifier = uncertainty_qualifier
+{uncertainty_qualifier.measure_name='upper limit'}
+uncertainty_qualifier =>
+standard_uncertainty
+standard_uncertainty.uncertainty_value
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

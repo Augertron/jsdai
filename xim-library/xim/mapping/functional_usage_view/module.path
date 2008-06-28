@@ -1,0 +1,419 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping network_functional_usage_view(Network_functional_usage_view_arm, Network_functional_usage_view_mim);*)
+entity_mapping Analytical_model_port_assignment_armx(Analytical_model_port_assignment_armx, analytical_model_port_assignment)
+extended;
+
+attribute_mapping assigned_item(assigned_item, , Functional_unit_usage_view_terminal_definition);
+
+				characterized_definition = shape_definition
+				shape_definition = shape_aspect
+				shape_aspect => functional_unit_terminal_definition
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Equivalent_functional_terminals_assignment(Equivalent_functional_terminals_assignment, shape_aspect);
+
+mapping_constraints;
+{shape_aspect
+shape_aspect.description = 'equivalent functional terminals'}
+
+end_mapping_constraints;
+
+attribute_mapping name(name, shape_aspect.name);
+
+end_attribute_mapping;
+
+attribute_mapping equivalent_terminals(equivalent_terminals, $PATH, Functional_unit_usage_view_terminal_definition);
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'equivalent functional terminals assignment'}
+shape_aspect_relationship.related_shape_aspect -> 
+shape_aspect =>
+functional_unit_terminal_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Equivalent_functional_unit_definition_assignment(Equivalent_functional_unit_definition_assignment, product_definition);
+
+mapping_constraints;
+{product_definition
+product_definition.description =  'equivalent functional unit definition'}
+
+end_mapping_constraints;
+
+attribute_mapping name(name, product_definition.id);
+
+end_attribute_mapping;
+
+attribute_mapping equivalent_functional_unit_definitions(equivalent_functional_unit_definitions, $PATH, Functional_unit_definition);
+product_definition <-
+product_definition_relationship.relating_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'equivalent functional unit definition assignment'}
+product_definition_relationship.related_product_definition ->
+{product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+(application_context_element.name = 'functional network design')
+(application_context_element.name = 'functional design usage')}
+product_definition =>
+functional_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*
+entity_mapping Functional_terminal_group(Functional_terminal_group, functional_terminal_group);
+
+mapping_constraints;
+functional_terminal_group <=
+group
+
+end_mapping_constraints;
+
+attribute_mapping name(name, group.name);
+functional_terminal_group <=
+group
+group.name
+
+end_attribute_mapping;
+
+attribute_mapping group_description(group_description, group.description);
+functional_terminal_group <=
+group
+group.description
+
+end_attribute_mapping;
+
+attribute_mapping group_type(group_type, group.id);
+functional_terminal_group <=
+group
+group.id
+
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Functional_terminal_group_assignment(Functional_terminal_group_assignment, applied_group_assignment);
+
+mapping_constraints;
+{applied_group_assignment
+applied_group_assignment <=
+group_assignment
+group_assignment.assigned_group ->
+group =>
+functional_terminal_group}
+
+end_mapping_constraints;
+
+attribute_mapping composed_group(composed_group, $PATH, Functional_terminal_group);
+applied_group_assignment <=
+group_assignment
+group_assignment.assigned_group ->
+group =>
+functional_terminal_group
+
+end_attribute_mapping;
+
+attribute_mapping functional_usage_view_terminal(functional_usage_view_terminal, $PATH, Scalar_terminal_definition);
+applied_group_assignment
+applied_group_assignment.items[i] ->
+groupable_item
+groupable_item = shape_aspect
+{shape_aspect
+shape_aspect.description = 'scalar terminal'}
+shape_aspect =>
+functional_unit_terminal_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Functional_unit_definition(Functional_unit_definition, functional_unit);
+
+mapping_constraints;
+functional_unit <=
+product_definition
+{product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+(application_context_element.name = 'functional network design')
+(application_context_element.name = 'functional design usage')}
+
+end_mapping_constraints;
+
+attribute_mapping defined_version(defined_version, $PATH, Functional_version);
+functional_unit <=
+product_definition
+product_definition.formation -> product_definition_formation
+{product_definition_formation.of_product -> 
+product <- 
+product_related_product_category.products[i] 
+product_related_product_category <= 
+product_category 
+product_category.name = 'functional'} 
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Functional_unit_make_from_relationship(Functional_unit_make_from_relationship, product_definition_relationship);
+
+mapping_constraints;
+product_definition_relationship
+{product_definition_relationship.related_product_definition ->
+product_definition =>
+functional_unit}
+{product_definition_relationship.relating_product_definition ->
+product_definition =>
+functional_unit}
+
+end_mapping_constraints;
+
+attribute_mapping related_view(related_view, $PATH, Functional_unit_usage_view);
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition =>
+functional_unit
+
+end_attribute_mapping;
+
+attribute_mapping relating_view(relating_view, $PATH, Functional_unit_usage_view);
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+functional_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Functional_unit_usage_view(Functional_unit_usage_view, functional_unit);
+
+mapping_constraints;
+functional_unit <=
+product_definition
+{product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'functional design usage'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Functional_unit_usage_view_terminal_definition(Functional_unit_usage_view_terminal_definition, functional_unit_terminal_definition);
+
+mapping_constraints;
+functional_unit_terminal_definition <=
+shape_aspect
+
+end_mapping_constraints;
+
+attribute_mapping signal_name(signal_name, shape_aspect.name);
+functional_unit_terminal_definition <=
+shape_aspect
+shape_aspect.name
+
+end_attribute_mapping;
+
+attribute_mapping associated_functional_unit_definition(associated_functional_unit_definition, $PATH, Functional_unit_usage_view);
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+functional_unit
+{functional_unit  <=
+product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'functional design usage'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Functional_unit_usage_view_terminal_definition_make_from_relationship(Functional_unit_usage_view_terminal_definition_make_from_relationship, make_from_functional_unit_terminal_definition_relationship);
+
+mapping_constraints;
+{[make_from_functional_unit_terminal_definition_relationship <=
+shape_aspect_relationship]
+[make_from_functional_unit_terminal_definition_relationship <=
+shape_aspect]}
+
+end_mapping_constraints;
+
+attribute_mapping reusable_feature(reusable_feature, $PATH, Functional_unit_usage_view_terminal_definition);
+make_from_functional_unit_terminal_definition_relationship <=
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect =>
+functional_unit_terminal_definition
+
+end_attribute_mapping;
+
+attribute_mapping resultant_feature(resultant_feature, $PATH, Functional_unit_usage_view_terminal_definition);
+make_from_functional_unit_terminal_definition_relationship <=
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+functional_unit_terminal_definition
+
+end_attribute_mapping;
+
+attribute_mapping associated_make_from(associated_make_from, $PATH, product_definition_relationship);
+make_from_functional_unit_terminal_definition_relationship <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape <=
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition_relationship
+product_definition_relationship
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Functional_product(Functional_product, product);
+
+mapping_constraints;
+product
+{product <-
+product_related_product_category.products[i] 
+product_related_product_category <= 
+product_category 
+product_category.name = 'functional'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Functional_version(Functional_version, product_definition_formation);
+
+mapping_constraints;
+product_definition_formation
+{product_definition_formation.of_product -> 
+product <- 
+product_related_product_category.products[i] 
+product_related_product_category <= 
+product_category 
+product_category.name = 'functional'}
+
+end_mapping_constraints;
+
+attribute_mapping of_product(of_product, $PATH, Functional_product);
+product_definition_formation
+product_definition_formation.of_product -> 
+product
+{product <- 
+product_related_product_category.products[i] 
+product_related_product_category <= 
+product_category 
+product_category.name = 'functional'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Scalar_terminal_definition(Scalar_terminal_definition, functional_unit_terminal_definition);
+
+mapping_constraints;
+functional_unit_terminal_definition <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'scalar terminal'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Scalar_terminal_definition_link_armx(Scalar_terminal_definition_link_armx, scalar_terminal_definition_link);
+
+mapping_constraints;
+{[scalar_terminal_definition_link <=
+shape_aspect]
+[scalar_terminal_definition_link <=
+shape_aspect_relationship]}
+
+end_mapping_constraints;
+
+attribute_mapping precedent_terminal_definition(precedent_terminal_definition, $PATH, Scalar_terminal_definition);
+scalar_terminal_definition_link <=
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+{shape_aspect
+shape_aspect.description = 'scalar terminal'}
+functional_unit_terminal_definition
+
+end_attribute_mapping;
+
+attribute_mapping subsequent_terminal_definition(subsequent_terminal_definition, $PATH, Scalar_terminal_definition);
+scalar_terminal_definition_link <=
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect =>
+{shape_aspect
+shape_aspect.description = 'scalar terminal'}
+functional_unit_terminal_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

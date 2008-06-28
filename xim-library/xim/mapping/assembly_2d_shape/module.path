@@ -1,0 +1,242 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping assembly_2d_shape(Assembly_2d_shape_arm, Assembly_2d_shape_mim);*)
+
+
+entity_mapping Bond_assembly_2d_position(Bond_assembly_2d_position, mapped_item);
+
+mapping_constraints;
+{mapped_item <=
+representation_item
+representation_item.name = 'assembly 2d position'}
+
+end_mapping_constraints;
+
+attribute_mapping bond(bond, $PATH, Assembled_with_bonding);
+mapped_item <=
+representation_item <-
+representation.items[i]
+{representation
+representation.name = 'bond assembly position'}
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'assembled with bonding'}
+shape_aspect_relationship =>
+component_feature_joint =>
+assembly_joint
+
+end_attribute_mapping;
+
+attribute_mapping bond_definition_placement(bond_definition_placement, $PATH, axis2_placement_2d);
+mapped_item
+mapped_item.mapping_target ->
+representation_item =>
+geometric_representation_item =>
+placement =>
+axis2_placement_2d
+
+end_attribute_mapping;
+
+attribute_mapping bond_model(bond_model, $PATH, Default_assembly_bond_shape_model);
+mapped_item
+mapped_item.mapping_source ->
+representation_map
+representation_map.mapped_representation ->
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+{property_definition
+[property_definition.description = 'default assembly bond shape model']
+[property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition_relationship
+product_definition_relationship =>
+product_definition_usage =>
+assembly_component_usage]}
+property_definition =>
+product_definition_shape
+
+end_attribute_mapping;
+
+attribute_mapping assembly_model(assembly_model, $PATH, Physical_unit_planar_shape_model);
+mapped_item <=
+representation_item <-
+representation.items[i]
+{representation
+[representation.name = 'ppsm']
+[representation.description = 'pu2ds']
+[representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+physical_unit]}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Component_2d_edge_location(Component_2d_edge_location, component_2d_location);
+
+mapping_constraints;
+{component_2d_location <=
+shape_representation_relationship <=
+representation_relationship	
+representation_relationship.description = 'component edge'}				
+
+end_mapping_constraints;
+
+attribute_mapping mounting_surface_assembly_joint(mounting_surface_assembly_joint, $PATH, Assembly_joint_armx);
+component_2d_location <=
+context_dependent_shape_representation
+context_dependent_shape_representation.represented_product_relation ->
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition 
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.description = 'mounting surface assembly joint'}
+property_definition_relationship.relating_property_definition -> 
+property_definition
+property_definition.definition -> 
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect =>
+component_feature_joint =>
+assembly_joint
+
+end_attribute_mapping;
+
+attribute_mapping reference_terminal_assembly_joint(reference_terminal_assembly_joint, $PATH, Assembly_joint_armx);
+component_2d_location <=
+context_dependent_shape_representation
+context_dependent_shape_representation.represented_product_relation ->
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition 
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.description = 'reference terminal assembly joint'}
+property_definition_relationship.relating_property_definition -> 
+property_definition
+property_definition.definition -> 
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect =>
+component_feature_joint =>
+assembly_joint
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Component_2d_stacked_location(Component_2d_stacked_location, component_2d_location);
+
+mapping_constraints;
+{component_2d_location <=
+shape_representation_relationship <=
+representation_relationship	
+representation_relationship.description = 'component stacked'}				
+
+end_mapping_constraints;
+
+attribute_mapping mounting_joint(mounting_joint, $PATH, Assembly_joint_armx);
+component_2d_location <=
+context_dependent_shape_representation
+context_dependent_shape_representation.represented_product_relation ->
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition 
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.description = 'mounting joint'}
+property_definition_relationship.relating_property_definition -> 
+property_definition
+property_definition.definition -> 
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect =>
+component_feature_joint =>
+assembly_joint
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Component_2d_surface_location(Component_2d_surface_location, component_2d_location);
+
+mapping_constraints;
+{component_2d_location <=
+shape_representation_relationship <=
+representation_relationship	
+representation_relationship.description = 'component surface'}
+
+end_mapping_constraints;
+
+attribute_mapping mounting_surface_assembly_joint(mounting_surface_assembly_joint, $PATH, Assembly_joint_armx);
+component_2d_location <=
+context_dependent_shape_representation
+context_dependent_shape_representation.represented_product_relation ->
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition 
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.description = 'mounting surface assembly joint'}
+property_definition_relationship.relating_property_definition -> 
+property_definition
+property_definition.definition -> 
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect =>
+component_feature_joint =>
+assembly_joint
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

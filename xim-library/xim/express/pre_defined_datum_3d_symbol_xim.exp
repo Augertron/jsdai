@@ -1,0 +1,58 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Pre defined datum 3d symbol - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Pre_defined_datum_3d_symbol_xim;
+
+USE FROM Extended_geometric_tolerance_xim;
+
+  ENTITY Pre_defined_datum_axis_3d_symbol
+    (* CONNOTATIONAL *) SUBTYPE OF (shape_representation);
+      associated_element : Datum_axis;
+    DERIVE
+      SELF\representation.name : label := '3d bound volume shape';
+    WHERE
+      WR2 : SELF\shape_representation.context_of_items.dimension_count = 3;
+  END_ENTITY;
+
+  ENTITY Pre_defined_datum_plane_3d_symbol
+    (* CONNOTATIONAL *) SUBTYPE OF (shape_representation);
+      associated_element : Datum_plane;
+    DERIVE
+      SELF\representation.name : label := '3d bound volume shape';
+    WHERE
+      WR2 : SELF\shape_representation.context_of_items.dimension_count = 3;
+  END_ENTITY;
+
+  SUBTYPE_CONSTRAINT pdd3ds_geometric_model_subtypes FOR shape_representation; 
+    (ONEOF (Pre_defined_datum_axis_3d_symbol,
+      Pre_defined_datum_plane_3d_symbol));
+  END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA;
+
+

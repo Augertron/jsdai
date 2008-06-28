@@ -1,0 +1,1092 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping package(Package_arm, Package_mim);*)
+
+entity_mapping Connection_zone_in_part_feature_template_definition(Connection_zone_in_part_feature_template_definition, shape_aspect);
+
+mapping_constraints;
+{shape_aspect
+shape_aspect.name = 'connection zone in part feature template definition'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Connection_zone_package_interface_plane_relationship(Connection_zone_package_interface_plane_relationship, connection_zone_interface_plane_relationship);
+
+mapping_constraints;
+{[connection_zone_interface_plane_relationship <=
+shape_aspect_relationship]
+[connection_zone_interface_plane_relationship <=
+shape_aspect]}
+
+end_mapping_constraints;
+
+attribute_mapping derived_zone_shape_class(derived_zone_shape_class, shape_aspect_relationship.description);
+connection_zone_interface_plane_relationship <=
+shape_aspect_relationship
+shape_aspect_relationship.description
+{(shape_aspect_relationship.description = 'area')
+(shape_aspect_relationship.description = 'edge')}
+
+end_attribute_mapping;
+
+attribute_mapping derived_zone(derived_zone, $PATH, Connection_zone_in_part_feature_template_definition);
+connection_zone_interface_plane_relationship <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'derived zone'}
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+
+end_attribute_mapping;
+
+attribute_mapping mating_zone(mating_zone, $PATH, Connection_zone_in_part_feature_template_definition);
+connection_zone_interface_plane_relationship <=
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+
+end_attribute_mapping;
+
+attribute_mapping interface_plane(interface_plane, $PATH, Seating_plane);
+connection_zone_interface_plane_relationship <=
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+seating_plane
+
+end_attribute_mapping;
+
+attribute_mapping interface_plane(interface_plane, $PATH, Interface_plane_armx);
+connection_zone_interface_plane_relationship <=
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+interface_plane
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping External_source_identification(External_source_identification, applied_external_identification_assignment)
+extended;
+
+attribute_mapping item(item, , Package_armx);
+
+				external_identification_item *> pa_external_identification_item
+				pa_external_identification_item = package 
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Visual_orientation_feature_armx(Visual_orientation_feature_armx, visual_orientation_feature);
+
+mapping_constraints;
+visual_orientation_feature <=
+shape_aspect
+
+end_mapping_constraints;
+
+attribute_mapping associated_body_vertical_extent(associated_body_vertical_extent, $PATH, Package_body_surface_armx);
+visual_orientation_feature <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'associated body vertical extent'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+(shape_aspect =>
+package_body_surface =>
+package_body_top_surface)
+(shape_aspect =>
+package_body_surface =>
+package_body_bottom_surface)
+
+end_attribute_mapping;
+
+attribute_mapping associated_terminal(associated_terminal, $PATH, Package_terminal_armx);
+visual_orientation_feature <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'associated terminal'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+placed_feature =>
+package_terminal
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Guided_wave_terminal_armx(Guided_wave_terminal_armx, guided_wave_terminal);
+
+mapping_constraints;
+guided_wave_terminal <=
+package_terminal <=
+placed_feature <=
+shape_aspect
+
+end_mapping_constraints;
+
+end_entity_mapping;
+(*
+entity_mapping Material_identification(Material_identification, material_designation)
+extended;
+
+attribute_mapping items(items, $PATH, Package_body_armx);
+
+				characterized_definition
+				characterized_definition = shape_definition
+				shape_definition
+				shape_definition = shape_aspect
+				shape_aspect => package_body
+				
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, Package_terminal_armx);
+
+				characterized_definition
+				characterized_definition = shape_definition
+				shape_definition
+				shape_definition = shape_aspect
+				shape_aspect => 
+				placed_feature =>
+				package_terminal
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Non_feature_shape_element(Non_feature_shape_element, shape_aspect)
+extended;
+
+attribute_mapping scope(scope, $PATH, Package_armx);
+
+					product_definition_shape =>
+					physical_unit =>
+					package
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Package_armx(Package_armx, package);
+
+mapping_constraints;
+package <=
+physical_unit <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping mounting_technology(mounting_technology, property_definition.description);
+package <=
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'mounting technology'}
+{(property_definition.description = 'surface mount')
+(property_definition.description = 'through hole')}
+property_definition.description
+
+end_attribute_mapping;
+
+attribute_mapping body_clearance_above_seating_plane(body_clearance_above_seating_plane, $PATH, Length_tolerance_characteristic);
+package <=
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition 
+characterized_product_definition 
+characterized_definition = characterized_product_definition 
+characterized_definition <- 
+property_definition.definition 
+{property_definition.name = 'body clearance above seating plane'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+
+end_attribute_mapping;
+
+attribute_mapping body_clearance_below_seating_plane(body_clearance_below_seating_plane, $PATH, Length_tolerance_characteristic);
+package <=
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition 
+characterized_product_definition 
+characterized_definition = characterized_product_definition 
+characterized_definition <- 
+property_definition.definition 
+{property_definition.name = 'body clearance below seating plane'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+
+
+end_attribute_mapping;
+
+attribute_mapping maximum_body_height_above_seating_plane(maximum_body_height_above_seating_plane, $PATH, length_measure_with_unit);
+package <=
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'maximum body height above seating plane'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping maximum_body_height_below_seating_plane(maximum_body_height_below_seating_plane, $PATH, length_measure_with_unit);
+package <=
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition 
+characterized_product_definition 
+characterized_definition = characterized_product_definition 
+characterized_definition <- 
+property_definition.definition 
+{property_definition.name = 'maximum body height below seating plane'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping maximum_lead_length_below_seating_plane(maximum_lead_length_below_seating_plane, $PATH, length_measure_with_unit);
+package <=
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition  
+characterized_product_definition  
+characterized_definition = characterized_product_definition  
+characterized_definition <-  
+property_definition.definition  
+{property_definition.name = 'maximum lead length below seating plane'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping maximum_seating_plane_installation_offset(maximum_seating_plane_installation_offset, $PATH, length_measure_with_unit);
+package <=
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'maximum seating plane installation offset'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping least_lead_length_below_seating_plane(least_lead_length_below_seating_plane, $PATH, length_measure_with_unit);
+package <=
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition   
+characterized_product_definition   
+characterized_definition = characterized_product_definition   
+characterized_definition <-   
+property_definition.definition   
+{property_definition.name = 'least lead length below seating plane'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping nominal_mounting_lead_pitch(nominal_mounting_lead_pitch, $PATH, length_measure_with_unit);
+package <=
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'nominal mounting lead pitch'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping nominal_mounting_lead_span(nominal_mounting_lead_span, $PATH, length_measure_with_unit);
+package <=
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'nominal mounting lead span'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Package_body_armx(Package_body_armx, package_body);
+
+mapping_constraints;
+package_body <=
+shape_aspect
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Package_armx);
+package_body <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+physical_unit =>
+package
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Package_body_bottom_surface_armx(Package_body_bottom_surface_armx, package_body_bottom_surface);
+
+mapping_constraints;
+package_body_bottom_surface <=
+package_body_surface <=
+shape_aspect
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Package_body_edge_segment_surface_armx(Package_body_edge_segment_surface_armx, package_body_edge_segment_surface);
+
+mapping_constraints;
+package_body_edge_segment_surface <=
+[shape_aspect_relationship]
+[shape_aspect]
+
+end_mapping_constraints;
+
+attribute_mapping composed_surface(composed_surface, $PATH, Package_body_edge_surface_armx);
+package_body_edge_segment_surface <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'composed surface'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+package_body_surface =>
+package_body_edge_surface
+
+end_attribute_mapping;
+
+attribute_mapping end_vertex(end_vertex, $PATH, Edge_segment_vertex_armx);
+package_body_edge_segment_surface <=
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.name = 'single datum'}
+shape_aspect =>
+datum =>
+edge_segment_vertex
+
+end_attribute_mapping;
+
+attribute_mapping start_vertex(start_vertex, $PATH, Edge_segment_vertex_armx);
+package_body_edge_segment_surface <=
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.name = 'single datum'}
+shape_aspect =>
+datum =>
+edge_segment_vertex
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Package_body_edge_surface_armx(Package_body_edge_surface_armx, package_body_edge_surface);
+
+mapping_constraints;
+package_body_edge_surface <=
+package_body_surface <=
+shape_aspect
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Package_body_surface_armx(Package_body_surface_armx, package_body_surface);
+
+mapping_constraints;
+package_body_surface <=
+shape_aspect
+
+end_mapping_constraints;
+
+attribute_mapping associated_package_body(associated_package_body, $PATH, Package_body_armx);
+package_body_surface <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'associated definition'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+package_body
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Package_body_top_surface_armx(Package_body_top_surface_armx, package_body_top_surface);
+
+mapping_constraints;
+package_body_top_surface <=
+package_body_surface <=
+shape_aspect
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Package_orientation_feature(Package_orientation_feature, (primary_orientation_feature)(secondary_orientation_feature)(tertiary_orientation_feature));
+
+mapping_constraints;
+
+(primary_orientation_feature <=
+shape_aspect)
+(secondary_orientation_feature <=
+shape_aspect)
+(tertiary_orientation_feature <=
+shape_aspect)				
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Package_armx);
+(primary_orientation_feature <=
+shape_aspect)
+(secondary_orientation_feature <=
+shape_aspect)
+(tertiary_orientation_feature <=
+shape_aspect)				
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+physical_unit =>
+package
+
+end_attribute_mapping;
+
+attribute_mapping associated_body_vertical_extent(associated_body_vertical_extent, $PATH, Package_body_surface_armx);
+
+(primary_orientation_feature <=
+shape_aspect)
+(secondary_orientation_feature <=
+shape_aspect)
+(tertiary_orientation_feature <=
+shape_aspect)				
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'associated body vertical extent'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+(shape_aspect =>
+package_body_surface =>
+package_body_top_surface)
+(shape_aspect =>
+package_body_surface =>
+package_body_bottom_surface)
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Package_terminal_armx(Package_terminal_armx, package_terminal);
+
+mapping_constraints;
+package_terminal <=
+placed_feature <=
+shape_aspect
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Package);
+package_terminal <=
+placed_feature <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+physical_unit =>
+package
+
+end_attribute_mapping;
+
+attribute_mapping definition(definition, $PATH, Package_terminal_template_definition);
+package_terminal <=
+placed_feature <=
+shape_aspect
+shape_definition = shape_aspect
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.related_property_definition 
+{property_definition_relationship.name = 'definition'}
+property_definition_relationship.relating_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition = characterized_object
+characterized_object =>
+shape_feature_definition =>
+part_feature_template_definition =>
+package_terminal_template_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Package_terminal_template_definition_armx(Package_terminal_template_definition_armx, package_terminal_template_definition);
+
+mapping_constraints;
+package_terminal_template_definition <=
+part_feature_template_definition <=
+shape_feature_definition <=
+characterized_object
+
+end_mapping_constraints;
+
+attribute_mapping lead_form(lead_form, $PATH, Predefined_lead_form);
+package_terminal_template_definition <=
+part_feature_template_definition <=
+shape_feature_definition <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition.name = 'predefined lead form'}
+{(property_definition.description = 'gull wing')
+(property_definition.description = 'j lead')
+(property_definition.description = 'reversed j lead')
+(property_definition.description = 'integral terminal')
+(property_definition.description = 'ball')
+(property_definition.description = 'undefined')
+(property_definition.description = 'straight')}
+property_definition.description
+
+end_attribute_mapping;
+
+attribute_mapping seating_plane_intersection(seating_plane_intersection, $PATH);
+package_terminal_template_definition <=
+part_feature_template_definition <=
+shape_feature_definition <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'seating plane intersection'}
+{(property_definition.description = 'surface intersection')
+(property_definition.description = 'through intersection')
+(property_definition.description = 'does not intersect')}
+property_definition.description
+
+end_attribute_mapping;
+
+attribute_mapping terminal_characteristic(terminal_characteristic, $PATH, characteristic);
+package_terminal_template_definition <=
+part_feature_template_definition <=
+shape_feature_definition <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'terminal characteristic'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item
+{representation_item
+groupable_item = representation_item
+groupable_item <-
+applied_group_assignment.items[i]
+applied_group_assignment <=
+group_assignment
+group_assignment.assigned_group ->
+group =>
+characteristic_type}
+
+end_attribute_mapping;
+
+attribute_mapping terminal_characteristic(terminal_characteristic, $PATH, descriptive_representation_item);
+				package_terminal_template_definition <=
+				part_feature_template_definition <=
+				shape_feature_definition <=
+				characterized_object
+				characterized_definition = characterized_object
+				characterized_definition <-
+				property_definition.definition
+				{property_definition.name = 'terminal characteristic'}
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				representation.items[i] ->
+				representation_item
+				representation_item =>
+				descriptive_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping terminal_characteristic(terminal_characteristic, $PATH, measure_representation_item);
+				package_terminal_template_definition <=
+				part_feature_template_definition <=
+				shape_feature_definition <=
+				characterized_object
+				characterized_definition = characterized_object
+				characterized_definition <-
+				property_definition.definition
+				{property_definition.name = 'terminal characteristic'}
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				representation.items[i] ->
+				representation_item
+				representation_item =>
+				measure_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping terminal_characteristic(terminal_characteristic, $PATH, Value_list);
+				package_terminal_template_definition <=
+				part_feature_template_definition <=
+				shape_feature_definition <=
+				characterized_object
+				characterized_definition = characterized_object
+				characterized_definition <-
+				property_definition.definition
+				{property_definition.name = 'terminal characteristic'}
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				representation.items[i] ->
+				representation_item
+				representation_item =>
+				compound_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping terminal_characteristic(terminal_characteristic, $PATH, Value_set);
+				package_terminal_template_definition <=
+				part_feature_template_definition <=
+				shape_feature_definition <=
+				characterized_object
+				characterized_definition = characterized_object
+				characterized_definition <-
+				property_definition.definition
+				{property_definition.name = 'terminal characteristic'}
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				representation.items[i] ->
+				representation_item
+				representation_item =>
+				compound_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping external_connection_zone(external_connection_zone, $PATH, Connection_zone_in_part_feature_template_definition);
+package_terminal_template_definition <=
+part_feature_template_definition <=
+shape_feature_definition <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+property_definition =>
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'external connection zone'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+
+end_attribute_mapping;
+
+attribute_mapping internal_connection_zone(internal_connection_zone, $PATH, Connection_zone_in_part_feature_template_definition);
+package_terminal_template_definition <=
+part_feature_template_definition <=
+shape_feature_definition <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+property_definition =>
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'internal connection zone'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+
+end_attribute_mapping;
+
+attribute_mapping seating_plane_zone(seating_plane_zone, $PATH, Connection_zone_package_interface_plane_relationship);
+package_terminal_template_definition <=
+part_feature_template_definition <=
+shape_feature_definition <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+property_definition =>
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'seating plane zone'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+connection_zone_interface_plane_relationship
+
+end_attribute_mapping;
+
+attribute_mapping terminal_diametrical_extent(terminal_diametrical_extent, $PATH, Length_tolerance_characteristic);
+package_terminal_template_definition <=
+part_feature_template_definition <=
+shape_feature_definition <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'terminal diametrical extent'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Package_terminal_surface_constituent_relationship(Package_terminal_surface_constituent_relationship, shape_aspect_relationship);
+
+mapping_constraints;
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'package terminal surface constituent relationship'}
+
+end_mapping_constraints;
+
+attribute_mapping related(related, $PATH, Package_terminal_armx);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect =>
+placed_feature =>
+package_terminal
+
+end_attribute_mapping;
+
+attribute_mapping relating(relating, $PATH, Package_body_surface_armx);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+package_body_surface
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Part_feature(Part_feature, 
+				(/SUBTYPE(Visual_orientation_feature_armx)/)
+				(/SUBTYPE(Package_body_armx)/)
+				(/SUBTYPE(Package_body_surface_armx)/)
+				(/SUBTYPE(Package_orientation_feature)/)
+				(/SUBTYPE(Package_terminal_armx)/)
+				(/SUBTYPE(Polarity_indication_feature)/)
+			)
+extended;
+
+end_entity_mapping;
+
+entity_mapping Polarity_indication_feature(Polarity_indication_feature, shape_aspect);
+
+mapping_constraints;
+shape_aspect
+{shape_aspect.description = 'polarity indication feature'}
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Package_armx);
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+physical_unit =>
+package
+
+end_attribute_mapping;
+
+attribute_mapping associated_body_vertical_extent(associated_body_vertical_extent, $PATH, Package_body_surface_armx);
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'associated body vertical extent'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+(shape_aspect =>
+package_body_surface =>
+package_body_top_surface)
+(shape_aspect =>
+package_body_surface =>
+package_body_bottom_surface)
+
+end_attribute_mapping;
+
+attribute_mapping associated_terminal(associated_terminal, $PATH, Package_terminal_armx);
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'associated terminal'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+placed_feature =>
+package_terminal
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Primary_orientation_feature_armx(Primary_orientation_feature_armx, primary_orientation_feature);
+
+mapping_constraints;
+primary_orientation_feature <=
+shape_aspect
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Primary_reference_terminal_armx(Primary_reference_terminal_armx, primary_reference_terminal);
+
+mapping_constraints;
+primary_reference_terminal <=
+package_terminal <=
+placed_feature <=
+shape_aspect
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Secondary_orientation_feature_armx(Secondary_orientation_feature_armx, secondary_orientation_feature);
+
+mapping_constraints;
+secondary_orientation_feature <=
+shape_aspect
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Tertiary_orientation_feature_armx(Tertiary_orientation_feature_armx, tertiary_orientation_feature);
+
+mapping_constraints;
+tertiary_orientation_feature <=
+shape_aspect
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Wire_terminal_armx(Wire_terminal_armx, wire_terminal);
+
+mapping_constraints;
+wire_terminal <=
+package_terminal <=
+placed_feature <=
+shape_aspect
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Wire_terminal_template_definition_armx(Wire_terminal_template_definition_armx, wire_terminal_template_definition);
+
+mapping_constraints;
+wire_terminal_template_definition <=
+package_terminal_template_definition <=
+part_feature_template_definition <=
+shape_feature_definition <=
+characterized_object
+
+end_mapping_constraints;
+
+attribute_mapping internal_connection_zone(internal_connection_zone, $PATH, Connection_zone_in_part_feature_template_definition);
+wire_terminal_template_definition <=
+package_terminal_template_definition <=
+part_feature_template_definition <=
+shape_feature_definition <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+property_definition =>
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'internal connection zone'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+
+end_attribute_mapping;
+
+attribute_mapping wire_terminal_length(wire_terminal_length, $PATH, Length_tolerance_characteristic);
+wire_terminal_template_definition <=
+package_terminal_template_definition <=
+part_feature_template_definition <=
+shape_feature_definition <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'wire terminal length'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

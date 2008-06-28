@@ -1,0 +1,170 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Part feature grouping - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Part_feature_grouping_xim;
+ 
+USE FROM Physical_unit_usage_view_xim;
+
+USE FROM Part_feature_grouping_mim;
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+
+
+  ENTITY Part_array_feature
+    ABSTRACT SUPERTYPE OF (ONEOF (Part_linear_array_feature,
+ Part_rectangular_array_feature))
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_group_feature, composite_array_shape_aspect);
+  END_ENTITY;
+
+  ENTITY Part_feature_placement_link
+  	(* CONNOTATIONAL *) SUBTYPE OF (composite_array_shape_aspect_link);
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED precedent_element : Part_feature;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED subsequent_element : Part_feature;
+    DERIVE
+      SELF\shape_aspect.of_shape : product_definition_shape := ?;
+      SELF\shape_aspect.description : text := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+      SELF\shape_aspect.name : label := ?;
+    INVERSE
+      referenced_by : part_linear_array_feature FOR element;
+    WHERE  
+      WR1 : acyclic_part_feature_placement_link(SELF, [subsequent_element], 
+        'PART_FEATURE_GROUPING_XIM.PART_FEATURE_PLACEMENT_LINK');
+  END_ENTITY;
+   
+  ENTITY Part_group_feature
+    SUPERTYPE OF (Part_array_feature)
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_feature,
+ Composite_shape_element);
+  END_ENTITY;
+
+  ENTITY Part_linear_array_feature
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_array_feature, linear_composite_array_shape_aspect);
+      element                               : SET[1:?] OF Part_feature_placement_link;
+      initial_node_positive_x_displacement  : length_measure_with_unit;
+      terminus_node_positive_x_displacement : length_measure_with_unit;
+      location_uncertainty                  : length_measure_with_unit;
+    WHERE  
+      WR1 : (1 + SIZEOF(element)) = pfg_get_sz_pf(element);      
+  END_ENTITY;
+
+  ENTITY Part_linear_array_feature_link
+  	(* CONNOTATIONAL *) SUBTYPE OF (linear_composite_array_shape_aspect_link);
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED precedent_element : Part_linear_array_feature;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED subsequent_element : Part_linear_array_feature;
+    DERIVE
+      SELF\shape_aspect.of_shape : product_definition_shape := ?;
+      SELF\shape_aspect.description : text := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+      SELF\shape_aspect.name : label := ?;
+    INVERSE
+      referenced_by : part_rectangular_array_feature FOR element;
+    WHERE
+      WR1 : acyclic_part_linear_array_feature_link(SELF, [subsequent_element], 
+        'PART_FEATURE_GROUPING_XIM.PART_LINEAR_ARRAY_FEATURE_LINK');
+  END_ENTITY;
+
+  ENTITY Part_rectangular_array_feature
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_array_feature, rectangular_composite_array_shape_aspect);
+      element                              : SET[1:?] OF Part_linear_array_feature_link;
+      initial_row_positive_y_displacement  : length_measure_with_unit;
+      terminus_row_positive_y_displacement : length_measure_with_unit;
+      location_uncertainty                 : length_measure_with_unit;
+    WHERE  
+      WR1 : (1 + SIZEOF(element)) = pfg_get_sz_plar(element);
+  END_ENTITY;
+
+  FUNCTION acyclic_part_feature_placement_link
+    (relation : Part_feature_placement_link; relatives : SET[1:?] OF 
+    Part_feature; specific_relation : STRING) : BOOLEAN; 
+    LOCAL
+      x : SET OF Part_feature_placement_link := [];
+    END_LOCAL;
+    IF relation.subsequent_element IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(pd <* bag_to_set(USEDIN(relation.subsequent_element,
+      'PART_FEATURE_GROUPING_XIM.' +
+      'PART_FEATURE_PLACEMENT_LINK.' +
+      'SUBSEQUENT_ELEMENT')) | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_part_feature_placement_link(x[i], relatives +
+        relation.subsequent_element, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION;    
+
+  FUNCTION acyclic_part_linear_array_feature_link
+    (relation : Part_linear_array_feature_link; relatives : SET[1:?] OF 
+    Part_linear_array_feature; specific_relation : STRING) : BOOLEAN; 
+    LOCAL
+      x : SET OF Part_linear_array_feature_link := [];
+    END_LOCAL;
+    IF relation.subsequent_element IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(pd <* bag_to_set(USEDIN(relation.subsequent_element,
+      'PART_FEATURE_GROUPING_XIM.' +
+      'PART_LINEAR_ARRAY_FEATURE_LINK.' +
+      'SUBSEQUENT_ELEMENT')) | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_part_linear_array_feature_link(x[i], relatives +
+        relation.subsequent_element, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION; 
+
+  FUNCTION pfg_get_sz_pf (input : SET[1:?] OF Part_feature_placement_link) : INTEGER;
+    LOCAL
+      ac : SET OF Part_feature := [];
+    END_LOCAL;
+    REPEAT i := 1 TO HIINDEX(input);
+      ac := ac + input[i]\Part_feature_placement_link.precedent_element +
+        input[i]\Part_feature_placement_link.subsequent_element;
+    END_REPEAT;
+    RETURN (SIZEOF(ac));
+  END_FUNCTION; 
+
+  FUNCTION pfg_get_sz_plar (input : SET[1:?] OF Part_linear_array_feature_link) : INTEGER;
+    LOCAL
+      ac : SET OF Part_linear_array_feature := [];
+    END_LOCAL;
+    REPEAT i := 1 TO HIINDEX(input);
+      ac := ac + input[i]\Part_linear_array_feature_link.precedent_element +
+        input[i]\Part_linear_array_feature_link.subsequent_element;
+    END_REPEAT;
+    RETURN (SIZEOF(ac));
+  END_FUNCTION;
+  
+END_SCHEMA;
+

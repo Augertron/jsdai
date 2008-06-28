@@ -1,0 +1,164 @@
+(* THIS IS DOCUMENT ISO TC184/SC4/WG12 N4852, CONTAINING REVISED EXPRESS FOR *)
+(* ISO 10303-108, 'PARAMETERIZATION AND CONSTRAINTS FOR EXPLICIT GEOMETRIC   *)
+(* PRODUCT MODELS' TO TAKE INTO ACCOUNT TC1 FOR THAT DOCUMENT -- 2007-04-20  *)                                          
+
+SCHEMA variational_representation_schema;
+
+REFERENCE FROM geometry_schema                        -- ISO 10303-42
+  (geometric_representation_item);
+
+REFERENCE FROM representation_schema                  -- ISO 10303-43
+  (representation,
+   representation_item,
+   representation_relationship,
+   using_representations);
+
+REFERENCE FROM parameterization_schema                -- ISO 10303-108
+  (bound_variational_parameter,
+   fixed_instance_attribute_set,
+   instance_attribute_reference,
+   unbound_variational_parameter);
+
+REFERENCE FROM explicit_constraint_schema             -- ISO 10303-108
+  (explicit_constraint,
+   free_form_constraint);
+
+REFERENCE FROM explicit_geometric_constraint_schema   -- ISO 10303-108
+  (explicit_geometric_constraint);
+
+REFERENCE FROM ISO13584_generic_expressions_schema    -- ISO 13584-20
+  (generic_variable);
+
+ENTITY variational_representation_item
+  ABSTRACT SUPERTYPE OF (auxiliary_geometric_representation_item)
+  SUBTYPE OF (representation_item);
+WHERE
+  WR1: SIZEOF(QUERY(q <* using_representations(SELF) |
+    NOT ('VARIATIONAL_REPRESENTATION_SCHEMA.VARIATIONAL_REPRESENTATION'  
+    IN TYPEOF(q)))) = 0;
+  WR2: SIZEOF(QUERY(q <* using_representations(SELF) |
+    NOT (SELF IN q.items))) = 0; 
+END_ENTITY;
+
+ENTITY auxiliary_geometric_representation_item
+  SUBTYPE OF (geometric_representation_item, 
+              variational_representation_item);
+END_ENTITY;
+
+ENTITY variational_representation 
+  SUBTYPE OF (representation);
+INVERSE
+  cm_link : variational_current_representation_relationship FOR rep_1;
+WHERE
+  WR1: SIZEOF(QUERY(q <* SELF\representation.items | 
+    'VARIATIONAL_REPRESENTATION_SCHEMA.VARIATIONAL_REPRESENTATION_ITEM' 
+    IN TYPEOF(q))) > 0;
+  WR2: SIZEOF(QUERY(q <* (SELF\representation.items - 
+    cm_link.rep_2.items) | invalidate_vrep_item(q))) = 0;
+END_ENTITY;
+
+ENTITY variational_current_representation_relationship
+  SUBTYPE OF (representation_relationship);
+  SELF\representation_relationship.rep_1 
+                 : variational_representation;
+  current_result : representation;
+UNIQUE
+  UR1: current_result;
+WHERE
+  WR1: QUERY(q <* SELF\representation_relationship.rep_1.items | NOT
+    ('VARIATIONAL_REPRESENTATION_SCHEMA.VARIATIONAL_REPRESENTATION_ITEM'
+    IN TYPEOF(q))) = SELF\representation_relationship.rep_2.items;
+  WR2: SELF\representation_relationship.rep_1.context_of_items :=:
+    SELF\representation_relationship.rep_2.context_of_items;
+  WR3: SIZEOF(QUERY(q <* SELF\representation_relationship.rep_2.items |
+    'VARIATIONAL_REPRESENTATION_SCHEMA.VARIATIONAL_REPRESENTATION_ITEM' 
+    IN TYPEOF(q))) = 0;
+  WR4: TYPEOF(SELF\representation_relationship.rep_1) -
+       TYPEOF(SELF\representation_relationship.rep_2) =
+       ['VARIATIONAL_REPRESENTATION_SCHEMA.VARIATIONAL_REPRESENTATION'];
+  WR5: current_result :=: SELF\representation_relationship.rep_2;
+END_ENTITY;
+
+FUNCTION invalidate_vrep_item(item : variational_representation_item) 
+                                   : BOOLEAN;
+
+  LOCAL
+    reps    : SET[1:?] OF representation := using_representations(item);
+    svri    : SET[1:?] OF variational_representation_item;
+    iar     : instance_attribute_reference;
+    i       : INTEGER;
+    n       : INTEGER := HIINDEX(reps);
+  END_LOCAL;
+
+  IF ('PARAMETERIZATION_SCHEMA.BOUND_VARIATIONAL_PARAMETER' IN TYPEOF(item))
+  THEN
+    IF 'PARAMETERIZATION_SCHEMA.INSTANCE_ATTRIBUTE_REFERENCE' 
+      IN TYPEOF(item\generic_variable.interpretation.semantics)
+    THEN
+      BEGIN
+        iar := item\generic_variable.interpretation.semantics;
+        IF (reps <> using_representations(iar.owning_instance))
+        THEN
+          RETURN(TRUE);
+        END_IF;
+      END;
+    ELSE RETURN(TRUE); -- parameter not attached to an instance attribute
+    END_IF;
+  END_IF;
+
+  IF ('PARAMETERIZATION_SCHEMA.UNBOUND_VARIATIONAL_PARAMETER' IN TYPEOF(item))
+  THEN
+    BEGIN 
+      REPEAT i := 1 TO n;
+        svri := QUERY(q <* reps[i].items | 
+          'EXPLICIT_CONSTRAINT_SCHEMA.FREE_FORM_CONSTRAINT' IN TYPEOF(q));
+        IF SIZEOF(QUERY(r <* svri | 
+          item IN (r.reference_elements + r.constrained_elements))) = 0
+        THEN 
+          RETURN(TRUE);
+        END_IF;
+      END_REPEAT;
+    END;
+  END_IF;
+
+  IF ('PARAMETERIZATION_SCHEMA.FIXED_INSTANCE_ATTRIBUTE_SET' 
+    IN TYPEOF(item))
+  THEN
+    REPEAT i := 1 TO SIZEOF(item.fixed_attributes);
+      IF (reps <> using_representations(item.fixed_attributes[i]))
+      THEN
+        RETURN(TRUE);
+      END_IF;
+    END_REPEAT;
+  END_IF;
+
+  IF ('EXPLICIT_CONSTRAINT_SCHEMA.EXPLICIT_CONSTRAINT' IN TYPEOF(item))
+  THEN
+    IF SIZEOF(QUERY(q <* 
+      (item.reference_elements + item.constrained_elements) |
+      reps <> using_representations(q))) > 0
+    THEN
+      RETURN(TRUE);
+    END_IF;
+  END_IF;
+
+  IF ('VARIATIONAL_REPRESENTATION_SCHEMA.AUXILIARY_GEOMETRIC_REPRESENTATION_ITEM' IN TYPEOF(item))
+  THEN
+    BEGIN 
+      REPEAT i := 1 TO n;
+        svri := QUERY(q <* reps[i].items | 
+          'EXPLICIT_GEOMETRIC_CONSTRAINT_SCHEMA.EXPLICIT_GEOMETRIC_CONSTRAINT' IN TYPEOF(q));
+        IF SIZEOF(QUERY(r <* svri | 
+          item IN r.reference_elements)) = 0
+        THEN
+          RETURN(TRUE);
+        END_IF;
+      END_REPEAT;
+    END;
+  END_IF;
+
+  RETURN(FALSE); -- no invalid cases have been found
+
+END_FUNCTION;
+
+END_SCHEMA; -- variational_representation_schema

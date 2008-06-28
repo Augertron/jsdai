@@ -1,0 +1,122 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping text_appearance(Text_appearance_arm, Text_appearance_mim);*)
+(* Everything is taken from the AIM
+
+entity_mapping Text_style(Text_style, (text_style)
+   (text_style_for_defined_font)
+   (text_style_with_box_characteristics)
+   (text_style_with_mirror)
+   (text_style_with_spacing)
+);
+
+attribute_mapping name(name, text_style.name);
+
+   (text_style_for_defined_font 
+character_style_select = text_style_for_defined_font 
+character_style_select <- text_style.character_appearance
+text_style.character_appearance
+text_style 
+text_style.name)
+   (text_style_with_box_characteristics <= text_style)
+   (text_style_with_mirror <= text_style)
+   (text_style_with_spacing <= text_style)
+text_style.name
+	 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Presentable_text_item(Presentable_text_item, (draughting_text_literal_with_delineation)
+(text_literal)
+(text_literal_with_extent)
+(text_literal_with_blanking_box)
+);
+
+attribute_mapping literal(literal, text_literal.literal);
+
+(draughting_text_literal_with_delineation <= text_literal_with_delineation
+text_literal_with_delineation <= text_literal)
+(text_literal_with_extent <= text_literal)
+(text_literal_with_blanking_box <= text_literal)
+
+end_attribute_mapping;
+
+attribute_mapping style(style, $PATH, Text_style);
+
+[text_literal.font -> font_select]
+[text_literal.path -> text_path]
+[text_literal.alignment -> text_alignment]
+
+end_attribute_mapping;
+
+attribute_mapping placement(placement, $PATH, axis2_placement);
+
+(draughting_text_literal_with_delineation <= text_literal_with_delineation
+text_literal_with_delineation <= text_literal)
+(text_literal_with_extent <= text_literal)
+(text_literal_with_blanking_box <= text_literal)
+text_literal
+text_literal.placement -> axis2_placement
+axis2_placement
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Composite_presentable_text(Composite_presentable_text, (composite_text) 
+(composite_text_with_extent)
+(composite_text_with_delineation)
+(composite_text_with_blanking_box)
+);
+
+attribute_mapping collected_text(collected_text, $PATH, text_literal);
+
+(composite_text) 
+(composite_text_with_extent <= composite_text)
+(composite_text_with_delineation <= composite_text)
+(composite_text_with_blanking_box <= composite_text)
+composite_text.collected_text -> text_or_character
+text_or_character = text_literal
+
+end_attribute_mapping;
+
+attribute_mapping collected_text(collected_text, $PATH, composite_text);
+
+(composite_text) 
+(composite_text_with_extent <= composite_text)
+(composite_text_with_delineation <= composite_text)
+(composite_text_with_blanking_box <= composite_text)
+composite_text.collected_text -> text_or_character
+text_or_character = composite_text
+(composite_text) 
+(composite_text => composite_text_with_extent)
+(composite_text => composite_text_with_delineation)
+(composite_text => composite_text_with_blanking_box)
+
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+(*end_schema_mapping;*)

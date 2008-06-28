@@ -1,0 +1,88 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping feature_and_connection_zone(Feature_and_connection_zone_arm, Feature_and_connection_zone_mim);*)
+
+
+entity_mapping Connection_zone(Connection_zone, shape_aspect);
+
+mapping_constraints;
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Shape_feature(Shape_feature, shape_aspect);
+mapping_constraints;
+{shape_aspect.product_definitional = .TRUE.}
+end_mapping_constraints;
+
+attribute_mapping connection_area(connection_area, $PATH, Connection_zone);
+shape_aspect
+shape_aspect <- 
+shape_aspect_relationship.related_shape_aspect 
+{shape_aspect_relationship 
+shape_aspect_relationship.name = 'connection area'} 
+shape_aspect_relationship.relating_shape_aspect -> 
+shape_aspect 
+{shape_aspect.description = 'connection zone'} 
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Feature_definition_with_connection_area(Feature_definition_with_connection_area, shape_feature_definition);
+
+ mapping_constraints; 
+shape_feature_definition <=
+characterized_object
+{characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition 
+property_definition =>
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}}
+ end_mapping_constraints;
+ 
+attribute_mapping connection_area(connection_area, $PATH, Connection_zone);
+shape_feature_definition <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition 
+property_definition =>
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+end_attribute_mapping;
+
+end_entity_mapping;
+
+(*end_schema_mapping;*)

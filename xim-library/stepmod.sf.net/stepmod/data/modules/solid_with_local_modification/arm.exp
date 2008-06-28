@@ -1,0 +1,444 @@
+(*
+ $Id$
+ ISO TC184/SC4/WG12 N4810 - ISO/CD-TS 10303-1319 Solid with local modification - EXPRESS ARM
+ *)
+
+SCHEMA Solid_with_local_modification_arm;
+
+USE FROM Basic_geometric_topology_arm; -- ISO/CD-TS 10303-1323
+
+USE FROM Procedural_solid_model_arm; -- ISO/CD-TS 10303-131
+
+USE FROM Topologically_bounded_surface_arm; -- ISO/TS 10303-1511
+
+  TYPE blend_end_condition = SELECT
+    (Edge_curve,
+    Point_on_curve,
+    Vertex);
+  END_TYPE;
+
+  TYPE blend_radius_variation = ENUMERATION OF
+    (linear,
+     cubic,
+     unspecified);
+  END_TYPE;
+
+  TYPE sculpting_surface = SELECT
+    (Advanced_face,
+     Advanced_open_shell,
+     Surface);
+  END_TYPE;
+ 
+  TYPE solid_with_placed_feature = SELECT
+    (Solid_with_depression,
+    Solid_with_protrusion,
+    Solid_with_circular_pattern,
+    Solid_with_rectangular_pattern);
+  END_TYPE;
+
+  ENTITY Advanced_open_shell
+    SUBTYPE OF (Detailed_topological_model_element);    
+      shell_faces : SET [1:?] OF Advanced_face;
+  END_ENTITY;
+
+  ENTITY Complex_deleted_face_solid
+    SUBTYPE OF (Deleted_face_solid);
+      thickened_face_list :  LIST [1:?] OF SET[1:?] OF Advanced_face;
+      thickness_list      :  LIST [1:?] OF length_measure;
+    WHERE
+      WR1: SIZEOF(thickened_face_list) = SIZEOF(thickness_list);
+  END_ENTITY; 
+
+  ENTITY Conical_stepped_hole_transition
+    SUBTYPE OF (Detailed_geometric_model_element);
+      apex_angle         : plane_angle_measure;
+      cone_base_radius   : length_measure;    
+      transition_number  : INTEGER;
+    WHERE
+      WR1 : transition_number > 0;
+      WR2 : cone_base_radius  > 0.0; 
+  END_ENTITY;
+
+  ENTITY Deleted_face_solid
+    SUPERTYPE OF (ONEOF(Deleted_face_solid_with_offsets, Complex_deleted_face_solid))
+    SUBTYPE OF (Modified_solid);
+      deleted_faces : SET [1:?] OF Advanced_face;
+      thickness     : length_measure;
+    WHERE
+      WR1 : thickness <> 0.0;
+  END_ENTITY; 
+
+  ENTITY Deleted_face_solid_with_offsets
+    SUBTYPE OF (Deleted_face_solid);
+      thickness2 : length_measure;
+    WHERE
+      WR1: thickness2 <> 0.0;
+      WR2: SELF\Deleted_face_solid.thickness <> thickness2;
+  END_ENTITY; 
+
+  ENTITY Path_modified_solid
+    SUBTYPE OF (Solid_with_edge_modification);
+  END_ENTITY;
+
+  ENTITY Path_modified_solid_with_end_conditions
+    SUBTYPE OF (Path_modified_solid);
+      end_conditions :  LIST [2:2] OF blend_end_condition; 
+  END_ENTITY;
+
+  ENTITY Sculptured_solid
+    SUBTYPE OF (Modified_solid);
+      cutting_surface : sculpting_surface;
+      positive_side   : BOOLEAN;
+  END_ENTITY;
+
+  ENTITY Sculptured_solid_with_selection
+    SUBTYPE OF (Sculptured_solid);
+      retained_part : Detailed_topological_model_element;
+  END_ENTITY;
+
+  ENTITY Solid_with_angled_chamfer
+    SUBTYPE OF (Solid_with_edge_modification);
+      offset_distance             : length_measure;
+      left_offset                 : BOOLEAN;
+      offset_angle                : plane_angle_measure;
+    WHERE
+      WR1: offset_distance > 0.0;   
+      WR2: offset_angle > 0.0; 
+  END_ENTITY; 
+
+  ENTITY Solid_with_circular_pattern
+    SUBTYPE OF (Modified_solid);
+      location : Axis_placement;
+      replicated_element : solid_with_placed_feature;
+      replicate_count  : INTEGER;
+      angular_spacing  : plane_angle_measure;
+      radial_alignment : BOOLEAN;
+      reference_point  : Cartesian_point;
+    WHERE
+     WR1 : replicate_count > 0;
+  END_ENTITY;
+
+  ENTITY Solid_with_circular_pocket
+    SUBTYPE OF (Solid_with_pocket);
+      pocket_radius      : length_measure; 
+    WHERE 
+      WR1: SELF\Solid_with_pocket.floor_blend_radius <= pocket_radius;
+      WR2: pocket_radius > 0.0;
+  END_ENTITY;
+
+  ENTITY Solid_with_circular_protrusion
+    SUBTYPE OF (Solid_with_protrusion);
+      radius : length_measure;
+    WHERE
+      WR1: radius >= 0.0; 
+  END_ENTITY;
+
+  ENTITY Solid_with_conical_bottom_hole
+    SUBTYPE OF (Solid_with_stepped_round_hole);
+      semi_apex_angle : plane_angle_measure;
+      tip_radius      : length_measure;
+    WHERE
+      WR1 : tip_radius < 
+          SELF\Solid_with_stepped_round_hole.segment_radii[segments];
+      WR2 : tip_radius >= 0.0;
+      WR3 : semi_apex_angle > 0.0;  
+  END_ENTITY;
+
+  ENTITY Solid_with_curved_slot
+    SUBTYPE OF (Solid_with_slot);
+     slot_centreline : Detailed_geometric_model_element;
+  END_ENTITY;
+
+  ENTITY Solid_with_depression
+    ABSTRACT SUPERTYPE OF (Solid_with_through_depression
+      ANDOR (ONEOF (Solid_with_stepped_round_hole,
+                	Solid_with_pocket,
+                 	Solid_with_slot,
+                 	Solid_with_groove)))
+    SUBTYPE OF (Modified_Solid);
+      location : Axis_placement; 
+      depth    : length_measure;
+    WHERE
+      WR1 : depth > 0.0;
+  END_ENTITY;
+
+  ENTITY Solid_with_double_offset_chamfer
+    SUBTYPE OF (Solid_with_edge_modification);
+      left_offset_distance  : length_measure;  
+      right_offset_distance : length_measure;
+    WHERE
+      WR1: left_offset_distance > 0.0;   
+      WR2: right_offset_distance > 0.0; 
+  END_ENTITY; 
+
+  ENTITY Solid_with_edge_modification
+    SUPERTYPE OF (Path_modified_solid ANDOR (ONEOF
+              (Solid_with_fixed_radius_edge_blend,
+               Solid_with_simple_chamfer,
+               Solid_with_double_offset_chamfer,
+               Solid_with_angled_chamfer)))
+    SUBTYPE OF (Modified_solid);    
+      blended_edges : LIST [1:?] OF Edge;
+  END_ENTITY;
+
+  ENTITY Solid_with_fixed_radius_edge_blend
+    SUBTYPE OF (Solid_with_edge_modification);
+      radius : length_measure;
+    WHERE
+      WR1: radius > 0.0; 
+  END_ENTITY;
+
+  ENTITY Solid_with_flat_bottom_hole
+    SUBTYPE OF (Solid_with_stepped_round_hole);
+      fillet_radius : length_measure;
+    WHERE
+      WR1 : fillet_radius < 
+          SELF\Solid_with_stepped_round_hole.segment_radii[segments];
+      WR2 : fillet_radius  >= 0.0;    
+  END_ENTITY;
+
+  ENTITY Solid_with_general_pocket  
+    SUBTYPE OF (Solid_with_pocket);
+      profile            : Detailed_geometric_model_element;
+      reference_point    : Cartesian_point;
+  END_ENTITY;
+
+  ENTITY Solid_with_general_protrusion
+    SUBTYPE OF (Solid_with_protrusion);
+    profile         : Detailed_geometric_model_element;
+    reference_point : Cartesian_point;
+  END_ENTITY;
+
+  ENTITY Solid_with_groove
+    SUBTYPE OF (Solid_with_depression);
+      groove_radius       : length_measure;
+      groove_width        : length_measure;
+      draft_angle         : plane_angle_measure;
+      floor_fillet_radius : length_measure;
+      external_groove     : BOOLEAN;
+    WHERE
+      WR1: NOT('SOLID_WITH_LOCAL_MODIFICATION_ARM.SOLID_WITH_THROUGH_DEPRESSION' 
+          IN TYPEOF(SELF));
+      WR2: groove_radius > 0.0; 
+      WR3: groove_width > 0.0;       
+      WR4: floor_fillet_radius >= 0.0;
+  END_ENTITY; 
+
+  ENTITY Solid_with_incomplete_circular_pattern
+    SUBTYPE OF (Solid_with_circular_pattern);
+      omitted_instances : SET[1:?] OF INTEGER;
+    WHERE
+      WR1: SIZEOF(omitted_instances) <
+           SELF\Solid_with_circular_pattern.replicate_count;
+      WR2: SIZEOF(QUERY(q <* omitted_instances | q > 
+           SELF\Solid_with_circular_pattern.replicate_count)) = 0;
+  END_ENTITY;
+
+  ENTITY Solid_with_incomplete_rectangular_pattern
+    SUBTYPE OF (Solid_with_rectangular_pattern);
+      omitted_instances : SET[1:?] OF LIST [1:2] OF INTEGER;
+    WHERE
+      WR1: NOT([1,1] IN omitted_instances);
+      WR2: SIZEOF(omitted_instances) <
+            ((SELF\Solid_with_rectangular_pattern.row_count *
+               SELF\Solid_with_rectangular_pattern.column_count) - 1);
+      WR3: SIZEOF(QUERY(q <* omitted_instances |   
+             ((q[1] > SELF\Solid_with_rectangular_pattern.row_count) OR
+              (q[2] > SELF\Solid_with_rectangular_pattern.column_count)))) = 0;
+  END_ENTITY;
+
+  ENTITY Solid_with_offset_faces
+    SUBTYPE OF (Modified_solid);
+      offset_faces : LIST [1:?] OF SET[1:?] OF Advanced_face;
+      offset_distances : LIST [1:?] OF length_measure;
+    WHERE
+      WR1: SIZEOF(offset_faces) = SIZEOF(offset_distances); 
+  END_ENTITY;
+
+  ENTITY Solid_with_pocket
+    ABSTRACT SUPERTYPE OF (ONEOF 
+                      (Solid_with_rectangular_pocket,
+                       Solid_with_circular_pocket,
+                       Solid_with_general_pocket))
+    SUBTYPE OF (Solid_with_depression);
+      floor_blend_radius : length_measure;
+      draft_angle        : plane_angle_measure;
+    WHERE
+      WR1 : floor_blend_radius >= 0.0;
+  END_ENTITY;
+
+  ENTITY Solid_with_protrusion
+    ABSTRACT SUPERTYPE OF (ONEOF 
+                        (Solid_with_circular_protrusion,
+                         Solid_with_rectangular_protrusion,
+                         Solid_with_general_protrusion))
+    SUBTYPE OF (Modified_solid);
+      location : Axis_placement; 
+      height      : length_measure;
+      draft_angle : plane_angle_measure;
+    WHERE
+      WR1: height > 0.0; 
+  END_ENTITY;
+
+  ENTITY Solid_with_rectangular_pattern
+    SUBTYPE OF (Modified_solid);
+      location : Axis_placement; 
+      replicated_element : solid_with_placed_feature;
+      row_count      : INTEGER;
+      column_count   : INTEGER;
+      row_spacing    : length_measure;
+      column_spacing : length_measure; 
+    WHERE
+      WR1 : (row_count * column_count) > 1;
+      WR2 : row_spacing > 0.0;
+      WR3 : column_spacing > 0.0;
+  END_ENTITY;
+
+  ENTITY Solid_with_rectangular_pocket
+    SUBTYPE OF (Solid_with_pocket);
+      pocket_length      : length_measure;
+      pocket_width       : length_measure;
+      corner_radius      : length_measure;
+    WHERE
+      WR1: (corner_radius < pocket_width/2) 
+        AND (corner_radius < pocket_length/2);
+      WR2: pocket_length > 0.0;
+      WR3: pocket_width > 0.0;
+      WR4: corner_radius >= 0.0;
+  END_ENTITY;
+
+  ENTITY Solid_with_rectangular_protrusion
+    SUBTYPE OF (Solid_with_protrusion);
+    protrusion_length : length_measure;
+    width             : length_measure;
+    corner_radius     : length_measure;
+  WHERE
+    WR1: (corner_radius <= width/2) 
+           AND (corner_radius <= protrusion_length/2);
+    WR2: protrusion_length > 0.0; 
+    WR3: width > 0.0; 
+    WR4: corner_radius >= 0.0; 
+  END_ENTITY;
+
+  ENTITY Solid_with_simple_chamfer
+    SUBTYPE OF (Solid_with_edge_modification);
+      offset_distance : length_measure;
+    WHERE
+      WR1: offset_distance > 0.0; 
+  END_ENTITY;
+
+  ENTITY Solid_with_slot
+    ABSTRACT SUPERTYPE OF ((ONEOF (Solid_with_straight_slot,
+                                 Solid_with_curved_slot))
+                     AND (ONEOF (Solid_with_trapezoidal_slot,
+                                 Solid_with_tee_slot)))
+    SUBTYPE OF (Solid_with_depression);
+      slot_width     : length_measure;
+      closed_ends    : LIST[2:2] OF LOGICAL;
+      end_exit_faces : LIST[2:2] OF SET[0:?] OF Advanced_face;
+  WHERE
+    WR1: NOT(('SOLID_WITH_LOCAL_MODIFICATION_ARM.SOLID_WITH_THROUGH_DEPRESSION' 
+          IN TYPEOF(SELF)) AND (closed_ends = [FALSE,FALSE]));
+    WR2: NOT(((closed_ends[1] = TRUE) AND (SIZEOF(end_exit_faces[1]) <> 0))
+        OR ((closed_ends[2] = TRUE) AND (SIZEOF(end_exit_faces[2]) <> 0)));
+    WR3 : slot_width > 0.0;       
+  END_ENTITY;
+
+  ENTITY Solid_with_spherical_bottom_hole
+    SUBTYPE OF (Solid_with_stepped_round_hole);
+      sphere_radius : length_measure;
+    WHERE
+      WR1 : sphere_radius >= 
+          SELF\Solid_with_stepped_round_hole.segment_radii[segments];
+  END_ENTITY;
+
+  ENTITY Solid_with_stepped_round_hole
+    SUPERTYPE OF (Solid_with_stepped_round_hole_and_conical_transitions
+    ANDOR ONEOF (Solid_with_flat_bottom_hole,
+                 Solid_with_conical_bottom_hole,
+                 Solid_with_spherical_bottom_hole))
+    SUBTYPE OF (Solid_with_depression);
+      segments           : INTEGER;
+      segment_radii      : LIST[1:segments] OF length_measure;
+      segment_depths     : LIST[1:segments] OF length_measure;
+    DERIVE
+      SELF\Solid_with_depression.depth : length_measure := calculate_depth(SELF);
+    WHERE
+      WR1: NOT (('SOLID_WITH_LOCAL_MODIFICATION_ARM.SOLID_WITH_THROUGH_DEPRESSION'
+        IN TYPEOF(SELF)) AND (SIZEOF(TYPEOF(SELF) *
+        ['SOLID_WITH_LOCAL_MODIFICATION_ARM.SOLID_WITH_FLAT_BOTTOM_HOLE',
+        'SOLID_WITH_LOCAL_MODIFICATION_ARM.SOLID_WITH_CONICAL_BOTTOM_HOLE',
+        'SOLID_WITH_LOCAL_MODIFICATION_ARM.SOLID_WITH_SPHERICAL_BOTTOM_HOLE']) 
+        <> 0)); 
+  END_ENTITY;
+
+  ENTITY Solid_with_stepped_round_hole_and_conical_transitions
+    SUBTYPE OF (Solid_with_stepped_round_hole);
+      conical_transitions : SET[1:?] OF Conical_stepped_hole_transition; 
+    WHERE
+      WR1: SIZEOF (conical_transitions) <= 
+         (SELF\Solid_with_stepped_round_hole.segments + 1);
+      WR2: ('SOLID_SHAPE_ELEMENT_SCHEMA.SOLID_WITH_THROUGH_DEPRESSION'
+         IN TYPEOF(SELF)) XOR (SIZEOF(conical_transitions) <= 
+         SELF\Solid_with_stepped_round_hole.segments);
+  END_ENTITY;
+
+  ENTITY Solid_with_straight_slot
+    SUBTYPE OF (Solid_with_slot);
+      slot_length : length_measure;
+    WHERE
+      WR1: slot_length > 0.0; 
+  END_ENTITY;
+
+  ENTITY Solid_with_tee_slot
+    SUBTYPE OF (Solid_with_slot);
+      tee_section_width  : length_measure;
+      collar_depth       : length_measure;
+    WHERE
+      WR1: collar_depth < SELF\Solid_with_depression.depth;
+      WR2: tee_section_width > SELF\solid_with_slot.slot_width; 
+      WR3: tee_section_width > 0.0;       
+      WR4: collar_depth > 0.0;       
+  END_ENTITY;
+
+  ENTITY Solid_with_through_depression
+    SUBTYPE OF (Solid_with_depression);
+      exit_faces : SET[1:?] OF Advanced_face;
+  END_ENTITY;
+
+  ENTITY Solid_with_trapezoidal_slot
+    SUBTYPE OF (Solid_with_slot);
+      draft_angle         : plane_angle_measure;
+      floor_fillet_radius : length_measure;
+    WHERE
+      WR1: floor_fillet_radius >= 0.0; 
+  END_ENTITY;
+
+  ENTITY Solid_with_variable_radius_edge_blend
+    SUBTYPE OF (Path_modified_solid);
+      interpolation_points : LIST [2:?] OF Cartesian_point;
+      radii                : LIST [2:?] OF length_measure;
+      variations           : LIST [2:?] OF blend_radius_variation; 
+    WHERE
+      WR1: SIZEOF(blended_edges) = SIZEOF(radii);
+      WR2: SIZEOF(variations) = SIZEOF(interpolation_points) - 1;
+      WR3: SIZEOF(['SOLID_WITH_LOCAL_MODIFICATION_ARM.SOLID_WITH_FIXED_RADIUS_EDGE_BLEND',
+              'SOLID_WITH_LOCAL_MODIFICATION_ARM.SOLID_WITH_SIMPLE_CHAMFER',
+              'SOLID_WITH_LOCAL_MODIFICATION_ARM.SOLID_WITH_DOUBLE_OFFSET_CHAMFER',
+              'SOLID_WITH_LOCAL_MODIFICATION_ARM.SOLID_WITH_ANGLED_CHAMFER'] * TYPEOF(SELF)) = 0;
+  END_ENTITY;
+
+  FUNCTION calculate_depth (swsrh : Solid_with_stepped_round_hole) 
+                              : length_measure;
+    LOCAL
+      i  : INTEGER;
+      td : length_measure := 0;
+    END_LOCAL;
+    REPEAT i := 1 TO swsrh.segments;
+      td := td + swsrh.segment_depths[i];
+    END_REPEAT;
+    RETURN(td); 
+  END_FUNCTION;
+
+END_SCHEMA;
+

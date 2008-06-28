@@ -1,0 +1,48 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4084 - ISO/TS 10303-1712 Part feature function - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3511
+*)
+
+
+SCHEMA Part_feature_function_mim;
+	USE FROM Physical_unit_usage_view_mim;	-- ISO/TS 10303-1732
+
+ENTITY fiducial_part_feature
+ SUBTYPE OF (part_tooling_feature);
+END_ENTITY;
+
+ENTITY part_interface_access_feature
+ SUBTYPE OF (shape_aspect);
+END_ENTITY;
+
+ENTITY part_mating_feature
+ SUBTYPE OF (shape_aspect);
+END_ENTITY;
+
+ENTITY part_mounting_feature
+ SUBTYPE OF (shape_aspect);
+END_ENTITY;
+
+ENTITY part_tooling_feature
+ SUPERTYPE OF (ONEOF(fiducial_part_feature,
+               tool_registration_mark) ANDOR 
+               test_point_part_feature)
+ SUBTYPE OF (shape_aspect);
+WHERE
+ WR1: SELF\shape_aspect.product_definitional = true;
+END_ENTITY;
+
+ENTITY test_point_part_feature
+ SUBTYPE OF (part_tooling_feature);
+END_ENTITY;
+
+ENTITY thermal_feature
+ SUBTYPE OF (shape_aspect);
+END_ENTITY;
+
+ENTITY tool_registration_mark
+ SUBTYPE OF (part_tooling_feature);
+END_ENTITY;
+
+END_SCHEMA;

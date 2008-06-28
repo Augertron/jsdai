@@ -1,0 +1,66 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   ISO TC184/SC4/WG12 N4583 - ISO/CD-TS 10303-1469 Foundation state definition - EXPRESS ARM
+*)
+
+SCHEMA Foundation_state_definition_xim;
+
+USE FROM Foundation_state_definition_mim;
+
+USE FROM support_resource_schema(label);
+
+USE FROM state_type_schema (State_type_role);
+
+TYPE state_definition_of_item = EXTENSIBLE GENERIC_ENTITY SELECT ;
+END_TYPE;
+
+  ENTITY Applied_state_definition_assignment
+    SUBTYPE OF (applied_state_type_assignment);
+      assigned_to                                                                       : state_definition_of_item;
+      SELF\state_type_assignment.assigned_state_type RENAMED described_state_definition : state_type;
+      SELF\state_type_assignment.role                                                   : State_type_role;
+    DERIVE
+      -- overlaps with attribute assigned_to
+      SELF\applied_state_type_assignment.items : SET [1:?] OF state_type_of_item := ?;
+  END_ENTITY;
+
+  ENTITY Composition_of_state_definition
+    SUBTYPE OF (state_type_relationship);
+      SELF\state_type_relationship.relating_state_type RENAMED part : SET [1 : ?] OF state_type;
+      SELF\state_type_relationship.related_state_type RENAMED whole : SET [1 : ?] OF state_type;
+    DERIVE
+      SELF\state_type_relationship.name : label := 'composition of state definition';
+  END_ENTITY;
+
+  ENTITY State_transition_definition
+    SUBTYPE OF (state_type_relationship);
+      SELF\state_type_relationship.relating_state_type RENAMED end_state : SET [1 : ?] OF state_type;
+      SELF\state_type_relationship.related_state_type RENAMED start_state : SET [1 : ?] OF state_type;
+    DERIVE
+      SELF\state_type_relationship.name : label := 'state transition definition';
+  END_ENTITY;
+
+END_SCHEMA;
+

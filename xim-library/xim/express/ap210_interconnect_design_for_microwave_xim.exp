@@ -1,0 +1,79 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Ap210 interconnect design for microwave - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Ap210_interconnect_design_for_microwave_xim;
+
+	USE FROM Design_product_data_management_xim;	-- ISO/TS 10303-1628
+	USE FROM Chemical_substance_xim;	-- ISO/TS 10303-1655
+	USE FROM Connectivity_allocation_to_physical_network_xim;	-- ISO/TS 10303-1658
+	USE FROM Design_specific_assignment_to_interconnect_usage_view_xim;	-- ISO/TS 10303-1663
+	USE FROM Device_marking_xim;	-- ISO/TS 10303-1664
+	USE FROM Interconnect_2d_shape_xim;	-- ISO/TS 10303-1682
+	USE FROM Interconnect_non_planar_shape_xim;	-- ISO/TS 10303-1688	
+	USE FROM Interconnect_module_to_assembly_module_relationship_xim;	-- ISO/TS 10303-1685
+	USE FROM Layered_interconnect_module_2d_design_xim;	-- ISO/TS 10303-1695
+	USE FROM Layered_interconnect_module_3d_design_xim;	-- ISO/TS 10303-1696
+	USE FROM Layout_macro_definition_xim;	-- ISO/TS 10303-1701
+	USE FROM Pre_defined_datum_symbol_xim;	-- ISO/TS 10303-1734
+	USE FROM Via_component_xim;	-- ISO/TS 10303-1754
+
+(** Most likely it is in CC Interconnect_module *)    
+	SUBTYPE_CONSTRAINT laminate_component_interface_terminal_armx_subtypes FOR Laminate_component_interface_terminal_armx; 
+		 (ONEOF (Printed_connector_component_interface_terminal,
+		 Component_termination_passage_interface_terminal,
+		 Land_interface_terminal));
+	END_SUBTYPE_CONSTRAINT;
+
+(** Most likely it is in CC Interconnect_module *)    
+	SUBTYPE_CONSTRAINT laminate_component_join_terminal_armx_subtypes FOR Laminate_component_join_terminal_armx; 
+		 (ONEOF (Component_termination_passage_join_terminal,
+		 Land_join_terminal,
+		 Embedded_physical_component_terminal,
+		 Printed_component_join_terminal));
+	END_SUBTYPE_CONSTRAINT;
+   
+(** It most likely should be in Interconnect_module CC *)
+SUBTYPE_CONSTRAINT planar_projected_shape_model_subtypes FOR Planar_projected_shape_model;  
+	(ONEOF ((Assembly_component_2d_shape_model ANDOR
+	 (ONEOF (Part_template_planar_shape_model,
+	 Physical_unit_planar_shape_model))),
+	 Stratum_planar_shape_model));
+END_SUBTYPE_CONSTRAINT; 
+
+(** Pre_defined_datum_symbol_arm and Layered_interconnect_module_3d_shape_arm are not linked in any way.
+Most likely it should be defined in Interconnect_module CC *)
+ SUBTYPE_CONSTRAINT shape_definition_3d_intersection_armx_subtypes FOR Shape_definition_3d_intersection_armx;  
+	 (ONEOF (Edge_segment_cross_section_armx,
+	 Pre_defined_perpendicular_datum_plane_symbol_3d_2d_relationship_armx,
+	 Pre_defined_perpendicular_datum_axis_symbol_3d_2d_relationship_armx,
+	 Pre_defined_parallel_datum_axis_symbol_3d_2d_relationship_armx));
+ END_SUBTYPE_CONSTRAINT;  
+ 
+ END_SCHEMA;
+
+

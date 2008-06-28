@@ -1,0 +1,1476 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping interconnect_placement_requirements(Interconnect_placement_requirements_arm, Interconnect_placement_requirements_mim);*)
+
+
+entity_mapping Interconnect_module_constraint_region(Interconnect_module_constraint_region, group_shape_aspect);
+
+mapping_constraints;
+group_shape_aspect <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'interconnect module constraint region'}
+
+end_mapping_constraints;
+
+attribute_mapping constrained_design_object_category(constrained_design_object_category, $PATH, interconnect_module_design_object_category_armx);
+group_shape_aspect <=
+shape_aspect
+shape_definition = shape_aspect
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'constrained object'}
+property_definition_relationship.related_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_object
+characterized_object
+{characterized_object =>
+interconnect_module_design_object_category}
+characterized_object
+{(characterized_object.description = 'assembly component category' .ASSEMBLY_COMPONENT_CATEGORY.)
+(characterized_object.description = 'cutout category' .INTERCONNECT_MODULE_CUTOUT.)
+(characterized_object.description = 'embedded physical component terminal category' .EMBEDDED_PHYSICAL_COMPONENT_TERMINAL_CATEGORY.)
+(characterized_object.description = 'fill area category' .INTERCONNECT_MODULE_FILL_AREA.)
+(characterized_object.description = 'inter stratum feature category' .INTERCONNECT_MODULE_INTER_STRATUM_FEATURE.)
+(characterized_object.description = 'stratum feature category' .INTERCONNECT_MODULE_STRATUM_FEATURE.)
+(characterized_object.description = 'via category' .INTERCONNECT_MODULE_VIA.)}
+characterized_object.description
+end_attribute_mapping;
+
+attribute_mapping constrained_design_object_category(constrained_design_object_category, $PATH, group);
+group_shape_aspect
+groupable_item = group_shape_aspect 
+groupable_item <-
+applied_group_assignment.items[i]
+applied_group_assignment <=
+group_assignment 
+{group_assignment.role ->
+object_role
+object_role.name = 'constrained object'}
+group_assignment.assigned_group ->
+group 
+end_attribute_mapping;
+
+attribute_mapping design_specific_purpose(design_specific_purpose, descriptive_representation_item);
+group_shape_aspect <=
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'design specific purpose'}
+representation_item =>
+descriptive_representation_item
+descriptive_representation_item.description
+
+end_attribute_mapping;
+
+attribute_mapping keepout(keepout, descriptive_representation_item);
+group_shape_aspect <=
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'keepout'}
+representation_item =>
+descriptive_representation_item
+{descriptive_representation_item
+(descriptive_representation_item.description = 'true')
+(descriptive_representation_item.description = 'false')}
+
+end_attribute_mapping;
+
+attribute_mapping non_conformant_interconnect_module_design_object(non_conformant_interconnect_module_design_object, $PATH, interconnect_module_design_object_select);
+group_shape_aspect <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'constraint region violation'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+(shape_aspect =>
+stratum_feature)
+(shape_aspect.of_shape ->
+product_definition_shape
+(product_definition_shape =>
+assembly_component)
+(product_definition_shape =>
+stratum))
+
+end_attribute_mapping;
+
+attribute_mapping non_conformant_interconnect_module_design_object(non_conformant_interconnect_module_design_object, $PATH, Stratum_armx);
+group_shape_aspect <=
+				shape_aspect <-
+				shape_aspect_relationship.related_shape_aspect
+				shape_aspect_relationship
+				{shape_aspect_relationship
+				shape_aspect_relationship.name = 'constraint region violation'}
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect.of_shape ->
+				product_definition_shape =>
+				stratum
+
+end_attribute_mapping;
+
+attribute_mapping non_conformant_interconnect_module_design_object(non_conformant_interconnect_module_design_object, $PATH, Via_armx);
+group_shape_aspect <=
+				shape_aspect <-
+				shape_aspect_relationship.related_shape_aspect
+				shape_aspect_relationship
+				{shape_aspect_relationship
+				shape_aspect_relationship.name = 'constraint region violation'}
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape =>
+				assembly_component =>
+				laminate_component =>
+				inter_stratum_feature =>
+				plated_inter_stratum_feature =>
+				plated_passage =>
+				via
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_interconnect_module_design_object(non_conformant_interconnect_module_design_object, $PATH, Cutout_armx);
+group_shape_aspect <=
+				shape_aspect <-
+				shape_aspect_relationship.related_shape_aspect
+				shape_aspect_relationship
+				{shape_aspect_relationship
+				shape_aspect_relationship.name = 'constraint region violation'}
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape =>
+				assembly_component =>
+				laminate_component =>
+				inter_stratum_feature =>
+				cutout
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_interconnect_module_design_object(non_conformant_interconnect_module_design_object, $PATH, Printed_component_armx);
+group_shape_aspect <=
+				shape_aspect <-
+				shape_aspect_relationship.related_shape_aspect
+				shape_aspect_relationship
+				{shape_aspect_relationship
+				shape_aspect_relationship.name = 'constraint region violation'}
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape =>
+				assembly_component =>
+				printed_component
+				
+end_attribute_mapping;
+attribute_mapping non_conformant_interconnect_module_design_object(non_conformant_interconnect_module_design_object, $PATH, Component_termination_passage_armx);
+group_shape_aspect <=
+				shape_aspect <-
+				shape_aspect_relationship.related_shape_aspect
+				shape_aspect_relationship
+				{shape_aspect_relationship
+				shape_aspect_relationship.name = 'constraint region violation'}
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape =>
+				assembly_component =>
+				laminate_component =>
+				inter_stratum_feature =>
+				plated_inter_stratum_feature =>
+				plated_passage =>
+				component_termination_passage
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_interconnect_module_design_object(non_conformant_interconnect_module_design_object, $PATH, Land_armx);
+group_shape_aspect <=
+				shape_aspect <-
+				shape_aspect_relationship.related_shape_aspect
+				shape_aspect_relationship
+				{shape_aspect_relationship
+				shape_aspect_relationship.name = 'constraint region violation'}
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape =>
+				assembly_component =>
+				laminate_component =>
+				stratum_feature_template_component =>
+				land
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_interconnect_module_design_object(non_conformant_interconnect_module_design_object, $PATH, Conductor);
+group_shape_aspect <=
+				shape_aspect <-
+				shape_aspect_relationship.related_shape_aspect
+				shape_aspect_relationship
+				{shape_aspect_relationship
+				shape_aspect_relationship.name = 'constraint region violation'}
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect => stratum_feature
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_interconnect_module_design_object(non_conformant_interconnect_module_design_object, $PATH, Conductive_filled_area);
+group_shape_aspect <=
+				shape_aspect <-
+				shape_aspect_relationship.related_shape_aspect
+				shape_aspect_relationship
+				{shape_aspect_relationship
+				shape_aspect_relationship.name = 'constraint region violation'}
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect => stratum_feature
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_interconnect_module_design_object(non_conformant_interconnect_module_design_object, $PATH, Stratum_feature_armx);
+group_shape_aspect <=
+				shape_aspect <-
+				shape_aspect_relationship.related_shape_aspect
+				shape_aspect_relationship
+				{shape_aspect_relationship
+				shape_aspect_relationship.name = 'constraint region violation'}
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect => stratum_feature
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_interconnect_module_design_object(non_conformant_interconnect_module_design_object, $PATH, Laminate_component_armx);
+group_shape_aspect <=
+				shape_aspect <-
+				shape_aspect_relationship.related_shape_aspect
+				shape_aspect_relationship
+				{shape_aspect_relationship
+				shape_aspect_relationship.name = 'constraint region violation'}
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape =>
+				assembly_component =>
+				laminate_component
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_interconnect_module_design_object(non_conformant_interconnect_module_design_object, $PATH, Inter_stratum_feature_armx);
+group_shape_aspect <=
+				shape_aspect <-
+				shape_aspect_relationship.related_shape_aspect
+				shape_aspect_relationship
+				{shape_aspect_relationship
+				shape_aspect_relationship.name = 'constraint region violation'}
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape =>
+				assembly_component => 
+				laminate_component =>
+				inter_stratum_feature
+				
+end_attribute_mapping;
+
+attribute_mapping associated_stratum_extent(associated_stratum_extent, $PATH, Inter_stratum_extent);
+group_shape_aspect <=
+shape_aspect
+shape_definition = shape_aspect
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'associated stratum extent'}
+property_definition_relationship.relating_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition_relationship
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'inter stratum extent'}
+
+end_attribute_mapping;
+
+attribute_mapping scope(scope, $PATH, Interconnect_module);
+group_shape_aspect <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape
+{product_definition_shape <=
+property_definition
+{property_definition.name = 'interconnect module'}}
+product_definition_shape =>
+physical_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Layer_qualified_layout_spacing_requirement_occurrence_armx(Layer_qualified_layout_spacing_requirement_occurrence_armx, layer_qualified_layout_spacing_requirement_occurrence);
+
+mapping_constraints;
+layer_qualified_layout_spacing_requirement_occurrence <=
+layout_spacing_requirement_occurrence <=
+predefined_requirement_view_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping layer_context(layer_context, $PATH, Inter_stratum_extent);
+layer_qualified_layout_spacing_requirement_occurrence <=
+layout_spacing_requirement_occurrence <=
+predefined_requirement_view_definition <=					
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition					
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'layer context'}
+property_definition_relationship.relating_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'inter stratum extent'}
+product_definition_relationship
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Layout_spacing_requirement_occurrence_armx(Layout_spacing_requirement_occurrence_armx, layout_spacing_requirement_occurrence);
+
+mapping_constraints;
+layout_spacing_requirement_occurrence <=
+predefined_requirement_view_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_spacing_type(of_spacing_type, $PATH);
+layout_spacing_requirement_occurrence <=
+predefined_requirement_view_definition <=
+product_definition			
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition.name = 'of spacing type'}
+property_definition.description
+{(property_definition.description = 'nearest boundary')
+(property_definition.description = 'centroid')
+(property_definition.description = 'furthest boundary')}
+
+end_attribute_mapping;
+
+attribute_mapping design_object_category_1(design_object_category_1, group);
+layout_spacing_requirement_occurrence
+groupable_item = layout_spacing_requirement_occurrence 
+groupable_item <-
+applied_group_assignment.items[i]
+applied_group_assignment <=
+group_assignment 
+{group_assignment.role ->
+object_role
+object_role.name = 'design object category 1'}
+group_assignment.assigned_group ->
+group 
+end_attribute_mapping;
+
+attribute_mapping design_object_category_1(design_object_category_1, $PATH, Stratum_armx);
+layout_spacing_requirement_occurrence <=
+predefined_requirement_view_definition <=
+product_definition			
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+{property_definition_relationship.name = 'design object category 1'}
+property_definition_relationship.related_property_definition ->
+property_definition =>
+product_definition_shape =>
+stratum  
+end_attribute_mapping;
+
+attribute_mapping design_object_category_1(design_object_category_1, characterized_object.name, pca_product_design_object_category);
+layout_spacing_requirement_occurrence <=
+predefined_requirement_view_definition <=
+product_definition			
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+{property_definition_relationship.name = 'design object category 1'}
+property_definition_relationship.related_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_object
+characterized_object
+characterized_object.name
+{(characterized_object.name = 'assembly component category')
+(characterized_object.name = 'assembly module category')
+(characterized_object.name = 'assembly module component category')
+(characterized_object.name = 'assembly module component terminal category')
+(characterized_object.name = 'assembly module macro component category')
+(characterized_object.name = 'assembly module macro component join terminal category')
+(characterized_object.name = 'bare die component category')
+(characterized_object.name = 'bare die component terminal category')
+(characterized_object.name = 'bonded conductive base blind via category')
+(characterized_object.name = 'buried via category')
+(characterized_object.name = 'cable component category')
+(characterized_object.name = 'component feature category')
+(characterized_object.name = 'component mounting feature category')
+(characterized_object.name = 'component termination passage category')
+(characterized_object.name = 'component termination passage interface terminal category')
+(characterized_object.name = 'component termination passage join terminal category')
+(characterized_object.name = 'conductive interconnect element terminal category')
+(characterized_object.name = 'conductive interconnect element with pre defined transitions category')
+(characterized_object.name = 'conductive interconnect element with user defined single transition category')
+(characterized_object.name = 'connected area component category')
+(characterized_object.name = 'contact size dependent land category')
+(characterized_object.name = 'cutout category')
+(characterized_object.name = 'cutout edge segment category')
+(characterized_object.name = 'dielectric material passage category')
+(characterized_object.name = 'electrical isolation laminate component category')
+(characterized_object.name = 'embedded physical component terminal category')
+(characterized_object.name = 'fiducial category')
+(characterized_object.name = 'fill area category')
+(characterized_object.name = 'inter stratum feature category')
+(characterized_object.name = 'interconnect component interface terminal category')
+(characterized_object.name = 'interconnect component join terminal category')
+(characterized_object.name = 'interconnect module component category')
+(characterized_object.name = 'interconnect module component stratum based terminal category')
+(characterized_object.name = 'interconnect module component surface feature category')
+(characterized_object.name = 'interconnect module component terminal category')
+(characterized_object.name = 'interconnect module edge category')
+(characterized_object.name = 'interconnect module edge segment category')
+(characterized_object.name = 'interconnect module macro component category')
+(characterized_object.name = 'interconnect module macro component join terminal category')
+(characterized_object.name = 'interface access material removal laminate component category')
+(characterized_object.name = 'interface access stratum feature template component category')
+(characterized_object.name = 'interface component category')
+(characterized_object.name = 'interfacial connection category')
+(characterized_object.name = 'internal probe access area category')
+(characterized_object.name = 'laminate component category')
+(characterized_object.name = 'generic laminate text component category')
+(characterized_object.name = 'laminate text string component category')
+(characterized_object.name = 'land category')
+(characterized_object.name = 'land interface terminal category')
+(characterized_object.name = 'land join terminal category')
+(characterized_object.name = 'material removal laminate component category')
+(characterized_object.name = 'minimally defined component terminal category')
+(characterized_object.name = 'movable packaged component join terminal category')
+(characterized_object.name = 'multi layer material removal laminate component category')
+(characterized_object.name = 'multi stratum special symbol component category')
+(characterized_object.name = 'non conductive base blind via category')
+(characterized_object.name = 'packaged component category')
+(characterized_object.name = 'packaged component join terminal category')
+(characterized_object.name = 'packaged connector component category')
+(characterized_object.name = 'packaged connector component interface terminal category')
+(characterized_object.name = 'partially plated cutout category')
+(characterized_object.name = 'partially plated interconnect module edge category')
+(characterized_object.name = 'physical component category')
+(characterized_object.name = 'physical connectivity interrupting cutout category')
+(characterized_object.name = 'physical laminate component category')
+(characterized_object.name = 'physical network supporting inter stratum feature category')
+(characterized_object.name = 'plated conductive base blind via category')
+(characterized_object.name = 'plated cutout category')
+(characterized_object.name = 'plated cutout edge segment category')
+(characterized_object.name = 'plated interconnect module edge category')
+(characterized_object.name = 'plated interconnect module edge segment category')
+(characterized_object.name = 'plated passage category')
+(characterized_object.name = 'plated passage or unsupported passage category')
+(characterized_object.name = 'primary stratum indicator symbol category')
+(characterized_object.name = 'printed component join terminal category')
+(characterized_object.name = 'printed connector component interface terminal category')
+(characterized_object.name = 'probe access area category')
+(characterized_object.name = 'routed interconnect component category')
+(characterized_object.name = 'routed physical component category')
+(characterized_object.name = 'single stratum special symbol component category')
+(characterized_object.name = 'stratum feature category')
+(characterized_object.name = 'stratum feature template component category')
+(characterized_object.name = 'thermal isolation laminate component category')
+(characterized_object.name = 'unrouted conductive interconnect element category')
+(characterized_object.name = 'unsupported passage category')
+(characterized_object.name = 'via category')
+(characterized_object.name = 'via terminal category')}
+
+end_attribute_mapping;
+
+attribute_mapping design_object_category_2(design_object_category_2, group);
+layout_spacing_requirement_occurrence
+groupable_item = layout_spacing_requirement_occurrence 
+groupable_item <-
+applied_group_assignment.items[i]
+applied_group_assignment <=
+group_assignment 
+{group_assignment.role ->
+object_role
+object_role.name = 'design object category 2'}
+group_assignment.assigned_group ->
+group 
+end_attribute_mapping;
+
+attribute_mapping design_object_category_2(design_object_category_2, $PATH, Stratum_armx);
+layout_spacing_requirement_occurrence <=
+predefined_requirement_view_definition <=
+product_definition			
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+{property_definition_relationship.name = 'design object category 2'}
+property_definition_relationship.related_property_definition ->
+property_definition =>
+product_definition_shape =>
+stratum 
+end_attribute_mapping;
+
+attribute_mapping design_object_category_2(design_object_category_2, characterized_object.name, pca_product_design_object_category);
+layout_spacing_requirement_occurrence <=
+predefined_requirement_view_definition <=
+product_definition			
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+{property_definition_relationship.name = 'design object category 2'}
+property_definition_relationship.related_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_object
+characterized_object
+characterized_object.name
+{(characterized_object.name = 'assembly component category')
+(characterized_object.name = 'assembly module category')
+(characterized_object.name = 'assembly module component category')
+(characterized_object.name = 'assembly module component terminal category')
+(characterized_object.name = 'assembly module macro component category')
+(characterized_object.name = 'assembly module macro component join terminal category')
+(characterized_object.name = 'bare die component category')
+(characterized_object.name = 'bare die component terminal category')
+(characterized_object.name = 'bonded conductive base blind via category')
+(characterized_object.name = 'buried via category')
+(characterized_object.name = 'cable component category')
+(characterized_object.name = 'component feature category')
+(characterized_object.name = 'component mounting feature category')
+(characterized_object.name = 'component termination passage category')
+(characterized_object.name = 'component termination passage interface terminal category')
+(characterized_object.name = 'component termination passage join terminal category')
+(characterized_object.name = 'conductive interconnect element terminal category')
+(characterized_object.name = 'conductive interconnect element with pre defined transitions category')
+(characterized_object.name = 'conductive interconnect element with user defined single transition category')
+(characterized_object.name = 'connected area component category')
+(characterized_object.name = 'contact size dependent land category')
+(characterized_object.name = 'cutout category')
+(characterized_object.name = 'cutout edge segment category')
+(characterized_object.name = 'dielectric material passage category')
+(characterized_object.name = 'electrical isolation laminate component category')
+(characterized_object.name = 'embedded physical component terminal category')
+(characterized_object.name = 'fiducial category')
+(characterized_object.name = 'fill area category')
+(characterized_object.name = 'inter stratum feature category')
+(characterized_object.name = 'interconnect component interface terminal category')
+(characterized_object.name = 'interconnect component join terminal category')
+(characterized_object.name = 'interconnect module component category')
+(characterized_object.name = 'interconnect module component stratum based terminal category')
+(characterized_object.name = 'interconnect module component surface feature category')
+(characterized_object.name = 'interconnect module component terminal category')
+(characterized_object.name = 'interconnect module edge category')
+(characterized_object.name = 'interconnect module edge segment category')
+(characterized_object.name = 'interconnect module macro component category')
+(characterized_object.name = 'interconnect module macro component join terminal category')
+(characterized_object.name = 'interface access material removal laminate component category')
+(characterized_object.name = 'interface access stratum feature template component category')
+(characterized_object.name = 'interface component category')
+(characterized_object.name = 'interfacial connection category')
+(characterized_object.name = 'internal probe access area category')
+(characterized_object.name = 'laminate component category')
+(characterized_object.name = 'generic laminate text component category')
+(characterized_object.name = 'laminate text string component category')
+(characterized_object.name = 'land category')
+(characterized_object.name = 'land interface terminal category')
+(characterized_object.name = 'land join terminal category')
+(characterized_object.name = 'material removal laminate component category')
+(characterized_object.name = 'minimally defined component terminal category')
+(characterized_object.name = 'movable packaged component join terminal category')
+(characterized_object.name = 'multi layer material removal laminate component category')
+(characterized_object.name = 'multi stratum special symbol component category')
+(characterized_object.name = 'non conductive base blind via category')
+(characterized_object.name = 'packaged component category')
+(characterized_object.name = 'packaged component join terminal category')
+(characterized_object.name = 'packaged connector component category')
+(characterized_object.name = 'packaged connector component interface terminal category')
+(characterized_object.name = 'partially plated cutout category')
+(characterized_object.name = 'partially plated interconnect module edge category')
+(characterized_object.name = 'physical component category')
+(characterized_object.name = 'physical connectivity interrupting cutout category')
+(characterized_object.name = 'physical laminate component category')
+(characterized_object.name = 'physical network supporting inter stratum feature category')
+(characterized_object.name = 'plated conductive base blind via category')
+(characterized_object.name = 'plated cutout category')
+(characterized_object.name = 'plated cutout edge segment category')
+(characterized_object.name = 'plated interconnect module edge category')
+(characterized_object.name = 'plated interconnect module edge segment category')
+(characterized_object.name = 'plated passage category')
+(characterized_object.name = 'plated passage or unsupported passage category')
+(characterized_object.name = 'primary stratum indicator symbol category')
+(characterized_object.name = 'printed component join terminal category')
+(characterized_object.name = 'printed connector component interface terminal category')
+(characterized_object.name = 'probe access area category')
+(characterized_object.name = 'routed interconnect component category')
+(characterized_object.name = 'routed physical component category')
+(characterized_object.name = 'single stratum special symbol component category')
+(characterized_object.name = 'stratum feature category')
+(characterized_object.name = 'stratum feature template component category')
+(characterized_object.name = 'thermal isolation laminate component category')
+(characterized_object.name = 'unrouted conductive interconnect element category')
+(characterized_object.name = 'unsupported passage category')
+(characterized_object.name = 'via category')
+(characterized_object.name = 'via terminal category')}
+
+end_attribute_mapping;
+
+attribute_mapping spacing(spacing, $PATH, Length_tolerance_characteristic);
+layout_spacing_requirement_occurrence <=
+predefined_requirement_view_definition <=
+product_definition			
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'required characteristic'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation  
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Layout_spacing_requirement_non_conforming_design_object(Layout_spacing_requirement_non_conforming_design_object, shape_aspect_relationship);
+
+mapping_constraints;
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'layout spacing requirement violation'}
+
+end_mapping_constraints;
+
+attribute_mapping design_requirement(design_requirement, $PATH, Layout_spacing_requirement_occurrence_armx);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'design requirement'}
+property_definition_relationship.related_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition
+product_definition =>
+predefined_requirement_view_definition => 
+layout_spacing_requirement_occurrence
+
+end_attribute_mapping;
+
+attribute_mapping non_conformant_design_object(non_conformant_design_object, $PATH, assembly_or_interconnect_design_object_select);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'non conformant design object'}
+property_definition_relationship.related_property_definition ->
+property_definition
+(property_definition =>
+product_definition_shape =>
+assembly_component)
+(property_definition =>
+product_definition_shape =>
+stratum)
+(property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect
+(shape_aspect =>
+stratum_feature)
+(shape_aspect =>
+component_feature))
+
+end_attribute_mapping;
+
+attribute_mapping non_conformant_design_object(non_conformant_design_object, $PATH, Assembly_component_armx);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'non conformant design object'}
+property_definition_relationship.related_property_definition ->
+property_definition =>
+product_definition_shape =>
+assembly_component
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_design_object(non_conformant_design_object, $PATH, Stratum_armx);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'non conformant design object'}
+property_definition_relationship.related_property_definition ->
+property_definition =>
+product_definition_shape =>
+stratum
+				
+end_attribute_mapping;
+attribute_mapping non_conformant_design_object(non_conformant_design_object, $PATH, Component_feature_armx);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'non conformant design object'}
+property_definition_relationship.related_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect =>
+component_feature
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_design_object(non_conformant_design_object, $PATH, Cutout_armx);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'non conformant design object'}
+property_definition_relationship.related_property_definition ->
+property_definition =>
+product_definition_shape =>
+assembly_component => 
+laminate_component =>
+inter_stratum_feature =>
+cutout
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_design_object(non_conformant_design_object, $PATH, Component_termination_passage_armx);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'non conformant design object'}
+property_definition_relationship.related_property_definition ->
+property_definition =>
+product_definition_shape =>
+assembly_component => 
+laminate_component =>
+inter_stratum_feature => 
+plated_inter_stratum_feature =>
+plated_passage =>
+component_termination_passage
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_design_object(non_conformant_design_object, $PATH, Land_armx);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'non conformant design object'}
+property_definition_relationship.related_property_definition ->
+property_definition =>
+product_definition_shape =>
+assembly_component =>  
+laminate_component =>
+stratum_feature_template_component =>
+land
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_design_object(non_conformant_design_object, $PATH, Conductor);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'non conformant design object'}
+property_definition_relationship.related_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect
+shape_aspect => 
+stratum_feature
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_design_object(non_conformant_design_object, $PATH, Conductive_filled_area);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'non conformant design object'}
+property_definition_relationship.related_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect
+shape_aspect => 
+stratum_feature
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_design_object(non_conformant_design_object, $PATH, Stratum_feature_armx);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'non conformant design object'}
+property_definition_relationship.related_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect
+shape_aspect => 
+stratum_feature
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_design_object(non_conformant_design_object, $PATH, Laminate_component_armx);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'non conformant design object'}
+property_definition_relationship.related_property_definition ->
+property_definition =>
+product_definition_shape =>
+assembly_component =>  
+laminate_component
+				
+end_attribute_mapping;
+
+attribute_mapping non_conformant_design_object(non_conformant_design_object, $PATH, Inter_stratum_feature_armx);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'non conformant design object'}
+property_definition_relationship.related_property_definition ->
+property_definition =>
+product_definition_shape =>
+assembly_component =>  
+laminate_component =>
+inter_stratum_feature
+				
+end_attribute_mapping;
+
+attribute_mapping intersection_violation(intersection_violation, $PATH);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'intersection violation'}
+property_definition.description
+{(property_definition.description = 'true')
+(property_definition.description = 'false')
+(property_definition.description = 'unknown')}
+end_attribute_mapping;
+
+attribute_mapping violation_value(violation_value, $PATH, length_measure_with_unit);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'violation value'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+end_attribute_mapping;
+
+attribute_mapping violation_shape(violation_shape, $PATH, shape_representation);
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'violation shape'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+shape_representation
+end_attribute_mapping;
+
+attribute_mapping design_object_1(design_object_1, $PATH, assembly_or_interconnect_design_object_select);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+(shape_aspect =>
+stratum_feature)
+(shape_aspect =>
+component_feature)
+(shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component)
+(shape_aspect.of_shape ->
+product_definition_shape =>
+stratum)
+
+end_attribute_mapping;
+
+attribute_mapping design_object_1(design_object_1, $PATH, Stratum_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape => 
+				stratum
+end_attribute_mapping;
+
+attribute_mapping design_object_1(design_object_1, $PATH, Assembly_component_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape => 
+				assembly_component
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_1(design_object_1, $PATH, Component_feature_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect =>
+				component_feature
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_1(design_object_1, $PATH, Cutout_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape => 
+				assembly_component => 
+				laminate_component =>
+				inter_stratum_feature =>
+				cutout
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_1(design_object_1, $PATH, Component_termination_passage_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape => 
+				assembly_component => 
+				laminate_component =>
+				inter_stratum_feature => 
+				plated_inter_stratum_feature =>
+				plated_passage =>
+				component_termination_passage
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_1(design_object_1, $PATH, Land_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape => 
+				laminate_component =>
+				stratum_feature_template_component =>
+				land
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_1(design_object_1, $PATH, Conductor);
+shape_aspect_relationship
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect => stratum_feature
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_1(design_object_1, $PATH, Conductive_filled_area);
+shape_aspect_relationship
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect => stratum_feature
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_1(design_object_1, $PATH, Stratum_feature_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect => stratum_feature
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_1(design_object_1, $PATH, Laminate_component_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape => 
+				assembly_component =>
+				laminate_component
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_1(design_object_1, $PATH, Inter_stratum_feature_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.relating_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape => 
+				assembly_component => 
+				laminate_component =>
+				inter_stratum_feature
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_2(design_object_2, $PATH, assembly_or_interconnect_design_object_select);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+(shape_aspect =>
+stratum_feature)
+(shape_aspect =>
+component_feature)
+(shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component)
+(shape_aspect.of_shape ->
+product_definition_shape =>
+stratum)
+
+
+end_attribute_mapping;
+
+attribute_mapping design_object_2(design_object_2, $PATH, Stratum_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.related_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape => 
+				stratum
+end_attribute_mapping;
+
+attribute_mapping design_object_2(design_object_2, $PATH, Assembly_component_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.related_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape =>
+				assembly_component
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_2(design_object_2, $PATH, Component_feature_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.related_shape_aspect ->
+				shape_aspect
+				shape_aspect =>
+				component_feature
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_2(design_object_2, $PATH, Cutout_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.related_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape => 
+				assembly_component => 
+				laminate_component =>
+				inter_stratum_feature =>
+				cutout
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_2(design_object_2, $PATH, Component_termination_passage_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.related_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape => 
+				assembly_component => 
+				laminate_component =>
+				inter_stratum_feature => 
+				plated_inter_stratum_feature =>
+				plated_passage =>
+				component_termination_passage
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_2(design_object_2, $PATH, Land_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.related_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape => 
+				assembly_component => 
+				laminate_component =>
+				stratum_feature_template_component =>
+				land
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_2(design_object_2, $PATH, Conductor);
+shape_aspect_relationship
+				shape_aspect_relationship.related_shape_aspect ->
+				shape_aspect => stratum_feature
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_2(design_object_2, $PATH, Conductive_filled_area);
+shape_aspect_relationship
+				shape_aspect_relationship.related_shape_aspect ->
+				shape_aspect => stratum_feature
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_2(design_object_2, $PATH, Stratum_feature_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.related_shape_aspect ->
+				shape_aspect => stratum_feature
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_2(design_object_2, $PATH, Laminate_component_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.related_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape => 
+				assembly_component =>
+				laminate_component
+				
+end_attribute_mapping;
+
+attribute_mapping design_object_2(design_object_2, $PATH, Inter_stratum_feature_armx);
+shape_aspect_relationship
+				shape_aspect_relationship.related_shape_aspect ->
+				shape_aspect
+				shape_aspect.of_shape ->
+				product_definition_shape => 
+				assembly_component => 
+				laminate_component =>
+				inter_stratum_feature
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping requirement_assignment_armx(requirement_assignment_armx, requirement_assignment)
+extended;
+
+attribute_mapping assigned_to(assigned_to, , Interconnect_module_constraint_region);
+
+					requirement_assigned_item *> ipr_requirement_assigned_item
+					ipr_requirement_assigned_item = 
+					group_shape_aspect
+					{group_shape_aspect <=
+					shape_aspect
+					shape_aspect.description = 'interconnect module constraint region'}
+				
+end_attribute_mapping;
+
+attribute_mapping assigned_to(assigned_to, , Stratum_constraint_region);
+
+					requirement_assigned_item *> ipr_requirement_assigned_item
+					ipr_requirement_assigned_item = 
+					group_shape_aspect
+					{group_shape_aspect <=
+					shape_aspect
+					shape_aspect.description = 'stratum constraint region'}
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Stratum_constraint_region(Stratum_constraint_region, group_shape_aspect);
+
+mapping_constraints;
+group_shape_aspect <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'stratum constraint region'}
+
+end_mapping_constraints;
+
+attribute_mapping constrained_stratum(constrained_stratum, $PATH, Stratum_armx);
+group_shape_aspect <=
+shape_aspect
+shape_definition = shape_aspect
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.relating_property_definition
+property_definition_relationship
+{property_definition_relationship
+property_definition_relationship.name = 'constrained stratum'}
+property_definition_relationship.related_property_definition ->
+property_definition =>
+product_definition_shape =>
+stratum 
+end_attribute_mapping;
+
+attribute_mapping design_specific_purpose(design_specific_purpose, descriptive_representation_item.description);
+group_shape_aspect <=
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'design specific purpose'}
+representation_item =>
+descriptive_representation_item.description
+end_attribute_mapping;
+
+attribute_mapping keepout(keepout, descriptive_representation_item);
+group_shape_aspect <=
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'keepout'}
+representation_item =>
+descriptive_representation_item
+{descriptive_representation_item
+(descriptive_representation_item.description = 'true')
+(descriptive_representation_item.description = 'false')}
+end_attribute_mapping;
+
+attribute_mapping non_conformant_stratum(non_conformant_stratum, $PATH, Stratum_armx);
+group_shape_aspect <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'non conformant stratum'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect.of_shape ->
+product_definition_shape =>
+stratum
+end_attribute_mapping;
+
+attribute_mapping scope(scope, $PATH, Stratum_armx);
+group_shape_aspect <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape
+{product_definition_shape <=
+property_definition
+{property_definition.name = 'interconnect module'}}
+product_definition_shape =>
+physical_unit
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

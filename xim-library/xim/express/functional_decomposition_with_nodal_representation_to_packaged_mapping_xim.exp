@@ -1,0 +1,58 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Functional decomposition with nodal representation to packaged mapping - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Functional_decomposition_with_nodal_representation_to_packaged_mapping_xim;
+
+USE FROM Functional_decomposition_to_design_xim; -- ISO/TS 10303-1676
+
+USE FROM Physical_connectivity_definition_xim;
+
+USE FROM Functional_decomposition_with_nodal_representation_to_packaged_mapping_mim;
+
+  ENTITY Aggregate_connectivity_requirement_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (aggregate_connectivity_requirement);
+      connectivity_requirement : SET [1:?] OF Functional_unit_network_node_definition;
+  END_ENTITY;
+
+  ENTITY Connectivity_allocation
+    (* CONNOTATIONAL *) SUBTYPE OF (property_definition_relationship);
+      implementation           : Physical_connectivity_definition_armx;
+      connectivity_requirement : Aggregate_connectivity_requirement_armx;
+    DERIVE
+      SELF\property_definition_relationship.related_property_definition : property_definition := ?;
+      SELF\property_definition_relationship.relating_property_definition : property_definition := ?;
+      SELF\property_definition_relationship.description : text := ?;
+      SELF\property_definition_relationship.name : label := ?;
+    UNIQUE
+      UR1 : implementation;
+  END_ENTITY;
+
+END_SCHEMA;
+
+
+

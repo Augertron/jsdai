@@ -1,0 +1,924 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Extended geometric tolerance - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Extended_geometric_tolerance_xim;
+
+USE FROM Geometric_tolerance_xim;
+
+USE FROM Non_feature_shape_element_xim;	-- ISO/TS 10303-1706
+
+USE FROM Requirement_decomposition_xim;
+
+USE FROM Default_tolerance_xim;
+
+USE FROM support_resource_schema(label);
+
+REFERENCE FROM Requirement_decomposition_xim(get_rvd);
+
+USE FROM Extended_geometric_tolerance_mim; -- name conflict
+
+USE FROM product_property_definition_schema(characterized_definition);
+
+
+USE FROM shape_tolerance_schema(
+	modified_geometric_tolerance, -- no name conflict
+	projected_zone_definition, -- no name conflict
+	runout_zone_definition, -- no name conflict
+	runout_zone_orientation, -- name conflict
+	runout_zone_orientation_reference_direction, -- no name conflict
+	tolerance_zone, -- no name conflict
+	tolerance_zone_form -- taken from AIM
+	);
+
+USE FROM shape_aspect_definition_schema(
+	apex,  -- name conflict
+	centre_of_symmetry, -- name conflict
+	derived_shape_aspect, -- no name conflict
+	extension, -- no name conflict
+	geometric_alignment, -- name conflict
+	geometric_intersection, -- name conflict
+	shape_aspect_deriving_relationship, -- no name conflict	
+	tangent -- no name conflict
+	);
+
+USE FROM shape_dimension_schema(
+		dimensional_characteristic_representation, -- no name conflict
+		shape_dimension_representation -- take fully from AIM
+	);
+	
+ 
+
+	SUBTYPE_CONSTRAINT shape_dimension_representation_subtypes FOR Shape_dimension_representation; 
+	    (ONEOF (Limit_dimension_representation,
+ 			Singular_dimension_representation,
+ 			externally_defined_dimension_representation));
+	END_SUBTYPE_CONSTRAINT;
+
+	
+	TYPE physical_feature_or_part_template = 
+		EXTENSIBLE GENERIC_ENTITY SELECT
+		(Shape_element);
+	END_TYPE;
+
+  TYPE centre_type = ENUMERATION OF
+    (centred_on_arc,
+     centred_on_radial);
+  END_TYPE;
+
+  TYPE descriptive_or_geometric_orientation = SELECT
+    (measure_orientation,
+     Direction);
+  END_TYPE;
+
+  TYPE dimension_qualifiers = ENUMERATION OF
+    (free_state,
+     average);
+  END_TYPE;
+
+  TYPE dimensional_location_or_dimensional_size = SELECT
+    (Size_dimension,
+     Location_dimension);
+  END_TYPE;
+(* It is accessable via mim
+ 	TYPE egt_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH  
+		(Externally_defined_dimension_representation);
+	END_TYPE;
+*)
+	TYPE egt_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
+	    (Restraint_condition,
+	  	Statistical_dimensional_location_armx,
+	  	Statistical_dimensional_size_armx,
+	  	Statistical_geometric_tolerance_armx);
+	END_TYPE; 
+
+  TYPE geometric_or_dimension_select = SELECT
+    (Geometric_tolerance_armx,
+     Geometric_dimension);
+  END_TYPE;
+
+  TYPE geometric_tolerance_qualifiers = ENUMERATION OF
+    (pitch_diameter,
+     minor_diameter,
+     each_element,
+     major_diameter,
+     each_radial_element,
+     not_concave,
+     not_convex,
+     free_state);
+  END_TYPE;
+
+  TYPE locating_or_refinement_linear_profile_tolerance = SELECT
+    (Line_profile_tolerance_armx,
+     Composite_linear_profile_refinement_tolerance);
+  END_TYPE;
+
+  TYPE locating_or_refinement_surface_profile_tolerance = SELECT
+    (Surface_profile_tolerance_armx,
+     Composite_surface_profile_refinement_tolerance);
+  END_TYPE;
+
+  TYPE measure_orientation = ENUMERATION OF
+    (reversed,
+     normal);
+  END_TYPE;
+
+	SUBTYPE_CONSTRAINT egt_non_feature_shape_element_subtypes FOR Non_feature_shape_element; 
+	    (ONEOF (
+		 Derived_non_feature_shape_element,
+		 Directed_axis,
+		 Positional_boundary_armx,
+		 Positional_boundary_member_armx,
+		 Tolerance_zone_boundary_armx,
+		 Tolerance_zone_boundary_member,
+		 Viewing_plane_armx,
+		 Seating_plane_armx,
+		 Reference_graphic_registration_mark_armx));
+	END_SUBTYPE_CONSTRAINT;
+
+  TYPE offset_types = ENUMERATION OF
+    (towards_material,
+     away_from_material);
+  END_TYPE;
+
+  TYPE orientation_select = SELECT
+    (Datum_axis_related_orientation,
+     Viewing_plane_based_orientation,
+     Datum_based_vector_orientation);
+  END_TYPE;
+
+  TYPE restrained_item_select = SELECT
+    (Single_datum,
+     physical_feature_or_part_template);
+  END_TYPE;
+
+	TYPE true_profile_representations = SELECT(
+		Dimension_set,
+     	Document_definition,
+     	Func);
+	END_TYPE;
+
+  ENTITY Apex_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Derived_non_feature_shape_element, apex);
+  END_ENTITY;
+
+  ENTITY Boundary_size_characteristic
+    ABSTRACT SUPERTYPE OF (ONEOF (Diametrical_boundary_size_characteristic,
+ Opposing_boundary_set_size_characteristic))
+ 		(* CONNOTATIONAL *) SUBTYPE OF (representation);
+      tolerance_value         : length_measure_with_unit;
+      maximum_tolerance_value : OPTIONAL length_measure_with_unit;
+    DERIVE
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+      SELF\representation.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Centre_axis
+    (* CONNOTATIONAL *) SUBTYPE OF (Centre_of_symmetry_armx);
+    DERIVE
+      SELF\shape_aspect.description : text := 'axis';
+  END_ENTITY;
+
+  ENTITY Centre_of_symmetry_armx
+    ABSTRACT SUPERTYPE OF (ONEOF (Centre_axis,
+ Centre_plane,
+ Centre_point))
+    (* CONNOTATIONAL *) SUBTYPE OF (Derived_non_feature_shape_element, centre_of_symmetry);
+  END_ENTITY;
+
+  ENTITY Centre_plane
+    (* CONNOTATIONAL *) SUBTYPE OF (Centre_of_symmetry_armx);
+    DERIVE
+      SELF\shape_aspect.description : text := 'plane';
+  END_ENTITY;
+
+  ENTITY Centre_point
+    (* CONNOTATIONAL *) SUBTYPE OF (Centre_of_symmetry_armx);
+    DERIVE
+      SELF\shape_aspect.description : text := 'point';
+  END_ENTITY;
+
+  ENTITY Composite_linear_profile_refinement_tolerance
+    (* CONNOTATIONAL *) SUBTYPE OF (Line_profile_tolerance_armx);
+      refined_control : locating_or_refinement_linear_profile_tolerance;
+    DERIVE
+      SELF\Geometric_tolerance.name : label := 'linear profile refinement';
+  END_ENTITY;
+
+  ENTITY Composite_surface_profile_refinement_tolerance
+    (* CONNOTATIONAL *) SUBTYPE OF (Surface_profile_tolerance_armx);
+      refined_control : locating_or_refinement_surface_profile_tolerance;
+    DERIVE
+      SELF\Geometric_tolerance.name : label := 'surface profile refinement';
+  END_ENTITY;
+
+  ENTITY Conical_tolerance_zone_boundary
+    (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_zone_boundary_armx);
+    DERIVE
+      SELF\shape_aspect.description : text := 'conical';
+    INVERSE
+      boundary_and_surface_relationships : SET[2:2] OF conical_tolerance_zone_boundary_and_surface_relationship FOR sized_tolerance_zone_boundary;
+  END_ENTITY;
+
+  ENTITY Conical_tolerance_zone_boundary_and_surface_relationship
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED sized_tolerance_zone_boundary	: Conical_tolerance_zone_boundary;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED terminating_surface				: physical_feature_or_part_template;
+      terminating_surface_datum                                                                     : OPTIONAL Datum_defined_by_feature; 
+    DERIVE
+      SELF\shape_aspect_relationship.description : text := ?;
+      SELF\shape_aspect_relationship.name : label := ?;
+    INVERSE
+      size_characteristic : conical_tolerance_zone_boundary_diametrical_size_characteristic FOR sized_boundary_at_surface;
+    WHERE
+      WR1: NOT EXISTS(terminating_surface_datum) OR 
+          (terminating_surface :=: terminating_surface_datum\Datum_defined_by_feature.defined_by);
+  END_ENTITY;
+
+  ENTITY Conical_tolerance_zone_boundary_diametrical_size_characteristic
+  	(* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      SELF\property_definition.definition RENAMED sized_boundary_at_surface : Conical_tolerance_zone_boundary_and_surface_relationship;
+      tolerance_value																												: length_measure_with_unit;
+    DERIVE
+      SELF\property_definition.description : text := ?;
+      SELF\property_definition.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Conical_tolerance_zone_definition
+    (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_zone_definition);
+-- LK input needed      SELF\Tolerance_zone_definition.boundary_definition : conical_tolerance_zone_boundary_definition;
+    DERIVE
+      SELF\tolerance_zone_definition.zone : tolerance_zone := ?;
+      SELF\tolerance_zone_definition.boundaries : SET [1:?] OF shape_aspect := ?;
+  END_ENTITY;
+
+  ENTITY Datum_axis
+    (* CONNOTATIONAL *) SUBTYPE OF (Datum_defined_by_derived_shape);
+    DERIVE
+      SELF\shape_aspect.description : text := 'axis';
+  END_ENTITY;
+
+  ENTITY Datum_axis_and_tolerance_zone_orienting_relationship
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED oriented_tolerance_zone	: Tolerance_zone;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED orienting_datum_axis			: Datum_axis;
+    DERIVE
+      SELF\shape_aspect_relationship.description : text := ?;
+      SELF\shape_aspect_relationship.name : label := ?;
+    INVERSE
+      zone_orientation : datum_axis_related_orientation FOR orienting_relationship;
+  END_ENTITY;
+
+  ENTITY Datum_axis_related_orientation
+  	(* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      SELF\property_definition.definition RENAMED orienting_relationship	: Datum_axis_and_tolerance_zone_orienting_relationship;
+      orientation_type							: centre_type;
+     (* Overlaps with orientation_type *) 
+     DERIVE
+       SELF\property_definition.name : label := ?;
+       SELF\property_definition.description : text := ?;
+  END_ENTITY;
+
+  ENTITY Datum_based_direction_vector
+  	(* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      direction_vector_representation 								: axis2_placement;
+      SELF\property_definition.definition RENAMED vector_of : Datum_plane;
+      positive_direction_vector                             : BOOLEAN;
+     (* Overlaps with positive_direction_vector *) 
+     DERIVE
+       SELF\property_definition.name : label := ?;
+       SELF\property_definition.description : text := ?;
+  END_ENTITY;
+
+  ENTITY Datum_based_length_measure
+  	(* CONNOTATIONAL *) SUBTYPE OF (representation);
+      measure             : length_measure_with_unit;
+      measure_orientation : descriptive_or_geometric_orientation;
+      of_datum            : Datum_plane;
+    DERIVE
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+      SELF\representation.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Datum_based_vector_orientation
+  	(* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      direction_components : SET[2:2] OF Datum_based_direction_element;
+    DERIVE
+      SELF\property_definition.definition : characterized_definition := ?;
+      SELF\property_definition.description : text := ?;
+      SELF\property_definition.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Datum_difference_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (datum_difference);
+      SELF\shape_aspect_relationship.name : STRING; --label;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED precedent_datum : datum;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED subsequent_datum : datum;
+  END_ENTITY;
+
+  ENTITY Datum_difference_based_characteristic_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (datum_difference_based_characteristic); 
+      of_datum_difference : Datum_difference_armx;
+  END_ENTITY;
+
+  ENTITY Datum_plane
+    (* CONNOTATIONAL *) SUBTYPE OF (Single_datum);
+    DERIVE
+      SELF\Shape_aspect.description : text := 'plane';
+  END_ENTITY;
+
+  ENTITY Datum_point
+    (* CONNOTATIONAL *) SUBTYPE OF (Datum_defined_by_derived_shape);
+    DERIVE
+      SELF\shape_aspect.description : text := 'point';
+  END_ENTITY;
+
+	ENTITY Datum_shape_element
+	  (* CONNOTATIONAL *) SUBTYPE OF (Datum, Non_feature_shape_element);
+	  DERIVE
+	    SELF\datum.identification : identifier := ?;
+	END_ENTITY;
+
+  ENTITY Derived_non_feature_shape_element
+    ABSTRACT SUPERTYPE OF (ONEOF (Apex_armx,
+ Centre_of_symmetry_armx,
+ Linear_extension,
+ Geometric_intersection_armx,
+ Geometric_alignment_armx,
+ Tangent_shape_element))
+    (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, derived_shape_aspect);
+  END_ENTITY; 
+
+  ENTITY Diametrical_boundary_size_characteristic
+    (* CONNOTATIONAL *) SUBTYPE OF (Boundary_size_characteristic);
+      sized_boundary : Tolerance_zone_circular_or_cylindrical_or_spherical_boundary;
+  END_ENTITY; 
+
+  ENTITY Dimension_qualifier
+    ABSTRACT SUPERTYPE OF (ONEOF (Pre_defined_dimension_qualifier,
+ User_defined_dimension_qualifier))
+ 		(* CONNOTATIONAL *) SUBTYPE OF (measure_qualification);
+      qualified_dimensions : SET[1:?] OF Geometric_dimension;
+    DERIVE
+      SELF\measure_qualification.qualifiers : SET [1:?] OF value_qualifier := ?;
+      SELF\measure_qualification.qualified_measure : measure_with_unit := ?;
+      SELF\measure_qualification.description : text := ?;
+      SELF\measure_qualification.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Dimension_related_positional_boundary
+    (* CONNOTATIONAL *) SUBTYPE OF (Positional_boundary_armx);
+      boundary_members             : SET[1:?] OF Positional_boundary_member_armx;
+      constrained_physical_feature : physical_feature_or_part_template;
+      constrained_physical_feature_datum     : OPTIONAL Datum_defined_by_feature;
+    DERIVE
+      SELF\shape_aspect.description : text := 'dimension related positional boundary';
+    WHERE
+      WR1: NOT EXISTS(constrained_physical_feature_datum) OR 
+          (constrained_physical_feature :=: constrained_physical_feature_datum\Datum_defined_by_feature.defined_by);
+  END_ENTITY;
+
+  ENTITY Dimension_related_positional_boundary_definition
+    (* CONNOTATIONAL *) SUBTYPE OF (Positional_boundary_definition);
+      SELF\Positional_boundary_definition.defined_positional_boundary : Dimension_related_positional_boundary;
+      characterized_boundary_member_definitions                       : SET[1:?] OF Positional_boundary_member_definition;
+  END_ENTITY;
+
+  ENTITY Dimension_set
+  	(* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      associated_dimensions : SET[1:?] OF Geometric_dimension;
+    DERIVE
+      SELF\property_definition.definition : characterized_definition := ?;
+      SELF\property_definition.description : text := ?;
+      SELF\property_definition.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Dimensional_size_based_on_opposing_boundaries
+    (* CONNOTATIONAL *) SUBTYPE OF (Size_dimension, opposing_boundary_dimensional_size);
+      boundary_separation								: Shape_element_locating_relationship;
+      SELF\dimensional_size.applies_to 	: Composite_unit_shape_element;
+  END_ENTITY;
+
+  ENTITY Directed_axis
+    (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, derived_shape_aspect);
+      axis_to_be_oriented : Centre_axis;
+      start_shape_element : Shape_element;
+      end_shape_element   : Shape_element;
+    DERIVE
+      SELF\shape_aspect.description : text := 'directed axis';
+    UNIQUE
+      UR1 : axis_to_be_oriented,
+ start_shape_element;
+  END_ENTITY;
+
+  ENTITY Datum_based_direction_element
+  	(* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      direction                     																: Datum_based_direction_vector;
+      angle_value                   																: plane_angle_measure_with_unit;
+      SELF\property_definition.definition RENAMED base_datum_plane	: Datum_plane;
+      direction_of_half_datum_plane 																: Datum_based_direction_vector;
+    DERIVE
+      SELF\property_definition.description : text := ?;
+      SELF\property_definition.name : label := ?;
+    INVERSE
+      elements_of : SET[1:?] OF datum_based_vector_orientation FOR direction_components;
+  END_ENTITY;
+
+  ENTITY Edge_segment_vertex_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Datum_point, edge_segment_vertex);
+    UNIQUE
+      UR1 : SELF\Shape_aspect.name;
+  END_ENTITY;
+
+  ENTITY Externally_defined_dimension_representation
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_dimension_representation);
+      dimension_value : OPTIONAL measure_with_unit;
+    DERIVE
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+      SELF\representation.name : label := ?;
+    INVERSE
+      definitions			: SET[1:?] OF External_source_identification FOR items;
+  END_ENTITY;
+
+  ENTITY Geometric_alignment_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Derived_non_feature_shape_element, geometric_alignment);
+  END_ENTITY;
+
+  ENTITY Geometric_intersection_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Derived_non_feature_shape_element, geometric_intersection);
+  END_ENTITY;
+
+  ENTITY Geometric_tolerance_qualifier
+    ABSTRACT SUPERTYPE OF (ONEOF (Pre_defined_geometric_tolerance_qualifier,
+ User_defined_geometric_tolerance_qualifier))
+ 		(* CONNOTATIONAL *) SUBTYPE OF (measure_qualification);
+      qualified_geometric_tolerances : SET[1:?] OF Geometric_tolerance_armx;
+     (* Overlaps with qualified_geometric_tolerances *) 
+     DERIVE
+       SELF\measure_qualification.qualified_measure : measure_with_unit := ?;
+       SELF\measure_qualification.qualifiers : SET [1:?] OF value_qualifier := ?;
+       SELF\measure_qualification.description : text := ?;
+       SELF\measure_qualification.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Geometric_tolerance_with_applied_material_condition_property
+    (* CONNOTATIONAL *) SUBTYPE OF (Geometric_tolerance_armx, modified_geometric_tolerance, physical_unit_geometric_tolerance);
+      SELF\modified_geometric_tolerance.modifier RENAMED applied_material_condition_property_name : material_condition_property_names;
+  END_ENTITY; 
+  
+  ENTITY Limit_dimension_representation
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_dimension_representation);
+      upper_dimension_value : measure_with_unit;
+      lower_dimension_value : measure_with_unit;
+    DERIVE
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+      SELF\representation.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Linear_extension
+    (* CONNOTATIONAL *) SUBTYPE OF (Derived_non_feature_shape_element, extension);
+  END_ENTITY;
+
+  ENTITY Maximum_dimension_representation
+    (* CONNOTATIONAL *) SUBTYPE OF (Singular_dimension_representation);
+  END_ENTITY;
+
+  ENTITY Minimum_dimension_representation
+    (* CONNOTATIONAL *) SUBTYPE OF (Singular_dimension_representation);
+  END_ENTITY;
+
+  ENTITY Opposing_boundary_set_size_characteristic
+    (* CONNOTATIONAL *) SUBTYPE OF (Boundary_size_characteristic);
+      sized_boundary_set : Tolerance_zone_opposing_boundary_set;
+  END_ENTITY;
+
+  ENTITY Parallel_shape_element_relationship
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_relationship);
+    DERIVE
+      SELF\Shape_element_relationship.relation_type : STRING := '';
+  END_ENTITY;
+
+  ENTITY Perpendicular_shape_element_relationship
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_relationship);
+    DERIVE
+      SELF\Shape_element_relationship.relation_type : STRING := '';
+  END_ENTITY; 
+
+  ENTITY Positional_boundary_armx
+    ABSTRACT SUPERTYPE OF (ONEOF (Profile_related_positional_boundary,
+ Dimension_related_positional_boundary))
+    (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, positional_boundary);
+    INVERSE
+      boundary_definition : positional_boundary_definition FOR defined_positional_boundary;
+  END_ENTITY;
+
+  ENTITY Positional_boundary_and_profile_boundary_member_relationship
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED offset_positional_boundary									: Profile_related_positional_boundary;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED base_profile_tolerance_zone_boundary_member : Tolerance_zone_boundary_member;
+    DERIVE
+      SELF\shape_aspect_relationship.description : text := ?;
+      SELF\shape_aspect_relationship.name : label := ?;
+    INVERSE
+      offset : positional_boundary_offset FOR offset_boundary_relationship;
+  END_ENTITY;
+
+  ENTITY Positional_boundary_definition
+    ABSTRACT SUPERTYPE OF (ONEOF (Profile_related_positional_boundary_definition,
+ Dimension_related_positional_boundary_definition))
+ 		(* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      SELF\property_definition.definition RENAMED defined_positional_boundary : Positional_boundary_armx;
+    DERIVE
+      SELF\property_definition.description : text := ?;
+      SELF\property_definition.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Positional_boundary_member_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, positional_boundary_member);
+    INVERSE
+      composed_positional_boundary : dimension_related_positional_boundary FOR boundary_members;
+      boundary_member_definition   : positional_boundary_member_definition FOR defined_positional_boundary_member;
+  END_ENTITY;
+
+  ENTITY Positional_boundary_member_definition
+  	(* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      SELF\property_definition.definition RENAMED defined_positional_boundary_member	: Positional_boundary_member_armx;
+      tolerance_value                    																							: length_measure_with_unit;
+      associated_dimension																														: Size_dimension;
+    DERIVE
+      SELF\property_definition.description : text := ?;
+      SELF\property_definition.name : label := ?;
+    INVERSE
+      boundary_definition : dimension_related_positional_boundary_definition FOR characterized_boundary_member_definitions;
+  END_ENTITY;
+
+  ENTITY Positional_boundary_offset
+  	(* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      SELF\property_definition.definition RENAMED offset_boundary_relationship	: Positional_boundary_and_profile_boundary_member_relationship;
+      tolerance_value              																							: length_measure_with_unit;
+    DERIVE
+      SELF\property_definition.description : text := ?;
+      SELF\property_definition.name : label := ?;
+    INVERSE
+      boundary_definition : profile_related_positional_boundary_definition FOR boundary_offset;
+  END_ENTITY;
+
+  ENTITY Pre_defined_dimension_qualifier
+    (* CONNOTATIONAL *) SUBTYPE OF (Dimension_qualifier);
+      description_x : dimension_qualifiers;
+  END_ENTITY;
+
+  ENTITY Pre_defined_geometric_tolerance_qualifier
+    (* CONNOTATIONAL *) SUBTYPE OF (Geometric_tolerance_qualifier);
+      description_x : geometric_tolerance_qualifiers;
+  END_ENTITY; 
+
+  ENTITY Profile_related_positional_boundary
+    (* CONNOTATIONAL *) SUBTYPE OF (Positional_boundary_armx);
+    DERIVE
+      SELF\shape_aspect.description : text := 'profile related positional boundary';
+    INVERSE
+      associating_relationship : positional_boundary_and_profile_boundary_member_relationship FOR offset_positional_boundary;
+  END_ENTITY;
+
+  ENTITY Profile_related_positional_boundary_definition
+    (* CONNOTATIONAL *) SUBTYPE OF (Positional_boundary_definition);
+      SELF\Positional_boundary_definition.defined_positional_boundary : Profile_related_positional_boundary;
+      boundary_offset                                                 : Positional_boundary_offset;
+  END_ENTITY;
+
+  ENTITY Projected_zone_and_base_relationship
+  	(* CONNOTATIONAL *) SUBTYPE OF (projected_zone_definition);
+      SELF\projected_zone_definition.projection_end RENAMED base_physical_feature : physical_feature_or_part_template;
+      SELF\tolerance_zone_definition.zone RENAMED projected_zone        		  : Tolerance_zone;
+    DERIVE
+      SELF\tolerance_zone_definition.boundaries : SET [1:?] OF shape_aspect := ?;
+      SELF\projected_zone_definition.projected_length : measure_with_unit := ?;
+    INVERSE
+      size_characteristic : projected_zone_height_characteristic FOR defined_height_of;
+    WHERE
+      WR1: NOT('SHAPE_PROPERTY_ASSIGNMENT_XIM.SHAPE_ELEMENT' IN TYPEOF(base_physical_feature)) OR
+       (SIZEOF(USEDIN(base_physical_feature,'GEOMETRIC_TOLERANCE_XIM.DATUM_DEFINED_BY_FEATURE.DEFINED_BY'))> 0); 
+  END_ENTITY;
+
+  ENTITY Projected_zone_height_characteristic
+  	(* CONNOTATIONAL *) SUBTYPE OF (projected_zone_definition);
+      defined_height_of																																: Projected_zone_and_base_relationship;
+      SELF\projected_zone_definition.projected_length RENAMED projected_height_value	: length_measure_with_unit;
+-- LK input needed    INVERSE
+-- LK input needed      zone_definition : projection FOR defining; --projected_zone_height;
+    DERIVE
+      SELF\tolerance_zone_definition.zone : tolerance_zone := ?;
+      SELF\tolerance_zone_definition.boundaries : SET [1:?] OF shape_aspect := ?;
+      SELF\projected_zone_definition.projection_end : shape_aspect := ?;
+  END_ENTITY;
+ 
+  ENTITY Restraint_condition
+    SUPERTYPE OF (Tolerance_specific_restraint_condition)
+    (* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      SELF\property_definition.definition RENAMED applied_to            : restrained_item_select;
+	DERIVE
+  		restraint_description: SET[0:?] OF Requirement_view_definition :=
+  		get_rvd(SELF, 'restraint description');
+        SELF\property_definition.description : text := ?;
+        SELF\property_definition.name : label := ?;
+	WHERE
+   		WR1 : SIZEOF(restraint_description) = 1;
+  END_ENTITY;
+  
+  ENTITY Runout_tolerance_zone_definition_with_specified_angle
+    (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_zone_definition, runout_zone_definition);
+      SELF\runout_zone_definition.orientation RENAMED runout_orientation : Runout_zone_orientation_armx;
+    DERIVE
+      SELF\tolerance_zone_definition.zone : tolerance_zone := ?;
+      SELF\tolerance_zone_definition.boundaries : SET [1:?] OF shape_aspect := ?;
+  END_ENTITY;
+
+  ENTITY Runout_tolerance_zone_orienting_relationship
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED oriented_zone : Tolerance_zone;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED orienting_axis : Directed_axis;
+    DERIVE
+      SELF\shape_aspect_relationship.description : text := ?;
+      SELF\shape_aspect_relationship.name : label := ?;
+    INVERSE
+      angular_size_characteristic : runout_zone_orientation_armx FOR oriented_relationship;
+  END_ENTITY;
+
+  ENTITY Runout_zone_orientation_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (runout_zone_orientation_reference_direction);
+      SELF\runout_zone_orientation_reference_direction.orientation_defining_relationship RENAMED oriented_relationship	: Runout_tolerance_zone_orienting_relationship;
+      SELF\runout_zone_orientation.angle RENAMED semi_angle_value      																									: plane_angle_measure_with_unit;
+    INVERSE
+      zone_definition : runout_tolerance_zone_definition_with_specified_angle FOR runout_orientation;
+  END_ENTITY;
+
+  ENTITY Separate_geometric_tolerance_requirement
+  	(* CONNOTATIONAL *) SUBTYPE OF (geometric_tolerance_group);
+      separated_geometric_tolerances : SET[1:?] OF Geometric_tolerance_armx;
+    DERIVE
+      SELF\property_definition.description : text := ?;
+      SELF\property_definition.definition : characterized_definition := ?;
+      SELF\property_definition.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Shape_element_deriving_relationship
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_relationship, shape_aspect_deriving_relationship);
+      SELF\Shape_element_relationship.relating : Derived_non_feature_shape_element;
+    UNIQUE
+      UR1 : SELF\Shape_element_relationship.related, 
+ SELF\Shape_element_relationship.relating;
+  END_ENTITY;
+
+  ENTITY Simultaneous_geometric_tolerance_requirement
+  	(* CONNOTATIONAL *) SUBTYPE OF (geometric_tolerance_group);
+      grouped_geometric_tolerances : SET[2:?] OF Geometric_tolerance_armx;
+    DERIVE
+      SELF\property_definition.description : text := ?;
+      SELF\property_definition.definition : characterized_definition := ?;
+      SELF\property_definition.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Singular_dimension_representation
+    ABSTRACT SUPERTYPE OF (ONEOF (Theoretically_exact_dimension_representation,
+ Maximum_dimension_representation,
+ Minimum_dimension_representation))
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_dimension_representation);
+      dimension_value : measure_with_unit;
+    DERIVE
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+      SELF\representation.name : label := ?;
+  END_ENTITY;
+
+	-- SEDS
+  ENTITY Statistical_dimensional_location_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Geometric_dimension, statistical_dimensional_location);
+      alternate_dimension             : OPTIONAL Geometric_dimension;
+	DERIVE
+  		statistical_control_requirement: SET[0:?] OF Requirement_view_definition :=
+  		get_rvd(SELF, 'statistical control requirement');
+	WHERE
+   		WR1 : SIZEOF(statistical_control_requirement) = 1;
+  END_ENTITY;
+
+	-- SEDS	
+  ENTITY Statistical_dimensional_size_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Geometric_dimension, statistical_dimensional_size);
+      alternate_dimension             : OPTIONAL Geometric_dimension;
+	DERIVE
+  		statistical_control_requirement: SET[0:?] OF Requirement_view_definition :=
+  		get_rvd(SELF, 'statistical control requirement');
+	WHERE
+   		WR1 : SIZEOF(statistical_control_requirement) = 1;
+  END_ENTITY;
+
+  ENTITY Statistical_geometric_tolerance_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Geometric_tolerance_armx, statistical_geometric_tolerance);
+      alternate_tolerance             : OPTIONAL Geometric_tolerance_armx;
+	DERIVE
+  		statistical_control_requirement: SET[0:?] OF Requirement_view_definition :=
+  		get_rvd(SELF, 'statistical control requirement');
+	WHERE
+   		WR1 : SIZEOF(statistical_control_requirement) = 1;
+  END_ENTITY;
+
+  ENTITY Tangent_plane
+    (* CONNOTATIONAL *) SUBTYPE OF (Tangent_shape_element);
+    DERIVE
+      SELF\shape_aspect.description : text := 'plane';
+  END_ENTITY;
+
+  ENTITY Tangent_shape_element
+    SUPERTYPE OF (Tangent_plane)
+    (* CONNOTATIONAL *) SUBTYPE OF (Derived_non_feature_shape_element, tangent);
+  END_ENTITY;
+
+  ENTITY Theoretically_exact_dimension_representation
+    (* CONNOTATIONAL *) SUBTYPE OF (Singular_dimension_representation);
+  END_ENTITY;
+
+  ENTITY Tolerance_specific_restraint_condition
+    (* CONNOTATIONAL *) SUBTYPE OF (Restraint_condition);
+      affected_tolerances : SET[1:?] OF geometric_or_dimension_select;
+  END_ENTITY;
+
+  ENTITY Tolerance_zone_and_viewing_plane_orienting_relationship
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED orienting_viewing_plane		: Viewing_plane_armx;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED oriented_tolerance_zone	: Tolerance_zone;
+    DERIVE
+      SELF\shape_aspect_relationship.description : text := ?;
+      SELF\shape_aspect_relationship.name : label := ?;
+    INVERSE
+      zone_orientation : viewing_plane_based_orientation FOR orienting_relationship;
+  END_ENTITY;
+
+  ENTITY Tolerance_zone_boundary_armx
+    ABSTRACT SUPERTYPE OF (ONEOF (Tolerance_zone_circular_or_cylindrical_or_spherical_boundary,
+ Tolerance_zone_opposing_boundary_set,
+ Conical_tolerance_zone_boundary))
+    (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, tolerance_zone_boundary);
+--    INVERSE
+-- LK input needed      bounded_zone             : tolerance_zone FOR zone_boundary;
+--      boundary_zone_definition : tolerance_zone_boundary_definition FOR defined_zone_boundary;
+  END_ENTITY;
+
+  ENTITY Tolerance_zone_boundary_member
+    (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element);
+    DERIVE
+      SELF\shape_aspect.description : text := 'tolerance zone boundary member';
+    INVERSE
+      explicit_opposing_boundary_set : tolerance_zone_explicit_opposing_boundary_set_armx FOR boundary_members;
+  END_ENTITY;
+
+  ENTITY Tolerance_zone_boundary_member_offset
+  	(* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      SELF\property_definition.definition RENAMED offset_tolerance_zone_boundary_member : Tolerance_zone_boundary_member;
+      offset_value                          															 : length_measure_with_unit;
+      type_of_offset                        		                                        : offset_types;
+     (* Overlaps with type_of_offset *) 
+     DERIVE
+       SELF\property_definition.name : label := ?;
+       SELF\property_definition.description : text := ?;
+--    INVERSE
+--      boundary_definition : profile_boundary_definition_with_offsets FOR boundary_offsets;
+  END_ENTITY;
+
+  ENTITY Tolerance_zone_circular_or_cylindrical_or_spherical_boundary
+    (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_zone_boundary_armx);
+    DERIVE
+      SELF\shape_aspect.description : text := 'circular or cylindrical or spherical';
+    INVERSE
+      size_characteristic : diametrical_boundary_size_characteristic FOR sized_boundary;
+  END_ENTITY;
+
+  ENTITY Tolerance_zone_definition_with_per_unit_size_specification
+    (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_zone_definition);
+      per_unit_size_specification : Tolerance_zone_per_unit_size_specification;
+    DERIVE
+      SELF\tolerance_zone_definition.zone : tolerance_zone := ?;
+      SELF\tolerance_zone_definition.boundaries : SET [1:?] OF shape_aspect := ?;
+  END_ENTITY;
+
+  ENTITY Tolerance_zone_definition_with_specified_orientation
+    (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_zone_definition);
+      zone_orientation : orientation_select;
+    DERIVE
+      SELF\tolerance_zone_definition.zone : tolerance_zone := ?;
+      SELF\tolerance_zone_definition.boundaries : SET [1:?] OF shape_aspect := ?;
+  END_ENTITY;
+
+  ENTITY Tolerance_zone_explicit_opposing_boundary_set_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_zone_opposing_boundary_set, tolerance_zone_explicit_opposing_boundary_set);
+      boundary_members : SET[2:2] OF Tolerance_zone_boundary_member;
+  END_ENTITY;
+
+  ENTITY Tolerance_zone_implicit_opposing_boundary_set_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_zone_opposing_boundary_set, tolerance_zone_implicit_opposing_boundary_set);
+  END_ENTITY;
+
+  ENTITY Tolerance_zone_opposing_boundary_set
+    ABSTRACT SUPERTYPE OF (ONEOF (Tolerance_zone_explicit_opposing_boundary_set_armx,
+ Tolerance_zone_implicit_opposing_boundary_set_armx))
+    (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_zone_boundary_armx);
+    INVERSE
+      size_characteristic : opposing_boundary_set_size_characteristic FOR sized_boundary_set;
+  END_ENTITY;
+
+  ENTITY Tolerance_zone_per_unit_size_specification
+  	(* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      SELF\property_definition.definition RENAMED specified_tolerance_zone	: Tolerance_zone;
+      per_unit_size            																							: SET[1:2] OF length_measure_with_unit;
+    DERIVE
+      SELF\property_definition.description : text := ?;
+      SELF\property_definition.name : label := ?;
+    INVERSE
+      zone_definition : tolerance_zone_definition_with_per_unit_size_specification FOR per_unit_size_specification;
+  END_ENTITY;
+
+  ENTITY True_profile
+  	(* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      SELF\property_definition.definition RENAMED profiled_surface : physical_feature_or_part_template;
+      profiled_surface_datum                                       : OPTIONAL Datum_defined_by_feature;
+      profile_representation 									   : true_profile_representations;
+    DERIVE
+      SELF\property_definition.description : text := ?;
+      SELF\property_definition.name : label := ?;
+--    INVERSE
+--      boundary_definition : SET[1:?] OF profile_boundary_definition FOR basic_profile;
+    WHERE
+      WR1: NOT EXISTS(profiled_surface_datum) OR 
+          (profiled_surface :=: profiled_surface_datum\Datum_defined_by_feature.defined_by);
+  END_ENTITY;
+
+  ENTITY User_defined_dimension_qualifier
+    (* CONNOTATIONAL *) SUBTYPE OF (Dimension_qualifier);
+      SELF\measure_qualification.description RENAMED name_x	: STRING; 
+      description_x 				: STRING; 
+  END_ENTITY;
+
+  ENTITY User_defined_geometric_tolerance_qualifier
+    (* CONNOTATIONAL *) SUBTYPE OF (Geometric_tolerance_qualifier);
+      SELF\measure_qualification.description RENAMED name_x	: STRING; 
+      description_x 				                                : STRING; 
+  END_ENTITY;
+
+  ENTITY Viewing_plane_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, viewing_plane);
+    DERIVE
+      SELF\shape_aspect.description : text := 'affected plane';
+    INVERSE
+      viewing_plane_specification : viewing_plane_definition FOR defined_viewing_plane;
+  END_ENTITY;
+
+  ENTITY Viewing_plane_based_orientation
+  	(* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      SELF\property_definition.definition RENAMED orienting_relationship	: Tolerance_zone_and_viewing_plane_orienting_relationship;
+      viewing_plane_specification 																				: Viewing_plane_definition;
+    DERIVE
+      SELF\property_definition.description : text := ?;
+      SELF\property_definition.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Viewing_plane_definition
+  	(* CONNOTATIONAL *) SUBTYPE OF (property_definition);
+      SELF\property_definition.definition RENAMED defined_viewing_plane	: Viewing_plane_armx;
+      viewing_plane_representation 																			: axis2_placement;
+    DERIVE
+      SELF\property_definition.description : text := ?;
+      SELF\property_definition.name : label := ?;
+    INVERSE
+      zone_orientation : viewing_plane_based_orientation FOR viewing_plane_specification;
+  END_ENTITY;
+
+END_SCHEMA;
+

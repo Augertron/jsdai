@@ -1,0 +1,103 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping manufacturing_configuration_effectivity(Manufacturing_configuration_effectivity_arm, Manufacturing_configuration_effectivity_mim);*)
+
+uof_mapping Manufacturing_configuration_effectivity(Manufacturing_configuration_effectivity);
+
+entity_mapping Dated_configuration(Dated_configuration, [dated_effectivity]
+[configuration_effectivity]
+);
+
+mapping_constraints;
+
+[dated_effectivity <=]
+[configuration_effectivity <=
+product_definition_effectivity <=]
+effectivity
+
+end_mapping_constraints;
+
+attribute_mapping effectivity_domain(effectivity_domain, $IDENTICAL_MAPPING, Dated_effectivity);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Lot_configuration(Lot_configuration, [lot_effectivity]
+[configuration_effectivity]
+);
+
+mapping_constraints;
+
+[lot_effectivity <=]
+[configuration_effectivity <=
+product_definition_effectivity <=]
+effectivity
+
+end_mapping_constraints;
+
+attribute_mapping effectivity_domain(effectivity_domain, $IDENTICAL_MAPPING, Lot_effectivity);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Manufacturing_configuration(Manufacturing_configuration, configuration_effectivity);
+
+attribute_mapping concerned_organization(concerned_organization, $PATH, Organization);
+
+configuration_effectivity 
+mce_organization_item = configuration_effectivity
+mce_organization_item <* organization_item
+organization_item <- applied_organization_assignment.items[i]
+applied_organization_assignment <= organization_assignment 
+{organization_assignment.role -> organization_role
+organization_role.name = 'concerned organization'} 
+organization_assignment.assigned_organization -> organization
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Serial_configuration(Serial_configuration, [serial_numbered_effectivity]
+[configuration_effectivity]
+);
+
+mapping_constraints;
+
+[serial_numbered_effectivity <=]
+[configuration_effectivity <=
+product_definition_effectivity <=]
+effectivity
+
+end_mapping_constraints;
+
+attribute_mapping effectivity_domain(effectivity_domain, $IDENTICAL_MAPPING, serial_numbered_effectivity);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

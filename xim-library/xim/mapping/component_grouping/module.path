@@ -1,0 +1,512 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping component_grouping(Component_grouping_arm, Component_grouping_mim);*)
+
+
+entity_mapping Array_placement_group_armx(Array_placement_group_armx, array_placement_group);
+
+mapping_constraints;
+array_placement_group <=
+assembly_group_component <=
+assembly_component <=
+component_definition <=
+product_definition
+{product_definition <-
+product_definition_relationship.relating_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'group component'}
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition =>
+component_definition =>
+assembly_component}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Assembly_component_placement_link(Assembly_component_placement_link, assembly_group_component_definition_placement_link);
+
+mapping_constraints;
+{[assembly_group_component_definition_placement_link <=
+product_definition]
+[assembly_group_component_definition_placement_link <=
+product_definition_relationship]}
+
+end_mapping_constraints;
+
+attribute_mapping precedent_element(precedent_element, $PATH, Assembly_component_armx);
+assembly_group_component_definition_placement_link <=
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+component_definition =>
+assembly_component
+
+end_attribute_mapping;
+
+attribute_mapping subsequent_element(subsequent_element, $PATH, Assembly_component_armx);
+assembly_group_component_definition_placement_link <=
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition =>
+component_definition =>
+assembly_component
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Assembly_group_component_armx(Assembly_group_component_armx, assembly_group_component);
+
+mapping_constraints;
+assembly_group_component <=
+assembly_component <=
+component_definition <=
+product_definition
+{product_definition <-
+product_definition_relationship.relating_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'group component'}
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition =>
+component_definition =>
+assembly_component}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Interfaced_group_component_armx(Interfaced_group_component_armx, interfaced_group_component);
+
+mapping_constraints;
+interfaced_group_component <=
+assembly_group_component <=
+assembly_component <=
+component_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping group_interface_component(group_interface_component, $PATH, Interface_component_armx);
+interfaced_group_component <=
+assembly_group_component <=
+assembly_component <=
+component_definition <=
+product_definition <-
+product_definition_relationship.relating_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'group interface component'}
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition
+product_definition =>
+component_definition =>
+assembly_component =>
+physical_component =>
+interface_component
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Linear_array_placement_group_component_armx(Linear_array_placement_group_component_armx, linear_array_placement_group_component);
+
+mapping_constraints;
+linear_array_placement_group_component <=
+array_placement_group <=
+assembly_group_component <=
+assembly_component <=
+component_definition <=
+product_definition
+{product_definition <-
+product_definition_relationship.relating_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'group component'}
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition
+product_definition =>
+component_definition =>
+assembly_component}
+
+end_mapping_constraints;
+
+attribute_mapping element(element, $PATH, Assembly_component_placement_link);
+linear_array_placement_group_component <=
+array_placement_group <=
+assembly_group_component <=
+assembly_component <=
+component_definition <=
+product_definition <-
+product_definition_relationship.relating_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'element'}
+product_definition_relationship.related_product_definition ->
+product_definition =>
+assembly_group_component_definition_placement_link
+
+end_attribute_mapping;
+
+attribute_mapping initial_node_positive_x_displacement(initial_node_positive_x_displacement, $PATH, length_measure_with_unit);
+linear_array_placement_group_component <=
+array_placement_group <=
+assembly_group_component <=
+assembly_component <=
+component_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+{property_definition
+property_definition.name = 'linear array placement group properties'}
+property_definition_representation.definition
+property_definition_representation.used_representation ->
+representation
+{[representation
+representation.name = 'linear array properties']
+[representation
+representation.context_of_items ->
+representation_context
+[representation_context
+representation_context =>
+global_unit_assigned_context]
+[representation_context
+representation_context =>
+global_uncertainty_assigned_context]
+[representation_context
+representation_context =>
+parametric_representation_context]]
+[representation
+representation.context_of_items ->
+representation_context
+representation_context.context_type
+representation_context.context_type = 'array parametric context']}
+representation.items[i] ->
+representation_item
+{representation_item.name = 'initial element positive x displacement'}
+representation_item =>
+measure_representation_item <=
+measure_with_unit
+{measure_with_unit =>
+length_measure_with_unit}
+measure_with_unit.value_component
+
+end_attribute_mapping;
+
+attribute_mapping location_uncertainty(location_uncertainty, $PATH, length_measure_with_unit);
+linear_array_placement_group_component <=
+array_placement_group <=
+assembly_group_component <=
+assembly_component <=
+component_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+{property_definition
+property_definition.name = 'linear array placement group properties'}
+property_definition_representation.definition
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.name = 'linear array properties'}
+representation.context_of_items ->
+representation_context
+representation_context =>
+global_uncertainty_assigned_context
+global_uncertainty_assigned_context.uncertainty[i] ->
+uncertainty_measure_with_unit <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping terminus_node_positive_x_displacement(terminus_node_positive_x_displacement, $PATH, length_measure_with_unit);
+linear_array_placement_group_component <=
+array_placement_group <=
+assembly_group_component <=
+assembly_component <=
+component_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+{property_definition
+property_definition.name = 'linear array placement group properties'}
+property_definition_representation.definition
+property_definition_representation.used_representation ->
+representation
+{[representation
+representation.name = 'linear array properties']
+[representation
+representation.context_of_items ->
+representation_context
+[representation_context
+representation_context =>
+global_unit_assigned_context]
+[representation_context
+representation_context =>
+global_uncertainty_assigned_context]
+[representation_context
+representation_context =>
+parametric_representation_context]]
+[representation
+representation.context_of_items ->
+representation_context
+representation_context.context_type
+representation_context.context_type = 'array parametric context']}
+representation.items[i] ->
+representation_item
+{representation_item.name = 'terminus element positive x displacement'}
+representation_item =>
+measure_representation_item <=
+measure_with_unit
+{measure_with_unit =>
+length_measure_with_unit}
+measure_with_unit.value_component
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Linear_array_placement_group_component_link(Linear_array_placement_group_component_link, linear_array_component_definition_link);
+
+mapping_constraints;
+
+{[linear_array_component_definition_link <=
+product_definition]
+[linear_array_component_definition_link <=
+product_definition_relationship]}
+
+end_mapping_constraints;
+
+attribute_mapping precedent_element(precedent_element, $PATH, Linear_array_placement_group_component_armx);
+
+linear_array_component_definition_link <=
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+component_definition =>
+assembly_component =>
+assembly_group_component =>
+array_placement_group =>
+linear_array_placement_group_component
+
+end_attribute_mapping;
+
+attribute_mapping subsequent_element(subsequent_element, $PATH, Linear_array_placement_group_component_armx);
+
+linear_array_component_definition_link <=
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition =>
+component_definition =>
+assembly_component =>
+assembly_group_component =>
+array_placement_group =>
+linear_array_placement_group_component
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Rectangular_array_placement_group_component_armx(Rectangular_array_placement_group_component_armx, rectangular_array_placement_group_component);
+
+mapping_constraints;
+rectangular_array_placement_group_component <=
+array_placement_group <=
+assembly_group_component <=
+assembly_component <=
+component_definition <=
+product_definition
+{product_definition <-
+product_definition_relationship.relating_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'group component'}
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition =>
+component_definition =>
+assembly_component}
+
+end_mapping_constraints;
+
+attribute_mapping element(element, $PATH, Linear_array_placement_group_component_link);
+rectangular_array_placement_group_component <=
+array_placement_group <=
+assembly_group_component <=
+assembly_component <=
+component_definition <=
+product_definition <-
+product_definition_relationship.relating_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'element'}
+product_definition_relationship.related_product_definition ->
+product_definition =>
+linear_array_component_definition_link
+
+end_attribute_mapping;
+
+attribute_mapping initial_row_positive_y_displacement(initial_row_positive_y_displacement, $PATH, length_measure_with_unit);
+rectangular_array_placement_group_component <=
+array_placement_group <=
+assembly_group_component <=
+assembly_component <=
+component_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+{property_definition
+property_definition.name = 'rectangular array placement group properties'}
+property_definition_representation.definition
+property_definition_representation.used_representation ->
+representation
+{[representation
+representation.name = 'rectangular array properties']
+[representation
+representation.context_of_items ->
+representation_context
+[representation_context
+representation_context =>
+global_unit_assigned_context]
+[representation_context
+representation_context =>
+global_uncertainty_assigned_context]
+[representation_context
+representation_context =>
+parametric_representation_context]]
+[representation
+representation.context_of_items ->
+representation_context
+representation_context.context_type
+representation_context.context_type = 'array parametric context']}
+representation.items[i] ->
+representation_item
+{representation_item.name = 'initial row positive y displacement'}
+representation_item =>
+measure_representation_item <=
+measure_with_unit
+{measure_with_unit =>
+length_measure_with_unit}
+measure_with_unit.value_component
+
+end_attribute_mapping;
+
+attribute_mapping location_uncertainty(location_uncertainty, $PATH, length_measure_with_unit);
+rectangular_array_placement_group_component <=
+array_placement_group <=
+assembly_group_component <=
+assembly_component <=
+component_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+{property_definition
+property_definition.name = 'rectangular array placement group properties'}
+property_definition_representation.definition
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.name = 'rectangular array properties'}
+representation.context_of_items ->
+representation_context
+representation_context =>
+global_uncertainty_assigned_context
+global_uncertainty_assigned_context.uncertainty[i] ->
+uncertainty_measure_with_unit <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping terminus_row_positive_y_displacement(terminus_row_positive_y_displacement, $PATH, length_measure_with_unit);
+rectangular_array_placement_group_component <=
+array_placement_group <=
+assembly_group_component <=
+assembly_component <=
+component_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+{property_definition
+property_definition.name = 'rectangular array placement group properties'}
+property_definition_representation.definition
+property_definition_representation.used_representation ->
+representation
+{[representation
+representation.name = 'rectangular array properties']
+[representation
+representation.context_of_items ->
+representation_context
+[representation_context
+representation_context =>
+global_unit_assigned_context]
+[representation_context
+representation_context =>
+global_uncertainty_assigned_context]
+[representation_context
+representation_context =>
+parametric_representation_context]]
+[representation
+representation.context_of_items ->
+representation_context
+representation_context.context_type
+representation_context.context_type = 'array parametric context']}
+representation.items[i] ->
+representation_item
+{representation_item.name = 'terminus row positive y displacement'}
+representation_item =>
+measure_representation_item <=
+measure_with_unit
+{measure_with_unit =>
+length_measure_with_unit}
+measure_with_unit.value_component
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

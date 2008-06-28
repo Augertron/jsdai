@@ -1,0 +1,69 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG3 N1955 - ISO/TS 10303-1606 AP210 assembly physical design - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG3 N1617
+*)
+
+SCHEMA Ap210_assembly_physical_design_arm;
+	USE FROM Altered_part_arm;	-- ISO/TS 10303-1602
+	USE FROM Design_product_data_management_arm;	-- ISO/TS 10303-1628
+	USE FROM Assembly_2d_shape_arm;	-- ISO/TS 10303-1632
+	USE FROM Assembly_3d_shape_arm;	-- ISO/TS 10303-1633
+	USE FROM Assembly_functional_interface_requirement_arm;	-- ISO/TS 10303-1635
+	USE FROM Assembly_module_with_cable_component_2d_arm;	-- ISO/TS 10303-1638
+	USE FROM Assembly_module_with_cable_component_3d_arm;	-- ISO/TS 10303-1639
+	USE FROM Assembly_module_with_macro_component_arm;	-- ISO/TS 10303-1640
+	USE FROM Chemical_substance_arm;	-- ISO/TS 10303-1655
+	USE FROM Design_specific_assignment_to_assembly_usage_view_arm;	-- ISO/TS 10303-1662
+	USE FROM Device_marking_arm;	-- ISO/TS 10303-1664
+    USE FROM Interconnect_module_to_assembly_module_relationship_arm;	-- ISO/TS 10303-1685
+	USE FROM Physical_unit_interconnect_definition_arm;	-- ISO/TS 10303-1729
+
+	TYPE ap210_apd_assembly_module_or_assembly_group_component = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON assembly_module_or_assembly_group_component WITH (
+		Assembly_group_component);
+	END_TYPE;
+(** Assembly_module_with_packaged_connector_component_arm and 
+Assembly_module_with_interconnect_component_arm  - most likely in some Assembly CC *)
+	SUBTYPE_CONSTRAINT physical_component_interface_terminal_subtypes FOR Physical_component_interface_terminal;     
+		(ONEOF (Packaged_connector_component_interface_terminal,
+		 Interconnect_component_interface_terminal));
+	END_SUBTYPE_CONSTRAINT;
+
+(** most likely some Assembly_module CC *)
+	SUBTYPE_CONSTRAINT packaged_part_subtypes FOR Packaged_part; 
+	    (ONEOF (Minimally_defined_connector, -- Assembly_functional_interface_requirement_arm
+	 	Packaged_connector) ANDOR -- Packaged_connector_model_arm
+	 	Altered_packaged_part); -- Altered_part_arm
+	END_SUBTYPE_CONSTRAINT;
+	
+	SUBTYPE_CONSTRAINT ap210_apd_part_view_definition_subtypes FOR Part_view_definition ; 
+		(ONEOF (Part_usage_view,
+		Part_design_view,
+		Stratum,
+		Physical_unit_interconnect_definition));
+	END_SUBTYPE_CONSTRAINT; 
+	
+	(** It most likely should be in Assembly_module CC *)
+	SUBTYPE_CONSTRAINT ap210_physical_component_subtypes FOR Physical_component;  
+		(ONEOF (Assembly_module_component, --Assembly_module_with_subassembly_arm
+		Bare_die_component, -- Assembly_module_design_arm
+		Cable_component, -- Assembly_module_with_cable_component_arm
+		Interconnect_module_component, -- Assembly_module_with_interconnect_component_arm
+		Packaged_component, -- Assembly_module_design_arm
+		Routed_interconnect_component, -- Assembly_module_design_arm
+		Routed_physical_component)); -- Assembly_module_design_arm 
+	END_SUBTYPE_CONSTRAINT;
+	
+	(** It most likely should be in Assembly_module CC *)
+	SUBTYPE_CONSTRAINT ap210_part_usage_view_subtypes FOR Part_usage_view;  
+	    ONEOF (Package,
+		 Bare_die,
+		 Cable_usage_view,
+		 Packaged_part,
+		 Assembly_module_usage_view,
+		 Interconnect_module_usage_view);
+	END_SUBTYPE_CONSTRAINT;
+
+   
+END_SCHEMA;
+

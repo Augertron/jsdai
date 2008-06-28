@@ -1,0 +1,63 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+Derived from ISO TC184/SC4/WG12 N2957 - ISO/TS 10303-1121 Document and version identification - EXPRESS ARM
+by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+(* Based on ARM *) 
+
+
+SCHEMA Document_and_version_identification_xim;
+
+USE FROM Product_identification_xim;    -- ISO/TS 10303-1017
+
+USE FROM product_version_xim;    -- ISO/TS 10303-1018
+
+USE FROM application_context_schema(product_context);
+
+REFERENCE FROM product_identification_xim(          -- ISO/TS 10303-1017 
+        types_of_product 
+); 
+
+ENTITY Document_armx
+  (* CONNOTATIONAL *) SUBTYPE OF (Product_armx);
+(** Added for consistency reasons - it is in the mapping and in similar cases in the ARM (e.g. Part, Template...), so have it here as well **)  
+WHERE
+  WR1: SIZEOF(['document']*types_of_product(SELF))=1;
+END_ENTITY;
+
+ENTITY Document_version
+  (* CONNOTATIONAL *) SUBTYPE OF (Product_definition_formation);
+  SELF\Product_definition_formation.of_product : Document_armx;
+END_ENTITY;
+
+RULE document_version_constraint FOR 
+(Product_definition_formation);
+WHERE
+  WR1: SIZEOF ( QUERY ( pv <* Product_definition_formation | ( NOT ( 'Document_and_version_identification_xim.' + 'DOCUMENT_VERSION' IN TYPEOF ( pv) ) ) AND ( 'Document_and_version_identification_xim.' + 'DOCUMENT_ARMX' IN TYPEOF ( pv.of_product) ) ) ) = 0 ;
+END_RULE; 
+
+END_SCHEMA;  -- Document_and_version_identification_xim
+

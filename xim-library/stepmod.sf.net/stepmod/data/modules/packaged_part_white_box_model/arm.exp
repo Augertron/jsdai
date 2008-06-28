@@ -1,0 +1,79 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4074 - ISO/TS 10303-1709 Packaged part white box model - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3504
+*)
+
+SCHEMA Packaged_part_white_box_model_arm;
+
+	USE FROM Bare_die_arm;	-- ISO/TS 10303-1650
+	USE FROM Packaged_part_black_box_model_arm;	-- ISO/TS 10303-1710
+	USE FROM Physical_unit_2d_shape_arm;	-- ISO/TS 10303-1726
+	USE FROM Physical_unit_3d_shape_arm;	-- ISO/TS 10303-1727
+
+  	TYPE ppwbm_analytical_model_port_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON analytical_model_port_assignment_select WITH  
+ 		(Functional_unit_usage_view_terminal_definition,
+ 		Connection_zone,
+ 		Datum_difference,
+  	Part_device_terminal,
+    Part_feature);
+	END_TYPE;
+
+	SUBTYPE_CONSTRAINT physical_unit_keepout_shape_model_subtypes FOR Physical_unit_keepout_shape_model;  
+	    (ONEOF (Physical_unit_3d_keepout_shape_model,
+	 	Physical_unit_planar_keepout_shape_model));
+	END_SUBTYPE_CONSTRAINT; 
+
+	SUBTYPE_CONSTRAINT physical_unit_shape_model_subtypes FOR Physical_unit_shape_model;  
+	    (ONEOF (Physical_unit_3d_shape_model,
+	 	Physical_unit_planar_shape_model));
+	END_SUBTYPE_CONSTRAINT; 
+
+  ENTITY Device_2d_position;
+      placed_device  : Part_device;
+      transformation : Axis_placement_2d;
+      part_shape     : Physical_unit_planar_shape_model;
+      device_shape   : Physical_unit_planar_shape_model;
+  END_ENTITY;
+
+  ENTITY Device_3d_position;
+      placed_device  : Part_device;
+      transformation : Axis_placement_3d;
+      part_shape     : Physical_unit_3d_shape_model;
+      device_shape   : Physical_unit_3d_shape_model;
+  END_ENTITY;
+
+  ENTITY Device_terminal_map;
+      target_terminal        : Packaged_part_terminal;
+      mapped_device_terminal : Part_device_terminal;
+    UNIQUE
+      UR1 : mapped_device_terminal,
+ target_terminal;
+  END_ENTITY;
+
+  ENTITY Device_terminal_map_relationship;
+      relating_device_terminal_map : Device_terminal_map;  
+      related_device_terminal_map  : Device_terminal_map;
+  END_ENTITY;
+
+  ENTITY Part_device;
+      defined_packaged_part : Packaged_part;
+      included_device       : Bare_die;
+      item_identification   : STRING; 
+     INVERSE
+      device_3d_position : SET[0:1] OF device_3d_position FOR placed_device;
+      device_2d_position : SET[0:1] OF device_2d_position FOR placed_device;
+    UNIQUE
+      UR1 : defined_packaged_part,
+ item_identification;
+   END_ENTITY;
+
+  ENTITY Part_device_terminal;
+      used_bare_die_terminal : Minimally_defined_bare_die_terminal;
+      terminated_device      : Part_device;
+    UNIQUE
+      UR1 : used_bare_die_terminal,
+ terminated_device;
+  END_ENTITY;
+
+END_SCHEMA;

@@ -1,0 +1,97 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Planned characteristic - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Planned_characteristic_xim;
+
+USE FROM Production_rule_xim;
+
+USE FROM Requirement_assignment_xim;
+
+USE FROM Planned_characteristic_mim;
+
+USE FROM support_resource_schema(
+	label,
+	text);
+ 
+  TYPE evaluation_result_value = ENUMERATION OF
+    (pass,
+     fail,
+     undefined);
+  END_TYPE;
+
+  TYPE evaluation_type = ENUMERATION OF
+    (not_evaluatable,
+     invalid,
+     valid,
+     to_be_evaluated);
+  END_TYPE;
+
+  ENTITY Evaluated_characteristic_armx
+    SUPERTYPE OF (Rule_based_evaluated_characteristic)
+    (* CONNOTATIONAL *) SUBTYPE OF (evaluated_characteristic);
+      SELF\representation_relationship.rep_1 RENAMED planned_product_data          	: Planned_characteristic;
+      product_data_status  		: evaluation_type;
+      product_characterization_data 	: OPTIONAL SET[1:?] OF Property_value_representation;
+      evaluation_result 							: evaluation_result_value;
+    DERIVE
+    	(* overlaps with product_data_status *)
+      SELF\representation_relationship.description : text :=?;
+      (* overlaps with product_characterization_data *)
+      SELF\representation_relationship.rep_2 : representation :=?;
+      (* overlaps with evaluation_result *)
+      SELF\representation_relationship.name  : label :=?;
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+      SELF\representation.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Evaluation_view_definition
+    (* CONNOTATIONAL *) SUBTYPE OF (Product_view_definition, evaluation_product_definition);
+      evaluated_product_definition : Product_definition;
+      evaluation_data              : SET[1:?] OF Evaluated_characteristic_armx;
+    WHERE
+      WR1 : TYPEOF(SELF) <> TYPEOF(evaluated_product_definition);
+  END_ENTITY;
+
+  ENTITY Planned_characteristic
+  	(* CONNOTATIONAL *) SUBTYPE OF (representation);
+      reference_requirement              : Requirement_assignment_armx;
+      planned_coordinated_characteristic : Property_value_representation;
+    DERIVE
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+      SELF\representation.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Rule_based_evaluated_characteristic
+    SUBTYPE OF (Evaluated_characteristic_armx);
+      evaluating_rule : Rule_definition_armx;
+  END_ENTITY;
+
+END_SCHEMA;
+

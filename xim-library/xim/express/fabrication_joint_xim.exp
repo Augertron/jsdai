@@ -1,0 +1,122 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Fabrication joint - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Fabrication_joint_xim;
+
+USE FROM Land_xim;
+
+USE FROM Layered_interconnect_module_with_printed_component_design_xim;
+
+-- USE FROM Sequential_laminate_assembly_design_xim;
+
+USE FROM Fabrication_joint_mim;
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+
+ 	TYPE fabricated_feature_select = SELECT(
+ 		Component_termination_passage_join_terminal,
+ 		Conductive_interconnect_element_terminal,
+	    Embedded_physical_component_terminal,
+ 		Land_join_terminal,
+ 		Printed_component_join_terminal,
+         Via_terminal);
+	END_TYPE;
+
+  ENTITY Connection_zone_based_fabrication_joint_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Fabrication_joint_armx, connection_zone_based_fabrication_joint);
+      zone_1 : Connection_zone_in_design_view;
+      zone_2 : Connection_zone_in_design_view;
+    WHERE
+      WR1 : zone_1 :<>: zone_2;
+  END_ENTITY;
+
+  ENTITY Fabrication_joint_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (Component_feature_joint_armx, fabrication_joint);
+      SELF\Component_feature_joint_armx.feature_1 RENAMED fabrication_feature_1                           : fabricated_feature_select;
+      SELF\Component_feature_joint_armx.feature_2 RENAMED fabrication_feature_2                           : fabricated_feature_select;
+      auxiliary_joint_material                                                                       : OPTIONAL Stratum_feature_template_component_armx;
+      SELF\Component_feature_joint_armx.associated_definition RENAMED associated_interconnect_module : Interconnect_module;
+    WHERE
+      WR1 : fabrication_feature_1 <> fabrication_feature_2;
+      WR2 : fabrication_feature_1 <> auxiliary_joint_material;
+      WR3 : fabrication_feature_2 <> auxiliary_joint_material;        
+  END_ENTITY;
+  
+  ENTITY Passage_terminal_based_fabrication_joint_link_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (passage_terminal_based_fabrication_joint_link);
+      associated_terminal : fabricated_feature_select;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED precedent_point : Fabrication_joint_armx;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED subsequent_point : Fabrication_joint_armx;
+    DERIVE
+      SELF\shape_aspect.of_shape : product_definition_shape := ?;
+      SELF\shape_aspect.description : text := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+      SELF\shape_aspect.name : label := ?;
+    UNIQUE
+      UR1 : associated_terminal, precedent_point, subsequent_point;
+    WHERE
+      WR1 : precedent_point <> subsequent_point;
+      WR2 : precedent_point.fabrication_feature_2 = associated_terminal;
+      WR3 : subsequent_point.fabrication_feature_1 = associated_terminal;
+      WR4 : SIZEOF(TYPEOF(associated_terminal) *
+            ['LAYERED_INTERCONNECT_MODULE_DESIGN_xim.' + 
+             'COMPONENT_TERMINATION_PASSAGE_JOIN_TERMINAL',
+             'LAYERED_INTERCONNECT_MODULE_DESIGN_xim.' + 
+             'VIA_TERMINAL']) = 1;
+      WR5 : acyclic_passage_terminal_based_fabrication_joint_link (SELF,
+        [subsequent_point],
+        'FABRICATION_JOINT_XIM.PASSAGE_TERMINAL_BASED_FABRICATION_JOINT_LINK_ARMX');
+  END_ENTITY; 
+  
+  FUNCTION acyclic_passage_terminal_based_fabrication_joint_link
+     (relation : Passage_terminal_based_fabrication_joint_link_armx; 
+     relatives : SET[1:?] OF Fabrication_joint_armx; 
+     specific_relation : STRING) : BOOLEAN; 
+     LOCAL
+       x : SET OF Passage_terminal_based_fabrication_joint_link_armx;
+     END_LOCAL;
+
+     IF relation.precedent_point IN relatives THEN
+       RETURN (FALSE);
+     END_IF;
+     x := QUERY(pd <* bag_to_set(USEDIN(relation.precedent_point,
+       'FABRICATION_JOINT_XIM.' + 'PASSAGE_TERMINAL_BASED_FABRICATION_JOINT_LINK_ARMX.' +
+       'SUBSEQUENT_POINT')) | specific_relation IN TYPEOF(pd));
+     REPEAT i := 1 TO HIINDEX(x);
+       IF NOT acyclic_passage_terminal_based_fabrication_joint_link(x[i],
+         relatives + relation.precedent_point, specific_relation) THEN
+         RETURN (FALSE);
+       END_IF;
+     END_REPEAT;
+   RETURN (TRUE);
+  END_FUNCTION;  
+  
+
+END_SCHEMA;
+

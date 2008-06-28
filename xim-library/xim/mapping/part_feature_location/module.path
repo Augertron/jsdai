@@ -1,0 +1,80 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping part_feature_location(Part_feature_location_arm, Part_feature_location_mim);*)
+
+
+entity_mapping Usage_concept_usage_relationship_armx(Usage_concept_usage_relationship_armx, usage_concept_usage_relationship);
+
+mapping_constraints;
+[usage_concept_usage_relationship <=
+mapped_item <=
+representation_item]
+[usage_concept_usage_relationship <=
+item_identified_representation_usage]
+
+end_mapping_constraints;
+
+attribute_mapping associated_usage(associated_usage, $PATH, usage_concept);
+usage_concept_usage_relationship <=
+item_identified_representation_usage
+item_identified_representation_usage.definition ->
+represented_definition 
+represented_definition = shape_aspect                
+shape_aspect
+
+end_attribute_mapping;
+
+attribute_mapping associated_shape_definition(associated_shape_definition, $PATH, Shape_representation);
+usage_concept_usage_relationship <=
+mapped_item
+mapped_item.mapping_source ->
+representation_map
+representation_map.mapped_representation ->
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping associating_usage_shape(associating_usage_shape, $PATH, feature_or_non_feature_usage);
+usage_concept_usage_relationship <=
+				item_identified_representation_usage
+				item_identified_representation_usage.used_representation ->
+				representation
+				representation =>
+				shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping associating_usage_shape(associating_usage_shape, $PATH, Usage_view_level_non_feature_shape_model);
+usage_concept_usage_relationship <=
+				item_identified_representation_usage
+				item_identified_representation_usage.used_representation ->
+				representation
+				representation =>
+				shape_representation
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

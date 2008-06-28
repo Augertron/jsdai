@@ -1,0 +1,45 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4087 - ISO/TS 10303-1713 Part feature grouping - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3514
+*)
+
+
+SCHEMA Part_feature_grouping_mim;
+	USE FROM Physical_unit_usage_view_mim;	-- ISO/TS 10303-1732
+--	USE FROM Value_with_unit_extension_mim;	-- ISO/TS 10303-1753
+	USE FROM Shape_aspect_definition_schema(composite_shape_aspect);
+	
+ENTITY composite_array_shape_aspect
+  SUPERTYPE OF (ONEOF( linear_composite_array_shape_aspect,
+                 rectangular_composite_array_shape_aspect))
+  SUBTYPE OF (composite_shape_aspect);
+END_ENTITY;
+
+ENTITY composite_array_shape_aspect_link
+  SUBTYPE OF (shape_aspect,shape_aspect_relationship);
+WHERE
+  WR1: SELF\shape_aspect_relationship.related_shape_aspect :<>:
+       SELF\shape_aspect_relationship.relating_shape_aspect;
+END_ENTITY; 
+
+ENTITY linear_composite_array_shape_aspect
+  SUBTYPE OF (composite_array_shape_aspect);
+END_ENTITY;
+
+ENTITY linear_composite_array_shape_aspect_link
+  SUBTYPE OF (shape_aspect,shape_aspect_relationship);
+    SELF\shape_aspect_relationship.relating_shape_aspect : linear_composite_array_shape_aspect;
+    SELF\shape_aspect_relationship.related_shape_aspect  : linear_composite_array_shape_aspect;
+WHERE
+  WR1: SELF\shape_aspect_relationship.related_shape_aspect :<>:
+       SELF\shape_aspect_relationship.relating_shape_aspect;
+END_ENTITY; 
+
+ENTITY rectangular_composite_array_shape_aspect
+  SUBTYPE OF (composite_array_shape_aspect);
+END_ENTITY;
+	
+END_SCHEMA;
+
+

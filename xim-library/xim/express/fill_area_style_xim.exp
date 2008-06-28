@@ -1,0 +1,54 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N3411 - ISO/CD-TS 10303-1672 Fill area - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Fill_area_style_xim;
+
+	USE FROM Basic_curve_xim;	-- ISO/TS 10303-1651
+	USE FROM Styled_curve_xim;	-- ISO/TS 10303-1749
+	USE FROM Value_with_unit_extension_xim;	-- ISO/TS 10303-1753
+	USE FROM Fill_area_style_mim;
+
+USE FROM Extended_basic_geometry_xim; 	-- ISO/TS 10303-1667 
+
+-- Moved from annotated_presentation
+	TYPE fill_area_style_select = SELECT
+	   (Hatch_style, 
+--	    fill_area_style_colour, 
+	    Tile_style);
+	END_TYPE; 
+
+(* Make entity a select *)
+  TYPE Hatch_style = SELECT(externally_defined_hatch_style, fill_area_style_hatching);
+  END_TYPE;
+
+(* Make entity a select *)
+  TYPE Tile_style = SELECT(externally_defined_tile_style, fill_area_style_tiles);
+  END_TYPE;
+
+END_SCHEMA;
+

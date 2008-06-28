@@ -1,0 +1,67 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3771 - ISO/WD 10303-1464 User defined attribute - EXPRESS ARM
+*) 
+
+SCHEMA User_defined_attribute_arm; 
+
+USE FROM Foundation_representation_arm;    -- ISO/TS 10303-1006
+
+USE FROM Independent_property_arm;    -- ISO/TS 10303-1036
+
+USE FROM Property_assignment_arm;    -- ISO/TS 10303-1030
+
+USE FROM Value_with_unit_arm;    -- ISO/TS 10303-1054
+
+
+TYPE user_defined_attribute_assignment_select = SELECT BASED_ON property_assignment_select;
+END_TYPE; 
+
+ENTITY Allowed_text_for_user_defined_attribute;
+  allowed_value : String_representation_item;
+  defined_attribute : Text_user_defined_attribute;
+END_ENTITY;
+
+ENTITY Allowed_value_for_user_defined_attribute;
+  allowed_value : Value_with_unit;
+  defined_attribute : Numeric_user_defined_attribute;
+END_ENTITY;
+
+ENTITY Boolean_user_defined_attribute
+  SUBTYPE OF (User_defined_attribute);
+END_ENTITY;
+
+ENTITY Logical_user_defined_attribute
+  SUBTYPE OF (User_defined_attribute);
+END_ENTITY;
+
+ENTITY Maximum_value_for_user_defined_attribute
+  SUBTYPE OF (Allowed_value_for_user_defined_attribute);
+END_ENTITY;
+
+ENTITY Minimum_value_for_user_defined_attribute
+  SUBTYPE OF (Allowed_value_for_user_defined_attribute);
+END_ENTITY;
+
+ENTITY Numeric_user_defined_attribute
+  SUBTYPE OF (User_defined_attribute);
+  allowed_units : OPTIONAL SET[1:?] OF Unit;
+END_ENTITY;
+
+ENTITY Text_user_defined_attribute
+  SUBTYPE OF (User_defined_attribute);
+END_ENTITY;
+
+ENTITY User_defined_attribute
+  SUBTYPE OF (Independent_property);
+  name : STRING;
+END_ENTITY;
+
+ENTITY User_defined_attribute_assignment
+  SUBTYPE OF (Applied_independent_property);
+  SELF\Applied_independent_property.base_independent_property : User_defined_attribute;
+  SELF\Assigned_property.described_element : user_defined_attribute_assignment_select;
+END_ENTITY;
+
+END_SCHEMA;  -- User_defined_attribute_arm
+

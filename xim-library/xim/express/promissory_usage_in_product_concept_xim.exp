@@ -1,0 +1,56 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N4221 - ISO/TS 10303-1758 Promissory usage in product concept - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Promissory_usage_in_product_concept_xim;
+
+USE FROM Configuration_item_xim;
+
+USE FROM Security_classification_xim;
+
+USE FROM promissory_usage_in_product_concept_mim;
+
+USE FROM support_resource_schema(label);
+
+-- The same extension is available via mim
+-- TYPE puipc_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT
+-- BASED_ON security_classification_item WITH
+--    (Promissory_usage_in_product_concept_relationship);
+-- END_TYPE;
+
+ ENTITY Promissory_usage_in_product_concept_relationship_armx
+  SUBTYPE OF (configuration_item, promissory_usage_in_product_concept_relationship);
+     DERIVE
+       SELF\configuration_item.purpose : label := ?;
+     INVERSE
+      security_code : SET[0:1] OF applied_security_classification_assignment FOR items;
+     WHERE
+      WR1: SIZEOF(USEDIN (SELF, configuration_design.configuration)) = 1;
+ END_ENTITY;
+
+END_SCHEMA;
+

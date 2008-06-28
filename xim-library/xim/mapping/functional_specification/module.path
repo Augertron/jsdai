@@ -1,0 +1,263 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping functional_specification(Functional_specification_arm, Functional_specification_mim);*)
+
+entity_mapping Document_assignment(Document_assignment, (applied_document_reference)(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment) *))
+extended;
+
+attribute_mapping is_assigned_to(is_assigned_to, , Signal_specification);
+(
+						document_reference_item *> fs_document_reference_item
+						fs_document_reference_item = representation
+					)(
+						document_reference_item *> fs_document_reference_item
+						fs_document_reference_item = representation
+					)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping External_source_identification(External_source_identification, applied_external_identification_assignment)
+extended;
+
+attribute_mapping item(item, , Functional_specification_armx);
+
+				external_identification_item *> fs_external_identification_item
+				fs_external_identification_item = functional_specification
+			
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Functional_specification_armx(Functional_specification_armx, functional_specification);
+
+mapping_constraints;
+functional_specification <=
+representation
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Functional_specification_definition_armx);
+functional_specification <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+functional_unit =>
+functional_specification_definition
+
+end_attribute_mapping;
+
+attribute_mapping characterizing_functional_unit(characterizing_functional_unit, $PATH, Functional_unit);
+functional_specification <=
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition
+product_definition =>
+component_functional_unit
+
+end_attribute_mapping;
+
+attribute_mapping characterizing_signal(characterizing_signal, $PATH, Signal_specification);
+functional_specification <=
+representation <-
+representation_relationship.rep_1
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'characterizing signal for functional specification'}
+representation_relationship.rep_2 ->
+representation
+{representation
+representation.name = 'signal specification'}
+
+end_attribute_mapping;
+
+attribute_mapping reference_signal(reference_signal, $PATH, Signal_specification);
+functional_specification <=
+representation <-
+representation_relationship.rep_1
+representation_relationship
+{representation_relationship
+representation_relationship.name = 'reference signal for functional specification'}
+representation_relationship.rep_2 ->
+representation
+{representation
+representation.name = 'signal specification'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Functional_specification_definition_armx(Functional_specification_definition_armx, functional_specification_definition);
+
+mapping_constraints;
+functional_specification_definition <=
+functional_unit <=
+product_definition
+{product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'functional network design'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Signal_specification(Signal_specification, representation);
+
+mapping_constraints;
+{representation
+representation.name = 'signal specification'}
+
+end_mapping_constraints;
+
+attribute_mapping characterization_network(characterization_network, $PATH, Functional_unit_network_definition);
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition =>
+product_definition_shape =>
+functional_unit
+{functional_unit  <=
+product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'functional network design'}
+
+end_attribute_mapping;
+
+attribute_mapping measurement_access_mechanism(measurement_access_mechanism, $PATH, Functional_unit_terminal);
+{representation
+representation.items[i] ->
+representation_item
+representation_item.name = 'measurement access mechanism'}
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect =>
+component_functional_terminal
+
+end_attribute_mapping;
+
+attribute_mapping reference_access_mechanism(reference_access_mechanism, $PATH, Functional_unit_terminal);
+{representation
+representation.items[i] ->
+representation_item
+representation_item.name = 'reference access mechanism'}
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect =>
+component_functional_terminal
+
+end_attribute_mapping;
+
+attribute_mapping maximum_characteristic(maximum_characteristic, $PATH, Signal_property);
+{representation
+representation.items[i] ->
+representation_item
+representation_item.name = 'maximum characteristic'}
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+{property_definition
+property_definition.name = 'signal property'}
+
+end_attribute_mapping;
+
+attribute_mapping minimum_characteristic(minimum_characteristic, $PATH, Signal_property);
+{representation
+representation.items[i] ->
+representation_item
+representation_item.name = 'minimum characteristic'}
+representation <-
+property_definition_representation.used_representation
+property_definition_representation
+property_definition_representation.definition ->
+property_definition
+{property_definition
+property_definition.name = 'signal property'}
+
+end_attribute_mapping;
+(* MADE DERIVED
+attribute_mapping measurement_condition(measurement_condition, $PATH, Test_specification);
+representation
+document_reference_item = representation
+document_reference_item <-
+applied_document_reference.items[i]
+applied_document_reference
+applied_document_reference <=
+document_reference
+document_reference.assigned_document ->
+document <-
+document_product_association.relating_document
+{document_product_association.name = 'equivalence'}
+document_product_association.related_product ->
+product_or_formation_or_definition = product_definition
+product_definition
+{product_definition.name = 'test specification'}
+
+end_attribute_mapping;
+*)
+end_entity_mapping;
+(*end_schema_mapping;*)

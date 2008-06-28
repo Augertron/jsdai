@@ -1,0 +1,35 @@
+(*
+ $Id$
+ ISO TC184/SC4/WG12 N4822 - ISO/CD-TS 10303-1321 Swept solid - EXPRESS ARM
+*)
+
+SCHEMA Swept_solid_arm;
+
+USE FROM Topologically_bounded_surface_arm; -- ISO 10303-1511
+
+  ENTITY Axis1_placement
+    SUBTYPE OF (Detailed_geometric_model_element);
+      axis     : Direction;
+      position : Cartesian_point;
+  END_ENTITY;
+
+  ENTITY Extruded_solid
+    SUBTYPE OF (Swept_solid);
+      depth              : length_measure;
+      extruded_direction : Direction;
+  END_ENTITY;
+
+  ENTITY Solid_of_revolution
+    SUBTYPE OF (Swept_solid);
+      angle : plane_angle_measure;
+      axis  : Axis1_placement;
+  END_ENTITY;
+
+  ENTITY Swept_solid
+    SUPERTYPE OF (ONEOF(Extruded_solid, Solid_of_revolution))
+    SUBTYPE OF (Detailed_geometric_model_element);
+      swept_face : Advanced_face;
+  END_ENTITY;
+
+END_SCHEMA;
+

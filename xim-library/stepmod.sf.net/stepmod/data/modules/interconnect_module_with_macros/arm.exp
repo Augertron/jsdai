@@ -1,0 +1,26 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4008 - ISO/TS 10303-1687 Interconnect module with macros - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3450
+*)
+
+SCHEMA Interconnect_module_with_macros_arm;
+
+USE FROM Layered_interconnect_module_design_arm;	-- ISO/TS 10303-1698
+
+  ENTITY Interconnect_module_macro_component
+    SUBTYPE OF (Physical_component, Single_instance);
+      SELF\Definition_based_product_occurrence.derived_from : Interconnect_module;
+    INVERSE
+      join_access_mechanisms : SET[1:?] OF interconnect_module_macro_component_join_terminal FOR associated_component;
+    WHERE
+      WR1 : SIZEOF(QUERY(immcjt <* join_access_mechanisms | immcjt\Component_feature.definition\Shape_element.containing_shape :<>: SELF\Definition_based_product_occurrence.derived_from\Part_design_view.usage_view)) = 0;
+      WR2 : NOT EXISTS(SELF\Product_view_definition.additional_characterization);
+  END_ENTITY;
+
+  ENTITY Interconnect_module_macro_component_join_terminal
+    SUBTYPE OF (Physical_component_terminal);
+      SELF\Component_feature.definition           : Interconnect_module_macro_terminal;
+      SELF\Component_feature.associated_component : Interconnect_module_macro_component;
+  END_ENTITY;
+END_SCHEMA;

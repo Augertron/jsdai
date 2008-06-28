@@ -1,0 +1,218 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+Derived from ISO TC184/SC4/WG12 N2873 - ISO/TS 10303-1050 Dimension tolerance - EXPRESS ARM
+by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+(* Based on ARM *) 
+
+
+SCHEMA Dimension_tolerance_xim;
+
+USE FROM Basic_curve_xim;    
+
+USE FROM Derived_shape_element_xim;    -- ISO/TS 10303-1130
+
+USE FROM Document_assignment_xim;    -- ISO/TS 10303-1122
+
+USE FROM Elemental_geometric_shape_xim;    -- ISO/TS 10303-1004
+
+USE FROM Extended_measure_representation_xim;    -- ISO/TS 10303-1106
+
+USE FROM Measure_representation_xim;    -- ISO/TS 10303-1118
+
+USE FROM Shape_property_assignment_xim;    -- ISO/TS 10303-1032
+
+USE FROM Value_with_unit_xim;    -- ISO/TS 10303-1054
+
+USE FROM Dimension_tolerance_mim;
+
+USE FROM shape_tolerance_schema(
+	limits_and_fits,
+	plus_minus_tolerance,
+	tolerance_value);
+
+USE FROM shape_dimension_schema(
+	angle_relator,
+	angular_location,
+	angular_size,
+	dimensional_location,
+	dimensional_location_with_path,
+	dimensional_size,
+	shape_dimension_representation);
+
+TYPE dimension_tolerance_document_element_select = EXTENSIBLE SELECT BASED_ON documented_element_select WITH 
+   (Externally_defined_size_dimension);
+END_TYPE; 
+
+TYPE dimension_value_select = SELECT
+   (Dimension_value_with_limitation, 
+    measure_representation_item, 
+    Tolerance_range, 
+    Value_limit);
+END_TYPE; 
+
+TYPE element_with_dimension_select = EXTENSIBLE GENERIC_ENTITY SELECT
+   (Shape_element);
+END_TYPE; 
+
+TYPE limitation_definition_select = SELECT
+   (Limits_and_fits, 
+    Plus_minus_bounds);
+END_TYPE; 
+
+TYPE placed_element_select = EXTENSIBLE SELECT
+   (constructive_element_select, 
+    Derived_geometry, 
+    element_with_dimension_select);
+END_TYPE; 
+
+ENTITY Angular_location_dimension
+  (* CONNOTATIONAL *) SUBTYPE OF (angular_location, Location_dimension);
+  orientation : axis2_placement;
+END_ENTITY;
+
+ENTITY Angular_size_dimension
+  (* CONNOTATIONAL *) SUBTYPE OF (angular_size, Size_dimension);
+  full : BOOLEAN;
+  major_angle : BOOLEAN;
+ (* overlaps with major_angle *)
+ DERIVE      
+  SELF\Angular_size.angle_selection : angle_relator :=?;
+END_ENTITY;
+
+ENTITY Curved_distance_dimension
+  (* CONNOTATIONAL *) SUBTYPE OF (dimensional_location_with_path, Location_dimension);
+  used_path : Measurement_path;
+END_ENTITY;
+
+ENTITY Curved_size_dimension
+  (* CONNOTATIONAL *) SUBTYPE OF (Size_dimension);
+END_ENTITY;
+
+ENTITY Diameter_size_dimension
+  (* CONNOTATIONAL *) SUBTYPE OF (Size_dimension);
+END_ENTITY;
+
+ENTITY Dimension_value_with_limitation
+  (* CONNOTATIONAL *) SUBTYPE OF (plus_minus_tolerance);
+  SELF\Plus_minus_tolerance.range RENAMED defined_by : limitation_definition_select;
+  limited_value : measure_representation_item;
+DERIVE
+  SELF\plus_minus_tolerance.toleranced_dimension : dimensional_characteristic := ?;
+END_ENTITY;
+
+ENTITY Externally_defined_size_dimension
+  (* CONNOTATIONAL *) SUBTYPE OF (externally_defined_dimension_definition, Size_dimension);
+  used_path : OPTIONAL Measurement_path;
+END_ENTITY;
+
+(* This is one of the exceptions - where ARM type has no AIM supertype. This should not be a problem, because ARM type is abstract *)
+(* This is done so, because Geometric_dimension is mapped to 2 alternatives, having no common suitable AIM type *)
+ENTITY Geometric_dimension
+  ABSTRACT SUPERTYPE OF (ONEOF (Location_dimension,
+                                Size_dimension));
+  (* CONNOTATIONAL *)                              
+  id : STRING;
+  dimension_value : dimension_value_select;
+  notes : OPTIONAL SET[1:?] OF STRING; (** Originally it is mandatory SET[0:?] **)
+END_ENTITY;
+
+ENTITY Height_size_dimension
+  (* CONNOTATIONAL *) SUBTYPE OF (Size_dimension);
+  used_path : OPTIONAL Measurement_path;
+END_ENTITY;
+
+ENTITY Length_size_dimension
+  (* CONNOTATIONAL *) SUBTYPE OF (Size_dimension);
+  used_path : OPTIONAL Measurement_path;
+END_ENTITY;
+
+ENTITY Linear_distance_dimension
+  (* CONNOTATIONAL *) SUBTYPE OF (Location_dimension);
+  orientation : OPTIONAL axis2_placement;
+END_ENTITY;
+
+ENTITY Location_dimension
+  ABSTRACT SUPERTYPE OF (ONEOF (Angular_location_dimension,
+                                Curved_distance_dimension,
+                                Linear_distance_dimension))
+  (* CONNOTATIONAL *) SUBTYPE OF (Geometric_dimension, dimensional_location);
+  (* attribute is accessable from supertype
+  description	: OPTIONAL STRING; *)
+  directed 																		: OPTIONAL BOOLEAN;
+  origin																			: placed_element_select;
+  target																			: placed_element_select;
+END_ENTITY;
+
+ENTITY Plus_minus_bounds
+  (* CONNOTATIONAL *) SUBTYPE OF (tolerance_value);
+  significant_digits : OPTIONAL INTEGER;
+  value_determination : OPTIONAL STRING;
+END_ENTITY;
+
+ENTITY Radial_size_dimension
+  (* CONNOTATIONAL *) SUBTYPE OF (Size_dimension);
+  radius_type : STRING;
+END_ENTITY;
+
+ENTITY Size_dimension
+  ABSTRACT SUPERTYPE OF (ONEOF (Angular_size_dimension,
+                                Curved_size_dimension,
+                                Diameter_size_dimension,
+                                Externally_defined_size_dimension,
+                                Height_size_dimension,
+                                Length_size_dimension,
+                                Radial_size_dimension,
+                                Thickness_size_dimension,
+                                Width_size_dimension))
+  (* CONNOTATIONAL *)SUBTYPE OF (dimensional_size, Geometric_dimension);
+  envelope_principle : OPTIONAL BOOLEAN;
+  SELF\dimensional_size.applies_to RENAMED is_applied_to : element_with_dimension_select;
+END_ENTITY;
+
+ENTITY Thickness_size_dimension
+  (* CONNOTATIONAL *) SUBTYPE OF (Size_dimension);
+  used_path : OPTIONAL Measurement_path;
+END_ENTITY;
+
+ENTITY Tolerance_range
+  (* CONNOTATIONAL *) SUBTYPE OF (shape_dimension_representation);
+  lower_range : measure_representation_item;
+  significant_digits : OPTIONAL INTEGER;
+  upper_range : measure_representation_item;
+DERIVE
+  SELF\representation.items : SET [1:?] OF representation_item := ?;
+  SELF\representation.context_of_items : representation_context := ?;
+  SELF\representation.name : label := ?;
+END_ENTITY;
+
+ENTITY Width_size_dimension
+  (* CONNOTATIONAL *) SUBTYPE OF (Size_dimension);
+  used_path : OPTIONAL Measurement_path;
+END_ENTITY;
+
+END_SCHEMA;  -- Dimension_tolerance_xim
+

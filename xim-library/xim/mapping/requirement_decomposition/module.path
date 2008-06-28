@@ -1,0 +1,782 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping requirement_decomposition(Requirement_decomposition_arm, Requirement_decomposition_mim);*)
+
+
+entity_mapping Assigned_property(Assigned_property, property_definition)
+extended;
+
+attribute_mapping described_element(described_element, $PATH, Requirement_view_definition);
+
+				characterized_definition
+				characterized_definition = characterized_product_definition
+				characterized_product_definition
+				characterized_product_definition = product_definition
+				product_definition
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Constraint_occurrence(Constraint_occurrence, predefined_requirement_view_definition);
+
+mapping_constraints;
+predefined_requirement_view_definition <=
+product_definition
+{product_definition
+(product_definition.id = 'constraint')
+((product_definition.description = 'shape and product definition based constraint')
+(product_definition.description = 'product definition based constraint'))}
+
+end_mapping_constraints;
+
+attribute_mapping logical_relation(logical_relation, $PATH, Complex_clause_armx);
+predefined_requirement_view_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'logical relation'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation.items[i] ->
+representation_item =>
+compound_representation_item =>
+complex_clause
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Design_characteristic_occurrence(Design_characteristic_occurrence, predefined_requirement_view_definition);
+
+mapping_constraints;
+predefined_requirement_view_definition <=
+product_definition
+{product_definition
+product_definition.description = 'design characteristic'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Material_electrical_conductivity_requirement_occurrence(Material_electrical_conductivity_requirement_occurrence, predefined_requirement_view_definition);
+
+mapping_constraints;
+predefined_requirement_view_definition <=
+product_definition
+{product_definition
+product_definition.description = 'material electrical conductivity classification'}
+
+end_mapping_constraints;
+
+attribute_mapping electrical_conductivity_characteristic(electrical_conductivity_characteristic, material_electrical_conductivity_category);
+predefined_requirement_view_definition
+groupable_item = predefined_requirement_view_definition
+groupable_item <-
+applied_group_assignment.items[i]
+applied_group_assignment <=
+group_assignment
+group_assignment.assigned_group ->
+{group
+(group.name = 'conductive')
+(group.name = 'non conductive')
+(group.name =  'resistive')
+(group.name =  'semi conductive')}
+group =>
+material_electrical_conductivity_category
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*
+entity_mapping Material_identification(Material_identification, material_designation)
+extended;
+
+attribute_mapping items(items, $PATH, Predefined_requirement_view_definition_armx);
+
+					characterized_definition = characterized_product_definition
+					characterized_product_definition
+					characterized_product_definition = product_definition
+					product_definition =>
+					predefined_requirement_view_definition
+
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+
+entity_mapping Operational_requirement_occurrence_relationship_armx(Operational_requirement_occurrence_relationship_armx, operational_requirement_occurrence_relationship);
+
+mapping_constraints;
+{
+operational_requirement_occurrence_relationship <=
+[property_definition]
+[product_definition_relationship]}
+
+end_mapping_constraints;
+
+attribute_mapping relationship_type(relationship_type, product_definition_relationship.name);
+operational_requirement_occurrence_relationship <=
+product_definition_relationship
+{product_definition_relationship.name
+(product_definition_relationship.name = 'and operation')
+(product_definition_relationship.name = 'or operation')}
+
+end_attribute_mapping;
+
+attribute_mapping result(result, $PATH, Requirement_view_definition);
+operational_requirement_occurrence_relationship <=
+property_definition
+property_definition.definition ->
+characterized_definition = characterized_product_definition
+characterized_product_definition = product_definition
+product_definition
+
+end_attribute_mapping;
+
+attribute_mapping operand_1(operand_1, $PATH, Requirement_view_definition);
+operational_requirement_occurrence_relationship <=
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition
+
+end_attribute_mapping;
+
+attribute_mapping operand_2(operand_2, $PATH, Requirement_view_definition);
+operational_requirement_occurrence_relationship <=
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Predefined_requirement_view_definition_armx(Predefined_requirement_view_definition_armx, predefined_requirement_view_definition);
+
+mapping_constraints;
+predefined_requirement_view_definition <=
+product_definition
+
+end_mapping_constraints;
+(* Removed attributes
+attribute_mapping domain_context(domain_context, $PATH, domain_context_type);
+predefined_requirement_view_definition <=
+product_definition
+product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.frame_of_reference ->
+application_context
+application_context.application
+(application_context.application = 'mechanical')
+(application_context.application = 'thermal')
+(application_context.application = 'electromechancial')
+(application_context.application = 'electromagnetic_compatibility')
+(application_context.application = 'electrical')
+
+
+
+end_attribute_mapping;
+
+attribute_mapping life_cycle_context(life_cycle_context, $PATH, life_cycle_context_type);
+predefined_requirement_view_definition <=
+product_definition					
+product_definition.frame_of_reference ->
+product_definition_context
+product_definition_context.life_cycle_stage
+(product_definition_context.life_cycle_stage = 'design')
+(product_definition_context.life_cycle_stage = 'qualify')
+(product_definition_context.life_cycle_stage = 'inspect')
+(product_definition_context.life_cycle_stage = 'test')
+
+end_attribute_mapping;
+*)
+attribute_mapping required_analytical_representation(required_analytical_representation, $PATH, Analytical_model_application);
+predefined_requirement_view_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'required analytical representation'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+analytical_representation
+
+end_attribute_mapping;
+(* Remove problematic alternative
+attribute_mapping required_characteristic(required_characteristic, $PATH, characteristic);
+predefined_requirement_view_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'required characteristic'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item
+{representation_item
+groupable_item = representation_item
+groupable_item <-
+applied_group_assignment.items[i]
+applied_group_assignment <=
+group_assignment
+group_assignment.assigned_group ->
+group =>
+characteristic_type}
+
+end_attribute_mapping;
+*)
+attribute_mapping required_characteristic(required_characteristic, $PATH, descriptive_representation_item);
+				predefined_requirement_view_definition <=
+				product_definition
+				characterized_product_definition = product_definition
+				characterized_product_definition
+				characterized_definition = characterized_product_definition
+				characterized_definition <-
+				property_definition.definition
+				{property_definition.name = 'required characteristic'}
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				(* GL added in order to avoid wrong hits *)
+				!{(representation.name = 'tolerance')
+				(representation.name = 'minimum tolerance')
+				(representation.name = 'maximum tolerance')
+				(representation.name = 'nominal tolerance')
+				(representation.name = 'plus minus tolerance')
+				(representation.name = 'symmetrical tolerance')
+				(representation.name = 'statistical tolerance')
+				(representation.name = 'range characteristic')}
+				representation.items[i] ->
+				representation_item =>
+				descriptive_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping required_characteristic(required_characteristic, $PATH, measure_representation_item);
+					predefined_requirement_view_definition <=
+					product_definition
+					characterized_product_definition = product_definition
+					characterized_product_definition
+					characterized_definition = characterized_product_definition
+					characterized_definition <-
+					property_definition.definition
+					{property_definition.name = 'required characteristic'}
+					property_definition <-
+					property_definition_representation.definition
+					property_definition_representation
+					property_definition_representation.used_representation ->
+					representation
+				(* GL added in order to avoid wrong hits *)
+				!{(representation.name = 'tolerance')
+				(representation.name = 'minimum tolerance')
+				(representation.name = 'maximum tolerance')
+				(representation.name = 'nominal tolerance')
+				(representation.name = 'plus minus tolerance')
+				(representation.name = 'symmetrical tolerance')
+				(representation.name = 'statistical tolerance')
+				(representation.name = 'range characteristic')}
+					representation.items[i] ->
+					representation_item =>
+					measure_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping required_characteristic(required_characteristic, $PATH, Value_list);
+				predefined_requirement_view_definition <=
+				product_definition
+				characterized_product_definition = product_definition
+				characterized_product_definition
+				characterized_definition = characterized_product_definition
+				characterized_definition <-
+				property_definition.definition
+				{property_definition.name = 'required characteristic'}
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				(* GL added in order to avoid wrong hits *)
+				!{(representation.name = 'tolerance')
+				(representation.name = 'minimum tolerance')
+				(representation.name = 'maximum tolerance')
+				(representation.name = 'nominal tolerance')
+				(representation.name = 'plus minus tolerance')
+				(representation.name = 'symmetrical tolerance')
+				(representation.name = 'statistical tolerance')
+				(representation.name = 'range characteristic')}
+				representation.items[i] ->
+				representation_item =>
+				compound_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping required_characteristic(required_characteristic, $PATH, Value_set);
+				predefined_requirement_view_definition <=
+				product_definition
+				characterized_product_definition = product_definition
+				characterized_product_definition
+				characterized_definition = characterized_product_definition
+				characterized_definition <-
+				property_definition.definition
+				{property_definition.name = 'required characteristic'}
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				(* GL added in order to avoid wrong hits *)
+				!{(representation.name = 'tolerance')
+				(representation.name = 'minimum tolerance')
+				(representation.name = 'maximum tolerance')
+				(representation.name = 'nominal tolerance')
+				(representation.name = 'plus minus tolerance')
+				(representation.name = 'symmetrical tolerance')
+				(representation.name = 'statistical tolerance')
+				(representation.name = 'range characteristic')}
+				representation.items[i] ->
+				representation_item =>
+				compound_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping required_characteristic(required_characteristic, $PATH, boolean_representation_item);
+				predefined_requirement_view_definition <=
+				product_definition
+				characterized_product_definition = product_definition
+				characterized_product_definition
+				characterized_definition = characterized_product_definition
+				characterized_definition <-
+				property_definition.definition
+				{property_definition.name = 'required characteristic'}
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				(* GL added in order to avoid wrong hits *)
+				!{(representation.name = 'tolerance')
+				(representation.name = 'minimum tolerance')
+				(representation.name = 'maximum tolerance')
+				(representation.name = 'nominal tolerance')
+				(representation.name = 'plus minus tolerance')
+				(representation.name = 'symmetrical tolerance')
+				(representation.name = 'statistical tolerance')
+				(representation.name = 'range characteristic')}
+				representation.items[i] ->
+				representation_item =>
+				boolean_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping required_characteristic(required_characteristic, $PATH, date_time_representation_item);
+				predefined_requirement_view_definition <=
+				product_definition
+				characterized_product_definition = product_definition
+				characterized_product_definition
+				characterized_definition = characterized_product_definition
+				characterized_definition <-
+				property_definition.definition
+				{property_definition.name = 'required characteristic'}
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				(* GL added in order to avoid wrong hits *)
+				!{(representation.name = 'tolerance')
+				(representation.name = 'minimum tolerance')
+				(representation.name = 'maximum tolerance')
+				(representation.name = 'nominal tolerance')
+				(representation.name = 'plus minus tolerance')
+				(representation.name = 'symmetrical tolerance')
+				(representation.name = 'statistical tolerance')
+				(representation.name = 'range characteristic')}
+				representation.items[i] ->
+				representation_item =>
+				date_time_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping required_characteristic(required_characteristic, $PATH, integer_representation_item);
+				predefined_requirement_view_definition <=
+				product_definition
+				characterized_product_definition = product_definition
+				characterized_product_definition
+				characterized_definition = characterized_product_definition
+				characterized_definition <-
+				property_definition.definition
+				{property_definition.name = 'required characteristic'}
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				(* GL added in order to avoid wrong hits *)
+				!{(representation.name = 'tolerance')
+				(representation.name = 'minimum tolerance')
+				(representation.name = 'maximum tolerance')
+				(representation.name = 'nominal tolerance')
+				(representation.name = 'plus minus tolerance')
+				(representation.name = 'symmetrical tolerance')
+				(representation.name = 'statistical tolerance')
+				(representation.name = 'range characteristic')}
+				representation.items[i] ->
+				representation_item =>
+				integer_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping required_characteristic(required_characteristic, $PATH, logical_representation_item);
+				predefined_requirement_view_definition <=
+				product_definition
+				characterized_product_definition = product_definition
+				characterized_product_definition
+				characterized_definition = characterized_product_definition
+				characterized_definition <-
+				property_definition.definition
+				{property_definition.name = 'required characteristic'}
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				(* GL added in order to avoid wrong hits *)
+				!{(representation.name = 'tolerance')
+				(representation.name = 'minimum tolerance')
+				(representation.name = 'maximum tolerance')
+				(representation.name = 'nominal tolerance')
+				(representation.name = 'plus minus tolerance')
+				(representation.name = 'symmetrical tolerance')
+				(representation.name = 'statistical tolerance')
+				(representation.name = 'range characteristic')}
+				representation.items[i] ->
+				representation_item =>
+				logical_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping required_characteristic(required_characteristic, $PATH, Rational_representation_item_xim);
+				predefined_requirement_view_definition <=
+				product_definition
+				characterized_product_definition = product_definition
+				characterized_product_definition
+				characterized_definition = characterized_product_definition
+				characterized_definition <-
+				property_definition.definition
+				{property_definition.name = 'required characteristic'}
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				(* GL added in order to avoid wrong hits *)
+				!{(representation.name = 'tolerance')
+				(representation.name = 'minimum tolerance')
+				(representation.name = 'maximum tolerance')
+				(representation.name = 'nominal tolerance')
+				(representation.name = 'plus minus tolerance')
+				(representation.name = 'symmetrical tolerance')
+				(representation.name = 'statistical tolerance')
+				(representation.name = 'range characteristic')}
+				representation.items[i] ->
+				representation_item =>
+				rational_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping required_characteristic(required_characteristic, $PATH, real_representation_item);
+				predefined_requirement_view_definition <=
+				product_definition
+				characterized_product_definition = product_definition
+				characterized_product_definition
+				characterized_definition = characterized_product_definition
+				characterized_definition <-
+				property_definition.definition
+				{property_definition.name = 'required characteristic'}
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				(* GL added in order to avoid wrong hits *)
+				!{(representation.name = 'tolerance')
+				(representation.name = 'minimum tolerance')
+				(representation.name = 'maximum tolerance')
+				(representation.name = 'nominal tolerance')
+				(representation.name = 'plus minus tolerance')
+				(representation.name = 'symmetrical tolerance')
+				(representation.name = 'statistical tolerance')
+				(representation.name = 'range characteristic')}
+				representation.items[i] ->
+				representation_item =>
+				real_representation_item
+				
+end_attribute_mapping;
+
+attribute_mapping required_characteristic(required_characteristic, $PATH, compound_representation_item);
+				predefined_requirement_view_definition <=
+				product_definition
+				characterized_product_definition = product_definition
+				characterized_product_definition
+				characterized_definition = characterized_product_definition
+				characterized_definition <-
+				property_definition.definition
+				{property_definition.name = 'required characteristic'}
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation
+				(* GL added in order to avoid wrong hits *)
+				!{(representation.name = 'tolerance')
+				(representation.name = 'minimum tolerance')
+				(representation.name = 'maximum tolerance')
+				(representation.name = 'nominal tolerance')
+				(representation.name = 'plus minus tolerance')
+				(representation.name = 'symmetrical tolerance')
+				(representation.name = 'statistical tolerance')
+				(representation.name = 'range characteristic')}
+				representation.items[i] ->
+				representation_item =>
+				compound_representation_item
+				
+end_attribute_mapping;
+       
+attribute_mapping required_characteristic(required_characteristic, $PATH, Property_value_representation);
+				predefined_requirement_view_definition <=
+				product_definition
+				characterized_product_definition = product_definition
+				characterized_product_definition
+				characterized_definition = characterized_product_definition
+				characterized_definition <-
+				property_definition.definition
+				{property_definition.name = 'required characteristic'}
+				property_definition <-
+				property_definition_representation.definition
+				property_definition_representation
+				property_definition_representation.used_representation ->
+				representation 
+				(* ADDED by GL in order to minimize wrong hits *)
+				(* Idea - it either do not contain any of items OR it is specific subtype of Property_value_representation *)
+				{(!{representation
+				representation.items[i] ->
+				(representation_item =>
+				compound_representation_item)
+				(representation_item =>
+				measure_representation_item)
+				(representation_item =>
+				boolean_representation_item)
+				(representation_item =>
+				date_time_representation_item)
+				(representation_item =>
+				integer_representation_item)
+				(representation_item =>
+				logical_representation_item)
+				(representation_item =>
+				rational_representation_item)
+				(representation_item =>
+				real_representation_item)
+				(representation_item =>
+				descriptive_representation_item)})
+				((representation.name = 'tolerance')
+				(representation.name = 'minimum tolerance')
+				(representation.name = 'maximum tolerance')
+				(representation.name = 'nominal tolerance')
+				(representation.name = 'plus minus tolerance')
+				(representation.name = 'symmetrical tolerance')
+				(representation.name = 'statistical tolerance')
+				(representation.name = 'range characteristic'))}
+
+				
+end_attribute_mapping;
+
+attribute_mapping required_functional_specification(required_functional_specification, $PATH, Functional_specification_armx);
+predefined_requirement_view_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'required functional specification'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+functional_specification
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Requirement_assignment_armx(Requirement_assignment_armx, requirement_assignment)
+extended;
+
+attribute_mapping assigned_to(assigned_to, , group);
+
+					requirement_assigned_item *> rd_requirement_assigned_item
+					rd_requirement_assigned_item = group 
+				
+end_attribute_mapping;
+
+attribute_mapping assigned_to(assigned_to, , group_relationship);
+
+					requirement_assigned_item *> rd_requirement_assigned_item
+					rd_requirement_assigned_item = group_relationship 
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Requirement_view_definition_relationship_armx(Requirement_view_definition_relationship_armx, requirement_view_definition_relationship);
+
+mapping_constraints;
+{requirement_view_definition_relationship <=
+product_definition_relationship}
+
+end_mapping_constraints;
+
+attribute_mapping relation_type(relation_type, product_definition_relationship.name);
+requirement_view_definition_relationship <=
+product_definition_relationship
+{product_definition_relationship.name
+(product_definition_relationship.name = 'derived from operation')
+(product_definition_relationship.name = 'precedence')
+(product_definition_relationship.name = 'supplemental')}
+
+end_attribute_mapping;
+
+attribute_mapping primary(primary, $PATH, Requirement_view_definition);
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition
+
+end_attribute_mapping;
+
+attribute_mapping secondary(secondary, $PATH, Requirement_view_definition);
+product_definition_relationship
+product_definition_relationship.related_product_definition ->
+product_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Shape_and_view_based_constraint_occurrence(Shape_and_view_based_constraint_occurrence, predefined_requirement_view_definition);
+
+mapping_constraints;
+predefined_requirement_view_definition <=
+product_definition
+{product_definition
+product_definition.description = 'shape and product definition based constraint'}
+
+end_mapping_constraints;
+
+attribute_mapping constraining_shape(constraining_shape, $PATH, Shape_representation);
+predefined_requirement_view_definition <=
+product_definition			
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'constraining shape'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation.used_representation ->
+representation <-
+representation_relationship.rep_1
+{representation_relationship
+representation_relationship.name = 'constraint shape reference'}
+representation_relationship.rep_2 ->
+representation
+{representation <-
+property_definition_representation.used_representation
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.definition ->
+property_definition
+{property_definition =>
+product_definition_shape}
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition
+product_definition}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping View_based_constraint_occurrence(View_based_constraint_occurrence, predefined_requirement_view_definition);
+
+mapping_constraints;
+predefined_requirement_view_definition <=
+product_definition
+{product_definition
+(product_definition.description = 'shape and product definition based constraint')
+(product_definition.description = 'product definition based constraint')}
+
+end_mapping_constraints;
+
+attribute_mapping constraining_part(constraining_part, $PATH, Product_view_definition);
+predefined_requirement_view_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'constraining part'}
+product_definition_relationship.relating_product_definition ->
+product_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

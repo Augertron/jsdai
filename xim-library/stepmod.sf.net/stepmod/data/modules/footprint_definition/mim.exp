@@ -1,0 +1,28 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3886 - ISO/TS 10303-1646 Footprint definition - EXPRESS MIM
+*)
+
+SCHEMA Footprint_definition_mim;
+
+    USE FROM Part_template_2d_shape_mim; -- ISO/TS 10303-1716
+	USE FROM Package_mim;	-- ISO/TS 10303-1707
+
+  SUBTYPE_CONSTRAINT multi_stratum_structured_template_subtypes FOR multi_stratum_structured_template;   
+ 	(ONEOF (padstack_definition, generic_footprint_definition, multi_stratum_special_symbol_template));
+  END_SUBTYPE_CONSTRAINT;  
+
+ENTITY breakout_footprint_definition
+ SUBTYPE OF (generic_footprint_definition);
+END_ENTITY; 
+	
+ENTITY footprint_definition
+ SUBTYPE OF (generic_footprint_definition);
+END_ENTITY; 
+
+ENTITY generic_footprint_definition
+ ABSTRACT SUPERTYPE OF (ONEOF (footprint_definition, breakout_footprint_definition))
+ SUBTYPE OF (multi_stratum_structured_template);
+END_ENTITY;
+
+END_SCHEMA;

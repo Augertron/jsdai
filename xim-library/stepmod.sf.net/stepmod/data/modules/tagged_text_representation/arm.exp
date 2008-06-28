@@ -1,0 +1,66 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N5009 - ISO/CD-TS 10303-1366 Tagged text representation - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3822
+*)
+
+SCHEMA Tagged_text_representation_arm;
+
+USE FROM Foundation_representation_arm;    --  ISO/TS 10303-1006
+
+TYPE string_representation_item_select = SELECT(
+    String_representation_item, 
+    Included_text_block,
+    Structured_text_composition);
+END_TYPE; 
+
+TYPE string_representation_item_list = LIST[1:?] OF
+string_representation_item_select;
+END_TYPE;
+
+TYPE string_representation_item_set = SET[1:?] OF string_representation_item_select;
+END_TYPE;
+
+TYPE string_representation_item_list_or_set =
+ SELECT(string_representation_item_list, string_representation_item_set); 
+END_TYPE;
+
+SUBTYPE_CONSTRAINT ttr_string_representation_item_subtypes FOR String_representation_item;
+  ONEOF (Tagged_text_item,
+         Uniform_resource_identifier);
+END_SUBTYPE_CONSTRAINT;
+
+ENTITY Included_text_block
+  SUBTYPE OF (Representation_item);
+  source : Structured_text_representation;
+END_ENTITY;
+
+ ENTITY Structured_text_composition
+   SUBTYPE OF (Representation_item);
+  content: string_representation_item_list_or_set;
+ END_ENTITY;
+
+ENTITY Structured_text_representation
+  SUBTYPE OF (Representation);
+  SELF\Representation.items : SET [1:1] OF string_representation_item_select; 
+END_ENTITY;
+
+ENTITY Tagged_text_item
+  SUBTYPE OF (String_representation_item);
+WHERE
+  WR1: SIZEOF (QUERY (using_rep <* USEDIN(SELF,
+       'FOUNDATION_REPRESENTATION_ARM.REPRESENTATION.ITEMS') |
+  NOT ('TAGGED_TEXT_REPRESENTATION_ARM.TAGGED_TEXT_FORMAT' IN
+  TYPEOF (using_rep.context_of_items))
+       )) = 0;
+END_ENTITY;
+
+ENTITY Tagged_text_format
+  SUBTYPE OF (Representation_context);
+END_ENTITY;
+
+ENTITY Uniform_resource_identifier
+  SUBTYPE OF (String_representation_item);
+END_ENTITY;
+
+END_SCHEMA;

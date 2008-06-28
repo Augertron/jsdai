@@ -1,0 +1,461 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping management_resource_information(Management_resource_information_arm, Management_resource_information_mim);*)
+
+uof_mapping Management_Resource_Information(Management_Resource_Information);
+end_uof_mapping;
+
+
+entity_mapping Alias_identification(Alias_identification, applied_identification_assignment)
+extended;
+
+attribute_mapping items(items, Approval_status);
+		aliasable_item
+		aliasable_item *> mri_aliasable_item
+		mri_aliasable_item
+		mri_aliasable_item = approval_status
+end_attribute_mapping;
+
+attribute_mapping items(items, Contract);
+		aliasable_item
+		aliasable_item *> mri_aliasable_item
+		mri_aliasable_item
+		mri_aliasable_item = contract
+end_attribute_mapping;
+
+attribute_mapping items(items, Organization);
+		aliasable_item
+		aliasable_item *> mri_aliasable_item
+		mri_aliasable_item
+		mri_aliasable_item = organization
+end_attribute_mapping;
+
+attribute_mapping items(items, Security_classification);
+		aliasable_item
+		aliasable_item *> mri_aliasable_item
+		mri_aliasable_item
+		mri_aliasable_item = security_classification
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Approval_assignment(Approval_assignment, applied_approval_assignment)
+extended;
+
+attribute_mapping items(items, $PATH, Certification);
+
+         approval_item *> mri_approval_item 
+         mri_approval_item = certification
+       
+end_attribute_mapping;
+
+attribute_mapping items(items, $PATH, Contract);
+
+         approval_item *> mri_approval_item 
+         mri_approval_item = contract
+       
+end_attribute_mapping;
+
+end_entity_mapping;
+(* Select from AIM is taken instead
+entity_mapping Date_or_date_time_assignment(Date_or_date_time_assignment, ((date_assignment))((date_and_time_assignment)))
+extended;
+
+attribute_mapping items(items, ($PATH)($PATH), Certification);
+(
+           date_item *> mri_date_item
+           mri_date_item = certification
+         )(
+         date_and_time_item *> mri_date_and_time_item
+           mri_date_and_time_item = certification 
+         )
+end_attribute_mapping;
+
+attribute_mapping items(items, ($PATH)($PATH), Contract);
+(
+           date_item *> mri_date_item
+           mri_date_item = contract
+         )(
+         date_and_time_item *> mri_date_and_time_item
+           mri_date_and_time_item = contract 
+         )
+end_attribute_mapping;
+
+attribute_mapping items(items, ($PATH)($PATH)($PATH)($PATH), organization_or_person_in_organization_assignment_select);
+(
+           (date_assignment=>
+           applied_date_assignment
+           applied_date_assignment.items[i] -> date_item
+           date_item *> mri_date_item
+           mri_date_item = applied_organization_assignment)
+         )(
+           (date_assignment=>
+           applied_date_assignment
+           applied_date_assignment.items[i] -> date_item
+           date_item *> mri_date_item
+           mri_date_item = applied_person_and_organization_assignment)
+         )(
+           (date_and_time_assignment=>
+           applied_date_and_time_assignment
+           applied_date_and_time_assignment.items[i] -> date_and_time_item
+           date_and_time_item *> mri_date_and_time_item
+           mri_date_and_time_item = applied_organization_assignment)
+         )(
+           (date_and_time_assignment=>
+           applied_date_and_time_assignment
+           applied_date_and_time_assignment.items[i] -> date_and_time_item
+           date_and_time_item *> mri_date_and_time_item
+           mri_date_and_time_item = applied_person_and_organization_assignment)
+         )
+end_attribute_mapping;
+
+attribute_mapping items(items, ($PATH)($PATH), Security_classification_assignment);
+(
+           date_item *> mri_date_item
+           mri_date_item = applied_security_classification_assignment
+         )(
+           date_and_time_item *> mri_date_and_time_item
+           mri_date_and_time_item = applied_security_classification_assignment
+         )
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Identification_assignment(Identification_assignment, applied_identification_assignment)
+extended;
+
+attribute_mapping items(items, ($PATH)($PATH), Approval_status);
+(
+          applied_identification_assignment
+          applied_identification_assignment <= 
+          identification_assignment
+          identification_assignment.role -> identification_role
+          applied_identification_assignment.items[i] -> 
+          identification_item  *> mri_identification_item
+          mri_identification_item = approval_status
+        )(
+          [applied_identification_assignment
+          {applied_identification_assignment <= 
+          identification_assignment
+          identification_assignment.role -> identification_role
+          {(identification_role.name='alias')}}
+          applied_identification_assignment.items[i] -> 
+          identification_item  *> mri_identification_item
+          mri_identification_item = approval_status]
+          [aliasable_item *> mri_aliasable_item
+          mri_aliasable_item = approval_status]
+        )
+end_attribute_mapping;
+
+attribute_mapping items(items, ($PATH)($PATH), Contract);
+(
+          applied_identification_assignment
+          applied_identification_assignment <= 
+          identification_assignment
+          identification_assignment.role -> identification_role
+          applied_identification_assignment.items[i] -> 
+          identification_item  *> mri_identification_item
+          mri_identification_item = contract
+        )(
+          [applied_identification_assignment
+          {applied_identification_assignment <= 
+          identification_assignment
+          identification_assignment.role -> identification_role
+          {(identification_role.name='alias')}}
+          applied_identification_assignment.items[i] -> 
+          identification_item  *> mri_identification_item
+          mri_identification_item = contract]
+          [aliasable_item *> mri_aliasable_item
+          mri_aliasable_item = contract]
+        )
+end_attribute_mapping;
+
+attribute_mapping items(items, ($PATH)($PATH), Organization);
+(
+          applied_identification_assignment
+          applied_identification_assignment <= 
+          identification_assignment
+          identification_assignment.role -> identification_role
+          applied_identification_assignment.items[i] -> 
+          identification_item  *> mri_identification_item
+          mri_identification_item = organization
+        )(
+          [applied_identification_assignment
+          {applied_identification_assignment <= 
+          identification_assignment
+          identification_assignment.role -> identification_role
+          {(identification_role.name='alias')}}
+          applied_identification_assignment.items[i] -> 
+          identification_item  *> mri_identification_item
+          mri_identification_item = organization]
+          [aliasable_item *> mri_aliasable_item
+          mri_aliasable_item = organization]
+        )
+end_attribute_mapping;
+
+attribute_mapping items(items, ($PATH)($PATH), Security_classification);
+(
+          applied_identification_assignment
+          applied_identification_assignment <= 
+          identification_assignment
+          identification_assignment.role -> identification_role
+          applied_identification_assignment.items[i] -> 
+          identification_item  *> mri_identification_item
+          mri_identification_item = security_classification_level
+        )(
+          [applied_identification_assignment
+          {applied_identification_assignment <= 
+          identification_assignment
+          identification_assignment.role -> identification_role
+          {(identification_role.name='alias')}}
+          applied_identification_assignment.items[i] -> 
+          identification_item  *> mri_identification_item
+          mri_identification_item = security_classification_level]
+          [aliasable_item *> mri_aliasable_item
+          mri_aliasable_item = security_classification_level]
+        )
+end_attribute_mapping;
+
+end_entity_mapping;
+(* USE select from AIM instead
+entity_mapping Organization_or_person_in_organization_assignment(Organization_or_person_in_organization_assignment, ( 
+			(applied_organization_assignment)
+			)( 
+			(applied_person_and_organization_assignment)
+			))
+extended;
+
+attribute_mapping items(items, ($PATH)($PATH), Contract);
+(
+           organization_item *> mri_organization_item 
+           mri_organization_item = contract
+         )(
+           person_and_organization_item *> mri_person_and_organization_item 
+           mri_person_and_organization_item = contract
+         )
+end_attribute_mapping;
+
+attribute_mapping items(items, ($PATH)($PATH), Identification_assignment);
+(
+           organization_item *> mri_organization_item 
+           mri_organization_item = applied_identification_assignment
+         )(
+           person_and_organization_item *> mri_person_and_organization_item 
+           mri_person_and_organization_item = applied_identification_assignment
+         )
+end_attribute_mapping;
+
+attribute_mapping items(items, ($PATH)($PATH), Security_classification_assignment);
+(
+           organization_item *> mri_organization_item 
+           mri_organization_item = applied_security_classification_assignment
+         )(
+           person_and_organization_item *> mri_person_and_organization_item 
+           mri_person_and_organization_item = applied_security_classification_assignment
+         )
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Language_indication(Language_indication, attribute_language_assignment)
+extended;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Approval);
+
+         attribute_language_item *> mri_attribute_language_item
+         mri_attribute_language_item = approval
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Approval_relationship);
+
+         attribute_language_item *> mri_attribute_language_item
+         mri_attribute_language_item = approval_relationship
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Approval_status);
+
+         attribute_language_item *> mri_attribute_language_item
+         mri_attribute_language_item = approval_status
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Certification);
+
+         attribute_language_item *> mri_attribute_language_item
+         mri_attribute_language_item = certification
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Contract);
+
+         attribute_language_item *> mri_attribute_language_item
+         mri_attribute_language_item = contract
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, (date_assignment)(date_and_time_assignment));
+
+         attribute_language_item *> mri_attribute_language_item
+         (mri_attribute_language_item = date_role)
+         (mri_attribute_language_item = date_time_role)
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Identification_assignment);
+
+         attribute_language_item *> mri_attribute_language_item
+         mri_attribute_language_item = identification_role
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Organization_relationship);
+
+         attribute_language_item *> mri_attribute_language_item
+         mri_attribute_language_item = organization_relationship
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, person_and_organization);
+
+         attribute_language_item *> mri_attribute_language_item
+         mri_attribute_language_item = person_and_organization
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Project);
+
+         attribute_language_item *> mri_attribute_language_item
+         mri_attribute_language_item = organizational_project
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Project_assignment);
+
+         attribute_language_item *> mri_attribute_language_item
+         mri_attribute_language_item = applied_organizational_project_assignment
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Project_relationship);
+
+         attribute_language_item *> mri_attribute_language_item
+         mri_attribute_language_item = organizational_project_relationship
+       
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Attribute_translation_assignment(Attribute_translation_assignment, multi_language_attribute_assignment)
+extended;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Approval);
+
+         multi_language_attribute_item *> mri_multi_language_attribute_item
+         mri_multi_language_attribute_item = approval
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Approval_relationship);
+
+         multi_language_attribute_item *> mri_multi_language_attribute_item
+         mri_multi_language_attribute_item = approval_relationship
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Approval_status);
+
+         multi_language_attribute_item *> mri_multi_language_attribute_item
+         mri_multi_language_attribute_item = approval_status
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Certification);
+
+         multi_language_attribute_item *> mri_multi_language_attribute_item
+         mri_multi_language_attribute_item = certification
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Contract);
+
+         multi_language_attribute_item *> mri_multi_language_attribute_item
+         mri_multi_language_attribute_item = contract
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, (date_assignment)(date_and_time_assignment));
+
+         multi_language_attribute_item *> mri_multi_language_attribute_item
+         (mri_multi_language_attribute_item = date_role)
+         (mri_multi_language_attribute_item = date_time_role)
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Identification_assignment);
+
+         multi_language_attribute_item *> mri_multi_language_attribute_item
+         mri_multi_language_attribute_item = identification_role
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Organization_relationship);
+
+         multi_language_attribute_item *> mri_multi_language_attribute_item
+         mri_multi_language_attribute_item = organization_relationship
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, person_and_organization);
+
+         multi_language_attribute_item *> mri_multi_language_attribute_item
+         mri_multi_language_attribute_item = person_and_organization
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Project);
+
+         multi_language_attribute_item *> mri_multi_language_attribute_item
+         mri_multi_language_attribute_item = organizational_project
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Project_assignment);
+
+         multi_language_attribute_item *> mri_multi_language_attribute_item
+         mri_multi_language_attribute_item = applied_organizational_project_assignment
+       
+end_attribute_mapping;
+
+attribute_mapping considered_instance(considered_instance, $PATH, Project_relationship);
+
+         multi_language_attribute_item *> mri_multi_language_attribute_item
+         mri_multi_language_attribute_item = organizational_project_relationship
+       
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

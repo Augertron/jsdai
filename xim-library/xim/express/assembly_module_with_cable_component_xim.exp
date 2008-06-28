@@ -1,0 +1,48 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Assembly module with cable component - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Assembly_module_with_cable_component_xim;
+ 
+ USE FROM Cable_xim;
+
+USE FROM Assembly_module_with_cable_component_mim;
+
+	SUBTYPE_CONSTRAINT amwcc_part_terminal_subtypes FOR Part_terminal; 
+		ONEOF (Minimally_defined_bare_die_terminal_armx,
+		 Assembly_module_terminal_armx,
+		 Cable_terminal_armx,
+		 Packaged_part_terminal_armx);
+	END_SUBTYPE_CONSTRAINT;
+
+  ENTITY Cable_component_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Physical_component_armx, Single_instance, cable_component);
+      SELF\Definition_based_product_occurrence.derived_from : Cable_usage_view_armx;
+  END_ENTITY;
+
+END_SCHEMA;
+

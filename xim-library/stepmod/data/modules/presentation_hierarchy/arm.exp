@@ -1,0 +1,66 @@
+--============================
+-- Make new module Presentation_view, containing, View, View_area,
+--  View_placed_annotation, Area_placed_annotation, and .. relationships
+--  need also something for presentation_set.
+
+SCHEMA Presentation_hierarchy_arm;
+
+--USE FROM Appearance_assignment_arm; -- Just because of link to Annotation_element
+
+USE FROM Contextual_shape_positioning_arm;
+
+TYPE view_placement_select = SELECT
+   (Axis_placement_mapping, 
+    Cartesian_transformation_2d, 
+    Geometric_placement_operation);
+END_TYPE; 
+
+TYPE presentation_association_select = EXTENSIBLE SELECT;
+END_TYPE; 
+
+TYPE area_select = EXTENSIBLE SELECT
+   (View_area);
+END_TYPE; 
+
+ENTITY View;
+  id : OPTIONAL STRING;
+  name : STRING;
+  description : OPTIONAL STRING;
+  layout : area_select;
+  view_space : Geometric_coordinate_space;
+  view_placement : view_placement_select;
+END_ENTITY;
+
+ENTITY View_area;
+  id : OPTIONAL STRING;
+  name : OPTIONAL STRING;
+  description : OPTIONAL STRING;
+  area_space : Geometric_coordinate_space;
+  revision_id : OPTIONAL STRING;
+  size : REAL;
+END_ENTITY;
+
+ENTITY View_area_assignment;
+  associated_view_area : View_area;
+  is_describing : presentation_association_select;
+END_ENTITY;
+
+ENTITY View_area_relationship;
+  relation_type : STRING;
+  description : OPTIONAL STRING;
+  relating : View_area;
+  related : View_area;
+END_ENTITY;
+
+ENTITY View_relationship;
+  relation_type : STRING;
+  description : OPTIONAL STRING;
+  relating : View;
+  related : View;
+END_ENTITY;
+--TODiscuss discuss with Lothar about it
+ENTITY Presentation_set;
+  areas : SET[1:?] OF View_area; -- it mapps to area_in_set
+END_ENTITY;
+
+END_SCHEMA;

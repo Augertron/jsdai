@@ -1,0 +1,139 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4141 - ISO/TS 10303-1731 Constructive solid geometry 2d - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3331
+*) 
+
+
+SCHEMA Constructive_solid_geometry_2d_mim;
+
+	USE FROM Elemental_geometric_shape_mim;	-- ISO/TS 10303-1004
+
+USE FROM Representation_schema(
+compound_representation_item,
+mapped_item);
+
+USE FROM geometric_model_schema 
+(boolean_result,
+csg_solid,
+elliptic_area,
+polygonal_area,
+rectangular_area,
+half_space_2d,
+ primitive_2d
+ );
+
+
+
+
+USE FROM geometry_schema (composite_curve);
+
+  TYPE boolean_operand_2d = SELECT (
+          primitive_2d,
+          boolean_result_2d,
+          half_space_2d);
+  END_TYPE; 
+
+  TYPE compound_inner_area_boundary = SELECT (set_inner_area_boundary);
+  END_TYPE;
+  
+  TYPE csg_2d_area_select = SELECT (axis2_placement_2d, csg_primitive_solid_2d);
+  END_TYPE;
+
+  TYPE csg_2d_shape_select = SELECT (mapped_item, axis2_placement_2d, csg_solid_2d);
+  END_TYPE;
+
+  TYPE csg_select_2d = SELECT (primitive_2d, boolean_result_2d);
+  END_TYPE;
+
+  TYPE set_inner_area_boundary = SET [1:?] OF primitive_2d;
+  END_TYPE;
+
+  ENTITY area_with_outer_boundary 
+     SUBTYPE OF (complex_area, half_space_2d);
+       SELF\half_space_2d.base_curve : composite_curve;
+  END_ENTITY; 
+
+  ENTITY boolean_result_2d
+    SUBTYPE OF (boolean_result);
+     SELF\boolean_result.first_operand : boolean_operand_2d;
+     SELF\boolean_result.second_operand : boolean_operand_2d;
+  END_ENTITY;
+
+  ENTITY complex_area
+    ABSTRACT SUPERTYPE OF (area_with_outer_boundary)
+    SUBTYPE OF (primitive_2d);
+  END_ENTITY;
+
+  ENTITY csg_primitive_solid_2d
+    SUBTYPE OF (csg_solid_2d);
+    SELF\csg_solid.tree_root_expression : primitive_2d;
+  END_ENTITY;  
+
+  ENTITY csg_solid_2d
+    SUBTYPE OF (csg_solid);
+    SELF\csg_solid.tree_root_expression : csg_select_2d;
+  END_ENTITY;
+  
+  ENTITY csg_2d_shape_representation
+    SUBTYPE OF (shape_representation);
+      SELF\representation.items : SET[1:?] OF csg_2d_shape_select;  
+   WHERE 
+     WR1: SELF.context_of_items\geometric_representation_context.coordinate_space_dimension = 2;
+     WR2: SIZEOF(QUERY ( it <* SELF.items | 
+       (SIZEOF(['CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.CSG_SOLID']
+  	   * TYPEOF(it)) = 1) 
+  	   OR 
+	   (('CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.MAPPED_ITEM' 
+	   IN TYPEOF(it)) AND
+	   ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.' +
+	   'CSG_2D_SHAPE_REPRESENTATION' 
+	   IN TYPEOF(it\mapped_item.mapping_source.mapped_representation))) 
+       )) >= 1;
+     WR3: SIZEOF(QUERY ( it <* SELF.items | 
+       (('CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.MAPPED_ITEM' 
+       IN TYPEOF(it)) AND (NOT (( 
+       'CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.' +
+       'CSG_2D_SHAPE_REPRESENTATION') 
+       IN TYPEOF(it\mapped_item.mapping_source.mapped_representation)))) )) = 0;
+     -- TODO does not work with the new introduced subtypes  
+     -- WR4: SIZEOF(TYPEOF(SELF) - TYPEOF(SELF\shape_representation ||
+     --  SELF\csg_2d_shape_representation || SELF\representation)) = 0;
+  END_ENTITY;
+
+  ENTITY primitive_2d_with_inner_boundary
+    SUBTYPE OF (primitive_2d, compound_representation_item);
+      SELF\compound_representation_item.item_element RENAMED inner_boundary : compound_inner_area_boundary;
+    WHERE
+      WR1: SIZEOF(['GEOMETRIC_MODEL_SCHEMA.CIRCULAR_AREA', 'GEOMETRIC_MODEL_SCHEMA.ELLIPTIC_AREA', 'GEOMETRIC_MODEL_SCHEMA.RECTANGULAR_AREA',
+        'GEOMETRIC_MODEL_SCHEMA.POLYGONAL_AREA', 'CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.COMPLEX_AREA'] * TYPEOF(SELF)) > 0;
+      WR2: SIZEOF(QUERY(inner <* inner_boundary |
+        'CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.PRIMITIVE_2D_WITH_INNER_BOUNDARY' IN TYPEOF(inner))) = 0;      
+  END_ENTITY;
+
+  ENTITY single_area_csg_2d_shape_representation
+    SUBTYPE OF (csg_2d_shape_representation);
+    SELF\representation.items : SET[1:?] OF csg_2d_area_select;
+  WHERE  
+    WR1: SIZEOF (QUERY (it <* SELF.items| 
+     ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.MAPPED_ITEM' 
+     IN TYPEOF(it)) )) = 0;
+    WR2: SIZEOF (QUERY (it <* SELF.items| 
+     ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.CSG_SOLID_2D' 
+     IN TYPEOF(it)) )) = 1;
+  END_ENTITY;
+
+  ENTITY single_boundary_csg_2d_shape_representation
+    SUBTYPE OF (single_area_csg_2d_shape_representation);
+    WHERE
+      WR1: SIZEOF(QUERY ( it <* SELF.items |
+        (('CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.CSG_PRIMITIVE_SOLID_2D' IN TYPEOF(it))
+        AND (('CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.PRIMITIVE_2D_WITH_INNER_BOUNDARY') IN
+        TYPEOF(it\csg_primitive_solid_2d.tree_root_expression))) )) = 0;
+  END_ENTITY;
+
+  SUBTYPE_CONSTRAINT primitive_2d_subtypes FOR primitive_2d;
+    ONEOF (elliptic_area, rectangular_area, polygonal_area, complex_area);
+  END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA;

@@ -1,0 +1,34 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4691 - ISO/CD-TS 10303-1775 Currency - EXPRESS MIM
+*)
+
+SCHEMA Currency_mim;
+
+USE FROM Value_with_unit_mim; -- ISO/TS 10303-1054
+
+USE FROM measure_schema;
+
+  ENTITY currency
+    ABSTRACT SUPERTYPE
+    SUBTYPE OF (context_dependent_unit);
+    WHERE 
+      WR1: ((SELF\named_unit.dimensions.length_exponent = 0.0) AND
+           (SELF\named_unit.dimensions.mass_exponent = 0.0) AND
+           (SELF\named_unit.dimensions.time_exponent = 0.0) AND
+           (SELF\named_unit.dimensions.electric_current_exponent = 0.0) AND
+           (SELF\named_unit.dimensions.thermodynamic_temperature_exponent = 0.0) AND
+           (SELF\named_unit.dimensions.amount_of_substance_exponent = 0.0) AND
+           (SELF\named_unit.dimensions.luminous_intensity_exponent = 0.0));
+  END_ENTITY;
+
+  ENTITY currency_measure_with_unit
+    SUBTYPE OF (measure_with_unit);
+      SELF\measure_with_unit.unit_component : currency; 
+  END_ENTITY;
+
+  ENTITY iso4217_currency 
+    SUBTYPE OF (currency);
+  END_ENTITY; 
+
+END_SCHEMA;

@@ -1,0 +1,93 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping document_structure(Document_structure_arm, Document_structure_mim);*)
+
+uof_mapping Document_Structure(Document_Structure);
+
+entity_mapping Document_definition_relationship(Document_definition_relationship, product_definition_relationship);
+
+attribute_mapping relation_type(relation_type, product_definition_relationship.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, product_definition_relationship.description);
+
+end_attribute_mapping;
+
+attribute_mapping relating_document_definition(relating_document_definition, $PATH, Document_definition);
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->  
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+(application_context_element.name = 'physical document definition')
+(application_context_element.name = 'digital document definition')
+(application_context_element.name = 'generic document definition')}
+end_attribute_mapping;
+
+attribute_mapping related_document_definition(related_document_definition, $PATH, Document_definition);
+product_definition_relationship
+product_definition_relationship.related_product_definition ->  
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+(application_context_element.name = 'physical document definition')
+(application_context_element.name = 'digital document definition')
+(application_context_element.name = 'generic document definition')}
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping File_relationship(File_relationship, document_relationship);
+
+attribute_mapping relation_type(relation_type, document_relationship.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, document_relationship.description);
+
+end_attribute_mapping;
+
+attribute_mapping relating_document_file(relating_document_file, $PATH, File);
+document_relationship
+document_relationship.relating_document ->     
+document =>
+document_file  
+
+end_attribute_mapping;
+
+attribute_mapping related_document_file(related_document_file, $PATH, File);
+document_relationship
+document_relationship.related_document ->     
+document =>
+document_file  
+
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

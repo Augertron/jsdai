@@ -1,0 +1,32 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4200 - ISO/TS 10303-1751 Test requirement allocation - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3624
+*)
+
+SCHEMA Test_requirement_allocation_arm;
+
+	USE FROM Functional_assignment_to_part_arm;	-- ISO/TS 10303-1674
+	USE FROM Requirement_decomposition_arm;	-- ISO/TS 10303-1740
+	USE FROM Functional_usage_view_arm;	-- ISO/TS 10303-1705
+
+   TYPE tra_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
+      (Product_version);
+   END_TYPE; 
+
+  ENTITY Test_requirement_allocation
+    SUBTYPE OF (Requirement_assignment);
+      SELF\Requirement_assignment.assigned_to : Product_version;
+      analytical_model_based_test_access                : OPTIONAL SET[1:?] OF Analytical_model_port_assignment; --part_feature_model_port_assignment;
+      functional_specification_based_test_access        : OPTIONAL SET[1:?] OF Functional_usage_view_to_part_terminal_assignment;
+      SELF\Requirement_assignment.assigned_requirement RENAMED assigned_requirement_property  : Predefined_requirement_view_definition;
+    WHERE
+      WR1 : EXISTS(analytical_model_based_test_access) XOR EXISTS(functional_specification_based_test_access);
+      WR2 : NOT (EXISTS(functional_specification_based_test_access)) OR 
+      (SIZEOF(QUERY(fa <* functional_specification_based_test_access | NOT 
+      (fa.physical_usage_view_terminal\Shape_element.containing_shape.defined_version = SELF\Requirement_assignment.assigned_to))) = 0);
+     WR3 : assigned_requirement_property\Product_view_definition.initial_context\View_definition_context.life_cycle_stage = 'test';
+  END_ENTITY;
+
+END_SCHEMA;  
+

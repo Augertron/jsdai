@@ -1,0 +1,57 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Datum difference based model - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Datum_difference_based_model_xim;
+
+USE FROM Extended_geometric_tolerance_xim;
+
+USE FROM Functional_usage_view_xim;
+
+USE FROM Datum_difference_based_model_mim;
+
+	SUBTYPE_CONSTRAINT ddbm_model_parameter_armx_subtypes FOR Model_parameter_armx; 
+		ONEOF (Datum_difference_based_model_parameter_armx,
+	 	Schema_based_model_parameter);
+	END_SUBTYPE_CONSTRAINT;
+
+  ENTITY Datum_difference_based_model_parameter_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Model_parameter_armx, datum_difference_based_model_parameter);
+      of_datum_difference : Datum_difference_armx;
+  END_ENTITY;
+
+  ENTITY Datum_difference_functional_unit_usage_view_terminal_assignment_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (datum_difference_functional_unit_usage_view_terminal_assignment);
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED assigned_functional_terminal_definition : Functional_unit_usage_view_terminal_definition;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED assigned_datum_difference         			: Datum_difference_armx;
+    DERIVE
+      SELF\shape_aspect_relationship.description : text := ?;
+      SELF\shape_aspect_relationship.name : label := ?;
+  END_ENTITY;
+
+END_SCHEMA;
+

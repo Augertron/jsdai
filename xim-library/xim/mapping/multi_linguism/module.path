@@ -1,0 +1,134 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping multi_linguism(Multi_linguism_arm, Multi_linguism_mim);*)
+
+uof_mapping Multi_linguism(Multi_linguism);
+(* Entity with the same name is taken from AIM
+entity_mapping Language(Language, language);
+
+mapping_constraints;
+language <= group
+end_mapping_constraints;
+
+attribute_mapping language_code(language_code, group.name);
+
+language <= group
+group.name
+
+end_attribute_mapping;
+
+attribute_mapping country_code(country_code, group.description);
+
+language <= group
+group.description
+
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Language_indication(Language_indication, attribute_language_assignment);
+
+mapping_constraints;
+
+attribute_language_assignment <= attribute_classification_assignment
+{attribute_classification_assignment.role ->
+classification_role
+classification_role.name = 'primary'}
+
+end_mapping_constraints;
+
+attribute_mapping considered_instance(considered_instance, $PATH, attribute_language_item);
+
+attribute_language_assignment.items[i] -> attribute_language_item
+
+end_attribute_mapping;
+
+attribute_mapping considered_attribute(considered_attribute, attribute_classification_assignment.attribute_name);
+
+attribute_language_assignment <= attribute_classification_assignment
+attribute_classification_assignment.attribute_name
+
+end_attribute_mapping;
+
+attribute_mapping used_language(used_language, $PATH, Language);
+
+attribute_language_assignment <= attribute_classification_assignment
+attribute_classification_assignment.assigned_class -> group
+group => language
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Attribute_translation_assignment(Attribute_translation_assignment, multi_language_attribute_assignment);
+
+mapping_constraints;
+
+multi_language_attribute_assignment <= attribute_value_assignment
+{attribute_value_assignment.role -> attribute_value_role
+attribute_value_role.name = 'alternate language'}
+{attribute_value_assignment = attribute_language_item 
+attribute_language_item <- attribute_language_assignment.items[i]
+attribute_language_assignment <= attribute_classification_assignment
+{attribute_classification_assignment.role -> classification_role
+classification_role.name = 'translated'}
+{attribute_classification_assignment.attribute_name = 'attribute_value'}}
+
+end_mapping_constraints;
+
+attribute_mapping considered_instance(considered_instance, $PATH, attribute_language_item);
+
+multi_language_attribute_assignment.items[i] -> multi_language_attribute_item
+
+end_attribute_mapping;
+
+attribute_mapping considered_attribute(considered_attribute, attribute_value_assignment.attribute_name);
+
+multi_language_attribute_assignment <= attribute_value_assignment
+attribute_value_assignment.attribute_name
+
+end_attribute_mapping;
+
+attribute_mapping translation_text(translation_text, attribute_value_assignment.attribute_value);
+
+multi_language_attribute_assignment <= attribute_value_assignment
+attribute_value_assignment.attribute_value
+
+end_attribute_mapping;
+
+attribute_mapping translation_language_x(translation_language_x, $PATH, Language);
+
+multi_language_attribute_assignment <= attribute_value_assignment
+attribute_value_assignment = attribute_language_item 
+attribute_language_item <- attribute_language_assignment.items[i]
+attribute_language_assignment <= attribute_classification_assignment
+attribute_classification_assignment.assigned_class -> group
+group => language
+
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

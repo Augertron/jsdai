@@ -1,0 +1,218 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping required_resource(Required_resource_arm, Required_resource_mim);*)
+
+uof_mapping Required_resource(Required_resource);
+
+entity_mapping Required_resource(Required_resource, action_resource_requirement);
+
+mapping_constraints;
+action_resource_requirement
+	{action_resource_requirement.kind ->
+	resource_requirement_type
+	resource_requirement_type.name='required resource'}
+	{action_resource_requirement.operations[i] ->
+	characterized_action_definition
+	characterized_action_definition = action_method
+	action_method
+	action_method.name = 'resource management'}
+    
+end_mapping_constraints;
+
+attribute_mapping name(name, action_resource_requirement.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, action_resource_requirement.description);
+
+end_attribute_mapping;
+
+attribute_mapping required_quantity(required_quantity, $PATH, measure_with_unit);
+action_resource_requirement
+	characterized_resource_definition = action_resource_requirement
+	characterized_resource_definition
+	characterized_resource_definition <-
+	resource_property.resource
+	resource_property
+	{resource_property.name = 'required quantity'}
+	resource_property <-
+	resource_property_representation.property 
+	resource_property_representation
+	{resource_property_representation.name = 'required quantity'}
+	resource_property_representation.representation ->
+	representation
+	{representation.context_of_items ->
+	representation_context
+	representation_context.context_identifier = ''}
+	{representation.context_of_items ->
+	representation_context
+	representation_context.context_type = 'required resource'}
+	representation.items[i] ->
+	representation_item
+	representation_item =>
+	value_representation_item
+	value_representation_item.value_component ->
+	measure_value 
+	measure_value <-
+	measure_with_unit.value_component
+  measure_with_unit    
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Required_resource_relationship(Required_resource_relationship, action_resource_requirement_relationship);
+
+mapping_constraints;
+
+end_mapping_constraints;
+
+attribute_mapping name(name, action_resource_requirement_relationship.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, action_resource_requirement_relationship.description);
+
+end_attribute_mapping;
+
+attribute_mapping relating(relating, $PATH, Required_resource);
+action_resource_requirement_relationship.relating_action_resource_requirement ->
+	action_resource_requirement
+      
+end_attribute_mapping;
+
+attribute_mapping related(related, $PATH, Required_resource);
+action_resource_requirement_relationship.related_action_resource_requirement ->
+	action_resource_requirement
+      
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Required_resource_assignment(Required_resource_assignment, action_method);
+
+mapping_constraints;
+{action_method.name = 'resource management'}
+	 {action_method.consequence = 'required resource assignment'}
+	 {action_method.purpose = 'standard action method'}
+    
+end_mapping_constraints;
+
+attribute_mapping assigned_resource(assigned_resource, $PATH, Required_resource);
+action_method
+	characterized_action_definition = action_method
+	characterized_action_definition
+	characterized_action_definition <- action_resource_requirement.operations[i]
+	action_resource_requirement
+        
+end_attribute_mapping;
+
+attribute_mapping item(item, $PATH, required_resource_item);
+ action_method <- action_method_assignment.assigned_action_method
+	action_method_assignment
+	{action_method_assignment.role -> action_method_role
+	action_method_role
+	action_method_role.name = 'required resource'}
+	action_method_assignment => applied_action_method_assignment
+	applied_action_method_assignment
+	applied_action_method_assignment.items[i] -> action_method_items
+	
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(* AIM entity is taken istead
+entity_mapping Classification_assignment(Classification_assignment, applied_classification_assignment)
+extended;
+
+attribute_mapping items(items, , Required_resource);
+
+         classification_item
+         classification_item *> required_resource_classification_item
+	 required_resource_classification_item
+	 required_resource_classification_item = action_resource_requirement
+       
+end_attribute_mapping;
+
+attribute_mapping items(items, , Required_resource_assignment);
+
+         classification_item
+         classification_item *> required_resource_classification_item
+	 required_resource_classification_item
+	 required_resource_classification_item = action_method
+       
+end_attribute_mapping;
+
+attribute_mapping items(items, , Required_resource_relationship);
+
+         classification_item
+         classification_item *> required_resource_classification_item
+	 required_resource_classification_item
+	 required_resource_classification_item = action_resource_requirement_relationship
+       
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Required_resource_by_resource_item(Required_resource_by_resource_item, requirement_for_action_resource);
+
+mapping_constraints;
+requirement_for_action_resource <=
+	action_resource_requirement
+	{action_resource_requirement.kind ->
+	resource_requirement_type
+	resource_requirement_type.name = 'required resource by resource item'}
+	{action_resource_requirement.operations[i] ->
+	characterized_action_definition
+	characterized_action_definition = action_method
+	action_method
+	action_method.name = 'resource management'}
+    
+end_mapping_constraints;
+
+attribute_mapping resource_item(resource_item, $PATH, Resource_item);
+requirement_for_action_resource.resources[i] ->
+	action_resource
+      
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Required_resource_by_specification(Required_resource_by_specification, action_resource_requirement);
+
+mapping_constraints;
+action_resource_requirement
+	{action_resource_requirement.kind ->
+	resource_requirement_type
+	resource_requirement_type.name='required resource by specification'}
+	{action_resource_requirement.operations[i] ->
+	characterized_action_definition
+	characterized_action_definition = action_method
+	action_method
+	action_method.name = 'resource management'}
+    
+end_mapping_constraints;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

@@ -1,0 +1,181 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping layered_3d_shape(Layered_3d_shape_arm, Layered_3d_shape_mim);*)
+
+entity_mapping Shape_definition_3d_intersection_armx(Shape_definition_3d_intersection_armx, shape_definition_3d_intersection);
+
+mapping_constraints;
+{shape_definition_3d_intersection <=
+[representation_relationship_with_transformation
+representation_relationship_with_transformation
+representation_relationship_with_transformation.transformation_operator ->
+transformation
+transformation = item_defined_transformation]
+[shape_representation_relationship]
+[representation]
+[shape_representation_relationship <=
+representation_relationship
+representation_relationship.name = 'shape definition 3d intersection']}
+
+end_mapping_constraints;
+
+attribute_mapping planar_shape_origin(planar_shape_origin, $PATH, axis2_placement_2d);
+shape_definition_3d_intersection <=
+representation_relationship_with_transformation
+representation_relationship_with_transformation.transformation_operator ->
+transformation
+transformation = item_defined_transformation
+item_defined_transformation.transform_item_1 ->
+representation_item
+{representation_item
+representation_item.name = 'origin'}
+representation_item =>
+geometric_representation_item =>
+placement =>
+axis2_placement_2d
+
+end_attribute_mapping;
+
+attribute_mapping orientation_intersection_plane(orientation_intersection_plane, $PATH, axis2_placement_3d);
+shape_definition_3d_intersection <=
+representation_relationship_with_transformation
+representation_relationship_with_transformation.transformation_operator ->
+transformation
+transformation = item_defined_transformation
+item_defined_transformation.transform_item_2 ->
+representation_item
+{representation_item
+representation_item.name = 'orientation intersection plane'}
+representation_item =>
+geometric_representation_item =>
+placement =>
+axis2_placement_3d
+
+end_attribute_mapping;
+
+attribute_mapping projected_volume(projected_volume, $PATH, Shape_representation);
+shape_definition_3d_intersection <=
+shape_representation_relationship <=
+representation_relationship
+representation_relationship.rep_2 ->
+{representation
+representation.context_of_items ->
+representation_context =>
+geometric_representation_context
+geometric_representation_context.coordinate_space_dimension = 3}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping surface_intersection_result(surface_intersection_result, $PATH, Planar_projected_shape_model);
+shape_definition_3d_intersection <=
+shape_representation_relationship <=
+representation_relationship
+representation_relationship.rep_1 ->
+{representation
+representation.name = 'ppsm'}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Shape_definition_3d_plane_projection(Shape_definition_3d_plane_projection, representation_relationship_with_transformation);
+
+mapping_constraints;
+{representation_relationship_with_transformation <=
+representation_relationship
+representation_relationship.name = 'shape definition 3d plane projection'}
+
+end_mapping_constraints;
+
+attribute_mapping planar_shape_origin(planar_shape_origin, $PATH, axis2_placement_2d);
+representation_relationship_with_transformation
+representation_relationship_with_transformation.transformation_operator ->
+transformation
+transformation = item_defined_transformation
+item_defined_transformation.transform_item_1 ->
+representation_item
+{representation_item
+representation_item.name = 'origin'}
+representation_item =>
+geometric_representation_item =>
+placement =>
+axis2_placement_2d
+
+end_attribute_mapping;
+
+attribute_mapping viewing_plane(viewing_plane, $PATH, axis2_placement_3d);
+representation_relationship_with_transformation <=
+representation_relationship
+representation_relationship.rep_2 ->
+representation
+representation.items[i] ->
+representation_item =>
+geometric_representation_item =>
+geometric_set
+geometric_set.elements[i] ->
+geometric_set_select = surface
+{surface <=
+geometric_representation_item <=
+representation_item
+representation_item.name = 'viewing plane'}
+surface =>
+elementary_surface
+{elementary_surface =>
+plane}
+elementary_surface.position ->
+axis2_placement_3d
+
+end_attribute_mapping;
+
+attribute_mapping projected_volume(projected_volume, $PATH, Shape_representation);
+representation_relationship_with_transformation <=
+representation_relationship
+representation_relationship.rep_2 ->
+{representation
+representation.context_of_items ->
+representation_context =>
+geometric_representation_context
+geometric_representation_context.coordinate_space_dimension = 3}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+attribute_mapping surface_projection_result(surface_projection_result, $PATH, Planar_projected_shape_model);
+representation_relationship_with_transformation <=
+representation_relationship
+representation_relationship.rep_1 ->
+{representation
+representation.name = 'ppsm'}
+representation =>
+shape_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

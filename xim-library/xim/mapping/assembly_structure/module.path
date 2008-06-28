@@ -1,0 +1,79 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping assembly_structure(Assembly_structure_arm, Assembly_structure_mim);*)
+
+uof_mapping Assembly_structure(Assembly_structure);
+(*
+entity_mapping Assembly_component_relationship(Assembly_component_relationship, (assembly_component_usage)(
+		 [assembly_component_usage]
+		 [quantified_assembly_component_usage]
+		 ));
+
+attribute_mapping quantity(quantity, $PATH, measure_with_unit);
+quantified_assembly_component_usage.quantity ->
+			 measure_with_unit
+			 
+end_attribute_mapping;
+
+attribute_mapping location_indicator(location_indicator, assembly_component_usage.reference_designator);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+entity_mapping Next_assembly_usage(Next_assembly_usage, next_assembly_usage_occurrence);
+
+mapping_constraints;
+assembly_component_usage => next_assembly_usage_occurrence
+		 
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Promissory_usage(Promissory_usage, promissory_usage_occurrence);
+
+mapping_constraints;
+assembly_component_usage => promissory_usage_occurrence
+		 
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Component_upper_level_identification(Component_upper_level_identification, specified_higher_usage_occurrence);
+
+attribute_mapping upper_assembly_relationship(upper_assembly_relationship, $PATH, assembly_component_usage);
+specified_higher_usage_occurrence.upper_usage -> assembly_component_usage
+			 {(assembly_component_usage => next_assembly_usage_occurrence)
+			 (assembly_component_usage => specified_higher_usage_occurrence)}
+			 
+end_attribute_mapping;
+
+attribute_mapping sub_assembly_relationship(sub_assembly_relationship, $PATH, next_assembly_usage_occurrence);
+specified_higher_usage_occurrence.next_usage -> next_assembly_usage_occurrence
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

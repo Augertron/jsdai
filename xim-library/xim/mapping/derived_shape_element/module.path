@@ -1,0 +1,288 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping derived_shape_element(Derived_shape_element_arm, Derived_shape_element_mim);*)
+
+
+entity_mapping Derived_shape_element(Derived_shape_element, ((derived_shape_aspect))((derived_shape_aspect))((derived_shape_aspect))(
+(derived_shape_aspect)
+)((derived_shape_aspect))((derived_shape_aspect))((derived_shape_aspect)
+)((derived_shape_aspect)
+));
+
+mapping_constraints;
+(
+(derived_shape_aspect 
+{derived_shape_aspect => apex})
+)(
+({derived_shape_aspect => centre_of_symmetry})
+)(
+({derived_shape_aspect => geometric_alignment})
+)(
+({derived_shape_aspect => perpendicular_to})
+)(
+({derived_shape_aspect => extension})
+)(
+({derived_shape_aspect => tangent})
+)(
+({derived_shape_aspect => geometric_intersection})
+)
+end_mapping_constraints;
+
+attribute_mapping derived_from(derived_from, $PATH, Shape_element);
+shape_aspect <- 
+shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship 
+{shape_aspect_relationship => 
+shape_aspect_deriving_relationship} 
+shape_aspect_relationship.related_shape_aspect -> 
+shape_aspect
+end_attribute_mapping;
+
+attribute_mapping role(role, shape_aspect.description);
+(derived_shape_aspect <=
+shape_aspect
+shape_aspect.description)
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Offset_shape_element(Offset_shape_element, parallel_offset
+);
+
+attribute_mapping offset(offset, $PATH, measure_with_unit);
+parallel_offset
+parallel_offset.offset -> 
+measure_with_unit
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Derived_geometry(Derived_geometry, (derived_shape_aspect)((derived_shape_aspect))((derived_shape_aspect)
+)(
+(derived_shape_aspect)
+)((derived_shape_aspect))((derived_shape_aspect))((derived_shape_aspect)
+)((derived_shape_aspect)
+)((derived_shape_aspect)
+));
+(* extended; *)
+
+mapping_constraints;
+(
+({derived_shape_aspect => apex})
+)(
+({derived_shape_aspect => centre_of_symmetry})
+)(
+({derived_shape_aspect => geometric_alignment})
+)(
+({derived_shape_aspect => perpendicular_to})
+)(
+({derived_shape_aspect => extension})
+)(
+({derived_shape_aspect => tangent})
+)(
+({derived_shape_aspect => geometric_intersection})
+)(
+({derived_shape_aspect => parallel_offset})
+)
+end_mapping_constraints;
+
+attribute_mapping derived_from(derived_from, $PATH, Shape_element);
+derived_shape_aspect <= shape_aspect
+shape_aspect <- shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship 
+{shape_aspect_relationship => shape_aspect_deriving_relationship} 
+shape_aspect_relationship.related_shape_aspect -> 
+shape_aspect
+end_attribute_mapping;
+
+attribute_mapping geometry(geometry, $PATH, constructive_element_select);
+
+derived_shape_aspect <= shape_aspect
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+represented_definition = property_definition
+represented_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] -> representation_item
+representation_item => geometric_representation_item
+
+end_attribute_mapping;
+
+attribute_mapping geometry(geometry, (axis2_placement_2d)(axis2_placement_3d));
+derived_shape_aspect <= shape_aspect
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+represented_definition = property_definition
+represented_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] -> representation_item
+representation_item => geometric_representation_item
+(geometric_representation_item => placement
+placement => axis2_placement_2d)
+(geometric_representation_item => placement
+placement => axis2_placement_3d)
+end_attribute_mapping;
+
+attribute_mapping geometry(geometry, $PATH, Curve);
+derived_shape_aspect <= shape_aspect
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+represented_definition = property_definition
+represented_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] -> representation_item
+representation_item => geometric_representation_item
+geometric_representation_item => curve
+
+end_attribute_mapping;
+
+attribute_mapping geometry(geometry, $PATH, Cartesian_point);
+derived_shape_aspect <= shape_aspect
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+represented_definition = property_definition
+represented_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] -> representation_item
+representation_item => geometric_representation_item
+geometric_representation_item => point
+point => cartesian_point
+
+end_attribute_mapping;
+
+attribute_mapping geometry(geometry, $PATH, Point_on_curve);
+derived_shape_aspect <= shape_aspect
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+represented_definition = property_definition
+represented_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] -> representation_item
+representation_item => geometric_representation_item
+geometric_representation_item => point
+point => point_on_curve
+
+end_attribute_mapping;
+
+attribute_mapping geometry(geometry, ($PATH)($PATH), Point_on_surface);
+derived_shape_aspect <= shape_aspect
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+represented_definition = property_definition
+represented_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] -> representation_item
+representation_item => geometric_representation_item
+(
+geometric_representation_item => point
+point => point_on_surface
+)(
+geometric_representation_item => point
+point => degenerate_pcurve
+)
+end_attribute_mapping;
+
+attribute_mapping geometry(geometry, ($PATH)($PATH), Surface);
+derived_shape_aspect <= shape_aspect
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+represented_definition = property_definition
+represented_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] -> representation_item
+representation_item => geometric_representation_item
+(
+geometric_representation_item => surface
+)(
+geometric_representation_item => surface
+surface => oriented_surface
+)
+end_attribute_mapping;
+
+attribute_mapping role(role, (shape_aspect.description)($IDENTICAL_MAPPING));
+(derived_shape_aspect <=
+shape_aspect
+shape_aspect.description)
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

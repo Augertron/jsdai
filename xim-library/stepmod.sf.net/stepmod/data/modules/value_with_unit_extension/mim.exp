@@ -1,0 +1,40 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4977 - ISO/CD-TS 10303-1753 Value with unit extension - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N4207
+*)
+
+
+SCHEMA Value_with_unit_extension_mim;
+	USE FROM Value_with_unit_mim;	-- ISO/TS 10303-1054
+
+	USE FROM Iso13584_generic_expressions_schema
+		(environment,
+		generic_literal,
+		variable_semantics);
+
+ENTITY expression_conversion_based_unit
+  SUBTYPE OF (context_dependent_unit, variable_semantics); 
+INVERSE
+  associated_variable_environment: environment FOR semantics; 
+END_ENTITY;
+
+ENTITY polar_complex_number_literal
+  SUBTYPE OF (generic_literal);
+  radius    : REAL;
+  angle     : REAL;
+WHERE
+  WR1: radius >= 0;
+  WR2: { 0 <= angle < 2*PI };
+END_ENTITY;
+
+ENTITY scattering_parameter
+ SUBTYPE OF (polar_complex_number_literal);
+WHERE
+  WR1: SIZEOF(TYPEOF(SELF) - (TYPEOF(SELF\polar_complex_number_literal ||
+       SELF\scattering_parameter))) = 0;
+END_ENTITY;
+
+END_SCHEMA;
+
+

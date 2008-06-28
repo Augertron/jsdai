@@ -1,0 +1,1059 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(** Moved from pre_design_product_...specializations *)
+
+
+entity_mapping Pre_defined_effectivity_or_ineffectivity_assignment__aia(Pre_defined_effectivity_or_ineffectivity_assignment__aia, effectivity_assignment);
+
+mapping_constraints;
+			effectivity_assignment
+			effectivity_assignment.role -> object_role
+			object_role.name
+			{(object_role.name = 'actual') 
+			(object_role.name = 'planned') 
+			(object_role.name = 'required')}
+			
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Applied_ineffectivity_assignment__actual(Applied_ineffectivity_assignment__actual, applied_effectivity_assignment);
+
+mapping_constraints;
+
+			effectivity_assignment
+			effectivity_assignment.role -> object_role
+			object_role.name
+			{object_role.name = 'actual'}
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Applied_ineffectivity_assignment__planned(Applied_ineffectivity_assignment__planned, applied_effectivity_assignment);
+
+mapping_constraints;
+
+			effectivity_assignment
+			effectivity_assignment.role -> object_role
+			object_role.name
+			{object_role.name = 'planned'}
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Applied_ineffectivity_assignment__required(Applied_ineffectivity_assignment__required, applied_effectivity_assignment);
+
+mapping_constraints;
+
+			effectivity_assignment
+			effectivity_assignment.role -> object_role
+			object_role.name
+			{object_role.name = 'required'}
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Externally_defined_effectivity_or_ineffectivity_assignment__aia(Externally_defined_effectivity_or_ineffectivity_assignment__aia, effectivity_assignment);
+
+mapping_constraints;
+			effectivity_assignment
+			effectivity_assignment.role -> object_role
+			object_role.name
+			!{(object_role.name = 'actual') 
+			(object_role.name = 'planned') 
+			(object_role.name = 'required')}
+			
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping process_plan_relationship__alternative(process_plan_relationship__alternative, action_relationship);
+
+mapping_constraints;
+
+			action_relationship
+			{action_relationship.name = 'alternative'}
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping process_plan_relationship__version_association(process_plan_relationship__version_association, action_relationship);
+
+mapping_constraints;
+
+			action_relationship
+			{action_relationship.name = 'version association'}
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping process_plan_relationship__version_sequence(process_plan_relationship__version_sequence, action_relationship);
+
+mapping_constraints;
+
+			action_relationship
+			{action_relationship.name = 'version sequence'}
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping model_change__property_definition (model_change__property_definition, property_definition);
+
+ mapping_constraints; 
+		 {(property_definition
+		property_definition.name = 'full model change')
+		(property_definition
+		property_definition.name = 'incremental model change')}
+ end_mapping_constraints;
+
+ attribute_mapping description_x (description_x, property_definition.description);
+ end_attribute_mapping;
+ 
+ attribute_mapping id_x (id_x, identification_assignment.assigned_id);
+		property_definition
+		identification_item = property_definition
+		identification_item <-
+		applied_identification_assignment.items[i]
+		applied_identification_assignment <=
+		identification_assignment
+		{identification_assignment.role ->
+		identification_role
+		identification_role.name = 'model change id'}
+		identification_assignment.assigned_id
+ end_attribute_mapping;
+
+ attribute_mapping deleted_element (deleted_element, $PATH, representation_item);
+		property_definition
+		represented_definition = property_definition
+		represented_definition <-
+		property_definition_representation.definition
+		property_definition_representation
+		{property_definition_representation.name = 'deleted elements'}
+		property_definition_representation.used_representation ->
+		representation
+		{representation.name = 'deleted elements'}
+		representation.items[i] ->
+		representation_item =>
+		{representation_item <-
+		representation.items[i]
+		representation <-
+		(property_definition_representation.used_representation
+		property_definition_representation
+		{property_definition_representation.name ='original representation'}
+		property_definition_representation.definition ->
+		represented_definition
+		represented_definition = property_definition
+		property_definition)
+		(action_property_representation.representation
+		action_property_representation
+		{action_property_representation.name = 'original representation'}
+		action_property_representation.property ->
+		action_property)}
+		(geometric_representation_item)
+		(mapped_item)
+		(topological_representation_item)
+		(styled_item)
+		(geometric_representation_item =>
+		draughting_callout =>
+		draughting_elements)
+ end_attribute_mapping;
+
+ attribute_mapping is_describing (is_describing, $PATH, change_armx);
+		property_definition
+		property_definition.definition ->
+		characterized_definition
+		characterized_definition = characterized_product_definition
+		characterized_product_definition
+		characterized_product_definition = product_definition_relationship
+		product_definition_relationship
+		{product_definition_relationship.name = 'change'}
+ end_attribute_mapping;
+ 
+ end_entity_mapping;
+ 
+entity_mapping model_change__action_property (model_change__action_property, action_property);
+
+ mapping_constraints; 
+	{(action_property
+	action_property.name = 'full model change')
+	(action_property
+	action_property.name = 'incremental model change')}
+ end_mapping_constraints;
+
+
+ attribute_mapping description_x (description_x, action_property.description);
+ end_attribute_mapping;
+ 
+ attribute_mapping id (id, identification_assignment.assigned_id);
+	action_property
+	identification_item = action_property
+	identification_item <-
+	applied_identification_assignment.items[i]
+	applied_identification_assignment <=
+	identification_assignment
+	{identification_assignment.role ->
+	identification_role
+	identification_role.name = 'model change id'}
+	identification_assignment.assigned_id
+ end_attribute_mapping;
+
+ attribute_mapping deleted_element (deleted_element, $PATH, representation_item);
+		action_property <-
+		action_property_representation.property
+		action_property_representation
+		{action_property_representation.name = 'deleted elements'}
+		action_property_representation.representation ->
+		representation
+		{representation.name = 'deleted elements'}
+		representation.items[i] ->
+		representation_item =>
+		{representation_item <-
+		representation.items[i]
+		representation <-
+		(property_definition_representation.used_representation
+		property_definition_representation
+		{property_definition_representation.name ='original representation'}
+		property_definition_representation.definition ->
+		represented_definition
+		represented_definition = property_definition
+		property_definition)
+		(action_property_representation.representation
+		action_property_representation
+		{action_property_representation.name = 'original representation'}
+		action_property_representation.property ->
+		action_property)}
+		(geometric_representation_item)
+		(mapped_item)
+		(topological_representation_item)
+		(styled_item)
+		(geometric_representation_item =>
+		draughting_callout =>
+		draughting_elements)
+ end_attribute_mapping;
+
+ attribute_mapping is_describing (is_describing, $PATH, change_armx);
+		action_property
+		action_property.definition ->
+		characterized_action_definition
+		characterized_action_definition = action_relationship
+		action_relationship
+ end_attribute_mapping;
+ end_entity_mapping;
+
+entity_mapping document_version_relationship__derivation(document_version_relationship__derivation, product_definition_formation_relationship);
+
+mapping_constraints;
+
+			product_definition_formation_relationship
+			{product_definition_formation_relationship.name = 'derivation'}
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping document_version_relationship__hierarchy(document_version_relationship__hierarchy, product_definition_formation_relationship);
+
+mapping_constraints;
+
+			product_definition_formation_relationship
+			{product_definition_formation_relationship.name = 'hierarchy'}
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping document_version_relationship__sequence(document_version_relationship__sequence, product_definition_formation_relationship);
+
+mapping_constraints;
+
+			product_definition_formation_relationship
+			{product_definition_formation_relationship.name = 'sequence'}
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping document_version_relationship__supplied_document(document_version_relationship__supplied_document, product_definition_formation_relationship);
+
+mapping_constraints;
+
+			product_definition_formation_relationship
+			{product_definition_formation_relationship.name = 'supplied document'}
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping product_definition_formation_relationship__derivation(product_definition_formation_relationship__derivation, product_definition_formation_relationship);
+
+mapping_constraints;
+
+			product_definition_formation_relationship
+			{product_definition_formation_relationship.name = 'derivation'}
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping product_definition_formation_relationship__hierarchy(product_definition_formation_relationship__hierarchy, product_definition_formation_relationship);
+
+mapping_constraints;
+
+			product_definition_formation_relationship
+			{product_definition_formation_relationship.name = 'hierarchy'}
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping product_definition_formation_relationship__sequence(product_definition_formation_relationship__sequence, product_definition_formation_relationship);
+
+mapping_constraints;
+
+			product_definition_formation_relationship
+			{product_definition_formation_relationship.name = 'sequence'}
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping product_definition_formation_relationship__supplied_item(product_definition_formation_relationship__supplied_item, product_definition_formation_relationship);
+
+mapping_constraints;
+
+			product_definition_formation_relationship
+			{product_definition_formation_relationship.name = 'supplied item'}
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping person_or_organization_or_person_in_organization_in_position_relationship__successor(person_or_organization_or_person_in_organization_in_position_relationship__successor, applied_position_in_organization_assignment);
+mapping_constraints;
+
+			applied_position_in_organization_assignment	<=
+			position_in_organization_assignment
+			position_in_organization_assignment.role ->
+			position_in_organization_role
+			{position_in_organization_role.name = 'successor'}			
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping part_definition_relationship__definition_replacement(part_definition_relationship__definition_replacement, product_definition_relationship);
+mapping_constraints;
+
+			product_definition_relationship
+			{product_definition_relationship.name = 'definition replacement'}			
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping part_definition_relationship__geometrical_relationship(part_definition_relationship__geometrical_relationship, product_definition_relationship);
+mapping_constraints;
+
+			product_definition_relationship
+			{product_definition_relationship.name = 'geometrical relationship'}			
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Part_definition_relationship__tool_part_relationship(Part_definition_relationship__tool_part_relationship, |product_definition_relationship|);
+
+mapping_constraints;
+{product_definition_relationship.name = 'tool part relationship'}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping document_definition_relationship__addition(document_definition_relationship__addition, product_definition_relationship);
+mapping_constraints;
+
+			product_definition_relationship
+			{product_definition_relationship.name = 'addition'}			
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping document_definition_relationship__copy(document_definition_relationship__copy, product_definition_relationship);
+mapping_constraints;
+
+			product_definition_relationship
+			{product_definition_relationship.name = 'copy'}			
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping document_definition_relationship__derivation(document_definition_relationship__derivation, product_definition_relationship);
+mapping_constraints;
+
+			product_definition_relationship
+			{product_definition_relationship.name = 'derivation'}			
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping document_definition_relationship__decomposition(document_definition_relationship__decomposition, product_definition_relationship);
+mapping_constraints;
+
+			product_definition_relationship
+			{product_definition_relationship.name = 'decomposition'}			
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping document_definition_relationship__peer(document_definition_relationship__peer, product_definition_relationship);
+mapping_constraints;
+
+			product_definition_relationship
+			{product_definition_relationship.name = 'peer'}			
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping document_definition_relationship__reference(document_definition_relationship__reference, product_definition_relationship);
+mapping_constraints;
+
+			product_definition_relationship
+			{product_definition_relationship.name = 'reference'}			
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping document_definition_relationship__sequence(document_definition_relationship__sequence, product_definition_relationship);
+mapping_constraints;
+
+			product_definition_relationship
+			{product_definition_relationship.name = 'sequenc'}			
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping document_definition_relationship__substitution(document_definition_relationship__substitution, product_definition_relationship);
+mapping_constraints;
+
+			product_definition_relationship
+			{product_definition_relationship.name = 'substitution'}			
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping document_definition_relationship__translation(document_definition_relationship__translation, product_definition_relationship);
+mapping_constraints;
+
+			product_definition_relationship
+			{product_definition_relationship.name = 'translation'}			
+		
+end_mapping_constraints;
+
+end_entity_mapping;
+
+(* Taken from S8 *)
+entity_mapping process_operation_resource_assignment (process_operation_resource_assignment, requirement_for_action_resource);
+
+ mapping_constraints; 
+   {requirement_for_action_resource <=
+   action_resource_requirement}
+ end_mapping_constraints;
+
+ attribute_mapping reason (reason, action_resource_requirement.description);
+ end_attribute_mapping;
+ 
+ attribute_mapping reference_tool (reference_tool, action_resource_requirement.name);
+
+requirement_for_action_resource <=
+{([action_resource_requirement.name = 'reference tool']
+[action_resource_requirement =>
+requirement_for_action_resource
+requirement_for_action_resource.resources[i] ->
+action_resource =>
+product_definition_resource <=
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'part definition'}])
+(action_resource_requirement.name = 'non reference tool')}
+
+
+ end_attribute_mapping;
+
+ attribute_mapping operation_process_operation_occurrence (operation
+
+, $PATH, process_operation_occurrence);
+
+requirement_for_action_resource <=
+action_resource_requirement
+action_resource_requirement.operations[i] ->
+characterized_action_definition
+characterized_action_definition = action
+action <-	(* Modified by Audronis Gustas *)
+action_relationship.related_action
+action_relationship
+{action_relationship.name = 'process operation occurrence'}
+
+
+ end_attribute_mapping;
+
+ attribute_mapping placement_transformation (placement
+
+, $PATH, transformation);
+
+[requirement_for_action_resource
+{requirement_for_action_resource <=
+action_resource_requirement
+action_resource_requirement.name = 'non reference tool'}
+requirement_for_action_resource.resources[i] ->
+action_resource =>
+product_definition_resource <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition =>
+product_definition_shape}
+property_definition
+represented_definition = property_definition
+represented_definition <-
+property_definition_representation.definition
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.used_representation ->
+representation <-
+representation_relationship.rep_1]
+[(requirement_for_action_resource
+{requirement_for_action_resource <=
+action_resource_requirement
+action_resource_requirement.name = 'reference tool'}
+requirement_for_action_resource.resources[i] ->
+action_resource =>
+product_definition_resource <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition =>
+product_definition_shape}
+property_definition
+represented_definition = property_definition
+represented_definition <-
+property_definition_representation.definition
+property_definition_representation
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation.used_representation ->
+representation <-)
+(action_resource_requirement
+action_resource_requirement.operations[i] ->
+characterized_action_definition
+characterized_action_definition = action
+action
+{action.chosen_method ->
+action_method =>
+process_operation}
+characterized_action_definition = action
+characterized_action_definition <-
+action_property.definition
+action_property <-
+action_property_representation.property
+action_property_representation
+action_property_representation.representation ->
+representation <-
+{representation.name = 'reference system'})
+
+representation_relationship.rep_2]
+representation_relationship =>
+representation_relationship_with_transformation
+representation_relationship_with_transformation.transformation_operator ->
+transformation
+(transformation = item_defined_transformation
+item_defined_transformation)
+(transformation = functionally_defined_transformation
+functionally_defined_transformation)
+(* Deleted by Audronis Gustas *)
+
+
+ end_attribute_mapping;
+(* Comment by GL
+ attribute_mapping reason_multi_language_string (reason
+
+, ([action_resource_requirement.description]
+[$PATH])
+($PATH), multi_language_string);
+
+requirement_for_action_resource
+(attribute_language_item = requirement_for_action_resource
+attribute_language_item <-
+attribute_language_assignment.items[i]
+attribute_language_assignment 
+{attribute_language_assignment  <=
+attribute_classification_assignment
+attribute_classification_assignment.attribute_name = 'description'})
+(multi_language_attribute_item = requirement_for_action_resource
+multi_language_attribute_item <-
+multi_language_attribute_assignment.items[i]
+multi_language_attribute_assignment
+{multi_language_attribute_assignment <=
+attribute_value_assignment
+attribute_value_assignment.attribute_name = 'description'})
+
+ end_attribute_mapping; *)
+(* For now comment out as making problems and questionable
+ attribute_mapping resource_definition_resource_requirement_type (resource_definition, $PATH, resource_requirement_type);
+		requirement_for_action_resource <=
+		action_resource_requirement
+		action_resource_requirement.kind ->
+		resource_requirement_type
+ end_attribute_mapping;
+*)
+ attribute_mapping resource_definition_product_view_definition (resource_definition, $PATH, Product_view_definition);
+
+requirement_for_action_resource
+requirement_for_action_resource.resources[i] ->
+action_resource  =>
+product_definition_resource <=
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'part definition'}
+
+
+ end_attribute_mapping;
+
+ attribute_mapping resource_definition_product_occurrence (resource_definition, $PATH, Product_occurrence);
+
+requirement_for_action_resource
+requirement_for_action_resource.resources[i] ->
+action_resource  =>
+product_definition_resource <=
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'part occurrence'}
+product_definition
+
+
+ end_attribute_mapping;
+(* GL - Not really 1:1 mapping from 214 - need review - TODO
+ attribute_mapping resource_definition_physical_element_definition (resource_definition, $PATH, physical_element_definition);
+
+requirement_for_action_resource
+requirement_for_action_resource.resources[i] ->
+action_resource  =>
+product_definition_resource <=
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'physical occurrence'}
+
+
+ end_attribute_mapping;
+
+ attribute_mapping resource_definition_product_component (resource_definition
+
+, $PATH, product_component);
+
+requirement_for_action_resource
+requirement_for_action_resource.resources[i] ->
+action_resource =>
+product_definition_resource <=
+product_definition
+product_definition.formation ->
+product_definition_formation
+
+ end_attribute_mapping; *)
+ 
+ end_entity_mapping;
+
+(* Synthetic entity *)
+entity_mapping Product_view_definition__product_definition_resource_xim (Product_view_definition__product_definition_resource_xim, product_definition_resource);
+
+ mapping_constraints; 
+product_definition_resource <=
+product_definition
+{product_definition.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'part definition'}
+ end_mapping_constraints;
+ 
+ end_entity_mapping;
+
+entity_mapping process_operation_occurrence (process_operation_occurrence, action_relationship);
+
+ mapping_constraints; 
+ 		{action_relationship
+		{action_relationship.name = 'process operation occurrence'}
+		action_relationship.related_action ->
+		action}
+ end_mapping_constraints;
+
+ attribute_mapping id (id, action.id);
+		action_relationship
+		action_relationship.related_action ->
+		action
+		action.id
+ end_attribute_mapping;
+
+ attribute_mapping is_defined_in_geometric_representation_context (is_defined_in, $PATH, geometric_representation_context);
+		action_relationship
+		{action_relationship.name = 'process operation occurrence'}
+		action_relationship.related_action ->
+		action
+		characterized_action_definition = action
+		characterized_action_definition <-
+		action_property.definition
+		action_property <-
+		action_property_representation.property
+		action_property_representation
+		action_property_representation.representation ->
+		representation
+		{[representation.name = 'reference system']
+		[representation
+		representation.items[i] ->
+		representation_item =>
+		geometric_representation_item =>
+		placement =>
+		axis2_placement_3d]}
+		representation.context_of_items ->
+		representation_context =>
+		geometric_representation_context
+ end_attribute_mapping;
+
+ attribute_mapping operation_definition_process_operation_definition (operation_definition, $PATH, Process_operation_definition);
+		action_relationship
+		action_relationship.related_action ->
+		action
+		action.chosen_method ->
+		action_method =>
+		process_operation
+ end_attribute_mapping;
+
+ attribute_mapping plan_process_plan (plan, $PATH, Process_plan_armx);
+		action_relationship 
+		action_relationship.relating_action ->
+		action =>
+		(process_plan)
+		(product_definition_process =>
+		product_process_plan)
+ end_attribute_mapping;
+ 
+ end_entity_mapping;
+ 
+ entity_mapping process_operation_occurrence_relationship (process_operation_occurrence_relationship, action_relationship);
+
+ mapping_constraints; {action_relationship	(* Modified by Audronis Gustas *)
+		[action_relationship.related_action ->
+		action <-
+		action_relationship.related_action
+		action_relationship
+		action_relationship.name = 'process operation occurrence']
+		[action_relationship.relating_action ->
+		action <-
+		action_relationship.related_action
+		action_relationship
+		action_relationship.name = 'process operation occurrence']}
+ end_mapping_constraints;
+
+ attribute_mapping cycle_time (cycle_time, time_measure_with_unit);
+		action_relationship
+		time_interval_item = action_relationship
+		time_interval_item <-
+		applied_time_interval_assignment.items[i]
+		applied_time_interval_assignment <=
+		time_interval_assignment
+		{time_interval_assignment.role ->
+		time_interval_role
+		time_interval_role.name = 'cycle time'}
+		time_interval_assignment.assigned_time_interval ->
+		time_interval =>
+		time_interval_with_bounds
+		{time_interval_with_bounds.primary_bound ->
+		date_time_or_event_occurrence
+		date_time_or_event_occurrence = event_occurrence
+		event_occurrence
+		event_occurrence.name = 'start of interval'}
+		time_interval_with_bounds.duration ->
+		time_measure_with_unit
+ end_attribute_mapping;
+
+ attribute_mapping description (description, action_relationship.description);
+ end_attribute_mapping;
+ 
+ attribute_mapping relation_type (relation_type, action_relationship.name);
+		action_relationship
+		{(action_relationship.name)
+		(action_relationship.name = 'decomposition')
+		(action_relationship.name = 'exclusiveness')
+		(action_relationship.name = 'sequence')
+		(action_relationship.name = 'simultaneity')
+		(action_relationship.name = 'substitution')}
+		action_relationship.name
+ end_attribute_mapping;
+(* GL - not supported
+ attribute_mapping description_multi_language_string (description
+
+, ([action_relationship.description]
+[$PATH])
+($PATH), multi_language_string);
+
+action_relationship
+(attribute_language_item = action_relationship
+attribute_language_item <-
+attribute_language_assignment.items[i]
+attribute_language_assignment 
+{attribute_language_assignment  <=
+attribute_classification_assignment
+attribute_classification_assignment.attribute_name = 'description'})
+(multi_language_attribute_item = action_relationship
+multi_language_attribute_item <-
+multi_language_attribute_assignment.items[i]
+multi_language_attribute_assignment
+{multi_language_attribute_assignment <=
+attribute_value_assignment
+attribute_value_assignment.attribute_name = 'description'})
+
+
+ end_attribute_mapping; *)
+
+ attribute_mapping related_process_operation_occurrence (related, $PATH, Process_operation_occurrence);
+		action_relationship 
+		action_relationship.related_action ->
+		action <-
+		action_relationship.related_action
+		action_relationship
+		{action_relationship.name = 'process operation occurrence'}
+ end_attribute_mapping;
+
+ attribute_mapping relating_process_operation_occurrence (relating, $PATH, Process_operation_occurrence);
+		action_relationship 
+		action_relationship.relating_action ->
+		action <-
+		action_relationship.related_action
+		action_relationship
+		{action_relationship.name = 'process operation occurrence'}
+ end_attribute_mapping;
+
+ attribute_mapping waiting_time_representation_item (waiting_time, $PATH, representation_item);
+		action_relationship
+		characterized_action_definition = action_relationship
+		characterized_action_definition <-
+		action_property.definition
+		action_property <-
+		action_property_representation.property
+		action_property_representation
+		action_property_representation.representation ->
+		representation
+		representation.items[i] ->
+		representation_item =>
+		(compound_representation_item)
+		(descriptive_representation_item)
+		(measure_representation_item)
+ end_attribute_mapping;
+ end_entity_mapping; 
+ 
+ 
+ entity_mapping Process_operation_definition (Process_operation_definition, process_operation);
+
+ mapping_constraints; 
+ 		{process_operation <=
+		action_method}
+ end_mapping_constraints;
+
+ attribute_mapping description (description, action_method.description);
+		process_operation <=
+		action_method
+		action_method.description
+ end_attribute_mapping;
+ 
+ attribute_mapping id (id, action_method.name);
+		process_operation <=
+		action_method
+		action_method.name
+ end_attribute_mapping;
+ 
+ attribute_mapping name (name, action_method.purpose);
+		process_operation <=
+		action_method
+		action_method.purpose
+ end_attribute_mapping;
+ 
+ attribute_mapping process_type (process_type, action_method.consequence);
+		process_operation <=
+		action_method
+		action_method.consequence
+ end_attribute_mapping;
+ 
+ attribute_mapping version_id (version_id, identification_assignment.assigned_id);
+		process_operation <=
+		action_method
+		identification_item = action_method
+		identification_item <-
+		applied_identification_assignment.items[1]
+		applied_identification_assignment <=
+		identification_assignment
+		{identification_assignment.role ->
+		identification_role
+		identification_role.name = 'version'}
+		identification_assignment.assigned_id
+ end_attribute_mapping;
+(* GL - multi_language_string is not supported
+ attribute_mapping description_multi_language_string (description
+
+, ([action_method.description]
+[$PATH])
+($PATH), multi_language_string);
+
+process_operation <=
+action_method
+(attribute_language_item = action_method
+attribute_language_item <-
+attribute_language_assignment.items[i]
+attribute_language_assignment 
+{attribute_language_assignment  <=
+attribute_classification_assignment
+attribute_classification_assignment.attribute_name = 'description'})
+(multi_language_attribute_item = action_method
+multi_language_attribute_item <-
+multi_language_attribute_assignment.items[i]
+multi_language_attribute_assignment
+{multi_language_attribute_assignment <=
+attribute_value_assignment
+attribute_value_assignment.attribute_name = 'description'})
+
+
+ end_attribute_mapping;
+
+ attribute_mapping name_multi_language_string (name
+
+, ([action_method.purpose]
+[$PATH])
+($PATH), multi_language_string);
+
+process_operation <=
+action_method
+(attribute_language_item = action_method
+attribute_language_item <-
+attribute_language_assignment.items[i]
+attribute_language_assignment 
+{attribute_language_assignment  <=
+attribute_classification_assignment
+attribute_classification_assignment.attribute_name = 'name'})
+(multi_language_attribute_item = action_method
+multi_language_attribute_item <-
+multi_language_attribute_assignment.items[i]
+multi_language_attribute_assignment
+{multi_language_attribute_assignment <=
+attribute_value_assignment
+attribute_value_assignment.attribute_name = 'name'})
+ end_attribute_mapping; *)
+ 
+ end_entity_mapping; 
+ 
+ 
+ entity_mapping Process_operation_definition_relationship (Process_operation_definition_relationship, action_method_relationship);
+
+ mapping_constraints; 
+ end_mapping_constraints;
+
+
+ attribute_mapping relation_type (relation_type, action_method_relationship.name);
+		action_method_relationship
+		{action_method_relationship
+		(action_method_relationship.name)
+		(action_method_relationship.name = 'alternative')
+		(action_method_relationship.name = 'substitution')
+		(action_method_relationship.name = 'version association')
+		(action_method_relationship.name = 'version sequence')}
+		action_method_relationship.name
+ end_attribute_mapping;
+
+ attribute_mapping related_process_operation_definition (related, $PATH, Process_operation_definition);
+		action_method_relationship
+		action_method_relationship.related_method ->
+		action_method =>
+		process_operation
+ end_attribute_mapping;
+
+ attribute_mapping relating_process_operation_definition (relating, $PATH, Process_operation_definition);
+		action_method_relationship
+		action_method_relationship.relating_method ->
+		action_method =>
+		process_operation
+ end_attribute_mapping;
+ end_entity_mapping;
+
+(** GL - mapping to itself in order to wrokarround problems for CityBike example 
+entity_mapping product_definition_resource (product_definition_resource, product_definition_resource);
+ mapping_constraints; 
+   {product_definition_resource <=
+   product_definition}
+ end_mapping_constraints;
+
+end_entity_mapping; *)
+  
+(* Missing mappings, likely not worth the energy  
+  Mapping missing for entity: property_change__property_definition_relationship
+  Mapping missing for entity: property_change__shape_aspect_relationship
+  Mapping missing for entity: property_change__action_property
+  Mapping missing for entity: change__product_definition_relationship
+  Mapping missing for entity: change__product_definition_formation_relationship
+  Mapping missing for entity: change__action_relationship
+  Mapping missing for entity: change__shape_aspect_relationship
+  Mapping missing for entity: model_property_association__property_definition
+  Mapping missing for entity: model_property_association__action_property
+  Mapping missing for entity: model_property_association__resource_property
+  Mapping missing for entity: instance_placement__rrwt
+  Mapping missing for entity: instance_placement__mi 
+  Mapping missing for entity: component_placement__rrwt
+  Mapping missing for entity: component_placement__mi *)
+
+(*end_schema_mapping;*)

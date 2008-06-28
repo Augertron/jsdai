@@ -1,0 +1,71 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N2921 - ISO/TS 10303-1011 Person organization - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Person_organization_xim;
+
+USE FROM basic_attribute_schema   -- ISO 10303-41
+  (id_attribute,
+   id_attribute_select,
+   name_attribute,
+   name_attribute_select); 
+
+USE FROM person_organization_schema   -- ISO 10303-41
+  (address,
+   organization,
+   organization_relationship,
+   organizational_address,
+   person,
+   person_and_organization,
+   personal_address,
+   (* Added additionally besides stuff from mim *)
+   person_organization_select); 
+
+
+USE FROM Person_organization_mim;
+
+ENTITY Organization_relationship__hierarchy
+  SUBTYPE OF (organization_relationship);
+  DERIVE
+    SELF\organization_relationship.name : STRING := 'hierarchy';
+END_ENTITY;
+
+ENTITY Organization_relationship__legal_succession
+  SUBTYPE OF (organization_relationship);
+  DERIVE
+    SELF\organization_relationship.name : STRING := 'legal succession';
+END_ENTITY;
+
+ENTITY Organization_relationship__reorganization
+  SUBTYPE OF (organization_relationship);
+  DERIVE
+    SELF\organization_relationship.name : STRING := 'reorganization';
+END_ENTITY;
+
+
+END_SCHEMA;  -- Person_organization_xim
+

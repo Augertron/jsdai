@@ -1,0 +1,52 @@
+(*
+$Id$
+ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+*) 
+
+
+SCHEMA contract_schema; 
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set,
+   identifier,
+   label,
+   text); 
+
+
+ENTITY contract;
+  name : label;
+  purpose : text;
+  kind : contract_type;
+END_ENTITY;
+
+ENTITY contract_relationship;
+  id : identifier;
+  name : label;
+  description : OPTIONAL text;
+  relating_contract : contract;
+  related_contract : contract;
+END_ENTITY;
+
+ENTITY contract_type;
+  description : label;
+END_ENTITY;
+
+FUNCTION acyclic_contract_relationship
+ (relation : contract_relationship; relatives : SET[1:?] OF contract; specific_relation : STRING) : BOOLEAN; 
+  LOCAL
+      x : SET OF contract_relationship;
+    END_LOCAL;
+
+    IF relation.relating_contract IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(cont <* bag_to_set(USEDIN(relation.relating_contract, 'CONTRACT_SCHEMA.' + 'CONTRACT_RELATIONSHIP.' + 'RELATED_CONTRACT')) | specific_relation IN TYPEOF(cont));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_contract_relationship(x[i], relatives + relation.relating_contract, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+END_FUNCTION; 
+
+END_SCHEMA;  -- contract_schema

@@ -1,0 +1,28 @@
+(*
+ $Id$
+ ISO TC184/SC4/WG12 N4816 - ISO/CD-TS 10303-1104 Specified product - EXPRESS ARM
+ Supersedes ISO TC184/SC4/WG12 N2589
+*)
+
+SCHEMA Specified_product_arm;
+
+USE FROM Configuration_item_arm; -- ISO/TS 10303-1056
+
+USE FROM Product_class_arm; -- ISO/TS 10303-1103
+
+  ENTITY Product_specification
+    SUBTYPE OF (Product_configuration);
+      version_id                              : OPTIONAL STRING;
+      SELF\Product_configuration.item_context : Product_class;
+      defining_specifications                 : SET [0:?] OF Specification;
+  END_ENTITY;
+
+  ENTITY Specification_based_product_version
+    SUBTYPE OF (Product_version);
+    INVERSE
+      specification_source : Item_design_association FOR design;
+    WHERE
+      WR1 : 'SPECIFIED_PRODUCT_ARM.PRODUCT_SPECIFICATION' IN TYPEOF(specification_source.configuration);
+  END_ENTITY;
+  
+END_SCHEMA;

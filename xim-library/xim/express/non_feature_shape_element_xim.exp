@@ -1,0 +1,136 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Non feature shape element - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Non_feature_shape_element_xim; 
+
+USE FROM Physical_unit_shape_with_parameters_xim;	-- ISO/TS 10303-1730
+
+USE FROM Non_feature_shape_element_mim;
+  
+  TYPE ee_product_definition_with_annotation_elements = EXTENSIBLE GENERIC_ENTITY SELECT;
+  END_TYPE;
+
+	TYPE nfse_usage_concept = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON usage_concept WITH 
+		(Non_feature_shape_element);
+	END_TYPE;
+
+  TYPE view_shape_select = EXTENSIBLE GENERIC_ENTITY SELECT
+    (Physical_unit_shape_model);  
+  END_TYPE;
+  
+  ENTITY Non_feature_shape_model
+    SUPERTYPE OF (ONEOF (Design_view_level_non_feature_shape_model,
+	    Usage_view_level_non_feature_shape_model))    
+    (* CONNOTATIONAL *) SUBTYPE OF (shape_representation);
+      associated_element : Non_feature_shape_element;
+      model_shape        : OPTIONAL shape_representation;
+    WHERE
+      WR1 : TYPEOF(SELF) <> TYPEOF(model_shape);  
+  END_ENTITY;
+
+  ENTITY Non_feature_shape_element
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element);
+      SELF\Shape_element.containing_shape RENAMED scope : ee_product_definition_with_annotation_elements;
+    INVERSE
+      element_shape            : SET[0:?] OF non_feature_shape_model FOR associated_element;
+      associated_usage_concept : SET[0:?] OF usage_concept_usage_relationship_armx FOR associated_usage;
+    UNIQUE
+      UR1 : SELF\Shape_aspect.name, scope;
+    WHERE
+      WR1 : NOT(SIZEOF(associated_usage_concept) > 0) OR (SIZEOF(element_shape)> 0);
+      WR2 : 'SHAPE_PROPERTY_ASSIGNMENT_XIM.ITEM_SHAPE' IN TYPEOF(scope);      
+  END_ENTITY;
+
+  ENTITY Non_feature_shape_element_relationship
+    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_relationship);
+      SELF\Shape_element_relationship.relating 	: Non_feature_shape_element;    
+      SELF\Shape_element_relationship.related		: Non_feature_shape_element;
+    DERIVE
+      SELF\Shape_element_relationship.relation_type : STRING := '';
+    UNIQUE
+      UR1 : SELF\Shape_element_relationship.related,
+ SELF\Shape_element_relationship.relating;
+  END_ENTITY;
+
+   ENTITY Reference_graphic_registration_mark_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, reference_graphic_registration_mark);
+  END_ENTITY;
+
+  ENTITY Seating_plane_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, seating_plane);
+   WHERE
+     WR1 : (SELF\Shape_element.element_name = 'seating plane');    
+  END_ENTITY;
+
+  ENTITY Interface_plane_armx
+    SUBTYPE OF (Non_feature_shape_element);
+   WHERE
+    WR1 : (SELF\Shape_element.element_name = 'interface plane');
+  END_ENTITY;
+
+  ENTITY Usage_view_level_non_feature_shape_model
+    (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_model);
+      SELF\Non_feature_shape_model.associated_element : View_level_non_feature_shape_element;
+      SELF\Non_feature_shape_model.model_shape        : view_shape_select;
+    WHERE
+      WR1 : SELF\Shape_representation.context_of_items = SELF\Non_feature_shape_model.model_shape\Shape_representation.context_of_items;
+  END_ENTITY;
+
+  ENTITY Design_view_level_non_feature_shape_model
+    (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_model);
+      SELF\Non_feature_shape_model.model_shape        : Physical_unit_shape_model;
+    WHERE
+      WR1 : SELF\Shape_representation.context_of_items :=: SELF\Non_feature_shape_model.model_shape\Shape_representation.context_of_items;
+      WR2: SIZEOF(USEDIN(SELF, 'EXTENDED_BASIC_GEOMETRY_XIM.SHAPE_REPRESENTATION_RELATIONSHIP.REP_1')) = 0;
+      WR3: SIZEOF(USEDIN(SELF, 'CONTEXTUAL_SHAPE_POSITIONING_XIM.GEOMETRIC_PLACEMENT_OPERATION.TEMPLATE_DEFINITION')) = 0;
+      WR4: SELF\Non_feature_shape_model.associated_element.scope :=:
+           SELF\Non_feature_shape_model.model_shape\Physical_unit_shape_model.shape_characterized_definition;  
+  END_ENTITY;
+
+  ENTITY View_level_non_feature_shape_element
+    SUBTYPE OF (Non_feature_shape_element);
+    DERIVE
+      SELF\shape_aspect.description : text := 'vlnfse';
+     WHERE
+		WR1: NOT(SIZEOF(SELF\Non_feature_shape_element.element_shape) > 0) OR    
+		valid_es('NON_FEATURE_SHAPE_ELEMENT_XIM.USAGE_VIEW_LEVEL_NON_FEATURE_SHAPE_MODEL',
+		      (SELF\Non_feature_shape_element.element_shape));
+  END_ENTITY;
+  
+  FUNCTION valid_es(input1 : STRING;
+                  input2 : SET OF NON_FEATURE_SHAPE_MODEL) : BOOLEAN;
+   REPEAT i := 1 to HIINDEX(input2);
+    IF NOT (input1 IN TYPEOF(input2)) THEN RETURN(FALSE);
+    END_IF;
+   END_REPEAT;
+    RETURN(TRUE);
+  END_FUNCTION;
+
+
+END_SCHEMA;
+

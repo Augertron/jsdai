@@ -1,0 +1,32 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4616 - ISO/CD-TS 10303-1471 State based behaviour representation - EXPRESS ARM
+*)
+
+SCHEMA State_based_behaviour_representation_arm;
+
+USE FROM Foundation_representation_arm;
+
+USE FROM Foundation_state_definition_arm;
+
+TYPE state_based_behaviour_element = SELECT 
+  (State_definition,
+   State_definition_relationship);
+END_TYPE;
+
+ENTITY State_based_behaviour_model
+SUBTYPE OF (Representation);
+  SELF\Representation.context_of_items : State_based_behaviour_representation_context;
+  SELF\Representation.items : SET [1 : ?] OF State_based_behaviour_representation_item;
+END_ENTITY;
+
+ENTITY State_based_behaviour_representation_context
+SUBTYPE OF (Representation_context);
+END_ENTITY;
+
+ENTITY State_based_behaviour_representation_item
+SUBTYPE OF (Representation_item);
+  item : State_based_behaviour_element;
+END_ENTITY;
+
+END_SCHEMA;

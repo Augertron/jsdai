@@ -1,0 +1,134 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Packaged part white box model - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Packaged_part_white_box_model_xim;
+
+USE FROM Packaged_part_black_box_model_xim;
+
+USE FROM Physical_unit_2d_shape_xim;
+
+USE FROM Physical_unit_3d_shape_xim;	-- ISO/TS 10303-1727
+
+USE FROM Bare_die_xim;
+
+USE FROM Packaged_part_white_box_model_mim;
+
+  	TYPE ppwbm_analytical_model_port_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON analytical_model_port_assignment_select WITH  
+ 		(Functional_unit_usage_view_terminal_definition,
+ 		Connection_zone,
+ 		Datum_difference_armx,
+  	Part_device_terminal,
+    Part_feature);
+	END_TYPE;
+
+	SUBTYPE_CONSTRAINT physical_unit_keepout_shape_model_subtypes FOR Physical_unit_keepout_shape_model;  
+	    (ONEOF (Physical_unit_3d_keepout_shape_model,
+	 	Physical_unit_planar_keepout_shape_model));
+	END_SUBTYPE_CONSTRAINT; 
+
+	SUBTYPE_CONSTRAINT physical_unit_shape_model_subtypes FOR Physical_unit_shape_model;  
+	    (ONEOF (Physical_unit_3d_shape_model,
+	 	Physical_unit_planar_shape_model));
+	END_SUBTYPE_CONSTRAINT; 
+
+  ENTITY Device_2d_position
+    (* CONNOTATIONAL *) SUBTYPE OF (mapped_item);
+      placed_device : Part_device;
+      SELF\mapped_item.mapping_target RENAMED transformation : axis2_placement_2d;
+      part_shape : Physical_unit_planar_shape_model;
+      device_shape : Physical_unit_planar_shape_model;
+    DERIVE
+      SELF\mapped_item.mapping_source : representation_map := ?;
+      SELF\representation_item.name : label := ?;   
+  END_ENTITY;
+
+  ENTITY Device_3d_position
+    (* CONNOTATIONAL *) SUBTYPE OF (mapped_item);
+      placed_device : Part_device;
+      SELF\mapped_item.mapping_target RENAMED transformation : axis2_placement_3d;
+      part_shape : Physical_unit_3d_shape_model;
+      device_shape : Physical_unit_3d_shape_model;
+    DERIVE
+      SELF\mapped_item.mapping_source : representation_map := ?;
+      SELF\representation_item.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Device_terminal_map_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (device_terminal_map);
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED target_terminal				: Packaged_part_terminal_armx;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED mapped_device_terminal 	: Part_device_terminal;
+    DERIVE
+      SELF\shape_aspect.of_shape : product_definition_shape := ?;
+      SELF\shape_aspect.description : text := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+      SELF\shape_aspect.name : label := ?;
+    UNIQUE
+      UR1 : mapped_device_terminal,
+ target_terminal;
+  END_ENTITY;
+
+  ENTITY Device_terminal_map_relationship
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED relating_device_terminal_map	: Device_terminal_map_armx;  
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED related_device_terminal_map  	: Device_terminal_map_armx;
+    DERIVE
+      SELF\shape_aspect_relationship.description : text := ?;
+      SELF\shape_aspect_relationship.name : label := ?;
+  END_ENTITY;
+
+  ENTITY Part_device
+  	(* CONNOTATIONAL *) SUBTYPE OF (product_definition_relationship);
+      SELF\product_definition_relationship.relating_product_definition RENAMED defined_packaged_part	: Packaged_part_armx;
+      SELF\product_definition_relationship.related_product_definition RENAMED included_device					: Bare_die_armx;
+      SELF\product_definition_relationship.name RENAMED item_identification														: STRING;
+     DERIVE
+      SELF\product_definition_relationship.id : identifier := ?;
+     INVERSE
+      device_3d_position : SET[0:1] OF device_3d_position FOR placed_device;
+      device_2d_position : SET[0:1] OF device_2d_position FOR placed_device;
+    UNIQUE
+      UR1 : defined_packaged_part,
+ item_identification;
+   END_ENTITY;
+
+  ENTITY Part_device_terminal
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect);
+      used_bare_die_terminal : Minimally_defined_bare_die_terminal_armx;
+      terminated_device      : Part_device;
+    DERIVE
+      SELF\shape_aspect.of_shape : product_definition_shape := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+      SELF\shape_aspect.description : text := ?;
+      SELF\shape_aspect.name : label := ?;
+    UNIQUE
+      UR1 : used_bare_die_terminal,
+ terminated_device;
+  END_ENTITY;
+
+END_SCHEMA;
+

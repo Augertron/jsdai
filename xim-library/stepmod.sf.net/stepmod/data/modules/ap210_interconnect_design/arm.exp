@@ -1,0 +1,60 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG3 N2015 - ISO/TS 10303-1617 AP210 interconnect design - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG3 N1650
+*)
+
+SCHEMA Ap210_interconnect_design_arm;
+	USE FROM Ap210_interconnect_design_for_microwave_arm;	-- ISO/TS 10303-1618
+
+RULE non_conductive_cross_section_template_population_constraint FOR
+    (Template_definition);
+WHERE
+  WR1:  SIZEOF( QUERY( td <* Template_definition |
+('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.NON_CONDUCTIVE_CROSS_SECTION_TEMPLATE' IN TYPEOF(td))
+              )) = 0;
+END_RULE;
+
+RULE printed_part_cross_section_template_population_constraint FOR
+    (Template_definition);
+WHERE
+  WR1:  SIZEOF( QUERY( td <* Template_definition |
+('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.PRINTED_PART_CROSS_SECTION_TEMPLATE' IN TYPEOF(td))
+              )) = 0;
+END_RULE;
+
+RULE printed_part_cross_section_template_terminal_population_constraint FOR
+    (Printed_part_template_terminal);
+WHERE
+  WR1:  SIZEOF( QUERY( pptt <* Printed_part_template_terminal |
+('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.PRINTED_PART_CROSS_SECTION_TEMPLATE_TERMINAL' IN TYPEOF(pptt))
+              )) = 0;
+END_RULE;
+
+RULE printed_part_template_material_population_constraint FOR
+    (Printed_part_template_material);
+WHERE
+  WR1:  SIZEOF(Printed_part_template_material) = 0;
+END_RULE;
+
+RULE printed_part_template_material_link_population_constraint FOR
+    (Printed_part_template_material_link);
+WHERE
+  WR1:  SIZEOF(Printed_part_template_material_link) = 0;
+END_RULE;
+
+RULE template_material_cross_section_boundary_population_constraint FOR
+    (Template_material_cross_section_boundary);
+WHERE
+  WR1:  SIZEOF(Template_material_cross_section_boundary) = 0;
+END_RULE;
+
+RULE printed_part_template_terminal_class_population_constraint FOR
+    (Printed_part_template_terminal);
+WHERE
+  WR1:  SIZEOF( QUERY( pptt <* Printed_part_template_terminal |
+NOT(pptt.connection_zone_category = printed_part_template_terminal_class.surface_point)
+              )) = 0;
+END_RULE;
+
+END_SCHEMA;

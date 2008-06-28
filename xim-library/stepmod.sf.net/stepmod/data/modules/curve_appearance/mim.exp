@@ -1,0 +1,72 @@
+(*
+	$Id$
+	ISO TC184/SC4/WG12 N4694 - ISO/CD-TS 10303-1003 Curve appearance - EXPRESS MIM
+	Supersedes ISO TC184/SC4/WG12 N4246
+*) 
+
+
+SCHEMA Curve_appearance_mim;
+
+USE FROM Styled_curve_mim; -- ISO/TS 10303-1749
+
+USE FROM presentation_appearance_schema   -- ISO 10303-46
+  (curve_style,
+   curve_style_font,
+   draughting_pre_defined_curve_font,
+   marker_select,
+   marker_type,
+   point_style,
+   pre_defined_curve_font,
+   pre_defined_marker); 
+
+USE FROM presentation_definition_schema   -- ISO 10303-46
+  (externally_defined_symbol,
+   pre_defined_symbol); 
+
+USE FROM presentation_resource_schema   -- ISO 10303-46
+  (externally_defined_text_font);
+
+
+USE FROM representation_schema   -- ISO 10303-43
+  (mapped_item); 
+
+
+  TYPE terminator = SELECT
+    (externally_defined_terminator_symbol, 
+     pre_defined_terminator_symbol, 
+     user_defined_terminator_symbol);
+  END_TYPE; 
+
+  ENTITY externally_defined_marker
+    SUBTYPE OF (externally_defined_symbol, pre_defined_marker);
+  END_ENTITY;
+
+  ENTITY externally_defined_terminator_symbol
+    SUBTYPE OF (externally_defined_symbol);
+  END_ENTITY;
+
+  ENTITY pre_defined_point_marker_symbol
+    SUBTYPE OF (pre_defined_marker, pre_defined_symbol);
+    WHERE
+      WR1: SELF.name IN ['asterisk','circle','dot','plus','square','triangle','x'];
+  END_ENTITY;
+
+  ENTITY pre_defined_terminator_symbol
+    SUBTYPE OF (pre_defined_symbol);
+    WHERE
+      WR1: SELF.name IN ['blanked arrow', 'blanked box', 'blanked dot', 'blanked triangle', 'dimension origin', 'filled arrow', 'filled box', 'filled dot', 'integral symbol', 'open arrow', 'slash', 'unfilled arrow', 'unfilled triangle', 'filled triangle'];
+  END_ENTITY;
+
+  ENTITY user_defined_marker
+    SUBTYPE OF (mapped_item, pre_defined_marker);
+  END_ENTITY;
+
+  ENTITY user_defined_terminator_symbol
+    SUBTYPE OF (mapped_item, pre_defined_symbol);
+  END_ENTITY;
+
+  ENTITY vector_style
+    SUBTYPE OF (curve_style, pre_defined_terminator_symbol);
+  END_ENTITY;
+
+END_SCHEMA;  

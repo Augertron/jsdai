@@ -1,0 +1,321 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4700 - ISO/CD-TS 10303-1628 Design product data management - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3838
+*)
+
+SCHEMA Design_product_data_management_mim;
+
+USE FROM Classification_with_attributes_mim;	-- ISO/TS 10303-1111
+USE FROM Generic_material_aspects_mim;	-- ISO/TS 10303-1681
+USE FROM Information_rights_mim;    -- ISO/TS 10303-1241
+USE FROM Item_definition_structure_mim;	-- ISO/TS 10303-1345
+USE FROM Pre_defined_product_data_management_specializations_mim; -- ISO/TS 10303-1760
+USE FROM Product_data_management_mim;	-- ISO/TS 10303-1231
+USE FROM Requirement_assignment_mim;	-- ISO/TS 10303-1233
+USE FROM Requirement_view_definition_relationship_mim;	-- ISO/TS 10303-1142
+USE FROM Specification_control_mim; -- ISO/CD-TS 10303-1112
+USE FROM Test_select_product_mim;	-- ISO/TS 10303-1757
+USE FROM Activity_method_assignment_mim;    -- ISO/TS 10303-1249
+USE FROM Attribute_classification_mim; -- ISO/TS 10303-1246
+
+USE FROM contract_schema(contract_type);
+USE FROM document_schema(document_type);
+USE FROM material_property_definition_schema(property_definition_relationship);
+USE FROM product_definition_schema(product_definition_formation_with_specified_source);
+USE FROM product_structure_schema(make_from_usage_option);
+USE FROM representation_schema(parametric_representation_context);
+
+  TYPE design_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH 
+    (product, 
+     product_definition_formation);
+  END_TYPE; 
+
+  TYPE design_pdm_action_request_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON pdm_action_request_item WITH 
+    (versioned_action_request);
+  END_TYPE;
+
+  TYPE design_pdm_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON pdm_approval_item WITH 
+    (action_directive,
+     certification,
+     configuration_item,
+     contract,
+     date,
+     directed_action,
+     document,
+     effectivity,
+     executed_action,
+     general_property_relationship,
+     group,
+     group_relationship,
+     product,
+     product_definition,
+     product_definition_formation_relationship,
+     product_definition_relationship,
+     product_definition_formation,
+     representation,
+     requirement_assignment,
+     security_classification,
+     shape_aspect_relationship);
+  END_TYPE;
+
+  TYPE design_pdm_attribute_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON attribute_classification_item WITH (
+	action_directive,
+	action_method,
+	action_property,
+	action_property_representation,
+	action_relationship,
+	action_request_solution,
+	action_request_status,
+	alternate_product_relationship,
+	applied_action_assignment,
+	applied_action_request_assignment,
+	applied_approval_assignment,
+	applied_certification_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_effectivity_assignment,
+	applied_event_occurrence_assignment,
+	applied_external_identification_assignment,
+	applied_identification_assignment,
+	applied_person_and_organization_assignment,
+	applied_organization_assignment,
+	applied_organizational_project_assignment,
+	approval,
+	approval_person_organization,	
+	approval_relationship,
+	approval_status,
+	certification,
+	context_dependent_unit,
+	contract,
+	date_and_time_assignment,
+	date_assignment,
+	derived_unit,
+	descriptive_representation_item,
+	document_file,
+	document_relationship,
+	effectivity,
+	event_occurrence_relationship,
+	executed_action,
+	general_property,
+	general_property_relationship,
+	group,
+	group_relationship,
+	information_right,
+	information_usage_right,
+	language,
+	measure_representation_item,
+	measure_with_unit,
+	named_unit,
+	organizational_address,
+	organizational_project_relationship,
+	organization_relationship,
+	person_and_organization,
+	person_and_organization_address,	
+	product,
+	product_category,
+	product_concept,
+	product_concept_context,
+	product_definition,
+	product_definition_context,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_definition_relationship,
+	property_definition,
+	property_definition_representation,
+	property_definition_relationship,
+	representation,
+	representation_context,
+	representation_item,
+	security_classification,
+	time_interval_relationship,
+	uncertainty_measure_with_unit,
+	usage_association,
+	versioned_action_request);
+  END_TYPE;
+
+  TYPE design_pdm_attribute_language_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON attribute_language_item WITH 
+    (information_right,
+	 information_usage_right,
+     usage_association);
+  END_TYPE; 
+
+  TYPE design_pdm_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON pdm_certification_item WITH 
+    (alternate_product_relationship,
+     product_definition_formation,
+     make_from_usage_option);
+  END_TYPE;
+
+  TYPE design_pdm_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON pdm_classification_item WITH 
+    (characterized_object,
+     classification_item_extended,
+     information_right,
+     information_usage_right,
+     usage_association);
+  END_TYPE;
+
+  TYPE design_pdm_contract_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON contract_item WITH 
+    (action_directive,
+     alternate_product_relationship,
+     directed_action,
+     organization,
+     person_and_organization,
+     product,
+     product_definition_formation);
+  END_TYPE;
+
+  TYPE design_pdm_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON pdm_date_and_time_item WITH 
+    (action_directive,
+     approval_person_organization,
+     certification,
+     contract,
+     directed_action,
+     document,
+     product_definition,
+     security_classification);
+  END_TYPE;
+
+  TYPE design_pdm_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON pdm_date_item WITH 
+    (action_directive,
+     product_definition,
+     directed_action,
+     approval_person_organization,
+     contract,
+	 document,
+	 executed_action,
+     security_classification,
+     certification);
+  END_TYPE;
+
+  TYPE design_pdm_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON pdm_document_reference_item WITH 
+    (applied_external_identification_assignment,
+     assembly_component_usage,
+     characterized_class,
+     characterized_object,
+     configuration_item,
+     descriptive_representation_item,
+     externally_defined_item,
+     group,
+     group_relationship,
+     information_right,
+     information_usage_right,
+     material_designation,
+     measure_representation_item,
+     product,
+     product_category,
+     product_definition,
+     product_definition_formation,
+     property_definition,
+     representation,
+     representation_item,
+     usage_association);
+  END_TYPE;
+
+  TYPE design_pdm_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON groupable_item WITH 
+    (group_relationship,
+     product_definition,
+     product_definition_formation,
+     property_definition_representation,
+     representation,
+     representation_item,
+     shape_aspect,
+     shape_aspect_relationship);
+  END_TYPE;
+
+  TYPE design_pdm_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH 
+    (configuration_item,
+     group,
+     group_relationship,
+     information_right,
+     information_usage_right,
+     material_designation,
+     person_and_organization,
+     product,
+     product_category,
+     product_concept,
+     product_definition_formation,
+     organization,
+     usage_association);
+  END_TYPE;
+
+  TYPE design_pdm_ir_usage_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ir_usage_item WITH 
+   (action_directive,
+    characterized_object,   
+    design_pdm_identification_item, 
+    design_pdm_requirement_assigned_item, 
+    design_pdm_classification_item, 
+    design_pdm_certification_item,
+    design_pdm_document_reference_item,      
+    person_and_organization,
+    product_definition_formation,
+    organization);  
+  END_TYPE;
+
+  TYPE design_pdm_multi_language_attribute_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON multi_language_attribute_item WITH 
+    (information_right,
+	 information_usage_right,
+     usage_association);
+  END_TYPE; 
+
+  TYPE design_pdm_name_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON name_item WITH 
+    (external_class_library,
+     group,
+     group_relationship,
+     product,
+     product_definition);
+  END_TYPE; 
+
+  TYPE design_pdm_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON pdm_organization_item WITH 
+    (action_directive,
+     applied_classification_assignment,
+     applied_identification_assignment,
+     product_definition,
+     product_definition_formation_relationship);
+  END_TYPE;
+
+  TYPE design_pdm_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON pdm_person_and_organization_item WITH 
+    (action_directive,
+     applied_classification_assignment,
+     applied_identification_assignment,
+     product_definition,
+     product_definition_formation_relationship);
+  END_TYPE;
+
+  TYPE design_pdm_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH 
+    (descriptive_representation_item, 
+     configuration_item, 
+     product_definition, 
+     product_definition_formation, 
+     product, 
+     product_class,
+     product_definition_relationship,
+     shape_aspect, 
+     representation); 
+  END_TYPE; 
+
+  TYPE design_pdm_requirement_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_source_item WITH 
+    (group,
+     group_relationship,
+     product_definition,
+     product_definition_formation,
+     product,
+     shape_aspect,
+     characterized_object,
+     product_definition_relationship);
+  END_TYPE; 
+
+  TYPE design_pdm_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON pdm_security_classification_item WITH 
+    (document,
+     make_from_usage_option,
+     product_definition_formation,
+     product_definition);
+  END_TYPE;
+
+  TYPE promissory_usage_in_product_model_assigned_item = SELECT
+    (product_concept,
+     product_definition);
+  END_TYPE;
+
+END_SCHEMA;
+
+

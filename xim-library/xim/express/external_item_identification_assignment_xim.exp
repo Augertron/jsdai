@@ -1,0 +1,58 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+ Derived from ISO TC184/SC4/WG12 N1207 - ISO/TS 10303-1128 External item identification assignment - EXPRESS ARM
+ by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*) 
+
+(* Based on ARM - it was hard to decide, since it is close to AIM, but makes things more easily accessable. *)
+
+ 
+SCHEMA External_item_identification_assignment_xim;
+
+USE FROM External_item_identification_assignment_mim;
+
+USE FROM management_resources_schema(
+  identification_assignment,
+  identification_role);
+  
+USE FROM external_reference_schema(external_source);
+
+(** ENTITY External_item_identification is removed, because its mapping is not differs from External_source_identification at all - SEDS *)
+
+ENTITY External_source_identification
+	(* CONNOTATIONAL *) SUBTYPE OF (applied_external_identification_assignment);
+  SELF\identification_assignment.assigned_id RENAMED external_id : STRING;
+  source_id	  : STRING;
+  source_type : STRING;
+  description : OPTIONAL STRING;
+  item 	  : external_identification_item;
+DERIVE
+  SELF\applied_external_identification_assignment.items : SET [1:?] OF external_identification_item := ?;
+  SELF\identification_assignment.role : identification_role := ?;
+  SELF\external_identification_assignment.source : external_source := ?;
+END_ENTITY;
+
+END_SCHEMA;
+

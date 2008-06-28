@@ -1,0 +1,27 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3906 - ISO/TS 10303-1653 Cable - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3318
+*)
+
+SCHEMA Cable_arm;
+
+	USE FROM Assembly_module_with_packaged_connector_component_arm;	-- ISO/TS 10303-1645
+
+  ENTITY Cable_terminal
+    SUBTYPE OF (Part_terminal);
+      SELF\Part_feature.associated_definition : Cable_usage_view;
+      mapped_terminal                         : OPTIONAL Packaged_connector_component_interface_terminal;
+      SELF\Shape_feature.connection_area      : OPTIONAL SET[1:?] OF Connection_zone_in_usage_view;            
+    WHERE
+      WR1 : SELF\Part_feature.associated_definition :=: 
+      mapped_terminal\Component_feature.associated_component\Assembly_component.occurrence_contexts[1].relating_view;
+  END_ENTITY;
+
+  ENTITY Cable_usage_view
+    SUBTYPE OF (Part_usage_view);
+    INVERSE
+      access_mechanisms : SET[1:?] OF cable_terminal FOR associated_definition;
+  END_ENTITY;
+
+END_SCHEMA;

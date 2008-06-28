@@ -1,0 +1,27 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3927 - ISO/TS 10303-1660 Datum difference based model - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3384
+*)
+
+SCHEMA Datum_difference_based_model_arm;
+
+	USE FROM Extended_geometric_tolerance_arm;	-- ISO/TS 10303-1666
+	USE FROM Functional_usage_view_arm;	-- ISO/TS 10303-1705
+
+	SUBTYPE_CONSTRAINT ddbm_model_parameter_subtypes FOR Model_parameter; 
+		ONEOF (Datum_difference_based_model_parameter,
+	 	Schema_based_model_parameter);
+	END_SUBTYPE_CONSTRAINT;
+
+  ENTITY Datum_difference_based_model_parameter
+    SUBTYPE OF (Model_parameter);
+      of_datum_difference : Datum_difference;
+  END_ENTITY;
+
+  ENTITY Datum_difference_functional_unit_usage_view_terminal_assignment;
+      assigned_functional_terminal_definition : Functional_unit_usage_view_terminal_definition;
+      assigned_datum_difference               : Datum_difference;
+  END_ENTITY;
+
+END_SCHEMA;

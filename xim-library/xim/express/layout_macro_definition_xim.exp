@@ -1,0 +1,93 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Layout macro definition - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Layout_macro_definition_xim; 
+
+USE FROM Fabrication_joint_xim;
+
+USE FROM Layout_macro_definition_mim;
+
+	SUBTYPE_CONSTRAINT printed_part_template_subtypes FOR Printed_part_template_armx;  
+		 (ONEOF (Basic_multi_stratum_printed_part_template_armx,
+		Layout_macro_floor_plan_template_armx,
+		Printed_connector_template_armx,
+		Structured_printed_part_template_armx));
+	END_SUBTYPE_CONSTRAINT;
+
+  ENTITY Layout_macro_component_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Printed_component_armx, layout_macro_component);
+      design_definition                     : Layout_macro_definition_armx;
+      SELF\Printed_component_armx.derived_from		: Layout_macro_floor_plan_template_armx;
+  END_ENTITY;
+
+  ENTITY Layout_macro_definition_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Interconnect_module, layout_macro_definition);
+      floor_layout_view : Layout_macro_floor_plan_template_armx;
+    WHERE
+      WR1 : NOT (EXISTS(SELF\Part_design_view.usage_view));
+      WR2 : SIZEOF(USEDIN(SELF,
+ 'GENERIC_PRODUCT_OCCURRENCE_XIM.DEFINITION_BASED_PRODUCT_OCCURRENCE.DERIVED_FROM')) = 0;
+  END_ENTITY;
+
+  ENTITY Layout_macro_definition_terminal_to_usage_terminal_assignment_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (layout_macro_definition_terminal_to_usage_terminal_assignment);
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED defined_template_feature	: Printed_part_template_terminal_armx;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED assigned_design_object		: fabricated_feature_select;
+    DERIVE
+      SELF\shape_aspect.of_shape : product_definition_shape := ?;
+      SELF\shape_aspect.description : text := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+      SELF\shape_aspect.name : label := ?;
+    WHERE
+      WR1 : SIZEOF(USEDIN(SELF,
+ 'LAYOUT_MACRO_DEFINITION_XIM.LAYOUT_MACRO_FLOOR_PLAN_TEMPLATE_ARMX.ACCESS_MAPS')) = 1;
+  END_ENTITY;
+
+  ENTITY Layout_macro_floor_plan_template_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Printed_part_template_armx, layout_macro_floor_plan_template);
+      access_maps : SET[1:?] OF Layout_macro_definition_terminal_to_usage_terminal_assignment_armx;
+    INVERSE
+      macro_definition : SET[0:1] OF layout_macro_definition_armx FOR floor_layout_view;
+   WHERE
+      WR1: SIZEOF(TYPEOF(SELF) - TYPEOF(SELF\Printed_part_template_armx ||
+                                 SELF\Template_definition ||
+                                 SELF\Item_shape ||
+                                 SELF\Product_view_definition ||
+                                 SELF\Layout_macro_floor_plan_template_armx)) = 0;      
+  END_ENTITY;
+
+SUBTYPE_CONSTRAINT printed_component_armx_subtypes FOR Printed_component_armx;  
+(ONEOF (Layout_macro_component_armx,
+ Printed_connector_component_armx));
+END_SUBTYPE_CONSTRAINT;  
+
+END_SCHEMA;
+
+
+
+

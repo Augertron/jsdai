@@ -1,0 +1,141 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3915 - ISO/TS 10303-1656 Component grouping - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3327
+*)
+
+SCHEMA Component_grouping_arm;
+
+	USE FROM Interface_component_arm;	-- ISO/TS 10303-1691
+	REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
+	
+  ENTITY Array_placement_group
+    ABSTRACT SUPERTYPE OF(ONEOF (Linear_array_placement_group_component,
+		Rectangular_array_placement_group_component))
+    SUBTYPE OF (Assembly_group_component);
+  END_ENTITY;
+
+  ENTITY Assembly_component_placement_link;
+      precedent_element  : Assembly_component;
+      subsequent_element : Assembly_component;
+    INVERSE
+      referenced_by : linear_array_placement_group_component FOR element;
+    WHERE
+      WR1:  acyclic_assembly_component_placement_link(SELF,
+         [subsequent_element],
+         'COMPONENT_GROUPING_ARM.ASSEMBLY_COMPONENT_PLACEMENT_LINK');
+  END_ENTITY;
+      
+  ENTITY Assembly_group_component
+    SUBTYPE OF (Assembly_component, Single_instance);
+    INVERSE
+      components : SET[1:?] OF next_assembly_usage FOR relating_view;
+    WHERE
+      WR1: SIZEOF(QUERY(co <* components | NOT(('PHYSICAL_UNIT_DESIGN_VIEW_ARM.ASSEMBLY_COMPONENT') IN TYPEOF(co\Product_occurrence_definition_relationship.related_view)))) = 0;
+  END_ENTITY;
+
+  ENTITY Interfaced_group_component
+    SUBTYPE OF (Assembly_group_component);
+      group_interface_component : SET[1:?] OF Interface_component;
+  END_ENTITY;
+
+  ENTITY Linear_array_placement_group_component
+    SUBTYPE OF (Array_placement_group);
+      element                               : SET[1:?] OF Assembly_component_placement_link;
+      initial_node_positive_x_displacement  : Length_data_element;
+      terminus_node_positive_x_displacement : Length_data_element;
+      location_uncertainty                  : Length_data_element;
+    WHERE  
+      WR1 : (1 + SIZEOF(element)) = cg_get_sz_ac(element);
+  END_ENTITY;
+
+  ENTITY Linear_array_placement_group_component_link;
+      precedent_element  : Linear_array_placement_group_component;
+      subsequent_element : Linear_array_placement_group_component;
+    INVERSE
+      referenced_by : rectangular_array_placement_group_component FOR element;
+    WHERE
+      WR1:  acyclic_linear_array_placement_group_component_link(SELF,
+         [subsequent_element],
+         'COMPONENT_GROUPING_ARM.LINEAR_ARRAY_PLACEMENT_GROUP_COMPONENT_LINK');
+  END_ENTITY;
+
+  ENTITY Rectangular_array_placement_group_component
+    SUBTYPE OF (Array_placement_group);
+      element                              : SET[1:?] OF Linear_array_placement_group_component_link;
+      initial_row_positive_y_displacement  : Length_data_element;
+      terminus_row_positive_y_displacement : Length_data_element;
+      location_uncertainty                 : Length_data_element;
+    WHERE
+      WR1 : (1 + SIZEOF(element)) = cg_get_sz_lapgc(element);
+  END_ENTITY;
+
+FUNCTION acyclic_assembly_component_placement_link
+  (relation : Assembly_component_placement_link; relatives : SET[1:?] OF
+  Assembly_component; specific_relation : STRING) : BOOLEAN; 
+LOCAL
+    x : SET OF Assembly_component_placement_link;
+END_LOCAL;
+
+    IF relation.precedent_element IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+      x := QUERY(pd <* bag_to_set(USEDIN(relation.precedent_element,
+        'COMPONENT_GROUPING_ARM.' + 'ASSEMBLY_COMPONENT_PLACEMENT_LINK.' +
+        'SUBSEQUENT_ELEMENT')) | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_assembly_component_placement_link(x[i], relatives +
+        relation.precedent_element, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+  RETURN (TRUE);
+END_FUNCTION; 
+
+FUNCTION acyclic_linear_array_placement_group_component_link
+  (relation : Linear_array_placement_group_component_link; relatives :
+  SET[1:?] OF Linear_array_placement_group_component; specific_relation : STRING): BOOLEAN; 
+LOCAL
+      x : SET OF Linear_array_placement_group_component_link;
+END_LOCAL;
+
+    IF relation.precedent_element IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+     x := QUERY(pd <* bag_to_set(USEDIN(relation.precedent_element,
+       'COMPONENT_GROUPING_ARM.' +
+       'LINEAR_ARRAY_PLACEMENT_GROUP_COMPONENT_LINK.' + 'SUBSEQUENT_ELEMENT'))
+       | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_linear_array_placement_group_component_link(x[i], relatives
+        + relation.precedent_element, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+  RETURN (TRUE);
+END_FUNCTION; 
+
+FUNCTION cg_get_sz_ac (input : SET[1:?] OF Assembly_component_placement_link) : INTEGER;
+LOCAL
+    ac : SET OF Assembly_component := [];
+END_LOCAL;
+    REPEAT i := 1 TO HIINDEX(input);
+      ac := ac + input[i]\Assembly_component_placement_link.precedent_element +
+      input[i]\Assembly_component_placement_link.subsequent_element;
+    END_REPEAT;
+  RETURN (SIZEOF(ac));
+END_FUNCTION; 
+
+FUNCTION cg_get_sz_lapgc (input : SET[1:?] OF Linear_array_placement_group_component_link) : INTEGER;
+LOCAL
+  ac : SET OF Linear_array_placement_group_component := [];
+END_LOCAL;
+    REPEAT i := 1 TO HIINDEX(input);
+      ac := ac +
+        input[i]\Linear_array_placement_group_component_link.precedent_element +
+        input[i]\Linear_array_placement_group_component_link.subsequent_element;
+    END_REPEAT;
+  RETURN (SIZEOF(ac));
+END_FUNCTION; 
+
+END_SCHEMA;

@@ -1,0 +1,97 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO/TC184/SC4 WG12N1051 - ISO CD/TS 10303-1119 Construction history - EXPRESS ARM 
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+(* Too many problems - can't use this module *)
+
+SCHEMA Construction_history_xim;
+
+USE FROM Constructive_solid_geometry_3d_xim; -- ISO 10303 TS 1068
+USE FROM Elemental_topology_xim; -- ISO 10303 TS 1006
+USE FROM Measure_representation_xim; -- ISO 10303 TS 1118
+USE FROM Shape_property_assignment_xim; -- ISO 10303 TS 1032
+
+USE FROM geometric_model_schema(solid_model);
+
+USE FROM topology_schema(face);
+
+TYPE shape_representation_select = SELECT (geometric_representation_item, topological_representation_item);
+END_TYPE;
+
+ENTITY Hybrid_shape_model
+  (* CONNOTATIONAL *) SUBTYPE OF (representation_relationship); (* More detailed type - not available yet. *)
+    implicit_rep: Procedural_shape_model; (* No mapping-SEDS !!! *)
+    explicit_rep : Manifold_solid_brep; (* No mapping-SEDS !!! *)
+ END_ENTITY;
+
+ENTITY Procedural_shape_model
+  SUBTYPE OF (shape_representation); (* More detailed type - not available yet. *)
+  operations: SET[1:?] OF Geometric_operation_sequence; (* No mapping-SEDS !!! *)
+END_ENTITY;
+
+
+ENTITY Geometric_operation_sequence 
+   SUBTYPE OF (geometric_representation_item);
+   elements:  List [1:?] of  geometric_representation_item;
+END_ENTITY;
+
+ENTITY Chosen_shape_element
+  SUBTYPE  OF (geometric_representation_item);
+  picked_element:  shape_representation_select;
+END_ENTITY;
+
+ENTITY Transition_feature_solid
+  ABSTRACT SUPERTYPE OF (ONEOF (Fillet_armx, Round, Chamfer_armx))
+  SUBTYPE OF (Shape_element, Solid_model);
+END_ENTITY;
+
+ENTITY Fillet_armx
+  SUBTYPE OF (Transition_feature_solid);
+ chosen_element:  Chosen_shape_element;
+ base_solid: Solid_model;
+ radius:  measure_representation_item;
+END_ENTITY;
+
+ENTITY Round
+  SUBTYPE OF (Transition_feature_solid);
+ chosen_element:  Chosen_shape_element;
+ base_solid: Solid_model;
+ radius: measure_representation_item;
+END_ENTITY;
+
+ENTITY Chamfer_armx
+ SUBTYPE OF (Transition_feature_solid);
+    chosen_element: Chosen_shape_element;
+    base_solid: Solid_model;
+    face1:  Face;
+    face2:  Face;
+    distance1: measure_representation_item;
+    distance2: measure_representation_item;
+  END_ENTITY;
+
+
+END_SCHEMA;

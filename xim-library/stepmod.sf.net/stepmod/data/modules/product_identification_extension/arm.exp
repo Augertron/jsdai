@@ -1,0 +1,31 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4161 - ISO/TS 10303-1738 Product identification extension - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3585
+*)
+
+ SCHEMA Product_identification_extension_arm;
+
+	USE FROM External_item_identification_assignment_arm;	-- ISO/TS 10303-1128
+	USE FROM Product_view_definition_arm;	-- ISO/TS 10303-1019
+
+ 	TYPE pie_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH  
+		(Externally_defined_view_definition);
+	END_TYPE;
+
+
+  ENTITY Externally_defined_view_definition
+    SUBTYPE OF (Product_view_definition);
+    INVERSE
+      source : External_source_identification FOR item;
+  END_ENTITY;
+
+
+
+  ENTITY Library_view_definition
+    SUBTYPE OF (Externally_defined_view_definition);
+    DERIVE
+      library : STRING := SELF\Externally_defined_view_definition.source.source_id;
+  END_ENTITY;
+
+ END_SCHEMA;

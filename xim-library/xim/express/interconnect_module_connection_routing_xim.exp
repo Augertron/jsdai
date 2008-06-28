@@ -1,0 +1,170 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Interconnect module connection routing - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Interconnect_module_connection_routing_xim;
+
+USE FROM Fabrication_joint_xim;
+
+USE FROM Interconnect_module_with_macros_xim;
+
+USE FROM Interconnect_module_connection_routing_mim;
+
+	TYPE imcr_termination_or_junction = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON termination_or_junction WITH 
+    	(Inter_stratum_join_relationship,
+     	Explicitly_located_layer_connection_point);
+  	END_TYPE;
+
+	SUBTYPE_CONSTRAINT layer_connection_point_armx_subtypes FOR Layer_connection_point_armx; 
+		(ONEOF (Explicitly_located_layer_connection_point,
+		Dependently_located_layer_connection_point));
+	END_SUBTYPE_CONSTRAINT; 
+
+	TYPE terminal_or_inter_stratum_feature = SELECT(
+  		Embedded_physical_component_terminal,
+			Inter_stratum_feature_armx,
+			Interconnect_module_macro_component_join_terminal_armx,
+     	Interconnect_module_terminal_armx,
+     	Printed_component_join_terminal);
+	END_TYPE;
+
+  	TYPE map_link = SELECT(
+  		Conductive_interconnect_element_terminal_link_armx,
+		Passage_terminal_based_fabrication_joint_link_armx);
+	END_TYPE;
+
+  	TYPE trace_junction_or_via = EXTENSIBLE SELECT
+     	(explicitly_located_layer_connection_point);
+	END_TYPE; -- trace_junction_or_via
+ 
+  	ENTITY Dependently_located_layer_connection_point
+    	(* CONNOTATIONAL *) SUBTYPE OF (Layer_connection_point_armx);
+      		associated_design_object : terminal_or_inter_stratum_feature;
+      		reference_zone           : OPTIONAL Connection_zone_in_design_view;
+      	DERIVE
+      	  SELF\shape_aspect.description : text := 'dependently located';	
+  	END_ENTITY; 
+
+  	ENTITY Dielectric_crossover_area_armx
+    	(* CONNOTATIONAL *) SUBTYPE OF (dielectric_crossover_area);
+      		SELF\shape_aspect_relationship.relating_shape_aspect RENAMED relating_concept  : Stratum_feature_armx;    
+      		SELF\shape_aspect_relationship.related_shape_aspect RENAMED related_concept    : Stratum_feature_armx;
+      		resulting_dielectric_crossover                                                 : Stratum_feature_armx;
+            resulting_shape                                                                : OPTIONAL Shape_representation;
+      INVERSE
+	    technology_requirement                                                             : SET[1:?] OF requirement_assignment_armx FOR assigned_to;
+  	END_ENTITY; 
+
+  	ENTITY Direct_stratum_component_join_implementation_armx
+  		(* CONNOTATIONAL *) SUBTYPE OF (direct_stratum_component_join_implementation);
+      	SELF\shape_aspect_relationship.relating_shape_aspect RENAMED implementing_joint			: Fabrication_joint_armx;
+      	SELF\shape_aspect_relationship.related_shape_aspect RENAMED topological_requirement : Stratum_embedded_physical_component_join_relationship;
+      DERIVE
+        SELF\shape_aspect_relationship.description : text := ?;
+        SELF\shape_aspect_relationship.name : label := ?;
+  	END_ENTITY; 
+
+  	ENTITY Explicitly_located_layer_connection_point
+    	(* CONNOTATIONAL *) SUBTYPE OF (Layer_connection_point_armx);
+      	DERIVE
+      	  SELF\shape_aspect.description : text := 'explicitly located';	
+  	END_ENTITY; 
+
+  	ENTITY Indirect_stratum_component_join_implementation_armx
+    	(* CONNOTATIONAL *) SUBTYPE OF (Plated_inter_stratum_feature_armx, indirect_stratum_component_join_implementation);
+      		indirect_topological_requirement : Stratum_embedded_physical_component_join_relationship;
+      		implementing_joint               : Fabrication_joint_armx;
+    	UNIQUE
+      		UR1 : indirect_topological_requirement,
+ 				implementing_joint;
+  	END_ENTITY; 
+
+  	ENTITY Inter_stratum_join_implementation
+    	ABSTRACT SUPERTYPE OF (ONEOF (Physical_network_supporting_stratum_feature_conductive_join,
+ 			Physical_network_supporting_inter_stratum_feature_armx))
+ 			(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect);
+      		topological_requirement : Inter_stratum_join_relationship;
+      DERIVE
+        SELF\shape_aspect.of_shape : product_definition_shape := ?;
+        SELF\shape_aspect.product_definitional : LOGICAL := ?;
+        SELF\shape_aspect.description : text := ?;
+        SELF\shape_aspect.name : label := ?;
+  	END_ENTITY; 
+
+  	ENTITY Junction_vertex_allocation
+  		(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+				SELF\shape_aspect_relationship.related_shape_aspect RENAMED implementation_point : trace_junction_or_via;
+      	SELF\shape_aspect_relationship.relating_shape_aspect RENAMED required_vertex     : Topological_junction;
+      DERIVE
+        SELF\shape_aspect_relationship.description : text := ?;
+        SELF\shape_aspect_relationship.name : label := ?;
+      UNIQUE
+        UR1 : required_vertex;
+  	END_ENTITY; 
+
+  	ENTITY Physical_connectivity_abstraction_map
+  		(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+      		SELF\shape_aspect_relationship.related_shape_aspect RENAMED name_space_context_based_definition : Physical_connectivity_element_armx;
+      		geometric_context_based_definition  																														: map_link;
+        DERIVE
+          SELF\shape_aspect_relationship.description : text := ?;
+          SELF\shape_aspect_relationship.relating_shape_aspect : shape_aspect := ?;
+          SELF\shape_aspect_relationship.name : label := ?;
+    	UNIQUE
+      UR1 : name_space_context_based_definition,
+ 		geometric_context_based_definition;
+  	END_ENTITY; 
+
+  	ENTITY Physical_network_supporting_inter_stratum_feature_armx
+    	(* CONNOTATIONAL *) SUBTYPE OF (Plated_inter_stratum_feature_armx,
+ 			Inter_stratum_join_implementation, physical_network_supporting_inter_stratum_feature);
+  	END_ENTITY; 
+
+  	ENTITY Physical_network_supporting_stratum_feature_conductive_join
+    	(* CONNOTATIONAL *) SUBTYPE OF (Stratum_feature_conductive_join_armx,
+		Inter_stratum_join_implementation);
+  	END_ENTITY; 
+
+-- SEDS
+  	ENTITY Stratum_feature_conductive_join_armx
+    	SUPERTYPE OF (Physical_network_supporting_stratum_feature_conductive_join)
+    	(* CONNOTATIONAL *) SUBTYPE OF (Stratum_feature_conductive_join);
+      		SELF\product_definition_relationship.relating_product_definition RENAMED relating_concept : Stratum_feature_template_component_armx;    
+      		SELF\product_definition_relationship.related_product_definition RENAMED related_concept   : Stratum_feature_template_component_armx;
+            resulting_shape                                                                           : OPTIONAL Shape_representation;
+        DERIVE   
+            SELF\product_definition_relationship.id : identifier := ?;
+            SELF\product_definition_relationship.name : label := ?;
+            SELF\product_definition_relationship.description : text := ?;
+        INVERSE
+	        technology_requirement                                                                    : SET[1:?] OF requirement_assignment_armx FOR assigned_to;
+    WHERE
+      WR1 : related_concept.resident_stratum :<>: relating_concept.resident_stratum;      
+	END_ENTITY; 
+
+END_SCHEMA;
+

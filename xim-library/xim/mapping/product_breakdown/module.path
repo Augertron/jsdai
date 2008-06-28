@@ -1,0 +1,485 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping product_breakdown(Product_breakdown_arm, Product_breakdown_mim);*)
+
+uof_mapping Breakdown(Breakdown);
+
+entity_mapping Breakdown(Breakdown, product
+			);
+
+mapping_constraints;
+
+				product
+				{product <-
+				product_related_product_category.products[i]
+				product_related_product_category <=
+				product_category
+				product_category.name='breakdown'}
+			
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Breakdown_element_usage_armx(Breakdown_element_usage_armx, breakdown_element_usage
+			);
+
+mapping_constraints;
+
+				breakdown_element_usage <=
+				product_definition_relationship
+			
+end_mapping_constraints;
+
+attribute_mapping name(name, 	product_definition_relationship.name
+				);
+
+					breakdown_element_usage <=
+					product_definition_relationship
+					product_definition_relationship.name
+				
+end_attribute_mapping;
+
+attribute_mapping child_element(child_element, $PATH, Breakdown_element_definition);
+
+					breakdown_element_usage <=
+					product_definition_relationship
+					product_definition_relationship.related_product_definition ->
+					product_definition
+					/SUPERTYPE(Breakdown_element_definition)/
+				
+end_attribute_mapping;
+
+attribute_mapping parent_element(parent_element, $PATH, Breakdown_element_definition);
+
+					breakdown_element_usage <=
+					product_definition_relationship
+					product_definition_relationship.relating_product_definition ->
+					product_definition
+					/SUPERTYPE(Breakdown_element_definition)/
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Breakdown_of_armx(Breakdown_of_armx, breakdown_of
+			);
+
+mapping_constraints;
+
+				breakdown_of <=
+				product_definition_relationship
+			
+end_mapping_constraints;
+
+attribute_mapping id(id, 	product_definition_relationship.id
+				);
+
+					breakdown_of <=
+					product_definition_relationship
+					product_definition_relationship.id
+				
+end_attribute_mapping;
+
+attribute_mapping name(name, 	product_definition_relationship.name
+				);
+
+					breakdown_of <=
+					product_definition_relationship
+					product_definition_relationship.name
+				
+end_attribute_mapping;
+
+attribute_mapping description(description, 	product_definition_relationship.description
+				);
+
+					breakdown_of <=
+					product_definition_relationship
+					product_definition_relationship.description
+				
+end_attribute_mapping;
+
+attribute_mapping breakdown(breakdown, $PATH, Breakdown_version);
+
+					breakdown_of <=
+					product_definition_relationship
+					product_definition_relationship.relating_product_definition ->
+					product_definition
+					product_definition.formation ->
+					product_definition_formation
+				
+end_attribute_mapping;
+
+attribute_mapping of_view(of_view, $PATH, Product_view_definition);
+
+                            breakdown_of <=
+                            product_definition_relationship
+                            product_definition_relationship.related_product_definition ->
+                            product_definition
+                            (* GL - SEDSZILLA #2404
+                            {product_definition.frame_of_reference -> product_definition_context
+                            product_definition_context <= application_context_element
+                            application_context_element.name ='product breakdown'} *)
+                          
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Breakdown_version(Breakdown_version, product_definition_formation);
+
+mapping_constraints;
+
+				{product_definition_formation <-
+				product_definition.formation
+				product_definition}
+			
+end_mapping_constraints;
+
+attribute_mapping of_product(of_product, $PATH, Breakdown);
+
+					product_definition_formation
+					product_definition_formation.of_product ->
+					product
+					{product <-
+					product_related_product_category.products[i]
+					product_related_product_category <=
+					product_category
+					product_category.name='breakdown'}
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+
+entity_mapping Assigned_property(Assigned_property, property_definition)
+extended;
+
+attribute_mapping described_element(described_element, $PATH, Breakdown_element_realization);
+
+					characterized_definition
+					characterized_definition = characterized_object
+					characterized_object
+					characterized_object =>
+					breakdown_element_realization
+				
+end_attribute_mapping;
+
+attribute_mapping described_element(described_element, $PATH, Breakdown_element_usage);
+
+                                  characterized_definition
+                                  characterized_definition = characterized_product_definition
+                                  characterized_product_definition
+                                  characterized_product_definition = product_definition_relationship
+                                  product_definition_relationship => breakdown_element_usage
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Breakdown_context_armx(Breakdown_context_armx, breakdown_context
+			);
+
+mapping_constraints;
+
+				breakdown_context <=
+				product_definition_relationship
+			
+end_mapping_constraints;
+
+attribute_mapping id(id, 	product_definition_relationship.id
+				);
+
+					breakdown_context <=
+					product_definition_relationship
+					product_definition_relationship.id
+				
+end_attribute_mapping;
+
+attribute_mapping name(name, 	product_definition_relationship.name
+				);
+
+					breakdown_context <=
+					product_definition_relationship
+					product_definition_relationship.name
+				
+end_attribute_mapping;
+
+attribute_mapping description(description, 	product_definition_relationship.description
+				);
+
+					breakdown_context <=
+					product_definition_relationship
+					product_definition_relationship.description
+				
+end_attribute_mapping;
+
+attribute_mapping breakdown(breakdown, $PATH, Breakdown_version);
+
+                                 breakdown_context <= 
+                                 product_definition_relationship 
+                                 product_definition_relationship.relating_product_definition ->
+                                 product_definition
+					product_definition product_definition.formation ->
+                                 product_definition_formation
+				
+end_attribute_mapping;
+
+attribute_mapping breakdown_element(breakdown_element, $PATH, Breakdown_element_definition);
+
+					breakdown_context <=
+					product_definition_relationship
+					product_definition_relationship.related_product_definition ->
+					product_definition
+					/SUPERTYPE(Breakdown_element_definition)/
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Breakdown_element(Breakdown_element, product
+			);
+
+mapping_constraints;
+
+				product
+				{product <-
+				product_related_product_category.products[i]
+				product_related_product_category <=
+				product_category
+				product_category.name='breakdown element'}
+			
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Breakdown_element_definition(Breakdown_element_definition, product_definition
+			);
+
+mapping_constraints;
+
+				(product_definition
+				{product_definition
+				product_definition.frame_of_reference ->
+				product_definition_context <= 
+				application_context_element
+				application_context_element.name = 'breakdown element definition'})
+			
+end_mapping_constraints;
+
+attribute_mapping defined_version(defined_version, $PATH, Breakdown_element_version);
+
+					product_definition
+					product_definition.formation ->
+					product_definition_formation
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Breakdown_element_version(Breakdown_element_version, product_definition_formation
+			);
+
+attribute_mapping of_product(of_product, $PATH, Breakdown_element);
+
+					product_definition_formation
+					product_definition_formation.of_product ->
+					product
+					{product <-
+					product_related_product_category.products[i]
+					product_related_product_category <=
+					product_category
+					product_category.name='breakdown element'}
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Product_definition_element_relationship_armx(Product_definition_element_relationship_armx, (product_definition_group_assignment)
+				(breakdown_element_group_assignment)
+			);
+
+mapping_constraints;
+
+				(product_definition_group_assignment
+				product_definition_group_assignment.assigned_group ->)
+				(breakdown_element_group_assignment
+				breakdown_element_group_assignment.assigned_group ->)
+				product_definition_element_relationship <=
+				group
+				group = 
+				id_attribute_select <-
+				id_attribute.identified_item
+				id_attribute
+			
+end_mapping_constraints;
+
+attribute_mapping id(id, 	id_attribute.attribute_value
+				);
+
+				  (product_definition_group_assignment
+					product_definition_group_assignment.assigned_group ->)
+					(breakdown_element_group_assignment
+					breakdown_element_group_assignment.assigned_group ->)
+					product_definition_element_relationship <=
+					group
+					group = 
+					id_attribute_select <-
+					id_attribute.identified_item
+					id_attribute
+					id_attribute.attribute_value
+				
+end_attribute_mapping;
+
+attribute_mapping name(name, 	group.name
+				);
+
+				  (product_definition_group_assignment
+					product_definition_group_assignment.assigned_group ->)
+					(breakdown_element_group_assignment
+					breakdown_element_group_assignment.assigned_group ->)
+					product_definition_element_relationship <=group
+					{group
+					id_attribute_select = group 
+					id_attribute_select <-
+					id_attribute.identified_item
+					id_attribute}
+					group.name
+				
+end_attribute_mapping;
+
+attribute_mapping description(description, 	group.description
+				);
+
+				  (product_definition_group_assignment
+					product_definition_group_assignment.assigned_group ->)
+					(breakdown_element_group_assignment
+					breakdown_element_group_assignment.assigned_group ->)
+					product_definition_element_relationship <=group
+					{group
+					id_attribute_select = group 
+					id_attribute_select <-
+					id_attribute.identified_item
+					id_attribute}
+					group.description
+				
+end_attribute_mapping;
+
+attribute_mapping breakdown(breakdown, $PATH, breakdown_item);
+
+					(product_definition_group_assignment
+					product_definition_group_assignment.assigned_group ->
+					product_definition_element_relationship <-
+					breakdown_element_group_assignment.assigned_group
+					breakdown_element_group_assignment)
+					(breakdown_element_group_assignment)
+					breakdown_element_group_assignment
+					breakdown_element_group_assignment.items[1] ->
+					product_definition_or_breakdown_element_usage
+				
+end_attribute_mapping;
+
+attribute_mapping breakdown(breakdown, $PATH, Breakdown_element_definition);
+
+					(product_definition_group_assignment
+					product_definition_group_assignment.assigned_group ->
+					product_definition_element_relationship <-
+					breakdown_element_group_assignment.assigned_group
+					breakdown_element_group_assignment)
+					(breakdown_element_group_assignment)
+					breakdown_element_group_assignment
+					breakdown_element_group_assignment.items[1] ->
+					product_definition_or_breakdown_element_usage =
+					product_definition
+					/SUPERTYPE(Breakdown_element_definition)/
+				
+end_attribute_mapping;
+
+attribute_mapping breakdown(breakdown, $PATH, Breakdown_element_usage);
+
+					(product_definition_group_assignment
+					product_definition_group_assignment.assigned_group ->
+					product_definition_element_relationship <-
+					breakdown_element_group_assignment.assigned_group
+					breakdown_element_group_assignment)
+					(breakdown_element_group_assignment)
+					breakdown_element_group_assignment
+					breakdown_element_group_assignment.items[1] ->
+					product_definition_or_breakdown_element_usage =
+					breakdown_element_usage
+				
+end_attribute_mapping;
+
+attribute_mapping product(product, $PATH, product_item);
+
+					product_definition_group_assignment
+					product_definition_group_assignment.items[1] ->
+					product_definition_or_product_definition_relationship
+				
+end_attribute_mapping;
+
+attribute_mapping product(product, $PATH, Product_view_definition);
+
+					product_definition_group_assignment
+					product_definition_group_assignment.items[1] ->
+					product_definition_or_product_definition_relationship =
+					product_definition
+				
+end_attribute_mapping;
+
+attribute_mapping product(product, $PATH, product_definition_usage);
+
+					product_definition_group_assignment
+					product_definition_group_assignment.items[1] ->
+					product_definition_or_product_definition_relationship =
+					product_definition_usage 
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+(* Better use breakdown_element_realization from AIM isntead
+entity_mapping Breakdown_element_realization_armx(Breakdown_element_realization_armx, breakdown_element_realization
+			);
+
+mapping_constraints;
+				breakdown_element_realization
+				{breakdown_element_realization <=
+				product_definition_element_relationship <=
+				group
+				group = 
+				id_attribute_select <-
+				id_attribute.identified_item
+				id_attribute}
+				{(breakdown_element_realization <- 
+				product_definition_group_assignment.assigned_group
+				product_definition_group_assignment)
+				(breakdown_element_realization <- 
+				breakdown_element_group_assignment.assigned_group
+				breakdown_element_group_assignment)
+				
+			
+end_mapping_constraints;
+
+end_entity_mapping;
+*)
+(*end_schema_mapping;*)

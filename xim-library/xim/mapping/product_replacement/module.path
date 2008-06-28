@@ -1,0 +1,79 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping product_replacement(Product_replacement_arm, Product_replacement_mim);*)
+
+uof_mapping Product_replacement(Product_replacement);
+
+entity_mapping Alternate_product_relationship(Alternate_product_relationship, alternate_product_relationship);
+
+attribute_mapping name(name, alternate_product_relationship.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, alternate_product_relationship.definition);
+
+end_attribute_mapping;
+
+attribute_mapping alternate_product(alternate_product, $PATH, Product);
+alternate_product_relationship.alternate ->
+			 product
+			 
+end_attribute_mapping;
+
+attribute_mapping base_product(base_product, $PATH, Product);
+alternate_product_relationship.base ->
+			 product
+			 
+end_attribute_mapping;
+
+attribute_mapping criteria(criteria, alternate_product_relationship.basis);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Assembly_relationship_substitution(Assembly_relationship_substitution, assembly_component_usage_substitute);
+
+attribute_mapping name(name, assembly_component_usage_substitute.name);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, assembly_component_usage_substitute.definition);
+
+end_attribute_mapping;
+
+attribute_mapping base_relationship(base_relationship, $PATH, assembly_component_usage);
+assembly_component_usage_substitute.base ->
+			 assembly_component_usage
+end_attribute_mapping;
+
+attribute_mapping substitute_relationship(substitute_relationship, $PATH, assembly_component_usage);
+assembly_component_usage_substitute.substitute ->
+			 assembly_component_usage
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

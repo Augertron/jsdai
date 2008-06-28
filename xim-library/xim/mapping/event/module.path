@@ -1,0 +1,171 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping event(Event_arm, Event_mim);*)
+
+uof_mapping Event(Event);
+
+entity_mapping Event(Event, 
+				event_occurrence
+			);
+
+attribute_mapping id(id, 
+					event_occurrence.id
+				);
+
+end_attribute_mapping;
+
+attribute_mapping name(name, 
+					event_occurrence.name
+				);
+
+end_attribute_mapping;
+
+attribute_mapping description(description, 
+					event_occurrence.description
+				);
+
+end_attribute_mapping;
+
+attribute_mapping planned_start_date(planned_start_date, $PATH, Calendar_date);
+
+					event_occurrence =
+					event_occurrence_date_item <* date_item
+					date_item <-
+					applied_date_assignment.items[i]
+					applied_date_assignment <=
+					date_assignment
+					{date_assignment.role ->
+					date_role
+					date_role.name='planned start date'}
+					date_assignment.assigned_date ->
+					date =>
+					calendar_date
+				
+end_attribute_mapping;
+
+attribute_mapping planned_start_date(planned_start_date, $PATH, date_and_time);
+
+					event_occurrence =
+					event_occurrence_date_and_time_item <* date_and_time_item
+					date_and_time_item <-
+					applied_date_and_time_assignment.items[i]
+					applied_date_and_time_assignment <=
+					date_and_time_assignment
+					{date_and_time_assignment.role ->
+					date_time_role
+					date_time_role.name='planned start date'}
+					date_and_time_assignment.assigned_date_and_time ->
+					date_and_time
+				
+end_attribute_mapping;
+
+attribute_mapping actual_start_date(actual_start_date, $PATH, Calendar_date);
+
+					event_occurrence =
+					event_occurrence_date_item <* date_item
+					date_item <-
+					applied_date_assignment.items[i]
+					applied_date_assignment <=
+					date_assignment
+					{date_assignment.role ->
+					date_role
+					date_role.name='actual start date'}
+					date_assignment.assigned_date ->
+					date =>
+					calendar_date
+				
+end_attribute_mapping;
+
+attribute_mapping actual_start_date(actual_start_date, $PATH, date_and_time);
+
+					event_occurrence =
+					event_occurrence_date_and_time_item <* date_and_time_item
+					date_and_time_item <-
+					applied_date_and_time_assignment.items[i]
+					applied_date_and_time_assignment <=
+					date_and_time_assignment
+					{date_and_time_assignment.role ->
+					date_time_role
+					date_time_role.name='actual start date'}
+					date_and_time_assignment.assigned_date_and_time ->
+					date_and_time
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Event_relationship(Event_relationship, 
+				event_occurrence_relationship
+			);
+
+attribute_mapping relation_type(relation_type, 
+					event_occurrence_relationship.name
+				);
+
+end_attribute_mapping;
+
+attribute_mapping relating_event(relating_event, $PATH, Event);
+
+					event_occurrence_relationship.relating_event ->
+					event_occurrence
+				
+end_attribute_mapping;
+
+attribute_mapping related_event(related_event, $PATH, Event);
+
+					event_occurrence_relationship.related_event ->
+					event_occurrence
+				
+end_attribute_mapping;
+
+attribute_mapping description(description, 
+					event_occurrence_relationship.description
+				);
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(* relative_event_occurrence is taken from AIM instead
+entity_mapping Relative_event(Relative_event, 
+				relative_event_occurrence
+			);
+
+attribute_mapping base_event(base_event, $PATH, Event);
+
+					relative_event_occurrence.base_event ->
+					event_occurrence
+				
+end_attribute_mapping;
+
+attribute_mapping offset(offset, $PATH, time_measure_with_unit);
+
+					relative_event_occurrence.offset ->
+					time_measure_with_unit
+				
+end_attribute_mapping;
+
+end_entity_mapping; *)
+end_uof_mapping;
+
+(*end_schema_mapping;*)

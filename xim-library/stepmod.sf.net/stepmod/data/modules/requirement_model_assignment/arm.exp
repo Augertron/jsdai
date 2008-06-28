@@ -1,0 +1,215 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3741 - ISO/WD 10303-1460 Requirement model assignment - EXPRESS ARM
+*) 
+
+SCHEMA Requirement_model_assignment_arm;
+
+USE FROM Requirement_categorization_arm;
+
+USE FROM Requirement_assignment_arm;    -- ISO/TS 10303-1233
+
+USE FROM Requirement_view_definition_arm;    -- ISO/TS 10303-1141
+
+--  TT note: The added SELECTS should NOT themselves be extensible.  
+--  	They need to be based on the requirement_assignment_item.
+
+(*			FOLLOWING INTERFACE ENABLING HOOKS ARE NEEDED
+		
+	-- Allocation relationships defined in Concept model (figure 8)
+	
+		Functional Requirements are assigned to functions
+		Performance (temporal) Requirements are assigned to functions
+		Function is allocated to Part (red used because of line crossings)
+		I/O is bound to ports (red used because of line crossings)
+		Interface Requirements are assigned to Interfaces
+		Physical Property Requirements are assigned to Part
+		Imposed Design is assigned to the Part on which it is imposed
+		Reference Requirements point to a Reference Source that may contain 
+			requirements of all the kinds in the classification
+*)
+
+TYPE functional_requirement_model_assignment_item = EXTENSIBLE SELECT BASED_ON requirement_assignment_item WITH
+	(Transformation_tbd);
+END_TYPE; 
+
+TYPE imposed_design_requirement_model_assignment_item = EXTENSIBLE SELECT BASED_ON requirement_assignment_item WITH
+	(Part_tbd);
+END_TYPE; 
+
+TYPE interface_requirement_model_assignment_item = EXTENSIBLE SELECT BASED_ON requirement_assignment_item WITH
+	(Interface_tbd);
+END_TYPE; 
+
+TYPE temporal_requirement_model_assignment_item = EXTENSIBLE SELECT BASED_ON requirement_assignment_item WITH
+	(Transformation_tbd);
+END_TYPE; 
+
+TYPE physical_property_requirement_model_assignment_item = EXTENSIBLE SELECT BASED_ON requirement_assignment_item WITH
+	(Part_tbd);
+END_TYPE; 
+
+TYPE reference_requirement_model_assignment_item = EXTENSIBLE SELECT BASED_ON requirement_assignment_item WITH
+	(Document_tbd);
+END_TYPE; 
+
+
+-- Note from TT - You don't need to actually refer to: 
+--	TYPE functional_requirement_model_assignment_item in the EXPRESS.  
+--	It is automagically pulled in by the EXPRESS compilers
+
+ENTITY Functional_requirement_model_assignment
+  SUBTYPE OF(Requirement_assignment);
+  SELF\requirement_assignment.assigned_requirement : Functional_requirement_model;  
+  SELF\requirement_assignment.assigned_to : Transformation_tbd;
+END_ENTITY;
+
+
+-- Note from TT - What is going on here is that we are 'redeclaring' the targets of the
+--  	attributes to be of the types we want and only of the types we want.
+--    	This is the critical bit to implement the 'assigned_to' link in the concept model.
+
+ENTITY Functional_requirement_model
+  SUBTYPE OF (System_requirement_model);
+INVERSE
+   assigned_to : SET [0:1] OF Functional_requirement_model_assignment FOR assigned_requirement;
+WHERE
+  WR1: SIZEOF(	
+  	QUERY(ra <* 
+	USEDIN(SELF,'REQUIREMENT_CATEGORIZATION_ARM.REQUIREMENT_ASSIGNMENT.ASSIGNED_REQUIREMENT')|		
+	NOT(SIZEOF(TYPEOF(ra) * 
+	['REQUIREMENT_MODEL_ASSIGNMENT_ARM.FUNCTIONAL_REQUIREMENT_MODEL_ASSIGNMENT']) = 1))) = 0;
+END_ENTITY;
+
+-- Note from TT - Need to address cardinality from the functional_requirement_model to the transformation
+
+--		What the INVERSE statement does is give a little bit of freedom in that a
+-- 		Functional_requirement_model can exist without an assigned_to, but it can
+-- 		only be referenced by an assignment that references the transformation.
+--		If you want to stick to the exact existence requirement stated in the telecon, 
+--  		change the INVERSE to be:
+--			INVERSE
+--		 	   assigned_to : Functional_requirement_model_assignment FOR assigned_requirement;
+
+-- 		What the WR1 requires is that there can be no Requirement_assignment
+--		referencing this Functional_requirement_model that is not a
+--		Functional_requirement_model_assignment.
+
+-- HPF -   The DOUBLE NEGATIVE "WHERE" rule enabled as
+--		there can be no Requirement_assignment 			--> 'REQUIREMENT_CATEGORIZATION_ARM.REQUIREMENT_ASSIGNMENT.ASSIGNED_REQUIREMENT'
+--		that is not a Functional_requirement_model_assignment.	--> 'REQUIREMENT_CATEGORIZATION_ARM.FUNCTIONAL_REQUIREMENT_MODEL_ASSIGNMENT'
+--		that references this Functional_requirement_model 	-->  ENTITY Functional_requirement_model
+-- 	   maps to:
+--		Each "Requirement_assignment" 
+--		that references a "Functional_requirement_model" 
+--		shall be a "Functional_requirement_model_assignment"
+
+-- 	Together, the INVERSE and WR achieve the effect specified by the concept model 
+--	but with a tiny bit of added functionality for an editing life cycle for the 
+-- 	Functional_requirement_model.  
+
+
+ENTITY Imposed_design_requirement_model_assignment
+  SUBTYPE OF(Requirement_assignment);
+  SELF\requirement_assignment.assigned_requirement : Imposed_design_requirement_model;  
+  SELF\requirement_assignment.assigned_to : Part_tbd;
+END_ENTITY;
+
+
+ENTITY Imposed_design_requirement_model
+  SUBTYPE OF (System_requirement_model);
+INVERSE
+   assigned_to : SET [0:1] OF Imposed_design_requirement_model_assignment FOR assigned_requirement;
+WHERE
+  WR1: SIZEOF(	
+  	QUERY(ra <* 
+	USEDIN(SELF,'REQUIREMENT_CATEGORIZATION_ARM.REQUIREMENT_ASSIGNMENT.ASSIGNED_REQUIREMENT')|		
+	NOT(SIZEOF(TYPEOF(ra) * 
+	['REQUIREMENT_MODEL_ASSIGNMENT_ARM.IMPOSED_DESIGN_REQUIREMENT_MODEL_ASSIGNMENT']) = 1))) = 0;	
+END_ENTITY;
+
+ENTITY Interface_requirement_model_assignment
+  SUBTYPE OF(Requirement_assignment);
+  SELF\requirement_assignment.assigned_requirement : Interface_requirement_model;  
+  SELF\requirement_assignment.assigned_to : Interface_tbd;
+END_ENTITY;
+
+ENTITY Interface_requirement_model
+  SUBTYPE OF (System_requirement_model);
+INVERSE
+   assigned_to : SET [0:1] OF Interface_requirement_model_assignment FOR assigned_requirement;
+WHERE
+  WR1: SIZEOF(	
+  	QUERY(ra <* 
+	USEDIN(SELF,'REQUIREMENT_CATEGORIZATION_ARM.REQUIREMENT_ASSIGNMENT.ASSIGNED_REQUIREMENT')|		
+	NOT(SIZEOF(TYPEOF(ra) * 
+	['REQUIREMENT_MODEL_ASSIGNMENT_ARM.INTERFACE_REQUIREMENT_MODEL_ASSIGNMENT']) = 1))) = 0;	
+END_ENTITY;
+
+ENTITY Temporal_requirement_model_assignment
+  SUBTYPE OF(Requirement_assignment);
+  SELF\requirement_assignment.assigned_requirement : Temporal_requirement_model;  
+  SELF\requirement_assignment.assigned_to : Transformation_tbd;
+END_ENTITY;
+
+ENTITY Temporal_requirement_model
+  SUBTYPE OF (System_requirement_model);
+INVERSE
+   assigned_to : SET [0:1] OF Temporal_requirement_model_assignment FOR assigned_requirement;
+WHERE
+  WR1: SIZEOF(	
+  	QUERY(ra <* 
+	USEDIN(SELF,'REQUIREMENT_CATEGORIZATION_ARM.REQUIREMENT_ASSIGNMENT.ASSIGNED_REQUIREMENT')|		
+	NOT(SIZEOF(TYPEOF(ra) * 
+	['REQUIREMENT_MODEL_ASSIGNMENT_ARM.TEMPORAL_REQUIREMENT_MODEL_ASSIGNMENT']) = 1))) = 0;	
+END_ENTITY;
+
+ENTITY Physical_property_requirement_model_assignment
+  SUBTYPE OF(Requirement_assignment);
+  SELF\requirement_assignment.assigned_requirement : Physical_property_requirement_model;  
+  SELF\requirement_assignment.assigned_to : Part_tbd;
+END_ENTITY;
+
+ENTITY Physical_property_requirement_model
+  SUBTYPE OF (System_requirement_model);
+INVERSE
+   assigned_to : SET [0:1] OF Physical_property_requirement_model_assignment FOR assigned_requirement;
+WHERE
+  WR1: SIZEOF(	
+  	QUERY(ra <* 
+	USEDIN(SELF,'REQUIREMENT_CATEGORIZATION_ARM.REQUIREMENT_ASSIGNMENT.ASSIGNED_REQUIREMENT')|		
+	NOT(SIZEOF(TYPEOF(ra) * 
+	['REQUIREMENT_MODEL_ASSIGNMENT_ARM.PHYSICAL_PROPERTY_REQUIREMENT_MODEL_ASSIGNMENT']) = 1))) = 0;	
+END_ENTITY;
+
+ENTITY Reference_requirement_model_assignment
+  SUBTYPE OF(Requirement_assignment);
+  SELF\requirement_assignment.assigned_requirement : Reference_requirement_model;  
+  SELF\requirement_assignment.assigned_to : Document_tbd;
+END_ENTITY;
+
+ENTITY Reference_requirement_model
+  SUBTYPE OF (System_requirement_model);
+  document_id : STRING;
+  document_name : STRING;
+  source : reference_requirement_model_assignment_item;
+END_ENTITY;
+
+ENTITY Transformation_tbd;
+-- Dummy.  This is in the FFB module, Replace with USE FROM when FBB finished
+END_ENTITY;
+
+ENTITY Part_tbd;
+-- To Be Determined
+END_ENTITY;
+
+ENTITY Interface_tbd;
+-- To Be Determined
+END_ENTITY;
+
+ENTITY Document_tbd;
+-- To Be Determined
+END_ENTITY;
+
+END_SCHEMA;
+

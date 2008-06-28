@@ -1,0 +1,296 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Analytical model - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Analytical_model_xim;
+
+USE FROM Model_parameter_xim;
+
+USE FROM Product_view_definition_relationship_xim;	-- ISO/TS 10303-1041
+
+USE FROM Software_xim;
+
+USE FROM Document_structure_xim;
+
+REFERENCE FROM product_identification_xim(          -- ISO/TS 10303-1017 
+        types_of_product 
+); 
+
+USE FROM Analytical_model_mim;
+
+USE FROM support_resource_schema (label);
+
+USE FROM product_property_representation_schema(represented_definition);
+
+REFERENCE FROM Specification_document_xim(get_document_definition);	-- ISO/TS 10303-1747
+
+	TYPE am_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
+	   (Analytical_model_definition);
+	END_TYPE; 
+
+-- Mim already have this extention - it just contains ARM supertype
+-- 	TYPE am_external_identification_item_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH  
+--		(Digital_analytical_model_vector_port_armx);
+--	END_TYPE;
+
+	TYPE analytical_model_port_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT;
+	END_TYPE;
+
+  TYPE port_property_type = ENUMERATION OF
+    (string_property_type,
+     boolean_property_type,
+     logical_property_type,
+     numeric_property_type,
+     physical_property_type);
+  END_TYPE;
+
+  TYPE signal_flow_direction = ENUMERATION OF
+    (unknown_direction,
+     not_applicable,
+     output_direction,
+     input_direction,
+     bidirectional);
+  END_TYPE;
+
+  ENTITY Across_port_variable_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Analog_port_variable_armx, across_port_variable);
+    WHERE
+      WR1 : EXISTS(SELF\Analog_port_variable_armx.unit_of_measure);
+  END_ENTITY;
+
+  ENTITY Analog_analytical_model_port_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Analytical_model_port_armx, analog_analytical_model_port);
+    INVERSE
+      signal_variable : SET[1:?] OF analog_port_variable_armx FOR associated_port;
+  END_ENTITY;
+
+  ENTITY Analog_port_variable_armx
+    SUPERTYPE OF (ONEOF (Through_port_variable_armx,
+ Across_port_variable_armx,
+ Transform_port_variable_armx))
+   	(* CONNOTATIONAL *) SUBTYPE OF (analog_port_variable);
+      associated_port : Analog_analytical_model_port_armx;
+      SELF\representation.name RENAMED variable_name   : label;
+      unit_of_measure : OPTIONAL Unit;
+    DERIVE
+      (* hiding of not needed attributes *)
+      SELF\representation.items : SET[1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+      SELF\representation_item.name : label := ?;
+    UNIQUE
+      UR1 : variable_name,
+ associated_port;
+  END_ENTITY;
+
+  ENTITY Analytical_model_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (Information_product);
+    UNIQUE 
+      UR1: SELF\product.id;
+    WHERE 
+      WR1 : SIZEOF(['analytical model', 'information'] * types_of_product(SELF)) = 2;
+  END_ENTITY;
+
+  ENTITY Analytical_model_application
+    (* CONNOTATIONAL *) SUBTYPE OF (analytical_representation);  
+      model_parameter_assignment : SET[1:?] OF Parameter_assignment_armx;
+      model_representation       : Analytical_model_definition_armx;
+    DERIVE
+      (* hiding of not needed attributes *)
+      SELF\representation.items : SET[1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+    UNIQUE
+      UR1 : name;
+  END_ENTITY;
+
+  ENTITY Analytical_model_definition_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (Information_definition, analytical_model_definition);
+      SELF\Product_definition.formation : Analytical_model_version;
+      source_code                       : SET [1:1] OF Digital_file;      
+	DERIVE  
+		representation_language: SET[1:1] OF Document_definition :=
+  			get_document_definition(SELF, 'representation language', 
+  			'SPECIFICATION_DOCUMENT_XIM.LANGUAGE_REFERENCE_MANUAL');      
+    INVERSE
+      access_mechanism : SET[1:?] OF analytical_model_port_armx FOR accessed_analytical_model;
+      parameter        : SET[1:?] OF analytical_model_parameter_armx FOR accessed_analytical_model;
+	  reference_document : document_assignment FOR is_assigned_to;    	
+  END_ENTITY;
+
+  ENTITY Analytical_model_make_from_relationship_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (Product_definition_relationship, analytical_model_make_from_relationship);
+      SELF\Product_definition_relationship.relating_product_definition RENAMED reusable_model  : Analytical_model_definition_armx;
+      SELF\Product_definition_relationship.related_product_definition RENAMED resultant_model : Analytical_model_definition_armx;
+    UNIQUE
+      UR1 : reusable_model, resultant_model;
+    WHERE
+      WR1 : reusable_model :<>: resultant_model;
+  END_ENTITY;
+
+  ENTITY Analytical_model_parameter_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Model_parameter_armx, analytical_model_parameter);
+      accessed_analytical_model : Analytical_model_definition_armx;
+    UNIQUE
+      UR1 : SELF\general_property.id,
+ accessed_analytical_model;
+  END_ENTITY;
+
+  ENTITY Analytical_model_port_armx
+    SUPERTYPE OF (analytical_model_vector_port_armx ANDOR
+ (ONEOF (Analog_analytical_model_port_armx,
+ Digital_analytical_model_port_armx)))
+     (* CONNOTATIONAL *) SUBTYPE OF (analytical_model_port);
+      accessed_analytical_model 									: Analytical_model_definition_armx;
+      SELF\representation.name RENAMED port_name	: label;
+    DERIVE
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+    UNIQUE
+      UR1 : port_name,
+ accessed_analytical_model;
+  END_ENTITY;
+
+  ENTITY Analytical_model_port_assignment_armx
+  	(* CONNOTATIONAL *) SUBTYPE OF (analytical_model_port_assignment);
+			SELF\Representation_relationship.rep_2 RENAMED assigned_analytical_model_port	: Analytical_model_port_armx;
+			assigned_item					: analytical_model_port_assignment_select;
+			SELF\Representation_relationship.rep_1 RENAMED associated_analytical_model_application :Analytical_model_application;
+   DERIVE
+     SELF\property_definition_representation.used_representation : representation := ?;
+     SELF\property_definition_representation.definition : represented_definition := ?;
+   UNIQUE
+    	UR1 : assigned_analytical_model_port,assigned_item,associated_analytical_model_application;
+(* where rule
+   we can now write a sensible where rule that states that the
+   associated_analytical_model_port.accessed_analytical_model =
+   associated_analytical_model_application.model_representation
+   *)
+   WHERE
+    WR1 : assigned_analytical_model_port.accessed_analytical_model =
+   associated_analytical_model_application.model_representation;
+  END_ENTITY;
+   
+  ENTITY Analytical_model_port_make_from_relationship
+  	(* CONNOTATIONAL *) SUBTYPE OF (make_from_model_port_relationship);
+      associated_make_from : Analytical_model_make_from_relationship_armx;
+      SELF\Representation_relationship.rep_1 RENAMED reusable_feature     : Analytical_model_port_armx;
+      SELF\Representation_relationship.rep_2 RENAMED resultant_feature    : Analytical_model_port_armx;
+    DERIVE
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+      SELF\representation.name : label := ?;
+    UNIQUE
+      UR1 : reusable_feature,
+ resultant_feature;
+    WHERE
+      WR1 : reusable_feature :<>: resultant_feature;
+      WR2 : reusable_feature.accessed_analytical_model :<>: resultant_feature.accessed_analytical_model;
+  END_ENTITY;
+
+  ENTITY Analytical_model_scalar_port_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Analytical_model_vector_port_armx, analytical_model_scalar_port);
+    WHERE
+      WR1 : SIZEOF(SELF\Analytical_model_vector_port_armx.element_port) = 1;
+      WR2 : SELF = SELF\Analytical_model_vector_port_armx.element_port[1];
+  END_ENTITY;
+
+  ENTITY Analytical_model_vector_port_armx
+    SUPERTYPE OF (Analytical_model_scalar_port_armx)
+    (* CONNOTATIONAL *) SUBTYPE OF (Analytical_model_port_armx, analytical_model_vector_port);
+    SELF\Compound_representation_item.item_element RENAMED element_port : LIST [1:?] OF Analytical_model_scalar_port_armx;
+  DERIVE    
+      size : INTEGER := SIZEOF(element_port); -- positive_integer;      
+  END_ENTITY;
+  
+  ENTITY Analytical_model_version
+  	(* CONNOTATIONAL *) SUBTYPE OF (Information_version);
+  		SELF\product_definition_formation.of_product : Analytical_model_armx;
+  END_ENTITY; 
+
+  ENTITY Digital_analytical_model_port_armx
+    (* CONNOTATIONAL *) ABSTRACT SUPERTYPE OF (Digital_analytical_model_vector_port_armx)
+    SUBTYPE OF (Analytical_model_port_armx, digital_analytical_model_port);
+      nominal_signal_flow_direction : signal_flow_direction;
+      port_type                     : port_property_type;
+    WHERE
+      WR1 : not_applicable <> nominal_signal_flow_direction;
+      WR2 : numeric_property_type <> port_type;
+      WR3 : physical_property_type <> port_type;
+      WR4 : unknown_direction <> nominal_signal_flow_direction;
+  END_ENTITY;
+
+  ENTITY Digital_analytical_model_scalar_port_armx
+    SUBTYPE OF (Digital_analytical_model_vector_port_armx, Analytical_model_scalar_port_armx, digital_analytical_model_scalar_port);
+  END_ENTITY;
+
+  ENTITY Digital_analytical_model_vector_port_armx
+    SUBTYPE OF (Digital_analytical_model_port_armx, Analytical_model_vector_port_armx, digital_analytical_model_vector_port);
+    INVERSE
+      data_encoding_method 	: External_source_identification FOR items;
+    WHERE
+     WR1 : SELF\Digital_analytical_model_port_armx.port_type = port_property_type.string_property_type;
+  END_ENTITY;
+
+	ENTITY Terminal_pair_port_equivalence_relationship
+		(* CONNOTATIONAL *) SUBTYPE OF (representation_relationship);
+      SELF\Representation_relationship.rep_2 RENAMED equivalent_port : Analytical_model_port_armx;
+      SELF\Representation_relationship.rep_1 RENAMED scalar_ports    : Analytical_model_vector_port_armx;
+     DERIVE
+       SELF\representation_relationship.description : text := ?;
+       SELF\representation_relationship.name : label := ?;
+	 WHERE
+	  WR1: (SIZEOF (scalar_ports.element_port) = 2);
+  	END_ENTITY;
+
+
+  ENTITY Through_port_variable_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Analog_port_variable_armx, through_port_variable);
+    WHERE
+      WR1 : EXISTS(SELF\Analog_port_variable_armx.unit_of_measure);
+  END_ENTITY;
+  
+  ENTITY Transform_port_variable_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Analog_port_variable_armx, transform_port_variable);
+      nominal_signal_flow_direction : signal_flow_direction;
+    WHERE
+      WR1 : not_applicable <> nominal_signal_flow_direction;
+      WR2 : bidirectional <> nominal_signal_flow_direction;
+  END_ENTITY;
+
+RULE analytical_model_version_constraint FOR 
+(product_definition_formation);
+WHERE
+  WR1: SIZEOF ( QUERY ( pv <* product_definition_formation | ( NOT ( 'ANALYTICAL_MODEL_XIM.' + 'ANALYTICAL_MODEL_VERSION' IN TYPEOF ( pv) ) ) AND ( 'ANALYTICAL_MODEL_XIM.' + 'ANALYTICAL_MODEL_ARMX' IN TYPEOF ( pv.of_product) ) ) ) =0 ;
+END_RULE; 
+
+RULE analytical_model_definition_constraint FOR 
+(Product_definition);
+WHERE
+  WR1: SIZEOF ( QUERY ( pvd <* Product_definition | ( NOT ( 'ANALYTICAL_MODEL_xim.' + 'ANALYTICAL_MODEL_DEFINITION_ARMX' IN TYPEOF (pvd) ) ) AND ( 'ANALYTICAL_MODEL_xim.' + 'ANALYTICAL_MODEL_VERSION' IN TYPEOF ( pvd.formation) ) ) ) =0 ;
+END_RULE; 
+
+END_SCHEMA;
+

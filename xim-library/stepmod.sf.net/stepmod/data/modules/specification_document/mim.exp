@@ -1,0 +1,51 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N5004 - ISO/CD-TS 10303-1747 Specification document - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N4189
+*)
+
+SCHEMA Specification_document_mim;
+USE FROM Characteristic_mim;	-- ISO/TS 10303-1654
+USE FROM Configuration_item_mim;	-- ISO/TS 10303-1056
+USE FROM Tagged_text_representation_mim; -- ISO/TS 10303-1366
+
+USE FROM document_schema (document_type);
+USE FROM management_resources_schema(group_assignment);
+USE FROM date_time_schema(date_time_role);
+USE FROM product_definition_schema(product_definition_formation_relationship);
+USE FROM product_property_representation_schema(item_identified_representation_usage);
+
+  TYPE document_identifier_assigned_item = SELECT
+    (document);
+  END_TYPE;
+
+  TYPE sd_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH 
+    (configuration_item,
+    product,
+    product_definition,
+    product_definition_formation);
+  END_TYPE;
+	
+  ENTITY document_identifier
+    SUBTYPE OF (group);
+    UNIQUE
+      UR1: SELF\group.name, SELF\group.description;
+  END_ENTITY;
+
+  ENTITY document_identifier_assignment
+    SUBTYPE OF (group_assignment);
+      SELF\group_assignment.assigned_group : document_identifier;
+        items : SET [1:?] OF document_identifier_assigned_item;
+  END_ENTITY;
+
+  ENTITY partial_document_with_structured_text_representation_assignment
+    SUBTYPE OF (applied_document_usage_constraint_assignment, characterized_object);
+  END_ENTITY;  
+
+  ENTITY specification_definition
+    SUBTYPE OF (product_definition);
+  END_ENTITY;
+	
+END_SCHEMA;
+
+

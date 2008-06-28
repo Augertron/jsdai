@@ -1,0 +1,44 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3900 - ISO/TS 10303-1651 Basic curve - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3366
+*)
+
+SCHEMA Basic_curve_arm;
+
+	USE FROM Basic_geometry_arm;	-- ISO/TS 10303-1652
+	USE FROM External_item_identification_assignment_arm;	-- ISO/TS 10303-1128
+
+	SUBTYPE_CONSTRAINT curve_subtypes FOR Curve;         
+	    ONEOF (Composite_curve,
+		Trimmed_curve);    
+	END_SUBTYPE_CONSTRAINT;
+
+  ENTITY Closed_curve
+    SUBTYPE OF (Curve);
+  END_ENTITY;
+
+  ENTITY Composite_curve
+    SUBTYPE OF (Curve);
+      curve_segment : LIST[1:?] OF UNIQUE Composite_curve_segment;
+  END_ENTITY;
+
+  ENTITY Composite_curve_segment;
+      segment_curve : Curve;
+    INVERSE
+      using_curves : SET[1:?] OF composite_curve FOR curve_segment;
+  END_ENTITY;
+
+	ENTITY Measurement_path;
+	          defined_by : Curve;
+	          defined_in : Geometric_coordinate_space;
+	END_ENTITY;
+
+	ENTITY Trimmed_curve
+	  SUBTYPE OF (Curve);
+	    start_point : Cartesian_point;
+	    end_point : Cartesian_point;
+	END_ENTITY;
+
+END_SCHEMA;
+

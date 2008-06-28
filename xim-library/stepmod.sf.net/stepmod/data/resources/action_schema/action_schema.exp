@@ -1,0 +1,199 @@
+(*
+$Id$
+ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+*) 
+
+SCHEMA action_schema; 
+
+REFERENCE FROM basic_attribute_schema   -- ISO 10303-41
+  (description_attribute,
+   get_description_value,
+   get_id_value,
+   get_name_value,
+   id_attribute,
+   name_attribute); 
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set,
+   identifier,
+   label,
+   text); 
+
+
+TYPE supported_item = SELECT
+   (action, 
+    action_directive, 
+    action_method);
+END_TYPE; 
+
+ENTITY action;
+  name : label;
+  description : OPTIONAL text;
+  chosen_method : action_method;
+DERIVE
+  id : identifier := get_id_value (SELF);
+WHERE
+  WR1: SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' + 'ID_ATTRIBUTE.IDENTIFIED_ITEM')) <= 1;
+END_ENTITY;
+
+ENTITY action_directive;
+  name : label;
+  description : OPTIONAL text;
+  analysis : text;
+  comment : text;
+  requests : SET[1:?] OF versioned_action_request;
+END_ENTITY;
+
+ENTITY action_method;
+  name : label;
+  description : OPTIONAL text;
+  consequence : text;
+  purpose : text;
+END_ENTITY;
+
+ENTITY action_method_relationship;
+  name : label;
+  description : OPTIONAL text;
+  relating_method : action_method;
+  related_method : action_method;
+END_ENTITY;
+
+ENTITY action_relationship;
+  name : label;
+  description : OPTIONAL text;
+  relating_action : action;
+  related_action : action;
+END_ENTITY;
+
+ENTITY action_request_solution;
+  method : action_method;
+  request : versioned_action_request;
+DERIVE
+  description : text := get_description_value (SELF);
+  name : label := get_name_value (SELF);
+WHERE
+  WR1: SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' + 'DESCRIPTION_ATTRIBUTE.DESCRIBED_ITEM')) <= 1;
+  WR2: SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' + 'NAME_ATTRIBUTE.NAMED_ITEM')) <= 1;
+END_ENTITY;
+
+ENTITY action_request_status;
+  status : label;
+  assigned_request : versioned_action_request;
+END_ENTITY;
+
+ENTITY action_resource;
+  name : label;
+  description : OPTIONAL text;
+  usage : SET[1:?] OF supported_item;
+  kind : action_resource_type;
+END_ENTITY;
+
+ENTITY action_resource_relationship;
+  name : label;
+  description : OPTIONAL text;
+  relating_resource : action_resource;
+  related_resource : action_resource;
+END_ENTITY;
+
+ENTITY action_resource_type;
+  name : label;
+END_ENTITY;
+
+ENTITY action_status;
+  status : label;
+  assigned_action : executed_action;
+END_ENTITY;
+
+ENTITY directed_action
+  SUBTYPE OF (executed_action);
+  directive : action_directive;
+END_ENTITY;
+
+ENTITY executed_action
+  SUBTYPE OF (action);
+END_ENTITY;
+
+ENTITY versioned_action_request;
+  id : identifier;
+  version : label;
+  purpose : text;
+  description : OPTIONAL text;
+END_ENTITY;
+
+ENTITY versioned_action_request_relationship;
+  id : identifier;
+  name : label;
+  description : OPTIONAL text;
+  relating_versioned_action_request : versioned_action_request;
+  related_versioned_action_request : versioned_action_request;
+END_ENTITY;
+
+FUNCTION acyclic_action_method_relationship (relation : action_method_relationship; relatives : SET [1:?] OF action_method; specific_relation : STRING):BOOLEAN;
+    LOCAL
+      x : SET OF action_method_relationship;
+    END_LOCAL;
+
+    IF relation.relating_method IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(am <* bag_to_set(USEDIN(relation.relating_method, 'ACTION_SCHEMA.' + 'ACTION_METHOD_RELATIONSHIP.' + 'RELATED_METHOD')) | specific_relation IN TYPEOF(am));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_action_method_relationship(x[i], relatives + relation.relating_method, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION;
+
+  FUNCTION acyclic_action_relationship (relation : action_relationship; relatives : SET [1:?] OF action; specific_relation : STRING):BOOLEAN;
+    LOCAL
+      x : SET OF action_relationship;
+    END_LOCAL;
+
+    IF relation.relating_action IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(actn <* bag_to_set(USEDIN(relation.relating_action, 'ACTION_SCHEMA.' + 'ACTION_RELATIONSHIP.' + 'RELATED_ACTION')) | specific_relation IN TYPEOF(actn));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_action_relationship(x[i], relatives + relation.relating_action, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION;
+
+  FUNCTION acyclic_action_resource_relationship (relation : action_resource_relationship; relatives : SET [1:?] OF action_resource; specific_relation : STRING):BOOLEAN;
+    LOCAL
+      x : SET OF action_resource_relationship;
+    END_LOCAL;
+
+    IF relation.relating_resource IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(ar <* bag_to_set(USEDIN(relation.relating_resource, 'ACTION_SCHEMA.' + 'ACTION_RESOURCE_RELATIONSHIP.' + 'RELATED_RESOURCE')) | specific_relation IN TYPEOF(ar));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_action_resource_relationship(x[i], relatives + relation.relating_resource, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION;
+
+  FUNCTION acyclic_versioned_action_request_relationship (relation : versioned_action_request_relationship; relatives : SET OF versioned_action_request; specific_relation : STRING):BOOLEAN;
+    LOCAL
+      x : SET OF versioned_action_request_relationship;
+    END_LOCAL;
+
+    IF relation.relating_versioned_action_request IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(varr <* bag_to_set(USEDIN(relation.relating_versioned_action_request, 'ACTION_SCHEMA.' + 'VERSIONED_ACTION_REQUEST_RELATIONSHIP.' + 'RELATED_VERSIONED_ACTION_REQUEST')) | specific_relation IN TYPEOF(varr));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_versioned_action_request_relationship(x[i], relatives + relation.relating_versioned_action_request, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION; 
+
+END_SCHEMA;  -- action_schema

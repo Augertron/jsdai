@@ -1,0 +1,235 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping assembly_functional_interface_requirement(Assembly_functional_interface_requirement_arm, Assembly_functional_interface_requirement_mim);*)
+
+
+entity_mapping Document_assignment(Document_assignment, (applied_document_reference)(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment) *))
+extended;
+
+attribute_mapping is_assigned_to(is_assigned_to, , Protocol_physical_layer_definition_armx);
+(
+						document_reference_item *> afir_document_reference_item
+						afir_document_reference_item = protocol_physical_layer_definition
+					)(
+						document_reference_item *> afir_document_reference_item
+						afir_document_reference_item = protocol_physical_layer_definition
+					)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Minimally_defined_connector_armx(Minimally_defined_connector_armx, minimally_defined_connector);
+
+mapping_constraints;
+minimally_defined_connector <=
+packaged_part <=
+physical_unit <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping used_package(used_package, $PATH, Package_external_reference);
+minimally_defined_connector <=
+packaged_part <=
+physical_unit <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+{property_definition_representation.name = 'used package'}
+property_definition_representation.used_representation ->
+representation
+{representation
+representation.name = 'package external reference'}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Protocol_physical_layer_definition_armx(Protocol_physical_layer_definition_armx, protocol_physical_layer_definition);
+
+mapping_constraints;
+protocol_physical_layer_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping host_functional_definition(host_functional_definition, $PATH, Functional_unit_usage_view);
+protocol_physical_layer_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'host functional definition'}
+product_definition_relationship.relating_product_definition ->
+product_definition
+{product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'functional design usage'}
+product_definition =>
+functional_unit
+
+end_attribute_mapping;
+
+attribute_mapping media_functional_definition(media_functional_definition, $PATH, Functional_unit_usage_view);
+protocol_physical_layer_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'media functional definition'}
+product_definition_relationship.relating_product_definition ->
+product_definition
+{product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'functional design usage'}
+product_definition =>
+functional_unit
+
+end_attribute_mapping;
+
+attribute_mapping host_connector(host_connector, $PATH, Minimally_defined_connector_armx);
+protocol_physical_layer_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'host connector'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+physical_unit =>
+packaged_part =>
+minimally_defined_connector
+
+end_attribute_mapping;
+
+attribute_mapping media_connector(media_connector, $PATH, Minimally_defined_connector_armx);
+protocol_physical_layer_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'media connector'}
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+physical_unit =>
+packaged_part =>
+minimally_defined_connector
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Protocol_physical_layer_definition_with_characterization_armx(Protocol_physical_layer_definition_with_characterization_armx, protocol_physical_layer_definition_with_characterization);
+
+mapping_constraints;
+protocol_physical_layer_definition <=
+product_definition
+
+end_mapping_constraints;
+
+
+attribute_mapping host_rcv_functional_characterization(host_rcv_functional_characterization, $PATH, Functional_specification_definition_armx);                           
+		protocol_physical_layer_definition_with_characterization <=
+		protocol_physical_layer_definition <=
+		product_definition <-
+		product_definition_relationship.related_product_definition
+		{product_definition_relationship.name = 'host rcv functional characterization'}
+		product_definition_relationship.relating_product_definition ->
+		product_definition
+		{product_definition <-
+			product_definition_context_association.definition
+			product_definition_context_association
+			{product_definition_context_association.role ->
+			product_definition_context_role
+			product_definition_context_role.name = 'part definition type'}
+			product_definition_context_association.frame_of_reference ->
+			product_definition_context <=
+			application_context_element
+			application_context_element.name = 'functional specification'}
+		product_definition =>
+		functional_unit =>
+		functional_specification_definition
+end_attribute_mapping;
+
+attribute_mapping host_xmt_functional_characterization(host_xmt_functional_characterization, $PATH, Functional_specification_definition_armx);               
+		protocol_physical_layer_definition_with_characterization <=
+		protocol_physical_layer_definition <=
+		product_definition <-
+		product_definition_relationship.related_product_definition
+		{product_definition_relationship.name = 'host xmt functional characterization'}
+		product_definition_relationship.relating_product_definition ->
+		product_definition
+		{product_definition <-
+			product_definition_context_association.definition
+			product_definition_context_association
+			{product_definition_context_association.role ->
+			product_definition_context_role
+			product_definition_context_role.name = 'part definition type'}
+			product_definition_context_association.frame_of_reference ->
+			product_definition_context <=
+			application_context_element
+			application_context_element.name = 'functional specification'}
+		product_definition =>
+		functional_unit =>
+		functional_specification_definition
+end_attribute_mapping;
+            
+attribute_mapping media_functional_characterization(media_functional_characterization, $PATH, Functional_specification_definition_armx);   
+      protocol_physical_layer_definition_with_characterization <=
+			protocol_physical_layer_definition <=
+			product_definition <-
+			product_definition_relationship.related_product_definition
+			{product_definition_relationship.name = 'media functional characterization'}
+			product_definition_relationship.relating_product_definition ->
+			product_definition
+			{product_definition <-
+			product_definition_context_association.definition
+			product_definition_context_association
+			{product_definition_context_association.role ->
+			product_definition_context_role
+			product_definition_context_role.name = 'part definition type'}
+			product_definition_context_association.frame_of_reference ->
+			product_definition_context <=
+			application_context_element
+			application_context_element.name = 'functional specification'}
+			product_definition =>
+			functional_unit =>
+			functional_specification_definition
+end_attribute_mapping;
+
+end_entity_mapping;
+
+(*end_schema_mapping;*)

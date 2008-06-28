@@ -1,0 +1,129 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3739 - ISO/WD 10303-1452 Requirement categorization - EXPRESS ARM
+*) 
+
+SCHEMA Requirement_categorization_arm;
+
+USE FROM Requirement_assignment_arm;    -- ISO/TS 10303-1233
+
+USE FROM Requirement_model_assignment_arm;    -- ISO/TS 10303-1233
+
+USE FROM Requirement_view_definition_arm;    -- ISO/TS 10303-1141
+
+USE FROM Document_assignment_arm;
+
+USE FROM Position_in_organization_arm;
+
+USE FROM Person_organization_arm;
+
+
+--  Notes and concerns
+
+(* From Tom Thurman Dec 9, 2004		
+	Comments/questions:
+	1-Why is requirement_category included?
+	2-Why the ONEOF subtype constraints on Reqirement_category?
+	(In 15 seconds, I was able to think of a couple of combinations that make
+	perfect sense(to me.;-() and that violate the ONEOF.
+	3-Resolved - The attributes of System_requirement imply to me that System_requirement
+	might be better off as a subtype of product, rather than a product_definition
+	(at least this is the direction we went with a product whose category is
+	'requirement model' (or something like that.) after a number of years of
+	beating our head on the wall.)
+	4-name of requirement_connector_arm.
+	Sorry but I am at a loss to understand from the description provided what
+	this module has to do with 'connector'.  Have you thought of using the word
+	'traceability'?		
+*)
+
+-- Begin AP233 extensions not covered by AP239
+
+
+(*	There is no support to couple requirements to modeling elements. A general 
+	ability to make allocations as defined by users is not adequate. For 
+	example, it is essential to be able to identify interface requirements as 
+	a subclass and allocate them to the appropriate interfaces in the model. 
+	This was discussed for a half day at the Stockholm meeting and decided there. 
+	These relationships must be hardwired into the model and not left to user 
+	definition to insure model and requirement integrity. The system engineer 
+	stakeholders in AP233 know this is needed.
+
+	The Requirements_categories_arm shows the needed subclasses and they can 
+	be found fully documented in the concept model along with the important 
+	allocations. For example the functional requirements and temporal 
+	requirements are allocated to function (transformation) in the 
+	function_based_behavior module set.
+	
+	The Requirement_model_assignment_arm provides for the necessary assignments.
+*)
+
+TYPE stakeholder_select = SELECT 
+	(Organization, 
+	Person, 
+	Person_in_organization, 
+	Person_or_organization_or_person_in_organization_in_position);
+END_TYPE;
+
+TYPE requirement_type = ENUMERATION OF (originating, derived, implied);
+END_TYPE;
+
+ENTITY Stakeholder_need
+  SUBTYPE OF (Requirement_source);
+  name : STRING;
+  rational : OPTIONAL STRING;
+END_ENTITY;
+
+ENTITY Requirement_category
+  SUBTYPE OF (Requirement_view_definition);
+END_ENTITY;
+
+ENTITY System_requirement_model
+  SUPERTYPE OF (ONEOF(Functional_requirement_model,
+			Imposed_design_requirement_model,
+			Interface_requirement_model,
+			Temporal_requirement_model,
+			Physical_property_requirement_model,
+			Reference_requirement_model))
+  SUBTYPE OF (Requirement_category);
+  has_owner  : SET[1:?] OF stakeholder_select;
+  has_type   : OPTIONAL requirement_type;
+END_ENTITY;
+
+--  Project_management does not yet have attributes defined.
+--  	The Verification & validation modules set will bring these out 
+
+ENTITY Project_requirement
+  SUBTYPE OF (Requirement_category);
+END_ENTITY;
+
+TYPE minimize_or_maximize = ENUMERATION OF (minimize, maximize);
+END_TYPE;
+
+ENTITY Measure_of_effectiveness
+  SUBTYPE OF (Requirement_view_definition);
+  SELF\Product_view_definition.name : STRING;
+  description : OPTIONAL STRING;
+  relative_importance : Measure_of_effectiveness_weight;
+END_ENTITY;
+
+ENTITY Measure_of_effectiveness_weight;
+  measure : REAL;
+  optimization_direction : minimize_or_maximize;
+END_ENTITY;
+
+ENTITY Regularization_function;
+  description : STRING;
+  uses : SET[1:?] OF Measure_of_effectiveness;
+  yields : REAL;
+  equation : Maths_script;
+END_ENTITY;
+
+ENTITY Maths_script;
+  script_language : STRING;
+  script : STRING;
+  symbol_list  : STRING;
+END_ENTITY;
+
+END_SCHEMA;
+

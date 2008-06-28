@@ -1,0 +1,361 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping construction_history(Construction_history_arm, construction_history_mim);*)
+
+uof_mapping Construction_History(Construction_History);
+
+entity_mapping Hybrid_shape_model(Hybrid_shape_model, explicit_procedural_shape_representation_relationship);
+
+mapping_constraints;
+explicit_procedural_shape_representation_relationship <= 
+		explicit_procedural_representation_relationship <=
+representation_relationship
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Procedural_shape_model(Procedural_shape_model, procedural_shape_representation);
+
+mapping_constraints;
+ procedural_shape_representation <= procedural_representation 
+		 procedural_representation <= representation
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Chosen_shape_element(Chosen_shape_element, selected_geometric_element);
+
+mapping_constraints;
+selected_geometric_element <= geometric_representation_item
+end_mapping_constraints;
+
+attribute_mapping picked_element(picked_element, $PATH, geometric_representation_item);
+selected_geometric_element <= geometric_representation_item
+		  selected_geometric_element.picked_element -> geometric_representation_item
+		  geometric_representation_item = trimmed_curve
+end_attribute_mapping;
+
+attribute_mapping picked_element(picked_element, $PATH, topological_representation_item);
+selected_geometric_element <= geometric_representation_item
+		  selected_geometric_element.picked_element -> topological_representation_item
+		  geometric_representation_item = edge_curve
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Transition_feature_solid(Transition_feature_solid, ( transition_feature_solid)( transition_feature_solid)( transition_feature_solid));
+
+mapping_constraints;
+(transition_feature_solid <= shape_aspect)(transition_feature_solid <= solid_model)(transition_feature_solid <= procedural_shape_representation_sequence)
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Fillet(Fillet,  edge_blend_fillet);
+
+mapping_constraints;
+edge_blend_fillet  <=  transition_feature_solid
+		  transition_feature_solid <= shape_aspect
+end_mapping_constraints;
+
+attribute_mapping chosen_element(chosen_element, $PATH, Detailed_geometric_model);
+edge_blend_fillet  <=  selected_geometric_element
+		  selected_geometric_element.picked_element -> geometric_representation_item
+		  geometric_representation_item = trimmed_curve
+end_attribute_mapping;
+
+attribute_mapping chosen_element(chosen_element, , Detailed_topological_model);
+edge_blend_fillet  <=  selected_geometric_element
+		  selected_geometric_element.picked_element -> topological_representation_item
+		  topological_representation_item = edge_curve
+end_attribute_mapping;
+
+attribute_mapping chosen_element(chosen_element, $PATH, Solid_model);
+edge_blend_fillet <= transition_feature_solid
+transition_feature_solid <= shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+shape_representation =>
+ representation
+representation.items[i] ->
+representation_item => geometric_representation_item
+geometric_representation_item => solid_model
+end_attribute_mapping;
+
+attribute_mapping radius(radius, $PATH, measure_representation_item);
+edge_blend_fillet <= transition_feature_solid
+transition_feature_solid <= shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation
+property_definition_representation.used_representation ->
+{representation =>
+shape_representation =>
+ shape_representation_with_parameters}
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'fillet radius '}
+representation_item =>
+measure_representation_item
+{measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit}
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Round(Round, edge_blend_round);
+
+mapping_constraints;
+edge_blend_round  <=  transition_feature_solid
+transition_feature_solid <= shape_aspect
+end_mapping_constraints;
+
+attribute_mapping chosen_enity(chosen_enity, $PATH, geometric_representation_item);
+edge_blend_round  <=  selected_geometric_element
+		  selected_geometric_element.picked_element -> geometric_representation_item
+		  geometric_representation_item = trimmed_curve
+end_attribute_mapping;
+
+attribute_mapping chosen_enity(chosen_enity, , topological_representation_item);
+edge_blend_round  <=  selected_geometric_element
+		  selected_geometric_element.picked_element -> topological_representation_item
+		  topological_representation_item = edge_curve
+end_attribute_mapping;
+
+attribute_mapping chosen_enity(chosen_enity, $PATH, Solid_model);
+edge_blend_round <= transition_feature_solid
+transition_feature_solid <= shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+shape_representation =>
+ representation
+representation.items[i] ->
+representation_item => geometric_representation_item
+geometric_representation_item => solid_model
+end_attribute_mapping;
+
+attribute_mapping radius(radius, $PATH, measure_representation_item);
+edge_blend_fillet <= transition_feature_solid
+transition_feature_solid <= shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation
+property_definition_representation.used_representation ->
+{representation =>
+shape_representation =>
+ shape_representation_with_parameters}
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'round radius '}
+representation_item =>
+measure_representation_item
+{measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit}
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Chamfer(Chamfer, edge_blend_chamfer);
+
+mapping_constraints;
+edge_blend_fillet  <=  transition_feature_solid
+		  transition_feature_solid <= shape_aspect
+end_mapping_constraints;
+
+attribute_mapping chosen_element(chosen_element, $PATH, geometric_representation_item);
+edge_blend_chamfer  <=  selected_geometric_element
+		  selected_geometric_element.picked_element -> geometric_representation_item
+		  geometric_representation_item = trimmed_curve
+end_attribute_mapping;
+
+attribute_mapping chosen_element(chosen_element, , topological_representation_item);
+edge_blend_chamfer <=  selected_geometric_element
+		  selected_geometric_element.picked_element -> topological_representation_item
+		  topological_representation_item = edge_curve
+end_attribute_mapping;
+
+attribute_mapping chosen_element(chosen_element, $PATH, Solid_model);
+edge_blend_chamfer <= transition_feature_solid
+transition_feature_solid <= shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+shape_representation =>
+ representation
+representation.items[i] ->
+representation_item => geometric_representation_item
+geometric_representation_item => solid_model
+end_attribute_mapping;
+
+attribute_mapping distance1(distance1, $PATH, measure_representation_item);
+edge_blend_chamfer <= transition_feature_solid
+transition_feature_solid <= shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation
+property_definition_representation.used_representation ->
+{representation =>
+shape_representation =>
+ shape_representation_with_parameters}
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'distance along face1 '}
+representation_item =>
+measure_representation_item
+{measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit}
+end_attribute_mapping;
+
+attribute_mapping distance2(distance2, $PATH, measure_representation_item);
+edge_blend_chamfer <= transition_feature_solid
+transition_feature_solid <= shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation
+property_definition_representation.used_representation ->
+{representation =>
+shape_representation =>
+ shape_representation_with_parameters}
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'distance along face1 '}
+representation_item =>
+measure_representation_item
+{measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit}
+end_attribute_mapping;
+
+attribute_mapping face1(face1, $PATH, Face);
+edge_blend_chamfer <= transition_feature_solid
+transition_feature_solid <= shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+shape_representation =>
+ representation
+representation.items[i] ->
+representation_item => topological_representation_item
+topological_representation_item => face
+end_attribute_mapping;
+
+attribute_mapping face2(face2, $PATH, Face);
+edge_blend_chamfer <= transition_feature_solid
+transition_feature_solid <= shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+{property_definition_representation =>
+shape_definition_representation}
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+shape_representation =>
+ representation
+representation.items[i] ->
+representation_item => topological_representation_item
+topological_representation_item => face
+end_attribute_mapping;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)

@@ -1,0 +1,183 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Ap210 product data management - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+
+SCHEMA Design_product_data_management_xim;
+
+USE FROM Alias_identification_xim;
+
+USE FROM Classification_with_attributes_xim;
+
+USE FROM Generic_material_aspects_xim;
+
+USE FROM Group_xim; -- ISO/TS 10303-1113
+
+USE FROM Item_definition_structure_xim;	-- ISO/TS 10303-1345
+
+USE FROM Part_occurrence_xim;  -- ISO/TS 10303-1063
+
+USE FROM Pre_defined_product_data_management_specializations_xim;
+
+USE FROM Requirement_assignment_xim;
+
+USE FROM Requirement_view_definition_relationship_xim; -- ISO/TS 10303-1142
+
+USE FROM Specification_control_xim;          -- ISO/TS 10303-1112
+
+USE FROM Test_select_product_xim;
+
+USE FROM Product_data_management_xim;
+
+USE FROM Attribute_classification_xim; -- ISO/TS 10303-1246
+
+
+USE FROM Design_product_data_management_mim;
+
+TYPE ap210_pdm_affected_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON pdm_affected_item_select WITH 
+   (versioned_action_request);  -- ??? check this if really needed
+END_TYPE; 
+
+TYPE ap210_pdm_assigned_name_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON name_item WITH 
+   (Product,
+   Product_view_definition);
+END_TYPE; 
+
+TYPE ap210_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON pdm_approval_item WITH 
+   (Certification,
+   Document_definition,
+   Effectivity,
+   general_property_relationship, 
+   configuration_item,
+   product_definition_formation,
+   Product_view_definition,
+   Requirement_assignment,
+   Security_classification,
+   Supplied_part_relationship_armx,
+   action_directive);
+END_TYPE;
+
+TYPE ap210_pdm_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON pdm_documented_element_select WITH 
+   (external_source_identification,
+    material_designation,
+    Product_category,
+    Product_view_definition,
+    Representation_item);
+END_TYPE; 
+(* TODO
+TYPE design_pdm_information_usage_right_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON information_usage_right_item WITH 
+   (design_pdm_identification_item, 
+    design_pdm_requirement_assignment_item, 
+    design_pdm_documented_element_select, 
+    design_pdm_contract_item, 
+    design_pdm_classification_item, 
+    design_pdm_certification_item, 
+    Characterizable_object);
+WHERE
+  WR1: SIZEOF(['INFORMATION_RIGHTS_ARM.INFORMATION_RIGHT',
+               'INFORMATION_RIGHTS_ARM.INFORMATION_USAGE_RIGHT',
+               'INFORMATION_RIGHTS_ARM.INFORMATION_USAGE_RIGHT_RELATIONSHIP'] * TYPEOF(SELF)) = 0;
+  END_TYPE; 
+*)
+(* It is available from MIM
+TYPE design_pdm_groupable_item = SELECT BASED_ON groupable_item WITH 
+   (Group_relationship);
+END_TYPE; 
+*)
+TYPE design_pdm_material_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON material_item_select WITH
+   (Part_view_definition);
+END_TYPE;
+
+
+(* It is available from MIM
+TYPE ap210_pdm_requirement_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_source_item WITH 
+   (product_definition,
+    product_definition_formation,
+    Product_armx,
+    Shape_element,
+    characterized_object,
+    product_definition_relationship);
+END_TYPE; 
+*)
+
+TYPE ap210_pdm_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
+    (configuration_item,
+    Product_view_definition,
+    product_definition_formation,
+    Product);
+END_TYPE; 
+
+
+RULE unique_document_id FOR
+    (Document_armx);
+WHERE
+  WR1:  SIZEOF(QUERY (p1 <* Document_armx | SIZEOF(QUERY (p2 <* Document_armx | 
+              (NOT(p1 :=: p2) AND (p1.id = p2.id)))) > 0 )) = 0;
+END_RULE;
+
+RULE unique_requirement_id FOR
+    (Requirement);
+WHERE
+  WR1:  SIZEOF(QUERY (p1 <* Requirement | SIZEOF(QUERY (p2 <* Requirement | 
+              (NOT(p1 :=: p2) AND (p1.id = p2.id)))) > 0 )) = 0;
+END_RULE;
+
+RULE unique_part_id FOR
+    (Part);
+WHERE
+  WR1:  SIZEOF(QUERY (p1 <* Part | SIZEOF(QUERY (p2 <* Part | 
+              (NOT(p1 :=: p2) AND (p1.id = p2.id)))) > 0 )) = 0;
+END_RULE;
+
+RULE unique_product_version_id FOR
+    (product);
+WHERE
+  WR1:  SIZEOF(QUERY (p <* Product | 
+   (SIZEOF (QUERY (pv1 <*
+USEDIN(p,'PRODUCT_VIEW_DEFINITION_XIM.PRODUCT_DEFINITION_FORMATION.OF_PRODUCT') |  
+   (SIZEOF (QUERY (pv2 <*
+USEDIN(p,'PRODUCT_VIEW_DEFINITION_XIM.PRODUCT_DEFINITION_FORMATION.OF_PRODUCT')
+|  pv1.id = pv2.id)) > 1)
+     )) > 0)
+   )) = 0;  
+END_RULE;
+
+RULE unique_product_view_definition_id FOR
+    (product_definition_formation);
+WHERE
+  WR1:  SIZEOF(QUERY (pv <* product_definition_formation | 
+   (SIZEOF (QUERY (pvd1 <*
+USEDIN(pv,'PRODUCT_VIEW_DEFINITION_ARM.PRODUCT_VIEW_DEFINITION.DEFINED_VERSION') |  
+     (SIZEOF (QUERY (pvd2 <*
+USEDIN(pv,'PRODUCT_VIEW_DEFINITION_ARM.PRODUCT_VIEW_DEFINITION.DEFINED_VERSION')
+|  pvd1.id = pvd2.id)) > 1)
+     )) > 0)
+   )) = 0;  
+END_RULE;
+
+END_SCHEMA;
+

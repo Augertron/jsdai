@@ -1,0 +1,65 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N3954 - ISO/TS 10303-1669 Fabrication requirement - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3405
+*)
+
+SCHEMA Fabrication_requirement_arm; 
+
+	USE FROM Fabrication_technology_arm;	-- ISO/TS 10303-1670
+
+  TYPE metal_or_dielectric = ENUMERATION OF
+    (over_finished_conductor,
+     over_finished_dielectric);
+  END_TYPE;
+
+  ENTITY Fabrication_thickness_requirement_occurrence
+    SUBTYPE OF (Predefined_requirement_view_definition);
+      characterized_class       : metal_or_dielectric;
+      characterized_class_range : Range_characteristic;
+      tolerance                 : Tolerance_characteristic;
+   WHERE    
+      WR1: SELF\Product_view_definition.initial_context.life_cycle_stage = 'test'; 
+      WR2: NOT EXISTS(SELF\Product_view_definition.id);
+  END_ENTITY;
+
+  ENTITY Layout_land_width_tolerance_requirement_occurrence
+    SUBTYPE OF (Predefined_requirement_view_definition);
+      mating_feature_pitch_class : Pitch_class;
+      maximum_negative_deviation : Length_data_element;
+   WHERE    
+      WR1: SELF\Product_view_definition.initial_context.life_cycle_stage = 'test'; 
+  END_ENTITY;
+
+  ENTITY Layout_line_width_tolerance_requirement_occurrence
+    SUBTYPE OF (Predefined_requirement_view_definition);
+      characterized_stratum_technology : Stratum_technology;
+      tolerance_line_width_class       : Line_width_class;
+      maximum_negative_deviation       : Length_data_element;
+      maximum_positive_deviation       : Length_data_element;
+   WHERE    
+      WR1: SELF\Product_view_definition.initial_context.life_cycle_stage = 'test'; 
+  END_ENTITY;
+
+  ENTITY Line_width_class;
+      class_member : Range_characteristic;
+      class_name   : STRING; 
+    WHERE
+      WR1 : SIZEOF(QUERY(np <* class_member\Representation.items | NOT ('VALUE_WITH_UNIT_EXTENSION_ARM.LENGTH_DATA_ELEMENT' IN TYPEOF(np)))) = 0;
+  END_ENTITY;
+
+  ENTITY Pitch_class;
+      class_member : Range_characteristic;
+      class_name   : STRING; 
+    WHERE
+      WR1 : SIZEOF(QUERY(np <* class_member\Representation.items | NOT ('VALUE_WITH_UNIT_EXTENSION_ARM.LENGTH_DATA_ELEMENT' IN TYPEOF(np)))) = 0;
+  END_ENTITY;
+
+	SUBTYPE_CONSTRAINT fr_predefined_requirement_view_definition_subtypes FOR Predefined_requirement_view_definition;     
+	    (ONEOF (Layout_line_width_tolerance_requirement_occurrence,
+	 Layout_land_width_tolerance_requirement_occurrence,
+	 Fabrication_thickness_requirement_occurrence));
+	END_SUBTYPE_CONSTRAINT;    
+
+END_SCHEMA;
+

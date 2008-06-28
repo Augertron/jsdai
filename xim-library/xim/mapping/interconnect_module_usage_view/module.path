@@ -1,0 +1,515 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping interconnect_module_usage_view(Interconnect_module_usage_view_arm, Interconnect_module_usage_view_mim);*)
+
+
+entity_mapping Interconnect_module_cavity_surface(Interconnect_module_cavity_surface, shape_aspect);
+
+mapping_constraints;
+shape_aspect
+{shape_aspect.description = 'interconnect module cavity surface'}
+
+end_mapping_constraints;
+
+attribute_mapping reference_surface(reference_surface, $PATH, Interconnect_module_surface_feature);
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'reference surface'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+{(shape_aspect.description = 'interconnect module primary surface')
+(shape_aspect.description = 'interconnect module secondary surface')
+(shape_aspect.description = 'interconnect module surface feature')}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_module_cutout_segment_surface_armx(Interconnect_module_cutout_segment_surface_armx, interconnect_module_cutout_segment_surface);
+
+mapping_constraints;
+[interconnect_module_cutout_segment_surface <=
+shape_aspect]
+[interconnect_module_cutout_segment_surface <=
+shape_aspect_relationship]
+{shape_aspect.description = 'interconnect module cutout segment surface'}
+
+end_mapping_constraints;
+
+attribute_mapping composed_surface(composed_surface, $PATH, Interconnect_module_cutout_surface);
+interconnect_module_cutout_segment_surface <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'composed surface'}
+shape_aspect_relationship.relating_shape_aspect ->
+{shape_aspect
+shape_aspect.description = 'interconnect module cutout surface'}
+shape_aspect
+
+end_attribute_mapping;
+
+attribute_mapping end_vertex(end_vertex, $PATH, Edge_segment_vertex_armx);
+interconnect_module_cutout_segment_surface <=
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.name = 'single datum'}
+shape_aspect =>
+datum =>
+edge_segment_vertex
+
+end_attribute_mapping;
+
+attribute_mapping start_vertex(start_vertex, $PATH, Edge_segment_vertex_armx);
+interconnect_module_cutout_segment_surface <=
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.name = 'single datum'}
+shape_aspect =>
+datum =>
+edge_segment_vertex
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_module_cutout_surface(Interconnect_module_cutout_surface, shape_aspect);
+
+mapping_constraints;
+shape_aspect
+{shape_aspect.description = 'interconnect module cutout surface'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_module_edge_segment_surface_armx(Interconnect_module_edge_segment_surface_armx, interconnect_module_edge_segment_surface);
+
+mapping_constraints;
+[interconnect_module_edge_segment_surface <=
+shape_aspect]
+[interconnect_module_edge_segment_surface <=
+shape_aspect_relationship]
+{shape_aspect.description = 'interconnect module edge segment surface'}
+
+end_mapping_constraints;
+
+attribute_mapping composed_surface(composed_surface, $PATH, Interconnect_module_edge_surface);
+interconnect_module_edge_segment_surface <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'composed surface'}
+shape_aspect_relationship.relating_shape_aspect ->
+{shape_aspect
+shape_aspect.description = 'interconnect module edge surface'}
+shape_aspect
+
+end_attribute_mapping;
+
+attribute_mapping end_vertex(end_vertex, $PATH, Edge_segment_vertex_armx);
+interconnect_module_edge_segment_surface <=
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.name = 'single datum'}
+shape_aspect =>
+datum =>
+edge_segment_vertex
+
+end_attribute_mapping;
+
+attribute_mapping start_vertex(start_vertex, $PATH, Edge_segment_vertex_armx);
+interconnect_module_edge_segment_surface <=
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.name = 'single datum'}
+shape_aspect =>
+datum =>
+edge_segment_vertex
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_module_edge_surface(Interconnect_module_edge_surface, shape_aspect);
+
+mapping_constraints;
+shape_aspect
+{shape_aspect.description = 'interconnect module edge surface'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_module_interface_terminal_armx(Interconnect_module_interface_terminal_armx, interconnect_module_interface_terminal);
+
+mapping_constraints;
+interconnect_module_interface_terminal <=
+interconnect_module_terminal <=
+shape_aspect
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_module_primary_surface(Interconnect_module_primary_surface, shape_aspect);
+
+mapping_constraints;
+shape_aspect
+{shape_aspect.description = 'interconnect module primary surface'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_module_secondary_surface(Interconnect_module_secondary_surface, shape_aspect);
+
+mapping_constraints;
+shape_aspect
+{shape_aspect.description = 'interconnect module secondary surface'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_module_surface_feature(Interconnect_module_surface_feature, shape_aspect);
+
+mapping_constraints;
+shape_aspect
+{(shape_aspect.description = 'interconnect module cavity surface')
+(shape_aspect.description = 'interconnect module cutout surface')
+(shape_aspect.description = 'interconnect module cutout segment surface')
+(shape_aspect.description = 'interconnect module edge surface')
+(shape_aspect.description = 'interconnect module edge segment surface')
+(shape_aspect.description = 'interconnect module primary surface')
+(shape_aspect.description = 'interconnect module secondary surface')}
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Interconnect_module_usage_view);
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape
+{product_definition_shape <=
+property_definition
+{property_definition.name = 'interconnect module'}}
+product_definition_shape =>
+physical_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_module_terminal_armx(Interconnect_module_terminal_armx, interconnect_module_terminal);
+
+mapping_constraints;
+interconnect_module_terminal <=
+shape_aspect
+{shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape <=
+property_definition
+{property_definition.name = 'interconnect module'}}
+
+
+end_mapping_constraints;
+
+attribute_mapping connection_area(connection_area, $PATH, Connection_zone_in_usage_view);
+interconnect_module_terminal <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'connection area'}
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+
+end_attribute_mapping;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Interconnect_module_usage_view);
+interconnect_module_terminal <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape
+{product_definition_shape <=
+property_definition
+{property_definition.name = 'interconnect module'}}
+product_definition_shape =>
+physical_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_module_terminal_surface_constituent_relationship(Interconnect_module_terminal_surface_constituent_relationship, shape_aspect_relationship);
+
+mapping_constraints;
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'interconnect module terminal surface constituent relationship'}
+
+end_mapping_constraints;
+
+attribute_mapping related(related, $PATH, Interconnect_module_terminal_armx);
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect =>
+interconnect_module_terminal
+
+end_attribute_mapping;
+
+attribute_mapping relating(relating, $PATH, Interconnect_module_surface_feature);
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+{(shape_aspect.description = 'interconnect module cavity surface')
+(shape_aspect.description = 'interconnect module cutout surface')
+(shape_aspect.description = 'interconnect module edge surface')
+(shape_aspect.description = 'interconnect module edge segment surface')
+(shape_aspect.description = 'interconnect module primary surface')
+(shape_aspect.description = 'interconnect module secondary surface')
+(shape_aspect.description = 'interconnect module surface feature')}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Interconnect_module_usage_view(Interconnect_module_usage_view, physical_unit);
+
+mapping_constraints;
+{[physical_unit <=
+product_definition_shape <=
+property_definition
+{property_definition.name = 'interconnect module'}]
+[physical_unit <=
+product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'physical design usage']}
+
+
+end_mapping_constraints;
+
+attribute_mapping implemented_function(implemented_function, $PATH, Functional_unit_usage_view);
+physical_unit <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'implemented function'}
+product_definition_relationship.relating_product_definition ->
+{product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'functional design usage'}
+product_definition =>
+functional_unit
+
+end_attribute_mapping;
+
+attribute_mapping located_thickness_requirement(located_thickness_requirement, $PATH, Located_interconnect_module_thickness_requirement);
+physical_unit <=
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+{property_definition
+[property_definition.name = 'located interconnect module thickness']}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+
+end_attribute_mapping;
+
+attribute_mapping thickness_over_metal_requirement(thickness_over_metal_requirement, $PATH, Length_tolerance_characteristic);
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition
+property_definition.name = 'thickness over metal requirement'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation.used_representation ->
+representation
+
+end_attribute_mapping;
+
+attribute_mapping thickness_over_dielectric_requirement(thickness_over_dielectric_requirement, $PATH, Length_tolerance_characteristic);
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition
+property_definition.name = 'thickness over dielectric requirement'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation.used_representation ->
+representation
+
+end_attribute_mapping;
+
+attribute_mapping measurement_condition(measurement_condition, $PATH, Restraint_condition);
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition
+(property_definition.description = 'restraint')
+(property_definition.description = 'tolerance specific restraint')}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Located_interconnect_module_thickness_requirement(Located_interconnect_module_thickness_requirement, property_definition_representation);
+
+mapping_constraints;
+property_definition_representation
+{property_definition_representation.definition ->
+property_definition
+[property_definition.name = 'located interconnect module thickness']
+[property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition 
+shape_definition = shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape
+{product_definition_shape <=
+property_definition
+{property_definition.name = 'interconnect module'}}
+]}
+
+end_mapping_constraints;
+
+attribute_mapping reference_location(reference_location, $PATH, axis2_placement);
+property_definition_representation
+property_definition_representation.used_representation ->
+representation <-
+representation_relationship.rep_2
+{representation_relationship
+representation_relationship.name = 'reference location'}
+representation_relationship.rep_1 ->
+representation
+representation.items[i] ->
+(representation_item =>
+geometric_representation_item =>
+placement =>
+axis2_placement_2d)
+(representation_item =>
+geometric_representation_item =>
+placement =>
+axis2_placement_3d)
+
+end_attribute_mapping;
+
+attribute_mapping thickness_requirement(thickness_requirement, $PATH, Length_tolerance_characteristic);
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Part_feature(Part_feature, 
+				(/SUBTYPE(Interconnect_module_surface_feature)/)
+			)
+extended;
+
+end_entity_mapping;
+
+entity_mapping Part_terminal(Part_terminal, 
+			(/SUBTYPE(Interconnect_module_terminal_armx)/)
+		)
+extended;
+
+end_entity_mapping;
+
+entity_mapping Pcb_usage_view(Pcb_usage_view, interconnect_definition);
+
+mapping_constraints;
+{[interconnect_definition <=
+physical_unit <=
+product_definition_shape <=
+property_definition
+{property_definition.name = 'interconnect module'}]
+[interconnect_definition <=
+physical_unit <=
+product_definition <-
+product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role ->
+product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference ->
+product_definition_context <=
+application_context_element
+application_context_element.name = 'physical design usage']}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

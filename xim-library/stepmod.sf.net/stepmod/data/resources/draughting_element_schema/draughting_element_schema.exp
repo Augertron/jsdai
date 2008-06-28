@@ -1,0 +1,201 @@
+(*
+ISO TC184/SC4/WG12 N4832 - ISO/CD 10303-101 Draughting - EXPRESS
+*)
+
+SCHEMA draughting_element_schema;
+
+REFERENCE FROM geometry_schema (geometric_representation_item);
+
+REFERENCE FROM support_resource_schema
+    (label,
+     text);
+
+REFERENCE FROM presentation_definition_schema
+    (annotation_occurrence,
+     annotation_curve_occurrence,
+     annotation_fill_area_occurrence, 
+     annotation_point_occurrence, 
+     annotation_text_occurrence, 
+     annotation_symbol_occurrence);
+     
+REFERENCE FROM presentation_appearance_schema
+    (invisible_item,
+    presentation_style_assignment,
+    styled_item);
+
+REFERENCE FROM presentation_resource_schema
+    (planar_box);
+
+REFERENCE FROM geometry_schema
+    (plane);
+
+  TYPE annotation_plane_element = SELECT 
+    (draughting_callout, 
+     styled_item); 
+  END_TYPE;
+
+  TYPE draughting_callout_element = SELECT
+    (annotation_text_occurrence, 
+     annotation_symbol_occurrence,
+     annotation_curve_occurrence);
+  END_TYPE;
+
+  TYPE dimension_extent_usage = ENUMERATION OF
+    (origin,
+     target);
+  END_TYPE;
+
+  TYPE des_invisible_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON invisible_item WITH
+    (draughting_callout);
+  END_TYPE;
+
+  TYPE plane_or_planar_box = SELECT 
+    (plane, 
+     planar_box) ;
+  END_TYPE; 
+   
+  ENTITY annotation_plane 
+    SUBTYPE OF (annotation_occurrence, geometric_representation_item);
+      elements : OPTIONAL SET[1:?] OF annotation_plane_element;
+      SELF\styled_item.item : plane_or_planar_box;
+    WHERE
+      WR1: SELF\geometric_representation_item.dim = 3;
+      WR2: NOT('PRESENTATION_RESOURCE_SCHEMA.'+'PLANAR_BOX' IN TYPEOF(SELF\styled_item.item)) OR
+        ('GEOMETRY_SCHEMA.'+'AXIS2_PLACEMENT_3D' IN TYPEOF(SELF\styled_item.item\planar_box.placement));
+      WR3: (('PRESENTATION_RESOURCE_SCHEMA.'+'PLANAR_BOX' IN TYPEOF(SELF\styled_item.item)) AND
+        ('PRESENTATION_APPEARANCE_SCHEMA.'+'CURVE_STYLE' IN TYPEOF(SELF\styled_item.styles[1]\presentation_style_assignment.styles[1]))) OR
+        (('GEOMETRY_SCHEMA.'+'PLANE' IN TYPEOF(SELF\styled_item.item)) AND
+        ('PRESENTATION_APPEARANCE_SCHEMA.'+'FILL_AREA_STYLE' IN TYPEOF(SELF\styled_item.styles[1]\presentation_style_assignment.styles[1])));
+      WR4: (SIZEOF(SELF\styled_item.styles) = 1) AND
+        (SIZEOF(SELF\styled_item.styles[1]\presentation_style_assignment.styles) = 1);
+  END_ENTITY;
+
+  ENTITY dimension_curve
+    SUBTYPE OF (annotation_curve_occurrence);
+    WHERE
+      WR1: (SIZEOF(
+          QUERY(dct <* USEDIN(SELF,'DRAUGHTING_ELEMENT_SCHEMA.' +
+                'TERMINATOR_SYMBOL.ANNOTATED_CURVE')
+               | (('DRAUGHTING_ELEMENT_SCHEMA.'+
+                  'DIMENSION_CURVE_TERMINATOR' IN TYPEOF(dct))
+                  ))
+          ) <= 2);
+      WR2:  SIZEOF(
+            QUERY( dcdc <* USEDIN(SELF,'DRAUGHTING_ELEMENT_SCHEMA.' +
+                   'DRAUGHTING_CALLOUT.CONTENTS') |
+                   ('DRAUGHTING_ELEMENT_SCHEMA.'+
+                    'DIMENSION_CURVE_DIRECTED_CALLOUT' IN TYPEOF(dcdc)))
+          )>= 1;
+     WR3: (SIZEOF(
+            QUERY(dct1 <* USEDIN(SELF,'DRAUGHTING_ELEMENT_SCHEMA.' +
+                  'TERMINATOR_SYMBOL.ANNOTATED_CURVE') 
+               | (('DRAUGHTING_ELEMENT_SCHEMA.'+
+                  'DIMENSION_CURVE_TERMINATOR' IN TYPEOF(dct1)) 
+                  AND (dct1.role = origin)))
+          ) <= 1)
+        AND 
+        (SIZEOF(
+            QUERY (dct2 <* USEDIN(SELF,'DRAUGHTING_ELEMENT_SCHEMA.'+
+                   'TERMINATOR_SYMBOL.ANNOTATED_CURVE') 
+                 | (('DRAUGHTING_ELEMENT_SCHEMA.'+
+                   'DIMENSION_CURVE_TERMINATOR' IN TYPEOF(dct2))
+                   AND (dct2.role = target)))
+         ) <= 1);
+  END_ENTITY;
+
+  ENTITY leader_curve
+    SUBTYPE OF (annotation_curve_occurrence);
+    WHERE
+      WR1: SIZEOF( 
+          QUERY(ldc <* USEDIN( SELF, 'DRAUGHTING_ELEMENT_SCHEMA.' +
+                       'DRAUGHTING_CALLOUT.CONTENTS')
+                   |   'DRAUGHTING_ELEMENT_SCHEMA.' +
+                       'LEADER_DIRECTED_CALLOUT'  IN TYPEOF(ldc))) >= 1;
+  END_ENTITY;
+
+  ENTITY projection_curve
+    SUBTYPE OF (annotation_curve_occurrence);
+  END_ENTITY;
+
+  ENTITY terminator_symbol
+    SUBTYPE OF (annotation_symbol_occurrence);
+      annotated_curve : annotation_curve_occurrence;
+  END_ENTITY;
+
+  ENTITY dimension_curve_terminator
+    SUBTYPE OF (terminator_symbol);
+      role  : dimension_extent_usage;
+    WHERE
+      WR1: 'DRAUGHTING_ELEMENT_SCHEMA.DIMENSION_CURVE' IN TYPEOF
+        (SELF\terminator_symbol.annotated_curve);
+  END_ENTITY;
+
+  ENTITY leader_terminator
+    SUBTYPE OF (terminator_symbol);
+    WHERE
+      WR1: 'DRAUGHTING_ELEMENT_SCHEMA.LEADER_CURVE' IN TYPEOF
+        (SELF\terminator_symbol.annotated_curve);
+  END_ENTITY;
+
+  ENTITY draughting_callout
+    SUBTYPE OF (geometric_representation_item);
+      contents : SET [1:?] OF draughting_callout_element; 
+    WHERE
+      WR1: (SIZEOF (QUERY (l_1 <* SELF\draughting_callout.contents |
+        'DRAUGHTING_ELEMENT_SCHEMA.LEADER_CURVE' IN (TYPEOF(l_1)))) = 0) OR
+        ('DRAUGHTING_ELEMENT_SCHEMA.LEADER_DIRECTED_CALLOUT' IN (TYPEOF(SELF))) AND
+        (SIZEOF (QUERY (l_1 <* SELF\draughting_callout.contents |
+        'DRAUGHTING_ELEMENT_SCHEMA.PROJECTION_CURVE' IN (TYPEOF(l_1)))) = 0) OR
+        ('DRAUGHTING_ELEMENT_SCHEMA.PROJECTION_DIRECTED_CALLOUT' IN (TYPEOF(SELF))) AND  
+        (SIZEOF (QUERY (l_1 <* SELF\draughting_callout.contents |
+        'DRAUGHTING_ELEMENT_SCHEMA.DIMENSION_CURVE' IN (TYPEOF(l_1)))) = 0) OR
+        ('DRAUGHTING_ELEMENT_SCHEMA.DIMENSION_CURVE_DIRECTED_CALLOUT' IN (TYPEOF(SELF)));
+  END_ENTITY;
+
+  ENTITY draughting_callout_relationship;
+    name : label;
+    description : text;
+    relating_draughting_callout : draughting_callout;
+    related_draughting_callout : draughting_callout;
+  END_ENTITY;
+
+  ENTITY leader_directed_callout
+    SUBTYPE OF (draughting_callout);
+    WHERE
+      WR1: SIZEOF (QUERY (l_1 <* SELF\draughting_callout.contents |
+        'DRAUGHTING_ELEMENT_SCHEMA.LEADER_CURVE' IN (TYPEOF(l_1)))) >= 1;
+      WR2: SIZEOF(SELF\draughting_callout.contents) >=2;
+  END_ENTITY;
+
+  ENTITY projection_directed_callout
+    SUBTYPE OF (draughting_callout);
+    WHERE
+      WR1: SIZEOF(QUERY(p_1<*SELF\draughting_callout.contents | 
+        'DRAUGHTING_ELEMENT_SCHEMA.PROJECTION_CURVE' IN (TYPEOF(p_1))))=1;
+      WR2: SIZEOF(SELF\draughting_callout.contents) >=2;
+  END_ENTITY;
+
+  ENTITY dimension_curve_directed_callout
+    SUBTYPE OF (draughting_callout);
+    WHERE
+      WR1: SIZEOF(QUERY(d_c<*SELF\draughting_callout.contents | 
+        'DRAUGHTING_ELEMENT_SCHEMA.DIMENSION_CURVE' IN (TYPEOF(d_c))))=1;
+      WR2: SIZEOF(SELF\draughting_callout.contents) >= 2;
+  END_ENTITY;
+
+  SUBTYPE_CONSTRAINT annotation_curve_subtypes FOR annotation_curve_occurrence;
+    (ONEOF(dimension_curve,
+    leader_curve,
+    projection_curve));
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT annotation_occurrence_subtypes FOR annotation_occurrence;
+  ONEOF (annotation_curve_occurrence,
+         annotation_fill_area_occurrence,
+         annotation_plane,
+         annotation_point_occurrence,
+         annotation_symbol_occurrence,
+         annotation_text_occurrence);
+  END_SUBTYPE_CONSTRAINT;
+
+END_SCHEMA; 

@@ -1,0 +1,103 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping assembly_module_with_subassembly(Assembly_module_with_subassembly_arm, Assembly_module_with_subassembly_mim);*)
+
+
+entity_mapping Assembly_module_component_armx(Assembly_module_component_armx, assembly_module_component);
+
+mapping_constraints;
+assembly_module_component <=
+physical_component <=
+assembly_component <=
+component_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping derived_from(derived_from, $PATH, Assembly_module_usage_view);
+assembly_module_component <=
+physical_component <=
+assembly_component <=
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'definition usage'}
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+physical_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Assembly_module_component_terminal(Assembly_module_component_terminal, physical_component_terminal);
+
+mapping_constraints;
+ physical_component_terminal <=
+component_terminal <=
+component_feature <=
+shape_aspect
+{shape_aspect
+[shape_aspect.description = 'assembly module component terminal']
+[shape_aspect.product_definitional = .TRUE.]}
+
+end_mapping_constraints;
+
+attribute_mapping associated_component(associated_component, $PATH, Assembly_module_component_armx);
+physical_component_terminal <=
+component_terminal <=
+component_feature <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+assembly_component =>
+physical_component =>
+assembly_module_component
+
+end_attribute_mapping;
+
+attribute_mapping definition(definition, $PATH, Assembly_module_terminal_armx);
+physical_component_terminal <=
+component_terminal <=
+component_feature <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'instantiated feature'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+{shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape <=
+property_definition
+{property_definition.name = 'assembly module'}}
+shape_aspect =>
+assembly_module_terminal
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(*end_schema_mapping;*)

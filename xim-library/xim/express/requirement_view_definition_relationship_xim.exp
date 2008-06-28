@@ -1,0 +1,54 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N3136 - ISO/TS 10303-1142 Requirement view definition relationship - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+(* Based on ARM *) 
+
+
+SCHEMA Requirement_view_definition_relationship_xim;
+
+USE FROM Product_view_definition_relationship_xim;    -- ISO/TS 10303-1041
+
+USE FROM Requirement_view_definition_xim;    -- ISO/TS 10303-1141
+
+
+ENTITY Requirement_collection_relationship
+  (* CONNOTATIONAL *) SUBTYPE OF (Product_definition_relationship);
+    SELF\product_definition_relationship.relating_product_definition RENAMED collection : Requirement_view_definition;
+    SELF\product_definition_relationship.related_product_definition RENAMED member : Requirement_view_definition;
+  DERIVE
+    SELF\product_definition_relationship.description : text :=?;
+END_ENTITY;
+
+ENTITY Tracing_relationship
+  (* CONNOTATIONAL *) SUBTYPE OF (Product_definition_relationship);
+  SELF\Product_definition_relationship.relating_product_definition RENAMED traces_from : Requirement_view_definition;
+  SELF\Product_definition_relationship.related_product_definition RENAMED traces_to : Requirement_view_definition;
+END_ENTITY;
+
+END_SCHEMA;  -- Requirement_view_definition_relationship_xim
+

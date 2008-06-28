@@ -1,0 +1,256 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping altered_package(Altered_package_arm, Altered_package_mim);*)
+
+entity_mapping Document_assignment(Document_assignment, (applied_document_reference)(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment) *))
+extended;
+
+attribute_mapping is_assigned_to(is_assigned_to, , Surface_prepped_terminal_armx);
+(
+						document_reference_item *> ap_document_reference_item
+						ap_document_reference_item = package_terminal =>
+						altered_package_terminal =>
+						surface_prepped_terminal
+					)(
+						document_reference_item *> ap_document_reference_item
+						ap_document_reference_item = package_terminal =>
+						altered_package_terminal =>
+						surface_prepped_terminal
+					)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Altered_package(Altered_package, package);
+
+mapping_constraints;
+package <=
+physical_unit <=
+product_definition
+{product_definition.description = 'altered package'}
+
+end_mapping_constraints;
+
+attribute_mapping package_to_be_altered(package_to_be_altered, $PATH, Package_armx);
+package <=
+physical_unit <=
+product_definition <-
+product_definition_relationship.related_product_definition
+{product_definition_relationship
+product_definition_relationship.name = 'package alteration'}
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+physical_unit =>
+package
+
+end_attribute_mapping;
+
+attribute_mapping modified_terminal_separation(modified_terminal_separation, $PATH, length_measure_with_unit);
+package <=
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition.name = 'modified terminal separation'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping of_geometric_status(of_geometric_status, $PATH, predefined_geometric_status);
+package <=
+physical_unit <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition 
+{property_definition.name = 'predefined geometric status'}
+property_definition.description
+{(property_definition.description = 'standard datum condition')
+(property_definition.description = 'undefined')
+(property_definition.description = 'perpendicular primary datum axis')
+(property_definition.description = 'perpendicular primary datum plane')}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Altered_package_terminal_armx(Altered_package_terminal_armx, altered_package_terminal);
+
+mapping_constraints;
+altered_package_terminal <=
+package_terminal <=
+placed_feature <=
+shape_aspect
+
+end_mapping_constraints;
+
+attribute_mapping terminal_to_be_altered(terminal_to_be_altered, $PATH, Package_terminal_armx);
+altered_package_terminal <=
+package_terminal <=
+placed_feature <=
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'terminal to be altered'}
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect =>
+placed_feature =>
+package_terminal
+
+end_attribute_mapping;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Altered_package);
+altered_package_terminal <=
+package_terminal <=
+placed_feature <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape <=
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition
+{product_definition
+product_definition.description = 'altered package'}
+product_definition =>
+physical_unit =>
+package
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping External_source_identification(External_source_identification, applied_external_identification_assignment)
+extended;
+
+attribute_mapping item(item, , Altered_package);
+
+				external_identification_item *> ap_external_identification_item
+				ap_external_identification_item = package 
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Length_trimmed_terminal_armx(Length_trimmed_terminal_armx, length_trimmed_terminal);
+
+mapping_constraints;
+length_trimmed_terminal <=
+altered_package_terminal <=
+package_terminal <=
+placed_feature <=
+shape_aspect
+
+end_mapping_constraints;
+
+attribute_mapping trimmed_length(trimmed_length, $PATH, Length_tolerance_characteristic);
+length_trimmed_terminal <=
+altered_package_terminal <=
+package_terminal <=
+placed_feature <=
+shape_aspect
+shape_definition = shape_aspect
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Shape_formed_terminal_armx(Shape_formed_terminal_armx, shape_formed_terminal);
+
+mapping_constraints;
+shape_formed_terminal <=
+altered_package_terminal <=
+package_terminal <=
+placed_feature <=
+shape_aspect
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Surface_prepped_terminal_armx(Surface_prepped_terminal_armx, surface_prepped_terminal);
+
+mapping_constraints;
+surface_prepped_terminal <=
+altered_package_terminal <=
+package_terminal <=
+placed_feature <=
+shape_aspect
+
+end_mapping_constraints;
+(* MADE DERIVED
+attribute_mapping surface_preparation(surface_preparation, $PATH, Surface_finish_specification);
+surface_prepped_terminal <=
+altered_package_terminal <=
+package_terminal
+document_reference_item = package_terminal
+document_reference_item <-
+applied_document_reference.items[i]
+applied_document_reference
+applied_document_reference <=
+document_reference
+document_reference.assigned_document ->
+document <-
+document_product_association.relating_document
+{document_product_association.name = 'equivalence'}
+document_product_association.related_product ->
+product_or_formation_or_definition = product_definition
+product_definition
+{product_definition.name = 'surface finish specification'}
+
+end_attribute_mapping;
+*)
+end_entity_mapping;
+(*end_schema_mapping;*)

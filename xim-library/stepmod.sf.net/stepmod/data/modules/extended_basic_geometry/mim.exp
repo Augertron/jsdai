@@ -1,0 +1,38 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4727 - ISO/CD-TS 10303-1667 Extended basic geometry - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3949
+*)
+
+SCHEMA Extended_basic_geometry_mim;
+
+USE FROM Basic_geometry_mim;	-- ISO/TS 10303-1652
+	
+USE FROM representation_schema(
+  definitional_representation_relationship,
+  mapped_item,
+  representation_item_relationship,
+  representation_map);
+
+USE FROM product_property_representation_schema -- ISO 10303-41
+  (shape_representation_relationship);
+  	 		
+USE FROM geometry_schema(
+  vector);	
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+
+  ENTITY geometric_model_element_relationship
+    SUBTYPE OF (geometric_representation_item, representation_item_relationship);
+      SELF\representation_item_relationship.relating_representation_item : geometric_representation_item;
+      SELF\representation_item_relationship.related_representation_item: geometric_representation_item;
+    UNIQUE
+      UR1: SELF\representation_item_relationship.relating_representation_item, 
+        SELF\representation_item_relationship.related_representation_item;
+    WHERE
+      WR1: SELF\representation_item_relationship.relating_representation_item :<>: 
+        SELF\representation_item_relationship.related_representation_item;
+  END_ENTITY; 
+
+END_SCHEMA;

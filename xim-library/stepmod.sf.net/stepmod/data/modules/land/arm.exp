@@ -1,0 +1,90 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4023 - ISO/TS 10303-1692 Land - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3465
+*)
+
+SCHEMA Land_arm;
+
+	USE FROM Layered_interconnect_module_design_arm;	-- ISO/TS 10303-1698
+
+	SUBTYPE_CONSTRAINT l_laminate_component_interface_terminal_subtypes FOR Laminate_component_interface_terminal; 
+		 (ONEOF (Component_termination_passage_interface_terminal,
+		 Land_interface_terminal));
+	END_SUBTYPE_CONSTRAINT;
+
+	SUBTYPE_CONSTRAINT l_laminate_component_join_terminal_subtypes FOR Laminate_component_join_terminal; 
+		 (ONEOF (Component_termination_passage_join_terminal,
+		 Land_join_terminal,
+		 Embedded_physical_component_terminal));
+	END_SUBTYPE_CONSTRAINT;
+
+	SUBTYPE_CONSTRAINT stratum_feature_template_component_subtypes FOR Stratum_feature_template_component;   
+		(ONEOF (Area_component,
+		Land));
+	END_SUBTYPE_CONSTRAINT;
+
+  ENTITY Contact_size_dependent_land
+    SUBTYPE OF (Land);
+      SELF\Definition_based_product_occurrence.derived_from : Default_attachment_size_based_land_physical_template;
+    INVERSE
+      external_access_mechanism : SET[1:2] OF land_interface_terminal FOR associated_component;
+  END_ENTITY;
+
+  ENTITY Inter_stratum_feature_dependent_land
+    ABSTRACT SUPERTYPE OF (ONEOF (Plated_passage_dependent_land,
+      Unsupported_passage_dependent_land))
+    SUBTYPE OF (Land);
+    SELF\Definition_based_product_occurrence.derived_from : Default_passage_based_land_physical_template;
+  END_ENTITY;
+
+  ENTITY Land
+    SUPERTYPE OF (ONEOF (
+ Contact_size_dependent_land,
+ Inter_stratum_feature_dependent_land))
+    SUBTYPE OF (Stratum_feature_template_component);
+      alternate_land_definition                             : OPTIONAL Land_physical_template;
+      SELF\Definition_based_product_occurrence.derived_from : Land_physical_template;
+    DERIVE
+       functional: BOOLEAN :=
+         (SIZEOF(['LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.CONDUCTOR',
+           'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.CONNECTED_FILLED_AREA'] *
+           TYPEOF(SELF\Stratum_feature_template_component.implementation_or_resident_stratum)) = 1);
+    INVERSE
+      access_mechanism : SET[1:?] OF land_join_terminal FOR associated_component;
+    WHERE
+      WR1 : ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.CONDUCTOR' IN 
+           TYPEOF(SELF\Stratum_feature_template_component.implementation_or_resident_stratum)) OR
+           ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.CONDUCTIVE_FILLED_AREA' IN 
+           TYPEOF(SELF\Stratum_feature_template_component.implementation_or_resident_stratum));
+  END_ENTITY;
+
+  ENTITY Land_interface_terminal
+    SUBTYPE OF (Laminate_component_interface_terminal);
+      SELF\Component_feature.definition           : Land_template_interface_terminal;
+      SELF\Component_feature.associated_component : Contact_size_dependent_land;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Shape_element.description);
+  END_ENTITY;
+
+  ENTITY Land_join_terminal
+    SUBTYPE OF (Laminate_component_join_terminal);
+      SELF\Component_feature.definition           : Land_template_join_terminal;
+      SELF\Component_feature.associated_component : Land;
+    WHERE
+      WR1 : NOT EXISTS(SELF\Shape_element.description);
+  END_ENTITY;
+
+ENTITY Plated_passage_dependent_land
+  SUBTYPE OF (Inter_stratum_feature_dependent_land);
+    reference_plated_passage             : Plated_passage;
+    SELF\Assembly_component.derived_from : Default_plated_passage_based_land_physical_template;
+END_ENTITY;
+
+  ENTITY Unsupported_passage_dependent_land
+    SUBTYPE OF (Inter_stratum_feature_dependent_land);
+      reference_passage                                     : Unsupported_passage;
+      SELF\Definition_based_product_occurrence.derived_from : Default_unsupported_passage_based_land_physical_template;
+  END_ENTITY;
+
+END_SCHEMA;

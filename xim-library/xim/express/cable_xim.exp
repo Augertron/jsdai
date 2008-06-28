@@ -1,0 +1,52 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*
+   Derived from ISO TC184/SC4/WG12 N - ISO/CD-TS 10303-xxxx Cable - EXPRESS ARM
+   by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
+*)
+
+SCHEMA Cable_xim;
+
+USE FROM Assembly_module_with_packaged_connector_component_xim;
+
+USE FROM Cable_mim;
+
+  ENTITY Cable_terminal_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_terminal, cable_terminal);
+      SELF\Shape_element.containing_shape(* TEMP-PF! *) : Cable_usage_view_armx;
+      mapped_terminal                                   : OPTIONAL Packaged_connector_component_interface_terminal;
+      SELF\Shape_feature.connection_area                : OPTIONAL SET[1:?] OF Connection_zone_in_usage_view;            
+    WHERE
+      WR1 : SELF\Part_feature.associated_definition(* TEMP-PF *) :=: 
+      mapped_terminal\Component_feature_armx.associated_component(* TEMP-CF *)\Definition_based_product_occurrence.occurrence_contexts[1].relating_product_definition;
+  END_ENTITY;
+
+  ENTITY Cable_usage_view_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_usage_view, cable_usage_view);
+    INVERSE
+      access_mechanisms : SET[1:?] OF cable_terminal_armx FOR containing_shape(* TEMP-AD! *);
+  END_ENTITY;
+
+END_SCHEMA;
+

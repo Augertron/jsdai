@@ -1,0 +1,369 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping model_parameter(Model_parameter_arm, Model_parameter_mim);*)
+
+
+entity_mapping Category_model_parameter_armx(Category_model_parameter_armx, category_model_parameter);
+
+mapping_constraints;
+category_model_parameter <=
+model_parameter
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Document_assignment(Document_assignment, (applied_document_reference)(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment) *))
+extended;
+
+attribute_mapping is_assigned_to(is_assigned_to, , Model_parameter_armx);
+(
+						document_reference_item *> mp_document_reference_item
+						mp_document_reference_item = model_parameter
+					)(
+						document_reference_item *> mp_document_reference_item
+						mp_document_reference_item = model_parameter
+					)
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Independent_property_with_unit(Independent_property_with_unit, general_property);
+
+mapping_constraints;
+  general_property
+  represented_definition = general_property
+  represented_definition <-
+  property_definition_representation.definition
+  property_definition_representation
+  property_definition_representation.used_representation ->
+  representation
+  {representation.name = 'allowed units'}
+
+end_mapping_constraints;
+
+
+attribute_mapping unit_of_measure(unit_of_measure, $PATH, unit);
+  general_property
+  represented_definition = general_property
+  represented_definition <-
+  property_definition_representation.definition
+  property_definition_representation
+  property_definition_representation.used_representation ->
+  representation
+  {[representation.name = 'allowed units']
+  [representation.items[1] ->
+  representation_item =>
+  descriptive_representation_item
+  descriptive_representation_item.description = 'allowed units']}
+  representation.context_of_items ->
+  representation_context =>
+  global_unit_assigned_context
+  global_unit_assigned_context.units[i] ->
+  unit 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Model_parameter_armx(Model_parameter_armx, model_parameter);
+
+mapping_constraints;
+{model_parameter <= 
+general_property}
+
+end_mapping_constraints;
+
+attribute_mapping default_value(default_value, $PATH, scalar_or_coordinated_characteristics);
+(model_parameter <=
+general_property
+represented_definition = general_property 
+represented_definition <-
+property_definition_representation.definition
+property_definition_representation
+{property_definition_representation =>
+default_value_property_definition_representation}
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item
+{representation_item
+groupable_item = representation_item
+groupable_item <-
+applied_group_assignment.items[i]
+applied_group_assignment <=
+group_assignment
+group_assignment.assigned_group ->
+group =>
+characteristic_type})
+(model_parameter <=
+general_property
+represented_definition = general_property 
+represented_definition <-
+property_definition_representation.definition
+property_definition_representation
+{property_definition_representation =>
+default_value_property_definition_representation}
+property_definition_representation.used_representation ->
+representation)
+
+end_attribute_mapping;
+
+attribute_mapping default_value(default_value, $PATH, Property_value_representation);
+
+					model_parameter <=
+					general_property
+					represented_definition = general_property 
+					represented_definition <-
+					property_definition_representation.definition
+					property_definition_representation
+					{property_definition_representation =>
+					default_value_property_definition_representation}
+					property_definition_representation.used_representation ->
+					representation 
+					
+end_attribute_mapping;
+
+attribute_mapping default_value(default_value, $PATH, measure_representation_item);
+
+					model_parameter <=
+					general_property
+					represented_definition = general_property 
+					represented_definition <-
+					property_definition_representation.definition
+					property_definition_representation
+					{property_definition_representation =>
+					default_value_property_definition_representation}
+					property_definition_representation.used_representation ->
+					representation
+ 					representation.items[i] ->
+					representation_item =>
+					measure_representation_item
+					
+end_attribute_mapping;
+
+attribute_mapping default_value(default_value, $PATH, Value_list);
+
+					model_parameter <=
+					general_property
+					represented_definition = general_property 
+					represented_definition <-
+					property_definition_representation.definition
+					property_definition_representation
+					{property_definition_representation =>
+					default_value_property_definition_representation}
+					property_definition_representation.used_representation ->
+					representation
+					representation.items[i] ->
+					representation_item =>
+					compound_representation_item
+					
+end_attribute_mapping;
+
+attribute_mapping default_value(default_value, $PATH, Value_set);
+
+					model_parameter <=
+					general_property
+					represented_definition = general_property 
+					represented_definition <-
+					property_definition_representation.definition
+					property_definition_representation
+					{property_definition_representation =>
+					default_value_property_definition_representation}
+					property_definition_representation.used_representation ->
+					representation
+					representation.items[i] ->
+					representation_item =>
+					compound_representation_item
+					
+end_attribute_mapping;
+
+attribute_mapping valid_range(valid_range, $PATH, Value_range_armx);
+model_parameter <=
+general_property
+represented_definition = general_property 
+represented_definition <-
+property_definition_representation.definition
+property_definition_representation
+{property_definition_representation =>
+valid_range_property_definition_representation}
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+compound_representation_item =>
+value_range
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Parameter_assignment_armx(Parameter_assignment_armx, parameter_assignment);
+
+mapping_constraints;
+				[parameter_assignment <=
+				property_definition_representation]
+				[parameter_assignment <=
+				representation]
+			
+end_mapping_constraints;
+
+attribute_mapping property(property, $PATH, Model_parameter_armx);
+
+					parameter_assignment <=
+					property_definition_representation
+					property_definition_representation.definition -> represented_definition 
+					represented_definition = general_property 
+					general_property =>
+					model_parameter			
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Parameter_assignment_override_armx(Parameter_assignment_override_armx, parameter_assignment_override);
+
+mapping_constraints;
+{[parameter_assignment_override <=
+representation]
+[parameter_assignment_override <=
+representation_relationship]}
+
+end_mapping_constraints;
+
+attribute_mapping overridden_parameter_assignment(overridden_parameter_assignment, $PATH, Parameter_assignment_armx);
+parameter_assignment_override <=
+representation_relationship
+representation_relationship.rep_1 ->
+representation =>
+parameter_assignment
+
+end_attribute_mapping;
+
+attribute_mapping overriding_parameter_assignment(overriding_parameter_assignment, $PATH, Parameter_assignment_armx);
+parameter_assignment_override <=
+representation_relationship
+representation_relationship.rep_2 ->
+representation =>
+parameter_assignment
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Product_specific_parameter_value_assignment_armx(Product_specific_parameter_value_assignment_armx, product_specific_parameter_value_assignment);
+
+mapping_constraints;
+product_specific_parameter_value_assignment <=
+				[characterized_object]
+				[product_related_product_category]
+			
+end_mapping_constraints;
+
+attribute_mapping assigned_parameter(assigned_parameter, $PATH, Parameter_assignment_armx);
+product_specific_parameter_value_assignment <=
+					characterized_object
+					characterized_definition = characterized_object
+					characterized_definition
+					characterized_definition <-
+					property_definition.definition
+					property_definition
+					{property_definition.description = 'assigned parameter'}
+					property_definition <-
+					property_definition_representation.definition
+					property_definition_representation
+					property_definition_representation.used_representation ->
+					representation =>
+					parameter_assignment
+				
+end_attribute_mapping;
+
+attribute_mapping of_product(of_product, $PATH, Product);
+product_specific_parameter_value_assignment <=
+					product_related_product_category
+					product_related_product_category.products[i] ->
+					product
+				
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Schema_based_model_parameter_armx(Schema_based_model_parameter_armx, schema_based_model_parameter);
+
+mapping_constraints;
+schema_based_model_parameter <=
+model_parameter
+
+end_mapping_constraints;
+
+attribute_mapping attribute_name(attribute_name, $PATH, general_property);
+schema_based_model_parameter <=
+model_parameter <=
+general_property <-
+general_property_relationship.related_property
+general_property_relationship
+{general_property_relationship.name = 'attribute name'}
+general_property_relationship.relating_property ->
+general_property 
+
+end_attribute_mapping;
+
+attribute_mapping entity_name(entity_name, $PATH, general_property);
+schema_based_model_parameter <=
+model_parameter <=
+general_property <-
+general_property_relationship.related_property
+general_property_relationship
+{general_property_relationship.name = 'entity name'}
+general_property_relationship.relating_property ->
+general_property 
+
+end_attribute_mapping;
+
+attribute_mapping schema_identifier(schema_identifier, $PATH, general_property);
+schema_based_model_parameter <=
+model_parameter <=
+general_property <-
+general_property_relationship.related_property
+general_property_relationship
+{general_property_relationship.name = 'schema identifier'}
+general_property_relationship.relating_property ->
+general_property 
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Test_method_based_parameter_assignment_armx(Test_method_based_parameter_assignment_armx, test_method_based_parameter_assignment);
+
+mapping_constraints;
+				test_method_based_parameter_assignment <=
+				parameter_assignment <=
+				property_definition_representation
+			
+end_mapping_constraints;
+
+end_entity_mapping;
+
+(*end_schema_mapping;*)

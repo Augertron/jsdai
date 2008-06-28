@@ -1,0 +1,61 @@
+(*
+ISO TC184/SC4/WG12 N676 - ISO/CD-TS 10303-1007 General surface appearance - EXPRESS ARM
+*) 
+
+-- GL Add surface_side ENUMERATION as in the AIM. Change STRING to this ENUMERATION for Surface_colour.side.
+-- TODiscuss likely this is not subset of 517
+SCHEMA General_surface_appearance_arm; 
+
+-- USE FROM Colour_arm;    -- ISO/TS 10303-1002
+
+USE FROM Curve_appearance_arm;    -- ISO/TS 10303-1003
+
+TYPE surface_side = ENUMERATION OF
+  (positive,
+   negative,
+   both);
+END_TYPE;
+
+ENTITY Boundary_curve_appearance
+  SUBTYPE OF (Surface_related_curve_appearance);
+END_ENTITY;
+
+ENTITY Control_grid_appearance
+  SUBTYPE OF (Surface_related_curve_appearance);
+END_ENTITY;
+
+ENTITY Parameter_line_appearance
+  SUBTYPE OF (Surface_related_curve_appearance);
+  number_of_u_curves : INTEGER;
+  number_of_v_curves : INTEGER;
+END_ENTITY;
+
+ENTITY Segmentation_curve_appearance
+  SUBTYPE OF (Surface_related_curve_appearance);
+END_ENTITY;
+
+ENTITY Silhouette_curve_appearance
+  SUBTYPE OF (Surface_related_curve_appearance);
+END_ENTITY;
+
+ENTITY Surface_appearance_wireframe;
+  side : STRING;
+  styles : SET[1:5] OF Surface_related_curve_appearance;
+END_ENTITY;
+
+ENTITY Surface_colour
+;--  SUBTYPE OF (Surface_related_curve_appearance); SEDS
+  side : surface_side;
+  assigned_colour : Colour;
+END_ENTITY;
+
+ENTITY Surface_related_curve_appearance
+  ABSTRACT SUPERTYPE OF (ONEOF (Boundary_curve_appearance,
+                                Control_grid_appearance,
+                                Parameter_line_appearance,
+                                Segmentation_curve_appearance,
+                                Silhouette_curve_appearance));
+  style : Curve_appearance;
+END_ENTITY;
+
+END_SCHEMA;  -- General_surface_appearance_arm

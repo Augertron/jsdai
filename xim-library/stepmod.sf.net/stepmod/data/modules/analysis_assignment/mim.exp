@@ -1,0 +1,35 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4542 - ISO/CD-TS 10303-1474 Analysis assignment - EXPRESS MIM
+*)
+
+SCHEMA Analysis_assignment_mim;
+
+USE FROM Analysis_identification_mim;    -- ISO/CD-TS 10303-1476
+
+USE FROM group_schema;    -- ISO 10303-41
+
+USE FROM management_resources_schema;    -- ISO 10303-41
+
+
+TYPE analysed_item = EXTENSIBLE GENERIC_ENTITY SELECT;
+END_TYPE;
+
+ENTITY analysis_assignment
+  SUBTYPE OF (group);
+END_ENTITY;
+
+ENTITY analysis_item
+  SUBTYPE OF (group_assignment);
+  SELF\group_assignment.assigned_group : analysis_assignment;
+  items : SET[1:1] OF analysed_item;
+END_ENTITY;
+
+ENTITY assigned_analysis
+  SUBTYPE OF (group_assignment);
+  SELF\group_assignment.assigned_group : analysis_assignment;
+  items : SET[1:1] OF product_definition_formation;
+END_ENTITY;
+
+END_SCHEMA;  -- Analysis_assignment_mim
+

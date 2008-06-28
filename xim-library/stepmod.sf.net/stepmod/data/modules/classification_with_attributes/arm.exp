@@ -1,0 +1,85 @@
+(*
+ $Id$
+ ISO TC184/SC4/WG12 N4964 - ISO/CD-TS 10303-1111 Classification with attributes - EXPRESS ARM
+ Supersedes ISO TC184/SC4/WG12 N4272
+*)
+
+SCHEMA Classification_with_attributes_arm;
+
+USE FROM Classification_assignment_arm;
+
+USE FROM Extended_measure_representation_arm;
+
+USE FROM Independent_property_arm;
+
+USE FROM Identification_assignment_arm;
+
+USE FROM Plib_class_reference_arm;
+
+USE FROM Product_view_definition_arm;
+
+TYPE classification_item_extended = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH (
+	Product, 
+	Product_version,
+	Product_view_definition) ;
+END_TYPE;
+
+TYPE classified_element_select = EXTENSIBLE GENERIC_ENTITY SELECT (
+	Product, 
+	Product_version,
+	Product_view_definition) ;
+END_TYPE;
+
+TYPE external_class_select = SELECT(Plib_class_reference, External_class);
+END_TYPE;
+
+TYPE definable_objects = SELECT (
+	Product, 
+	Product_version, 
+	Product_view_definition);
+END_TYPE;
+
+ENTITY Class_with_attributes
+SUBTYPE OF (Class);
+  version_id: OPTIONAL STRING;
+  used_classification_system: OPTIONAL Classification_system;
+INVERSE
+  characterization_attributes: SET[0:?] OF Classification_attribute FOR characterized_class;
+END_ENTITY;
+
+ENTITY Class_hierarchy;
+  super_class: Class_with_attributes;
+  sub_class: Class_with_attributes;
+END_ENTITY;
+
+ENTITY Classification_association
+SUBTYPE OF (Classification_assignment);
+   SELF\Classification_assignment.assigned_class: Class_with_attributes;
+   definitional: LOGICAL;
+WHERE
+WR1: SIZEOF(QUERY(it<* SELF\Classification_assignment.items |
+     NOT('CLASSIFICATION_WITH_ATTRIBUTES_ARM.DEFINABLE_OBJECTS' IN TYPEOF(it)) AND definitional ))=0;
+WR2: SIZEOF(QUERY(it<* SELF\Classification_assignment.items |
+     NOT('CLASSIFICATION_WITH_ATTRIBUTES_ARM.CLASSIFIED_ELEMENT_SELECT' IN TYPEOF(it)) )) =0;
+END_ENTITY;
+
+ENTITY Classification_attribute;
+   id: STRING;
+   name: OPTIONAL STRING;
+   description: OPTIONAL STRING;
+   allowed_values: OPTIONAL SET[1:?] OF Measure_item;
+   characterized_class: Class_with_attributes;
+   attribute_definition: Independent_property;
+END_ENTITY;
+
+ENTITY Classification_system;
+  id: STRING;
+  description: OPTIONAL STRING;
+END_ENTITY;
+
+ENTITY External_class_with_attributes
+SUBTYPE OF (Class_with_attributes);
+  source: external_class_select;
+END_ENTITY;
+
+END_SCHEMA;

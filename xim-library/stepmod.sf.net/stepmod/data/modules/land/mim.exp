@@ -1,0 +1,43 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4024 - ISO/TS 10303-1692 Land - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3466
+*)
+
+
+SCHEMA Land_mim;
+	USE FROM Layered_interconnect_module_design_mim;	-- ISO/TS 10303-1698
+
+
+SUBTYPE_CONSTRAINT stratum_feature_template_component_subtypes FOR stratum_feature_template_component;   
+	(ONEOF (area_component,
+	land));
+END_SUBTYPE_CONSTRAINT;
+
+ENTITY contact_size_dependent_land
+  SUBTYPE OF (land);
+END_ENTITY;
+
+ENTITY inter_stratum_feature_dependent_land
+  ABSTRACT SUPERTYPE OF (ONEOF (plated_passage_dependent_land,
+    unsupported_passage_dependent_land))
+  SUBTYPE OF (land);
+END_ENTITY;
+	
+ENTITY land
+  SUPERTYPE OF (ONEOF (contact_size_dependent_land,
+    inter_stratum_feature_dependent_land))
+  SUBTYPE OF (stratum_feature_template_component);
+END_ENTITY;	
+
+ENTITY plated_passage_dependent_land
+  SUBTYPE OF (inter_stratum_feature_dependent_land);
+END_ENTITY;
+
+ENTITY unsupported_passage_dependent_land
+  SUBTYPE OF (inter_stratum_feature_dependent_land);
+END_ENTITY;
+	
+END_SCHEMA;
+
+

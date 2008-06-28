@@ -1,0 +1,24 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N4541 - ISO/CD-TS 10303-1474 Analysis assignment - EXPRESS ARM
+*) 
+
+SCHEMA Analysis_assignment_arm;
+
+USE FROM Analysis_identification_arm;
+
+TYPE analysed_item = EXTENSIBLE GENERIC_ENTITY SELECT 
+  (Product_version);
+END_TYPE;
+
+ENTITY Analysis_assignment;
+  analysis : Analysis_version;
+  applied_to : analysed_item;
+END_ENTITY;
+
+ENTITY Analysis_design_version_relationship
+SUBTYPE OF (Analysis_assignment);
+  SELF\Analysis_assignment.applied_to : Product_version;
+END_ENTITY;
+
+END_SCHEMA;

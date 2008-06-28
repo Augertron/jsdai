@@ -1,0 +1,70 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping part_collection(Part_collection_arm, Part_collection_mim);*)
+
+uof_mapping Part_collection(Part_collection);
+
+entity_mapping Collected_item_association(Collected_item_association, product_definition_relationship);
+
+mapping_constraints;
+
+	 product_definition_relationship
+{product_definition_relationship.name = 'collection membership'}
+end_mapping_constraints;
+
+attribute_mapping relating_product_definition(relating_product_definition, $PATH, Collection_definition);
+
+product_definition_relationship
+{product_definition_relationship.name = 'collection membership'}
+product_definition_relationship.relating_product_definition -> product_definition 
+{product_definition <- product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role -> product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference -> product_definition_context
+product_definition_context <= application_context_element 
+application_context_element.name = 'collection definition'}
+ 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Collection_definition(Collection_definition, product_definition);
+
+mapping_constraints;
+
+product_definition <- product_definition_context_association.definition
+product_definition_context_association
+{product_definition_context_association.role -> product_definition_context_role
+product_definition_context_role.name = 'part definition type'}
+product_definition_context_association.frame_of_reference -> product_definition_context
+product_definition_context <= application_context_element 
+application_context_element.name = 'collection definition'
+
+end_mapping_constraints;
+
+end_entity_mapping;
+end_uof_mapping;
+
+(*end_schema_mapping;*)
