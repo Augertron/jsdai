@@ -41,20 +41,20 @@ end_mapping_constraints;
 
 end_entity_mapping;
 
-entity_mapping Breakdown_element_usage_armx(Breakdown_element_usage_armx, breakdown_element_usage
-			);
+entity_mapping Breakdown_element_usage_armx(Breakdown_element_usage_armx, product_definition_usage);
 
 mapping_constraints;
 
-				breakdown_element_usage <=
+				product_definition_usage <=
 				product_definition_relationship
+				{product_definition_relationship.name = 'decomposition'}
 			
 end_mapping_constraints;
 
 attribute_mapping name(name, 	product_definition_relationship.name
 				);
 
-					breakdown_element_usage <=
+					product_definition_usage <=
 					product_definition_relationship
 					product_definition_relationship.name
 				
@@ -62,7 +62,7 @@ end_attribute_mapping;
 
 attribute_mapping child_element(child_element, $PATH, Breakdown_element_definition);
 
-					breakdown_element_usage <=
+					product_definition_usage <=
 					product_definition_relationship
 					product_definition_relationship.related_product_definition ->
 					product_definition
@@ -72,7 +72,7 @@ end_attribute_mapping;
 
 attribute_mapping parent_element(parent_element, $PATH, Breakdown_element_definition);
 
-					breakdown_element_usage <=
+					product_definition_usage <=
 					product_definition_relationship
 					product_definition_relationship.relating_product_definition ->
 					product_definition
@@ -191,7 +191,7 @@ attribute_mapping described_element(described_element, $PATH, Breakdown_element_
                                   characterized_definition = characterized_product_definition
                                   characterized_product_definition
                                   characterized_product_definition = product_definition_relationship
-                                  product_definition_relationship => breakdown_element_usage
+                                  product_definition_relationship => product_definition_usage
 				
 end_attribute_mapping;
 
@@ -426,7 +426,7 @@ attribute_mapping breakdown(breakdown, $PATH, Breakdown_element_usage);
 					breakdown_element_group_assignment
 					breakdown_element_group_assignment.items[1] ->
 					product_definition_or_breakdown_element_usage =
-					breakdown_element_usage
+					product_definition_usage
 				
 end_attribute_mapping;
 

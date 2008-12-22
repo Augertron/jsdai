@@ -37,11 +37,31 @@ import jsdai.SFabrication_technology_mim.CPassage_technology;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_property_representation_schema.*;
 import jsdai.SRepresentation_schema.*;
+import jsdai.SShape_property_assignment_xim.CxItem_shape;
 
 public class CxPassage_technology_armx extends CPassage_technology_armx implements EMappedXIMEntity
 {
 
 	public int attributeState = ATTRIBUTES_MODIFIED;	
+
+	// From CProperty_definition.java
+	/// methods for attribute: name, base type: STRING
+/*	public boolean testName(EProperty_definition type) throws SdaiException {
+		return test_string(a0);
+	}
+	public String getName(EProperty_definition type) throws SdaiException {
+		return get_string(a0);
+	}*/
+	public void setName(EProperty_definition type, String value) throws SdaiException {
+		a0 = set_string(value);
+	}
+	public void unsetName(EProperty_definition type) throws SdaiException {
+		a0 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EProperty_definition type) throws SdaiException {
+		return a0$;
+	}
+	// ENDOF From CProperty_definition.java
 
 	// FROM Characterized_object
 	/// methods for attribute: description, base type: STRING
@@ -89,6 +109,8 @@ public class CxPassage_technology_armx extends CPassage_technology_armx implemen
 		// maximum_aspect_ratio
 		setMaximum_aspect_ratio(context, this);
 		
+		// passage_terminus_condition : OPTIONAL ft_terminus_condition;
+		setPassage_terminus_condition(context, this);
 		
 		// Clean ARM
 		// as_finished_inter_stratum_extent 		
@@ -105,6 +127,9 @@ public class CxPassage_technology_armx extends CPassage_technology_armx implemen
 		
 		// maximum_aspect_ratio
 		unsetMaximum_aspect_ratio(null);
+		
+		// passage_terminus_condition : OPTIONAL ft_terminus_condition;
+		unsetPassage_terminus_condition(null);
 		
 	}
 
@@ -125,6 +150,9 @@ public class CxPassage_technology_armx extends CPassage_technology_armx implemen
 		
 		// maximum_aspect_ratio
 		unsetMaximum_aspect_ratio(context, this);
+		
+		// passage_terminus_condition : OPTIONAL ft_terminus_condition;
+		unsetPassage_terminus_condition(context, this);
 
 		cleanAIM_stuff(context, this);
 
@@ -205,10 +233,12 @@ public class CxPassage_technology_armx extends CPassage_technology_armx implemen
 	public static void setMappingConstraints(SdaiContext context, EPassage_technology_armx armEntity) throws SdaiException
 	{
 		unsetMappingConstraints(context, armEntity);
+		CxItem_shape.setMappingConstraints(context, armEntity);
 	}
 
 	public static void unsetMappingConstraints(SdaiContext context, EPassage_technology_armx armEntity) throws SdaiException
 	{
+		CxItem_shape.unsetMappingConstraints(context, armEntity);
 	}
 
    //********** "passage_technology" attributes
@@ -474,9 +504,17 @@ public class CxPassage_technology_armx extends CPassage_technology_armx implemen
     unsetAs_finished_passage_extent(context, armEntity);
 
     if (armEntity.testAs_finished_passage_extent(null)) {
-      ETolerance_characteristic characteristic = armEntity.getAs_finished_passage_extent(null);
-      
-      CxAP210ARMUtilities.setProperty_definitionToRepresentationPath(context, armEntity, null, "as finished passage extent", characteristic);
+      ERepresentation_item characteristic = (ERepresentation_item)armEntity.getAs_finished_passage_extent(null);
+      ARepresentation ar = new ARepresentation();
+      CRepresentation.usedinItems(null, characteristic, context.domain, ar);
+      ERepresentation er;
+      if(ar.getMemberCount() > 0){
+    	  er = ar.getByIndex(1);
+      }else{
+    	  er = CxAP210ARMUtilities.createRepresentation(context, "", false);
+    	  er.createItems(null).addUnordered(characteristic);
+      }
+      CxAP210ARMUtilities.setProperty_definitionToRepresentationPath(context, armEntity, null, "as finished passage extent", er);
     }
  }
 
@@ -699,6 +737,70 @@ public class CxPassage_technology_armx extends CPassage_technology_armx implemen
  }
 */ 
  
+ /**
+  * Sets/creates data for passage_terminus_condition attribute.
+  *
+  * <p>
+	attribute_mapping passage_terminus_condition(passage_terminus_condition, $PATH);
+		passage_technology <=
+		characterized_object
+		characterized_definition = characterized_object
+		characterized_definition <-
+		property_definition.definition
+		property_definition
+		{property_definition.name = 'passage terminus condition'}
+		{(property_definition.description = 'bilateral complete removal')
+		(property_definition.description = 'bilateral bond')
+		(property_definition.description = 'unilateral bond')}
+				
+	end_attribute_mapping;
+  * </p>
+  * @param context SdaiContext.
+  * @param armEntity arm entity.
+  * @throws SdaiException
+  */
+ public static void setPassage_terminus_condition(SdaiContext context, EPassage_technology_armx armEntity) throws SdaiException {
+    //unset old values
+    unsetPassage_terminus_condition(context, armEntity);
+
+    if (armEntity.testPassage_terminus_condition(null)) {
+
+       int armTerminus_condition = armEntity.getPassage_terminus_condition(null);
+       
+       LangUtils.Attribute_and_value_structure[] propertyStructure = new LangUtils.Attribute_and_value_structure[]
+			{
+				new LangUtils.Attribute_and_value_structure(CProperty_definition.attributeName(null), "passage terminus condition"),
+				new LangUtils.Attribute_and_value_structure(CProperty_definition.attributeDefinition(null), armEntity)
+			};
+       EProperty_definition property_definition  = (EProperty_definition) LangUtils.createInstanceIfNeeded(context, CProperty_definition.definition, propertyStructure);
+       String value = EFt_terminus_condition.toString(armTerminus_condition).toLowerCase().replace('_', ' ');
+       property_definition.setDescription(null, value);
+    }
+ }
+
+ /**
+  * Unsets/deletes data for plated_passage attribute.
+  *
+  * @param context SdaiContext.
+  * @param armEntity arm entity.
+  * @throws SdaiException
+  */
+ public static void unsetPassage_terminus_condition(SdaiContext context, EPassage_technology_armx armEntity) throws SdaiException {
+    String keyword = "passage terminus condition";
+    AProperty_definition apd = new AProperty_definition();
+    CProperty_definition.usedinDefinition(null, armEntity, context.domain, apd);
+    SdaiIterator iter = apd.createIterator();
+    while(iter.next()){
+    	EProperty_definition epd = apd.getCurrentMember(iter);
+		// Safety check for derived attributes
+/*		if(((CEntity)epd).testAttributeFast(CProperty_definition.attributeName(null), null) < 0){
+			continue;
+		}*/
+    	
+    	if((epd.testName(null))&&(epd.getName(null).equals(keyword)))
+    		epd.deleteApplicationInstance();
+    }
+ }
  
 	
 }

@@ -23,6 +23,79 @@
 
 (*schema_mapping interconnect_placement_requirements(Interconnect_placement_requirements_arm, Interconnect_placement_requirements_mim);*)
 
+entity_mapping Area_qualified_layout_spacing_requirement_armx(Area_qualified_layout_spacing_requirement_armx, area_qualified_layout_spacing_requirement);
+
+mapping_constraints;
+area_qualified_layout_spacing_requirement <=
+layout_spacing_requirement <=
+predefined_requirement_view_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping area_context(area_context, $PATH, Layout_spacing_contextual_area_armx);
+area_qualified_layout_spacing_requirement <=
+layout_spacing_requirement <=
+predefined_requirement_view_definition <=					
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'area context'}
+property_definition_relationship.relating_property_definition ->
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = shape_definition
+shape_definition
+shape_definition = shape_aspect
+shape_aspect =>
+layout_spacing_contextual_area
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Layout_spacing_contextual_area_armx(Layout_spacing_contextual_area_armx, layout_spacing_contextual_area);
+
+mapping_constraints;
+layout_spacing_contextual_area <=
+shape_aspect
+
+end_mapping_constraints;
+
+attribute_mapping reference_surface(reference_surface, $PATH, Interconnect_module_component_surface_feature_armx);
+layout_spacing_contextual_area <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'reference surface'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+{shape_aspect.description = 'interconnect module component surface feature'}
+shape_aspect =>
+component_feature =>				
+physical_component_feature =>
+interconnect_module_component_surface_feature  
+
+end_attribute_mapping;
+
+attribute_mapping scope(scope, $PATH, Assembly_module_design_view_armx);
+layout_spacing_contextual_area <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+physical_unit =>
+assembly_module_design_view
+
+end_attribute_mapping;
+
+end_entity_mapping;
 
 entity_mapping Interconnect_module_constraint_region(Interconnect_module_constraint_region, group_shape_aspect);
 
@@ -343,34 +416,32 @@ product_definition_relationship.name = 'inter stratum extent'}
 
 end_attribute_mapping;
 
-attribute_mapping scope(scope, $PATH, Interconnect_module);
+attribute_mapping scope(scope, $PATH, Layered_interconnect_module_design_view_armx);
 group_shape_aspect <=
 shape_aspect
 shape_aspect.of_shape ->
-product_definition_shape
-{product_definition_shape <=
-property_definition
-{property_definition.name = 'interconnect module'}}
 product_definition_shape =>
-physical_unit
+physical_unit =>
+interconnect_module_design_view =>
+layered_interconnect_module_design_view
 
 end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Layer_qualified_layout_spacing_requirement_occurrence_armx(Layer_qualified_layout_spacing_requirement_occurrence_armx, layer_qualified_layout_spacing_requirement_occurrence);
+entity_mapping Layer_qualified_layout_spacing_requirement_armx(Layer_qualified_layout_spacing_requirement_armx, layer_qualified_layout_spacing_requirement);
 
 mapping_constraints;
-layer_qualified_layout_spacing_requirement_occurrence <=
-layout_spacing_requirement_occurrence <=
+layer_qualified_layout_spacing_requirement <=
+layout_spacing_requirement <=
 predefined_requirement_view_definition <=
 product_definition
 
 end_mapping_constraints;
 
 attribute_mapping layer_context(layer_context, $PATH, Inter_stratum_extent);
-layer_qualified_layout_spacing_requirement_occurrence <=
-layout_spacing_requirement_occurrence <=
+layer_qualified_layout_spacing_requirement <=
+layout_spacing_requirement <=
 predefined_requirement_view_definition <=					
 product_definition
 characterized_product_definition = product_definition
@@ -397,16 +468,16 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Layout_spacing_requirement_occurrence_armx(Layout_spacing_requirement_occurrence_armx, layout_spacing_requirement_occurrence);
+entity_mapping Layout_spacing_requirement_armx(Layout_spacing_requirement_armx, layout_spacing_requirement);
 
 mapping_constraints;
-layout_spacing_requirement_occurrence <=
+layout_spacing_requirement <=
 predefined_requirement_view_definition
 
 end_mapping_constraints;
 
 attribute_mapping of_spacing_type(of_spacing_type, $PATH);
-layout_spacing_requirement_occurrence <=
+layout_spacing_requirement <=
 predefined_requirement_view_definition <=
 product_definition			
 characterized_product_definition = product_definition
@@ -424,8 +495,8 @@ property_definition.description
 end_attribute_mapping;
 
 attribute_mapping design_object_category_1(design_object_category_1, group);
-layout_spacing_requirement_occurrence
-groupable_item = layout_spacing_requirement_occurrence 
+layout_spacing_requirement
+groupable_item = layout_spacing_requirement 
 groupable_item <-
 applied_group_assignment.items[i]
 applied_group_assignment <=
@@ -438,7 +509,7 @@ group
 end_attribute_mapping;
 
 attribute_mapping design_object_category_1(design_object_category_1, $PATH, Stratum_armx);
-layout_spacing_requirement_occurrence <=
+layout_spacing_requirement <=
 predefined_requirement_view_definition <=
 product_definition			
 characterized_product_definition = product_definition
@@ -455,8 +526,8 @@ product_definition_shape =>
 stratum  
 end_attribute_mapping;
 
-attribute_mapping design_object_category_1(design_object_category_1, characterized_object.name, pca_product_design_object_category);
-layout_spacing_requirement_occurrence <=
+attribute_mapping design_object_category_1(design_object_category_1, characterized_object.name, lam_product_design_object_category);
+layout_spacing_requirement <=
 predefined_requirement_view_definition <=
 product_definition			
 characterized_product_definition = product_definition
@@ -482,7 +553,6 @@ characterized_object.name
 (characterized_object.name = 'assembly module macro component join terminal category')
 (characterized_object.name = 'bare die component category')
 (characterized_object.name = 'bare die component terminal category')
-(characterized_object.name = 'bonded conductive base blind via category')
 (characterized_object.name = 'buried via category')
 (characterized_object.name = 'cable component category')
 (characterized_object.name = 'component feature category')
@@ -565,8 +635,8 @@ characterized_object.name
 end_attribute_mapping;
 
 attribute_mapping design_object_category_2(design_object_category_2, group);
-layout_spacing_requirement_occurrence
-groupable_item = layout_spacing_requirement_occurrence 
+layout_spacing_requirement
+groupable_item = layout_spacing_requirement 
 groupable_item <-
 applied_group_assignment.items[i]
 applied_group_assignment <=
@@ -579,7 +649,7 @@ group
 end_attribute_mapping;
 
 attribute_mapping design_object_category_2(design_object_category_2, $PATH, Stratum_armx);
-layout_spacing_requirement_occurrence <=
+layout_spacing_requirement <=
 predefined_requirement_view_definition <=
 product_definition			
 characterized_product_definition = product_definition
@@ -596,8 +666,8 @@ product_definition_shape =>
 stratum 
 end_attribute_mapping;
 
-attribute_mapping design_object_category_2(design_object_category_2, characterized_object.name, pca_product_design_object_category);
-layout_spacing_requirement_occurrence <=
+attribute_mapping design_object_category_2(design_object_category_2, characterized_object.name, lam_product_design_object_category);
+layout_spacing_requirement <=
 predefined_requirement_view_definition <=
 product_definition			
 characterized_product_definition = product_definition
@@ -623,7 +693,6 @@ characterized_object.name
 (characterized_object.name = 'assembly module macro component join terminal category')
 (characterized_object.name = 'bare die component category')
 (characterized_object.name = 'bare die component terminal category')
-(characterized_object.name = 'bonded conductive base blind via category')
 (characterized_object.name = 'buried via category')
 (characterized_object.name = 'cable component category')
 (characterized_object.name = 'component feature category')
@@ -706,7 +775,7 @@ characterized_object.name
 end_attribute_mapping;
 
 attribute_mapping spacing(spacing, $PATH, Length_tolerance_characteristic);
-layout_spacing_requirement_occurrence <=
+layout_spacing_requirement <=
 predefined_requirement_view_definition <=
 product_definition			
 characterized_product_definition = product_definition
@@ -733,7 +802,7 @@ shape_aspect_relationship.name = 'layout spacing requirement violation'}
 
 end_mapping_constraints;
 
-attribute_mapping design_requirement(design_requirement, $PATH, Layout_spacing_requirement_occurrence_armx);
+attribute_mapping design_requirement(design_requirement, $PATH, Layout_spacing_requirement_armx);
 shape_aspect_relationship
 shape_definition = shape_aspect_relationship
 shape_definition
@@ -754,7 +823,7 @@ characterized_product_definition
 characterized_product_definition = product_definition
 product_definition =>
 predefined_requirement_view_definition => 
-layout_spacing_requirement_occurrence
+layout_spacing_requirement
 
 end_attribute_mapping;
 
@@ -1460,16 +1529,14 @@ product_definition_shape =>
 stratum
 end_attribute_mapping;
 
-attribute_mapping scope(scope, $PATH, Stratum_armx);
+attribute_mapping scope(scope, $PATH, Layered_interconnect_module_design_view_armx);
 group_shape_aspect <=
 shape_aspect
 shape_aspect.of_shape ->
-product_definition_shape
-{product_definition_shape <=
-property_definition
-{property_definition.name = 'interconnect module'}}
 product_definition_shape =>
-physical_unit
+physical_unit =>
+interconnect_module_design_view =>
+layered_interconnect_module_design_view
 end_attribute_mapping;
 
 end_entity_mapping;

@@ -36,9 +36,9 @@ import jsdai.SAction_schema.CAction_method_relationship;
 import jsdai.SAction_schema.EAction_method_relationship;
 import jsdai.SMethod_definition_schema.CSequential_method;
 import jsdai.SMethod_definition_schema.ESequential_method;
-import jsdai.STask_specification_mim.ATask_element;
-import jsdai.STask_specification_mim.CTask_element_sequence;
-import jsdai.STask_specification_mim.ETask_element;
+import jsdai.STask_element_mim.ATask_element;
+import jsdai.STask_element_mim.CTask_element_sequence;
+import jsdai.STask_element_mim.ETask_element;
 
 public class CxTask_element_sequence_armx extends CTask_element_sequence_armx implements EMappedXIMEntity{
 

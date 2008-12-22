@@ -29,7 +29,7 @@ package jsdai.SAssembly_component_placement_requirements_xim;
 * $Id$
 */
 
-import jsdai.SAssembly_component_placement_requirements_mim.EItem_restricted_requirement_occurrence;
+import jsdai.SAssembly_component_placement_requirements_mim.EItem_restricted_requirement;
 import jsdai.SAssembly_component_placement_requirements_mim.EMounting_restriction_area;
 import jsdai.SCharacteristic_xim.ELength_tolerance_characteristic;
 import jsdai.SCharacteristic_xim.ETolerance_characteristic;
@@ -707,7 +707,7 @@ public class CxComponent_placement_restriction_assignment extends CComponent_pla
 		if (armEntity.testRequirement(null))
 		{
 			jsdai.SRepresentation_schema.ERepresentation aimEntity = armEntity;
-			EItem_restricted_requirement_occurrence_armx armRequirement = armEntity.getRequirement(null);
+			EItem_restricted_requirement_armx armRequirement = armEntity.getRequirement(null);
 			// GRP
 			// R <- PDR -> GRP
 			EProperty_definition_representation epdr = (EProperty_definition_representation)
@@ -748,7 +748,7 @@ public class CxComponent_placement_restriction_assignment extends CComponent_pla
 			EEntity definition = epdr.getDefinition(null);
 			if(definition instanceof EProperty_definition){
 				EProperty_definition epd = (EProperty_definition)definition;
-				if(epd.getDefinition(null) instanceof EItem_restricted_requirement_occurrence){
+				if(epd.getDefinition(null) instanceof EItem_restricted_requirement){
 					epdr.deleteApplicationInstance();
 				}
 			}

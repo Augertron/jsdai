@@ -60,6 +60,10 @@ REFERENCE FROM Specification_document_xim(get_document_definition);	-- ISO/TS 10
 	TYPE analytical_model_port_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT;
 	END_TYPE;
 
+  TYPE am_property_assignment_select = EXTENSIBLE SELECT BASED_ON property_assignment_select WITH
+    (Analytical_model_definition_armx);
+  END_TYPE; 
+
   TYPE port_property_type = ENUMERATION OF
     (string_property_type,
      boolean_property_type,
@@ -116,7 +120,7 @@ REFERENCE FROM Specification_document_xim(get_document_definition);	-- ISO/TS 10
 
   ENTITY Analytical_model_application
     (* CONNOTATIONAL *) SUBTYPE OF (analytical_representation);  
-      model_parameter_assignment : SET[1:?] OF Parameter_assignment_armx;
+      model_parameter_assignment : OPTIONAL SET[1:?] OF Parameter_assignment_armx;
       model_representation       : Analytical_model_definition_armx;
     DERIVE
       (* hiding of not needed attributes *)
@@ -136,7 +140,7 @@ REFERENCE FROM Specification_document_xim(get_document_definition);	-- ISO/TS 10
   			'SPECIFICATION_DOCUMENT_XIM.LANGUAGE_REFERENCE_MANUAL');      
     INVERSE
       access_mechanism : SET[1:?] OF analytical_model_port_armx FOR accessed_analytical_model;
-      parameter        : SET[1:?] OF analytical_model_parameter_armx FOR accessed_analytical_model;
+      parameter        : SET[1:?] OF Analytical_model_parameter_armx FOR described_element;
 	  reference_document : document_assignment FOR is_assigned_to;    	
   END_ENTITY;
 
@@ -151,11 +155,10 @@ REFERENCE FROM Specification_document_xim(get_document_definition);	-- ISO/TS 10
   END_ENTITY;
 
   ENTITY Analytical_model_parameter_armx
-    (* CONNOTATIONAL *) SUBTYPE OF (Model_parameter_armx, analytical_model_parameter);
-      accessed_analytical_model : Analytical_model_definition_armx;
+    SUBTYPE OF (Applied_independent_property, analytical_model_parameter);
+      SELF\Assigned_property.described_element RENAMED accessed_analytical_model : Analytical_model_definition_armx;
     UNIQUE
-      UR1 : SELF\general_property.id,
- accessed_analytical_model;
+      UR1 : SELF\Assigned_property.id,  accessed_analytical_model;
   END_ENTITY;
 
   ENTITY Analytical_model_port_armx

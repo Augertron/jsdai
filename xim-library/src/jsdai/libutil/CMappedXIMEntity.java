@@ -93,11 +93,20 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 	 */
 	public static EEntity buildMappedInstance(MappingContext mappingContext, EEntity mimInstance,
 			EEntity_mapping entityMapping) throws SdaiException {
-		return buildMappedInstance(mappingContext, mimInstance, entityMapping, null);
+		return buildMappedInstance(mappingContext, mimInstance, entityMapping, null, false);
 	}
 
 	/**
-	 * Creates or returns already created mapped entity 
+	 * @deprecated Use {@link #buildMappedInstance(MappingContext, EEntity,
+	 *             EEntity_mapping, Collection, boolean)} instead.
+	 */
+	public static EEntity buildMappedInstance(MappingContext mappingContext, EEntity mimInstance,
+			EEntity_mapping entityMapping, Collection deferredInstances) throws SdaiException {
+		return buildMappedInstance(mappingContext, mimInstance, entityMapping, deferredInstances, false);
+	}
+
+	/**
+	 * Creates or returns already created mapped entity
 	 * instance using mapping context's mapped instance association.
 	 * Mapped instance is created by substituting provided <code>mimInstance</code>
 	 * to mapped entity type.
@@ -106,15 +115,19 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 	 * @param mimInstance target MIM instance to build mapped XIM instance for
 	 * @param entityMapping XIM entity mapping
 	 * @param deferredInstances output collection to which deferred instances are added
+	 * @param forceXimAsMimSubtype if true XIM instance is considered as logical subtype
+	 *        of MIM instance
 	 * @return mapped XIM entity instance
 	 * @exception SdaiException if an error occurs during the operation
 	 *                          or in underlying JSDAI operations
 	 */
 	public static EEntity buildMappedInstance(MappingContext mappingContext, EEntity mimInstance,
-			EEntity_mapping entityMapping, Collection deferredInstances) throws SdaiException {
+			EEntity_mapping entityMapping, Collection deferredInstances,
+			boolean forceXimAsMimSubtype) throws SdaiException {
 		EEntity_definition ximType = entityMapping.getSource(null);
 		EEntity ximMappedInstance = mappingContext.getMappedInstance(mimInstance);
-		if(ximMappedInstance == null && !ximType.isSubtypeOf(mimInstance.getInstanceType())) {
+		if(!forceXimAsMimSubtype && ximMappedInstance == null
+				&& !ximType.isSubtypeOf(mimInstance.getInstanceType())) {
 			ximMappedInstance = mimInstance;
 		}
 		if(ximMappedInstance != null) {
@@ -195,7 +208,7 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 							System.arraycopy(cplxTypeTemp, 0, newCplxTypeTemp, 0, cplxTypeTemp.length);
 							newCplxTypeTemp[newCplxTypeTemp.length - 1] = entityMapping;
 						} else {
-							newCplxTypeTemp = new Object[] { complexTypes, entityMapping};
+							newCplxTypeTemp = new Object[] { complexTypes, entityMapping };
 						}
 						mimInstance.setTemp(CPLX_TYPE_TEMP, newCplxTypeTemp);
 						if(deferredInstances != null) {
@@ -216,10 +229,21 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 			if(workingModel == null) {
 				workingModel = mimInstance.findEntityInstanceSdaiModel();
 			}
-			ximMappedInstance = workingModel.substituteInstance(mimInstance, ximType);
-			mappingContext.putMappedInstace(mimInstance, ximMappedInstance);
-			unsetMappedAttributes(mappingContext, ximMappedInstance, entityMapping);
-			return ximMappedInstance;
+			try {
+				ximMappedInstance = workingModel.substituteInstance(mimInstance, ximType);
+				mappingContext.putMappedInstace(mimInstance, ximMappedInstance);
+				unsetMappedAttributes(mappingContext, ximMappedInstance, entityMapping);
+				return ximMappedInstance;
+			} catch (SdaiException e) {
+				if(e.getErrorId() == SdaiException.ED_NVLD) {
+					Collection complexTypes = new HashSet();
+					complexTypes.add(ximType);
+					mimInstance.setTemp(CPLX_TYPE_TEMP, new Object[] { complexTypes, entityMapping });
+					return null;
+				} else {
+					throw e;
+				}
+			}
 		}
 	}
 
@@ -368,7 +392,7 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 			Aggregate aggregate = createAttrOrAggr(ximInstance, attrOrAggr, selectTypes, attrValue == null);
 			if(aggregate != null) {
 				EAggregation_type aggregationType = (EAggregation_type)domain;
-				assignMappedValue(ximInstance, mappingContext, aggregate, aggregationType.getElement_type(null), 
+				assignMappedValue(ximInstance, mappingContext, aggregate, aggregationType.getElement_type(null),
 								  attrValue, selectTypes, selectPos, genAttMapping, dataType);
 			}
 			return false;
@@ -421,7 +445,7 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 				SdaiIterator aggregateIter = aggregate.createIterator();
 				while(aggregateIter.next()) {
 					EEntity aggrInst = aggregate.getCurrentMemberEntity(aggregateIter);
-					EEntity attrInstance = 
+					EEntity attrInstance =
 						findMappedInstance(mappingContext, aggrInst,
 										   domainDefinition, (genAttMapping != null) ?
 										   BUILD_FLAG_FIND_NULL : BUILD_FLAG_FIND_NOT_NULL);
@@ -436,7 +460,7 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 				while(collectionIter.hasNext()) {
 					Object value = collectionIter.next();
 					if(value instanceof EEntity) {
-						EEntity attrInstance = 
+						EEntity attrInstance =
 							findMappedInstance(mappingContext, (EEntity)value, domainDefinition,
 											   (genAttMapping != null) ?
 											   BUILD_FLAG_FIND_NULL : BUILD_FLAG_FIND_NOT_NULL);
@@ -466,8 +490,8 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 				return true;
 			} else {
 				//FIXME: implement enumeration support
-				throw new SdaiException(SdaiException.FN_NAVL, 
-										"No support for EEnumeration_type attributes yet: " + 
+				throw new SdaiException(SdaiException.FN_NAVL,
+										"No support for EEnumeration_type attributes yet: " +
 										ximInstance + "\n" + genAttMapping + "\n" + domain + "\n" + attrValue);
 			}
 		} else if(domain instanceof ESelect_type) {
@@ -532,16 +556,16 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 						if(!assignGeneralEntitySelect(ximInstance, mappingContext, attrOrAggr,
 													  selectDomain, (EEntity)attrValue)) {
 							//FIXME: implement the case when entity domain as entity_mapping isn't given
-							throw new SdaiException(SdaiException.FN_NAVL, 
-													"No suitable value found for attribute of select type.\n" + 
+							throw new SdaiException(SdaiException.FN_NAVL,
+													"No suitable value found for attribute of select type.\n" +
 													"Instance " + ximInstance +
 													"\nAttribute or aggregate: " + attrOrAggr +
 													" (select is " + selectDomain.getPersistentLabel() + ").\n" +
 													"Reason: attribute value " + attrValue +
-													" is not of expected type" + 
-													(dataType != null ? ": " + 
+													" is not of expected type" +
+													(dataType != null ? ": " +
 															(dataType.getMemberCount() == 1 ?
-																	dataType.getByIndexEntity(1).toString() 
+																	dataType.getByIndexEntity(1).toString()
 																	: dataType.toString()): ""));
 						}
 						return true;
@@ -609,7 +633,7 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 						} else {
 							attrValueString = String.valueOf(attrValue);
 						}
-						throw new SdaiException(SdaiException.SY_ERR, 
+						throw new SdaiException(SdaiException.SY_ERR,
 												"No suitable select path found: " + ximInstance + "\n" +
 												genAttMapping + "\n" + domain + "\n" + attrValueString);
 					}
@@ -624,7 +648,7 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 							select[selectIdx++] = (EDefined_type)dataTypeElem;
 						}
 					}
-					
+
 					ANamed_type selections = selectDomain.getSelections(null);
 					SdaiIterator selectionIter = selections.createIterator();
 					while(selectionIter.next()) {
@@ -637,8 +661,8 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 					}
 					return false;
 					//FIXME: implement selects of defined type when mapping.data_type is given
-// 					throw new SdaiException(SdaiException.FN_NAVL, 
-// 											"No support for selects yet (2): " + 
+// 					throw new SdaiException(SdaiException.FN_NAVL,
+// 											"No support for selects yet (2): " +
 // 											ximInstance + "\n" + genAttMapping + "\n" + domain);
 				}
 			}
@@ -665,8 +689,8 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 											  boolean mandatoryOnly) throws SdaiException {
 		if(attrOrAggr instanceof EAttribute) {
 			EAttribute attribute = (EAttribute)attrOrAggr;
-			if(mandatoryOnly 
-			   && (!(attribute instanceof EExplicit_attribute) 
+			if(mandatoryOnly
+			   && (!(attribute instanceof EExplicit_attribute)
 				   || ((EExplicit_attribute)attribute).getOptional_flag(null))) {
 				return null;
 			}
@@ -688,7 +712,7 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 				return aggr.createAggregateByIndex(aggr.getMemberCount() + 1, selectTypes);
 			}
 		}
-		throw new SdaiException(SdaiException.SY_ERR, 
+		throw new SdaiException(SdaiException.SY_ERR,
 								"FATAL! Nothing known about this attrOrAggr type: " + attrOrAggr);
 	}
 
@@ -774,7 +798,7 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 		}
 		complexNameBuffer.setLength(complexNameBuffer.length() - 1);
 
-		EEntity_definition complextEntityDefinition = 
+		EEntity_definition complextEntityDefinition =
 			workingModel.getUnderlyingSchema().getEntityDefinition(
 					complexNameBuffer.toString());
 		EEntity outInstance =

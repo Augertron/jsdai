@@ -30,7 +30,7 @@ SCHEMA Part_template_shape_with_parameters_xim;
 
 USE FROM Non_feature_shape_element_xim;
 
-USE FROM Physical_layout_template_xim;
+USE FROM Part_template_xim;
 
 USE FROM Part_template_shape_with_parameters_mim;
 
@@ -96,22 +96,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
          (gmr\Representation_relationship.name = 'principal part shape')));      
 	WHERE
       WR1 : SIZEOF(principal_part_shape) < 2;
-  END_ENTITY;
-
-  ENTITY Part_template_shape_representation_relationship
-  	(* CONNOTATIONAL *) SUBTYPE OF (shape_representation_relationship);
-      SELF\representation_relationship.rep_1 RENAMED principal_part_shape : Part_template_shape_model;
-      SELF\representation_relationship.rep_2 RENAMED related_part_shape   : Part_template_shape_model;
-    DERIVE
-      SELF\Representation_relationship.name : label := 'part template shape representation relationship';
-    UNIQUE
-      UR1 : principal_part_shape,
- related_part_shape;
-    WHERE
-      WR1 : principal_part_shape :<>: related_part_shape;
-      WR2 : principal_part_shape\shape_representation.context_of_items :=: related_part_shape\shape_representation.context_of_items;
-      WR3 : principal_part_shape\Part_template_shape_model.shape_characterized_definition :=:
-            related_part_shape\Part_template_shape_model.shape_characterized_definition;
+      WR2: SIZEOF(USEDIN(SELF, 'SHAPE_PROPERTY_ASSIGNMENT_XIM.SHAPE_DESCRIPTION_ASSOCIATION.REPRESENTATION'))=0;            
   END_ENTITY;
 
   RULE unique_part_template_shape_model_for_geometric_template FOR

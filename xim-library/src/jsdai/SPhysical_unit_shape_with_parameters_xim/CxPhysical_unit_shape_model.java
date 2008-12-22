@@ -431,6 +431,9 @@ public class CxPhysical_unit_shape_model extends CPhysical_unit_shape_model impl
             else if (attribute.getName(null).equals("component_application")) {
 	            item.setName(null, EPu2ds_component_application.toString(armValue).toLowerCase().replace('_', ' '));
 	        }
+            else if (attribute.getName(null).equals("side")) {
+	            item.setName(null, EPu2ds_shape_side.toString(armValue).toLowerCase().replace('_', ' '));
+	        }
          	else
 				throw new SdaiException(SdaiException.FN_NAVL, "Unsupported case - attribute: "+attribute.getName(null)+" for "+armEntity);
          item.setDescription(null, "");

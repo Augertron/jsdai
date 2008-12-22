@@ -32,10 +32,12 @@ package jsdai.SFootprint_definition_xim;
 import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SFootprint_definition_mim.CFootprint_definition;
+import jsdai.SLayered_interconnect_complex_template_xim.CxMulti_stratum_structured_template_armx;
+import jsdai.SLayered_interconnect_complex_template_xim.EMulti_stratum_structured_template_armx;
 import jsdai.SMaterial_property_definition_schema.AProperty_definition_relationship;
 import jsdai.SMaterial_property_definition_schema.CProperty_definition_relationship;
 import jsdai.SMaterial_property_definition_schema.EProperty_definition_relationship;
-import jsdai.SPhysical_layout_template_xim.*;
+import jsdai.SPart_template_xim.*;
 import jsdai.SPhysical_unit_usage_view_xim.EPart_usage_view;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
@@ -160,6 +162,8 @@ public class CxFootprint_definition_armx extends CFootprint_definition_armx impl
 		
 		setReference_package(context, this);
 		
+		setLocation(context, this);
+		
 		// setFootprint_location(context, this);
 
 		// Clean ARM specific attributes
@@ -168,7 +172,7 @@ public class CxFootprint_definition_armx extends CFootprint_definition_armx impl
 		unsetAdditional_contexts(null);
 		unsetPhysical_characteristic(null);
 		unsetReference_package(null);
-		
+		unsetLocation(null);
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
@@ -198,6 +202,7 @@ public class CxFootprint_definition_armx extends CFootprint_definition_armx impl
 		
 		unsetReference_package(context, this);
 		
+		unsetLocation(context, this);		
 	}
 	
 	
@@ -557,4 +562,14 @@ public class CxFootprint_definition_armx extends CFootprint_definition_armx impl
  	
 */    
 //********** "template_definition" attributes
+
+	public static void setLocation(SdaiContext context, EMulti_stratum_structured_template_armx armEntity)throws SdaiException {
+		CxMulti_stratum_structured_template_armx.setLocation(context, armEntity);
+	}
+
+	public static void unsetLocation(SdaiContext context, EFootprint_definition_armx armEntity)throws SdaiException {
+		CxMulti_stratum_structured_template_armx.unsetLocation(context, armEntity);
+	}
+   
+   
 }

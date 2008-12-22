@@ -36,6 +36,26 @@ USE FROM Assembly_technology_xim;
 
 USE FROM Physical_node_requirement_to_implementing_component_allocation_mim;
 
+  ENTITY Assembly_to_part_connectivity_structure_allocation_armx
+    SUBTYPE OF (assembly_to_part_connectivity_structure_allocation);
+	  SELF\shape_aspect_relationship.related_shape_aspect RENAMED assembly_element : Physical_connectivity_element_armx;
+	  SELF\shape_aspect_relationship.relating_shape_aspect RENAMED part_element    : Part_connected_terminals_element_armx;
+	  assembly_context                                                             : Physical_connectivity_definition_armx;
+  UNIQUE
+    UR1 : name, assembly_context;
+  END_ENTITY;	
+  
+  ENTITY Physical_node_branch_requirement_to_implementing_component_allocation_armx
+    SUBTYPE OF (physical_node_branch_requirement_to_implementing_component_allocation);
+	  SELF\shape_aspect_relationship.related_shape_aspect RENAMED physical_node_branch_requirement : Physical_connectivity_element_armx;
+      SELF\shape_aspect.of_shape RENAMED implementation_component                                  : Assembly_component_armx;
+	  SELF\shape_aspect_relationship.relating_shape_aspect RENAMED part_element                    : Part_connected_terminals_element;
+      implementation_interface_joint_set  : OPTIONAL SET[1:?] OF Interface_mounted_join;
+      implementation_joint_set            : OPTIONAL SET[1:?] OF Assembly_joint;
+    UNIQUE
+      UR1 : name, implementation_component;
+  END_ENTITY;	
+  
   ENTITY Physical_node_requirement_to_implementing_component_allocation_armx
   	(* CONNOTATIONAL *) SUBTYPE OF (physical_node_requirement_to_implementing_component_allocation);
       SELF\shape_aspect_relationship.relating_shape_aspect RENAMED physical_node_requirement	: Physical_connectivity_definition_armx;

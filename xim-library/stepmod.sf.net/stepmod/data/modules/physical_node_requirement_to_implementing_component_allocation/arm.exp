@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4116 - ISO/TS 10303-1723 Physical node requirement to implementing component allocation - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3540
+   ISO TC184/SC4/WG12 N5764 - ISO/TS 10303-1723 Physical node requirement to implementing component allocation - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4116
 *)
 
 SCHEMA Physical_node_requirement_to_implementing_component_allocation_arm;
@@ -10,6 +10,26 @@ SCHEMA Physical_node_requirement_to_implementing_component_allocation_arm;
 	USE FROM Assembly_technology_arm;	-- ISO/TS 10303-1649
 	USE FROM Physical_connectivity_definition_arm;	-- ISO/TS 10303-1755
 
+  ENTITY Assembly_to_part_connectivity_structure_allocation;
+    name                : STRING;
+	assembly_element    : Physical_connectivity_element;
+	part_element        : Part_connected_terminals_element;
+	assembly_context    : Physical_connectivity_definition;
+  UNIQUE
+    UR1 : name, assembly_context;
+  END_ENTITY;	
+	
+  ENTITY Physical_node_branch_requirement_to_implementing_component_allocation;
+	name                                : STRING;
+	physical_node_branch_requirement    : Physical_connectivity_element;
+    implementation_component            : Assembly_component;
+	part_element                        : Part_connected_terminals_element;
+    implementation_interface_joint_set  : OPTIONAL SET[1:?] OF Interface_mounted_join;
+    implementation_joint_set            : OPTIONAL SET[1:?] OF Assembly_joint;
+  UNIQUE
+    UR1 : name, implementation_component;
+  END_ENTITY;	
+	
   ENTITY Physical_node_requirement_to_implementing_component_allocation;
       physical_node_requirement          : Physical_connectivity_definition;
       implementation_component           : Assembly_component;

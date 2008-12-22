@@ -305,7 +305,7 @@ public class CxInterconnect_module_constraint_region extends CInterconnect_modul
 			if(!armKeepout)
 				setValue = "false";
 			jsdai.SRepresentation_schema.ERepresentation suitableRepresentation = null;
-			top: for(int i=1;i<=reps.getMemberCount();i++){
+			for(int i=1;i<=reps.getMemberCount();i++){
 				jsdai.SRepresentation_schema.ERepresentation temp = reps.getByIndex(i);
 				// Exact types only - since all subtypes are intended for geometry - do not "touch" them
 				if(temp.getInstanceType() == jsdai.SRepresentation_schema.CRepresentation.definition){

@@ -32,7 +32,7 @@ package jsdai.SMixed_complex_types;
 import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SConstructive_solid_geometry_2d_mim.CCsg_2d_shape_representation;
-import jsdai.SPart_template_2d_shape_xim.*;
+import jsdai.SLayered_interconnect_complex_template_xim.*;
 import jsdai.SPhysical_unit_2d_design_view_xim.*;
 import jsdai.SRepresentation_schema.ERepresentation;
 

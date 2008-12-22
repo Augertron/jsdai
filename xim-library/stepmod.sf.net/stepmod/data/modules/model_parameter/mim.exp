@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4057 - ISO/TS 10303-1703 Model parameter - EXPRESS MIM
-   Supersedes ISO TC184/SC4/WG12 N3493
+   ISO TC184/SC4/WG12 N5711 - ISO/TS 10303-1703 Model parameter - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N4057
 *)
 
 SCHEMA Model_parameter_mim;
@@ -37,6 +37,12 @@ USE FROM product_property_definition_schema(characterized_definition);  -- ISO 1
     SUBTYPE OF (general_property);
   END_ENTITY;
 
+  ENTITY model_parameter_with_unit 
+    SUBTYPE OF (model_parameter);
+    WHERE
+     WR1 : NOT ('MODEL_PARAMETER_MIM.SCHEMA_BASED_MODEL_PARAMETER' IN TYPEOF(SELF));
+  END_ENTITY;
+
   ENTITY parameter_assignment_override
     SUBTYPE OF (representation, representation_relationship);
       SELF\representation_relationship.rep_1 : parameter_assignment;
@@ -44,9 +50,8 @@ USE FROM product_property_definition_schema(characterized_definition);  -- ISO 1
     UNIQUE
       UR1: SELF\representation_relationship.rep_1, SELF\representation_relationship.rep_2;
     WHERE
-      WR1: SELF\representation_relationship.rep_1 <> 
-        SELF\representation_relationship.rep_2;
-  END_ENTITY; 
+      WR1: SELF\representation_relationship.rep_1 <> SELF\representation_relationship.rep_2;
+  END_ENTITY;
 
   ENTITY parameter_assignment
     SUBTYPE OF (property_definition_representation, representation);

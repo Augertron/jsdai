@@ -100,7 +100,7 @@ public class CxPart_occurrence_definition_relationship extends CPart_occurrence_
 		// Setting derived
 	    // SELF\product_definition_relationship.id : STRING := 
 	    //   SELF\Product_definition_relationship.related_product_definition\Product_view_definition.id;
-		armEntity.setId(null, armEntity.getRelated_product_definition(null).getId(null));
+//OPT		armEntity.setId(null, armEntity.getRelated_view(null).getId(null));
 	}
 
 	public static void unsetMappingConstraints(SdaiContext context, EPart_occurrence_definition_relationship armEntity) throws SdaiException

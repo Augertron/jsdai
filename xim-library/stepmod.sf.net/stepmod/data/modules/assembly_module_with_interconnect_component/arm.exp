@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N3876 - ISO/TS 10303-1643 Assembly module with interconnect component - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3306
+   ISO TC184/SC4/WG12 N5596 - ISO/TS 10303-1643 Assembly module with interconnect component - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3876
 *)
 
 SCHEMA Assembly_module_with_interconnect_component_arm;
@@ -43,11 +43,13 @@ SCHEMA Assembly_module_with_interconnect_component_arm;
       SELF\Component_feature.associated_component : Physical_component;
     WHERE
       WR1 : NOT EXISTS(SELF\Shape_element.description);
+        WR2: NOT EXISTS(SELF\Component_feature.definition) OR
+             NOT( 'FUNCTIONAL_ASSIGNMENT_TO_PART_ARM.PART_TERMINAL' IN TYPEOF(SELF\Component_feature.definition));
   END_ENTITY;
 
   ENTITY Interconnect_module_component
     SUBTYPE OF (Physical_component, Single_instance);
-      SELF\Definition_based_product_occurrence.derived_from : Interconnect_module_usage_view;
+      SELF\Definition_based_product_occurrence.derived_from : Layered_interconnect_module_usage_view;
     WHERE
       WR1 : NOT EXISTS(SELF\Product_view_definition.name);
   END_ENTITY;

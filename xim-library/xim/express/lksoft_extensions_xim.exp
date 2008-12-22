@@ -24,7 +24,7 @@
 SCHEMA lksoft_extensions_xim;
 
 USE FROM Fabrication_technology_xim;
-USE FROM Part_template_2d_shape_xim;
+USE FROM Layered_interconnect_complex_template_xim;
 USE FROM Land_xim;
 
 REFERENCE FROM Fabrication_technology_xim(get_stack);
@@ -43,13 +43,13 @@ REFERENCE FROM Fabrication_technology_xim(get_stack);
   END_ENTITY;
 
   ENTITY Land_with_join_terminal_xim
-    SUBTYPE OF (Land_armx, Land_join_terminal);
+    SUBTYPE OF (Land_armx, Land_join_terminal, land_with_join_terminal);
     DERIVE
-	  SELF\component_feature_armx.associated_component : Land_armx := SELF;
+	  SELF\Component_feature_armx.associated_component : Land_with_join_terminal_xim := SELF;
   END_ENTITY;
  
   ENTITY Stratum_feature_template_component_with_stratum_feature_xim
-    SUBTYPE OF (Stratum_feature_template_component_armx, Stratum_feature_armx);
+    SUBTYPE OF (Stratum_feature_template_component_armx, Stratum_feature_armx, stratum_feature_template_component_with_stratum_feature);
     DERIVE
       SELF\Stratum_feature_template_component_armx.implementation_or_resident_stratum : Stratum_feature_armx := SELF;
   END_ENTITY;
@@ -89,10 +89,11 @@ REFERENCE FROM Fabrication_technology_xim(get_stack);
 
   ENTITY Structured_layout_component_sub_assembly_relationship_with_component_xim
     SUBTYPE OF (Structured_layout_component_sub_assembly_relationship_armx, Assembly_component_armx);
+(* EC problem *)    
     DERIVE
 	  -- not sure if we need this derivation as assembly_component_armx has this attribute derived to self
 	  -- in its supertype component_definition
-	  SELF\product_definition_relationship.related_product_definition : Assembly_component_armx := SELF;
+	  SELF\Structured_layout_component_sub_assembly_relationship_armx.related_view : Assembly_component_armx := SELF;
   END_ENTITY;
 
   (** One or none elements of this group can be made available in the final stack.
@@ -130,9 +131,9 @@ REFERENCE FROM Fabrication_technology_xim(get_stack);
     WHERE
       -- this group shall either have another group as a parent, or shall be
       -- a root group of some Local_linear_stack
-      WR1: (SIZEOF(parent) = 1) XOR (SIZEOF(USEDIN(SELF, 'PART_TEMPLATE_2D_SHAPE_XIM.LOCAL_LINEAR_STACK_ARMX.' + 'ROOT_XIM')) = 1);
+      WR1: (SIZEOF(parent) = 1) XOR (SIZEOF(USEDIN(SELF, 'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.LOCAL_LINEAR_STACK_ARMX.' + 'ROOT_XIM')) = 1);
       -- each group can be root for at most one Local_linear_stack
-      WR2: (SIZEOF(USEDIN(SELF, 'PART_TEMPLATE_2D_SHAPE_XIM.LOCAL_LINEAR_STACK_ARMX.' + 'ROOT_XIM')) <= 1);
+      WR2: (SIZEOF(USEDIN(SELF, 'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.LOCAL_LINEAR_STACK_ARMX.' + 'ROOT_XIM')) <= 1);
   END_ENTITY;
 
   (** returns the root for the tree the specified input group belongs to *)
@@ -156,7 +157,7 @@ REFERENCE FROM Fabrication_technology_xim(get_stack);
     --    and shall be referenced by one and only one Local_linear_stack_armx as root_xim
     IF 'LKSOFT_EXTENSIONS_XIM.SEQUENTIAL_STRATUM_TECHNOLOGY_OCCURRENCE_GROUP_XIM' IN TYPEOF(root_group) THEN
 	    -- stack shall be ? if usedin shall return empty bag
-      stack := USEDIN(root_group, 'PART_TEMPLATE_2D_SHAPE_XIM.LOCAL_LINEAR_STACK_ARMX.' + 'ROOT_XIM')[1];
+      stack := USEDIN(root_group, 'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.LOCAL_LINEAR_STACK_ARMX.' + 'ROOT_XIM')[1];
     END_IF;
 
     -- either we found a stack here, or data is invalid

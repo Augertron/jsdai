@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N3984 - ISO/TS 10303-1679 Functional specification - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3426
+   ISO TC184/SC4/WG12 N5656 - ISO/TS 10303-1679 Functional specification - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3984
 *)
 
 SCHEMA Functional_specification_arm;
@@ -19,13 +19,18 @@ SCHEMA Functional_specification_arm;
 		(Functional_specification);
 	END_TYPE;
 
+    TYPE fs_node_or_terminal = SELECT
+        (Functional_unit_network_node_definition,
+         Functional_unit_terminal);
+    END_TYPE;
+
   ENTITY Functional_specification;
       associated_definition          	: Functional_specification_definition;
-      reference_signal               	: Signal_specification;
+      reference_signal               	: SET [1:?] OF Signal_specification;
       characterizing_functional_unit 	: Functional_unit;
-      characterizing_signal          	: Signal_specification;
+      characterizing_signal          	: SET [1:?] OF Signal_specification;
     INVERSE
-      characteristic_category					: External_source_identification FOR item;
+      characteristic_category		    : External_source_identification FOR item;
     WHERE
       WR1 : characterizing_functional_unit.composed_network = associated_definition;
   END_ENTITY;
@@ -37,15 +42,20 @@ SCHEMA Functional_specification_arm;
   END_ENTITY;
 
   ENTITY Signal_specification;
-      measurement_access_mechanism : Functional_unit_terminal;
-      reference_access_mechanism   : OPTIONAL Functional_unit_terminal;
-      minimum_characteristic       : Signal_property;
-      maximum_characteristic       : Signal_property;
+      signal_access_mechanism      : fs_node_or_terminal;
+      reference_access_mechanism   : OPTIONAL fs_node_or_terminal;
+      minimum_characteristic       : OPTIONAL Signal_property;
+      maximum_characteristic       : OPTIONAL Signal_property;
       characterization_network     : Functional_unit_network_definition;
+      nominal_characteristic       : OPTIONAL Signal_property;
 	DERIVE
 	  measurement_condition: SET[1:1] OF Document_definition :=
   			get_document_definition(SELF, 'measurement condition', 
   			'SPECIFICATION_DOCUMENT_ARM.TEST_SPECIFICATION');
+   WHERE
+    WR1 : EXISTS (minimum_characteristic) OR
+          EXISTS (maximum_characteristic) OR
+          EXISTS (nominal_characteristic);
   END_ENTITY;
 
 END_SCHEMA;

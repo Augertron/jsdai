@@ -32,9 +32,9 @@ package jsdai.SFootprint_definition_xim;
 import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SFootprint_definition_mim.CGeneric_footprint_definition;
-import jsdai.SPart_template_2d_shape_xim.CxMulti_stratum_structured_template_armx;
-import jsdai.SPart_template_2d_shape_xim.EMulti_stratum_structured_template_armx;
-import jsdai.SPhysical_layout_template_xim.*;
+import jsdai.SLayered_interconnect_complex_template_xim.CxMulti_stratum_structured_template_armx;
+import jsdai.SLayered_interconnect_complex_template_xim.EMulti_stratum_structured_template_armx;
+import jsdai.SPart_template_xim.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
@@ -324,7 +324,7 @@ public class CxGeneric_footprint_definition_armx extends CGeneric_footprint_defi
 
  	public static void setLocation(SdaiContext context, EMulti_stratum_structured_template_armx armEntity) throws SdaiException
  	{
- 		// CxMulti_stratum_structured_template_armx.setLocation(context, armEntity);
+ 		CxMulti_stratum_structured_template_armx.setLocation(context, armEntity);
  		// It is derived attribute in the AMR - nothing to set
  	}
 
@@ -338,7 +338,7 @@ public class CxGeneric_footprint_definition_armx extends CGeneric_footprint_defi
  	*/
  	public static void unsetLocation(SdaiContext context, EMulti_stratum_structured_template_armx armEntity) throws SdaiException
    {
- 		// CxMulti_stratum_structured_template_armx.unsetLocation(context, armEntity);
+ 		CxMulti_stratum_structured_template_armx.unsetLocation(context, armEntity);
  		// It is derived attribute in the AMR - nothing to set
  	}
  	

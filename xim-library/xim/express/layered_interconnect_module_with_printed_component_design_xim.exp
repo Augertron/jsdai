@@ -146,8 +146,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
       passage_resident_stratum : SET OF Stratum_armx := limdwpcd_get_prs(passage_component, SELF\Assembly_component_armx.assemblies);
       passage_dependent_land_component : SET OF Plated_passage_dependent_land_armx := limdwpcd_get_ppdl(passage_component);  
     INVERSE
-      SELF\Assembly_group_component_armx.components  : 
-        SET [1:?] OF Structured_layout_component_sub_assembly_relationship FOR relating_product_definition;
+      SELF\Assembly_group_component_armx.components : SET [1:?] OF Structured_layout_component_sub_assembly_relationship_armx FOR relating_view;
     WHERE
      WR1 : (SIZEOF(tiebar_component) + SIZEOF(passage_component)) > 0;
      WR2 : SIZEOF(components) = (SIZEOF(tiebar_component) + SIZEOF(padstack_component));             
@@ -314,8 +313,8 @@ END_LOCAL;
 
 REPEAT i := 1 to 1 by 1;
 	REPEAT j := 1 to SIZEOF(input1) by 1;
-	      sto := sto + input1\Stratum_technology_occurrence_relationship_armx.sto_1 +
-	                   input1\Stratum_technology_occurrence_relationship_armx.sto_2;
+	      sto := sto + input1[j]\Stratum_technology_occurrence_relationship_armx.sto_1 +
+	                   input1[j]\Stratum_technology_occurrence_relationship_armx.sto_2;
 	END_REPEAT;
 	
 	REPEAT j := 1 to SIZEOF(sto) by 1;

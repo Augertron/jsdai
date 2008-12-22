@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4122 - ISO/TS 10303-1725 Physical unit 3d design view - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3561
+   ISO TC184/SC4/WG12 N5770 - ISO/TS 10303-1725 Physical unit 3d design view - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4122
 *)
 
 SCHEMA Physical_unit_3d_design_view_arm;
@@ -45,18 +45,6 @@ SCHEMA Physical_unit_3d_design_view_arm;
      WR4: NOT('PART_TEMPLATE_SHAPE_WITH_PARAMETERS_ARM.PART_TEMPLATE_SHAPE_MODEL' IN TYPEOF(component_model)) OR
      (component\Product_occurrence_definition_relationship.related_view\Assembly_component.derived_from IN
       component_model\Part_template_shape_model.shape_characterized_definition);
-  END_ENTITY;
-
-  ENTITY Component_part_3d_geometric_representation_relationship
-    SUBTYPE OF (Geometric_model_relationship);
-		SELF\Geometric_model_relationship.rep_1 RENAMED part_shape      : part_template_or_physical_unit_3d_shape_model_select;
-	    SELF\Geometric_model_relationship.rep_2 RENAMED component_shape : Assembly_component_3d_shape_model;
-	WHERE
-	  WR1 : NOT EXISTS(SELF\Representation_relationship.relation_type);
-      WR2 : SIZEOF(QUERY(ac <* component_shape.shape_characterized_component |
-                   NOT(part_shape.shape_characterized_definition :=: ac\Assembly_component.derived_from)
-                   )) = 0;
-      WR3 : part_shape :<>: component_shape;
   END_ENTITY;
 
   RULE unique_assembly_component_3d_shape_model FOR (Assembly_component_3d_shape_model);

@@ -31,12 +31,10 @@ package jsdai.SPhysical_unit_design_view_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.util.LangUtils;
+import jsdai.SAssembly_structure_xim.ANext_assembly_usage_occurrence_relationship_armx;
+import jsdai.SAssembly_structure_xim.ENext_assembly_usage_occurrence_relationship_armx;
+import jsdai.SGroup_mim.AGroupable_item;
 import jsdai.SPhysical_unit_design_view_mim.CAssembly_item_number;
-import jsdai.SProduct_property_definition_schema.EProperty_definition;
-import jsdai.SProduct_property_representation_schema.*;
-import jsdai.SProduct_structure_schema.*;
-import jsdai.SQualified_measure_schema.CDescriptive_representation_item;
 import jsdai.SRepresentation_schema.*;
 
 public class CxAssembly_item_number_armx extends CAssembly_item_number_armx implements EMappedXIMEntity
@@ -59,6 +57,33 @@ public class CxAssembly_item_number_armx extends CAssembly_item_number_armx impl
 		return a0$;
 	}
 
+    // Attribute from jsdai.SPhysical_unit_design_view_mim.CAssembly_item_number
+	// methods for attribute: items, base type: SET OF SELECT
+/*	public static int usedinItems(jsdai.SGroup_mim.EApplied_group_assignment type, EEntity instance, ASdaiModel domain, AEntity result) throws SdaiException {
+		return ((CEntity)instance).makeUsedin(definition, a3$, domain, result);
+	}
+	public boolean testItems(jsdai.SGroup_mim.EApplied_group_assignment type) throws SdaiException {
+		return test_aggregate(a3);
+	}
+	public jsdai.SGroup_mim.AGroupable_item getItems(jsdai.SGroup_mim.EApplied_group_assignment type) throws SdaiException {
+		if (a3 == null)
+			throw new SdaiException(SdaiException.VA_NSET);
+		return a3;
+	}*/
+	public jsdai.SGroup_mim.AGroupable_item createItems(jsdai.SGroup_mim.EApplied_group_assignment type) throws SdaiException {
+		a3 = (jsdai.SGroup_mim.AGroupable_item)create_aggregate_class(a3, a3$, jsdai.SGroup_mim.AGroupable_item.class, 0);
+		return a3;
+	}
+	public void unsetItems(jsdai.SGroup_mim.EApplied_group_assignment type) throws SdaiException {
+		unset_aggregate(a3);
+		a3 = null;
+	}
+	public static jsdai.dictionary.EAttribute attributeItems(jsdai.SGroup_mim.EApplied_group_assignment type) throws SdaiException {
+		return a3$;
+	}
+    // ENDOF Attribute from jsdai.SPhysical_unit_design_view_mim.CAssembly_item_number
+	
+	
 	public int attributeState = ATTRIBUTES_MODIFIED;	
 
 	
@@ -73,11 +98,16 @@ public class CxAssembly_item_number_armx extends CAssembly_item_number_armx impl
 
 		setMappingConstraints(context, this);
 		
+		setAssembly_usage(context, this);
+		
+		unsetAssembly_usage(null); 
+		
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
 		unsetMappingConstraints(context, this);
 
+		setAssembly_usage(context, this);
 	}
 	
 	
@@ -145,76 +175,35 @@ public class CxAssembly_item_number_armx extends CAssembly_item_number_armx impl
 	* Sets/creates data for assembly_usage attribute.
 	*
 	* <p>
-	*  attribute_mapping assembly_usage_assembly_composition_relationship (assembly_usage
-	* , (*PATH*), assembly_composition_relationship);
-	* 	descriptive_representation_item <= 
-	* 	representation_item <- 
-	* 	representation.items[i] 
-	* 	representation <- 
-	* 	property_definition_representation.used_representation 
-	* 	property_definition_representation.definition -> 
-	* 	property_definition 
-	* 	{property_definition.name = `item find number'} 
-	* 	property_definition.definition -> 
-	* 	product_definition_relationship => 
-	* 	{product_definition_relationship 
-	* 	product_definition_usage => 
-	* 	assembly_component_usage 
-	*  end_attribute_mapping; 
+	attribute_mapping assembly_usage(assembly_usage, $PATH, assembly_component_usage);
+		assembly_item_number <=
+		applied_group_assignment
+		applied_group_assignment.items[i] ->
+		groupable_item *> pudv_groupable_item
+		pudv_groupable_item = assembly_component_usage
+	end_attribute_mapping;
 	* </p> 
 	* @param context SdaiContext.
 	* @param armEntity arm entity.
 	* @throws SdaiException
 	*/	
-	/* Made redeclared after changed in SEDSZILLA #2368	
-	public static void setAssembly_usage(SdaiContext context, EAssembly_item_number armEntity) throws SdaiException
+	/* Made redeclared after changed in SEDSZILLA #2368; Made explicit again after restructuring in assembly */	
+	public static void setAssembly_usage(SdaiContext context, EAssembly_item_number_armx armEntity) throws SdaiException
 	{
 		//unset old values
 		unsetAssembly_usage(context, armEntity);
 		
 		if (armEntity.testAssembly_usage(null))
-		{ 
-			// GET ER
-			ARepresentation ar = new ARepresentation();
-			CRepresentation.usedinItems(null, armEntity, context.domain, ar);
-			SdaiIterator iterR = ar.createIterator();
-			ERepresentation er = null; 
-			while(iterR.next()){
-				ERepresentation erCandidate = ar.getCurrentMember(iterR);
-				ERepresentation_context erc = erCandidate.getContext_of_items(null);
-				if(erc.getContext_type(null).equals("item find number representation context")){
-					er = erCandidate;
-					break;
-				}
-			}
-			if(er == null)
-				throw new SdaiException(SdaiException.EI_NVLD, "DRI must have representation with context name /'item find number representation context/' pointing to it "+armEntity);
-			AAssembly_component_usage armAssembly_usages = armEntity.getAssembly_usage(null);
-			SdaiIterator iter = armAssembly_usages.createIterator();
-			while(iter.next()){
-				EAssembly_component_usage armAssembly_usage = armAssembly_usages.getCurrentMember(iter);
-				// PD -> ACU
-				LangUtils.Attribute_and_value_structure[] pdS = {
-					new LangUtils.Attribute_and_value_structure(
-						jsdai.SProduct_property_definition_schema.CProperty_definition.attributeDefinition(null),
-						armAssembly_usage),
-					new LangUtils.Attribute_and_value_structure(
-						jsdai.SProduct_property_definition_schema.CProperty_definition.attributeName(null),
-						"item find number")						
-				};
-				jsdai.SProduct_property_definition_schema.EProperty_definition pd =
-					(jsdai.SProduct_property_definition_schema.EProperty_definition)
-				LangUtils.createInstanceIfNeeded(context, jsdai.SProduct_property_definition_schema.CProperty_definition.definition,pdS);
-				//PDR->PD
-				jsdai.SProduct_property_representation_schema.EProperty_definition_representation 
-					pdr = (jsdai.SProduct_property_representation_schema.EProperty_definition_representation)
-					context.working_model.createEntityInstance(jsdai.SProduct_property_representation_schema.CProperty_definition_representation.definition);
-				pdr.setDefinition(null,pd);
-				pdr.setUsed_representation(null, er);
+		{
+			AGroupable_item items = armEntity.createItems(null);
+			ANext_assembly_usage_occurrence_relationship_armx links = armEntity.getAssembly_usage(null);
+			for(int i=1,count=links.getMemberCount(); i<=count; i++){
+				ENext_assembly_usage_occurrence_relationship_armx link = links.getByIndex(i); 
+				items.addUnordered(link);
 			}
 		}
 	}
-*/
+
 
 	/**
 	* Unsets/deletes data for assembly_usage attribute.
@@ -223,36 +212,10 @@ public class CxAssembly_item_number_armx extends CAssembly_item_number_armx impl
 	* @param armEntity arm entity.
 	* @throws SdaiException
 	*/	
-/* Made redeclared after changed in SEDSZILLA #2368	
-	public static void unsetAssembly_usage(SdaiContext context, EAssembly_item_number armEntity) throws SdaiException
+	/* Made redeclared after changed in SEDSZILLA #2368; Made explicit again after restructuring in assembly */
+	public static void unsetAssembly_usage(SdaiContext context, EAssembly_item_number_armx armEntity) throws SdaiException
 	{
-		ARepresentation ar = new ARepresentation();
-		CRepresentation.usedinItems(null, armEntity, context.domain, ar);
-		SdaiIterator iterR = ar.createIterator();
-		ERepresentation er = null; 
-		while(iterR.next()){
-			ERepresentation erCandidate = ar.getCurrentMember(iterR);
-			ERepresentation_context erc = erCandidate.getContext_of_items(null);
-			if(erc.getContext_type(null).equals("item find number representation context")){
-				er = erCandidate;
-				break;
-			}
-		}
-		if(er == null)
-			return;
-		AProperty_definition_representation apdr = new AProperty_definition_representation();
-		CProperty_definition_representation.usedinUsed_representation(null, er, context.domain, apdr);
-		for(int i=1;i<=apdr.getMemberCount();i++){
-			EProperty_definition_representation epdr = apdr.getByIndex(i);
-			EEntity definition = epdr.getDefinition(null);
-			if(definition instanceof EProperty_definition){
-				EProperty_definition epd = (EProperty_definition)definition;
-				if(epd.getName(null).equals("item find number")){
-					epdr.deleteApplicationInstance();
-				}
-			}
-		}
+		armEntity.unsetItems(null);
 	}
-*/	
 	
 }

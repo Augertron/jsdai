@@ -38,7 +38,7 @@ USE FROM Generic_product_occurrence_mim;
 TYPE extended_value_with_unit = EXTENSIBLE SELECT (
      measure_with_unit, 
      Value_limit, 
-     Value_range);
+     Value_range_armx);
 END_TYPE;
 
 	ENTITY Definition_based_product_occurrence
@@ -59,12 +59,13 @@ END_TYPE;
       SELF\Product_view_definition.additional_characterization : STRING :=?;    
       SELF\Product_view_definition.initial_context : product_definition_context := ?;  
     INVERSE
-      occurrence_contexts: SET[1:?] OF product_definition_relationship FOR related_product_definition;
+      occurrence_contexts: SET[1:?] OF Product_occurrence_definition_relationship_armx FOR related_view;
+(* This complex is anyway not possible      
     WHERE
       WR1: SIZEOF(QUERY( oc <* occurrence_contexts |
             NOT( NOT('PRODUCT_STRUCTURE_SCHEMA.ASSEMBLY_COMPONENT_USAGE' IN TYPEOF(oc)) OR
                  NOT ('PRODUCT_STRUCTURE_SCHEMA.QUANTIFIED_ASSEMBLY_COMPONENT_USAGE' IN TYPEOF(oc)))
-               )) = 0;
+               )) = 0; *)
   END_ENTITY;
 
 ENTITY Product_occurrence_with_quantity

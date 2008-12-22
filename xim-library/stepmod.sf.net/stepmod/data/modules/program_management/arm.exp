@@ -1,1164 +1,614 @@
-(*
-   $Id$
-   ISO TC184/SC4/WG3 N2303 - ISO/CD-TS 10303-1466 Program management - EXPRESS ARM
-*) 
-
 SCHEMA Program_management_arm;
 
 USE FROM Issue_management_arm;
+
+USE FROM Probability_distribution_arm;
 
 USE FROM Project_management_arm;
 
 USE FROM Risk_management_arm;
 
-
-TYPE prgm_ss_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_support_item WITH
-	(Work_order);
+TYPE prgm_activity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_item WITH
+  (Risk,
+   Risk_analysis,
+   Risk_assessment,
+   Risk_communication,
+   Risk_control,
+   Risk_estimation,
+   Risk_evaluation,
+   Risk_identification,
+   Risk_perception_source_assignment);
 END_TYPE;
 
---		the set of activity_item that are associated with the assigned_activity.
---			activity_item
-
-TYPE ap233_activity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_item WITH
-	(Approval,
-	Certification,
-	Justification,
-	Product_category,
-	Required_resource,
-	Risk,
-	Work_order,
-	Work_output,
-	Work_request);
+TYPE prgm_activity_method_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_method_item WITH
+  (Risk,
+   Risk_impact_assignment,
+   Risk_treatment);
 END_TYPE;
 
---		the set of data associated to the assigned_activity_method.
---			activity_method_item
-
-TYPE ap233_activity_method_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_method_item WITH
-	(Applied_risk_impact_assignment,
-	Approval_assignment,
-	Certification,
-	Condition,
-	Date_or_date_time_assignment,
-	Justification,
-	Observation,
-	Risk,
-	Security_classification,
-	State_definition,
-	Task_objective);
+TYPE prgm_affected_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON affected_item_select WITH
+  (Issue,
+   Lessons_learned,
+   Organization_or_person_in_organization_assignment,
+   Risk,
+   Risk_perception_source_assignment);
 END_TYPE;
 
---		the item that realizes the Activity_method.
---			activity_realization_select
-
-TYPE ap233_activity_realization_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_realization_select WITH
-	(Activity,
-	Activity_method,
-	Product,
-	Product_version,
-	Product_view_definition,
-	Task_element);
+TYPE prgm_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
+  (Issue,
+   Risk);
 END_TYPE;
 
---		the set of things that are affected by the Work_request.
---			affected_item_select
-
-TYPE ap233_affected_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON affected_item_select WITH
-	(Activity,
-	Approval_assignment,
-	Certification_assignment,
-	Document_assignment,
-	Event_assignment,
-	Information_usage_right,
-	Justification_assignment,
-	Product_configuration,
-	Project_assignment,
-	Risk,
-	State_definition,
-	Work_request);
+TYPE prgm_assigned_name_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON assigned_name_select WITH
+  (Issue,
+   Risk);
 END_TYPE;
 
---		the activity or product data to which the Approval is assigned.
---			approval_item
-
-TYPE ap233_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
-	(Product,
-	Product_version,
-	State_assessment,
-	State_definition,
-	State_definition_relationship,
-	State_relationship,
-	Work_output_assignment);
+TYPE prgm_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
+  (Lessons_learned);
 END_TYPE;
 
---		the things to which the name is assigned.
---			assigned_name_select
-
-TYPE ap233_assigned_name_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON assigned_name_select WITH
-	(Breakdown_element_realization,
-	Event,
-	Observation,
-	Risk);
+TYPE prgm_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
+  (Assigned_property,
+   Disposition,
+   Issue,
+   Issue_consequence,
+   Numerical_item_with_unit,
+   Organization,
+   Person_in_organization,
+   Probability_distribution,
+   Risk,
+   Risk_consequence,
+   Risk_impact_assignment,
+   Risk_perception,
+   Risk_perception_relationship,
+   Risk_relationship);
 END_TYPE;
 
---		the activity or product data to which the Certification is assigned.
---			certification_
-
-TYPE ap233_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
-	(Approving_person_organization,
-	Assigned_property,
-	Justification,
-	Lessons_learned,
-	State_definition);
+TYPE prgm_classified_attribute_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classified_attribute_select WITH
+  (Issue,
+   Risk);
 END_TYPE;
 
---		the object of which the Activity_property identifies a characteristic.
---			characterized_activity_definition
-
-TYPE ap233_characterized_activity_definition = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON characterized_activity_definition WITH
-	(Breakdown_of,
-	Event,
-	Product,
-	Risk,
-	State_definition);
+TYPE prgm_condition_evaluation_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_evaluation_item WITH
+  (Risk_analysis,
+   Risk_impact_assignment);
 END_TYPE;
 
---		the product or activity data to which the Condition_evaluation has been assigned.
---			condition_evaluation_item
-
-TYPE ap233_condition_evaluation_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_evaluation_item WITH
-	(Activity_method,
-	Activity_property,
-	Applied_risk_impact_assignment,
-	Justification,
-	Required_resource,
-	Resource_event,
-	Risk_analysis,
-	State_definition);
+TYPE prgm_condition_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_item WITH
+  (Approval,
+   Issue,
+   Lessons_learned,
+   Risk,
+   Risk_impact_assignment,
+   Risk_treatment);
 END_TYPE;
 
---		the product or activity data which acted as a parameter to the Condition_evaluation.
---			condition_evaluation_parameter_item
-
-TYPE ap233_condition_evaluation_parameter_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_evaluation_parameter_item WITH
-	(Activity,
-	Activity_property,
-	Work_output);
+TYPE prgm_contract_item = EXTENSIBLE SELECT BASED_ON contract_item WITH
+  (Issue,
+   Risk_analysis,
+   Risk_control,
+   Risk_perception_source_assignment,
+   Risk_treatment);
 END_TYPE;
 
---		the product or activity data to which the Condition is being assigned.
---			condition_item
-
-TYPE ap233_condition_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_item WITH
-	(Certification_assignment,
-	Contract_assignment,
-	Date_or_date_time_assignment,
-	Event_assignment,
-	Justification_assignment,
-	Location_assignment,
-	Project_assignment,
-	Qualification_assignment,
-	Risk_treatment,
-	Security_classification_assignment);
+TYPE prgm_date_or_date_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_or_date_time_item WITH
+  (Issue);
 END_TYPE;
 
---		the product or activity data which acts as a parameter to the condition.
---			condition_parameter_item
-
-TYPE ap233_condition_parameter_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_parameter_item WITH
-	(Risk_analysis);
+TYPE prgm_defined_activities = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON defined_activities WITH
+  (Issue,
+   Lessons_learned,
+   Risk_analysis);
 END_TYPE;
 
---		the activity or product data to which the Contract is assigned.
---			contract_item
-
-TYPE ap233_contract_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON contract_item WITH
-	(Issue,
-	Justification,
-	Risk_analysis,
-	Risk_control,
-	Risk_treatment);
+TYPE prgm_defined_attributes = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON defined_attributes WITH
+  (Organization,
+   Person_in_organization);
 END_TYPE;
 
---		the Activity or Resource_as_realized that provides the content of the Experience_instance.
---			defined_activities
-
-TYPE ap233_defined_activities = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON defined_activities WITH
-	(Event_assignment,
-	Lessons_learned,
-	Observation_consequence,
-	Product,
-	Project,
-	Risk_analysis,
-	Work_output);
+TYPE prgm_defined_methods = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON defined_methods WITH
+  (Issue,
+   Lessons_learned,
+   Risk_analysis,
+   Risk_assessment);
 END_TYPE;
 
---		the required attributes of a person.
---			defined_attributes
-
-TYPE ap233_defined_attributes = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON defined_attributes WITH
-	(Position_group,
-	Position_group_role,
-	Position_role,
-	Position_type_role,
-	Risk_stakeholder,
-	Type_of_person_assignment,
-	Work_output_assignment);
+TYPE prgm_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH
+  (Probability_distribution,
+   Risk_analysis,
+   Risk_treatment,
+   Selected_item);
 END_TYPE;
 
---		the Activity_method or Required_resource that provides the content of the Experience_type. 
---			defined_methods
-
-TYPE ap233_defined_methods = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON defined_methods WITH
-	(Event,
-	Issue,
-	Lessons_learned,
-	Observation_consequence,
-	Product,
-	Product_group,
-	Risk_analysis,
-	Risk_assessment,
-	Work_output_assignment);
+TYPE prgm_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
+  (Issue,
+   Issue_consequence,
+   Risk_perception_source_assignment,
+   Risk_treatment);
 END_TYPE;
 
---		the documented_element_select for the Document_assignment.
---			documented_element_select
-
-TYPE ap233_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH
-	(Risk_analysis,
-	Risk_treatment);
+TYPE prgm_event_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_event_item WITH
+  (Activity_property,
+   Applied_state_assignment,
+   Condition_evaluation_parameter,
+   Contract,
+   Contract_assignment,
+   Issue,
+   Managed_resource,
+   Market,
+   Project,
+   Project_assignment,
+   Required_resource,
+   Required_resource_assignment,
+   Resource_event,
+   Resource_property,
+   Risk,
+   Risk_impact_assignment,
+   State,
+   State_relationship,
+   Task_method_state_relationship,
+   Task_objective,
+   Task_objective_state_relationship,
+   View_definition_relationship);
 END_TYPE;
 
---		the set of effectivity_item whose effectivity is characterized by this entity.
---			effectivity_item
-
-TYPE ap233_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
-	(Activity_method_assignment,
-	Applied_state_assignment,
-	Condition_relationship,
-	Event,
-	Event_assignment,
-	External_source_identification,
-	Issue_consequence,
-	Risk_treatment);
+TYPE prgm_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH
+  (Organization,
+   Person_in_organization);
 END_TYPE;
 
---		the product or activity data to which the Event is assigned.
---			event_item
-
-TYPE ap233_event_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON event_item WITH
-	(Activity,
-	Approval,
-	Contract,
-	Justification,
-	Observation,
-	Product,
-	Required_resource,
-	Risk,
-	Work_request);
+TYPE prgm_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
+  (Assigned_property,
+   Disposition,
+   Organization,
+   Person_in_organization,
+   Probability_distribution,
+   Risk,
+   Risk_analysis,
+   Risk_identification,
+   Risk_impact,
+   Risk_impact_assignment,
+   Risk_perception_source_assignment,
+   Risk_treatment);
 END_TYPE;
 
---		the external_identification_item whose source is identified.
---			external_identification_item
-
-TYPE ap233_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH
-	(Person_in_organization,
-	Product,
-	Project,
-	Required_resource,
-	Risk_stakeholder,
-	Work_output);
+TYPE prgm_information_usage_right_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON information_usage_right_item WITH
+  (Assigned_property,
+   Issue,
+   Issue_consequence,
+   Risk,
+   Risk_treatment);
 END_TYPE;
 
---		the data to which the identification is assigned.
---			identification_item
-
-TYPE ap233_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
-	(Applied_probability_assignment,
-	Applied_risk_impact_assignment,
-	Applied_risk_source_assignment,
-	Applied_state_definition_assignment,
-	Risk,
-	Risk_analysis,
-	Risk_identification,
-	Risk_impact,
-	Risk_stakeholder,
-	Risk_treatment);
+TYPE prgm_issue_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON issue_reference_item WITH
+  (Activity_method_realization,
+   Activity_method_realization_relationship,
+   Activity_method_relationship,
+   Activity_property,
+   Activity_property_representation,
+   Applied_activity_method_assignment,
+   Applied_information_usage_right,
+   Applied_state_assignment,
+   Applied_state_definition_assignment,
+   Approval,
+   Approval_assignment,
+   Assigned_property,
+   Attribute_classification,
+   Breakdown_context,
+   Breakdown_of,
+   Condition,
+   Condition_assignment,
+   Condition_evaluation,
+   Condition_evaluation_assignment,
+   Condition_evaluation_parameter,
+   Condition_parameter,
+   Condition_relationship,
+   Defined_state_relationship,
+   Document_assignment,
+   Document_definition_relationship,
+   Effectivity,
+   Effectivity_assignment,
+   Effectivity_relationship,
+   Experience_gained,
+   Experience_instance,
+   Experience_type,
+   Experience_type_relationship,
+   External_class_library,
+   External_source_identification,
+   File,
+   File_relationship,
+   Independent_property,
+   Independent_property_relationship,
+   Information_right,
+   Information_usage_right,
+   Information_usage_right_relationship,
+   Item_design_association,
+   Justification,
+   Justification_assignment,
+   Justification_relationship,
+   Justification_support_assignment,
+   Location,
+   Location_assignment,
+   Location_relationship,
+   Location_representation,
+   Managed_resource,
+   Managed_resource_relationship,
+   Market,
+   Name_assignment,
+   Organization,
+   Organization_or_person_in_organization_assignment,
+   Organization_organization_type_relationship,
+   Organization_type,
+   Organizational_location_identification,
+   Person,
+   Person_in_organization,
+   Person_or_organization_or_person_in_organization_in_position,
+   Person_or_organization_or_person_in_organization_in_position_relationship,
+   Position,
+   Position_assignment,
+   Position_group,
+   Position_group_assignment,
+   Position_group_relationship,
+   Position_group_role,
+   Position_position_type_assignment,
+   Position_relationship,
+   Position_role,
+   Position_type,
+   Position_type_assignment,
+   Position_type_role,
+   Probability,
+   Product_concept,
+   Product_configuration,
+   Product_definition_element_relationship,
+   Product_group,
+   Product_group_membership,
+   Product_group_relationship,
+   Product_relationship,
+   Product_version_relationship,
+   Product_view_definition,
+   Project,
+   Project_assignment,
+   Project_relationship,
+   Property_definition_representation,
+   Qualification_assignment,
+   Qualification_type,
+   Qualification_type_relationship,
+   Regional_coordinate,
+   Related_condition_parameter,
+   Representation,
+   Representation_context,
+   Representation_item,
+   Required_resource,
+   Required_resource_assignment,
+   Required_resource_relationship,
+   Resource_as_realized,
+   Resource_as_realized_assignment,
+   Resource_as_realized_relationship,
+   Resource_event,
+   Resource_event_correspondence_relationship,
+   Resource_event_relationship,
+   Resource_item,
+   Resource_item_assignment,
+   Resource_item_relationship,
+   Resource_property,
+   Resource_property_representation,
+   Risk,
+   Risk_analysis,
+   Risk_assessment,
+   Risk_attitude,
+   Risk_communication,
+   Risk_consequence,
+   Risk_control,
+   Risk_estimation,
+   Risk_evaluation,
+   Risk_identification,
+   Risk_impact_assignment,
+   Risk_perception,
+   Risk_perception_relationship,
+   Risk_perception_source_assignment,
+   Risk_relationship,
+   Risk_treatment,
+   Risk_version,
+   Selected_item_assignment,
+   State,
+   State_assertion,
+   State_assessment,
+   State_definition,
+   State_definition_relationship,
+   State_definition_role,
+   State_relationship,
+   State_role,
+   Task_element_state_relationship,
+   Task_method_state_relationship,
+   Task_objective,
+   Task_objective_state_relationship,
+   Time_interval,
+   Time_interval_assignment,
+   Time_interval_relationship,
+   Time_interval_role,
+   Time_offset,
+   Type_of_person,
+   Type_of_person_assignment,
+   Type_of_person_definition,
+   Type_of_person_definition_relationship,
+   Type_of_person_definition_required_attributes_relationship,
+   View_definition_relationship,
+   Work_order,
+   Work_output,
+   Work_output_assignment,
+   Work_output_relationship);
 END_TYPE;
 
---		the set of information usage right items to which the usage right applies.
---			information_usage_right_item
-
-TYPE ap233_information_usage_right_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON information_usage_right_item WITH
-	(Activity_method,
-	Activity_property,
-	Assigned_property,
-	Contract,
-	Justification,
-	Managed_resource,
-	Project,
-	Required_resource,
-	Resource_item,
-	Risk_treatment,
-	Work_output);
+TYPE prgm_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_item WITH
+  (Issue,
+   Risk,
+   Risk_treatment);
 END_TYPE;
 
---		 the item referenced as relevant to the issue.
---			issue_reference_item
-
-TYPE ap233_issue_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON issue_reference_item WITH
-	(Activity,
-	Activity_method,
-	Activity_method_assignment,
-	Activity_method_realization,
-	Activity_method_realization_relationship,
-	Activity_method_relationship,
-	Activity_property,
-	Activity_property_representation,
-	Activity_relationship,
-	Activity_status,
-	Address,
-	Address_assignment,
-	Affected_items_assignment,
-	Applied_activity_assignment,
-	Applied_activity_method_assignment,
-	Applied_information_usage_right,
-	Applied_probability_assignment,
-	Applied_risk_impact_assignment,
-	Applied_risk_source_assignment,
-	Applied_risk_status_assignment,
-	Applied_state_assignment,
-	Applied_state_definition_assignment,
-	Approval,
-	Approval_assignment,
-	Approval_relationship,
-	Approval_status,
-	Approving_person_organization,
-	Assigned_property,
-	Attribute_classification,
-	Attribute_translation_assignment,
-	Breakdown_context,
-	Breakdown_of,
-	Calendar_date,
-	Certification,
-	Certification_assignment,
-	Class,
-	Classification_assignment,
-	Condition,
-	Condition_assignment,
-	Condition_evaluation,
-	Condition_evaluation_assignment,
-	Condition_evaluation_parameter,
-	Condition_parameter,
-	Condition_relationship,
-	Contract,
-	Contract_assignment,
-	Date_or_date_time_assignment,
-	Date_time,
-	Defined_state_relationship,
-	Document_assignment,
-	Document_definition_relationship,
-	Effectivity,
-	Effectivity_assignment,
-	Effectivity_relationship,
-	Event,
-	Event_assignment,
-	Event_relationship,
-	Experience_gained,
-	Experience_instance,
-	Experience_type,
-	Experience_type_relationship,
-	External_class_library,
-	External_source_identification,
-	File,
-	File_relationship,
-	Identification_assignment,
-	Independent_property,
-	Independent_property_relationship,
-	Information_right,
-	Information_usage_right,
-	Information_usage_right_relationship,
-	Item_design_association,
-	Justification,
-	Justification_assignment,
-	Justification_relationship,
-	Justification_support_assignment,
-	Language,
-	Language_indication,
-	Local_time,
-	Location,
-	Location_assignment,
-	Location_relationship,
-	Location_representation,
-	Managed_resource,
-	Managed_resource_relationship,
-	Market,
-	Name_assignment,
-	Observation,
-	Observation_consequence,
-	Observation_relationship,
-	Organization,
-	Organization_or_person_in_organization_assignment,
-	Organization_organization_type_relationship,
-	Organization_relationship,
-	Organization_type,
-	Organizational_location_identification,
-	Person,
-	Person_in_organization,
-	Person_or_organization_or_person_in_organization_in_position,
-	Person_or_organization_or_person_in_organization_in_position_relationship,
-	Position,
-	Position_assignment,
-	Position_group,
-	Position_group_assignment,
-	Position_group_relationship,
-	Position_group_role,
-	Position_position_type_assignment,
-	Position_relationship,
-	Position_role,
-	Position_type,
-	Position_type_assignment,
-	Position_type_role,
-	Probability,
-	Product,
-	Product_category,
-	Product_category_assignment,
-	Product_category_hierarchy,
-	Product_concept,
-	Product_configuration,
-	Product_definition_element_relationship,
-	Product_design_to_individual,
-	Product_design_version_to_individual,
-	Product_group,
-	Product_group_membership,
-	Product_group_relationship,
-	Product_planned_to_realized,
-	Product_relationship,
-	Product_version,
-	Product_version_relationship,
-	Product_view_definition,
-	Project,
-	Project_assignment,
-	Project_relationship,
-	Property_definition_representation,
-	Qualification_assignment,
-	Qualification_type,
-	Qualification_type_relationship,
-	Regional_coordinate,
-	Related_condition_parameter,
-	Representation,
-	Representation_context,
-	Representation_item,
-	Required_resource,
-	Required_resource_assignment,
-	Required_resource_relationship,
-	Resource_as_realized,
-	Resource_as_realized_assignment,
-	Resource_as_realized_relationship,
-	Resource_event,
-	Resource_event_correspondence_relationship,
-	Resource_event_relationship,
-	Resource_item,
-	Resource_item_assignment,
-	Resource_item_relationship,
-	Resource_property,
-	Resource_property_representation,
-	Risk,
-	Risk_analysis,
-	Risk_assessment,
-	Risk_attitude,
-	Risk_communication,
-	Risk_consequence,
-	Risk_context,
-	Risk_control,
-	Risk_estimation,
-	Risk_evaluation,
-	Risk_identification,
-	Risk_owner_assignment,
-	Risk_perception,
-	Risk_perception_formation,
-	Risk_perception_relationship,
-	Risk_reduction,
-	Risk_relationship,
-	Risk_stakeholder,
-	Risk_status,
-	Risk_treatment,
-	Security_classification,
-	Security_classification_assignment,
-	Selected_item_assignment,
-	State,
-	State_assertion,
-	State_assessment,
-	State_definition,
-	State_definition_relationship,
-	State_relationship,
-	State_role,
-	Task_element_state_relationship,
-	Task_method_state_relationship,
-	Task_objective,
-	Task_objective_state_relationship,
-	Time_interval,
-	Time_interval_assignment,
-	Time_interval_relationship,
-	Time_interval_role,
-	Time_offset,
-	Type_of_person,
-	Type_of_person_assignment,
-	Type_of_person_definition,
-	Type_of_person_definition_relationship,
-	Type_of_person_definition_required_attributes_relationship,
-	Unit,
-	Value_with_unit,
-	View_definition_context,
-	View_definition_relationship,
-	Work_order,
-	Work_output,
-	Work_output_assignment,
-	Work_output_relationship,
-	Work_request,
-	Work_request_status);
+TYPE prgm_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_support_item WITH
+  (Organization_or_person_in_organization_assignment,
+   Risk_analysis,
+   Risk_consequence);
 END_TYPE;
 
---		the data item for which Justification  is provided.
---			justification_item
-
-TYPE ap233_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_item WITH
-	(Applied_information_usage_right,
-	Breakdown,
-	Breakdown_of,
-	Certification,
-	Condition,
-	Contract,
-	Information_usage_right,
-	Issue,
-	Project_assignment,
-	Qualification_type,
-	Risk,
-	Security_classification);
+TYPE prgm_location_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON location_assignment_select WITH
+  (Risk_treatment);
 END_TYPE;
 
---		the item which provides evidential support for a Justification.
---			justification_support_item
-
-TYPE ap233_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_support_item WITH
-	(Risk_analysis,
-	Risk_consequence,
-	Risk_stakeholder);
+TYPE prgm_observation_recorder = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON observation_recorder WITH
+  (Person,
+   Person_in_organization,
+   Type_of_person_assignment);
 END_TYPE;
 
---		the item that is assigned to the specified location.
---			location_assignment_select
-
-TYPE ap233_location_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON location_assignment_select WITH
-	(Event,
-	Risk_treatment);
+TYPE prgm_observed_context = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON observed_context WITH
+  (Approval,
+   Risk,
+   Risk_analysis,
+   Risk_assessment,
+   Risk_attitude,
+   Risk_consequence,
+   Risk_control,
+   Risk_estimation,
+   Risk_evaluation,
+   Risk_impact_assignment,
+   Risk_perception,
+   Risk_perception_context,
+   Risk_perception_source_assignment,
+   Risk_treatment);
 END_TYPE;
 
---		the person or equipment that did the observing. 
---			observation_recorder
-
-TYPE ap233_observation_recorder = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON observation_recorder WITH
-	(Person,
-	Person_in_organization,
-	Type_of_person_assignment);
+TYPE prgm_organization_or_person_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_or_person_in_organization_item WITH
+  (Approval,
+   Assigned_property,
+   Class,
+   Issue_consequence,
+   Organization,
+   Organization_or_person_in_organization_assignment,
+   Person_in_organization,
+   Risk,
+   Risk_analysis,
+   Risk_assessment,
+   Risk_attitude,
+   Risk_communication,
+   Risk_consequence,
+   Risk_control,
+   Risk_estimation,
+   Risk_evaluation,
+   Risk_identification,
+   Risk_impact_assignment,
+   Risk_perception,
+   Risk_perception_relationship,
+   Risk_perception_source_assignment,
+   Risk_relationship,
+   Risk_treatment);
 END_TYPE;
 
---		the context in which the observation is made.
---			observed_context
-
-TYPE ap233_observed_context = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON observed_context WITH
-	(Activity,
-	Activity_method,
-	Activity_property,
-	Applied_activity_assignment,
-	Applied_activity_method_assignment,
-	Applied_risk_impact_assignment,
-	Applied_risk_source_assignment,
-	Applied_state_assignment,
-	Applied_state_definition_assignment,
-	Approval_assignment,
-	Assigned_property,
-	Certification_assignment,
-	Condition_assignment,
-	Condition_evaluation_assignment,
-	Contract_assignment,
-	Document_assignment,
-	Effectivity_assignment,
-	Event_assignment,
-	Issue,
-	Justification_assignment,
-	Managed_resource,
-	Observation_consequence,
-	Product,
-	Product_concept,
-	Product_configuration,
-	Product_design_to_individual,
-	Product_group,
-	Product_planned_to_realized,
-	Product_version,
-	Product_version_relationship,
-	Product_view_definition,
-	Project,
-	Project_assignment,
-	Property_representation,
-	Related_condition_parameter,
-	Representation,
-	Representation_item,
-	Required_resource,
-	Required_resource_assignment,
-	Resource_as_realized,
-	Resource_as_realized_assignment,
-	Resource_event,
-	Resource_item,
-	Resource_item_assignment,
-	Resource_property,
-	Risk,
-	Risk_analysis,
-	Risk_assessment,
-	Risk_attitude,
-	Risk_consequence,
-	Risk_control,
-	Risk_estimation,
-	Risk_evaluation,
-	Risk_objective,
-	Risk_perception,
-	Risk_reduction,
-	Risk_status,
-	Risk_treatment,
-	Scheme,
-	Scheme_entry,
-	Scheme_version,
-	Security_classification_assignment,
-	State,
-	State_assertion,
-	State_assessment,
-	State_definition,
-	State_definition_relationship,
-	State_relationship,
-	State_role,
-	Task_method,
-	Task_method_version,
-	Task_objective,
-	View_definition_relationship);
+TYPE prgm_person_or_organization_or_person_in_organization_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_or_organization_or_person_in_organization_select WITH
+  (Organization,
+   Person_in_organization);
 END_TYPE;
 
---		the activity or product data to which the organization or person in an organization is assigned.
---			organization_or_person_in_organization_item
-
-TYPE ap233_organization_or_person_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_or_person_in_organization_item WITH
-	(Issue_consequence,
-	Risk_analysis,
-	Risk_assessment,
-	Risk_communication,
-	Risk_control,
-	Risk_estimation,
-	Risk_identification,
-	Risk_owner_assignment,
-	Task_method);
+TYPE prgm_position_group_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_group_item WITH
+  (Issue_consequence,
+   Risk_impact_assignment,
+   Risk_perception_source_assignment);
 END_TYPE;
 
---		the person or organization that undergoes the Experience_instance.
---			person_or_organization_or_person_in_organization_select
-
-TYPE ap233_person_or_organization_or_person_in_organization_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_or_organization_or_person_in_organization_select WITH
-	(Organization_or_person_in_organization_assignment,
-	Person_or_organization_or_person_in_organization_in_position,
-	Person_or_organization_or_person_in_organization_in_position_relationship,
-	Risk_stakeholder,
-	Type_of_person,
-	Type_of_person_definition_relationship);
+TYPE prgm_position_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_item WITH
+  (Issue_consequence,
+   Risk_impact_assignment,
+   Risk_perception_source_assignment);
 END_TYPE;
 
---		 the activity or product data to which the Position_group is assigned.
---			position_group_item
-
-TYPE ap233_position_group_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_group_item WITH
-	(Activity,
-	Activity_method,
-	Event,
-	Location,
-	Product_category,
-	Product_concept,
-	Product_configuration,
-	Product_group,
-	Project,
-	Required_resource,
-	Resource_event,
-	State,
-	Work_order,
-	Work_output_assignment,
-	Work_request);
+TYPE prgm_position_type_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_type_item WITH
+  (Issue_consequence,
+   Risk_impact_assignment,
+   Risk_perception_source_assignment);
 END_TYPE;
 
---		 the activity or product data to which the Position  is assigned
---			position_item
-
-TYPE ap233_position_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_item WITH
-	(Activity,
-	Activity_method,
-	Event,
-	Location,
-	Product_category,
-	Product_concept,
-	Product_configuration,
-	Product_group,
-	Project,
-	Required_resource,
-	Resource_event,
-	State,
-	Work_order,
-	Work_output_assignment,
-	Work_request);
+TYPE prgm_product_based_location_representation = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON product_based_location_representation WITH
+  (Lessons_learned,
+   Organization,
+   Organization_type,
+   Person_in_organization,
+   Risk,
+   Risk_assessment,
+   Risk_attitude,
+   Risk_consequence,
+   Risk_estimation,
+   Risk_treatment);
 END_TYPE;
 
---		 the activity or product data to which the Position_type  is assigned
---			position_item
-
-TYPE ap233_position_type_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_type_item WITH
-	(Activity,
-	Activity_method,
-	Event,
-	Location,
-	Product_category,
-	Product_concept,
-	Product_configuration,
-	Product_group,
-	Project,
-	Required_resource,
-	Resource_event,
-	State,
-	Work_order,
-	Work_output_assignment,
-	Work_request);
+TYPE prgm_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
+  (Lessons_learned,
+   Organization,
+   Person_in_organization,
+   Risk_analysis,
+   Risk_communication,
+   Risk_control,
+   Risk_evaluation,
+   Risk_identification,
+   Risk_impact_assignment,
+   Risk_perception_context,
+   Risk_perception_source_assignment,
+   Risk_relationship);
 END_TYPE;
 
-
---		the product that provides the context for the location specification.
---			product_based_location_representation
-
-TYPE ap233_product_based_location_representation = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON product_based_location_representation WITH
-	(Activity,
-	Activity_method,
-	Breakdown_of,
-	Condition_evaluation_parameter,
-	Event,
-	Justification,
-	Language_indication,
-	Lessons_learned,
-	Managed_resource,
-	Market,
-	Observation,
-	Organization_stakeholder,
-	Organization_type,
-	Product_concept,
-	Project,
-	Representation,
-	Required_resource,
-	Resource_event,
-	Resource_item,
-	Resource_property,
-	Risk,
-	Risk_assessment,
-	Risk_attitude,
-	Risk_consequence,
-	Risk_estimation,
-	Risk_reduction,
-	Risk_stakeholder,
-	Risk_treatment,
-	State,
-	State_definition,
-	State_relationship,
-	View_definition_relationship,
-	Work_output,
-	Work_request);
+TYPE prgm_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
+  (Assigned_property,
+   Risk,
+   Risk_analysis,
+   Risk_assessment,
+   Risk_consequence,
+   Risk_control,
+   Risk_estimation,
+   Risk_evaluation,
+   Risk_impact_assignment,
+   Risk_perception,
+   Risk_perception_context,
+   Risk_perception_source_assignment,
+   Risk_relationship,
+   Risk_treatment);
 END_TYPE;
 
---		the set of instances of entity types listed in project_item, that are associated with the Project. 
---			project_item
-
-TYPE ap233_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
-	(Applied_risk_impact_assignment,
-	Applied_risk_source_assignment,
-	Lessons_learned,
-	Person_in_organization_stakeholder,
-	Product_view_definition,
-	Representation,
-	Risk_analysis,
-	Risk_communication,
-	Risk_control,
-	Risk_evaluation,
-	Risk_identification,
-	Risk_objective,
-	Risk_reduction,
-	Risk_relationship,
-	Risk_stakeholder,
-	View_definition_relationship);
+TYPE prgm_required_resource_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON required_resource_item WITH
+  (Issue,
+   Risk_analysis,
+   Risk_treatment);
 END_TYPE;
 
---		the element to which the property is assigned.
---			property_assignment_select
-
-
-TYPE ap233_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
-	(Activity,
-	Activity_happening,
-	Activity_property,
-	Applied_probability_assignment,
-	Applied_risk_impact_assignment,
-	Applied_risk_source_assignment,
-	Assigned_property,
-	Condition_evaluation,
-	Condition_evaluation_parameter,
-	Condition_parameter,
-	Independent_property,
-	Independent_property_relationship,
-	Information_usage_right,
-	Observation,
-	Observation_consequence,
-	Product,
-	Product_category,
-	Product_concept,
-	Product_configuration,
-	Product_group,
-	Product_version,
-	Product_version_relationship,
-	Property_definition_representation,
-	Related_condition_parameter,
-	Representation,
-	Representation_context,
-	Representation_item,
-	Required_resource,
-	Resource_as_realized,
-	Resource_event,
-	Resource_property,
-	Risk_analysis,
-	Risk_assessment,
-	Risk_consequence,
-	Risk_control,
-	Risk_estimation,
-	Risk_evaluation,
-	Risk_objective,
-	Risk_perception,
-	Risk_reduction,
-	Risk_treatment,
-	Security_classification,
-	State_assertion,
-	State_assessment,
-	Task_objective,
-	Work_order,
-	Work_request);
+TYPE prgm_resource_as_realized_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON resource_as_realized_item WITH
+  (Lessons_learned,
+   Risk,
+   Risk_analysis,
+   Risk_assessment,
+   Risk_communication,
+   Risk_control,
+   Risk_estimation,
+   Risk_evaluation,
+   Risk_impact,
+   Risk_impact_assignment,
+   Risk_perception,
+   Risk_perception_context,
+   Risk_treatment);
 END_TYPE;
 
---		 the entity to which the required resource statement is assigned.
---			required_resource_item
-
-TYPE ap233_required_resource_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON required_resource_item WITH
-	(Certification_assignment,
-	Condition_evaluation_assignment,
-	Contract_assignment,
-	Justification,
-	Managed_resource,
-	Organization,
-	Person_in_organization,
-	Product,
-	Product_version,
-	Product_view_definition,
-	Project,
-	Risk_analysis,
-	Risk_treatment,
-	State_definition,
-	Work_order);
+TYPE prgm_resource_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON resource_assignment_item WITH
+  (Risk_analysis,
+   Risk_assessment,
+   Risk_communication,
+   Risk_control,
+   Risk_estimation,
+   Risk_evaluation,
+   Risk_identification,
+   Risk_perception_source_assignment,
+   Risk_treatment);
 END_TYPE;
 
---		 the entity that used or consumed the resource.
---			resource_as_realized_item
-
-TYPE ap233_resource_as_realized_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON resource_as_realized_item WITH
-	(Activity_actual,
-	Activity_method,
-	Activity_method_assignment,
-	Activity_method_realization,
-	Activity_method_relationship,
-	Affected_items_assignment,
-	Applied_activity_assignment,
-	Applied_activity_method_assignment,
-	Applied_risk_impact_assignment,
-	Certification,
-	Certification_assignment,
-	Composition_of_state_definition,
-	Condition_evaluation_assignment,
-	Contract,
-	Contract_assignment,
-	Directed_activity,
-	Event,
-	Event_assignment,
-	Lessons_learned,
-	Observation,
-	Observation_consequence,
-	Observation_item,
-	Product,
-	Product_version,
-	Product_version_relationship,
-	Product_view_definition,
-	Project,
-	Project_assignment,
-	Representation,
-	Representation_item,
-	Resource_event,
-	Resource_event_correspondence_relationship,
-	Resource_event_relationship,
-	Risk,
-	Risk_analysis,
-	Risk_assessment,
-	Risk_communication,
-	Risk_control,
-	Risk_estimation,
-	Risk_evaluation,
-	Risk_impact,
-	Risk_objective,
-	Risk_perception,
-	Risk_reduction,
-	Risk_treatment,
-	Security_classification_assignment,
-	State,
-	State_assessment,
-	State_definition,
-	State_definition_relationship,
-	State_relationship,
-	State_role,
-	Task_objective,
-	Work_output_assignment);
+TYPE prgm_risk_impact_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_impact_item WITH
+  (Activity_method_realization_relationship,
+   Activity_property,
+   Applied_state_assignment,
+   Breakdown_context,
+   Breakdown_of,
+   Defined_state_relationship,
+   Issue,
+   Issue_consequence,
+   Managed_resource,
+   Managed_resource_relationship,
+   Market,
+   Product_version_relationship,
+   Project,
+   Project_assignment,
+   Required_resource,
+   Required_resource_assignment,
+   Resource_event,
+   Resource_property,
+   State,
+   State_assertion,
+   State_assessment,
+   State_relationship,
+   Task_method_state_relationship,
+   Task_objective,
+   Task_objective_state_relationship,
+   View_definition_relationship);
 END_TYPE;
 
---		the resource assignment item to which the resource item is assigned.
---			resource_assignment_item
-
-TYPE ap233_resource_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON resource_assignment_item WITH
-	(Activity_method,
-	Event,
-	Managed_resource,
-	Person_in_organization,
-	Position_group_assignment,
-	Work_order);
+TYPE prgm_risk_perception_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_perception_source_item WITH
+  (Activity_relationship,
+   Approval,
+   Approving_person_organization,
+   Assigned_property,
+   Condition,
+   Document_assignment,
+   Event,
+   Event_relationship,
+   File,
+   Independent_property,
+   Independent_property_relationship,
+   Justification,
+   Justification_assignment,
+   Justification_relationship,
+   Justification_support_assignment,
+   Organization,
+   Organization_or_person_in_organization_assignment,
+   Person,
+   Person_in_organization,
+   Product_version,
+   Product_view_definition,
+   Representation,
+   Representation_item,
+   Resource_item,
+   Resource_item_assignment,
+   Resource_item_relationship,
+   State_definition,
+   State_definition_relationship);
 END_TYPE;
 
---		the items that are designated as resources within the application context. 
---			resource_item_select
-
-TYPE ap233_resource_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON resource_item_select WITH
-	(Work_order);
+TYPE prgm_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
+  (Risk_communication,
+   Risk_impact,
+   Risk_treatment);
 END_TYPE;
 
---		the activity or product data to which the Security_classification is assigned.
---			security_classification_item
-
-TYPE ap233_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
-	(Activity_property,
-	Assigned_property,
-	Event,
-	Managed_resource,
-	Product,
-	Risk_communication,
-	Risk_impact,
-	Risk_treatment);
+TYPE prgm_state_definition_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_definition_of_item WITH
+  (Issue_reference,
+   Lessons_learned,
+   Risk,
+   Risk_attitude,
+   Risk_control,
+   Risk_impact,
+   Risk_impact_assignment,
+   Risk_perception_context,
+   Risk_treatment);
 END_TYPE;
 
---		the object whose State_definition is given by the described_state_definition.
---			state_definition_of_item
-
-TYPE ap233_state_definition_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_definition_of_item WITH
-	(Applied_risk_impact_assignment,
-	Digital_document_definition,
-	Digital_file,
-	Document,
-	Document_version,
-	Event,
-	File,
-	File_location_identification,
-	Hardcopy,
-	Issue_reference,
-	Lessons_learned,
-	Observation_consequence,
-	Physical_document_definition,
-	Risk,
-	Risk_attitude,
-	Risk_control,
-	Risk_impact,
-	Risk_objective,
-	Risk_treatment,
-	State);
+TYPE prgm_state_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_of_item WITH
+  (Risk_analysis,
+   Risk_attitude,
+   Risk_communication,
+   Risk_control,
+   Risk_evaluation,
+   Risk_impact,
+   Risk_impact_assignment,
+   Risk_perception,
+   Risk_treatment);
 END_TYPE;
 
---		the subject which has or is in a State.
---			state_of_item
-
-TYPE ap233_state_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_of_item WITH
-	(Applied_risk_impact_assignment,
-	Applied_state_definition_assignment,
-	Breakdown_version,
-	Digital_document_definition,
-	Document,
-	Document_version,
-	Event,
-	File,
-	File_location_identification,
-	Observation,
-	Observation_consequence,
-	Physical_document_definition,
-	Product,
-	Product_version,
-	Risk_analysis,
-	Risk_attitude,
-	Risk_communication,
-	Risk_control,
-	Risk_evaluation,
-	Risk_impact,
-	Risk_perception,
-	Risk_treatment,
-	State,
-	State_assessment,
-	State_definition,
-	State_definition_relationship,
-	State_relationship,
-	State_role,
-	Type_of_person);
+TYPE prgm_type_of_person_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON type_of_person_item_select WITH
+  (Risk_analysis,
+   Risk_impact_assignment,
+   Risk_treatment);
 END_TYPE;
 
---	the set of things to which the Type_of_person is assigned.
---		type_of_person_item_select
-
-TYPE ap233_type_of_person_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON type_of_person_item_select WITH
-	(Activity,
-	Activity_method,
-	Activity_method_assignment,
-	Applied_risk_impact_assignment,
-	Document_assignment,
-	Experience_gained,
-	Experience_instance,
-	Experience_type,
-	Observation_consequence,
-	Product,
-	Product_version,
-	Project,
-	Project_assignment,
-	Required_resource_assignment,
-	Resource_item_assignment,
-	Risk_analysis,
-	Risk_treatment,
-	View_definition_relationship,
-	Work_order,
-	Work_output_assignment,
-	Work_request);
+TYPE prgm_work_output_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON work_output_item WITH
+  (Risk_analysis,
+   Risk_assessment,
+   Risk_evaluation,
+   Risk_treatment);
 END_TYPE;
-
---  		the source that produces or delivers the work output.
---			work_item
-
-TYPE ap233_work_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON work_item WITH
-	(Project);
-END_TYPE;
-
---	Work_output (a statement of output resulting from an activity 
--- 	or a task) has detail representation provided by
---			work_output_item
-
-TYPE ap233_work_output_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON work_output_item WITH
-	(Activity_method,
-	Risk_analysis,
-	Risk_assessment,
-	Risk_evaluation,
-	Risk_reduction,
-	Risk_treatment);
-END_TYPE;
-
-
-TYPE ap233_risk_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_source_item WITH			
-	(Activity_relationship,		
-	Approval,		
-	Approving_person_organization,		
-	Assigned_property,		
-	Condition,		
-	Document_assignment,		
-	Event,		
-	Event_relationship,		
-	File,		
-	Independent_property,		
-	Independent_property_relationship,		
-	Justification,		
-	Justification_assignment,
-	Justification_relationship,
-	Justification_support_assignment,
-	Organization,
-	Organization_or_person_in_organization_assignment,
-	Person,
-	Person_in_organization,
-	Product_version,
-	Product_view_definition,
-	Representation,
-	Representation_item,
-	Resource_item,
-	Resource_item_assignment,
-	Resource_item_relationship,
-	State_definition,
-	State_definition_relationship);
-END_TYPE;	
-
-
-
-TYPE ap233_probable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON probable_item WITH	
-	(Activity_property,
-	Applied_state_assignment,
-	Condition_evaluation_parameter,
-	Contract,
-	Contract_assignment,
-	Managed_resource,
-	Market,
-	Project,
-	Project_assignment,
-	Required_resource,
-	Required_resource_assignment,
-	Resource_event,
-	Resource_property,
-	State,
-	State_relationship,
-	Task_method_state_relationship,
-	Task_objective,
-	Task_objective_state_relationship,
-	View_definition_relationship);
-END_TYPE;	
-
-
-TYPE ap233_risk_impact_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_impact_item WITH	
-	(Activity_method_realization_relationship,
-	Activity_property,
-	Applied_state_assignment,
-	Breakdown_context,
-	Breakdown_of,
-	Defined_state_relationship,
-	Issue,
-	Issue_consequence,
-	Managed_resource,
-	Managed_resource_relationship,
-	Market,
-	Product_version_relationship,
-	Project,
-	Project_assignment,
-	Required_resource,
-	Required_resource_assignment,
-	Resource_event,
-	Resource_property,
-	State,
-	State_assertion,
-	State_assessment,
-	State_relationship,
-	Task_method_state_relationship,
-	Task_objective,
-	Task_objective_state_relationship,
-	View_definition_relationship);
-END_TYPE;	
-
 
 END_SCHEMA;
-
-
 

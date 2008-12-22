@@ -1,246 +1,1559 @@
 (*
    $Id$
-   ISO TC184/SC4/WG3 N2312 - ISO/CD-TS 10303-1433 Project management - EXPRESS MIM
+   ISO TC184/SC4/WG3 N2497 - ISO/TS 10303-1433 Project management - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N2312
 *)
 
 SCHEMA Project_management_mim;
   USE FROM Organization_structure_mim;
   USE FROM Project_breakdown_mim;
   USE FROM Work_structure_mim;
+  USE FROM date_time_schema   
+    (local_time); 
 
---   Push up from (pmri) Project_management_resource_information;
-
-TYPE prjm_pmri_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
-	(product_concept,
-	configuration_item,
-	product_definition_formation_relationship,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE prjm_pmri_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(product_concept,
-	configuration_item,
-	product_definition_formation_relationship,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE prjm_pmri_action_request_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_request_item WITH
-	(product_definition_relationship);
-END_TYPE;
-
-TYPE prjm_pmri_aliasable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON aliasable_item WITH
-	(product_concept,
-	configuration_item,
-	product_relationship,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE prjm_pmri_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
-	(product_concept,
-	configuration_item,
-	product_relationship,
-	product_definition_formation_relationship,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE prjm_pmri_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
-	(configuration_item,
-	product_definition_formation_relationship,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE prjm_pmri_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
-	(product_concept_context,
-	product_concept,
-	configuration_item,
-	product_definition_formation_relationship,
-	product_relationship,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE prjm_pmri_attribute_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON attribute_classification_item WITH
-	(product_concept_context,
-	product_concept,
-	product_relationship,
-	product_definition_formation_relationship,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE prjm_pmri2_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
-	(product_definition_relationship);
-END_TYPE;
-
-TYPE prjm_pmri3_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
-	(product_concept,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE prjm_pmri_condition_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_action_method_items WITH
-	(product_definition_relationship);
-END_TYPE;
-
-TYPE prjm_pmri3_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(applied_identification_assignment,
-	product_concept,
-	product_definition_relationship);
-END_TYPE;
-
-
-TYPE prjm_pmri_contract_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON contract_item WITH
-	(configuration_item);
-END_TYPE;
-
-TYPE prjm_pmri_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_and_time_item WITH
-	(product_concept,
-	configuration_item,
-	product_relationship,
-	product_definition_formation_relationship);
-END_TYPE;
-
-TYPE prjm_pmri_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_item WITH
-	(product_concept,
-	configuration_item,
-	product_relationship,
-	product_definition_formation_relationship);
-END_TYPE;
-
-TYPE prjm_pmri_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH
-	(product_concept_context,
-	product_concept,
-	configuration_item,
-	product_relationship);
-END_TYPE;
-
-
-TYPE prjm_pmri_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
-	(configuration_item,
-	product_relationship);
-END_TYPE;
-
-
-TYPE prjm_ap233_event_occurrence_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON event_occurrence_item WITH
-	(executed_action,
-	approval,
-	contract,
-	product,
-	observation,
+TYPE prjm_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
+	(action,
+	action_directive,
+	action_method,
+	action_property,
 	action_resource_requirement,
+	approval,
+	certification,
+	configuration_item,
+	contract,
+	document_file,
+	effectivity,
+	event_occurrence,
+	executed_action,
+	organization,
+	organizational_project,
+	person,
+	person_and_organization,
+	product,
+	product_category,
+	product_concept,
+	product_definition,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_definition_relationship,
+	state_type,
+	state_type_assignment,
 	versioned_action_request);
 END_TYPE;
 
-TYPE prjm_pmri_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
-	(product_concept_context,
-	product_concept,
+TYPE prjm_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
+	(action,
+	action_actual,
+	action_directive,
+	action_method,
+	action_method_assignment,
+	action_method_relationship,
+	action_property,
+	action_relationship,
+	action_request_solution,
+	action_resource,
+	action_resource_relationship,
+	action_resource_requirement,
+	action_resource_requirement_relationship,
+	applied_action_assignment,
+	applied_action_method_assignment,
+	applied_action_request_assignment,
+	applied_approval_assignment,
+	applied_certification_assignment,
+	applied_contract_assignment,
+	applied_event_occurrence_assignment,
+	applied_identification_assignment,
+	applied_location_assignment,
+	applied_organizational_project_assignment,
+	applied_position_in_organization_group_assignment,
+	applied_qualification_type_assignment,
+	applied_security_classification_assignment,
+	ascribable_state,
+	certification,
+	condition,
 	configuration_item,
+	contract,
+	date_and_time_assignment,
+	date_assignment,
+	directed_action,
+	event_occurrence,
+	general_property,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
+	observation,
+	observation_consequence,
+	organization,
+	organization_type,
+	organizational_project,
+	person_and_organization,
+	product,
+	product_concept,
+	product_definition,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_definition_relationship,
+	representation,
+	representation_item,
+	resource_property,
+	security_classification,
+	state_observed,
+	state_observed_relationship,
+	state_observed_role,
+	state_type,
+	state_type_relationship,
+	task_element_relationship,
+	task_objective,
+	task_step,
+	versioned_action_request);
+END_TYPE;
+
+(* captured by mapping table
+TYPE prjm_activity_realization_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_realization_select WITH
+	(action_method, 			Ok
+	executed_action,			Error must map to action_method
+	product,				Error must map to action_method
+	product_definition,			Error must map to action_method
+	product_definition_formation,		Error must map to action_method
+	task_element);				Ok maps to task_element <= action_method
+END_TYPE;
+*)
+
+TYPE prjm_action_request_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_request_item WITH
+	(applied_approval_assignment,
+	applied_certification_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_event_occurrence_assignment,
+	configuration_item,
+	contract,
+	executed_action,
+	information_usage_right,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
+	organization,
+	organizational_project,
+	person,
+	product,
+	product_definition_formation,
+	product_definition_relationship,
+	state_observed,
+	state_type,
+	versioned_action_request);
+END_TYPE;
+
+TYPE prjm_aliasable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON aliasable_item WITH
+	(address,
+	applied_organization_assignment,
+	applied_person_and_organization_assignment,
+	applied_security_classification_assignment,
+	approval,
+	approval_status,
+	certification,
+	configuration_item,
+	event_occurrence,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
+	justification_support_assignment,
+	justification_support_item_group_assignment,
+	organizational_project,
+	person,
+	person_and_organization,
+	product,
+	product_as_individual,
+	product_as_individual_view,
+	product_as_planned,
+	product_as_realized,
+	product_concept,
+	product_definition,
+	product_definition_formation,
+	product_definition_relationship,
+	product_relationship);
+END_TYPE;
+
+TYPE prjm_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
+	(action_method,
+	action_method_assignment,
+	applied_action_assignment,
+	applied_certification_assignment,
+	applied_classification_assignment,
+	applied_contract_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_effectivity_assignment,
+	applied_event_occurrence_assignment,
+	applied_identification_assignment,
+	applied_organization_assignment,
+	applied_organizational_project_assignment,
+	applied_person_and_organization_assignment,
+	applied_security_classification_assignment,
+	applied_usage_right,
+	ascribable_state,
+	certification,
+	configuration_item,
+	contract,
+	date_and_time_assignment,
+	date_assignment,
+	event_occurrence,
+	executed_action,
+	information_usage_right,
+	organization_relationship,
+	organizational_address,
+	organizational_project,
+	person_and_organization,
+	person_and_organization_address,
+	position_in_organization,
+	product,
+	product_as_individual,
+	product_as_planned,
+	product_as_realized,
+	product_concept,
+	product_definition,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_definition_relationship,
+	product_design_to_individual,
+	product_design_version_to_individual,
+	product_related_product_category,
 	product_relationship,
+	security_classification,
+	state_observed_relationship,
+	state_type,
+	state_type_relationship,
+	task_element_relationship);
+END_TYPE;
+
+TYPE prjm_name_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON name_item WITH
+	(breakdown_element_group_assignment,
+	event_occurrence,
+	observation,
+	product,
+	product_definition,
+	product_definition_group_assignment);
+END_TYPE;
+
+TYPE prjm_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
+	(action_method,
+	applied_qualification_type_assignment,
+	approval_person_organization,
+	configuration_item,
+	executed_action,
+	product,
+	product_as_individual,
+	product_as_planned,
+	product_as_realized,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_definition_relationship,
+	product_group,
+	product_group_relationship,
+	property_definition,
+	state_type);
+END_TYPE;
+
+(* captured by mapping table
+	TYPE prjm_characterized_activity_definition = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON characterized_activity_definition WITH
+		(action_method,				Ok
+		applied_qualification_type_assignment,	Error
+		approval_person_organization,		Error
+		breakdown_of,				Error
+		event_occurrence,			Error
+		executed_action,			Ok executed_action <= action
+		product,				Error
+		product_definition_formation,		Error
+		property_definition,			Error
+		state_type);				Error
+	END_TYPE;
+*)
+
+TYPE prjm_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
+	(action,
+	action_method,
+	action_method_relationship,
+	action_property,
+	action_relationship,
+	action_resource,
+	action_resource_relationship,
+	action_resource_requirement,
+	action_resource_requirement_relationship,
+	action_status,
+	address,
+	applied_action_assignment,
+	applied_action_method_assignment,
+	applied_approval_assignment,
+	applied_certification_assignment,
+	applied_contract_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_effectivity_assignment,
+	applied_event_occurrence_assignment,
+	applied_external_identification_assignment, 
+	applied_identification_assignment,
+	applied_organization_assignment,
+	applied_organizational_project_assignment,
+	applied_person_and_organization_assignment,
+	applied_person_type_assignment,
+	applied_person_type_definition_assignment,
+	applied_position_in_organization_assignment,
+	applied_position_in_organization_type_assignment,
+	applied_security_classification_assignment,
+	applied_usage_right,
+	approval,
+	approval_person_organization,
+	approval_relationship,
+	approval_status,
+	attribute_language_assignment,
+	calendar_date,
+	certification,
+	class,
+	condition,
+	configuration_item,
+	context_dependent_unit,
+	contract,
+	conversion_based_unit,
+	date_and_time,
+	date_and_time_assignment,
+	date_assignment,
+	derived_unit,
+	descriptive_representation_item,
+	document_file,
+	document_relationship,
+	effectivity,
+	effectivity_relationship,
+	event_occurrence,
+	event_occurrence_relationship,
+	executed_action,
+	experience_type,
+	group,
+	information_right,
+	information_usage_right,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
+	justification_support_assignment,
+	justification_support_item_group_assignment,
+	language,
+	local_time,
+	location,
+	location_relationship,
+	measure_with_unit,
+	multi_language_attribute_assignment,
+	named_unit,
+	organization,
+	organization_relationship,
+	organizational_address,
+	organizational_project,
+	organizational_project_relationship,
+	person,
+	person_and_organization,
+	person_and_organization_address,
+	person_type,
+	person_type_definition,
+	person_type_definition_relationship,
+	position_in_organization,
+	position_in_organization_relationship,
+	position_in_organization_type,
+	product,
+	product_as_planned,
+	product_as_realized,
+	product_category,
+	product_concept,
+	product_concept_context,
+	product_definition,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_definition_relationship,
+	product_design_to_individual,
+	product_design_version_to_individual,
+	product_group,
+	product_group_relationship,
+	product_relationship,
+	qualification_type,
+	representation,
+	representation_context,
+	representation_item,
+	representation_relationship,
+	resource_property,
+	resource_property_representation,
+	security_classification,
+	state_observed,
+	state_observed_assignment,
+	state_observed_relationship,
+	state_type,
+	state_type_assignment,
+	state_type_relationship,
+	task_method,
+	task_objective,
+	time_interval_relationship,
+	uncertainty_measure_with_unit,
+	usage_association);
+END_TYPE;
+
+TYPE prjm_attribute_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON attribute_classification_item WITH
+	(information_right,
+	information_usage_right,
+	product_concept,
+	product_concept_context,
+	product_definition_formation_relationship,
+	product_definition_relationship,
+	product_relationship,
+	usage_association);
+END_TYPE;
+
+TYPE prjm_contract_item = EXTENSIBLE SELECT BASED_ON contract_item WITH
+	(action_method,
+	applied_action_assignment,
+	configuration_item,
+	executed_action,
+	externally_defined_class,
+	information_usage_right,
+	organization,
+	organization_item,
+	person_and_organization_item,
+	organizational_project,
+	person_and_organization,
+	product,
+	product_as_individual,
+	product_as_planned,
+	product_definition_formation,
+	security_classification);
+END_TYPE;
+
+TYPE prjm_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_item WITH
+	(action_method,
+	action_relationship,
+	applied_action_assignment,
+	applied_certification_assignment,
+	applied_classification_assignment,
+	applied_contract_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_effectivity_assignment,
+	applied_event_occurrence_assignment,
+	applied_identification_assignment,
+	applied_organization_assignment,
+	applied_organizational_project_assignment,
+	applied_person_and_organization_assignment,
+	applied_qualification_type_assignment,
+	applied_security_classification_assignment,
+	applied_usage_right,
+	approval,
+	approval_person_organization,
+	certification,
+	configuration_item,
+	contract,
+	date_and_time_assignment,
+	date_assignment,
+	document_file,
+	effectivity,
+	executed_action,
+	experience,
+	information_usage_right,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
+	justification_support_assignment,
+	justification_support_item_group_assignment,
+	organization_relationship,
+	organizational_address,
+	organizational_project,
+	person,
+	person_and_organization,
+	person_and_organization_address,
+	product,
+	product_concept,
+	product_definition,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_definition_relationship,
+	product_related_product_category,
+	product_relationship,
+	property_definition,
+	property_definition_representation,
+	representation,
+	security_classification,
+	selected_item_assignment);
+END_TYPE;
+
+TYPE prjm_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_and_time_item WITH
+	(action_method,
+	action_relationship,
+	applied_action_assignment,
+	applied_certification_assignment,
+	applied_classification_assignment,
+	applied_contract_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_effectivity_assignment,
+	applied_event_occurrence_assignment,
+	applied_identification_assignment,
+	applied_organization_assignment,
+	applied_organizational_project_assignment,
+	applied_person_and_organization_assignment,
+	applied_qualification_type_assignment,
+	applied_security_classification_assignment,
+	applied_usage_right,
+	approval,
+	approval_person_organization,
+	certification,
+	configuration_item,
+	contract,
+	date_and_time_assignment,
+	date_assignment,
+	document_file,
+	effectivity,
+	executed_action,
+	experience,
+	information_usage_right,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
+	justification_support_assignment,
+	justification_support_item_group_assignment,
+	organization_relationship,
+	organizational_address,
+	organizational_project,
+	person,
+	person_and_organization,
+	person_and_organization_address,
+	product,
+	product_concept,
+	product_definition,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_definition_relationship,
+	product_related_product_category,
+	product_relationship,
+	property_definition,
+	property_definition_representation,
+	representation,
+	security_classification,
+	selected_item_assignment);
+END_TYPE;
+
+TYPE prjm_experience_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON experience_item WITH
+	(action_method,
+	applied_event_occurrence_assignment,
+	observation_consequence,
+	organizational_project,
+	product);
+END_TYPE;
+
+TYPE prjm_person_definition_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_definition_item WITH
+	(action_method_assignment,
+	applied_person_type_assignment,
+	applied_position_in_organization_group_assignment,
+	group,
+	position_in_organization_assignment,
+	position_in_organization_type_assignment);
+END_TYPE;
+
+TYPE prjm_experience_type_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON experience_type_item WITH
+	(action_directive,
+	action_method_assignment,
+	applied_organization_assignment,
+	applied_person_and_organization_assignment,
+	applied_position_in_organization_assignment,
+	event_occurrence,
+	group,
+	observation_consequence,
+	person_type,
+	person_type_definition_relationship,
+	product,
+	product_definition,
+	product_definition_formation,
+	product_group);
+END_TYPE;
+
+TYPE prjm_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH
+	(action,
+	action_directive,
+	action_method,
+	action_method_relationship,
+	action_property,
+	action_property_representation,
+	action_relationship,
+	action_resource,
+	action_resource_relationship,
+	action_resource_requirement,
+	action_resource_requirement_relationship,
+	address,
+	applied_action_assignment,
+	applied_action_method_assignment,
+	applied_certification_assignment,
+	applied_classification_assignment,
+	applied_contract_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_effectivity_assignment,
+	applied_event_occurrence_assignment,
+	applied_external_identification_assignment,
+	applied_identification_assignment,
+	applied_location_assignment,
+	applied_location_representation_assignment,
+	applied_organization_assignment,
+	applied_organizational_project_assignment,
+	applied_person_and_organization_assignment,
+	applied_position_in_organization_assignment,
+	applied_position_in_organization_type_assignment,
+	applied_qualification_type_assignment,
+	applied_security_classification_assignment,
+	applied_usage_right,
+	approval,
+	ascribable_state,
+	breakdown_context,
+	breakdown_element_group_assignment,
+	breakdown_element_usage,
+	certification,
+	class,
+	condition,
+	configuration_item,
+	contract,
+	date_and_time_assignment,
+	date_assignment,
+	document_file,
+	effectivity,
+	executed_action,
+	experience,
+	experience_type,
+	group,
+	information_usage_right,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
+	justification_support_assignment,
+	justification_support_item_group_assignment,
+	location,
+	location_relationship,
+	observation,
+	observation_consequence,
+	organization_relationship,
+	organization_type,
+	organizational_address,
+	organizational_project,
+	person,
+	person_and_organization,
+	person_and_organization_address,
+	person_type,
+	person_type_definition,
+	position_in_organization,
+	position_in_organization_type,
+	position_in_organization_type_assignment,
+	product,
+	product_as_planned,
+	product_as_realized,
+	product_category,
+	product_concept,
+	product_concept_context,
+	product_definition,
+	product_definition_formation,
+	product_definition_group_assignment,
+	product_definition_relationship,
+	product_design_to_individual,
+	product_design_version_to_individual,
+	product_group,
+	product_group_membership,
+	product_group_relationship,
+	product_planned_to_realized,
+	product_related_product_category,
+	product_relationship,
+	property_definition,
+	property_definition_representation,
+	qualification_type,
+	representation,
+	representation_item,
+	resource_property,
+	resource_property_representation,
+	security_classification,
+	selected_item,
+	state_observed,
+	state_type,
+	task_element,
+	task_element_relationship,
+	task_method,
+	task_method_relationship,
+	task_method_version_relationship,
+	task_objective,
+	usage_association,
+	versioned_action_request);
+END_TYPE;
+
+TYPE prjm_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
+	(action_method,
+	action_method_relationship,
+	action_property_representation,
+	action_request_solution,
+	applied_action_assignment,
+	applied_action_method_assignment,
+	applied_approval_assignment,
+	applied_certification_assignment,
+	applied_classification_assignment,
+	applied_contract_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_effectivity_assignment,
+	applied_event_occurrence_assignment,
+	applied_external_identification_assignment,
+	applied_identification_assignment,
+	applied_organization_assignment,
+	applied_organizational_project_assignment,
+	applied_person_and_organization_assignment,
+	applied_security_classification_assignment,
+	applied_usage_right,
+	configuration_item,
+	date_and_time_assignment,
+	date_assignment,
+	document_file,
+	event_occurrence,
+	executed_action,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
+	justification_support_assignment,
+	justification_support_item_group_assignment,
+	multi_language_attribute_assignment,
+	organization_relationship,
+	organizational_address,
+	person_and_organization,
+	person_and_organization_address,
+	person_type_definition_relationship,
+	product,
+	product_definition,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_definition_relationship,
+	product_definition_usage,
+	product_group,
+	product_group_membership,
+	product_group_relationship,
+	product_relationship,
+	property_definition,
+	resource_property_representation,
+	state_observed_assignment);
+END_TYPE;
+
+
+TYPE prjm_event_occurrence_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON event_occurrence_item WITH
+	(action_resource_requirement,
+	approval,
+	certification,
+	contract,
+	executed_action,
+	observation,
+	organizational_project,
+	product,
+	versioned_action_request);
+END_TYPE;
+
+TYPE prjm_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH
+	(action_method,
+	action_resource_requirement,
+	organizational_project,
+	person_and_organization,
+	product);
+END_TYPE;
+
+TYPE prjm_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
+	(action_resource,
+	action_resource_requirement,
+	address,
+	applied_action_assignment,
+	applied_action_method_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_organization_assignment,
+	applied_person_and_organization_assignment,
+	applied_security_classification_assignment,
+	approval,
+	approval_status,
+	certification,
+	class,
+	condition,
+	configuration_item,
+	contract,
+	document_file,
+	effectivity,
+	event_occurrence,
+	executed_action,
+	experience,
+	information_right,
+	information_usage_right,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
+	justification_support_assignment,
+	justification_support_item_group_assignment,
+	organization,
+	organizational_project,
+	person,
+	person_and_organization,
+	position_in_organization,
+	product,
+	product_as_individual,
+	product_as_individual_version,
+	product_as_individual_view,
+	product_concept,
+	product_concept_context,
+	product_definition,
+	product_definition_formation,
+	product_definition_relationship,
+	product_definition_usage,
+	product_relationship,
+	property_definition,
+	security_classification,
+	state_type_assignment,
+	state_type_relationship,
+	task_step,
+	usage_association);
+END_TYPE;
+
+TYPE prjm_ir_usage_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ir_usage_item WITH
+	(action_directive,
+	action_method,
+	action_property,
+	action_resource,
+	action_resource_requirement,
+	applied_certification_assignment,
+	applied_external_identification_assignment,
+	applied_security_classification_assignment,
+	applied_usage_right,
+	certification,
+	configuration_item,
+	contract,
+	document_file,
+	information_right,
+	information_usage_right,
+	organization,
+	organizational_project,
+	person_and_organization,
+	product,
+	product_category,
+	product_definition,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_definition_relationship,
+	property_definition,
+	representation_item,
+	security_classification,
+	usage_association);
+END_TYPE;
+
+TYPE prjm_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_item WITH
+	(action_method,
+	applied_action_assignment,
+	applied_action_method_assignment,
+	applied_approval_assignment,
+	applied_classification_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_organizational_project_assignment,
+	applied_usage_right,
+	approval,
+	breakdown_of,
+	certification,
+	condition,
+	contract,
+	effectivity,
+	executed_action,
+	general_property,
+	general_property_relationship,
+	information_usage_right,
+	product,
+	product_definition,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_definition_relationship,
+	property_definition,
+	qualification_type,
+	security_classification,
+	state_type_assignment);
+END_TYPE;
+
+TYPE prjm_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_support_item WITH
+	(action_directive,
+	action_method,
+	applied_action_assignment,
+	approval,
+	certification,
+	contract,
+	effectivity,
+	event_occurrence,
+	executed_action,
+	general_property,
+	general_property_relationship,
+	organizational_project,
+	product,
+	product_definition,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_definition_relationship,
+	property_definition);
+END_TYPE;
+
+TYPE prjm_location_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON location_item WITH
+	(action_request_solution,
+	action_resource,
+	event_occurrence);
+END_TYPE;
+
+TYPE prjm_observed_context_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON observed_context_item WITH
+	(action,
+	action_method,
+	action_property,
+	action_resource,
+	action_resource_requirement,
+	applied_action_assignment,
+	applied_action_method_assignment,
+	applied_approval_assignment,
+	applied_certification_assignment,
+	applied_contract_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_effectivity_assignment,
+	applied_event_occurrence_assignment,
+	applied_organizational_project_assignment,
+	applied_security_classification_assignment,
+	ascribable_state,
+	configuration_item,
+	executed_action,
+	group,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
+	observation_consequence,
+	organizational_project,
+	product,
+	product_concept,
+	product_definition,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_definition_relationship,
+	product_design_to_individual,
+	product_group,
+	product_planned_to_realized,
+	property_definition,
+	property_definition_representation,
+	representation,
+	representation_item,
+	resource_property,
+	state_observed,
+	state_observed_assignment,
+	state_observed_relationship,
+	state_observed_role,
+	state_type,
+	state_type_assignment,
+	state_type_relationship,
+	task_method,
+	task_objective);
+END_TYPE;
+
+TYPE prjm_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_item WITH
+	(action_method,
+	action_relationship,
+	applied_action_assignment,
+	applied_certification_assignment,
+	applied_classification_assignment,
+	applied_contract_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_effectivity_assignment,
+	applied_event_occurrence_assignment,
+	applied_identification_assignment,
+	applied_organization_assignment,
+	applied_organizational_project_assignment,
+	applied_person_and_organization_assignment,
+	applied_qualification_type_assignment,
+	applied_security_classification_assignment,
+	approval,
+	certification,
+	configuration_item,
+	contract,
+	date_and_time_assignment,
+	date_assignment,
+	document_file,
+	effectivity,
+	event_occurrence,
+	executed_action,
+	general_property,
+	general_property_relationship,
+	information_usage_right,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
+	justification_support_assignment,
+	justification_support_item_group_assignment,
+	organizational_address,
+	organizational_project,
+	person_and_organization,
+	person_and_organization_address,
+	product,
+	product_as_individual,
+	product_as_planned,
+	product_category,
+	product_definition,
+	product_definition_context,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_related_product_category,
+	product_relationship,
+	property_definition,
+	property_definition_representation,
+	qualification_type,
+	representation,
+	security_classification,
+	task_method);
+END_TYPE;
+
+TYPE prjm_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_and_organization_item WITH
+	(action_method,
+	action_relationship,
+	applied_action_assignment,
+	applied_certification_assignment,
+	applied_classification_assignment,
+	applied_contract_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_effectivity_assignment,
+	applied_event_occurrence_assignment,
+	applied_identification_assignment,
+	applied_organization_assignment,
+	applied_organizational_project_assignment,
+	applied_person_and_organization_assignment,
+	applied_qualification_type_assignment,
+	applied_security_classification_assignment,
+	approval,
+	certification,
+	configuration_item,
+	contract,
+	date_and_time_assignment,
+	date_assignment,
+	document_file,
+	effectivity,
+	event_occurrence,
+	executed_action,
+	general_property,
+	general_property_relationship,
+	information_usage_right,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
+	justification_support_assignment,
+	justification_support_item_group_assignment,
+	organizational_address,
+	organizational_project,
+	person_and_organization,
+	person_and_organization_address,
+	product,
+	product_as_individual,
+	product_as_planned,
+	product_category,
+	product_definition,
+	product_definition_context,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_related_product_category,
+	product_relationship,
+	property_definition,
+	property_definition_representation,
+	qualification_type,
+	representation,
+	security_classification,
+	task_method);
+END_TYPE;
+
+TYPE prjm_position_in_organization_group_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_group_item WITH
+	(action,
+	action_directive,
+	action_method,
+	action_method_assignment,
+	action_resource_requirement,
+	configuration_item,
+	event_occurrence,
+	executed_action,
+	location,
+	organizational_project,
+	product_category,
+	product_concept,
+	product_group,
+	state_observed,
+	versioned_action_request);
+END_TYPE;
+
+TYPE prjm_position_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_item WITH
+	(action,
+	action_directive,
+	action_method,
+	action_method_assignment,
+	action_resource_requirement,
+	configuration_item,
+	event_occurrence,
+	executed_action,
+	location,
+	organizational_project,
+	product_category,
+	product_concept,
+	product_group,
+	state_observed,
+	versioned_action_request);
+END_TYPE;
+
+TYPE prjm_position_in_organization_type_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_type_item WITH
+	(action,
+	action_directive,
+	action_method,
+	action_method_assignment,
+	action_resource_requirement,
+	configuration_item,
+	event_occurrence,
+	executed_action,
+	location,
+	organizational_project,
+	product_category,
+	product_concept,
+	product_group,
+	state_observed,
+	versioned_action_request);
+END_TYPE;
+
+TYPE prjm_location_representation_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON location_representation_item WITH
+	(action,
+	action_directive,
+	action_method,
+	action_resource,
+	action_resource_requirement,
+	applied_action_assignment,
+	attribute_language_assignment,
+	breakdown_of,
+	event_occurrence,
+	executed_action,
+	observation,
+	organization_type,
+	organizational_project,
+	product,
+	product_concept,
+	product_concept_context,
+	product_definition_relationship,
+	representation,
+	resource_property,
+	state_observed,
+	state_observed_relationship,
+	state_type,
+	versioned_action_request);
+END_TYPE;
+
+TYPE prjm_product_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON product_definition_or_breakdown_element_usage WITH
+	(product_definition,
 	product_definition_usage);
 END_TYPE;
 
-
-TYPE prjm_pmri_ir_usage_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ir_usage_item WITH
-	(configuration_item);
-END_TYPE;
-
-TYPE prjm_pmri_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_and_organization_item WITH
-	(product_relationship,
-	product_definition_formation_relationship);
-END_TYPE;
-
-TYPE prjm_pmri_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_item WITH
-	(product_relationship,
-	product_definition_formation_relationship);
-END_TYPE;
-
-
-TYPE prjm_pmri_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
-	(configuration_item);
-END_TYPE;
-
-
-TYPE prjm_ap233_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(action_actual,
-	action_method,
-	action_request_solution,
-	action_method_relationship,
-	applied_action_request_assignment,
-	applied_action_assignment,
-	applied_action_method_assignment,
-	certification,
-	applied_certification_assignment,
-	state_type_assignment,
-	contract,
-	applied_contract_assignment,
-	directed_action,
-	event_occurrence,
-	applied_event_occurrence_assignment,
-	observation,
-	observation_consequence,
-	representation,
+TYPE prjm_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
+	(configuration_item,
+	executed_action,
 	product,
-	product_definition_formation,
-	product_definition_formation_relationship,
+	product_concept,
 	product_definition,
-	organizational_project,
-	applied_organizational_project_assignment,
-	representation_item,
-	action,
+	product_definition_formation,
+	product_definition_relationship,
+	representation);
+END_TYPE;
+
+(*
+TYPE prjm_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
+	(action,
+	action_directive,
+	action_method,
 	action_property,
 	action_relationship,
-	applied_security_classification_assignment,
-	state_observed,
+	action_resource,
+	action_resource_requirement,
+	applied_action_assignment,
+	applied_action_method_assignment,
 	ascribable_state,
-	state_type,
-	state_type_relationship,
+	breakdown_element_group_assignment,
+	breakdown_element_usage,
+	configuration_item,
+ 	document_file,
+	executed_action,
+	experience,
+	general_property,
+	general_property_relationship,
+	group,
+	information_usage_right,
+	observation,
+	observation_consequence,
+	person_type_definition,
+	product,
+	product_category,
+	product_concept,
+	product_definition,
+	product_definition_formation,
+	product_definition_formation_relationship,
+	product_definition_group_assignment,
+	product_definition_relationship,
+	product_group,
+ 	product_group_membership,
+	property_definition,
+	property_definition_representation,
+	representation,
+	representation_context,
+	representation_item,
+	resource_property,
+	security_classification,
+	task_objective,
+	versioned_action_request);
+END_TYPE;
+*)
+		
+		ENTITY prjm_characterizable_action
+		  SUBTYPE OF (action, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_action_directive
+		  SUBTYPE OF (action_directive, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_action_method
+		  SUBTYPE OF (action_method, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_action_property
+		  SUBTYPE OF (action_property, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_action_relationship
+		  SUBTYPE OF (action_relationship, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_action_resource
+		  SUBTYPE OF (action_resource, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_action_resource_requirement
+		  SUBTYPE OF (action_resource_requirement, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_applied_action_assignment
+		  SUBTYPE OF (applied_action_assignment, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_applied_action_method_assignment
+		  SUBTYPE OF (applied_action_method_assignment, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_ascribable_state
+		  SUBTYPE OF (ascribable_state, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_breakdown_element_group_assignment
+		  SUBTYPE OF (breakdown_element_group_assignment, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_breakdown_element_usage
+		  SUBTYPE OF (breakdown_element_usage, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_configuration_item
+		  SUBTYPE OF (configuration_item, characterized_object);
+		END_ENTITY;
+		
+(*
+		ENTITY prjm_characterizable_document_file
+		  SUBTYPE OF (document_file, characterized_object);
+		END_ENTITY;
+*)
+		
+		ENTITY prjm_characterizable_executed_action
+		  SUBTYPE OF (executed_action, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_experience
+		  SUBTYPE OF (experience, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_general_property
+		  SUBTYPE OF (general_property, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_general_property_relationship
+		  SUBTYPE OF (general_property_relationship, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_group
+		  SUBTYPE OF (group, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_information_usage_right
+		  SUBTYPE OF (information_usage_right, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_observation
+		  SUBTYPE OF (observation, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_observation_consequence
+		  SUBTYPE OF (observation_consequence, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_person_type_definition
+		  SUBTYPE OF (person_type_definition, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_product
+		  SUBTYPE OF (product, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_product_category
+		  SUBTYPE OF (product_category, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_product_concept
+		  SUBTYPE OF (product_concept, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_product_definition
+		  SUBTYPE OF (product_definition, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_product_definition_formation
+		  SUBTYPE OF (product_definition_formation, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_product_definition_formation_relationship
+		  SUBTYPE OF (product_definition_formation_relationship, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_product_definition_group_assignment
+		  SUBTYPE OF (product_definition_group_assignment, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_product_definition_relationship
+		  SUBTYPE OF (product_definition_relationship, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_product_group
+		  SUBTYPE OF (product_group, characterized_object);
+		END_ENTITY;
+		
+(*
+		ENTITY prjm_characterizable_product_group_membership
+		  SUBTYPE OF (product_group_membership, characterized_object);
+		END_ENTITY;
+*)		
+		ENTITY prjm_characterizable_property_definition
+		  SUBTYPE OF (property_definition, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_property_definition_representation
+		  SUBTYPE OF (property_definition_representation, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_representation
+		  SUBTYPE OF (representation, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_representation_context
+		  SUBTYPE OF (representation_context, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_representation_item
+		  SUBTYPE OF (representation_item, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_resource_property
+		  SUBTYPE OF (resource_property, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_security_classification
+		  SUBTYPE OF (security_classification, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_task_objective
+		  SUBTYPE OF (task_objective, characterized_object);
+		END_ENTITY;
+		
+		ENTITY prjm_characterizable_versioned_action_request
+		  SUBTYPE OF (versioned_action_request, characterized_object);
+		END_ENTITY;
+
+TYPE prjm_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
+	(action_method,
+	action_property,
+	action_resource,
+	applied_action_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	configuration_item,
+	document_file,
+	event_occurrence,
+	executed_action,
+	product,
+	product_as_individual_version,
+	product_definition,
+	product_definition_formation,
+	product_relationship,
+	property_definition);
+END_TYPE;
+
+TYPE prjm_selected_item_context_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON selected_item_context_items WITH
+	(configuration_item,
+	product_concept);
+END_TYPE;
+
+TYPE prjm_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_type_of_item WITH
+	(applied_external_identification_assignment, 
+	configuration_item,
+	document_file,
+	event_occurrence,
+	observation_consequence,
+	product,
+	product_concept,
+	product_definition,
+	product_definition_formation,
+	product_definition_relationship,
+	state_observed);
+END_TYPE;
+
+TYPE prjm_state_observed_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_observed_of_item WITH
+	(action_method,
+	applied_action_assignment,
+	applied_external_identification_assignment, 
+	approval,
+	ascribable_state,
+	configuration_item,
+	document_file,
+	event_occurrence,
+	executed_action,
+	information_usage_right,
+	observation,
+	observation_consequence,
+	organizational_project,
+	person_type,
+	product,
+	product_concept,
+	product_definition,
+	product_definition_formation,
+	product_definition_relationship,
+	security_classification,
+	state_observed,
 	state_observed_relationship,
 	state_observed_role,
-	task_objective,
-	action_method_assignment);
+	state_type,
+	state_type_assignment,
+	state_type_relationship);
 END_TYPE;
 
-TYPE prjm_pmri_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
-	(configuration_item,
-	product_relationship);
-END_TYPE;
-
-
-TYPE prjm_pmri_selected_item_context_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON selected_item_context_items WITH
-	(product_concept,
-	configuration_item);
-END_TYPE;
-
-
-TYPE prjm_pmri_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_type_of_item WITH
-	(product_concept,
+TYPE prjm_attribute_language_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON attribute_language_item WITH
+	(action_method,
+	action_relationship,
+	applied_action_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_external_identification_assignment,
+	applied_identification_assignment,
+	applied_organizational_project_assignment,
+	approval,
+	approval_relationship,
+	approval_status,
+	certification,
 	configuration_item,
-	product_definition_relationship);
+	contract,
+	date_and_time_assignment,
+	date_assignment,
+	document_relationship,
+	event_occurrence,
+	executed_action,
+	general_property,
+	general_property_relationship,
+	information_right,
+	information_usage_right,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
+	justification_support_assignment,
+	justification_support_item_group_assignment,
+	organization_relationship,
+	organizational_project,
+	organizational_project_relationship,
+	person_and_organization,
+	product,
+	product_category,
+	product_definition,
+	product_definition_formation,
+	product_definition_relationship,
+	product_relationship,
+	property_definition,
+	representation_item);
 END_TYPE;
 
-
-TYPE prjm_pmri_state_observed_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_observed_of_item WITH
-	(product_concept,
+TYPE prjm_multi_language_attribute_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON multi_language_attribute_item WITH
+	(action_method,
+	action_relationship,
+	applied_action_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_external_identification_assignment,
+	applied_identification_assignment,
+	applied_organizational_project_assignment,
+	approval,
+	approval_relationship,
+	approval_status,
+	certification,
 	configuration_item,
-	product_definition_relationship);
+	contract,
+	date_and_time_assignment,
+	date_assignment,
+	document_relationship,
+	event_occurrence,
+	executed_action,
+	general_property,
+	general_property_relationship,
+	information_right,
+	information_usage_right,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
+	justification_support_assignment,
+	justification_support_item_group_assignment,
+	organization_relationship,
+	organizational_project,
+	organizational_project_relationship,
+	person_and_organization,
+	product,
+	product_category,
+	product_definition,
+	product_definition_formation,
+	product_definition_relationship,
+	product_relationship,
+	property_definition,
+	representation_item);
 END_TYPE;
 
-
-TYPE prjm_pmri_multi_language_attribute_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON multi_language_attribute_item WITH
-	(configuration_item,
-	product_relationship);
+TYPE prjm_time_interval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON time_interval_item WITH
+	(executed_action);
 END_TYPE;
 
-TYPE prjm_pmri_attribute_language_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON attribute_language_item WITH
-	(configuration_item,
-	product_relationship);
+TYPE prjm_person_type_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_type_item WITH
+	(action_directive,
+	action_method,
+	action_method_assignment,
+	action_request_solution,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_experience_assignment,
+	applied_organizational_project_assignment,
+	executed_action,
+	experience,
+	experience_type,
+	observation_consequence,
+	organizational_project,
+	product,
+	product_definition_formation,
+	product_definition_relationship,
+	versioned_action_request);
 END_TYPE;
-
-
-TYPE prjm_pb_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
-	(product_as_individual,
-	product_as_planned,
-	product_as_realized,
-	product_group,
-	product_group_relationship);
-END_TYPE;
-
 
 END_SCHEMA;
+
+

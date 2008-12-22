@@ -161,10 +161,9 @@ public class CxDatum_defined_by_feature$datum_plane extends CDatum_defined_by_fe
 	 */
 	public static void setMappingConstraints(SdaiContext context,
 		CDatum_defined_by_feature$datum_plane armEntity) throws SdaiException {
+		unsetMappingConstraints(context, armEntity);		
 		CxDatum_plane.setMappingConstraints(context, armEntity);
 		CxDatum_defined_by_feature.setMappingConstraints(context, armEntity);
-		unsetMappingConstraints(context, armEntity);
-
 	}
 
 	/**

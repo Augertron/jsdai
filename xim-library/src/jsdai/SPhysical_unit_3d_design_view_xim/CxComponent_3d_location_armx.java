@@ -34,12 +34,31 @@ import jsdai.libutil.*;
 import jsdai.SContextual_shape_positioning_xim.CxContextual_shape_representation;
 import jsdai.SContextual_shape_positioning_xim.CxGeometric_composition_with_operator_transformation;
 import jsdai.SPhysical_unit_3d_design_view_mim.CComponent_3d_location;
+import jsdai.SRepresentation_schema.ERepresentation_relationship;
 
 public class CxComponent_3d_location_armx extends CComponent_3d_location_armx implements EMappedXIMEntity
 {
 
 	public int attributeState = ATTRIBUTES_MODIFIED;	
 
+	// From RR
+	/// methods for attribute: name, base type: STRING
+	public boolean testName(ERepresentation_relationship type) throws SdaiException {
+		return test_string(a2);
+	}
+	public String getName(ERepresentation_relationship type) throws SdaiException {
+		return get_string(a2);
+	}
+	public void setName(ERepresentation_relationship type, String value) throws SdaiException {
+		a2 = set_string(value);
+	}
+	public void unsetName(ERepresentation_relationship type) throws SdaiException {
+		a2 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(ERepresentation_relationship type) throws SdaiException {
+		return a2$;
+	}
+	// ENDOF RR
 	
 	public void createAimData(SdaiContext context) throws SdaiException {
 		if (attributeState == ATTRIBUTES_MODIFIED) {
@@ -92,12 +111,14 @@ public class CxComponent_3d_location_armx extends CComponent_3d_location_armx im
 		unsetMappingConstraints(context, armEntity);
 		CxContextual_shape_representation.setMappingConstraints(context, armEntity);
 		CxGeometric_composition_with_operator_transformation.setMappingConstraints(context, armEntity);
+		armEntity.setName(null, "component 3d location");
 	}
 
 	public static void unsetMappingConstraints(SdaiContext context, EComponent_3d_location_armx armEntity) throws SdaiException
 	{
 		CxContextual_shape_representation.unsetMappingConstraints(context, armEntity);
 		CxGeometric_composition_with_operator_transformation.unsetMappingConstraints(context, armEntity);
+		armEntity.unsetName(null);
 	}
 
 	//**********component_2d_location attributes

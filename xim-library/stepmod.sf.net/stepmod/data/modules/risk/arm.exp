@@ -1,437 +1,360 @@
-(*
-   $Id$
-   ISO TC184/SC4/WG12 N4499 - ISO/CD-TS 10303-1264 Risk - EXPRESS ARM
-*) 
-
 SCHEMA Risk_arm;
 
-USE FROM Activity_arm;    -- ISO/TS 10303-1047
+USE FROM Activity_arm;
 
-USE FROM Activity_method_arm;    -- ISO/TS 10303-1049
+USE FROM Document_assignment_arm;
 
-USE FROM Activity_method_assignment_arm;    -- ISO/TS 10303-1249
+USE FROM Event_assignment_arm;
 
-USE FROM Approval_arm;    -- ISO/TS 10303-1012
+USE FROM Measure_representation_arm;
 
-USE FROM Classification_assignment_arm;    -- ISO/TS 10303-1114
+USE FROM Probability_arm;
 
-USE FROM Condition_arm;    -- ISO/TS 10303-1253
+USE FROM Product_relationship_arm;
 
-USE FROM Date_time_assignment_arm;    -- ISO/TS 10303-1014
+USE FROM Product_view_definition_relationship_arm;
 
-USE FROM Document_assignment_arm;    -- ISO/TS 10303-1122
+USE FROM Property_assignment_arm;
 
-USE FROM Event_arm;    -- ISO/TS 10303-1064
+TYPE lessons_learned_select = EXTENSIBLE SELECT BASED_ON documented_element_select WITH
+  (Risk,
+   Risk_impact_assignment,
+   Risk_perception_source_assignment,
+   Risk_treatment);
+END_TYPE;
 
-USE FROM Justification_arm;    -- ISO/TS 10303-1263
+TYPE risk_activity = SELECT 
+  (Risk_acceptance,
+   Risk_analysis,
+   Risk_assessment,
+   Risk_communication,
+   Risk_control,
+   Risk_estimation,
+   Risk_evaluation,
+   Risk_identification,
+   Risk_treatment);
+END_TYPE;
 
-USE FROM Person_organization_arm;    -- ISO/TS 10303-1011
+TYPE risk_activity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_item WITH
+  (Assigned_property,
+   Event_assignment,
+   Lessons_learned,
+   Risk,
+   Risk_assessment,
+   Risk_consequence,
+   Risk_control,
+   risk_criteria_select,
+   Risk_estimation,
+   Risk_evaluation,
+   Risk_identification,
+   Risk_impact,
+   Risk_impact_assignment,
+   Risk_perception_context,
+   Risk_perception_relationship,
+   Risk_perception_source_assignment,
+   risk_perception_source_item,
+   Risk_relationship,
+   Risk_treatment);
+END_TYPE;
 
-USE FROM Person_organization_assignment_arm;    -- ISO/TS 10303-1013
+TYPE risk_communication_select = SELECT 
+  (Assigned_property,
+   Event_assignment,
+   Lessons_learned,
+   Risk,
+   Risk_assessment,
+   Risk_consequence,
+   Risk_control,
+   Risk_estimation,
+   Risk_evaluation,
+   Risk_identification,
+   Risk_impact_assignment,
+   Risk_perception,
+   Risk_perception_context,
+   Risk_perception_relationship,
+   Risk_perception_source_assignment,
+   Risk_treatment);
+END_TYPE;
 
-USE FROM Probability_arm;    -- ISO/TS 10303-1252
+TYPE risk_criteria_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_item WITH
+  (Risk_perception);
+END_TYPE;
 
-USE FROM Probability_distribution_arm;    -- ISO/TS 10303-1274
+TYPE risk_estimation_select = SELECT 
+  (Assigned_property,
+   Event_assignment,
+   Risk_consequence,
+   Risk_impact_assignment);
+END_TYPE;
 
-USE FROM Product_identification_arm;    -- ISO/TS 10303-1017
+TYPE risk_event_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON event_item WITH
+  (Risk_perception);
+END_TYPE;
 
-USE FROM Property_assignment_arm;    -- ISO/TS 10303-1030
+TYPE risk_impact_item = EXTENSIBLE GENERIC_ENTITY SELECT ;
+END_TYPE;
 
-USE FROM Resource_item_arm;    -- ISO/TS 10303-1268
+TYPE risk_perception_source_item = EXTENSIBLE GENERIC_ENTITY SELECT 
+  (Activity,
+   Activity_method,
+   Product);
+END_TYPE;
 
-USE FROM State_definition_arm;    -- ISO/TS 10303-1255
+TYPE risk_property_assignment_select = EXTENSIBLE SELECT BASED_ON property_assignment_select WITH
+  (Event,
+   Risk_perception);
+END_TYPE;
 
+TYPE risk_treatment_select = SELECT 
+  (Assigned_property,
+   Risk_consequence,
+   Risk_impact,
+   Risk_perception,
+   Risk_perception_relationship,
+   Risk_relationship);
+END_TYPE;
 
-TYPE activity_risk_source = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_source_item WITH 
-   (Activity, 
-    Activity_method);
-END_TYPE; 
-
-TYPE lessons_learned_select = EXTENSIBLE SELECT BASED_ON documented_element_select WITH 
-   (Applied_risk_source_assignment, 
-    Risk, 
-    Risk_criteria);
-END_TYPE; 
-
-TYPE mitigation_select = SELECT
-   (Applied_probability_assignment, 
-    Applied_risk_impact_assignment, 
-    Applied_risk_source_assignment, 
-    Risk, 
-    Risk_consequence, 
-    Risk_level, 
-    Risk_perception, 
-    Risk_perception_relationship, 
-    Risk_relationship);
-END_TYPE; 
-
-TYPE probability_select = SELECT
-   (Probability, 
-    Probability_distribution);
-END_TYPE; 
-
-TYPE probable_event = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON probable_item WITH 
-   (Event);
-END_TYPE; 
-
-TYPE probable_item = EXTENSIBLE GENERIC_ENTITY SELECT;
-END_TYPE; 
-
-TYPE product_risk_source = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_source_item WITH 
-   (Product);
-END_TYPE; 
-
-TYPE risk_activity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_item WITH 
-   (Applied_risk_source_assignment, 
-    Risk_analysis, 
-    Risk_assessment, 
-    Risk_communication, 
-    Risk_control, 
-    Risk_estimation, 
-    Risk_evaluation, 
-    Risk_identification, 
-    Risk_reduction);
-END_TYPE; 
-
-TYPE risk_activity_method_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_method_item WITH 
-   (Risk_treatment);
-END_TYPE; 
-
-TYPE risk_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH 
-   (Risk_perception, 
-    Risk_reduction);
-END_TYPE; 
-
-TYPE risk_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH 
-   (Applied_probability_assignment, 
-    Applied_risk_impact_assignment, 
-    Risk, 
-    Risk_consequence, 
-    Risk_perception, 
-    Risk_perception_relationship, 
-    Risk_relationship, 
-    Risk_stakeholder);
-END_TYPE; 
-
-TYPE risk_communication_select = SELECT
-   (Applied_probability_assignment, 
-    Applied_risk_impact_assignment, 
-    Applied_risk_source_assignment, 
-    Lessons_learned, 
-    Risk, 
-    Risk_assessment, 
-    Risk_consequence, 
-    Risk_context, 
-    Risk_control, 
-    Risk_criteria, 
-    Risk_estimation, 
-    Risk_evaluation, 
-    Risk_identification, 
-    Risk_perception, 
-    Risk_perception_relationship, 
-    Risk_status, 
-    Risk_treatment);
-END_TYPE; 
-
-TYPE risk_condition_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_item WITH 
-   (Risk_status);
-END_TYPE; 
-
-TYPE risk_date_or_date_time_item = SELECT BASED_ON date_or_date_time_item WITH 
-   (Applied_probability_assignment, 
-    Applied_risk_impact_assignment, 
-    Applied_risk_source_assignment, 
-    Risk, 
-    Risk_attitude, 
-    Risk_consequence, 
-    Risk_context, 
-    Risk_criteria, 
-    Risk_evaluation, 
-    Risk_perception, 
-    Risk_perception_relationship, 
-    Risk_reduction, 
-    Risk_relationship, 
-    Risk_status, 
-    Risk_treatment);
-END_TYPE; 
-
-TYPE risk_estimation_select = SELECT
-   (Applied_probability_assignment, 
-    Applied_risk_impact_assignment, 
-    Risk_consequence);
-END_TYPE; 
-
-TYPE risk_evaluation_select = SELECT
-   (Risk_level, 
-    Risk_perception);
-END_TYPE; 
-
-TYPE risk_identification_select = SELECT
-   (Applied_risk_impact_assignment, 
-    Applied_risk_source_assignment, 
-    Risk, 
-    Risk_consequence, 
-    Risk_criteria, 
-    Risk_perception);
-END_TYPE; 
-
-TYPE risk_impact_item = EXTENSIBLE GENERIC_ENTITY SELECT;
-END_TYPE; 
-
-TYPE risk_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_item WITH 
-   (Risk_reduction, 
-    Risk_treatment);
-END_TYPE; 
-
-TYPE risk_organization_or_person_in_organization_item = EXTENSIBLE SELECT BASED_ON organization_or_person_in_organization_item WITH 
-   (Applied_probability_assignment, 
-    Applied_risk_impact_assignment, 
-    Applied_risk_source_assignment, 
-    Risk, 
-    Risk_attitude, 
-    Risk_consequence, 
-    Risk_context, 
-    Risk_criteria, 
-    Risk_evaluation, 
-    Risk_perception, 
-    Risk_perception_relationship, 
-    Risk_reduction, 
-    Risk_relationship, 
-    Risk_stakeholder, 
-    Risk_status, 
-    Risk_treatment);
-END_TYPE; 
-
-TYPE risk_property_assignment_select = EXTENSIBLE SELECT BASED_ON property_assignment_select WITH 
-   (Risk, 
-    Risk_relationship);
-END_TYPE; 
-
-TYPE risk_resource_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON resource_assignment_item WITH 
-   (Applied_risk_source_assignment, 
-    Risk_analysis, 
-    Risk_assessment, 
-    Risk_communication, 
-    Risk_control, 
-    Risk_estimation, 
-    Risk_evaluation, 
-    Risk_identification, 
-    Risk_reduction, 
-    Risk_treatment);
-END_TYPE; 
-
-TYPE risk_source_item = EXTENSIBLE GENERIC_ENTITY SELECT;
-END_TYPE; 
-
-TYPE state_risk_impact = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_impact_item WITH 
-   (State_definition);
-END_TYPE; 
-
-ENTITY Applied_probability_assignment;
-  assigned_probability : probability_select;
-  items : SET[1:?] OF probable_item;
+ENTITY Contained_acceptance
+SUBTYPE OF (Risk_activity_structure);
+  SELF\Risk_activity_structure.parent : Risk_control;
+  SELF\Risk_activity_structure.child : Risk_acceptance;
 END_ENTITY;
 
-ENTITY Applied_risk_impact_assignment;
-  assigned_risk_impact : Risk_impact;
-  items : SET[1:?] OF risk_impact_item;
+ENTITY Contained_analysis
+SUBTYPE OF (Risk_activity_structure);
+  SELF\Risk_activity_structure.parent : Risk_assessment;
+  SELF\Risk_activity_structure.child : Risk_analysis;
 END_ENTITY;
 
-ENTITY Applied_risk_source_assignment;
-  assigned_risk : Risk;
-  items : SET[1:?] OF risk_source_item;
-  risk_context : Risk_context;
+ENTITY Contained_communication
+SUBTYPE OF (Risk_activity_structure);
+  SELF\Risk_activity_structure.parent : Risk_control;
+  SELF\Risk_activity_structure.child : Risk_communication;
 END_ENTITY;
 
-ENTITY Applied_risk_status_assignment;
-  risk : SET[1:?] OF Risk;
-  risk_status : Risk_status;
+ENTITY Contained_estimation
+SUBTYPE OF (Risk_activity_structure);
+  SELF\Risk_activity_structure.parent : Risk_analysis;
+  SELF\Risk_activity_structure.child : Risk_estimation;
+END_ENTITY;
+
+ENTITY Contained_evaluation
+SUBTYPE OF (Risk_activity_structure);
+  SELF\Risk_activity_structure.parent : Risk_assessment;
+  SELF\Risk_activity_structure.child : Risk_evaluation;
+END_ENTITY;
+
+ENTITY Contained_identification
+SUBTYPE OF (Risk_activity_structure);
+  SELF\Risk_activity_structure.parent : Risk_analysis;
+  SELF\Risk_activity_structure.child : Risk_identification;
+END_ENTITY;
+
+ENTITY Contained_treatments
+SUBTYPE OF (Risk_activity_structure);
+  SELF\Risk_activity_structure.parent : Risk_control;
+  SELF\Risk_activity_structure.child : Risk_treatment;
+END_ENTITY;
+
+ENTITY Event_probability
+SUBTYPE OF (Assigned_property);
+  SELF\Assigned_property.described_element : Event;
 END_ENTITY;
 
 ENTITY Lessons_learned
-  SUBTYPE OF (Document_assignment);
+SUBTYPE OF (Document_assignment);
   SELF\Document_assignment.is_assigned_to : lessons_learned_select;
 END_ENTITY;
 
-ENTITY Organization_stakeholder
-  SUBTYPE OF (Organization, Risk_stakeholder);
+ENTITY Monitor
+SUBTYPE OF (Risk_activity_structure);
+  SELF\Risk_activity_structure.parent : Risk_control;
+  SELF\Risk_activity_structure.child : Risk_assessment;
 END_ENTITY;
 
-ENTITY Person_in_organization_stakeholder
-  SUBTYPE OF (Person_in_organization, Risk_stakeholder);
+ENTITY Probability_representation
+SUBTYPE OF (Property_representation);
+  SELF\Property_representation.property : Event_probability;
+  SELF\Property_definition_representation.rep : Probability;
 END_ENTITY;
 
-ENTITY Risk;
-  id : STRING;
-  name : STRING;
-  description : OPTIONAL STRING;
+ENTITY Related_consequence
+SUBTYPE OF (View_definition_relationship);
+  SELF\View_definition_relationship.relating_view : Risk_perception;
+  SELF\View_definition_relationship.related_view : Risk_consequence;
+END_ENTITY;
+
+ENTITY Risk
+SUBTYPE OF (Product);
 END_ENTITY;
 
 ENTITY Risk_acceptance
-  SUBTYPE OF (Risk_treatment);
+SUBTYPE OF (Activity);
 END_ENTITY;
 
-ENTITY Risk_analysis;
-  risk_identification : Risk_identification;
-  risk_estimate : SET[1:?] OF Risk_estimation;
+ENTITY Risk_activity_structure ABSTRACT SUPERTYPE
+SUBTYPE OF (Activity_relationship);
+  SELF\Activity_relationship.relating_activity RENAMED parent : risk_activity;
+  SELF\Activity_relationship.related_activity RENAMED child : risk_activity;
 END_ENTITY;
 
-ENTITY Risk_assessment;
-  risk_analysis : SET[1:?] OF Risk_analysis;
-  risk_evaluation : SET[1:?] OF Risk_evaluation;
+ENTITY Risk_analysis
+SUBTYPE OF (Activity);
 END_ENTITY;
 
-ENTITY Risk_attitude;
-  criticality_factor : NUMBER;
+ENTITY Risk_assessment
+SUBTYPE OF (Activity);
 END_ENTITY;
 
-ENTITY Risk_avoidance
-  SUBTYPE OF (Risk_treatment);
+ENTITY Risk_attitude
+SUBTYPE OF (Property_representation);
+  SELF\Property_representation.property : Risk_level;
+  SELF\Property_definition_representation.rep RENAMED criticality_factor : Property_value_representation;
 END_ENTITY;
 
-ENTITY Risk_communication;
-  inputs : SET[1:?] OF risk_communication_select;
-  communicator : Risk_stakeholder;
-  communicatee : SET[1:?] OF Risk_stakeholder;
+ENTITY Risk_communicated_items
+SUBTYPE OF (Applied_activity_assignment);
+  SELF\Applied_activity_assignment.assigned_activity : Risk_communication;
+  SELF\Applied_activity_assignment.items : SET [1 : ?] OF risk_communication_select;
+DERIVE
+  SELF\Applied_activity_assignment.role : STRING := 'risk_communicated_items';
 END_ENTITY;
 
-ENTITY Risk_consequence;
-  name : STRING;
-  description : OPTIONAL STRING;
+ENTITY Risk_communication
+SUBTYPE OF (Activity);
 END_ENTITY;
 
-ENTITY Risk_containment
-  SUBTYPE OF (Risk_treatment);
+ENTITY Risk_consequence
+SUBTYPE OF (Product_view_definition);
 END_ENTITY;
 
-ENTITY Risk_context;
-  name : STRING;
-  description : OPTIONAL STRING;
+ENTITY Risk_control
+SUBTYPE OF (Activity);
 END_ENTITY;
 
-ENTITY Risk_control;
-  monitor : SET[1:?] OF Risk_assessment;
+ENTITY Risk_estimation
+SUBTYPE OF (Activity);
 END_ENTITY;
 
-ENTITY Risk_criteria
-  SUBTYPE OF (Risk_perception);
+ENTITY Risk_estimation_inputs
+SUBTYPE OF (Applied_activity_assignment);
+  SELF\Applied_activity_assignment.assigned_activity : Risk_estimation;
+  SELF\Applied_activity_assignment.items : SET [1 : ?] OF Risk_perception;
+DERIVE
+  SELF\Applied_activity_assignment.role : STRING := 'risk_estimation_input';
 END_ENTITY;
 
-ENTITY Risk_estimation;
-  inputs : SET[0:?] OF Risk_context;
-  outputs : SET[1:?] OF risk_estimation_select;
+ENTITY Risk_estimation_outputs
+SUBTYPE OF (Applied_activity_assignment);
+  SELF\Applied_activity_assignment.assigned_activity : Risk_estimation;
+  SELF\Applied_activity_assignment.items : SET [1 : ?] OF risk_estimation_select;
+DERIVE
+  SELF\Applied_activity_assignment.role : STRING := 'risk_estimation_output';
 END_ENTITY;
 
-ENTITY Risk_evaluation;
-  id : OPTIONAL STRING;
-  name : STRING;
-  description : OPTIONAL STRING;
-  items : SET[1:?] OF risk_evaluation_select;
-  risk_criteria : SET[1:?] OF Risk_criteria;
-  risk_treatment : Risk_treatment;
+ENTITY Risk_evaluation
+SUBTYPE OF (Activity);
 END_ENTITY;
 
-ENTITY Risk_identification;
-  inputs : SET[1:?] OF risk_identification_select;
-  risk_stakeholder : OPTIONAL Risk_stakeholder;
+ENTITY Risk_evaluation_criteria
+SUBTYPE OF (Applied_activity_assignment);
+  SELF\Applied_activity_assignment.assigned_activity : Risk_evaluation;
+  SELF\Applied_activity_assignment.items : SET [1 : ?] OF risk_criteria_select;
+DERIVE
+  SELF\Applied_activity_assignment.role : STRING := 'risk_evaluation_criteria';
+END_ENTITY;
+
+ENTITY Risk_evaluation_inputs
+SUBTYPE OF (Applied_activity_assignment);
+  SELF\Applied_activity_assignment.assigned_activity : Risk_evaluation;
+  SELF\Applied_activity_assignment.items : SET [1 : ?] OF Risk_perception;
+DERIVE
+  SELF\Applied_activity_assignment.role : STRING := 'risk_evaluation_input';
+END_ENTITY;
+
+ENTITY Risk_event
+SUBTYPE OF (Event_assignment);
+  associated_risk : Risk_perception;
+DERIVE
+  SELF\Event_assignment.items : SET [1 : ?] OF Risk_perception := [associated_risk];
+  SELF\Event_assignment.role : STRING := 'risk of event';
+END_ENTITY;
+
+ENTITY Risk_identification
+SUBTYPE OF (Activity);
+END_ENTITY;
+
+ENTITY Risk_identification_inputs
+SUBTYPE OF (Applied_activity_assignment);
+  SELF\Applied_activity_assignment.assigned_activity : Risk_identification;
+  SELF\Applied_activity_assignment.items : SET [1 : ?] OF risk_perception_source_item;
+DERIVE
+  SELF\Applied_activity_assignment.role : STRING := 'risk_identification_input';
 END_ENTITY;
 
 ENTITY Risk_impact
-  SUBTYPE OF (Risk_consequence);
+SUBTYPE OF (Risk_consequence);
   causal_consequence : OPTIONAL Risk_consequence;
 END_ENTITY;
 
+ENTITY Risk_impact_assignment;
+  assigned_risk_impact : Risk_impact;
+  items : SET [1 : ?] OF risk_impact_item;
+END_ENTITY;
+
 ENTITY Risk_level
-  SUBTYPE OF (Risk_perception);
-  risk_attitude : Risk_attitude;
-  SELF\Risk_perception.risk_context RENAMED risk_objective : Risk_objective;
+SUBTYPE OF (Assigned_property);
+  SELF\Assigned_property.described_element : Risk_perception;
 END_ENTITY;
 
-ENTITY Risk_level_relationship
-  SUBTYPE OF (Risk_perception_relationship);
-  SELF\Risk_perception_relationship.relating_risk_perception RENAMED relating_risk_level : Risk_level;
-  SELF\Risk_perception_relationship.related_risk_perception RENAMED related_risk_level : Risk_level;
+ENTITY Risk_measure
+SUBTYPE OF (Activity_method);
 END_ENTITY;
 
-ENTITY Risk_objective
-  SUBTYPE OF (Risk_context);
+ENTITY Risk_perception
+SUBTYPE OF (Product_view_definition);
+  SELF\Product_view_definition.defined_version : Risk_version;
+  SELF\Product_view_definition.initial_context RENAMED risk_perception_context : Risk_perception_context;
 END_ENTITY;
 
-ENTITY Risk_optimization
-  SUBTYPE OF (Risk_treatment);
+ENTITY Risk_perception_context
+SUBTYPE OF (View_definition_context);
 END_ENTITY;
 
-ENTITY Risk_owner_assignment;
-  risk : SET[1:?] OF Risk;
-  risk_owner : Risk_stakeholder;
+ENTITY Risk_perception_relationship
+SUBTYPE OF (View_definition_relationship);
+  SELF\View_definition_relationship.relating_view RENAMED relating_risk_perception : Risk_perception;
+  SELF\View_definition_relationship.related_view RENAMED related_risk_perception : Risk_perception;
 END_ENTITY;
 
-ENTITY Risk_perception;
-  name : STRING;
-  description : OPTIONAL STRING;
-  formation : Risk_perception_formation;
-  perceived_probability : Applied_probability_assignment;
-  perceived_consequence : SET[1:?] OF Risk_consequence;
-  perceived_impact : SET[0:?] OF Risk_impact;
-  risk_context : Risk_context;
-  risk_status : Risk_status;
+ENTITY Risk_perception_source_assignment;
+  assigned_risk : Risk_perception;
+  items : SET [1 : ?] OF risk_perception_source_item;
 END_ENTITY;
 
-ENTITY Risk_perception_formation;
-  of_risk : Risk;
+ENTITY Risk_relationship
+SUBTYPE OF (Product_relationship);
+  SELF\Product_relationship.relating_product RENAMED relating_risk : Risk;
+  SELF\Product_relationship.related_product RENAMED related_risk : Risk;
 END_ENTITY;
 
-ENTITY Risk_perception_relationship;
-  name : STRING;
-  description : OPTIONAL STRING;
-  relating_risk_perception : Risk_perception;
-  related_risk_perception : Risk_perception;
+ENTITY Risk_treatment
+SUBTYPE OF (Activity);
+  SELF\Activity.chosen_method : Risk_measure;
 END_ENTITY;
 
-ENTITY Risk_person_stakeholder
-  SUBTYPE OF (Person, Risk_stakeholder);
+ENTITY Risk_treatment_assignment
+SUBTYPE OF (Applied_activity_assignment);
+  SELF\Applied_activity_assignment.assigned_activity : Risk_treatment;
+  SELF\Applied_activity_assignment.items : SET [1 : ?] OF risk_treatment_select;
+DERIVE
+  SELF\Applied_activity_assignment.role : STRING := 'risk_treatment_assignment';
 END_ENTITY;
 
-ENTITY Risk_reduction;
-  id : OPTIONAL STRING;
-  name : STRING;
-  description : OPTIONAL STRING;
-  approach : Risk_treatment;
-  resolves : SET[1:?] OF mitigation_select;
-  risk_evaluation : OPTIONAL Risk_evaluation;
+ENTITY Risk_version
+SUBTYPE OF (Product_version);
+  SELF\Product_version.of_product RENAMED of_risk : Risk;
 END_ENTITY;
 
-ENTITY Risk_relationship;
-  id : STRING;
-  name : STRING;
-  description : OPTIONAL STRING;
-  relating_risk : Risk;
-  related_risk : Risk;
-END_ENTITY;
+END_SCHEMA;
 
-ENTITY Risk_retention
-  SUBTYPE OF (Risk_treatment);
-END_ENTITY;
-
-ENTITY Risk_stakeholder
-  ABSTRACT SUPERTYPE ;
-END_ENTITY;
-
-ENTITY Risk_status;
-  name : STRING;
-  description : OPTIONAL STRING;
-END_ENTITY;
-
-ENTITY Risk_transfer
-  SUBTYPE OF (Risk_treatment);
-END_ENTITY;
-
-ENTITY Risk_treatment;
-  name : STRING;
-  description : OPTIONAL STRING;
-  risk_analysis : Risk_analysis;
-  primary_objective : mitigation_select;
-  secondary_objectives : SET[0:?] OF mitigation_select;
-END_ENTITY;
-
-END_SCHEMA;  -- Risk_arm

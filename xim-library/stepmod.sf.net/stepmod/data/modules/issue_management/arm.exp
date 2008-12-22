@@ -1,350 +1,243 @@
 (*
    $Id$
-   ISO TC184/SC4/WG3 N2295 - ISO/CD-TS 10303-1489 Issue management - EXPRESS ARM
+   ISO TC184/SC4/WG3 N2486 - ISO/TS 10303-1489 Issue management - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N2295
 *) 
 
 SCHEMA Issue_management_arm;
 
-USE FROM Activity_arm;    -- ISO/TS 10303-1047
-
-USE FROM Activity_as_realized_arm;    -- ISO/TS 10303-1259
-
-USE FROM Activity_method_arm;    -- ISO/TS 10303-1049
-
 USE FROM Activity_method_assignment_arm;    -- ISO/TS 10303-1249
-
-USE FROM Alias_identification_arm;    -- ISO/TS 10303-1025
-
-USE FROM Approval_arm;    -- ISO/TS 10303-1012
-
-USE FROM Certification_arm;    -- ISO/TS 10303-1044
-
-USE FROM Class_arm;    -- ISO/TS 10303-1070
-
-USE FROM Classification_assignment_arm;    -- ISO/TS 10303-1114
-
-USE FROM Contract_arm;    -- ISO/TS 10303-1062
-
-USE FROM Date_time_arm;    -- ISO/TS 10303-1010
-
-USE FROM Date_time_assignment_arm;    -- ISO/TS 10303-1014
 
 USE FROM Disposition_arm;    -- ISO/TS 10303-1493
 
-USE FROM Event_arm;    -- ISO/TS 10303-1064
-
-USE FROM Event_assignment_arm;    -- ISO/TS 10303-1364
-
-USE FROM Identification_assignment_arm;    -- ISO/TS 10303-1021
-
 USE FROM Issue_arm;    -- ISO/WD 10303-1490
 
-USE FROM Multi_linguism_arm;    -- ISO/TS 10303-1105
-
-USE FROM Observation_arm;    -- ISO/TS 10303-1258
-
-USE FROM Person_organization_arm;    -- ISO/TS 10303-1011
-
-USE FROM Person_organization_assignment_arm;    -- ISO/TS 10303-1013
-
-USE FROM Product_as_individual_arm;    -- ISO/TS 10303-1164
-
-USE FROM Product_categorization_arm;    -- ISO/TS 10303-1016
-
-USE FROM Product_identification_arm;    -- ISO/TS 10303-1017
-
-USE FROM Product_version_arm;    -- ISO/TS 10303-1018
-
-USE FROM Product_view_definition_arm;    -- ISO/TS 10303-1019
-
-USE FROM Project_arm;    -- ISO/TS 10303-1061
-
-USE FROM Security_classification_arm;    -- ISO/TS 10303-1015
-
-USE FROM Value_with_unit_arm;    -- ISO/TS 10303-1054
-
-USE FROM Work_request_arm;    -- ISO/TS 10303-1042
-
-
-TYPE im_ap233_activity_method_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_method_item WITH 
-   (Approval_assignment, 
-    Certification, 
-    Date_or_date_time_assignment, 
-    Observation, 
-    Security_classification);
+TYPE im_activity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_item WITH 
+		(Activity, 
+		Activity_method, 
+		Applied_activity_assignment,
+		Contract, 
+		Issue,
+		Product, 
+		Product_version, 
+		Product_view_definition);
 END_TYPE; 
 
-TYPE im_ap233_event_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON event_item WITH 
-   (Observation);
+TYPE im_activity_method_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_method_item WITH 
+		(Approval_assignment, 
+		Certification, 
+		Date_or_date_time_assignment, 
+		Observation, 
+		Security_classification);
 END_TYPE; 
 
-TYPE im_ap233_issue_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON issue_reference_item WITH 
-   (Activity, 
-    Activity_method, 
-    Activity_method_assignment, 
-    Activity_relationship, 
-    Activity_status, 
-    Address, 
-    Address_assignment, 
-    Affected_items_assignment, 
-    Applied_activity_assignment, 
-    Approval, 
-    Approval_assignment, 
-    Approval_relationship, 
-    Approval_status, 
-    Approving_person_organization, 
-    Attribute_translation_assignment, 
-    Calendar_date, 
-    Certification, 
-    Certification_assignment, 
-    Class, 
-    Classification_assignment, 
-    Contract, 
-    Contract_assignment, 
-    Date_or_date_time_assignment, 
-    Date_time, 
-    Event, 
-    Event_assignment, 
-    Event_relationship, 
-    Identification_assignment, 
-    Language, 
-    Language_indication, 
-    Local_time, 
-    Observation, 
-    Observation_consequence, 
-    Observation_relationship, 
-    Organization, 
-    Organization_or_person_in_organization_assignment, 
-    Organization_relationship, 
-    Product, 
-    Product_category, 
-    Product_category_assignment, 
-    Product_category_hierarchy, 
-    Product_design_to_individual, 
-    Product_design_version_to_individual, 
-    Product_planned_to_realized, 
-    Product_version, 
-    Security_classification, 
-    Security_classification_assignment, 
-    Unit, 
-    Value_with_unit, 
-    View_definition_context, 
-    Work_request, 
-    Work_request_status);
+TYPE im_affected_item_select = EXTENSIBLE SELECT BASED_ON affected_item_select WITH 
+		(Activity_method,
+		Contract, 
+		Organization, 
+		Person, 
+		Person_in_organization,
+		Product, 
+		Product_version, 
+		Product_view_definition);
 END_TYPE; 
 
-TYPE im_ap233_observed_context = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON observed_context WITH 
-   (Activity, 
-    Activity_method, 
-    Applied_activity_assignment, 
-    Approval_assignment, 
-    Certification_assignment, 
-    Contract_assignment, 
-    Event_assignment, 
-    Issue, 
-    Observation_consequence, 
-    Product, 
-    Product_design_to_individual, 
-    Product_planned_to_realized, 
-    Product_version, 
-    Product_view_definition, 
-    Project, 
-    Project_assignment, 
-    Security_classification_assignment);
+TYPE im_alias_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON alias_identification_item WITH 
+		(Address, 
+		Approval, 
+		Approval_status, 
+		Certification, 
+		Event,
+		Organization_or_person_in_organization_assignment, 
+		Person, 
+		Person_in_organization,
+		Product_as_individual, 
+		Product_as_individual_view, 
+		Product_as_planned, 
+		Product_as_realized,
+		Project, 
+		Security_classification_assignment);
 END_TYPE; 
 
-TYPE im_os_affected_item_select = EXTENSIBLE SELECT BASED_ON affected_item_select WITH 
-   (Organization, 
-    Person, 
-    Person_in_organization);
+TYPE im_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH 
+		(Activity_actual, 
+		Certification, 
+		Event,
+		Identification_assignment, 
+		Product_as_individual, 
+		Product_as_planned, 
+		Product_as_realized, 
+		Product_design_to_individual, 
+		Product_design_version_to_individual, 
+		Product_planned_to_realized,
+		Product_view_definition, 
+		View_definition_context,
+		Work_request);
 END_TYPE; 
 
-TYPE im_pb_alias_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON alias_identification_item WITH 
-   (Product_as_individual, 
-    Product_as_individual_view, 
-    Product_as_planned, 
-    Product_as_realized);
+TYPE im_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH 
+		(Product_as_individual, 
+		Product_as_planned, 
+		Product_as_realized,
+		Project);
 END_TYPE; 
 
-TYPE im_pb_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH 
-   (Product_as_individual, 
-    Product_as_planned, 
-    Product_as_realized, 
-    Product_design_to_individual, 
-    Product_design_version_to_individual, 
-    Product_planned_to_realized);
+TYPE im_classification = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH 
+		(Activity, 
+		Activity_relationship, 
+		Applied_activity_assignment,
+		Conversion_based_unit, 
+		Derived_unit, 
+		Product, 
+		Product_as_planned, 
+		Product_as_realized, 
+		Product_category, 
+		Product_design_to_individual, 
+		Product_design_version_to_individual, 
+		Product_planned_to_realized,
+		Product_version, 
+		Product_view_definition, 
+		Uncertainty_with_unit, 
+		Unit, 
+		Value_with_unit, 
+		View_definition_context);
 END_TYPE; 
 
-TYPE im_pb_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH 
-   (Product_as_individual, 
-    Product_as_planned, 
-    Product_as_realized);
+TYPE im_contract_item = EXTENSIBLE SELECT BASED_ON contract_item WITH 
+		(organization_or_person_in_organization_item,
+		Product_as_individual, 
+		Product_as_planned, 
+		Product_as_realized,
+		Product_version);
 END_TYPE; 
 
-TYPE im_pb_classification = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH 
-   (Product_as_planned, 
-    Product_as_realized, 
-    Product_design_to_individual, 
-    Product_design_version_to_individual, 
-    Product_planned_to_realized);
+TYPE im_date_or_date_time_item = EXTENSIBLE SELECT BASED_ON date_or_date_time_item WITH 
+		(Identification_assignment, 
+		Product_as_planned, 
+		Product_as_realized, 
+		Product_design_to_individual, 
+		Product_design_version_to_individual, 
+		Product_planned_to_realized,
+		Product_version, 
+		Product_view_definition, 
+		View_definition_context);
 END_TYPE; 
 
-TYPE im_pb_contract_item = EXTENSIBLE SELECT BASED_ON contract_item WITH 
-   (Product_as_individual, 
-    Product_as_planned, 
-    Product_as_realized);
+TYPE im_event_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON event_item WITH 
+		(Observation);
 END_TYPE; 
 
-TYPE im_pb_date_or_date_time_item = EXTENSIBLE SELECT BASED_ON date_or_date_time_item WITH 
-   (Product_as_planned, 
-    Product_as_realized, 
-    Product_design_to_individual, 
-    Product_design_version_to_individual, 
-    Product_planned_to_realized);
+TYPE im_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH 
+		(Activity_method,
+		Product_as_planned, 
+		Product_as_realized,
+		Product_category, 
+		View_definition_context);
 END_TYPE; 
 
-TYPE im_pb_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH 
-   (Product_category, 
-    View_definition_context);
+TYPE im_issue_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON issue_reference_item WITH 
+		(Activity, 
+		Activity_method, 
+		Activity_method_assignment, 
+		Activity_relationship, 
+		Activity_status, 
+		Address, 
+		Address_assignment, 
+		Affected_items_assignment, 
+		Applied_activity_assignment, 
+		Approval, 
+		Approval_assignment, 
+		Approval_relationship, 
+		Approval_status, 
+		Approving_person_organization, 
+		Attribute_translation_assignment, 
+		Calendar_date, 
+		Certification, 
+		Certification_assignment, 
+		Class, 
+		Classification_assignment, 
+		Contract, 
+		Contract_assignment, 
+		Date_or_date_time_assignment, 
+		Date_time, 
+		Event, 
+		Event_assignment, 
+		Event_relationship, 
+		Identification_assignment, 
+		Language, 
+		Language_indication, 
+		Local_time, 
+		Observation, 
+		Observation_consequence, 
+		Observation_relationship, 
+		Organization, 
+		Organization_or_person_in_organization_assignment, 
+		Organization_relationship, 
+		Product, 
+		Product_category, 
+		Product_category_assignment, 
+		Product_category_hierarchy, 
+		Product_design_to_individual, 
+		Product_design_version_to_individual, 
+		Product_planned_to_realized, 
+		Product_version, 
+		Security_classification, 
+		Security_classification_assignment, 
+		Unit, 
+		Value_with_unit, 
+		View_definition_context, 
+		Work_request, 
+		Work_request_status);
 END_TYPE; 
 
-TYPE im_pb_organization_or_person_in_organization_item = EXTENSIBLE SELECT BASED_ON organization_or_person_in_organization_item WITH 
-   (Product_as_individual, 
-    Product_as_planned, 
-    Product_as_realized);
+TYPE im_observed_context = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON observed_context WITH 
+		(Activity, 
+		Activity_method, 
+		Applied_activity_assignment, 
+		Approval_assignment, 
+		Certification_assignment, 
+		Contract_assignment, 
+		Event_assignment, 
+		Issue, 
+		Observation_consequence, 
+		Product, 
+		Product_design_to_individual, 
+		Product_planned_to_realized, 
+		Product_version, 
+		Product_view_definition, 
+		Project, 
+		Project_assignment, 
+		Security_classification_assignment);
 END_TYPE; 
 
-TYPE im_pb_security_classification_item = EXTENSIBLE SELECT BASED_ON security_classification_item WITH 
-   (Product_as_individual, 
-    Product_as_individual_version, 
-    Product_as_planned, 
-    Product_as_realized, 
-    Product_design_version_to_individual);
+TYPE im_organization_or_person_in_organization_item = EXTENSIBLE SELECT BASED_ON organization_or_person_in_organization_item WITH 
+		(Product_as_individual, 
+		Product_as_planned, 
+		Product_as_realized);
 END_TYPE; 
 
-TYPE im_pb_string_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON string_select WITH 
-   (Product_as_individual, 
-    Product_as_individual_version, 
-    Product_as_individual_view);
+TYPE im_project_item = EXTENSIBLE SELECT BASED_ON project_item WITH 
+		(Activity_method, 
+		Applied_activity_assignment);
 END_TYPE; 
 
-TYPE im_pmri_activity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_item WITH 
-   (Contract, 
-    Product, 
-    Product_version, 
-    Product_view_definition);
+TYPE im_security_classification_item = EXTENSIBLE SELECT BASED_ON security_classification_item WITH 
+		(Product_as_individual, 
+		Product_as_individual_version, 
+		Product_as_planned, 
+		Product_as_realized, 
+		Product_design_version_to_individual,
+		Product_version, 
+		Product_view_definition, 
+		Project_relationship);
 END_TYPE; 
 
-TYPE im_pmri_affected_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON affected_item_select WITH 
-   (Contract, 
-    Product, 
-    Product_version, 
-    Product_view_definition);
-END_TYPE; 
-
-TYPE im_pmri_alias_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON alias_identification_item WITH 
-   (Approval, 
-    Approval_status, 
-    Certification, 
-    Organization_or_person_in_organization_assignment, 
-    Project, 
-    Security_classification_assignment);
-END_TYPE; 
-
-TYPE im_pmri_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH 
-   (Certification, 
-    Identification_assignment, 
-    Product_view_definition, 
-    View_definition_context);
-END_TYPE; 
-
-TYPE im_pmri_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH 
-   (Project);
-END_TYPE; 
-
-TYPE im_pmri_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH 
-   (Conversion_based_unit, 
-    Derived_unit, 
-    Product, 
-    Product_category, 
-    Product_version, 
-    Product_view_definition, 
-    Uncertainty_with_unit, 
-    Unit, 
-    Value_with_unit, 
-    View_definition_context);
-END_TYPE; 
-
-TYPE im_pmri_contract_item = EXTENSIBLE SELECT BASED_ON contract_item WITH 
-   (organization_or_person_in_organization_item, 
-    Product_version);
-END_TYPE; 
-
-TYPE im_pmri_date_or_date_time_item = EXTENSIBLE SELECT BASED_ON date_or_date_time_item WITH 
-   (Identification_assignment, 
-    Product_version, 
-    Product_view_definition, 
-    View_definition_context);
-END_TYPE; 
-
-TYPE im_pmri_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH 
-   (Product_as_planned, 
-    Product_as_realized);
-END_TYPE; 
-
-TYPE im_pmri_security_classification_item = EXTENSIBLE SELECT BASED_ON security_classification_item WITH 
-   (Product_version, 
-    Product_view_definition, 
-    Project_relationship);
-END_TYPE; 
-
-TYPE im_so_alias_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON alias_identification_item WITH 
-   (Address, 
-    Person, 
-    Person_in_organization);
-END_TYPE; 
-
-TYPE im_ss_activity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_item WITH 
-   (Activity, 
-    Activity_method, 
-    Applied_activity_assignment);
-END_TYPE; 
-
-TYPE im_ss_affected_item_select = EXTENSIBLE SELECT BASED_ON affected_item_select WITH 
-   (Activity_method);
-END_TYPE; 
-
-TYPE im_ss_alias_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON alias_identification_item WITH 
-   (Event);
-END_TYPE; 
-
-TYPE im_ss_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH 
-   (Event);
-END_TYPE; 
-
-TYPE im_ss_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH 
-   (Activity, 
-    Activity_relationship, 
-    Applied_activity_assignment);
-END_TYPE; 
-
-TYPE im_ss_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH 
-   (Activity_method);
-END_TYPE; 
-
-TYPE im_ss_project_item = EXTENSIBLE SELECT BASED_ON project_item WITH 
-   (Activity_method, 
-    Applied_activity_assignment);
-END_TYPE; 
-
-TYPE issue_activity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_item WITH 
-   (Issue);
-END_TYPE; 
-
-TYPE issue_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH 
-   (Activity_actual, 
-    Work_request);
+TYPE im_string_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON string_select WITH 
+		(Product_as_individual, 
+		Product_as_individual_version, 
+		Product_as_individual_view);
 END_TYPE; 
 
 END_SCHEMA;  -- Issue_management_arm
+
 

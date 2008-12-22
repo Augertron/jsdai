@@ -31,8 +31,8 @@ package jsdai.SMixed_complex_types;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.SPart_template_2d_shape_xim.CxPart_template_planar_shape_model;
-import jsdai.SPart_template_2d_shape_xim.EPart_template_planar_shape_model;
+import jsdai.SLayered_interconnect_complex_template_xim.CxPart_template_planar_shape_model;
+import jsdai.SLayered_interconnect_complex_template_xim.EPart_template_planar_shape_model;
 import jsdai.SPhysical_unit_2d_design_view_xim.*;
 import jsdai.SProduct_property_representation_schema.CShape_representation;
 import jsdai.SRepresentation_schema.ERepresentation;

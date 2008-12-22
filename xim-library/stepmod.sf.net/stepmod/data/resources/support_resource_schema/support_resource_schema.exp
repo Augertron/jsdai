@@ -1,22 +1,26 @@
 (*
-  $Id$
-  ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
-*) 
+$Id$
+
+2008-02-07
+ISO TC184/SC4/WG12 N4883 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+*)
+(*
+Supersedes ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+changes to date_time schema and to measure_schema as per TC1 - WG12 N4884.
+*)
 
 
 SCHEMA support_resource_schema;
+  TYPE identifier = STRING;
+  END_TYPE;
 
+  TYPE label = STRING;
+  END_TYPE;
 
-TYPE identifier = STRING;
-END_TYPE; 
+  TYPE text = STRING;
+  END_TYPE;
 
-TYPE label = STRING;
-END_TYPE; 
-
-TYPE text = STRING;
-END_TYPE; 
-
-FUNCTION bag_to_set (the_bag : BAG OF GENERIC:intype):SET OF GENERIC:intype;
+  FUNCTION bag_to_set (the_bag : BAG OF GENERIC:intype):SET OF GENERIC:intype;
     LOCAL
       the_set : SET OF GENERIC:intype := [];
     END_LOCAL;
@@ -27,20 +31,23 @@ FUNCTION bag_to_set (the_bag : BAG OF GENERIC:intype):SET OF GENERIC:intype;
       END_REPEAT;
     END_IF;
     RETURN (the_set);
-END_FUNCTION; 
+  END_FUNCTION;
 
-FUNCTION type_check_function
- (the_type : GENERIC; sub_names : SET OF STRING; criterion : INTEGER) : LOGICAL; 
-IF (( NOT EXISTS ( the_type ) ) OR (NOT ({0<= criterion <=3})) OR
-(SIZEOF ( sub_names ) = 0 ) ) THEN RETURN (UNKNOWN);
-ELSE
-  CASE criterion OF
-       0: RETURN (SIZEOF ( sub_names * TYPEOF (the_type) ) > 0);
-       1: RETURN (SIZEOF ( sub_names * TYPEOF (the_type) ) = 0);
-       2: RETURN (SIZEOF ( sub_names * TYPEOF (the_type) ) = 1);
-       3: RETURN (SIZEOF ( sub_names * TYPEOF (the_type) ) <= 1);
-  END_CASE;
-END_IF;
-END_FUNCTION; 
+  FUNCTION type_check_function (the_type : GENERIC; sub_names : SET OF STRING; criterion : INTEGER):LOGICAL;
+    IF ((NOT EXISTS(the_type)) OR (NOT ({0 <= criterion <= 3})) OR (SIZEOF(sub_names) = 0)) THEN
+      RETURN (UNKNOWN);
+    ELSE
+      CASE criterion OF 
+        0:
+          RETURN (SIZEOF(sub_names * TYPEOF(the_type)) > 0);
+        1:
+          RETURN (SIZEOF(sub_names * TYPEOF(the_type)) = 0);
+        2:
+          RETURN (SIZEOF(sub_names * TYPEOF(the_type)) = 1);
+        3:
+          RETURN (SIZEOF(sub_names * TYPEOF(the_type)) <= 1);
+      END_CASE;
+    END_IF;
+  END_FUNCTION;
 
-END_SCHEMA;  -- support_resource_schema
+END_SCHEMA;

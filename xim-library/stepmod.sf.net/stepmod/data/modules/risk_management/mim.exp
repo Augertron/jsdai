@@ -1,362 +1,263 @@
 (*
    $Id$
-   ISO TC184/SC4/WG3 N2320 - ISO/CD-TS 10303-1467 Risk management - EXPRESS MIM
+   ISO TC184/SC4/WG3 N2502 - ISO/TS 10303-1467 Risk management - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N2320
 *)
 
 SCHEMA Risk_management_mim;
   USE FROM Risk_mim;
   USE FROM product_property_definition_schema   -- ISO 10303-41
   	(characterized_object); 
-  USE FROM state_observed_schema;
 
-
-TYPE rm_pmri_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
-	(general_property,
-	product,
-	product_definition_formation,
-	product_definition);
-END_TYPE;
-
-TYPE rm_ss_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
-	(executed_action,
-	action_method,
-	applied_action_assignment,
-	property_definition,
-	action_resource);
-END_TYPE;
-
-TYPE rm_pmri_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(product,
-	product_definition_formation,
-	document_file,
-	product_definition);
-END_TYPE;
-
-TYPE rm_os_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(organization,
-	person,
-	person_and_organization);
-END_TYPE;
-
-TYPE rm_ss_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(executed_action,
-	applied_action_assignment,
-	property_definition,
-	event_occurrence);
-END_TYPE;
-
-TYPE rm_pmri_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
-	(condition,
-	applied_action_method_assignment,
-	applied_identification_assignment,
-	general_property,
-	general_property_relationship,
-	product_definition,
-	product_definition_context);
-END_TYPE;
-
-TYPE rm_ss_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
-	(action_method_relationship,
-	applied_action_method_assignment,
-	state_type_assignment,
-	property_definition,
-	event_occurrence,
-	product,
-	justification_group_assignment,  justification_assignment,
-	product_relationship,
-	justification_support_assignment,
+TYPE rm_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
+	(action_method,
 	action_resource,
-	action_method,
-	action_resource_relationship);
-END_TYPE;
-TYPE rm_pmri_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
-	(conversion_based_unit,
-	derived_unit,
-	applied_external_identification_assignment,
+	applied_action_assignment,
+	executed_action,
 	general_property,
-	general_property_relationship,
 	product,
-	product_category,
-	product_definition_formation,
 	product_definition,
-	uncertainty_measure_with_unit,
-	named_unit, 
-	measure_with_unit,
-	product_definition_context);
+	product_definition_formation,
+	property_definition);
 END_TYPE;
 
-TYPE rm_ss_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
-	(executed_action,
-	action_relationship,
+TYPE rm_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
+	(action_method,
 	applied_action_assignment,
-	property_definition,
-	property_definition_representation);
-END_TYPE;
-
-TYPE rm_pmri2_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(approval,
 	applied_approval_assignment,
-	applied_document_reference,  applied_document_usage_constraint_assignment
-	);
-END_TYPE;
-
-TYPE rm_ss2_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(executed_action,
-	applied_action_assignment,
-	property_definition,
-	state_type,
-	state_type_relationship);
-END_TYPE;
-
-TYPE rm_pmri3_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(approval,
-	applied_approval_assignment,
-	calendar_date,
 	applied_classification_assignment,
-	date_assignment, date_and_time_assignment,
-	date_and_time,
-	applied_document_reference,  applied_document_usage_constraint_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
 	applied_identification_assignment,
-	applied_organization_assignment, applied_person_and_organization_assignment,
+	applied_organization_assignment,
+	applied_person_and_organization_assignment,
+	approval,
+	calendar_date,
+	date_and_time,
+	date_and_time_assignment,
+	date_assignment,
+	document_file,
+	event_occurrence,
+	executed_action,
+	organization,
+	person,
+	person_and_organization,
 	product,
-	product_related_product_category,
-	product_definition_formation,
 	product_definition,
-	representation);
-END_TYPE;
-
-TYPE rm_ss3_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(executed_action,
-	action_method,
+	product_definition_formation,
+	product_related_product_category,
 	property_definition,
 	property_definition_representation,
-	state_type);
-END_TYPE;
-
-TYPE rm_pmri_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_and_time_item WITH
-	(condition,
-	applied_action_method_assignment,
-	applied_identification_assignment,
-	general_property,
-	general_property_relationship,
-	product_definition_formation,
-	product_definition,
-	product_definition_context);
-END_TYPE;
-
-TYPE rm_pmri_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_item WITH
-	(condition,
-	applied_action_method_assignment,
-	applied_identification_assignment,
-	general_property,
-	general_property_relationship,
-	product_definition_formation,
-	product_definition,
-	product_definition_context);
-END_TYPE;
-
-TYPE rm_ss_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_and_time_item WITH
-	(action_method_relationship,
-	applied_action_method_assignment,
-	action_resource,
-	action_method);
-END_TYPE;
-
-TYPE rm_ss_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_item WITH
-	(action_method_relationship,
-	applied_action_method_assignment,
-	action_resource,
-	action_method);
-END_TYPE;
-
-TYPE rm_pmri_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH
-	(applied_external_identification_assignment,
-	product_category);
-END_TYPE;
-
-TYPE rm_ss_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH
-	(action_method_relationship,
-	applied_action_method_assignment,
-	action_resource,
-	action_method,
-	action_resource_relationship,
-	state_type);
-END_TYPE;
-
-TYPE rm_pmri_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
-	(document_file,
-	applied_external_identification_assignment,
-	general_property,
-	general_property_relationship,
-	product_category,
 	representation,
-	product_definition_context);
-END_TYPE;
-
-TYPE rm_ss_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
-	(action_method,
-	action_method_relationship,
 	state_type,
 	state_type_relationship);
 END_TYPE;
 
-TYPE rm_ss_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_item WITH
-	(action_method_relationship,
-	applied_action_method_assignment,
+TYPE rm_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
+	(action_method,
+	action_method_relationship,
 	action_resource,
-	action_method,
-	action_resource_relationship);
+	action_resource_relationship,
+	applied_action_method_assignment,
+	applied_identification_assignment,
+	condition,
+	event_occurrence,
+	general_property,
+	general_property_relationship,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
+	justification_support_assignment,
+	justification_support_item_group_assignment,
+	product,
+	product_definition,
+	product_definition_context,
+	product_relationship,
+	property_definition,
+	state_type_assignment);
 END_TYPE;
 
-TYPE rm_pmri_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_support_item WITH
-	(product_definition_context);
+TYPE rm_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
+	(action_relationship,
+	applied_action_assignment,
+	applied_external_identification_assignment,
+	conversion_based_unit,
+	derived_unit,
+	executed_action,
+	general_property,
+	general_property_relationship,
+	measure_with_unit,
+	named_unit,
+	product,
+	product_category,
+	product_definition,
+	product_definition_context,
+	product_definition_formation,
+	property_definition,
+	property_definition_representation,
+	uncertainty_measure_with_unit);
 END_TYPE;
 
-TYPE rm_ss_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_support_item WITH
-	(applied_action_method_assignment,
-	state_type_assignment,
+TYPE rm_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_item WITH
+	(action_method,
+	action_method_relationship,
+	action_resource,
+	applied_action_method_assignment,
+	applied_identification_assignment,
+	condition,
+	general_property,
+	general_property_relationship,
+	product_definition,
+	product_definition_context,
+	product_definition_formation);
+END_TYPE;
+
+TYPE rm_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_and_time_item WITH
+	(action_method,
+	action_method_relationship,
+	action_resource,
+	applied_action_method_assignment,
+	applied_identification_assignment,
+	condition,
+	general_property,
+	general_property_relationship,
+	product_definition,
+	product_definition_context,
+	product_definition_formation);
+END_TYPE;
+
+TYPE rm_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH
+	(action_method,
+	action_method_relationship,
+	action_resource,
+	action_resource_relationship,
+	applied_action_method_assignment,
+	applied_external_identification_assignment,
+	product_category,
 	state_type);
 END_TYPE;
 
-TYPE rm_pmri_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_and_organization_item WITH
-	(condition,
+TYPE rm_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
+	(action_method,
+	action_method_relationship,
+	applied_external_identification_assignment,
+	document_file,
+	general_property,
+	general_property_relationship,
+	product_category,
+	product_definition_context,
+	representation,
+	state_type,
+	state_type_relationship);
+END_TYPE;
+
+TYPE rm_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_item WITH
+	(action_method,
+	action_method_relationship,
+	action_resource,
+	action_resource_relationship,
 	applied_action_method_assignment);
 END_TYPE;
 
-TYPE rm_pmri_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_item WITH
-	(condition,
-	applied_action_method_assignment);
+TYPE rm_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_support_item WITH
+	(applied_action_method_assignment,
+	product_definition_context,
+	state_type,
+	state_type_assignment);
 END_TYPE;
 
-TYPE rm_ss_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_and_organization_item WITH
-	(action_method_relationship,
-	applied_action_method_assignment,
+TYPE rm_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_item WITH
+	(action_method,
+	action_method_relationship,
 	action_resource,
-	action_method);
-END_TYPE;
-
-TYPE rm_ss_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_item WITH
-	(action_method_relationship,
 	applied_action_method_assignment,
-	action_resource,
-	action_method);
+	condition);
 END_TYPE;
 
-(*TYPE rm_pmri_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
-	(applied_document_reference,  applied_document_usage_constraint_assignment,
-	applied_organization_assignment, applied_person_and_organization_assignment,
-	product_definition);
-END_TYPE;*)
+TYPE rm_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_and_organization_item WITH
+	(action_method,
+	action_method_relationship,
+	action_resource,
+	applied_action_method_assignment,
+	condition);
+END_TYPE;
 
-ENTITY rm_pmri_characterizable_applied_document_reference  
-  SUBTYPE OF (applied_document_reference, characterized_object);
-END_ENTITY;
-
-  
-ENTITY rm_pmri_characterizable_applied_document_usage_constraint_assignment
-  SUBTYPE OF (applied_document_usage_constraint_assignment, characterized_object);
-END_ENTITY;
-
-
-ENTITY rm_pmri_characterizable_applied_organization_assignment 
-  SUBTYPE OF (applied_organization_assignment, characterized_object);
-END_ENTITY;
-
- 
-ENTITY rm_pmri_characterizable_applied_person_and_organization_assignment
-  SUBTYPE OF (applied_person_and_organization_assignment, characterized_object);
-END_ENTITY;
-
-
-ENTITY rm_pmri_characterizable_product_definition
-  SUBTYPE OF (product_definition, characterized_object);
-END_ENTITY;
-
-
-
-(*TYPE rm_os_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
+(*
+TYPE rm_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
 	(address,
+	applied_action_assignment,
+	applied_action_method_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_organization_assignment,
+	applied_person_and_organization_assignment,
 	person,
-	person_and_organization);
-END_TYPE;*)
-
-ENTITY rm_os_characterizable_address
-  SUBTYPE OF (address, characterized_object);
-END_ENTITY;
-
-
-ENTITY rm_os_characterizable_person
-  SUBTYPE OF (person, characterized_object);
-END_ENTITY;
-
-
-ENTITY rm_os_characterizable_person_and_organization
-  SUBTYPE OF (person_and_organization, characterized_object);
-END_ENTITY;
-
-
-
-(*TYPE rm_ss_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
-	(applied_action_assignment,
-	applied_action_method_assignment);
-END_TYPE;*)
-
-ENTITY rm_ss_characterizable_applied_action_assignment
-  SUBTYPE OF (applied_action_assignment, characterized_object);
-END_ENTITY;
-
-
-ENTITY rm_ss_characterizable_applied_action_method_assignment
-  SUBTYPE OF (applied_action_method_assignment, characterized_object);
-END_ENTITY;
-
-
-
-TYPE rm_pmri4_action_method_items= EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(product,
-	product_definition,
-	product_definition_formation,
-	document_file);
+	person_and_organization,
+	product_definition);
 END_TYPE;
+*)
 
-TYPE rm_os2_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(organization,
-	person,
-	person_and_organization);
-END_TYPE;
+		ENTITY rm_characterizable_address  
+		  SUBTYPE OF (address, characterized_object);
+		END_ENTITY;
+		
+		ENTITY rm_characterizable_applied_action_assignment  
+		  SUBTYPE OF (applied_action_assignment, characterized_object);
+		END_ENTITY;
+		
+		ENTITY rm_characterizable_applied_action_method_assignment  
+		  SUBTYPE OF (applied_action_method_assignment, characterized_object);
+		END_ENTITY;
+		
+		ENTITY rm_characterizable_applied_document_reference  
+		  SUBTYPE OF (applied_document_reference, characterized_object);
+		END_ENTITY;
+		
+		ENTITY rm_characterizable_applied_document_usage_constraint_assignment  
+		  SUBTYPE OF (applied_document_usage_constraint_assignment, characterized_object);
+		END_ENTITY;
+		
+		ENTITY rm_characterizable_applied_organization_assignment  
+		  SUBTYPE OF (applied_organization_assignment, characterized_object);
+		END_ENTITY;
+		
+		ENTITY rm_characterizable_applied_person_and_organization_assignment  
+		  SUBTYPE OF (applied_person_and_organization_assignment, characterized_object);
+		END_ENTITY;
+		
+		ENTITY rm_characterizable_person  
+		  SUBTYPE OF (person, characterized_object);
+		END_ENTITY;
+		
+		ENTITY rm_characterizable_person_and_organization  
+		  SUBTYPE OF (person_and_organization, characterized_object);
+		END_ENTITY;
+		
+		ENTITY rm_characterizable_product_definition  
+		  SUBTYPE OF (product_definition, characterized_object);
+		END_ENTITY;
 
-TYPE rm_pmri_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_type_of_item WITH
-	(product,
+TYPE rm_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_type_of_item WITH
+	(action_method,
+	action_resource,
+	action_resource_relationship,
+	applied_action_assignment,
+	applied_action_method_assignment,
+	executed_action,
+	organization,
+	person_and_organization,
+	product,
 	product_category,
 	product_definition_formation);
 END_TYPE;
 
-TYPE rm_os_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_type_of_item WITH
-	(organization,
-	person_and_organization);
-END_TYPE;
-
-TYPE rm_ss_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_type_of_item WITH
-	(executed_action,
-	action_method,
-	applied_action_assignment,
-	applied_action_method_assignment,
-	action_resource_relationship,
-	action_resource);
-END_TYPE;
-
-
-	
-TYPE rm_ap233_probable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON probable_item WITH	
-	(executed_action,
-	action,
-	action_method,
+TYPE rm_probable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON probable_item WITH
+	(action_method,
 	action_method_relationship,
 	action_relationship,
-	action_resource,
-	applied_action_assignment,
 	applied_action_method_assignment,
 	condition,
+	executed_action,
 	general_property,
 	general_property_relationship,
 	product,
@@ -364,34 +265,25 @@ TYPE rm_ap233_probable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON probable
 	product_definition_formation,
 	representation,
 	representation_item,
-	resource_property,
-	state_observed,
-	state_observed_assignment,
-	state_observed_relationship,
 	state_type,
 	state_type_relationship);
-END_TYPE;	
+END_TYPE;
 
-
-TYPE rm_ap233_risk_impact_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_impact_item WITH	
-	(executed_action,
-	action,
-	action_method,
+TYPE rm_risk_impact_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_impact_item WITH
+	(action_method,
 	action_relationship,
 	action_resource,
 	action_resource_relationship,
 	applied_action_assignment,
-	applied_action_method_assignment,
-	applied_organization_assignment, applied_person_and_organization_assignment,
+	applied_organization_assignment,
+	applied_person_and_organization_assignment,
 	approval,
-	ascribable_state,
-	ascribable_state_relationship,
 	condition,
 	event_occurrence,
 	event_occurrence_relationship,
+	executed_action,
 	general_property,
 	general_property_relationship,
-	group,
 	organization,
 	person,
 	person_and_organization,
@@ -400,37 +292,31 @@ TYPE rm_ap233_risk_impact_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_
 	product_definition_formation,
 	representation,
 	representation_item,
-	resource_property,
-	state_observed,
-	state_observed_assignment,
-	state_observed_relationship,
 	state_type_relationship);
-END_TYPE;	
+END_TYPE;
 
-TYPE rm_ap233_risk_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_source_item WITH	
-	(action_relationship,
-	action,
-	action_method,
-	action_method_assignment,
+TYPE rm_risk_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_source_item WITH
+	(action_method,
+	action_relationship,
 	action_resource,
 	action_resource_relationship,
-	applied_action_assignment,
-	applied_action_method_assignment,
-	applied_document_reference,  applied_document_usage_constraint_assignment,
-	applied_organization_assignment, applied_person_and_organization_assignment,
+	applied_document_reference,
+	applied_document_usage_constraint_assignment,
+	applied_organization_assignment,
+	applied_person_and_organization_assignment,
 	approval,
 	approval_person_organization,
-	ascribable_state,
-	ascribable_state_relationship,
 	condition,
 	document_file,
 	event_occurrence,
 	event_occurrence_relationship,
 	general_property,
 	general_property_relationship,
-	group,
-	justification_group_assignment,  justification_assignment,
+	justification_assignment,
+	justification_group_assignment,
+	justification_item_group_assignment,
 	justification_support_assignment,
+	justification_support_item_group_assignment,
 	organization,
 	person,
 	person_and_organization,
@@ -441,13 +327,9 @@ TYPE rm_ap233_risk_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_
 	property_definition,
 	representation,
 	representation_item,
-	resource_property,
-	state_observed,
-	state_observed_assignment,
-	state_observed_relationship,
 	state_type,
 	state_type_relationship);
-END_TYPE;	
+END_TYPE;
 
 END_SCHEMA;
 

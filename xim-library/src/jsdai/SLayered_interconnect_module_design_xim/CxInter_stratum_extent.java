@@ -29,9 +29,17 @@ package jsdai.SLayered_interconnect_module_design_xim;
 * $Id$
 */
 
+import jsdai.SMaterial_property_definition_schema.AProperty_definition_relationship;
+import jsdai.SMaterial_property_definition_schema.CProperty_definition_relationship;
+import jsdai.SMaterial_property_definition_schema.EProperty_definition_relationship;
 import jsdai.SProduct_definition_schema.*;
+import jsdai.SProduct_property_definition_schema.AProperty_definition;
+import jsdai.SProduct_property_definition_schema.CProduct_definition_shape;
+import jsdai.SProduct_property_definition_schema.CProperty_definition;
+import jsdai.SProduct_property_definition_schema.EProperty_definition;
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
+import jsdai.util.LangUtils;
 
 public class CxInter_stratum_extent extends CInter_stratum_extent implements EMappedXIMEntity
 {
@@ -86,6 +94,9 @@ public class CxInter_stratum_extent extends CInter_stratum_extent implements EMa
 
 		setMappingConstraints(context, this);
 
+		setIncluded_stratum(context, this);
+		
+		unsetIncluded_stratum(null);
 		//********** "managed_design_object" attributes
 
 	}
@@ -96,6 +107,7 @@ public class CxInter_stratum_extent extends CInter_stratum_extent implements EMa
 	public void removeAimData(SdaiContext context) throws SdaiException {
 		unsetMappingConstraints(context, this);
 
+		unsetIncluded_stratum(context, this);
 	}
 	
 	
@@ -128,4 +140,78 @@ public class CxInter_stratum_extent extends CInter_stratum_extent implements EMa
 	
 	//********** "managed_design_object" attributes
 
+	/**
+	* Sets/creates data for mapping constraints.
+	*
+	* <p>
+		attribute_mapping included_stratum(included_stratum, $PATH, Stratum_armx);
+			product_definition_relationship
+			characterized_product_definition = product_definition_relationship
+			characterized_product_definition
+			characterized_definition = characterized_product_definition
+			characterized_definition <-
+			property_definition.definition
+			property_definition <-
+			property_definition_relationship.related_property_definition
+			property_definition_relationship
+			{property_definition_relationship.name = 'included stratum'}
+			property_definition_relationship.relating_property_definition ->
+			property_definition =>
+			product_definition_shape =>
+			stratum
+		end_attribute_mapping;
+	* </p>
+	* @param context SdaiContext.
+	* @param armEntity arm entity.
+	* @throws SdaiException
+	*/
+	// PDR <- PD <- PDR -> S
+	public static void setIncluded_stratum(SdaiContext context, EInter_stratum_extent armEntity) throws SdaiException
+	{
+		unsetIncluded_stratum(context, armEntity);
+		if(armEntity.testIncluded_stratum(null)){
+			AStratum_armx stratums = armEntity.getIncluded_stratum(null);
+			for(int i=1,count=stratums.getMemberCount(); i<=count; i++){
+				EStratum_armx stratum = stratums.getByIndex(i);
+		        // PD
+		        LangUtils.Attribute_and_value_structure[] pdStructure = {
+		           new LangUtils.Attribute_and_value_structure(CProperty_definition.attributeDefinition(null), 
+		           		armEntity),
+		        };
+	
+		        EProperty_definition property_definition = (EProperty_definition) LangUtils.createInstanceIfNeeded(
+		           context,
+		           CProperty_definition.definition,
+		           pdStructure);
+	
+		        if (!property_definition.testName(null)) {
+		           property_definition.setName(null, "");
+		        }
+				// PDR
+		        EProperty_definition_relationship property_definition_relationship = (EProperty_definition_relationship)
+		        	context.working_model.createEntityInstance(CProperty_definition_relationship.definition);
+		        property_definition_relationship.setRelated_property_definition(null, property_definition);
+		        property_definition_relationship.setName(null, "included stratum");
+		        property_definition_relationship.setRelating_property_definition(null, stratum);
+			}
+		}
+	}
+
+	public static void unsetIncluded_stratum(SdaiContext context, EInter_stratum_extent armEntity) throws SdaiException
+	{
+		AProperty_definition apd = new AProperty_definition();
+		CProperty_definition.usedinDefinition(null, armEntity, context.domain, apd);
+		for(int p=1,countP=apd.getMemberCount(); p<=countP; p++){
+			AProperty_definition_relationship apdr = new AProperty_definition_relationship();
+			CProperty_definition_relationship.usedinRelated_property_definition(null, apd.getByIndex(p), context.domain, apdr);	
+			for(int r=1,countR=apdr.getMemberCount(); r<=countR; r++){
+				EProperty_definition_relationship epdr = apdr.getByIndex(r);
+				if((epdr.testName(null))&&(epdr.getName(null).equals("included stratum"))){
+					epdr.deleteApplicationInstance();
+				}
+			}
+		}
+		CProperty_definition.usedinDefinition(null, armEntity, context.domain, apd);
+	}
+	
 }

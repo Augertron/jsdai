@@ -31,7 +31,7 @@ package jsdai.SPart_template_shape_with_parameters_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.SPhysical_layout_template_xim.ETemplate_definition;
+import jsdai.SPart_template_xim.ETemplate_definition;
 import jsdai.SProduct_property_representation_schema.*;
 import jsdai.SQualified_measure_schema.*;
 import jsdai.SRepresentation_schema.*;

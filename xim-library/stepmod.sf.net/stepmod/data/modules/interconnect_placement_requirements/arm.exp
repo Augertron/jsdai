@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4017 - ISO/TS 10303-1690 Interconnect placement requirements - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3459
+   ISO TC184/SC4/WG12 N5680 - ISO/TS 10303-1690 Interconnect placement requirements - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4017
 *)
 
 SCHEMA Interconnect_placement_requirements_arm;
@@ -9,10 +9,10 @@ SCHEMA Interconnect_placement_requirements_arm;
 USE FROM Land_arm;	-- ISO/TS 10303-1692
 
   SUBTYPE_CONSTRAINT ipr_predefined_requirement_view_definition_subtypes FOR Predefined_requirement_view_definition;   
-    (ONEOF (Assembly_spacing_requirement_occurrence,
-       Assembly_group_spacing_requirement_occurrence,
-       Item_restricted_requirement_occurrence,
-       Layout_spacing_requirement_occurrence));
+    (ONEOF (Assembly_spacing_requirement,
+       Assembly_group_spacing_requirement,
+       Item_restricted_requirement,
+       Layout_spacing_requirement));
   END_SUBTYPE_CONSTRAINT;  
 
   TYPE assembly_or_interconnect_design_object_select = EXTENSIBLE SELECT
@@ -55,7 +55,7 @@ USE FROM Land_arm;	-- ISO/TS 10303-1692
 	 Stratum_constraint_region);
   END_TYPE;  
 
-  TYPE pca_product_design_object_category = ENUMERATION OF
+  TYPE lam_product_design_object_category = ENUMERATION OF
     (assembly_component_category,
      assembly_module_category,
      assembly_module_component_category,
@@ -64,7 +64,6 @@ USE FROM Land_arm;	-- ISO/TS 10303-1692
      assembly_module_macro_component_join_terminal_category,
      bare_die_component_category,
      bare_die_component_terminal_category,
-     bonded_conductive_base_blind_via_category,
      buried_via_category,
      cable_component_category,
      component_feature_category,
@@ -147,8 +146,8 @@ USE FROM Land_arm;	-- ISO/TS 10303-1692
      via_terminal_category);
   END_TYPE;
 
-  TYPE pca_product_design_object_category_or_group = SELECT(
-     pca_product_design_object_category,
+  TYPE lam_product_design_object_category_or_group = SELECT(
+     lam_product_design_object_category,
      Stratum,
      Group);
   END_TYPE;    
@@ -180,7 +179,7 @@ USE FROM Land_arm;	-- ISO/TS 10303-1692
     SUBTYPE OF (Non_feature_shape_element);
       keepout                                          : BOOLEAN;
       non_conformant_interconnect_module_design_object : OPTIONAL SET[1:?] OF interconnect_module_design_object_select;
-      SELF\Non_feature_shape_element.scope             : Interconnect_module;
+      SELF\Non_feature_shape_element.scope             : Layered_interconnect_module_design_view;
       design_specific_purpose                          : STRING; 
       associated_stratum_extent                        : SET[1:?] OF Inter_stratum_extent;
       constrained_design_object_category               : interconnect_module_design_object_category_or_group;
@@ -193,15 +192,29 @@ USE FROM Land_arm;	-- ISO/TS 10303-1692
       WR3 : valid_non_conformant_design_object_context(non_conformant_interconnect_module_design_object, scope);
   END_ENTITY;
 
-  ENTITY Layer_qualified_layout_spacing_requirement_occurrence
-    SUBTYPE OF (Layout_spacing_requirement_occurrence);
+  ENTITY Layer_qualified_layout_spacing_requirement
+    SUBTYPE OF (Layout_spacing_requirement);
       layer_context : SET[1:?] OF Inter_stratum_extent;
   END_ENTITY;
 
-  ENTITY Layout_spacing_requirement_occurrence
+  ENTITY Area_qualified_layout_spacing_requirement
+    SUBTYPE OF (Layout_spacing_requirement);
+      area_context : SET [1:?] OF Layout_spacing_contextual_area;
+  END_ENTITY;
+
+  ENTITY Layout_spacing_contextual_area
+    SUBTYPE OF (Non_feature_shape_element);
+      reference_surface : Interconnect_module_component_surface_feature;
+      SELF\Non_feature_shape_element.scope : Assembly_module_design_view;
+    WHERE
+      WR1: (SIZEOF(SELF\Non_feature_shape_element.element_shape) = 0) OR 
+      (SIZEOF(QUERY(es <* SELF\Non_feature_shape_element.element_shape | NOT ('CONSTRUCTION_GEOMETRY_ARM.CONSTRUCTIVE_GEOMETRY' IN TYPEOF(es)) )) = 0);
+  END_ENTITY;
+
+  ENTITY Layout_spacing_requirement
     SUBTYPE OF (Predefined_requirement_view_definition);
-      design_object_category_1                                                            : pca_product_design_object_category_or_group;
-      design_object_category_2                                                            : pca_product_design_object_category_or_group;
+      design_object_category_1                                                            : lam_product_design_object_category_or_group;
+      design_object_category_2                                                            : lam_product_design_object_category_or_group;
       SELF\Predefined_requirement_view_definition.required_characteristic RENAMED spacing : Length_tolerance_characteristic;
       of_spacing_type                                                                     : spacing_type;
   END_ENTITY;
@@ -210,7 +223,7 @@ USE FROM Land_arm;	-- ISO/TS 10303-1692
       non_conformant_design_object : SET[1:?] OF assembly_or_interconnect_design_object_select;
       design_object_1              : assembly_or_interconnect_design_object_select;
       design_object_2              : assembly_or_interconnect_design_object_select;
-      design_requirement           : Layout_spacing_requirement_occurrence;
+      design_requirement           : Layout_spacing_requirement;
       violation_value              : OPTIONAL Length_data_element;
       violation_shape              : OPTIONAL Geometric_model;
       intersection_violation       : LOGICAL;
@@ -224,7 +237,7 @@ USE FROM Land_arm;	-- ISO/TS 10303-1692
       design_specific_purpose                          : STRING;       
       keepout                                          : BOOLEAN;
       non_conformant_stratum                           : OPTIONAL SET[1:?] OF Stratum;
-      SELF\Non_feature_shape_element.scope             : Interconnect_module;
+      SELF\Non_feature_shape_element.scope             : Layered_interconnect_module_design_view;
     INVERSE
       precedent_version_constraint_region : SET[0:1] OF non_feature_shape_element_relationship FOR related;
       requirement : SET[1:1] OF requirement_assignment FOR assigned_to;
@@ -235,7 +248,7 @@ USE FROM Land_arm;	-- ISO/TS 10303-1692
   END_ENTITY;
 
   FUNCTION valid_non_conformant_design_object_context(input1 : SET OF interconnect_module_design_object_select;
-                  input2 : Interconnect_module) : BOOLEAN;
+                  input2 : Layered_interconnect_module_design_view) : BOOLEAN;
   LOCAL
     vdr : SET OF Assembly_component_relationship := [];
     valid : BOOLEAN := TRUE;
@@ -260,7 +273,7 @@ USE FROM Land_arm;	-- ISO/TS 10303-1692
   END_FUNCTION;
 
   FUNCTION valid_non_conformant_stratum_context(input1 : SET OF Stratum;
-                  input2 : Interconnect_module) : BOOLEAN;
+                  input2 : Layered_interconnect_module_design_view) : BOOLEAN;
   LOCAL
     imsar : SET OF Interconnect_module_stratum_assembly_relationship := [];
     valid : BOOLEAN := TRUE;

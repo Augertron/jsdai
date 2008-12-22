@@ -34,7 +34,6 @@ import jsdai.libutil.EMappedXIMEntity;
 import jsdai.SAssembly_component_placement_requirements_mim.CMounting_restriction_area;
 import jsdai.SAssembly_module_with_interconnect_component_xim.EInterconnect_module_component_surface_feature_armx;
 import jsdai.SNon_feature_shape_element_xim.CxNon_feature_shape_element;
-import jsdai.SNon_feature_shape_element_xim.ENon_feature_shape_element;
 import jsdai.SProduct_property_definition_schema.*;
 
 public class CxMounting_restriction_area_armx extends CMounting_restriction_area_armx implements EMappedXIMEntity{

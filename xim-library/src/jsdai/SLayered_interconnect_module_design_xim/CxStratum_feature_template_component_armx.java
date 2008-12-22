@@ -51,6 +51,26 @@ public class CxStratum_feature_template_component_armx
 	public static int apFlag = AP21x; // Default is this style  
 
 	// Taken from PDR
+	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
+		a11 = set_string(value);
+	}
+	public void unsetId(EProduct_definition_relationship type) throws SdaiException {
+		a11 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
+		return a11$;
+	}
+
+	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
+		a12 = set_string(value);
+	}
+	public void unsetName(EProduct_definition_relationship type) throws SdaiException {
+		a12 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
+		return a12$;
+	}
+	
 	// attribute (current explicit or supertype explicit) : relating_product_definition, base type: entity product_definition
 /*	public static int usedinRelating_product_definition(EProduct_definition_relationship type, EProduct_definition instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a14$, domain, result);
@@ -221,7 +241,7 @@ public class CxStratum_feature_template_component_armx
 			setAdditional_contexts(context, this);
 
 			
-			
+			setCausal_item(context, this);
 			
 
 			setDerived_from(context, this);
@@ -241,6 +261,7 @@ public class CxStratum_feature_template_component_armx
 			// stratum_feature_implementation
 			unsetImplementation_or_resident_stratum(null);
 			
+			unsetCausal_item(null);
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
@@ -258,7 +279,7 @@ public class CxStratum_feature_template_component_armx
 			//additional_characterization - this is derived in laminate_component
 			// unsetAdditional_characterization(context, this);
 
-			
+			unsetCausal_item(context, this);
 			
 			
 			
@@ -517,4 +538,123 @@ public class CxStratum_feature_template_component_armx
 		
 	}
 
+	/**
+	* Sets/creates data for Causal_item attribute.
+	*
+	* <p>
+	attribute_mapping causal_item(causal_item, , stratum_concept);
+		(material_removal_laminate_component <=
+		laminate_component <=
+		assembly_component <=
+		product_definition_shape <-
+		shape_aspect.of_shape
+		shape_aspect <-
+		shape_aspect_relationship.related_shape_aspect
+		shape_aspect_relationship
+		{shape_aspect_relationship
+		shape_aspect_relationship.name = 'causal item'}
+		shape_aspect_relationship.relating_shape_aspect ->
+		shape_aspect)
+		(material_removal_laminate_component <=
+		laminate_component <=
+		assembly_component <=
+		component_definition <=
+		product_definition <-
+		product_definition_relationship.related_product_definition
+		product_definition_relationship
+		{product_definition_relationship
+		product_definition_relationship.name = 'causal item'}
+		product_definition_relationship.relating_product_definition ->
+		product_definition)
+	end_attribute_mapping;
+	* </p>
+	* @param context SdaiContext.
+	* @param armEntity arm entity.
+	* @throws SdaiException
+	*/
+	public static void setCausal_item(SdaiContext context, EStratum_feature_template_component_armx armEntity) throws SdaiException
+	{
+		//unset old values
+		unsetCausal_item(context, armEntity);
+
+		if (armEntity.testCausal_item(null)){
+			EEntity armAttribute = armEntity.getCausal_item(null);
+			if(armAttribute instanceof EShape_aspect){
+				// SA
+				LangUtils.Attribute_and_value_structure[] saStructure =
+	            {new LangUtils.Attribute_and_value_structure(
+	            		CShape_aspect.attributeOf_shape(null),
+							armEntity)};
+				EShape_aspect
+	            	esa = (EShape_aspect)
+	            LangUtils.createInstanceIfNeeded(context,
+	                                             CShape_aspect.definition,
+	                                             saStructure);
+				if(!esa.testProduct_definitional(null))
+					esa.setProduct_definitional(null, ELogical.UNKNOWN);
+				if(!esa.testName(null))
+					esa.setName(null, "");
+				
+				//shape_aspect_relationship
+				EShape_aspect_relationship shape_aspect_relationship = (EShape_aspect_relationship) 
+					context.working_model.createEntityInstance(CShape_aspect_relationship.definition);
+					shape_aspect_relationship.setName(null, "causal item");
+					shape_aspect_relationship.setDescription(null, "");
+					shape_aspect_relationship.setRelating_shape_aspect(null, (EShape_aspect)armAttribute);
+					shape_aspect_relationship.setRelated_shape_aspect(null, esa);
+			}else{
+				//pdr
+				EProduct_definition_relationship pdr = (EProduct_definition_relationship) 
+					context.working_model.createEntityInstance(CProduct_definition_relationship.definition);
+				pdr.setName(null, "causal item");
+				pdr.setDescription(null, "");
+				pdr.setRelating_product_definition(null, (EProduct_definition)armAttribute);
+				pdr.setRelated_product_definition(null, armEntity);
+			}
+		}
+	}
+
+
+	/**
+	* Unsets/deletes data for stratum_feature_implementation attribute.
+	*
+	* @param context SdaiContext.
+	* @param armEntity arm entity.
+	* @throws SdaiException
+	*/
+	public static void unsetCausal_item(SdaiContext context, EStratum_feature_template_component_armx armEntity) throws SdaiException
+	{
+		EShape_aspect esa = null;
+		AShape_aspect asa = new AShape_aspect();
+		CShape_aspect.usedinOf_shape(null, armEntity, context.domain, asa);
+
+		for (int j = 1; j <= asa.getMemberCount(); j++) {
+			esa = asa.getByIndex(j);
+
+			EShape_aspect_relationship relationship = null;
+			AShape_aspect_relationship aRelationship = new AShape_aspect_relationship();
+			CShape_aspect_relationship.usedinRelated_shape_aspect(null, esa, context.domain, aRelationship);
+	
+			for (int i = 1; i <= aRelationship.getMemberCount(); i++) {
+				relationship = aRelationship.getByIndex(i);
+				if (relationship.testName(null) && relationship.getName(null).equals("causal item")) {
+					relationship.deleteApplicationInstance();
+				}
+			}
+		}
+
+		EProduct_definition_relationship relationship = null;
+		AProduct_definition_relationship aRelationship = new AProduct_definition_relationship();
+		CProduct_definition_relationship.usedinRelated_product_definition(null, armEntity, context.domain, aRelationship);
+
+		for (int i = 1; i <= aRelationship.getMemberCount(); i++) {
+			relationship = aRelationship.getByIndex(i);
+			if (relationship.testName(null) && relationship.getName(null).equals("causal item")) {
+				relationship.deleteApplicationInstance();
+			}
+		}
+		
+	}
+	
+	
 }

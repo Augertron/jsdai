@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N3888 - ISO/TS 10303-1647 Assembly physical interface requirement - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3360
+   ISO TC184/SC4/WG12 N5608 - ISO/TS 10303-1647 Assembly physical interface requirement - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3888
 *)
 
 SCHEMA Assembly_physical_interface_requirement_arm;
@@ -28,7 +28,7 @@ REFERENCE FROM Requirement_decomposition_arm(get_rvd);	-- ISO/TS 10303-1740
      Geometrically_bounded_surface_shape_representation);
   END_TYPE;
 
-  ENTITY Interface_requirement_occurrence
+  ENTITY Interface_requirement
     SUBTYPE OF (Predefined_requirement_view_definition);
       interface_to_next_higher_assembly : OPTIONAL Next_higher_assembly_interface_requirement;
       reference_protocol                : OPTIONAL Protocol_physical_layer_definition;
@@ -71,10 +71,10 @@ REFERENCE FROM Requirement_decomposition_arm(get_rvd);	-- ISO/TS 10303-1740
     SUBTYPE OF (Requirement_assignment);
       SELF\Requirement_assignment.assigned_to : Part_terminal;
       protocol_signal                                   : Functional_unit_usage_view_terminal_definition;
-      SELF\Requirement_assignment.assigned_requirement RENAMED assigned_requirement_property  : Interface_requirement_occurrence;
+      SELF\Requirement_assignment.assigned_requirement RENAMED assigned_requirement_property  : Interface_requirement;
     WHERE
-      WR1 : EXISTS(assigned_requirement_property\Interface_requirement_occurrence.reference_protocol);
-      WR2 : protocol_signal IN assigned_requirement_property\Interface_requirement_occurrence.reference_protocol.host_functional_definition\Functional_unit_usage_view.access_mechanism;
+      WR1 : EXISTS(assigned_requirement_property\Interface_requirement.reference_protocol);
+      WR2 : protocol_signal IN assigned_requirement_property\Interface_requirement.reference_protocol.host_functional_definition\Functional_unit_usage_view.access_mechanism;
   END_ENTITY;
 
   ENTITY Termination_constraint

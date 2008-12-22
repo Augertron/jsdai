@@ -28,12 +28,43 @@
 
 SCHEMA Thermal_network_definition_xim;
 
-USE FROM Network_functional_design_view_xim;
-
 USE FROM Thermal_network_definition_mim;
 
+USE FROM Component_feature_xim; -- ISO/TS 10303-1657
+USE FROM Network_functional_design_view_xim;	-- ISO/TS 10303-1704
+USE FROM Non_feature_shape_element_xim; -- ISO/TS 10303-1706
+  
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+
+REFERENCE FROM representation_schema(using_representations);
+
+  TYPE tnd_location_select = EXTENSIBLE GENERIC_ENTITY SELECT
+      (cartesian_point,
+       Part_feature,
+       Non_feature_shape_element,
+       Component_feature_armx);
+  END_TYPE;
+   
   ENTITY Thermal_network_definition
-    (* CONNOTATIONAL *) SUBTYPE OF (Functional_unit_network_definition, thermal_network);
+    SUBTYPE OF (Functional_unit_network_definition);
+  END_ENTITY;
+
+  ENTITY Thermal_functional_unit_network_node_definition
+    SUBTYPE OF (Functional_unit_network_node_definition);
+      SELF\Functional_unit_network_node_definition.associated_functional_unit_definition : Thermal_network_definition;
+      location : OPTIONAL tnd_location_select;
+      used_model : OPTIONAL shape_representation;
+    WHERE
+      WR1 : SIZEOF(USEDIN(SELF, 'NETWORK_FUNCTIONAL_DESIGN_VIEW_XIM.BUS_ELEMENT_LINK.PRECEDENT_ELEMENT' ))
+          + SIZEOF(USEDIN(SELF, 'NETWORK_FUNCTIONAL_DESIGN_VIEW_XIM.BUS_ELEMENT_LINK.SUBSEQUENT_ELEMENT' )) = 0;
+      WR2: NOT('ELEMENTAL_GEOMETRIC_SHAPE_XIM.CARTESIAN_POINT' IN TYPEOF(location)) OR 
+              (used_model IN using_representations(location));
+      WR3: NOT('ELEMENTAL_GEOMETRIC_SHAPE_XIM.CARTESIAN_POINT' IN TYPEOF(location)) OR 
+              (SIZEOF(QUERY(sda <* USEDIN(used_model, 'SHAPE_PROPERTY_ASSIGNMENT_XIM.SHAPE_DESCRIPTION_ASSOCIATION.REPRESENTATION') |
+               sda\Shape_description_association.represented_characteristic = SELF\Functional_unit_network_node_definition.associated_functional_unit_definition)) = 1);
+      WR4: NOT(('ELEMENTAL_GEOMETRIC_SHAPE_XIM.CARTESIAN_POINT' IN TYPEOF(location)) XOR
+               EXISTS(used_model));
   END_ENTITY;
 
 END_SCHEMA;

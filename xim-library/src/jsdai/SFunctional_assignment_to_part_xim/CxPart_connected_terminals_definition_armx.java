@@ -59,12 +59,12 @@ public class CxPart_connected_terminals_definition_armx extends CPart_connected_
 	}
 
 	/// methods for attribute: product_definitional, base type: LOGICAL
-	public boolean testProduct_definitional(EShape_aspect type) throws SdaiException {
+/*	public boolean testProduct_definitional(EShape_aspect type) throws SdaiException {
 		return test_logical(a3);
 	}
 	public int getProduct_definitional(EShape_aspect type) throws SdaiException {
 		return get_logical(a3);
-	}
+	}*/
 	public void setProduct_definitional(EShape_aspect type, int value) throws SdaiException {
 		a3 = set_logical(value);
 	}
@@ -123,7 +123,7 @@ public class CxPart_connected_terminals_definition_armx extends CPart_connected_
 	{
 		unsetMappingConstraints(context, armEntity);
 		// AIM gap
-		if(!armEntity.testProduct_definitional(null))
+//		if(!armEntity.testProduct_definitional(null))
 			armEntity.setProduct_definitional(null, ELogical.UNKNOWN);
 	}
 

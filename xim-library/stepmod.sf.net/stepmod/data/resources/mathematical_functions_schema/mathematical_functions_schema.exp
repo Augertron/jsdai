@@ -1,4 +1,10 @@
+(* WG12 N4886 Part 50 EXPRESS as modified by TC1 2007-07-25 (WG12 N4885) 
+ $Id$ *)
+
 (* Genenerated from: ../../irs/wg12n921.exp *)
+(* modified to fix problem in *)
+(* derive_function_range having to do with return value assignment in dimension_of function. *)
+(* SEDS is #1299  *)
 
 SCHEMA mathematical_functions_schema;
 -- This file constitutes document WG12 N921
@@ -176,8 +182,6 @@ TYPE maths_string = STRING;
 END_TYPE;
 TYPE maths_binary = BINARY;
 END_TYPE;
-
-(* TYPE below fixed by David Leal 2003-12-18 *)
 
 TYPE maths_simple_atom = SELECT
   (maths_number,
@@ -715,10 +719,10 @@ ENTITY listed_complex_number_data
   SUBTYPE OF (explicit_table_function, generic_literal);
   values : LIST [2:?] OF REAL;
 DERIVE
-  self\explicit_table_function.shape : LIST [1:?] OF positive_integer :=
-    [SIZEOF (values)/2];
+      SELF\explicit_table_function.shape : LIST [1:?] OF positive_integer := [ SIZEOF(values) DIV 2 ];
 WHERE
-  WR1: NOT ODD (SIZEOF (values));
+      WR1:
+         NOT ODD(SIZEOF(values));
 END_ENTITY;
 ENTITY listed_data
   SUBTYPE OF (explicit_table_function, generic_literal);
@@ -2412,6 +2416,7 @@ FUNCTION derive_function_range(func : maths_function) : tuple_space;
     typenames : SET OF STRING := stripped_typeof(func);
     tspace : tuple_space := make_listed_product_space ([]);
     m, n : nonnegative_integer := 0;
+    temp : INTEGER := 0;
   END_LOCAL;
   IF 'FINITE_FUNCTION' IN typenames THEN
     RETURN (derive_finite_function_range (func\finite_function.pairs));
@@ -2541,24 +2546,22 @@ FUNCTION derive_function_range(func : maths_function) : tuple_space;
     RETURN (values_space_of (func\expression_denoted_function.expr)\function_space.
       range_argument);
   END_IF;
-  (*
   IF 'IMPORTED_POINT_FUNCTION' IN typenames THEN
-    RETURN (one_tuples_of (make_uniform_product_space (the_reals,
-      dimension_of (func\imported_point_function.geometry))));
+      temp := dimension_of (func\imported_point_function.geometry);
+    RETURN (one_tuples_of (make_uniform_product_space (the_reals, temp)));
   END_IF;
   IF 'IMPORTED_CURVE_FUNCTION' IN typenames THEN
-    RETURN (one_tuples_of (make_uniform_product_space (the_reals,
-      dimension_of (func\imported_curve_function.geometry))));
+      temp := dimension_of (func\imported_curve_function.geometry);
+    RETURN (one_tuples_of (make_uniform_product_space (the_reals, temp)));
   END_IF;
   IF 'IMPORTED_SURFACE_FUNCTION' IN typenames THEN
-    RETURN (one_tuples_of (make_uniform_product_space (the_reals,
-      dimension_of (func\imported_surface_function.geometry))));
+      temp := dimension_of (func\imported_surface_function.geometry);
+    RETURN (one_tuples_of (make_uniform_product_space (the_reals, temp)));
   END_IF;
   IF 'IMPORTED_VOLUME_FUNCTION' IN typenames THEN
-    RETURN (one_tuples_of (make_uniform_product_space (the_reals,
-      dimension_of (func\imported_volume_function.geometry))));
+      temp := dimension_of (func\imported_volume_function.geometry);
+    RETURN (one_tuples_of (make_uniform_product_space (the_reals, temp)));
   END_IF;
-  *)
   IF 'APPLICATION_DEFINED_FUNCTION' IN typenames THEN
     RETURN (func\application_defined_function.explicit_range);
   END_IF;
@@ -4382,9 +4385,12 @@ FUNCTION make_maths_enum_literal(lit_value : maths_enum_atom) : maths_enum_liter
       || simple_generic_expression()
         || generic_expression() );
 END_FUNCTION;  -- make_maths_enum_literal
+
 FUNCTION make_maths_real_variable(values_space : maths_space;
                                   name         : label) : maths_real_variable;
-  RETURN (maths_real_variable()
+    
+   RETURN (expression() || numeric_expression() || simple_numeric_expression() 
+   ||  maths_real_variable() 
     || maths_variable (values_space, name)
       || generic_variable()
         || simple_generic_expression()
@@ -4392,7 +4398,8 @@ FUNCTION make_maths_real_variable(values_space : maths_space;
     || real_numeric_variable()
       || numeric_variable()
         || variable() );
-END_FUNCTION;  -- make_maths_real_variable
+  END_FUNCTION;
+
 FUNCTION make_maths_tuple_literal(lit_value : LIST OF maths_value)
                                  : maths_tuple_literal;
   RETURN (maths_tuple_literal (lit_value)

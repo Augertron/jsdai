@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4212 - ISO/TS 10303-1755 Physical connectivity definition - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3666
+   ISO TC184/SC4/WG12 N5824 - ISO/TS 10303-1755 Physical connectivity definition - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4212
 *)
 
 SCHEMA Physical_connectivity_definition_arm;
@@ -13,8 +13,9 @@ SCHEMA Physical_connectivity_definition_arm;
 REFERENCE FROM Requirement_decomposition_arm(get_rvd);	-- ISO/TS 10303-1740		
 REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
 
-	TYPE pcd_groupable_item = SELECT BASED_ON groupable_item WITH 
-	   (Physical_connectivity_definition);
+	TYPE pcd_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON groupable_item WITH 
+	   (Physical_connectivity_definition,
+	    Group_relationship);
 	END_TYPE; 
 
 	TYPE pcd_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
@@ -27,7 +28,14 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
 		(Physical_connectivity_element,
 		 Physical_connectivity_definition);
 	END_TYPE;
-
+        
+	TYPE physical_connectivity_definition_domain_enumeration = EXTENSIBLE ENUMERATION OF
+		(electrical,
+		 thermal,
+		 optical,
+		 magnetic);
+    END_TYPE;
+     
 	TYPE termination_or_junction = EXTENSIBLE GENERIC_ENTITY SELECT
     	(Component_terminal,
     	 Topological_junction);
@@ -39,10 +47,17 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       associated_terminals  : SET[2:?] OF Physical_component_terminal;
       SELF\Shape_element.element_name : STRING;
       SELF\Shape_element.containing_shape RENAMED associated_definition : Physical_unit_network_definition;
+    INVERSE
+      domain : SET [0:1] OF Physical_connectivity_definition_domain for associated_definition;
     UNIQUE
       UR1 : SELF\Shape_element.element_name, associated_definition;
   END_ENTITY;
 
+  ENTITY Physical_connectivity_definition_domain;
+      domain_type : physical_connectivity_definition_domain_enumeration;
+      associated_definition : Physical_connectivity_definition;
+  END_ENTITY;
+  
   ENTITY Physical_connectivity_definition_relationship;
       first_definition  : Physical_connectivity_definition;
       second_definition : Physical_connectivity_definition;
@@ -60,6 +75,40 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       UR1 : name, connectivity_context;
     WHERE
       WR1 : start_terminus <> end_terminus;
+  END_ENTITY;
+
+  ENTITY Physical_connectivity_layout_topology_link
+    SUBTYPE OF(Group_relationship);
+      SELF\Group_relationship.related_group RENAMED subsequent_node : Physical_connectivity_layout_topology_node;
+      SELF\Group_relationship.relating_group RENAMED precedent_node  : Physical_connectivity_layout_topology_node;
+    DERIVE
+      SELF\Group_relationship.relation_type : STRING := '';
+    WHERE  
+      WR1 : acyclic_physical_connectivity_layout_topology_link(SELF, [subsequent_node], 
+        'PHYSICAL_CONNECTIVITY_DEFINITION_ARM.PHYSICAL_CONNECTIVITY_LAYOUT_TOPOLOGY_LINK');
+  END_ENTITY;
+
+  ENTITY Physical_connectivity_layout_topology_node
+    SUBTYPE OF(Group);
+      SELF\Group.name RENAMED terminal_type : STRING;
+    WHERE
+      WR1 : (SIZEOF(SELF\Group.elements) = 0);
+  END_ENTITY;
+
+  ENTITY Physical_connectivity_layout_topology_requirement
+    SUBTYPE OF(Predefined_requirement_view_definition, Group);
+      SELF\Group.elements : SET [1:?] OF Physical_connectivity_layout_topology_link;
+    DERIVE
+      nodes : SET [1:?] OF Physical_connectivity_layout_topology_node := pcd_get_pcltn(elements);
+      tree_structure : LOGICAL := (SIZEOF(nodes) = (SIZEOF(elements) + 1));
+    WHERE
+      WR1 : (tree_structure = TRUE);
+  END_ENTITY;
+
+  ENTITY Physical_connectivity_layout_topology_requirement_assignment
+    SUBTYPE OF(Requirement_assignment);
+      SELF\Requirement_assignment.assigned_requirement : Physical_connectivity_layout_topology_requirement;
+      SELF\Requirement_assignment.assigned_to          : Physical_connectivity_definition;
   END_ENTITY;
 
   ENTITY Physical_connectivity_make_from_relationship;
@@ -88,10 +137,14 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     DERIVE
       terminals : SET [0:?] OF Component_terminal := 
       get_terminals(bag_to_set(USEDIN(SELF,'PHYSICAL_CONNECTIVITY_DEFINITION_ARM.PHYSICAL_CONNECTIVITY_DEFINITION.ASSOCIATED_DEFINITION')));
+       assembly : SET[0:?] of Product_view_definition := pcd_get_assemblies(terminals);
     WHERE
       WR1 : NOT (SIZEOF(terminals) > 1) OR
            (SIZEOF(QUERY(t <* terminals | NOT(SIZEOF(USEDIN(t, 'PHYSICAL_CONNECTIVITY_DEFINITION_ARM.' + 
                           'PHYSICAL_CONNECTIVITY_DEFINITION.ASSOCIATED_TERMINALS')) = 1))) = 0);
+      WR2: SIZEOF(QUERY( ass <* assembly |
+      (ass\Product_view_definition.defined_version = SELF\Product_view_definition.defined_version)
+           )) > 0;                          
   END_ENTITY;
 
   ENTITY Topological_junction;
@@ -101,6 +154,43 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       UR1 : name, scope;
   END_ENTITY; 
 
+  FUNCTION acyclic_physical_connectivity_layout_topology_link
+    (relation : Physical_connectivity_layout_topology_link; 
+    relatives : SET[1:?] OF Physical_connectivity_layout_topology_node; 
+    specific_relation : STRING) : BOOLEAN; 
+    LOCAL
+      x : SET OF Physical_connectivity_layout_topology_link := [];
+    END_LOCAL;
+    IF relation.precedent_node IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(pd <* bag_to_set(USEDIN(relation.precedent_node,
+      'PHYSICAL_CONNECTIVITY_DEFINITION_ARM.' +
+      'PHYSICAL_CONNECTIVITY_LAYOUT_TOPOLOGY_LINK.' +
+      'SUBSEQUENT_NODE')) | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_physical_connectivity_layout_topology_link(x[i], relatives +
+        relation.precedent_node, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION;    
+
+  FUNCTION pcd_get_assemblies(input : SET OF Component_terminal) : SET OF Product_view_definition;
+    LOCAL
+      ac : SET OF Assembly_component := [];
+     pvd : SET OF Product_view_definition := [];
+    END_LOCAL;
+   REPEAT i := 1 TO HIINDEX(input) BY 1;
+      ac := ac + input[i]\Component_feature.associated_component;
+   END_REPEAT;
+   REPEAT i := 1 to HIINDEX(ac) BY 1;
+     pvd  := pvd + ac[i]\Assembly_component.assemblies;
+   END_REPEAT;
+   RETURN(pvd);
+  END_FUNCTION; 
+   
   FUNCTION get_terminals(input : SET OF Physical_connectivity_definition) : SET OF Component_terminal;
   LOCAL
    ct : SET OF Component_terminal := [];
@@ -145,4 +235,15 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
   RETURN(tj);
   END_FUNCTION;
 
+  FUNCTION pcd_get_pcltn(input : SET OF Physical_connectivity_layout_topology_link) : SET OF Physical_connectivity_layout_topology_node;
+  LOCAL
+   pcltn : SET OF Physical_connectivity_layout_topology_node := [];
+    i : INTEGER := 0;
+  END_LOCAL;
+  REPEAT  i := 1 TO SIZEOF(input) BY 1;
+   pcltn := pcltn + input[i].precedent_node + input[i].subsequent_node;
+  END_REPEAT;
+  RETURN(pcltn);
+  END_FUNCTION;
+  
 END_SCHEMA;

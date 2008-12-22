@@ -67,7 +67,7 @@ public class CxSubstance_composition_relationship extends CSubstance_composition
 	}
 	public jsdai.SMeasure_schema.AMeasure_with_unit getConstituent_amount(EProduct_material_composition_relationship type) throws SdaiException {
 		return (jsdai.SMeasure_schema.AMeasure_with_unit)get_aggregate(a6);
-	}*/
+	}
 	public jsdai.SMeasure_schema.AMeasure_with_unit createConstituent_amount(EProduct_material_composition_relationship type) throws SdaiException {
 		a6 = (jsdai.SMeasure_schema.AMeasure_with_unit)create_aggregate_class(a6, a6$,  jsdai.SMeasure_schema.AMeasure_with_unit.class, 0);
 		return a6;
@@ -78,7 +78,7 @@ public class CxSubstance_composition_relationship extends CSubstance_composition
 	}
 	public static jsdai.dictionary.EAttribute attributeConstituent_amount(EProduct_material_composition_relationship type) throws SdaiException {
 		return a6$;
-	}
+	}*/
 
 	//<01> generating methods for consolidated attribute:  composition_basis
 	//<01-0> current entity

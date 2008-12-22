@@ -1,7 +1,7 @@
 (*
  $Id$
- ISO TC184/SC4/WG12 N4964 - ISO/CD-TS 10303-1111 Classification with attributes - EXPRESS ARM
- Supersedes ISO TC184/SC4/WG12 N4272
+ ISO TC184/SC4/WG12 N5317 - ISO/TS 10303-1111 Classification with attributes - EXPRESS ARM
+ Supersedes ISO TC184/SC4/WG12 N4964
 *)
 
 SCHEMA Classification_with_attributes_arm;
@@ -19,9 +19,7 @@ USE FROM Plib_class_reference_arm;
 USE FROM Product_view_definition_arm;
 
 TYPE classification_item_extended = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH (
-	Product, 
-	Product_version,
-	Product_view_definition) ;
+	classified_element_select) ;
 END_TYPE;
 
 TYPE classified_element_select = EXTENSIBLE GENERIC_ENTITY SELECT (
@@ -57,8 +55,9 @@ SUBTYPE OF (Classification_assignment);
    SELF\Classification_assignment.assigned_class: Class_with_attributes;
    definitional: LOGICAL;
 WHERE
-WR1: SIZEOF(QUERY(it<* SELF\Classification_assignment.items |
-     NOT('CLASSIFICATION_WITH_ATTRIBUTES_ARM.DEFINABLE_OBJECTS' IN TYPEOF(it)) AND definitional ))=0;
+WR1: NOT(definitional = TRUE) OR
+       (SIZEOF(QUERY(it<* SELF\Classification_assignment.items | 
+                 NOT('CLASSIFICATION_WITH_ATTRIBUTES_ARM.DEFINABLE_OBJECTS' IN TYPEOF(it)) )) = 0);
 WR2: SIZEOF(QUERY(it<* SELF\Classification_assignment.items |
      NOT('CLASSIFICATION_WITH_ATTRIBUTES_ARM.CLASSIFIED_ELEMENT_SELECT' IN TYPEOF(it)) )) =0;
 END_ENTITY;

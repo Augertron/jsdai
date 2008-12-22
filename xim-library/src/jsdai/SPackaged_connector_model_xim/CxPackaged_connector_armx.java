@@ -79,19 +79,19 @@ public class CxPackaged_connector_armx
 	// From CProperty_definition.java
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(EProperty_definition type) throws SdaiException {
-		return test_string(a7);
+		return test_string(a6);
 	}
 	public String getName(EProperty_definition type) throws SdaiException {
-		return get_string(a7);
+		return get_string(a6);
 	}*/
 	public void setName(EProperty_definition type, String value) throws SdaiException {
-		a7 = set_string(value);
+		a6 = set_string(value);
 	}
 	public void unsetName(EProperty_definition type) throws SdaiException {
-		a7 = unset_string();
+		a6 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(EProperty_definition type) throws SdaiException {
-		return a7$;
+		return a6$;
 	}
 	
 	// From property_definition

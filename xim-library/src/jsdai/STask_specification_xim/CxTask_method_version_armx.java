@@ -34,8 +34,8 @@ import jsdai.libutil.EMappedXIMEntity;
 import jsdai.SAction_schema.AAction_method_relationship;
 import jsdai.SAction_schema.CAction_method_relationship;
 import jsdai.SAction_schema.EAction_method_relationship;
+import jsdai.STask_element_mim.ETask_element;
 import jsdai.STask_specification_mim.CTask_method_version;
-import jsdai.STask_specification_mim.ETask_element;
 
 public class CxTask_method_version_armx extends CTask_method_version_armx implements EMappedXIMEntity{
 

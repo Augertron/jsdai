@@ -1,9 +1,12 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4602 - ISO/CD-TS 10303-1470 Parameter value specification - EXPRESS MIM
+   ISO TC184/SC4/WG12 N5888 - ISO/TS 10303-1470 Parameter value specification - EXPRESS MIM
+    Supersedes ISO TC184/SC4/WG12 N601
 *) 
 
 SCHEMA Parameter_value_specification_mim;
+
+USE FROM Generic_expression_mim;			-- missing added to align with xml
 
 USE FROM Group_mim   -- ISO/TS 10303-1113
   (applied_group_assignment,
@@ -13,12 +16,22 @@ USE FROM ISO13584_generic_expressions_schema   -- ISO 13584-20
   (generic_expression,
    variable_semantics); 
 
+(* USE FROM Maths_value_mim; *)
+				--  add for analysis math link
+
 USE FROM measure_schema   -- ISO 10303-41
   (measure_with_unit); 
 
 USE FROM Name_assignment_mim   -- ISO/TS 10303-1340
   (applied_name_assignment,
    name_item); 
+
+USE FROM Numeric_function_mim;				-- missing added to align with xml
+
+(* USE FROM qualified_measure_schema    			--  add for analysis math link
+	(maths_value_with_unit);    			--  add for analysis math link
+*)
+USE FROM Value_with_unit_mim;				-- missing added to align with xml
 
 
 TYPE generic_expression_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON groupable_item WITH 
@@ -35,6 +48,7 @@ END_TYPE;
 
 TYPE parameter_value_select = EXTENSIBLE GENERIC_ENTITY SELECT
    (generic_expression, 
+    (* maths_value_with_unit,  *)   				--  add for analysis math link
     measure_with_unit);
 END_TYPE; 
 

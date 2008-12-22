@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N3855 - ISO/TS 10303-1636 Assembly module design - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3297
+   ISO TC184/SC4/WG12 N5575 - ISO/TS 10303-1636 Assembly module design - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3855
 *)
 
 SCHEMA Assembly_module_design_arm;
@@ -10,7 +10,7 @@ SCHEMA Assembly_module_design_arm;
 	USE FROM Assembly_module_usage_view_arm;	-- ISO/TS 10303-1642
 	USE FROM Bare_die_arm;	-- ISO/TS 10303-1650
 	USE FROM Physical_component_feature_arm;	-- ISO/TS 10303-1721
-	USE FROM Part_template_extension_arm;	-- ISO/TS 10303-1718
+	USE FROM Layered_interconnect_simple_template_arm;	-- ISO/TS 10303-1718
 
 	SUBTYPE_CONSTRAINT physical_component_subtypes FOR Physical_component;         
 	    ONEOF (Bare_die_component,
@@ -33,7 +33,7 @@ SCHEMA Assembly_module_design_arm;
 
 	TYPE assembly_module_or_assembly_group_component = 
 		EXTENSIBLE GENERIC_ENTITY SELECT 
-		(Assembly_module);
+		(Assembly_module_design_view);
 	END_TYPE;
 
   ENTITY Assembly_connection_zone_position_relationship;
@@ -41,10 +41,11 @@ SCHEMA Assembly_module_design_arm;
       associated_usage                            : Connection_zone_in_design_view;
       associated_connection_zone_shape_definition : Geometric_model;
       associated_usage_placement                  : Axis_placement;
-      associating_design_view                     : Assembly_module;
+      associating_design_view                     : Assembly_module_design_view;
   END_ENTITY;
 
-  ENTITY Assembly_module
+  ENTITY Assembly_module_design_view
+    SUPERTYPE OF (ONEOF (Layered_assembly_panel_design_view, Layered_assembly_module_design_view))
     SUBTYPE OF (Assembly_definition, Part_design_view);
   WHERE
     WR1 : NOT EXISTS(SELF\Product_view_definition.additional_characterization);
@@ -97,6 +98,10 @@ SCHEMA Assembly_module_design_arm;
       added_clearance             : Length_tolerance_characteristic;
   END_ENTITY;
 
+  ENTITY Layered_assembly_panel_design_view
+    SUBTYPE OF (Assembly_module_design_view);
+  END_ENTITY;
+
   ENTITY Minimally_defined_component_terminal
     SUBTYPE OF (Physical_component_terminal);
       SELF\Component_feature.definition : Part_terminal_external_reference;
@@ -128,21 +133,21 @@ SCHEMA Assembly_module_design_arm;
       WR1 : NOT EXISTS(SELF\Shape_element.description);
   END_ENTITY;
 
-  ENTITY Pca
-    SUBTYPE OF (Assembly_module);
-      SELF\Part_design_view.usage_view : Pca_usage_view;
+  ENTITY Layered_assembly_module_design_view
+    SUBTYPE OF (Assembly_module_design_view);
+      SELF\Part_design_view.usage_view : Layered_assembly_module_usage_view;
   END_ENTITY;
 
   ENTITY Routed_interconnect_component
     SUBTYPE OF (Physical_component);
-      routed_centreline_shape : Planar_path_shape_model_with_parameters;
+      routed_centreline_shape : Path_area_with_parameters;
     WHERE
       WR1 : NOT EXISTS(SELF\Product_view_definition.name);
   END_ENTITY;
 
   ENTITY Routed_physical_component
     SUBTYPE OF (Physical_component);
-      routed_centreline_shape : Planar_path_shape_model_with_parameters;
+      routed_centreline_shape : Path_area_with_parameters;
   END_ENTITY;
 
 END_SCHEMA;

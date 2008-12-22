@@ -33,6 +33,7 @@ import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
 import jsdai.util.LangUtils;
 import jsdai.SAssembly_module_usage_view_mim.CAssembly_module_terminal;
+import jsdai.SAssembly_structure_xim.ENext_assembly_usage_occurrence_relationship_armx;
 import jsdai.SFeature_and_connection_zone_xim.CxShape_feature;
 import jsdai.SFunctional_assignment_to_part_xim.CxPart_terminal;
 import jsdai.SPackaged_connector_model_xim.EPackaged_part_interface_terminal;
@@ -381,7 +382,7 @@ public class CxAssembly_module_terminal_armx extends CAssembly_module_terminal_a
 
 		if (armEntity.testRelated_connector(null))
 		{
-			ENext_assembly_usage_occurrence 
+			ENext_assembly_usage_occurrence_relationship_armx 
 				armConnector = armEntity.getRelated_connector(null);
 	      // PDS
 	      LangUtils.Attribute_and_value_structure[] pdsStructure = {

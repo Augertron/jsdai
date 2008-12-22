@@ -39,6 +39,21 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
+entity_mapping Assigned_property(Assigned_property, property_definition)
+extended;
+
+attribute_mapping described_element(described_element, $PATH, Analytical_model_definition_armx);
+
+					characterized_definition
+					characterized_definition = characterized_product_definition
+					characterized_product_definition
+					characterized_product_definition = product_definition
+					product_definition =>
+					analytical_model_definition
+			
+end_attribute_mapping;
+
+end_entity_mapping;
 
 entity_mapping Across_port_variable_armx(Across_port_variable_armx, across_port_variable);
 
@@ -130,13 +145,6 @@ end_mapping_constraints;
 attribute_mapping model_representation(model_representation, $PATH, Analytical_model_definition_armx);
 analytical_representation <=
 representation <-
-representation_relationship.rep_2
-representation_relationship
-representation_relationship.rep_1 ->
-representation
-{representation =>
-analytical_model}
-representation <-
 property_definition_representation.used_representation
 property_definition_representation
 property_definition_representation.definition ->
@@ -168,17 +176,6 @@ entity_mapping Analytical_model_definition_armx(Analytical_model_definition_armx
 mapping_constraints;
 analytical_model_definition <=
 product_definition
-{characterized_product_definition = product_definition
-characterized_product_definition
-characterized_definition = characterized_product_definition
-characterized_definition <-
-property_definition.definition
-property_definition <-
-property_definition_representation.definition
-property_definition_representation
-property_definition_representation.used_representation ->
-representation =>
-analytical_model}
 
 end_mapping_constraints;
 
@@ -266,20 +263,20 @@ entity_mapping Analytical_model_parameter_armx(Analytical_model_parameter_armx, 
 
 mapping_constraints;
 analytical_model_parameter <=
-model_parameter
+property_definition
 
 end_mapping_constraints;
 
-attribute_mapping accessed_analytical_model(accessed_analytical_model, $PATH, Analytical_model_armx);
+attribute_mapping accessed_analytical_model(accessed_analytical_model, $PATH, Analytical_model_definition_armx);
 analytical_model_parameter <=
-model_parameter <=
-general_property
-represented_definition = general_property 
-represented_definition <-
-property_definition_representation.definition
-property_definition_representation.used_representation ->
-representation =>
-analytical_model
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition
+product_definition =>
+analytical_model_definition
 
 end_attribute_mapping;
 
@@ -288,8 +285,12 @@ end_entity_mapping;
 entity_mapping Analytical_model_port_armx(Analytical_model_port_armx, analytical_model_port);
 
 mapping_constraints;
-analytical_model_port <=
-representation
+{[analytical_model_port <=
+representation]
+[analytical_model_port <=
+property_definition_representation]
+[analytical_model_port <=
+property_definition]}
 
 end_mapping_constraints;
 
@@ -300,16 +301,16 @@ representation.name
 
 end_attribute_mapping;
 
-attribute_mapping accessed_analytical_model(accessed_analytical_model, $PATH, Analytical_model_armx);
+attribute_mapping accessed_analytical_model(accessed_analytical_model, $PATH, Analytical_model_definition_armx);
 analytical_model_port <=
-representation <-
-representation_relationship.rep_2
-representation_relationship
-{representation_relationship
-representation_relationship.name = 'access mechanism'}
-representation_relationship.rep_1 ->
-representation =>
-analytical_model
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_product_definition
+characterized_product_definition
+characterized_product_definition = product_definition
+product_definition =>
+analytical_model_definition
 
 end_attribute_mapping;
 

@@ -48,13 +48,13 @@ public class CxAssembly_component_2d_shape_model$footprint_definition_shape_mode
 		return get_string(a5);
 	}*/
 	public void setName(ERepresentation type, String value) throws SdaiException {
-		a5 = set_string(value);
+		a6 = set_string(value);
 	}
 	public void unsetName(ERepresentation type) throws SdaiException {
-		a5 = unset_string();
+		a6 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(ERepresentation type) throws SdaiException {
-		return a5$;
+		return a6$;
 	}
 	public int attributeState = ATTRIBUTES_MODIFIED;	
 

@@ -1,0 +1,104 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N5747 - ISO/TS 10303-1716 Layered interconnect complex template - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N4096
+*)
+
+
+SCHEMA Layered_interconnect_complex_template_mim;
+USE FROM Layered_interconnect_simple_template_mim;	-- ISO/TS 10303-1718
+USE FROM Physical_unit_2d_shape_mim; -- ISO/TS 10303-1726
+
+USE FROM product_property_definition_schema (characterized_definition);
+
+  TYPE lict_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH 
+    (assembly_component_usage,
+     structured_template);
+  END_TYPE; 
+
+  ENTITY complex_passage_padstack_definition
+    SUBTYPE OF (stratum_stack_dependent_template, passage_padstack_definition);
+  END_ENTITY;
+
+  ENTITY design_specific_stratum_technology_mapping_relationship
+    SUBTYPE OF(stratum_technology_mapping_relationship, property_definition);
+      SELF\property_definition.definition RENAMED scope : library_to_design_stack_model_mapping;
+  END_ENTITY;
+  
+  ENTITY library_stack_model
+    SUBTYPE OF(stratum_stack_model);
+  END_ENTITY;
+
+  ENTITY library_to_design_stack_model_mapping
+    SUBTYPE OF (product_definition_relationship);
+  END_ENTITY;
+
+  ENTITY material_removal_structured_template
+    SUBTYPE OF (single_stratum_structured_template);
+  END_ENTITY;
+
+  ENTITY multi_stratum_special_symbol_template
+    SUBTYPE OF (multi_stratum_structured_template, special_symbol_template);
+  END_ENTITY;
+  
+  ENTITY multi_stratum_structured_template
+    ABSTRACT SUPERTYPE OF (ONEOF (padstack_definition, multi_stratum_special_symbol_template)
+      ANDOR stratum_stack_dependent_template)  
+    SUBTYPE OF (structured_template);
+  END_ENTITY;
+
+  ENTITY padstack_definition
+    SUPERTYPE OF (passage_padstack_definition)
+    SUBTYPE OF (multi_stratum_structured_template);
+  END_ENTITY;
+
+  ENTITY part_template_keepout_shape_allocation_to_stratum_stack
+    SUBTYPE OF (characterized_object, property_definition);
+    DERIVE
+      SELF\property_definition.definition : part_template_keepout_shape_allocation_to_stratum_stack := SELF;
+  END_ENTITY;
+
+  ENTITY passage_padstack_definition 
+    SUBTYPE OF (padstack_definition);
+  END_ENTITY; 
+
+  ENTITY physical_unit_keepout_shape_allocation_to_stratum_stack
+    SUBTYPE OF (representation, representation_relationship);
+  END_ENTITY;
+
+  ENTITY physical_unit_keepout_shape_allocation_to_stratum_technology
+    SUBTYPE OF (representation);
+  END_ENTITY;
+
+  ENTITY single_stratum_special_symbol_template
+    SUBTYPE OF (single_stratum_structured_template, special_symbol_template);
+  END_ENTITY;
+  
+  ENTITY single_stratum_structured_template
+    ABSTRACT SUPERTYPE OF (ONEOF (material_removal_structured_template, single_stratum_special_symbol_template))
+    SUBTYPE OF (structured_template, single_stratum_template);
+  END_ENTITY;
+
+  ENTITY special_symbol_template
+    ABSTRACT SUPERTYPE OF (ONEOF (single_stratum_special_symbol_template, multi_stratum_special_symbol_template))
+    SUBTYPE OF (part_template_definition);
+  END_ENTITY;
+
+  ENTITY stratum_specific_template_location
+    SUBTYPE OF (assembly_component_usage, property_definition);
+  END_ENTITY;
+
+  ENTITY stratum_stack_dependent_template
+    SUBTYPE OF (multi_stratum_structured_template);
+  END_ENTITY;
+
+  ENTITY structured_inter_stratum_feature_template
+    SUBTYPE OF (inter_stratum_feature_template, stratum_stack_dependent_template);
+  END_ENTITY;
+  
+  ENTITY structured_template
+    ABSTRACT SUPERTYPE OF (ONEOF (single_stratum_structured_template, multi_stratum_structured_template))
+    SUBTYPE OF (geometric_template);
+  END_ENTITY;
+	
+END_SCHEMA;

@@ -31,6 +31,12 @@ package jsdai.SGeneric_product_occurrence_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
+import jsdai.SAssembly_structure_xim.AProduct_occurrence_definition_relationship_armx;
+import jsdai.SAssembly_structure_xim.CProduct_occurrence_definition_relationship_armx;
+import jsdai.SPhysical_unit_design_view_mim.ANext_assembly_usage_occurrence_relationship;
+import jsdai.SPhysical_unit_design_view_mim.CNext_assembly_usage_occurrence_relationship;
+import jsdai.SPhysical_unit_design_view_mim.EAssembly_component;
+import jsdai.SPhysical_unit_design_view_mim.ENext_assembly_usage_occurrence_relationship;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_structure_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
@@ -186,8 +192,14 @@ public class CxDefinition_based_product_occurrence
 		unsetMappingConstraints(context, armEntity);
 		CxProduct_occurrence.setMappingConstraints(context, armEntity);
 		if(armEntity.testDerived_from(null)){
-		  // Implement a derived attribute
-	      armEntity.setFormation(null, armEntity.getDerived_from(null).getFormation(null));
+			// Implement a derived attribute
+			EProduct_view_definition epvd = armEntity.getDerived_from(null);
+			if(epvd.testFormation(null)){
+				armEntity.setFormation(null, epvd.getFormation(null));	
+			}else{
+				System.err.println(" WARNING definition without version "+epvd);
+			}
+	      
 		}else{
 			System.err.println(" WARNING component without definition "+armEntity);
 		}
@@ -371,6 +383,10 @@ public class CxDefinition_based_product_occurrence
 		// in AP203 style mapping is IDENTICAL, so do nothing
 		if(apFlag == AP203)
 			return;
+		// We reuse the same instance as it is PDR, so don't need to create one more PDR as it is done for DBPO
+		if(armEntity instanceof EAssembly_component){
+			return;
+		}
 		unsetDerived_from(context, armEntity);
 		// ALTERNATIVE 2, if it is ALTERNATIVE 1 - DO NOTHING
 		if(armEntity.testDerived_from(null)){
@@ -419,8 +435,24 @@ public class CxDefinition_based_product_occurrence
 	public static void finalize_assembly_structure(SdaiContext context, EDefinition_based_product_occurrence component)throws SdaiException{
 		// Last chance to skip 1) or 2) patterns
 		if(context.working_model.getUnderlyingSchemaString().equalsIgnoreCase("ap210_electronic_assembly_interconnect_and_packaging_design_mim")){
+			component.unsetDerived_from(null);
 			return;
 		}
+		// if new structure is used - do nothing
+		AProduct_occurrence_definition_relationship_armx apodr = new AProduct_occurrence_definition_relationship_armx();
+		CProduct_occurrence_definition_relationship_armx.usedinRelated_view(null, component, context.domain, apodr);
+		if(apodr.getMemberCount() > 0){
+			component.unsetDerived_from(null);
+			return;
+		}
+		// Maybe it is already implemented on AIM
+		ANext_assembly_usage_occurrence_relationship anauor = new ANext_assembly_usage_occurrence_relationship();
+		CNext_assembly_usage_occurrence_relationship.usedinOccurrence(null, component, context.domain, anauor);
+		if(anauor.getMemberCount() > 0){
+			component.unsetDerived_from(null);
+			return;
+		}
+		
 		AProduct_definition_relationship apdr = new AProduct_definition_relationship();
 		CProduct_definition_relationship.usedinRelated_product_definition(null, component, context.domain, apdr);
 		SdaiIterator iter = apdr.createIterator();
@@ -435,13 +467,12 @@ public class CxDefinition_based_product_occurrence
 		}
 		// Get definition
 		EProduct_definition definition = component.getDerived_from(null);
+		component.unsetDerived_from(null);
 		// 1) Just delete this occurrence
 		if(count < 2){
 			// Clean ARM specific attributes
 			// component.unsetAdditional_characterization(null);
 			component.unsetAdditional_contexts(null);
-			
-			component.unsetDerived_from(null);
 			
 			EEntity newComponent = component.findEntityInstanceSdaiModel().substituteInstance(component, definition.getInstanceType());
 			definition.moveUsersFrom(newComponent);

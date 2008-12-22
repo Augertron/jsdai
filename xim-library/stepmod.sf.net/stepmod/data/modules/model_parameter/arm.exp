@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4056 - ISO/TS 10303-1703 Model parameter - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3492
+   ISO TC184/SC4/WG12 N5710 - ISO/TS 10303-1703 Model parameter - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4056
 *)
 
 SCHEMA Model_parameter_arm;
@@ -46,6 +46,12 @@ REFERENCE FROM Specification_document_arm(get_document_definition);	-- ISO/TS 10
         'DOCUMENT_DEFINITION_ARM.DOCUMENT_DEFINITION');
 	WHERE
       WR1 : EXISTS (reference_document) AND (SIZEOF(reference_document) = 1);
+  END_ENTITY;
+
+  ENTITY Model_parameter_with_unit 
+    SUBTYPE OF (Independent_property_with_unit,Model_parameter);
+     WHERE
+      WR1: NOT('MODEL_PARAMETER_ARM.SCHEMA_BASED_MODEL_PARAMETER' IN TYPEOF(SELF));
   END_ENTITY;
 
   ENTITY Parameter_assignment

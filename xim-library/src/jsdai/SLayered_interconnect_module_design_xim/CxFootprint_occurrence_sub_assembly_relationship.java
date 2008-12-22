@@ -50,7 +50,7 @@ public class CxFootprint_occurrence_sub_assembly_relationship extends CFootprint
 	}
 	public jsdai.SProduct_definition_schema.EProduct_definition getOccurrence(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		return (jsdai.SProduct_definition_schema.EProduct_definition)get_instance(a8);
-	}*/
+	}
 	public void setOccurrence(EProduct_definition_occurrence_relationship type, jsdai.SProduct_definition_schema.EProduct_definition value) throws SdaiException {
 		a8 = set_instance(a8, value);
 	}
@@ -60,14 +60,14 @@ public class CxFootprint_occurrence_sub_assembly_relationship extends CFootprint
 	public static jsdai.dictionary.EAttribute attributeOccurrence(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		return a8$;
 	}
-	
+*/	
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		return test_string(a6);
 	}
 	public String getName(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		return get_string(a6);
-	}*/
+	}
 	public void setName(EProduct_definition_occurrence_relationship type, String value) throws SdaiException {
 		a6 = set_string(value);
 	}
@@ -78,7 +78,7 @@ public class CxFootprint_occurrence_sub_assembly_relationship extends CFootprint
 		return a6$;
 	}
 	// END of taken from PDOR
-	
+*/	
 	// Taken from PDR
 	/// methods for attribute: id, base type: STRING
 /*	public boolean testId(EProduct_definition_relationship type) throws SdaiException {
@@ -86,7 +86,7 @@ public class CxFootprint_occurrence_sub_assembly_relationship extends CFootprint
 	}
 	public String getId(EProduct_definition_relationship type) throws SdaiException {
 		return get_string(a0);
-	}*/
+	}
 	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
 		a0 = set_string(value);
 	}
@@ -96,14 +96,14 @@ public class CxFootprint_occurrence_sub_assembly_relationship extends CFootprint
 	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
 		return a0$;
 	}
-
+*/
 	//<01> generating methods for consolidated attribute:  name
 /*	public boolean testName(EProduct_definition_relationship type) throws SdaiException {
 		return test_string(a1);
 	}
 	public String getName(EProduct_definition_relationship type) throws SdaiException {
 		return get_string(a1);
-	}*/
+	}
 	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
 		a1 = set_string(value);
 	}
@@ -113,7 +113,7 @@ public class CxFootprint_occurrence_sub_assembly_relationship extends CFootprint
 	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
 		return a1$;
 	}
-
+*/
 	
 	// ENDOF taken from PDR
 

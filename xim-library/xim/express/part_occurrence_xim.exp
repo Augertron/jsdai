@@ -48,14 +48,13 @@ It is recommended to use in complex with Next_assembly_usage_occurrence_relation
 *)
 ENTITY Part_occurrence_definition_relationship 
      ABSTRACT SUPERTYPE
-     SUBTYPE OF (assembly_component_usage); 
-       SELF\product_definition_relationship.relating_product_definition : Part_view_definition; 
+     SUBTYPE OF (Product_occurrence_definition_relationship_armx); 
+       SELF\Product_occurrence_definition_relationship_armx.relating_view : Part_view_definition; 
 -- We can't reach this unambigously (in the mapping) on this level - so better hide it at all
 -- try it once more...
-       SELF\product_definition_relationship.related_product_definition : Part_occurrence;
+       SELF\Product_occurrence_definition_relationship_armx.related_view : Part_occurrence;
   DERIVE 
-    SELF\product_definition_relationship.id : STRING := 
-      SELF\Product_definition_relationship.related_product_definition\Product_view_definition.id;
+    id : STRING := SELF\Product_occurrence_definition_relationship_armx.related_view\Product_view_definition.id;
   END_ENTITY; 
 
 ENTITY Specification_based_part_occurrence

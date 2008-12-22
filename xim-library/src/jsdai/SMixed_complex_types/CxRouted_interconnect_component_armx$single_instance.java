@@ -33,7 +33,6 @@ import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SAssembly_module_design_mim.CRouted_interconnect_component;
 import jsdai.SAssembly_module_design_xim.CxRouted_interconnect_component_armx;
-import jsdai.SAssembly_module_design_xim.ERouted_interconnect_component_armx;
 import jsdai.SGeneric_product_occurrence_xim.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
@@ -52,6 +51,26 @@ public class CxRouted_interconnect_component_armx$single_instance
 	public static int apFlag = AP21x; // Default is this style  
 
 	// Taken from PDR
+	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
+		a6 = set_string(value);
+	}
+	public void unsetId(EProduct_definition_relationship type) throws SdaiException {
+		a6 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
+		return a6$;
+	}
+
+	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
+		a7 = set_string(value);
+	}
+	public void unsetName(EProduct_definition_relationship type) throws SdaiException {
+		a7= unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
+		return a7$;
+	}
+	
 	// attribute (current explicit or supertype explicit) : relating_product_definition, base type: entity product_definition
 /*	public static int usedinRelating_product_definition(EProduct_definition_relationship type, EProduct_definition instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a12$, domain, result);
@@ -244,7 +263,7 @@ public class CxRouted_interconnect_component_armx$single_instance
 			setDerived_from(context, this);
 			
 			// probed_layout_item
-			setRouted_centreline_shape(context, this);
+			// setRouted_centreline_shape(context, this);
 			
 			// Clean ARM specific attributes - this is derived in laminate_component
 			// unsetAdditional_characterization(null);
@@ -255,7 +274,7 @@ public class CxRouted_interconnect_component_armx$single_instance
 			unsetId_x(null);
 
 			// probed_layout_item
-			unsetRouted_centreline_shape(null);
+			// unsetRouted_centreline_shape(null);
 			
 	}
 
@@ -279,7 +298,7 @@ public class CxRouted_interconnect_component_armx$single_instance
 			unsetId_x(context, this);
 
 			// probed_layout_item
-			unsetRouted_centreline_shape(context, this);
+			// unsetRouted_centreline_shape(context, this);
 			
 	}
 
@@ -449,11 +468,12 @@ public class CxRouted_interconnect_component_armx$single_instance
 	* @param armEntity arm entity.
 	* @throws SdaiException
 	*/
+	/* Became redeclared no need to do anything	
 	public static void setRouted_centreline_shape(SdaiContext context, ERouted_interconnect_component_armx armEntity) throws SdaiException
 	{
 		CxRouted_interconnect_component_armx.setRouted_centreline_shape(context, armEntity);
 	}
-
+*/
 
 	/**
 	* Unsets/deletes data for probed_layout_item attribute.
@@ -462,9 +482,10 @@ public class CxRouted_interconnect_component_armx$single_instance
 	* @param armEntity arm entity.
 	* @throws SdaiException
 	*/
+	/* Became redeclared no need to do anything	
 	public static void unsetRouted_centreline_shape(SdaiContext context, ERouted_interconnect_component_armx armEntity) throws SdaiException
 	{
 		CxRouted_interconnect_component_armx.unsetRouted_centreline_shape(context, armEntity);
 	}
-
+*/
 }

@@ -30,14 +30,16 @@ package jsdai.SMixed_complex_types;
 */
 
 import jsdai.SItem_definition_structure_xim.CxAssembled_part_association;
+import jsdai.SAssembly_structure_xim.CxNext_assembly_usage_occurrence_relationship_armx;
+import jsdai.SAssembly_structure_xim.CxProduct_occurrence_definition_relationship_armx;
+import jsdai.SAssembly_structure_xim.ENext_assembly_usage_occurrence_relationship_armx;
 import jsdai.SPhysical_unit_design_view_mim.CNext_assembly_usage_occurrence_relationship;
-import jsdai.SPhysical_unit_design_view_xim.CxNext_assembly_usage_occurrence_relationship_armx;
-import jsdai.SProduct_definition_schema.EProduct_definition_relationship;
-import jsdai.SProduct_structure_schema.EProduct_definition_occurrence_relationship;
+import jsdai.SPhysical_unit_design_view_mim.ENext_assembly_usage_occurrence_relationship;
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
+import jsdai.libutil.XimEntityStandalone;
 
-public class CxAssembled_part_association$next_assembly_usage_occurrence_relationship_armx extends CAssembled_part_association$next_assembly_usage_occurrence_relationship_armx implements EMappedXIMEntity
+public class CxAssembled_part_association$next_assembly_usage_occurrence_relationship_armx extends CAssembled_part_association$next_assembly_usage_occurrence_relationship_armx implements EMappedXIMEntity, XimEntityStandalone
 {
 	public int attributeState = ATTRIBUTES_MODIFIED;	
 
@@ -48,7 +50,7 @@ public class CxAssembled_part_association$next_assembly_usage_occurrence_relatio
 	}
 	public String getName(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		return get_string(a1);
-	}*/
+	}
 	public void setName(EProduct_definition_occurrence_relationship type, String value) throws SdaiException {
 		a1 = set_string(value);
 	}
@@ -58,7 +60,7 @@ public class CxAssembled_part_association$next_assembly_usage_occurrence_relatio
 	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		return a1$;
 	}
-	
+*/	
 	// attribute (current explicit or supertype explicit) : occurrence, base type: entity product_definition
 /*	public static int usedinOccurrence(EProduct_definition_occurrence_relationship type, jsdai.SProduct_definition_schema.EProduct_definition instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a3$, domain, result);
@@ -68,7 +70,7 @@ public class CxAssembled_part_association$next_assembly_usage_occurrence_relatio
 	}
 	public jsdai.SProduct_definition_schema.EProduct_definition getOccurrence(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		return (jsdai.SProduct_definition_schema.EProduct_definition)get_instance(a3);
-	}*/
+	}
 	public void setOccurrence(EProduct_definition_occurrence_relationship type, jsdai.SProduct_definition_schema.EProduct_definition value) throws SdaiException {
 		a3 = set_instance(a3, value);
 	}
@@ -78,7 +80,7 @@ public class CxAssembled_part_association$next_assembly_usage_occurrence_relatio
 	public static jsdai.dictionary.EAttribute attributeOccurrence(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		return a3$;
 	}
-	
+*/	
 	// END of taken from PDOR
 	// Taken from PDR
 	/// methods for attribute: id, base type: STRING
@@ -87,7 +89,7 @@ public class CxAssembled_part_association$next_assembly_usage_occurrence_relatio
 	}
 	public String getId(EProduct_definition_relationship type) throws SdaiException {
 		return get_string(a5);
-	}*/
+	}
 	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
 		a5 = set_string(value);
 	}
@@ -97,7 +99,7 @@ public class CxAssembled_part_association$next_assembly_usage_occurrence_relatio
 	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
 		return a5$;
 	}
-	
+*/	
 	// ENDOF taken from PDR
 
 	
@@ -113,9 +115,26 @@ public class CxAssembled_part_association$next_assembly_usage_occurrence_relatio
 
 		setMappingConstraints(context, this);
 
-		CxNext_assembly_usage_occurrence_relationship_armx.processAssemblyTrick(context, this);
+		// relating_view : product_view_definition;
+        setRelating_view(context, this);
+		
+		// related_view : product_occurrence;		
+        setRelated_view(context, this);
+        
+		// reference_designator
+		setReference_designator(context, this);		
+		
+		// CxNext_assembly_usage_occurrence_relationship_armx.processAssemblyTrick(context, this);
 		//********** "managed_design_object" attributes
 
+		// relating_view : product_view_definition;
+        unsetRelating_view(null);
+		
+		// related_view : product_occurrence;		
+        unsetRelated_view(null);
+        
+		// reference_designator
+		unsetReference_designator(null);		
 	}
 
 	/* (non-Javadoc)
@@ -124,6 +143,14 @@ public class CxAssembled_part_association$next_assembly_usage_occurrence_relatio
 	public void removeAimData(SdaiContext context) throws SdaiException {
 		unsetMappingConstraints(context, this);
 
+		// relating_view : product_view_definition;
+        unsetRelating_view(context, this);
+		
+		// related_view : product_occurrence;		
+        unsetRelated_view(context, this);
+        
+		// reference_designator
+		unsetReference_designator(context, this);		
 	}
 	
 	
@@ -153,6 +180,48 @@ public class CxAssembled_part_association$next_assembly_usage_occurrence_relatio
 	}
 	
 	
-	//********** "managed_design_object" attributes
+	public static void setRelated_view(SdaiContext context, ENext_assembly_usage_occurrence_relationship_armx armEntity) throws SdaiException
+	{
+		CxNext_assembly_usage_occurrence_relationship_armx.setRelated_view(context, armEntity);
+	}
+	
+	public static void unsetRelated_view(SdaiContext context, ENext_assembly_usage_occurrence_relationship_armx armEntity) throws SdaiException
+	{
+		CxNext_assembly_usage_occurrence_relationship_armx.unsetRelated_view(context, armEntity);
+	}
+
+	public static void setReference_designator(SdaiContext context, ENext_assembly_usage_occurrence_relationship_armx armEntity) throws SdaiException
+	{
+		CxNext_assembly_usage_occurrence_relationship_armx.setReference_designator(context, armEntity);
+	}
+	
+	public static void unsetReference_designator(SdaiContext context, ENext_assembly_usage_occurrence_relationship_armx armEntity) throws SdaiException
+	{
+		CxNext_assembly_usage_occurrence_relationship_armx.unsetReference_designator(context, armEntity);
+	}
+
+	public static void setRelating_view(SdaiContext context, ENext_assembly_usage_occurrence_relationship_armx armEntity) throws SdaiException
+	{
+		CxProduct_occurrence_definition_relationship_armx.setRelating_view(context, armEntity);
+	}
+	
+	public static void unsetRelating_view(SdaiContext context, ENext_assembly_usage_occurrence_relationship_armx armEntity) throws SdaiException
+	{
+		CxProduct_occurrence_definition_relationship_armx.unsetRelating_view(context, armEntity);
+	}
+	
+	ENext_assembly_usage_occurrence_relationship aimInstance;
+	
+	public EEntity getAimInstance(SdaiContext context) throws SdaiException {
+		if(aimInstance == null){
+			aimInstance = (ENext_assembly_usage_occurrence_relationship)
+				context.working_model.createEntityInstance(CNext_assembly_usage_occurrence_relationship.definition);
+		}
+		return aimInstance;
+	}
+	
+	public void unsetAimInstance(SdaiContext context) throws SdaiException{
+		aimInstance = null;
+	}
 
 }

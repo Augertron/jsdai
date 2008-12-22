@@ -52,15 +52,35 @@ public class CxPhysical_shield_armx$single_instance
 	public static int apFlag = AP21x; // Default is this style  
 
 	// Taken from PDR
+	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
+		a7 = set_string(value);
+	}
+	public void unsetId(EProduct_definition_relationship type) throws SdaiException {
+		a7 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
+		return a7$;
+	}
+
+	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
+		a8 = set_string(value);
+	}
+	public void unsetName(EProduct_definition_relationship type) throws SdaiException {
+		a8 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
+		return a8$;
+	}
+	
 	// attribute (current explicit or supertype explicit) : relating_product_definition, base type: entity product_definition
 /*	public static int usedinRelating_product_definition(EProduct_definition_relationship type, EProduct_definition instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a12$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a10$, domain, result);
 	}
 	public boolean testRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		return test_instance(a12);
+		return test_instance(a10);
 	}
 	public EProduct_definition getRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		return (EProduct_definition)get_instance(a12);
+		return (EProduct_definition)get_instance(a10);
 	}*/
 	public void setRelating_product_definition(EProduct_definition_relationship type, EProduct_definition value) throws SdaiException {
 		a10 = set_instance(a10, value);
@@ -69,7 +89,7 @@ public class CxPhysical_shield_armx$single_instance
 		a10 = unset_instance(a10);
 	}
 	public static jsdai.dictionary.EAttribute attributeRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		return a12$;
+		return a10$;
 	}
 	// ENDOF taken from PDR
 

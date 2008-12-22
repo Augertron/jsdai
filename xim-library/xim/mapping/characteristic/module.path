@@ -45,31 +45,64 @@ end_mapping_constraints;
 
 end_entity_mapping;
 
-entity_mapping Characteristic_data_table_header_link_armx(Characteristic_data_table_header_link_armx, characteristic_data_table_header_link);
+entity_mapping Characteristic_data_column_header_armx(Characteristic_data_column_header_armx, characteristic_data_column_header);
 
 mapping_constraints;
-			[characteristic_data_table_header_link <=
-			general_property]
-			[characteristic_data_table_header_link <=
-			general_property_relationship]
+			characteristic_data_column_header <=
+			general_property
 end_mapping_constraints;
 
-attribute_mapping subsequent(subsequent, $PATH, general_property);
-			characteristic_data_table_header_link <=
+end_entity_mapping;
+
+entity_mapping Characteristic_data_table_column_link_armx(Characteristic_data_column_header_link_armx, characteristic_data_column_header_link);
+
+mapping_constraints;
+			characteristic_data_column_header_link <=
+			general_property_relationship
+end_mapping_constraints;
+
+attribute_mapping subsequent(subsequent, $PATH, Characteristic_data_column_header_armx);
+			characteristic_data_column_header_link <=
       general_property_relationship
 			general_property_relationship.related_property ->
-			general_property
+			general_property =>
+			characteristic_data_column_header
 end_attribute_mapping;
 
-attribute_mapping precedent(precedent, $PATH, general_property);
-			characteristic_data_table_header_link <=
+attribute_mapping precedent(precedent, $PATH, Characteristic_data_column_header_armx);
+			characteristic_data_column_header_link <=
       general_property_relationship
 			general_property_relationship.relating_property ->
-			general_property  
+			general_property =>
+			characteristic_data_column_header
 end_attribute_mapping;
 
 end_entity_mapping;
 
+entity_mapping Characteristic_data_table_header_decomposition_armx(Characteristic_data_table_header_decomposition_armx, characteristic_data_table_header_decomposition);
+
+mapping_constraints;
+			characteristic_data_table_header_decomposition <=
+			general_property_relationship
+end_mapping_constraints;
+
+attribute_mapping related_property(related_property, $PATH, Characteristic_data_column_header_armx);
+			characteristic_data_table_header_decomposition <=
+     	general_property_relationship
+			general_property_relationship.related_property ->
+			general_property =>
+			characteristic_data_column_header
+end_attribute_mapping;
+
+attribute_mapping relating_property(relating_property, $PATH, Characteristic_data_table_header_armx);
+			characteristic_data_table_header_decomposition <=
+      general_property_relationship
+			general_property_relationship.relating_property ->
+			general_property =>
+			characteristic_data_table_header
+end_attribute_mapping;
+
+end_entity_mapping;
 entity_mapping Characteristic_data_table_representation(Characteristic_data_table_representation, representation);
 
 attribute_mapping items(items, $PATH, Characteristic_data_table);
@@ -113,6 +146,15 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
+entity_mapping Null_representation_item_armx(Null_representation_item_armx, null_representation_item);
+
+mapping_constraints;
+	null_representation_item <=
+	representation_item
+end_mapping_constraints;
+
+end_entity_mapping;
+
 entity_mapping Characteristic_data_table_row(Characteristic_data_table_row, row_representation_item);
 
 mapping_constraints;
@@ -126,13 +168,14 @@ representation_item]
 
 end_mapping_constraints;
 
-attribute_mapping cell(cell, $PATH, characteristic);
-	row_representation_item <=
-	compound_representation_item
-	compound_representation_item.item_element ->
-	compound_item_definition = list_representation_item
-	list_representation_item[i] ->
-	representation_item
+attribute_mapping cell(cell, $PATH, Null_representation_item_armx);
+					row_representation_item <=
+					compound_representation_item
+					compound_representation_item.item_element ->
+					compound_item_definition = list_representation_item
+					list_representation_item[i] ->
+					representation_item =>
+					null_representation_item
 end_attribute_mapping;
 
 attribute_mapping cell(cell, $PATH, descriptive_representation_item);

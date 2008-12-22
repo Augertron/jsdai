@@ -32,7 +32,7 @@ package jsdai.SFabrication_technology_xim;
 import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SFabrication_technology_mim.CStratum_stack_model;
-import jsdai.SPhysical_layout_template_xim.*;
+import jsdai.SPart_template_xim.*;
 import jsdai.SProduct_definition_schema.EProduct_definition;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;

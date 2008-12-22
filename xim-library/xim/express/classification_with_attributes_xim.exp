@@ -79,13 +79,16 @@ TYPE definable_objects = SELECT (
 	Product_view_definition) ;
 END_TYPE;
 
-ENTITY Class_with_attributes
- (* CONNOTATIONAL *) SUBTYPE OF (Class_armx, characterized_class);
-  version_id: OPTIONAL STRING;
-  used_classification_system: OPTIONAL Class_system;
-INVERSE
-  characterization_attributes: SET[0:?] OF Classification_attribute FOR characterized_class;
-END_ENTITY;
+  ENTITY Class_with_attributes
+    (* CONNOTATIONAL *) SUBTYPE OF (Class_armx, characterized_class);
+      version_id: OPTIONAL STRING;
+      used_classification_system: OPTIONAL Class_system;
+    DERIVE
+      SELF\characterized_object.name: label := ?;
+      SELF\characterized_object.description : text := ?;          
+    INVERSE
+      characterization_attributes: SET[0:?] OF Classification_attribute FOR characterized_class;
+  END_ENTITY;
 
 ENTITY Class_hierarchy
 (* CONNOTATIONAL *) SUBTYPE OF (group_relationship);
@@ -104,8 +107,9 @@ ENTITY Classification_association
    -- Overlaps with definitional attribute
    SELF\classification_assignment.role : classification_role := ?;
 WHERE
-WR1: SIZEOF(QUERY(it<* SELF\Classification_assignment.items |
-     NOT('Classification_with_attributes_xim.DEFINABLE_OBJECTS' IN TYPEOF(it)) AND definitional ))=0;
+WR1: NOT(definitional = TRUE) OR
+       (SIZEOF(QUERY(it<* SELF\Classification_assignment.items | 
+                 NOT('CLASSIFICATION_WITH_ATTRIBUTES_XIM.DEFINABLE_OBJECTS' IN TYPEOF(it)) )) = 0);
 WR2: SIZEOF(QUERY(it<* SELF\Classification_assignment.items |
      NOT('Classification_with_attributes_xim.CLASSIFIED_ELEMENT_SELECT' IN TYPEOF(it)) )) =0;
 END_ENTITY;

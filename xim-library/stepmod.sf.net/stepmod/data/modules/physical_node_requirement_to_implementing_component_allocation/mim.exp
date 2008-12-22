@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4117 - ISO/TS 10303-1723 Physical node requirement to implementing component allocation - EXPRESS MIM
-   Supersedes ISO TC184/SC4/WG12 N3541
+   ISO TC184/SC4/WG12 N5765 - ISO/TS 10303-1723 Physical node requirement to implementing component allocation - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N4117
 *)
 
 
@@ -12,6 +12,19 @@ SCHEMA Physical_node_requirement_to_implementing_component_allocation_mim;
 	
 REFERENCE FROM product_property_definition_schema -- ISO 10303-41
   (acyclic_shape_aspect_relationship);
+
+  ENTITY assembly_to_part_connectivity_structure_allocation
+    SUBTYPE OF (shape_aspect_relationship, shape_aspect);
+	  SELF\shape_aspect_relationship.related_shape_aspect RENAMED assembly_element : physical_connectivity_element;
+	  SELF\shape_aspect_relationship.relating_shape_aspect RENAMED part_element    : part_connected_terminals_element;
+  END_ENTITY;	
+	
+  ENTITY physical_node_branch_requirement_to_implementing_component_allocation
+    SUBTYPE OF (shape_aspect_relationship, shape_aspect);  
+	  SELF\shape_aspect_relationship.related_shape_aspect RENAMED physical_node_branch_requirement : physical_connectivity_element;
+      SELF\shape_aspect.of_shape RENAMED implementation_component                                  : assembly_component;
+	  SELF\shape_aspect_relationship.relating_shape_aspect RENAMED part_element                    : part_connected_terminals_element;
+  END_ENTITY;	
 	
 ENTITY physical_node_requirement_to_implementing_component_allocation
   SUBTYPE OF (shape_aspect_relationship, shape_aspect);

@@ -41,6 +41,25 @@ import jsdai.SProduct_property_definition_schema.*;
 public class CxDesign_layer_technology extends CDesign_layer_technology implements EMappedXIMEntity
 {
 
+	// From CProperty_definition.java
+	/// methods for attribute: name, base type: STRING
+/*	public boolean testName(EProperty_definition type) throws SdaiException {
+		return test_string(a0);
+	}
+	public String getName(EProperty_definition type) throws SdaiException {
+		return get_string(a0);
+	}*/
+	public void setName(EProperty_definition type, String value) throws SdaiException {
+		a0 = set_string(value);
+	}
+	public void unsetName(EProperty_definition type) throws SdaiException {
+		a0 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EProperty_definition type) throws SdaiException {
+		return a0$;
+	}
+	// ENDOF From CProperty_definition.java
+
 	// Taken from Characterized_object
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(ECharacterized_object type) throws SdaiException {
@@ -402,14 +421,10 @@ public class CxDesign_layer_technology extends CDesign_layer_technology implemen
 		//unset old values
 		unsetDesign_layer_purpose(context, armEntity);
 
-		if (armEntity.testDesign_layer_purpose(null))
-		{
-
-			//jsdai.SElectronic_assembly_interconnect_and_packaging_design.EStratum_technology aimEntity = (jsdai.SElectronic_assembly_interconnect_and_packaging_design.EStratum_technology) armEntity.getAimInstance();
+		if (armEntity.testDesign_layer_purpose(null)){
 			int armDesign_layer_purpose = armEntity.getDesign_layer_purpose(null);
-		   String value = EPredefined_design_layer_purpose.toString(armDesign_layer_purpose).toLowerCase().replace('_',' ');
-         setDescriptive_representation_item(context, armEntity, "layer purpose", value,
-                                            "physical characteristics representation");
+			String value = EPredefined_design_layer_purpose.toString(armDesign_layer_purpose).toLowerCase().replace('_',' ');
+			CxStratum_technology_armx.setPropertDefinition(armEntity, "layer purpose", value);
 		}
 	}
 
@@ -424,7 +439,7 @@ public class CxDesign_layer_technology extends CDesign_layer_technology implemen
 	public static void unsetDesign_layer_purpose(SdaiContext context, EDesign_layer_technology armEntity) throws SdaiException
 	{
 		String keyword = "layer purpose";
-		CxAP210ARMUtilities.unsetRepresentationItemFromPropertyDefinition(armEntity, context, null, keyword);
+		CxStratum_technology_armx.unsetPropertDefinition(context.domain, armEntity, keyword);
 	}
 
 

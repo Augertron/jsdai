@@ -1,6 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4608 - ISO/CD-TS 10303-1434 Project management resource information - EXPRESS MIM
+   ISO TC184/SC4/WG12 N5900 - ISO/TS 10303-1434 Project management resource information - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N4608
 *)
 
 SCHEMA Project_management_resource_information_mim;
@@ -14,35 +15,61 @@ SCHEMA Project_management_resource_information_mim;
 
 
 
---		the set of action_items that are associated with the assigned_activity.
---			action_items
-
 TYPE pmri_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
-	(contract,
+	(address,
+	applied_approval_assignment,
+	applied_certification_assignment,
+	applied_classification_assignment,
+	applied_contract_assignment,
+	applied_document_reference,  
+	applied_document_usage_constraint_assignment,
+	applied_identification_assignment,
+	applied_location_representation_assignment, 
+	applied_organization_assignment, 
+	applied_person_and_organization_assignment,
+	approval,
+	calendar_date,
+	contract,
+	date_and_time,
+	date_and_time_assignment,
+	date_assignment, 
 	general_property,
 	location,
-	representation, applied_location_representation_assignment, address,
 	product,
+	product_definition,
 	product_definition_formation,
-	product_definition);
+	product_related_product_category,
+	representation);
 END_TYPE;
 
---		the set of data associated to the assigned_activity_method.
---			action_method_items
 
 TYPE pmri_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(contract,
-	product,
-	product_definition_formation,
+	(applied_approval_assignment,
+	applied_certification_assignment,
+	applied_classification_assignment,
+	applied_contract_assignment,
+	applied_document_reference,  
+	applied_document_usage_constraint_assignment,
+	applied_location_representation_assignment,
+	applied_organization_assignment, 
+	applied_organizational_project_assignment,
+	applied_person_and_organization_assignment,
+	approval,
+	calendar_date,
+	contract,
+	date_and_time,
+	date_and_time_assignment,
+	date_assignment, 
 	document_file,
 	location,
-	applied_location_representation_assignment,
+	organizational_project,
+	product,
 	product_definition,
-	organizational_project);
+	product_definition_formation,
+	product_related_product_category,
+	representation);
 END_TYPE;
 
---		the set of things that are affected by the Work_request.
---			action_request_item
 
 TYPE pmri_action_request_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_request_item WITH
 	(contract,
@@ -52,9 +79,6 @@ TYPE pmri_action_request_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action
 	document_file);
 END_TYPE;
 
---		the inherited items  attribute shall not contain any element that is not aliasable
---			aliasable_item
-
 TYPE pmri_aliasable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON aliasable_item WITH
 	(approval,
 	approval_status,
@@ -63,9 +87,6 @@ TYPE pmri_aliasable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON aliasable_i
 	organizational_project,
 	applied_security_classification_assignment);
 END_TYPE;
-
---		the activity or product data to which the Approval is assigned.
---			approval_item
 
 TYPE pmri_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
 	(certification,
@@ -80,25 +101,16 @@ TYPE pmri_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_ite
 	product_definition_context);
 END_TYPE;
 
---		the activity or product data to which the Certification is assigned.
---			certification_item
-
 TYPE pmri_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
 	(product,
 	product_definition_formation,
 	organizational_project);
 END_TYPE;
 
---		the object of which the Activity_property identifies a characteristic.
---			characterized_action_definition
-
 (*TYPE pmri_characterized_activity_definition = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON characterized_activity_definition WITH
 	(condition,
 	action_method_relationship);
 END_TYPE;*)
-
---		the set or more instances of types listed in classification_item that are classified.
---			classification_item
 
 TYPE pmri_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
 	(conversion_based_unit,
@@ -121,9 +133,6 @@ TYPE pmri_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classi
 	measure_with_unit,
 	product_definition_context);
 END_TYPE;
-
---		an instance of one of the types of attribute_classification_item.
---			attribute_classification_item
 
 TYPE pmri_attribute_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON attribute_classification_item WITH
 	(approval,
@@ -174,40 +183,6 @@ TYPE pmri_attribute_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED
 	product_definition_context);
 END_TYPE;
 
---		the product or activity data to which the Condition_evaluation has been assigned.
---			action_items
-
-TYPE pmri2_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
-	(approval,
-	applied_approval_assignment,
-	applied_document_reference,  applied_document_usage_constraint_assignment
-	);
-END_TYPE;
-
---		the product or activity data which acted as a parameter to the Condition_evaluation.
---			action_items
-
-TYPE pmri3_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
-	(approval,
-	applied_approval_assignment,
-	calendar_date,
-	applied_certification_assignment,
-	applied_classification_assignment,
-	applied_contract_assignment,
-	date_assignment, date_and_time_assignment,
-	date_and_time,
-	applied_document_reference,  applied_document_usage_constraint_assignment,
-	applied_identification_assignment,
-	applied_organization_assignment, applied_person_and_organization_assignment,
-	product,
-	product_related_product_category,
-	product_definition_formation,
-	product_definition,
-	representation);
-END_TYPE;
-
---		the product or activity data to which the Condition is being assigned.
---			action_method_items
 
 TYPE pmri_condition_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_action_method_items WITH
 	(approval,
@@ -216,38 +191,12 @@ TYPE pmri_condition_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED
 	);
 END_TYPE;
 
---		the product or activity data which acts as a parameter to the condition.
---			action_method_items
-
-TYPE pmri3_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(approval,
-	applied_approval_assignment,
-	calendar_date,
-	applied_certification_assignment,
-	applied_classification_assignment,
-	applied_contract_assignment,
-	date_assignment, date_and_time_assignment,
-	date_and_time,
-	applied_document_reference,  applied_document_usage_constraint_assignment,
-	applied_organization_assignment, applied_person_and_organization_assignment,
-	product,
-	product_related_product_category,
-	product_definition_formation,
-	product_definition,
-	representation);
-END_TYPE;
-
---		the activity or product data to which the Contract is assigned.
---			contract_item
 
 TYPE pmri_contract_item = EXTENSIBLE SELECT BASED_ON contract_item WITH
 	(external_class_library,
 	organization_item, person_and_organization_item,
 	product_definition_formation);
 END_TYPE;
-
---		the activity or product data to which the Calendar_date or Date_time is assigned.
---			date_and_time_item
 
 TYPE pmri_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_and_time_item WITH
 	(condition,
@@ -277,9 +226,6 @@ TYPE pmri_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_item WITH
 	product_definition_context);
 END_TYPE;
 
---		the document_reference_item for the applied_document_reference,  applied_document_usage_constraint_assignment.
---			document_reference_item
-
 TYPE pmri_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH
 	(applied_external_identification_assignment,
 	location,
@@ -291,9 +237,6 @@ TYPE pmri_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON do
 	selected_item);
 END_TYPE;
 
---		the set of effectivity_item whose effectivity is characterized by this entity.
---			effectivity_item
-
 TYPE pmri_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
 	(product_definition,
 	product_definition_relationship,
@@ -302,8 +245,6 @@ TYPE pmri_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivi
 	selected_item_assignment);
 END_TYPE;
 
---		the data to which the identification is assigned.
---			identification_item
 
 TYPE pmri_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
 	(document_file,
@@ -317,8 +258,6 @@ TYPE pmri_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identi
 	product_definition_context);
 END_TYPE;
 
---		the data item for which Justification  is provided.
---			justification_item
 
 TYPE pmri_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_item WITH
 	(product_definition_relationship,
@@ -326,8 +265,6 @@ TYPE pmri_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justifi
 	applied_location_assignment);
 END_TYPE;
 
---		the item which provides evidential support for a Justification.
---			justification_support_item
 
 TYPE pmri_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_support_item WITH
 	(product_definition_relationship,
@@ -337,8 +274,6 @@ TYPE pmri_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON
 	product_definition_context);
 END_TYPE;
 
---		the item that is assigned to the specified location.
---			location_item
 
 TYPE pmri_location_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON location_item WITH
 	(product,
@@ -348,8 +283,6 @@ TYPE pmri_location_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON location_ite
 	organizational_project);
 END_TYPE;
 
---		the activity or product data to which the organization or person in an organization is assigned.
---			person_and_organization_item
 
 TYPE pmri_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_and_organization_item WITH
 	(condition,
@@ -367,17 +300,12 @@ TYPE pmri_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organiza
 	selected_item_assignment);
 END_TYPE;
 
---		 the activity or product data to which the Position_group is assigned.
---			position_in_organization_group_item
-
 TYPE pmri_position_in_organization_group_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_group_item WITH
 	(approval_person_organization,
 	product_definition,
 	applied_organization_assignment, applied_person_and_organization_assignment);
 END_TYPE;
 
---		 the activity or product data to which the Position  is assigned
---			position_in_organization_item
 
 TYPE pmri_position_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_item WITH
 	(approval_person_organization,
@@ -385,8 +313,6 @@ TYPE pmri_position_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED
 	applied_organization_assignment, applied_person_and_organization_assignment);
 END_TYPE;
 
---		 the activity or product data to which the Position_type  is assigned
---			position_in_organization_type_item
 
 TYPE pmri_position_in_organization_type_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_type_item WITH
 	(approval_person_organization,
@@ -394,15 +320,11 @@ TYPE pmri_position_in_organization_type_item = EXTENSIBLE GENERIC_ENTITY SELECT 
 	applied_organization_assignment, applied_person_and_organization_assignment);
 END_TYPE;
 
---		the set of instances of entity types listed in project_item, that are associated with the Project. 
---			project_item
 
 TYPE pmri_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
 	(general_property);
 END_TYPE;
 
---		the element to which the property is assigned.
---			property_assignment_select
 
 (*TYPE pmri_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
 	(applied_document_reference,  applied_document_usage_constraint_assignment,
@@ -447,55 +369,24 @@ ENTITY pmri_characterizable_product_definition
 END_ENTITY;
 
 
-
-
---		the resource assignment item to which the resource item is assigned.
---			action_method_items
-
-TYPE pmri6_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(contract,
-	location,
-	organizational_project);
-END_TYPE;
-
---		the items that are designated as resources within the application context. 
---			action_method_items
-
-TYPE pmri4_action_method_items= EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(product,
-	product_definition,
-	product_definition_formation,
-	document_file,
-	location);
-END_TYPE;
-
---		the activity or product data to which the Security_classification is assigned.
---			security_classification_item
-
 TYPE pmri_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
 	(product_definition_formation,
 	product_definition,
 	organizational_project_relationship);
 END_TYPE;
 
---		the context in which the product or activity data is being identified as being a Selected_item.
---			selected_item_context_items	
 
 TYPE pmri_selected_item_context_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON selected_item_context_items WITH
 	(contract,
 	organizational_project);
 END_TYPE;
 
---		the product or activity data that is being designated as a Selected_item.
---			selected_item_select
 
 TYPE pmri_selected_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON selected_item_select WITH
 	(product,
 	product_definition_formation);
 END_TYPE;
 
---		the object whose State_definition is given by the described_state_definition.
---			state_type_of_item
 
 TYPE pmri_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_type_of_item WITH
 	(certification,
@@ -508,8 +399,6 @@ TYPE pmri_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_t
 	security_classification);
 END_TYPE;
 
---		the subject which has or is in a State.
---			state_observed_of_item
 
 TYPE pmri_state_observed_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_observed_of_item WITH
 	(certification,
@@ -519,8 +408,6 @@ TYPE pmri_state_observed_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON sta
 	security_classification);
 END_TYPE;
 
---		the instance for which the Language of the considered_attribute has been identified.
---			multi_language_attribute_item
 
 TYPE pmri_multi_language_attribute_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON multi_language_attribute_item WITH
 	(condition,
@@ -544,20 +431,6 @@ TYPE pmri_attribute_language_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON at
 	applied_location_representation_assignment,
 	measure_representation_item,
 	representation);
-END_TYPE;
-
---	Work_output (a statement of output resulting from an activity 
--- 	or a task) has detail representation provided by
---			action_method_items
-
-TYPE pmri5_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(contract,
-	product,
-	product_definition,
-	product_definition_formation,
-	document_file,
-	location,
-	applied_organizational_project_assignment);
 END_TYPE;
 
 END_SCHEMA;

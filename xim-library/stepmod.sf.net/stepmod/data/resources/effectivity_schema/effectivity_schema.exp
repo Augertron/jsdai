@@ -1,78 +1,63 @@
 (*
 $Id$
-ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
-*) 
+
+2008-02-07
+ISO TC184/SC4/WG12 N4883 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+*)
+(*
+Supersedes ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+changes to date_time schema and to measure_schema as per TC1 - WG12 N4884.
+*)
 
 
 SCHEMA effectivity_schema;
+  REFERENCE FROM basic_attribute_schema (description_attribute, get_description_value, get_name_value, name_attribute);
+  REFERENCE FROM date_time_schema (date_time_or_event_occurrence, time_interval);
+  REFERENCE FROM measure_schema (measure_with_unit);
+  REFERENCE FROM support_resource_schema (bag_to_set, identifier, label, text);
+  ENTITY dated_effectivity
+    SUBTYPE OF (effectivity);
+    effectivity_end_date : OPTIONAL date_time_or_event_occurrence;
+    effectivity_start_date : date_time_or_event_occurrence;
+  END_ENTITY;
 
-REFERENCE FROM basic_attribute_schema   -- ISO 10303-41
-  (description_attribute,
-   get_description_value,
-   get_name_value,
-   name_attribute); 
+  ENTITY effectivity
+    SUPERTYPE OF (ONEOF(serial_numbered_effectivity, dated_effectivity, lot_effectivity, time_interval_based_effectivity));
+    id : identifier;
+  DERIVE
+    name : label := get_name_value(SELF);
+    description : text := get_description_value(SELF);
+  WHERE
+    WR1: SIZEOF(USEDIN(SELF, 'BASIC_ATTRIBUTE_SCHEMA.' + 'NAME_ATTRIBUTE.NAMED_ITEM')) <= 1;
+    WR2: SIZEOF(USEDIN(SELF, 'BASIC_ATTRIBUTE_SCHEMA.' + 'DESCRIPTION_ATTRIBUTE.DESCRIBED_ITEM')) <= 1;
+  END_ENTITY;
 
-REFERENCE FROM date_time_schema   -- ISO 10303-41
-  (date_time_or_event_occurrence,
-   time_interval); 
+  ENTITY effectivity_relationship;
+    name : label;
+    description : OPTIONAL text;
+    related_effectivity : effectivity;
+    relating_effectivity : effectivity;
+  END_ENTITY;
 
-REFERENCE FROM measure_schema   -- ISO 10303-41
-  (measure_with_unit); 
+  ENTITY lot_effectivity
+    SUBTYPE OF (effectivity);
+    effectivity_lot_id : identifier;
+    effectivity_lot_size : measure_with_unit;
+  END_ENTITY;
 
-REFERENCE FROM support_resource_schema   -- ISO 10303-41
-  (bag_to_set,
-   identifier,
-   label,
-   text); 
+  ENTITY serial_numbered_effectivity
+    SUBTYPE OF (effectivity);
+    effectivity_start_id : identifier;
+    effectivity_end_id : OPTIONAL identifier;
+  END_ENTITY;
 
+  ENTITY time_interval_based_effectivity
+    SUBTYPE OF (effectivity);
+    effectivity_period : time_interval;
+  END_ENTITY;
 
-ENTITY dated_effectivity
-  SUBTYPE OF (effectivity);
-  effectivity_end_date : OPTIONAL date_time_or_event_occurrence;
-  effectivity_start_date : date_time_or_event_occurrence;
-END_ENTITY;
-
-ENTITY effectivity
-  SUPERTYPE OF (ONEOF (serial_numbered_effectivity,
-                       dated_effectivity,
-                       lot_effectivity,
-                       time_interval_based_effectivity));
-  id : identifier;
-DERIVE
-  name : label := get_name_value(SELF);
-  description : text := get_description_value(SELF);
-WHERE
-  WR1: SIZEOF(USEDIN(SELF, 'BASIC_ATTRIBUTE_SCHEMA.' + 'NAME_ATTRIBUTE.NAMED_ITEM')) <= 1;
-  WR2: SIZEOF(USEDIN(SELF, 'BASIC_ATTRIBUTE_SCHEMA.' + 'DESCRIPTION_ATTRIBUTE.DESCRIBED_ITEM')) <= 1;
-END_ENTITY;
-
-ENTITY effectivity_relationship;
-  name : label;
-  description : OPTIONAL text;
-  related_effectivity : effectivity;
-  relating_effectivity : effectivity;
-END_ENTITY;
-
-ENTITY lot_effectivity
-  SUBTYPE OF (effectivity);
-  effectivity_lot_id : identifier;
-  effectivity_lot_size : measure_with_unit;
-END_ENTITY;
-
-ENTITY serial_numbered_effectivity
-  SUBTYPE OF (effectivity);
-  effectivity_start_id : identifier;
-  effectivity_end_id : OPTIONAL identifier;
-END_ENTITY;
-
-ENTITY time_interval_based_effectivity
-  SUBTYPE OF (effectivity);
-  effectivity_period : time_interval;
-END_ENTITY;
-
-FUNCTION acyclic_effectivity_relationship
- (relation : effectivity_relationship; relatives : SET[1:?] OF effectivity; specific_relation : STRING) : BOOLEAN; 
-  LOCAL
+  FUNCTION acyclic_effectivity_relationship (relation : effectivity_relationship; relatives : SET [1:?] OF effectivity; specific_relation : STRING):BOOLEAN;
+    LOCAL
       x : SET OF effectivity_relationship;
     END_LOCAL;
 
@@ -86,8 +71,6 @@ FUNCTION acyclic_effectivity_relationship
       END_IF;
     END_REPEAT;
     RETURN (TRUE);
-END_FUNCTION; 
+  END_FUNCTION;
 
-END_SCHEMA;  -- effectivity_schema
-
-
+END_SCHEMA;

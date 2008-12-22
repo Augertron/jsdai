@@ -93,7 +93,6 @@ TYPE interface_plane_or_seating_plane =  SELECT
   ENTITY Connection_zone_package_interface_plane_relationship
   (* CONNOTATIONAL *) SUBTYPE OF (connection_zone_interface_plane_relationship);
       SELF\shape_aspect_relationship.relating_shape_aspect RENAMED interface_plane : interface_plane_or_seating_plane;
-      SELF\shape_aspect_relationship.related_shape_aspect RENAMED mating_zone      : Connection_zone_in_part_feature_template_definition;
       derived_zone                                                                 : Connection_zone_in_part_feature_template_definition;
       SELF\shape_aspect_relationship.description RENAMED derived_zone_shape_class  : text;
     DERIVE
@@ -103,8 +102,6 @@ TYPE interface_plane_or_seating_plane =  SELECT
       SELF\shape_aspect.name : label := ?;
     INVERSE
       associated_package_terminal  : SET[0:1] OF package_terminal_template_definition_armx FOR seating_plane_zone;
-    UNIQUE
-      UR1 : interface_plane, mating_zone;
     WHERE
       WR1 : derived_zone_shape_class IN ['area','edge'];
   END_ENTITY;
@@ -121,11 +118,11 @@ TYPE interface_plane_or_seating_plane =  SELECT
 
   ENTITY Package_armx
     (* CONNOTATIONAL *) SUBTYPE OF (Part_usage_view, package);
-      mounting_technology                        : mounting_technology_type;
+      mounting_technology                        : OPTIONAL mounting_technology_type;
       maximum_seating_plane_installation_offset  : OPTIONAL length_measure_with_unit;
       nominal_mounting_lead_pitch                : OPTIONAL length_measure_with_unit;
       nominal_mounting_lead_span                 : OPTIONAL length_measure_with_unit;
-      maximum_body_height_above_seating_plane    : length_measure_with_unit;
+      maximum_body_height_above_seating_plane    : OPTIONAL length_measure_with_unit;
       maximum_body_height_below_seating_plane    : OPTIONAL length_measure_with_unit;
       body_clearance_above_seating_plane         : OPTIONAL Length_tolerance_characteristic;
       body_clearance_below_seating_plane         : OPTIONAL Length_tolerance_characteristic;
@@ -154,7 +151,7 @@ TYPE interface_plane_or_seating_plane =  SELECT
      WR1  : NOT (mounting_technology = surface_mount) OR (NOT (EXISTS(maximum_lead_length_below_seating_plane) OR EXISTS(least_lead_length_below_seating_plane)));
       WR2  : NOT (EXISTS(maximum_lead_length_below_seating_plane)) OR (maximum_lead_length_below_seating_plane\measure_with_unit.value_component > 0.0);
       WR3  : NOT (EXISTS(least_lead_length_below_seating_plane)) OR (least_lead_length_below_seating_plane\measure_with_unit.value_component > 0.0);
-      WR4  : SIZEOF(package_seating_plane) = 1;
+      WR4  : NOT EXISTS(mounting_technology) OR (SIZEOF(package_seating_plane) = 1);
       WR5  : 'package' IN types_of_product(SELF\Product_view_definition.defined_version.of_product);
       WR6  : SIZEOF(QUERY(pa <* package_accesses | 'PACKAGE_XIM.PRIMARY_REFERENCE_TERMINAL_ARMX' IN TYPEOF(pa))) = 1;
 	  WR7  : SIZEOF(QUERY(nt <* package_accesses |
@@ -238,17 +235,17 @@ TYPE interface_plane_or_seating_plane =  SELECT
       SELF\Placed_feature_armx.definition 	  : Package_terminal_template_definition_armx;
       SELF\Part_feature.associated_definition : Package_armx;
    INVERSE
-      feature_shape : SET[1:?] OF usage_concept_usage_relationship_armx FOR associated_usage;
+      SELF\Part_feature.feature_shape : SET[1:?] OF usage_concept_usage_relationship_armx FOR associated_usage;
    WHERE
       WR1: SIZEOF(SELF\Shape_feature.surface_conditions) = 0;	        
   END_ENTITY;
 
   ENTITY Package_terminal_template_definition_armx
     SUBTYPE OF (Part_feature_template_definition_armx, package_terminal_template_definition);
-      external_connection_zone                : OPTIONAL SET[1:?] OF Connection_zone_in_part_feature_template_definition;
+      SELF\Feature_definition_with_connection_area_armx.connection_area RENAMED external_connection_zone : OPTIONAL SET[1:?] OF Connection_zone_in_part_feature_template_definition;      
       internal_connection_zone                : OPTIONAL SET[1:?] OF Connection_zone_in_part_feature_template_definition;
       lead_form                               : OPTIONAL predefined_lead_form;      
-      seating_plane_intersection              : seating_plane_intersection_type;
+      seating_plane_intersection              : OPTIONAL seating_plane_intersection_type;
       terminal_characteristic                 : OPTIONAL SET[1:?] OF characteristic;
       terminal_diametrical_extent             : OPTIONAL Length_tolerance_characteristic;
       seating_plane_zone                      : OPTIONAL Connection_zone_package_interface_plane_relationship;
@@ -257,23 +254,22 @@ TYPE interface_plane_or_seating_plane =  SELECT
       terminal_core_material : SET [0:1] OF material_designation := bag_to_set(QUERY( temp <* USEDIN(SELF,
      'MATERIAL_PROPERTY_DEFINITION_SCHEMA.MATERIAL_DESIGNATION.DEFINITIONS') | 
      (SIZEOF( QUERY( cla <* USEDIN(temp,'CLASSIFICATION_ASSIGNMENT_MIM.' + 
- 	'APPLIED_CLASSIFICATION_ASSIGNMENT.' + 'ITEMS') | cla.role = 'terminal core material')) = 1)));
+ 	'APPLIED_CLASSIFICATION_ASSIGNMENT.' + 'ITEMS') | cla.role.name = 'terminal core material')) = 1)));
       terminal_surface_material : SET [0:1] OF material_designation := bag_to_set(QUERY( temp <* USEDIN(SELF,
      'MATERIAL_PROPERTY_DEFINITION_SCHEMA.MATERIAL_DESIGNATION.DEFINITIONS') | 
      (SIZEOF( QUERY( cla <* USEDIN(temp,'CLASSIFICATION_ASSIGNMENT_MIM.' + 
- 	'APPLIED_CLASSIFICATION_ASSIGNMENT.' + 'ITEMS') | cla.role = 'terminal surface material')) = 1)));
+ 	'APPLIED_CLASSIFICATION_ASSIGNMENT.' + 'ITEMS') | cla.role.name = 'terminal surface material')) = 1)));
  	INVERSE
 	  external_lead_form                      : SET[0:1] OF External_source_identification FOR item;             	
     WHERE
       WR1 : NOT EXISTS(seating_plane_zone) OR (SIZEOF(QUERY(cz <* external_connection_zone | (seating_plane_zone.derived_zone = cz))) = 1);
-      WR2 : NOT EXISTS(seating_plane_zone) OR (SIZEOF(QUERY(cz <* external_connection_zone | (seating_plane_zone.mating_zone = cz))) = 1);
-      WR3 : NOT EXISTS(seating_plane_zone) OR ((seating_plane_intersection = surface_intersection) OR (seating_plane_intersection = through_intersection));
-      WR4 : NOT ((seating_plane_intersection = does_not_intersect) AND (EXISTS(seating_plane_zone)));
-      WR5 : NOT (SIZEOF(terminal_core_material) = 1) OR
+      WR2 : NOT EXISTS(seating_plane_zone) OR ((seating_plane_intersection = surface_intersection) OR (seating_plane_intersection = through_intersection));
+      WR3 : NOT ((seating_plane_intersection = does_not_intersect) AND (EXISTS(seating_plane_zone)));
+      WR4 : NOT (SIZEOF(terminal_core_material) = 1) OR
                 ('CONDUCTIVITY_MATERIAL_ASPECTS_XIM.MATERIAL_IDENTIFICATION_WITH_CONDUCTIVITY_CLASSIFICATION' IN TYPEOF (terminal_core_material[1]));
-      WR6: (SIZEOF(terminal_surface_material) = 1) AND
+      WR5: (SIZEOF(terminal_surface_material) = 1) AND
                 ('CONDUCTIVITY_MATERIAL_ASPECTS_XIM.MATERIAL_IDENTIFICATION_WITH_CONDUCTIVITY_CLASSIFICATION' IN TYPEOF (terminal_surface_material[1]));
-	  WR7: (EXISTS (lead_form)) XOR ((SIZEOF(external_lead_form)) = 1);                                                  
+	  WR6: (EXISTS (lead_form)) XOR ((SIZEOF(external_lead_form)) = 1);
   END_ENTITY;
 
   ENTITY Package_terminal_surface_constituent_relationship

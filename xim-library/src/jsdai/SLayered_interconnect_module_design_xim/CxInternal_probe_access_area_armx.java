@@ -51,6 +51,26 @@ public class CxInternal_probe_access_area_armx
 	public static int apFlag = AP21x; // Default is this style  
 
 	// Taken from PDR
+	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
+		a11 = set_string(value);
+	}
+	public void unsetId(EProduct_definition_relationship type) throws SdaiException {
+		a11 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
+		return a11$;
+	}
+
+	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
+		a12 = set_string(value);
+	}
+	public void unsetName(EProduct_definition_relationship type) throws SdaiException {
+		a12 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
+		return a12$;
+	}
+	
 	// attribute (current explicit or supertype explicit) : relating_product_definition, base type: entity product_definition
 /*	public static int usedinRelating_product_definition(EProduct_definition_relationship type, EProduct_definition instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a14$, domain, result);
@@ -211,6 +231,26 @@ public class CxInternal_probe_access_area_armx
 	// ENDOF taken from Shape_element
 	
 	// From CShape_aspect.java
+	
+	/*	public static int usedinOf_shape(EShape_aspect type, EProduct_definition_shape instance, ASdaiModel domain, AEntity result) throws SdaiException {
+	return ((CEntity)instance).makeUsedin(definition, a18$, domain, result);
+}
+public boolean testOf_shape(EShape_aspect type) throws SdaiException {
+	return test_instance(a18);
+}
+public EProduct_definition_shape getOf_shape(EShape_aspect type) throws SdaiException {
+	return (EProduct_definition_shape)get_instance(a18);
+}*/
+public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
+	a18 = set_instance(a18, value);
+}
+public void unsetOf_shape(EShape_aspect type) throws SdaiException {
+	a18 = unset_instance(a18);
+}
+public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) throws SdaiException {
+	return a18$;
+}
+	
 	/// methods for attribute: product_definitional, base type: LOGICAL
 /*	public boolean testProduct_definitional(EShape_aspect type) throws SdaiException {
 		return test_logical(a19);

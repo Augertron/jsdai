@@ -1,0 +1,57 @@
+(*
+ $Id$
+ ISO TC184/SC4/WG12 N2175 ISO/CD 10303-110 Document WG12 N2176, 2003/07/09
+   Complete EXPRESS code extracted from WG12 N2175
+*)
+
+SCHEMA domain_schema;
+  REFERENCE FROM analysis_schema                  -- ISO 10303-53
+                 (model_product_domain_with_mesh,
+                  model_property_distribution);
+  REFERENCE FROM basis_schema                     -- ISO 10303-110
+                 (specified_general_property);
+  REFERENCE FROM mathematical_description_of_distribution_schema  -- ISO 10303-51
+                 (property_distribution_description);
+  REFERENCE FROM mesh_topology_schema             -- ISO 10303-52
+                 (rind);
+
+TYPE coordinate_data_name = EXTENSIBLE ENUMERATION OF
+     (coordinate_x,
+      coordinate_y,
+      coordinate_z,
+      coordinate_r,
+      coordinate_theta,
+      coordinate_phi,
+      coordinate_normal,
+      coordinate_tangential,
+      coordinate_xi,
+      coordinate_eta,
+      coordinate_zeta,
+      coordinate_transform);
+END_TYPE;
+
+ENTITY grid_coordinates
+  SUBTYPE OF (model_property_distribution);
+  SELF\model_property_distribution.domain : model_product_domain_with_mesh;
+  SELF\model_property_distribution.range  : specified_general_property;
+(* INVERSE
+  data : SET OF property_distribution_description FOR physical_function;
+*)
+WHERE
+  wr1 : is_coordinate_property(range);
+END_ENTITY;
+
+ENTITY grid_coordinates_with_rind
+  SUBTYPE OF (grid_coordinates);
+  rind_planes : rind;
+END_ENTITY;
+
+FUNCTION is_coordinate_property(arg : specified_general_property) : BOOLEAN;
+  IF ('EXTERNAL_REFERENCE_SCHEMA.EXTERNALLY_DEFINED_ITEM' IN
+      TYPEOF(arg) ) THEN
+    RETURN(TRUE);
+  END_IF;
+  RETURN ('DOMAIN_SCHEMA.COORDINATE_DATA_NAME' IN TYPEOF(arg));
+END_FUNCTION;
+
+END_SCHEMA;  -- end of domain_schema

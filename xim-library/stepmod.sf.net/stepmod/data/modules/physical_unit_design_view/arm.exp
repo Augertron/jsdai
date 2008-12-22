@@ -6,17 +6,15 @@
 
 SCHEMA Physical_unit_design_view_arm;
 USE FROM Component_grouping_arm;	-- ISO/TS 10303-1656
-USE FROM Physical_layout_template_arm; -- ISO/TS 10303-1722
+USE FROM Part_template_arm; -- ISO/TS 10303-1722
 USE FROM Physical_unit_usage_view_arm;	-- ISO/TS 10303-1732
 USE FROM Specification_document_arm;	-- ISO/TS 10303-1747
 	
-REFERENCE FROM Layered_interconnect_module_design_arm(get_assemblies); -- ISO/TS 10303-1698
 REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
 
   SUBTYPE_CONSTRAINT pudv_connection_zone_subtypes FOR Connection_zone;     
     ONEOF (Connection_zone_in_usage_view,
-           Connection_zone_in_design_view,
-           Connection_zone_in_layout_template);
+           Connection_zone_in_design_view);
   END_SUBTYPE_CONSTRAINT;
 
   TYPE assembly_component_or_item_number = SELECT
@@ -34,7 +32,8 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
   END_TYPE;    
 	
   TYPE pudv_groupable_item = SELECT BASED_ON groupable_item WITH 
-    (Assembly_component_relationship);
+    (Assembly_component,
+    Assembly_component_relationship);
   END_TYPE; 
 
   TYPE pudv_physical_unit = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON physical_unit WITH 
@@ -67,7 +66,6 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
   END_ENTITY;
 
   ENTITY Assembly_component
-    ABSTRACT SUPERTYPE
     SUBTYPE OF (Definition_based_product_occurrence, Item_shape);
 	  SELF\Definition_based_product_occurrence.derived_from : physical_unit_or_part_template;
     DERIVE
@@ -80,7 +78,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       SELF\Product_occurrence.occurrence_contexts : SET[1:?] OF Assembly_component_relationship FOR related_view;
     WHERE
       WR1 : NOT(('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.FOOTPRINT_OCCURRENCE' IN TYPEOF(SELF)) XOR ('FOOTPRINT_DEFINITION_ARM.FOOTPRINT_DEFINITION' IN TYPEOF(derived_from))) OR 
-            NOT(('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.PADSTACK_OCCURRENCE' IN TYPEOF(SELF)) XOR ('PART_TEMPLATE_2D_SHAPE_ARM.PADSTACK_DEFINITION' IN TYPEOF(SELF\Definition_based_product_occurrence.derived_from)));
+            NOT(('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.PADSTACK_OCCURRENCE' IN TYPEOF(SELF)) XOR ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.PADSTACK_DEFINITION' IN TYPEOF(SELF\Definition_based_product_occurrence.derived_from)));
       WR2 : SELF\Product_view_definition.defined_version :=: SELF\Definition_based_product_occurrence.derived_from.defined_version;
 	  WR3 : SIZEOF(assemblies) = SIZEOF(versions);
 	  WR4 : SIZEOF(product) = 1;
@@ -259,6 +257,26 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
                                            input2 : GENERIC_ENTITY) : BOOLEAN;
     RETURN(TRUE);
   END_FUNCTION;                                         
+
+  FUNCTION get_assemblies(input : Assembly_component) : SET OF Product_view_definition;
+    LOCAL
+      acr : SET OF Assembly_component_relationship := input\Assembly_component.occurrence_contexts;
+      pvd : SET OF Product_view_definition := [];
+    END_LOCAL;
+
+    REPEAT i := 1 TO HIINDEX(acr) BY 1;
+      IF NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.' +
+        'STRUCTURED_LAYOUT_COMPONENT' IN
+        TYPEOF(acr[i]\Product_occurrence_definition_relationship.relating_view))
+      THEN
+        pvd := pvd + acr[i]\Product_occurrence_definition_relationship.relating_view; 
+      ELSE
+        pvd := pvd + get_assemblies(acr[i]\Product_occurrence_definition_relationship.relating_view);
+      END_IF;
+    END_REPEAT;
+
+    RETURN (pvd);
+  END_FUNCTION;
 
 END_SCHEMA;
 

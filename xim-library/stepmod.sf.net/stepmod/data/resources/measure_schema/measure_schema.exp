@@ -1,7 +1,13 @@
 (*
 $Id$
-ISO TC184/SC4/WG12 N4923 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
-*) 
+
+2008-02-07
+ISO TC184/SC4/WG12 N4883 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+*)
+(*
+Supersedes ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+changes to date_time schema and to measure_schema as per TC1 - WG12 N4834.
+*)
 
 
 SCHEMA measure_schema;
@@ -93,10 +99,10 @@ TYPE amount_of_substance_measure = REAL;
 
   TYPE measure_value = SELECT 
     (absorbed_dose_measure,
-	 dose_equivalent_measure,
+     dose_equivalent_measure,
      radioactivity_measure,
-	 acceleration_measure,
-	 amount_of_substance_measure, 
+     acceleration_measure,
+     amount_of_substance_measure, 
      area_measure, 
      celsius_temperature_measure, 
      context_dependent_measure, 
@@ -293,8 +299,11 @@ END_ENTITY;
 
   ENTITY conversion_based_unit
     SUBTYPE OF (named_unit);
-    name : label;
-    conversion_factor : measure_with_unit;
+     name : label;
+     conversion_factor : measure_with_unit;
+   DERIVE
+     SELF\named_unit.dimensions : dimensional_exponents := 
+    derive_dimensional_exponents(conversion_factor\measure_with_unit.unit_component);
   END_ENTITY;
 
   ENTITY derived_unit
@@ -770,12 +779,17 @@ END_ENTITY;
     WR2: NOT EXISTS(SELF\derived_unit.name);
   END_ENTITY;
 
+  
   ENTITY si_unit
     SUBTYPE OF (named_unit);
     prefix : OPTIONAL si_prefix;
     name : si_unit_name;
   DERIVE
     SELF\named_unit.dimensions : dimensional_exponents := dimensions_for_si_unit(name);
+  WHERE
+    WR1: NOT(('MEASURE_SCHEMA.MASS_UNIT' IN TYPEOF(SELF)) AND
+             (SIZEOF(USEDIN(SELF,'MEASURE_SCHEMA.DERIVED_UNIT_ELEMENT.UNIT')) > 0)) OR
+            (prefix = si_prefix.kilo); 
   END_ENTITY;
 
   ENTITY solid_angle_measure_with_unit

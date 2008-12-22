@@ -1,13 +1,13 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4158 - ISO/TS 10303-1737 Printed physical layout template - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3582
+   ISO TC184/SC4/WG12 N5803 - ISO/TS 10303-1737 Printed physical layout template - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4158
 *)
 
 SCHEMA Printed_physical_layout_template_arm;
 
 USE FROM Functional_usage_view_arm;	-- ISO/TS 10303-1705
-USE FROM Part_template_2d_shape_arm; -- ISO/TS 10303-1716
+USE FROM Layered_interconnect_complex_template_arm; -- ISO/TS 10303-1716
 REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
 
   TYPE pplt_usage_concept = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON usage_concept WITH 
@@ -230,7 +230,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
           (SIZEOF(QUERY(tsm <* tiebar_shape_model |
           (ap2d_geometrically_in_tiebar(pcl,tsm)))) > 0)
           )) = SIZEOF(passage_component_location));
-        WR4: SIZEOF(QUERY(t <* SELF\Structured_template.templates | 'FABRICATION_TECHNOLOGY_ARM.STRATUM_FEATURE_TEMPLATE' IN TYPEOF(t\Template_location_in_structured_template.template))) > 0;
+        WR4: SIZEOF(QUERY(t <* SELF\Structured_template.templates | 'LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_ARM.STRATUM_FEATURE_TEMPLATE' IN TYPEOF(t\Template_location_in_structured_template.template))) > 0;
         WR5: SIZEOF(QUERY(spptt <* SELF\Printed_part_template.access_mechanisms | 
           NOT(SIZEOF(USEDIN(spptt,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION.CONNECTED_TERMINALS')) = 1)
           )) = 0;
@@ -260,7 +260,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
             NOT ('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.STRUCTURED_PRINTED_PART_TEMPLATE_TERMINAL'
                   IN TYPEOF(t)))) = 0;
       WR2 : SIZEOF(QUERY(t <* SELF\Structured_template.templates |
-            'PART_TEMPLATE_2D_SHAPE_ARM.STRUCTURED_TEMPLATE' IN TYPEOF(t.template))) = 0;
+            'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.STRUCTURED_TEMPLATE' IN TYPEOF(t.template))) = 0;
   END_ENTITY;
 
   ENTITY Structured_printed_part_template_terminal
@@ -268,7 +268,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       SELF\Printed_part_template_terminal.associated_definition : Structured_printed_part_template;
       associated_composition_relationship : Template_location_in_structured_template;
     WHERE
-      WR1 : associated_composition_relationship.assembly :=: associated_definition;
+      WR1 : associated_composition_relationship\Template_location_in_structured_template.assembly :=: associated_definition;
       WR2 : TYPEOF(SELF) <> TYPEOF(SELF\Structured_printed_part_template_terminal);
   END_ENTITY;
 

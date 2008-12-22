@@ -31,8 +31,8 @@ package jsdai.SFeature_and_connection_zone_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.SFabrication_technology_mim.EDefault_attachment_size_based_land_physical_template;
 import jsdai.SLayered_interconnect_module_design_mim.EProbe_access_area;
+import jsdai.SLayered_interconnect_simple_template_mim.EDefault_attachment_size_based_land_physical_template;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SShape_property_assignment_xim.CxShape_element;

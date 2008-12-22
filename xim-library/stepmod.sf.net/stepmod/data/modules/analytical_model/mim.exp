@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N3832 - ISO/TS 10303-1603 Analytical model - EXPRESS MIM
-   Supersedes ISO TC184/SC4/WG12 N3289
+   ISO TC184/SC4/WG12 N5558 - ISO/TS 10303-1603 Analytical model - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3832
 *)
 
 
@@ -36,12 +36,6 @@ USE FROM date_time_schema
     SUBTYPE OF (representation, representation_item);
   END_ENTITY;
 
-  ENTITY analytical_model
-    SUBTYPE OF (representation);
-    UNIQUE
-      UR1: SELF\representation.name;
-  END_ENTITY;
-
   ENTITY analytical_model_definition
     SUBTYPE OF (product_definition);
   END_ENTITY;
@@ -56,13 +50,14 @@ USE FROM date_time_schema
   END_ENTITY;
 
   ENTITY analytical_model_parameter 
-    SUBTYPE OF (model_parameter);
+    SUBTYPE OF (property_definition);
   END_ENTITY;
 
   ENTITY analytical_model_port
-    SUPERTYPE OF (analytical_model_vector_port ANDOR (ONEOF(
-      analog_analytical_model_port, digital_analytical_model_port)))
-    SUBTYPE OF (representation);
+    SUBTYPE OF(property_definition, property_definition_representation, representation);
+    DERIVE
+      SELF\property_definition_representation.definition : property_definition :=SELF;
+      SELF\property_definition_representation.used_representation : representation := SELF;
   END_ENTITY;
 
   ENTITY analytical_model_port_assignment

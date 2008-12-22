@@ -143,7 +143,7 @@ public class CxPlacement_group_requirement_definition extends CPlacement_group_r
 			EComponent_feature_armx feature = (EComponent_feature_armx)component_or_feature;
 			component = feature.getAssociated_component(null);
 		}
-		EProduct_definition assembly = component.getOccurrence_contexts(null, context.domain).getByIndex(1).getRelating_product_definition(null);
+		EProduct_definition assembly = component.getOccurrence_contexts(null, context.domain).getByIndex(1).getRelating_view(null);
 		armEntity.setRelating_product_definition(null, assembly);
 	}
 

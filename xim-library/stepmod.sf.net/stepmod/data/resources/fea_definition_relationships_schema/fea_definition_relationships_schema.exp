@@ -1,0 +1,164 @@
+
+(*
+$Id$
+ISO TC184/SC4/WG12 N4312 - ISO/IS 10303-107 *) 
+
+SCHEMA fea_definition_relationships_schema;
+
+REFERENCE FROM product_property_definition_schema
+  (general_property,
+   property_definition);
+
+REFERENCE FROM structural_response_representation_schema
+  (analysis_item_within_representation,
+   consistent_element_reference,
+   curve_element_section_definition,
+   element_aspect,
+   element_representation,
+   fea_model,
+   node_representation,
+   surface_section,
+   surface_section_field);
+
+REFERENCE FROM support_resource_schema
+  (identifier,
+   label,
+   text);
+
+REFERENCE FROM topology_schema;
+
+ENTITY element_topological_relationship;
+  aspect : element_aspect;
+  element_ref : element_representation;
+  item : analysis_item_within_representation;
+WHERE
+    WR1: 'TOPOLOGY_SCHEMA.TOPOLOGICAL_REPRESENTATION_ITEM' IN TYPEOF (item.item);
+    WR2: consistent_topological_reference (aspect, item.item);
+    WR3: consistent_element_reference (aspect, element_ref);
+END_ENTITY;
+
+ENTITY fea_beam_section_idealisation_relationship;
+  id : identifier;
+  name : label;
+  description : OPTIONAL text;
+  idealised : general_property;
+  idealising : curve_element_section_definition;
+END_ENTITY;
+
+ENTITY fea_model_topological_relationship;
+  item : analysis_item_within_representation;
+  model_ref : fea_model;
+WHERE
+    WR1: 'TOPOLOGICAL_DEFINITION_AND_MESH_SCHEMA.MESH' IN TYPEOF (item.item);
+END_ENTITY;
+
+ENTITY fea_shell_section_distribution_idealisation_relationship;
+  id : identifier;
+  name : label;
+  description : OPTIONAL text;
+  idealised : property_definition;
+  idealising : surface_section_field;
+END_ENTITY;
+
+ENTITY fea_shell_section_idealisation_relationship;
+  id : identifier;
+  name : label;
+  description : OPTIONAL text;
+  idealised : general_property;
+  idealising : surface_section;
+END_ENTITY;
+
+ENTITY node_topological_relationship;
+  item : analysis_item_within_representation;
+  node_ref : node_representation;
+WHERE
+    WR1: 'TOPOLOGY_SCHEMA.VERTEX' IN TYPEOF (item.item);
+END_ENTITY;
+
+FUNCTION consistent_topological_reference (
+  aspect    :  GENERIC;
+  item      :  topological_representation_item) : BOOLEAN;
+
+    LOCAL
+      status : BOOLEAN;
+      srrs   : STRING;
+    END_LOCAL;
+
+    status := FALSE;
+    srrs := 'STRUCTURAL_RESPONSE_REPRESENTATION_SCHEMA.';
+
+    IF (srrs + 'ELEMENT_VOLUME') IN TYPEOF(aspect) THEN
+      IF 'TOPOLOGY_SCHEMA.CLOSED_SHELL' IN TYPEOF(item) THEN
+        status := TRUE;
+      END_IF;
+    END_IF;
+
+    IF (srrs + 'VOLUME_3D_FACE') IN TYPEOF(aspect) THEN
+      IF 'TOPOLOGY_SCHEMA.FACE' IN TYPEOF(item) THEN
+        status := TRUE;
+      END_IF;
+    END_IF;
+
+    IF (srrs + 'VOLUME_2D_FACE') IN TYPEOF(aspect) THEN
+      IF 'TOPOLOGY_SCHEMA.EDGE' IN TYPEOF(item) THEN
+        status := TRUE;
+      END_IF;
+    END_IF;
+
+    IF (srrs + 'SURFACE_3D_FACE') IN TYPEOF(aspect) THEN
+      IF 'TOPOLOGY_SCHEMA.FACE' IN TYPEOF(item) THEN
+        status := TRUE;
+      END_IF;
+    END_IF;
+
+    IF (srrs + 'SURFACE_2D_FACE') IN TYPEOF(aspect) THEN
+      IF 'TOPOLOGY_SCHEMA.EDGE' IN TYPEOF(item) THEN
+        status := TRUE;
+      END_IF;
+    END_IF;
+
+    IF (srrs + 'VOLUME_3D_EDGE') IN TYPEOF(aspect) THEN
+      IF 'TOPOLOGY_SCHEMA.EDGE' IN TYPEOF(item) THEN
+        status := TRUE;
+      END_IF;
+    END_IF;
+
+    IF (srrs + 'VOLUME_2D_EDGE') IN TYPEOF(aspect) THEN
+      IF 'TOPOLOGY_SCHEMA.VERTEX' IN TYPEOF(item) THEN
+        status := TRUE;
+      END_IF;
+    END_IF;
+
+    IF (srrs + 'SURFACE_3D_EDGE') IN TYPEOF(aspect) THEN
+      IF 'TOPOLOGY_SCHEMA.EDGE' IN TYPEOF(item) THEN
+        status := TRUE;
+      END_IF;
+    END_IF;
+
+
+
+    IF (srrs + 'SURFACE_2D_EDGE') IN TYPEOF(aspect) THEN
+      IF 'TOPOLOGY_SCHEMA.VERTEX' IN TYPEOF(item) THEN
+        status := TRUE;
+      END_IF;
+    END_IF;
+
+    IF (srrs + 'CURVE_EDGE') IN TYPEOF(aspect) THEN
+      IF 'TOPOLOGY_SCHEMA.EDGE' IN TYPEOF(item) THEN
+        status := TRUE;
+
+      END_IF;
+    END_IF;
+
+    IF 'TOPOLOGICAL_DEFINITION_AND_MESH_SCHEMA.TOPOLOGICAL_REGION' IN TYPEOF(item) THEN
+      status := TRUE;
+    END_IF;
+
+  RETURN(status);
+
+  END_FUNCTION;
+
+
+
+END_SCHEMA;
+

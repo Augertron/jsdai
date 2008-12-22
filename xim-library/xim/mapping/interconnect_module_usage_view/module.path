@@ -219,15 +219,13 @@ shape_aspect
 
 end_mapping_constraints;
 
-attribute_mapping associated_definition(associated_definition, $PATH, Interconnect_module_usage_view);
+attribute_mapping associated_definition(associated_definition, $PATH, Layered_interconnect_module_usage_view_armx);
 shape_aspect
 shape_aspect.of_shape ->
-product_definition_shape
-{product_definition_shape <=
-property_definition
-{property_definition.name = 'interconnect module'}}
 product_definition_shape =>
-physical_unit
+physical_unit =>
+interconnect_module_usage_view =>
+layered_interconnect_module_usage_view
 
 end_attribute_mapping;
 
@@ -261,16 +259,14 @@ shape_aspect.description = 'connection zone'}
 
 end_attribute_mapping;
 
-attribute_mapping associated_definition(associated_definition, $PATH, Interconnect_module_usage_view);
+attribute_mapping associated_definition(associated_definition, $PATH, Layered_interconnect_module_usage_view_armx);
 interconnect_module_terminal <=
 shape_aspect
 shape_aspect.of_shape ->
-product_definition_shape
-{product_definition_shape <=
-property_definition
-{property_definition.name = 'interconnect module'}}
 product_definition_shape =>
-physical_unit
+physical_unit =>
+interconnect_module_usage_view =>
+layered_interconnect_module_usage_view
 
 end_attribute_mapping;
 
@@ -308,29 +304,30 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Interconnect_module_usage_view(Interconnect_module_usage_view, physical_unit);
+entity_mapping Interconnect_module_usage_view_armx(Interconnect_module_usage_view_armx, interconnect_module_usage_view);
 
 mapping_constraints;
-{[physical_unit <=
-product_definition_shape <=
-property_definition
-{property_definition.name = 'interconnect module'}]
-[physical_unit <=
-product_definition <-
-product_definition_context_association.definition
-product_definition_context_association
-{product_definition_context_association.role ->
-product_definition_context_role
-product_definition_context_role.name = 'part definition type'}
-product_definition_context_association.frame_of_reference ->
-product_definition_context <=
-application_context_element
-application_context_element.name = 'physical design usage']}
+	interconnect_module_usage_view <=
+	physical_unit <=
+	product_definition_shape <=
+	property_definition
+end_mapping_constraints;
 
+end_entity_mapping;
 
+entity_mapping Layered_interconnect_module_usage_view_armx(Layered_interconnect_module_usage_view_armx, layered_interconnect_module_usage_view);
+
+mapping_constraints;
+	layered_interconnect_module_usage_view <=
+	interconnect_module_usage_view <=
+	physical_unit <=
+	product_definition_shape <=
+	property_definition
 end_mapping_constraints;
 
 attribute_mapping implemented_function(implemented_function, $PATH, Functional_unit_usage_view);
+layered_interconnect_module_usage_view <=
+interconnect_module_usage_view <=
 physical_unit <=
 product_definition <-
 product_definition_relationship.related_product_definition
@@ -354,6 +351,8 @@ functional_unit
 end_attribute_mapping;
 
 attribute_mapping located_thickness_requirement(located_thickness_requirement, $PATH, Located_interconnect_module_thickness_requirement);
+layered_interconnect_module_usage_view <=
+interconnect_module_usage_view <=
 physical_unit <=
 product_definition_shape <-
 shape_aspect.of_shape
@@ -372,6 +371,8 @@ property_definition_representation
 end_attribute_mapping;
 
 attribute_mapping thickness_over_metal_requirement(thickness_over_metal_requirement, $PATH, Length_tolerance_characteristic);
+layered_interconnect_module_usage_view <=
+interconnect_module_usage_view <=
 physical_unit <=
 product_definition
 characterized_product_definition = product_definition
@@ -390,6 +391,8 @@ representation
 end_attribute_mapping;
 
 attribute_mapping thickness_over_dielectric_requirement(thickness_over_dielectric_requirement, $PATH, Length_tolerance_characteristic);
+layered_interconnect_module_usage_view <=
+interconnect_module_usage_view <=
 physical_unit <=
 product_definition
 characterized_product_definition = product_definition
@@ -408,6 +411,8 @@ representation
 end_attribute_mapping;
 
 attribute_mapping measurement_condition(measurement_condition, $PATH, Restraint_condition);
+layered_interconnect_module_usage_view <=
+interconnect_module_usage_view <=
 physical_unit <=
 product_definition
 characterized_product_definition = product_definition
@@ -488,28 +493,4 @@ extended;
 
 end_entity_mapping;
 
-entity_mapping Pcb_usage_view(Pcb_usage_view, interconnect_definition);
-
-mapping_constraints;
-{[interconnect_definition <=
-physical_unit <=
-product_definition_shape <=
-property_definition
-{property_definition.name = 'interconnect module'}]
-[interconnect_definition <=
-physical_unit <=
-product_definition <-
-product_definition_context_association.definition
-product_definition_context_association
-{product_definition_context_association.role ->
-product_definition_context_role
-product_definition_context_role.name = 'part definition type'}
-product_definition_context_association.frame_of_reference ->
-product_definition_context <=
-application_context_element
-application_context_element.name = 'physical design usage']}
-
-end_mapping_constraints;
-
-end_entity_mapping;
 (*end_schema_mapping;*)

@@ -40,8 +40,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
        (* CONNOTATIONAL *) SUBTYPE OF (Shape_element);
    		connection_area : OPTIONAL SET[1:?] OF Connection_zone;
     DERIVE
-      surface_conditions : SET OF Surface_condition := 
-	         bag_to_set(USEDIN(SELF\Shape_element,'SURFACE_CONDITIONS_XIM.SURFACE_CONDITION_ASSOCIATION.DESCRIBED_ELEMENT'));		   		
+      surface_conditions : SET OF Surface_condition := facz_get_sc(SELF);			         
     UNIQUE
       UR1 : SELF\Shape_aspect.name, SELF\Shape_element.containing_shape;
   END_ENTITY;
@@ -57,13 +56,22 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
       WR1 : SIZEOF(USEDIN(SELF, '')) > 0;
   END_ENTITY;
 
- ENTITY Feature_definition_with_connection_area
-    SUBTYPE OF (Shape_feature_definition_armx);
-    connection_area : SET [1:?] OF Connection_zone;
+ ENTITY Feature_definition_with_connection_area_armx
+    SUBTYPE OF (Shape_feature_definition_armx, feature_definition_with_connection_area);
+    connection_area : OPTIONAL SET [1:?] OF Connection_zone;
   END_ENTITY;
 
--- USE entity from MIM
---  ENTITY Location_shape_model
+FUNCTION facz_get_sc (input : Shape_feature) : SET OF Surface_condition;
+  LOCAL
+    sca : SET OF Surface_condition_association := 
+	         bag_to_set(USEDIN(input,'SURFACE_CONDITIONS_XIM.SURFACE_CONDITION_ASSOCIATION.DESCRIBED_ELEMENT'));
+	sc  : SET OF Surface_condition := [];       
+  END_LOCAL;
+   REPEAT i := 1 TO HIINDEX(sca);
+     sc := sc + sca[i]\Surface_condition_association.describing_surface_condition;
+   END_REPEAT;
+   RETURN (sc);
+END_FUNCTION;
   
 END_SCHEMA;
 

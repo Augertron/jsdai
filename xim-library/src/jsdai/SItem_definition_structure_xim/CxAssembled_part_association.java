@@ -79,8 +79,8 @@ public class CxAssembled_part_association extends CAssembled_part_association im
 	{
 		unsetMappingConstraints(context, armEntity);
 		CxPart_occurrence_definition_relationship.setMappingConstraints(context, armEntity);
-		if(!armEntity.testName(null))
-			armEntity.setName(null, "");
+/*OPT		if(!armEntity.testName(null))
+			armEntity.setName(null, ""); OPT */
 	}
 
 	public static void unsetMappingConstraints(SdaiContext context, EAssembled_part_association armEntity) throws SdaiException

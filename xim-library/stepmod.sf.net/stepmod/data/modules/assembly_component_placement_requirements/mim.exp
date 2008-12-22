@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N3850 - ISO/TS 10303-1634 Assembly component placement requirements - EXPRESS MIM
-   Supersedes ISO TC184/SC4/WG12 N3292
+   ISO TC184/SC4/WG12 N5570 - ISO/TS 10303-1634 Assembly component placement requirements - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3850
 *)
 SCHEMA Assembly_component_placement_requirements_mim;
 
@@ -9,9 +9,9 @@ USE FROM Assembly_module_with_interconnect_component_mim;	-- ISO/TS 10303-1643
 
 
   SUBTYPE_CONSTRAINT acpr_predefined_requirement_view_definition_subtypes FOR predefined_requirement_view_definition;   
-    (ONEOF (assembly_spacing_requirement_occurrence,
-     assembly_group_spacing_requirement_occurrence,
-     item_restricted_requirement_occurrence));
+    (ONEOF (assembly_spacing_requirement,
+     assembly_group_spacing_requirement,
+     item_restricted_requirement));
   END_SUBTYPE_CONSTRAINT;  
 
   TYPE acpr_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH 
@@ -21,16 +21,16 @@ USE FROM Assembly_module_with_interconnect_component_mim;	-- ISO/TS 10303-1643
   END_TYPE;
 
   TYPE acpr_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON groupable_item WITH 
-    (assembly_spacing_requirement_occurrence,
+    (assembly_spacing_requirement,
      shape_aspect,
      predefined_requirement_view_definition);
   END_TYPE;
 
-  ENTITY assembly_group_spacing_requirement_occurrence
+  ENTITY assembly_group_spacing_requirement
     SUBTYPE OF (predefined_requirement_view_definition);
   END_ENTITY;
 
-  ENTITY assembly_spacing_requirement_occurrence
+  ENTITY assembly_spacing_requirement
     SUBTYPE OF (predefined_requirement_view_definition);
   END_ENTITY;
 
@@ -38,7 +38,7 @@ USE FROM Assembly_module_with_interconnect_component_mim;	-- ISO/TS 10303-1643
     SUBTYPE OF (component_definition);
   END_ENTITY;
 
-  ENTITY item_restricted_requirement_occurrence
+  ENTITY item_restricted_requirement
     SUBTYPE OF (group, predefined_requirement_view_definition);
   END_ENTITY;
 

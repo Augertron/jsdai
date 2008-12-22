@@ -31,19 +31,37 @@ package jsdai.SFabrication_technology_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.util.LangUtils;
 import jsdai.SCharacteristic_xim.*;
 import jsdai.SFabrication_technology_mim.CStratum_technology;
 import jsdai.SMeasure_schema.*;
-import jsdai.SQualified_measure_schema.*;
 import jsdai.SMixed_complex_types.*;
 import jsdai.SRepresentation_schema.*;
+import jsdai.SShape_property_assignment_xim.CxItem_shape;
 import jsdai.SProduct_property_representation_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 
 
 public class CxStratum_technology_armx extends CStratum_technology_armx implements EMappedXIMEntity
 {
+
+	// From CProperty_definition.java
+	/// methods for attribute: name, base type: STRING
+/*	public boolean testName(EProperty_definition type) throws SdaiException {
+		return test_string(a0);
+	}
+	public String getName(EProperty_definition type) throws SdaiException {
+		return get_string(a0);
+	}*/
+	public void setName(EProperty_definition type, String value) throws SdaiException {
+		a0 = set_string(value);
+	}
+	public void unsetName(EProperty_definition type) throws SdaiException {
+		a0 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EProperty_definition type) throws SdaiException {
+		return a0$;
+	}
+	// ENDOF From CProperty_definition.java
 
 	// Taken from Characterized_object
 	/// methods for attribute: description, base type: STRING
@@ -101,6 +119,9 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 		// Added since WD20
 		setLayer_position(context, this);
 
+        // minimum_aspect_ratio : OPTIONAL REAL;
+		// TODO setMinimum_aspect_ratio(context, this);		
+		
 		// Added after modularization - made derived
 		// setSurface_specification(context, this);
 
@@ -111,7 +132,8 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 		unsetMinimum_finished_feature_spacing(null);
 		unsetMaximum_feature_size_requirement(null);
 		unsetLayer_position(null);
-	
+        // minimum_aspect_ratio : OPTIONAL REAL;
+		unsetMinimum_aspect_ratio(null);		
 	}
 
 	/* (non-Javadoc)
@@ -144,6 +166,9 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 		// Added since WD20
 		unsetLayer_position(context, this);
 
+        // minimum_aspect_ratio : OPTIONAL REAL;
+		// TODO unsetMinimum_aspect_ratio(context, this);		
+		
 		// Added after modularization - made derived
 		// unsetSurface_specification(context, this);
 
@@ -166,12 +191,13 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 	public static void setMappingConstraints(SdaiContext context, EStratum_technology_armx armEntity) throws SdaiException
 	{
 		//CxManaged_design_object.setMappingConstraints(context, armEntity);
-
+		unsetMappingConstraints(context, armEntity);
+		CxItem_shape.setMappingConstraints(context, armEntity);
 	}
 
 	public static void unsetMappingConstraints(SdaiContext context, EStratum_technology_armx armEntity) throws SdaiException
 	{
-
+		CxItem_shape.unsetMappingConstraints(context, armEntity);
 	}
 	
 	
@@ -269,33 +295,17 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 	* Sets/creates data for stratum_thickness attribute.
 	*
 	* <p>
-	*  attribute_mapping maximum_stratum_thickness_length_data_element (maximum_stratum_thickness
-	* , (*PATH*), length_data_element);
-	* 	stratum_technology <=
-	* 	characterized_object
-	* 	characterized_definition = characterized_object
-	* 	characterized_definition <-
-	* 	property_definition.definition
-	* 	property_definition <-
-	* 	property_definition_representation.definition
-	* 	property_definition_representation
-	* 	property_definition_representation.used_representation ->
-	* 	representation
-	* 	{representation
-	* 	representation.name = `physical characteristics representation'}
-	* 	representation.items[i] ->
-	*  representation_item =&gt; 
-	*  coordinated_representation_item
-	* 	{coordinated_representation_item &lt;=
-	* 	representation_item
-	* 	(representation_item.name = 'tolerance')
-	* 	(representation_item.name = 'minimum tolerance')
-	* 	(representation_item.name = 'maximum tolerance')
-	* 	(representation_item.name = 'nominal tolerance')
-	* 	(representation_item.name = 'plus minus tolerance')
-	* 	(representation_item.name = 'symmetrical tolerance')
-	* 	(representation_item.name = 'statistical tolerance')}
-	*  end_attribute_mapping;
+	attribute_mapping stratum_thickness(stratum_thickness, $PATH, Length_tolerance_characteristic);
+		stratum_technology <=
+		product_definition_shape <=
+		property_definition <-
+		property_definition_representation.definition
+		property_definition_representation
+		property_definition_representation.used_representation ->
+		representation
+		{representation
+		representation.description = 'length tolerance'}
+	end_attribute_mapping;
 	* </p>
 	* @param context SdaiContext.
 	* @param armEntity arm entity.
@@ -303,7 +313,7 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 	*/
 	public static void setStratum_thickness(SdaiContext context, EStratum_technology_armx armEntity) throws SdaiException
 	{
-		 unsetStratum_thickness(context, armEntity);
+		  unsetStratum_thickness(context, armEntity);
        if (armEntity.testStratum_thickness(null)){
 
 	      ETolerance_characteristic characteristic = armEntity.getStratum_thickness(null);
@@ -311,67 +321,13 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 	      // CxAP210ARMUtilities.setProperty_definitionToRepresentationPath(context, armEntity, null, "stratum thickness", characteristic);
 			
 			//property_definition_representation
-		   EProperty_definition_representation property_definition_representation  = (EProperty_definition_representation)
+	      EProperty_definition epd = setPropertDefinition(armEntity, "stratum thickness", null);
+		  EProperty_definition_representation property_definition_representation  = (EProperty_definition_representation)
 				context.working_model.createEntityInstance(CProperty_definition_representation.definition);
 		   
-		   property_definition_representation.setDefinition(null, armEntity);
-		   property_definition_representation.setUsed_representation(null, characteristic);
-	      
-	      
-			// setRepresentation_item(context, armEntity, armMst, "physical characteristics representation");
+		  property_definition_representation.setDefinition(null, epd);
+		  property_definition_representation.setUsed_representation(null, characteristic);
 
-// Vilius' code
-/*            jsdai.SProduct_property_definition_schema.AProperty_definition aProperty_definition = new jsdai.SProduct_property_definition_schema.AProperty_definition();
-            jsdai.SProduct_property_definition_schema.EProperty_definition property_definition = null;
-
-            jsdai.SProduct_property_definition_schema.CProperty_definition.usedinDefinition(null,aimEntity,context.domain,aProperty_definition);
-
-            if (aProperty_definition.getMemberCount()==0)
-            {
-                property_definition = (jsdai.SProduct_property_definition_schema.EProperty_definition) context.working_model.createEntityInstance(jsdai.SProduct_property_definition_schema.CProperty_definition.class);
-                property_definition.setDefinition(null,aimEntity);
-            }
-            else
-            {
-               property_definition = aProperty_definition.getByIndex(1);
-            }
-
-            jsdai.SProduct_property_representation_schema.EProperty_definition_representation property_definition_representation =
-                    (jsdai.SProduct_property_representation_schema.EProperty_definition_representation) context.working_model.createEntityInstance(jsdai.SProduct_property_representation_schema.CProperty_definition_representation.class);
-            property_definition_representation.setDefinition(null,property_definition);
-
-            armMst.createAimData(context);
-
-            ELength_measure_with_unit lmwu1 = (ELength_measure_with_unit) armMst.getAimInstance();
-            CLength_measure_with_unit$measure_representation_item lmwu =
-                    (CLength_measure_with_unit$measure_representation_item)
-                    context.working_model.substituteInstance(lmwu1,CLength_measure_with_unit$measure_representation_item.class);
-
-            lmwu.setName(null,"maximum thickness");
-            armMst.setAimInstance(lmwu);
-
-            LangUtils.Attribute_and_value_structure[] representationStructure =
-				{new LangUtils.Attribute_and_value_structure(
-                    jsdai.SRepresentation_schema.CRepresentation.attributeName(null),
-                     "physical characteristics representation")
-				};
-			jsdai.SRepresentation_schema.ERepresentation representation =
-				(jsdai.SRepresentation_schema.ERepresentation)
-				LangUtils.createInstanceIfNeeded(context, jsdai.SRepresentation_schema.CRepresentation.definition, representationStructure);
-
-            if (representation.testItems(null))
-            {
-                AEntity items = representation.getItems(null);
-                if (!items.isMember(lmwu))
-                    items.addUnordered(lmwu);
-            }
-            else
-            {
-                representation.createItems(null).addUnordered(lmwu);
-            }
-
-            property_definition_representation.setUsed_representation(null,representation);
-*/
 		}
 	}
 
@@ -387,35 +343,7 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 	{
 		// CxAP210ARMUtilities.unsetProperty_definitionToRepresentationPath(context, armEntity, "allowed component terminal extent");
 		// MIGHT be too strong - need to test
-		AProperty_definition_representation apdr = new AProperty_definition_representation();
-		CProperty_definition_representation.usedinDefinition(null, armEntity, context.domain, apdr);
-		for(int index=1,count = apdr.getMemberCount(); index <= count;index++){
-			EProperty_definition_representation epdr = apdr.getByIndex(index);
-			ERepresentation er = epdr.getUsed_representation(null);
-			if((er.testName(null)) && (er.getName(null).equals("length tolerance"))){
-				epdr.deleteApplicationInstance();
-			}
-		}
-		// Probably need review
-/*		
-		if (armEntity.testStratum_thickness(null)){
-			ERepresentation suitableRepresentation =
-				getSuitable_representation(context, armEntity, "physical characteristics representation");
-		   if((suitableRepresentation != null)&&(suitableRepresentation.testItems(null))){
-				ARepresentation_item items = suitableRepresentation.getItems(null);
-                for (SdaiIterator it = items.createIterator(); it.next();){
-                    ERepresentation_item item = items.getCurrentMember(it);
-                    
-                    if(item instanceof ECoordinated_representation_item){
-                    	String name = item.getName(null);
-                        if(name.length() >= 9 &&
-                        		name.substring(name.length()-9, name.length()).equals("tolerance"))
-                            items.removeUnordered(item);
-                    }
-
-                }
-		   }
-		}*/
+		unsetPropertDefinitionRepresentation(context.domain, armEntity, "stratum thickness");
 	}
 
 	/**
@@ -483,7 +411,7 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 	*/
 	public static void unsetMinimum_finished_feature_size(SdaiContext context, EStratum_technology_armx armEntity) throws SdaiException
 	{
-		CxAP210ARMUtilities.unsetProperty_definitionToRepresentationPath(context, armEntity, "minimum finished feature size");
+	 CxAP210ARMUtilities.unsetProperty_definitionToRepresentationPath(context, armEntity, "minimum finished feature size");
 	}
 
 
@@ -504,7 +432,7 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 	* 	property_definition_representation.used_representation ->
 	* 	representation
 	* 	{representation
-	* 	representation.name = `stiffness class representation'}
+	* 	representation.name = `physical characteristics representation'}
 	* 	representation.items[i] ->
 	* 	{representation_item
 	* 	representation_item.name = `laminate stiffness class'}
@@ -528,58 +456,8 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 		if (armEntity.testLaminate_stiffness_class(null))
 		{
 			int armValue = armEntity.getLaminate_stiffness_class(null);
-            //PD->ST
-/*            LangUtils.Attribute_and_value_structure[] pdS = {new LangUtils.Attribute_and_value_structure(
-                    jsdai.SProduct_property_definition_schema.CProperty_definition.attributeDefinition(null),armEntity)
-            };
-            jsdai.SProduct_property_definition_schema.EProperty_definition pd = (jsdai.SProduct_property_definition_schema.EProperty_definition)
-                LangUtils.createInstanceIfNeeded(context,jsdai.SProduct_property_definition_schema.CProperty_definition.definition,pdS);*/
-            //PDR->R
-                //R
-            jsdai.SRepresentation_schema.ERepresentation r = null;
-            jsdai.SRepresentation_schema.ERepresentation neededR = null;
-            jsdai.SProduct_property_representation_schema.AProperty_definition_representation aPdr = new jsdai.SProduct_property_representation_schema.AProperty_definition_representation();
-            jsdai.SProduct_property_representation_schema.EProperty_definition_representation pdr = null;
-            jsdai.SProduct_property_representation_schema.CProperty_definition_representation.usedinDefinition(null,armEntity,context.domain,aPdr);
-            for (int i=1;i<=aPdr.getMemberCount();i++)
-            {
-                pdr = aPdr.getByIndex(i);
-                if (pdr.testUsed_representation(null))
-                {
-                    r = pdr.getUsed_representation(null);
-                    if (r.testName(null) && r.getName(null).equals("stiffness class representation"))
-                    {
-                        neededR = r;
-                        break;
-                    }
-                }
-            }
-            if (neededR==null)
-            {
-                neededR = (jsdai.SRepresentation_schema.ERepresentation)
-                        context.working_model.createEntityInstance(jsdai.SRepresentation_schema.CRepresentation.class);
-                neededR.setName(null,"stiffness class representation");
-            }
-                //PDR
-            pdr = (jsdai.SProduct_property_representation_schema.EProperty_definition_representation)
-                        context.working_model.createEntityInstance(jsdai.SProduct_property_representation_schema.CProperty_definition_representation.class);
-            pdr.setDefinition(null,armEntity);
-            pdr.setUsed_representation(null,neededR);
-            //R->DRI
-            // DRI
-            EDescriptive_representation_item item = (EDescriptive_representation_item)
-                context.working_model.createEntityInstance(CDescriptive_representation_item.class);
-            String description = EStiffness_class.toString(armValue);
-            item.setDescription(null, description.replace('_', ' '));
-
-            // R -> DRI
-            ARepresentation_item items;
-            if(neededR.testItems(null))
-                items = neededR.getItems(null);
-            else
-                items = neededR.createItems(null);
-            items.addUnordered(item);
-
+            String description = EStiffness_class.toString(armValue).toLowerCase().replace('_', ' ');
+            setPropertDefinition(armEntity, "laminate stiffness class", description);
 		}
 	}
 
@@ -593,35 +471,7 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 	*/
 	public static void unsetLaminate_stiffness_class(SdaiContext context, EStratum_technology_armx armEntity) throws SdaiException
 	{
-		if (armEntity.testLaminate_stiffness_class(null)){
-   
-/*            jsdai.SProduct_property_definition_schema.AProperty_definition aProperty_definition = new jsdai.SProduct_property_definition_schema.AProperty_definition();
-            jsdai.SProduct_property_definition_schema.EProperty_definition property_definition = null;
-
-            jsdai.SProduct_property_definition_schema.CProperty_definition.usedinDefinition(null,armEntity,context.domain,aProperty_definition);
-
-            if (aProperty_definition.getMemberCount()==0)
-            {
-                return;
-            }
-            else
-            {
-               property_definition = aProperty_definition.getByIndex(1);
-            }*/
-            jsdai.SProduct_property_representation_schema.AProperty_definition_representation aProperty_definition_representation = new jsdai.SProduct_property_representation_schema.AProperty_definition_representation();
-            jsdai.SProduct_property_representation_schema.EProperty_definition_representation property_definition_representation = null;
-            jsdai.SProduct_property_representation_schema.CProperty_definition_representation.usedinDefinition(null,armEntity,context.domain,aProperty_definition_representation);
-
-            if (aProperty_definition_representation.getMemberCount()==0)
-            {
-                return;
-            }
-            else
-            {
-                property_definition_representation = aProperty_definition_representation.getByIndex(1);
-                property_definition_representation.deleteApplicationInstance();
-            }
-        }
+		unsetPropertDefinition(context.domain, armEntity, "laminate stiffness class");		
 	}
 
 
@@ -897,8 +747,8 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 		if (armEntity.testLayer_position(null))
 		{
 			int armDesign_layer_position = armEntity.getLayer_position(null);
-			String value = ELayer_position_type.toString(armDesign_layer_position).toLowerCase();
-			CxDesign_layer_technology.setDescriptive_representation_item(context, armEntity, "layer position", value, "physical characteristics representation");
+			String value = ELayer_position_type.toString(armDesign_layer_position).toLowerCase().replace('_', ' ');
+			setPropertDefinition(armEntity, "layer position", value);
 		}
 	}
 	/**
@@ -911,7 +761,7 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 	public static void unsetLayer_position(SdaiContext context, EStratum_technology_armx armEntity) throws SdaiException
 	{
 		String keyword = "layer position";
-		CxAP210ARMUtilities.unsetRepresentationItemFromCharacterizedObject(armEntity, context, "physical characteristics representation", keyword);
+		unsetPropertDefinition(context.domain, armEntity, keyword);
 	}
 
 	// Added since modularization
@@ -974,4 +824,44 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
         }
 	}
 	*/
+	
+	static EProperty_definition setPropertDefinition(EEntity definition, String name, String description)throws SdaiException{
+		SdaiModel model = definition.findEntityInstanceSdaiModel();
+		EProperty_definition epd = (EProperty_definition)model.createEntityInstance(CProperty_definition.definition);
+		epd.setDefinition(null, definition);
+		epd.setName(null, name);
+		if(description != null){
+			epd.setDescription(null, description);
+		}
+		return epd;
+	}
+
+	static void unsetPropertDefinition(ASdaiModel domain, EEntity definition, String name)throws SdaiException{
+		AProperty_definition apd = new AProperty_definition();
+		CProperty_definition.usedinDefinition(null, definition, domain, apd);
+		for(int i=1,count=apd.getMemberCount(); i<=count; i++){
+			EProperty_definition epd = apd.getByIndex(i);
+			if((epd.testName(null))&&(epd.getName(null).equals(name))){
+				epd.deleteApplicationInstance();
+			}
+		}
+	}
+
+	private static void unsetPropertDefinitionRepresentation(ASdaiModel domain, EEntity definition, String name)throws SdaiException{
+		AProperty_definition apd = new AProperty_definition();
+		CProperty_definition.usedinDefinition(null, definition, domain, apd);
+		for(int i=1,count=apd.getMemberCount(); i<=count; i++){
+			EProperty_definition epd = apd.getByIndex(i);
+			if((epd.testName(null))&&(epd.getName(null).equals(name))){
+				AProperty_definition_representation apdr = new AProperty_definition_representation();
+				CProperty_definition_representation.usedinDefinition(null, epd, domain, apdr);
+				for(int j=1,count2=apdr.getMemberCount(); j<=count2; j++){
+					apdr.getByIndex(j).deleteApplicationInstance();
+				}
+				epd.deleteApplicationInstance();
+			}
+		}
+	}
+	
+	
 }

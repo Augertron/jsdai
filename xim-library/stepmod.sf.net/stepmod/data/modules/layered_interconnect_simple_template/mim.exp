@@ -1,0 +1,229 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N5753 - ISO/TS 10303-1718 Layered interconnect simple template - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N4102
+*)
+
+
+SCHEMA Layered_interconnect_simple_template_mim;
+    USE FROM Layered_2d_shape_mim;	-- ISO/TS 10303-1693
+    USE FROM Fill_area_style_mim; -- ISO/TS 10303-1672
+	USE FROM Fabrication_technology_mim;	-- ISO/TS 10303-1670
+	USE FROM Text_representation_mim;	-- ISO/TS 10303-1750
+	USE FROM Part_template_shape_with_parameters_mim;	-- ISO/TS 10303-1720	
+	
+	USE FROM Presentation_definition_schema(text_literal);
+
+  TYPE list_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH 
+    (land_physical_template);
+  END_TYPE; 
+
+ SUBTYPE_CONSTRAINT list_template_definition_subtypes FOR part_template_definition;   
+ 	(ONEOF (geometric_template,
+			parametric_template,
+ 			part_string_template,
+    		part_text_template,    
+            single_stratum_template,
+            stratum_stack_model));
+ END_SUBTYPE_CONSTRAINT;  
+
+ENTITY blind_passage_template
+  SUBTYPE OF (unsupported_passage_template);
+END_ENTITY;
+
+ENTITY closed_curve_style_parameters
+  SUBTYPE OF(curve_style_parameters_representation);
+END_ENTITY;  
+
+ENTITY component_termination_passage_template
+  SUBTYPE OF (continuous_template, inter_stratum_feature_template);
+END_ENTITY;
+
+ENTITY continuous_template
+  SUBTYPE OF (geometric_template);
+END_ENTITY;
+
+ENTITY counterbore_passage_template
+  SUBTYPE OF (unsupported_passage_template);
+END_ENTITY;
+
+ENTITY countersunk_passage_template
+  SUBTYPE OF (unsupported_passage_template);
+END_ENTITY;  
+
+ENTITY curve_style_parameters_representation
+  SUBTYPE OF(representation);
+END_ENTITY;  
+
+ENTITY curve_style_parameters_with_ends
+  SUBTYPE OF(curve_style_parameters_representation);
+END_ENTITY;  
+
+ENTITY default_attachment_size_based_land_physical_template
+  SUBTYPE OF (land_physical_template, shape_aspect);
+  DERIVE
+    SELF\shape_aspect.of_shape : default_attachment_size_based_land_physical_template := SELF;
+END_ENTITY;
+
+ENTITY default_passage_based_land_physical_template
+  ABSTRACT SUPERTYPE OF (ONEOF (default_plated_passage_based_land_physical_template,
+    default_unsupported_passage_based_land_physical_template))
+  SUBTYPE OF (land_physical_template);
+END_ENTITY;
+
+ENTITY default_plated_passage_based_land_physical_template
+  SUBTYPE OF (default_passage_based_land_physical_template);
+END_ENTITY;
+
+ENTITY default_trace_template
+  SUBTYPE OF (trace_template);
+END_ENTITY;
+
+ENTITY default_unsupported_passage_based_land_physical_template
+  SUBTYPE OF (default_passage_based_land_physical_template);
+END_ENTITY;
+
+ENTITY inter_stratum_feature_edge_segment_template
+  SUBTYPE OF (part_template_definition,shape_aspect_relationship);
+    SELF\shape_aspect_relationship.relating_shape_aspect : edge_segment_vertex;
+    SELF\shape_aspect_relationship.related_shape_aspect  : edge_segment_vertex;
+WHERE
+  WR1: SELF\shape_aspect_relationship.relating_shape_aspect :<>:
+       SELF\shape_aspect_relationship.related_shape_aspect;
+END_ENTITY;
+
+ENTITY inter_stratum_feature_edge_template
+  SUBTYPE OF (part_template_definition);
+END_ENTITY;
+
+ENTITY inter_stratum_feature_template
+  SUPERTYPE OF (ONEOF(component_termination_passage_template,
+    unsupported_passage_template,
+    via_template))
+    SUBTYPE OF (geometric_template);
+END_ENTITY;
+
+ENTITY fill_area_template
+  SUBTYPE OF (parametric_template);
+END_ENTITY;
+
+ENTITY hatch_area_template
+  SUBTYPE OF (fill_area_template);
+END_ENTITY;  
+
+ENTITY hatch_line_element
+  SUBTYPE OF (geometric_representation_item, representation_item_relationship);
+    SELF\representation_item_relationship.relating_representation_item : line;
+    SELF\representation_item_relationship.related_representation_item  : measure_representation_item;
+END_ENTITY;
+
+ENTITY land_physical_template
+  SUPERTYPE OF (ONEOF (default_passage_based_land_physical_template,
+    default_attachment_size_based_land_physical_template))
+  SUBTYPE OF (stratum_feature_template);
+END_ENTITY;
+
+ENTITY land_template_terminal
+  SUBTYPE OF (shape_aspect);
+END_ENTITY;
+
+ENTITY material_removal_feature_template
+  SUBTYPE OF (single_stratum_continuous_template);
+END_ENTITY;
+
+ENTITY parametric_template
+  ABSTRACT SUPERTYPE OF (ONEOF (fill_area_template,
+    teardrop_template,
+    trace_template))
+  SUBTYPE OF (part_template_definition);
+END_ENTITY;
+  
+ENTITY part_string_template
+  SUBTYPE OF (part_template_definition);
+END_ENTITY;
+
+ENTITY part_text_template
+  SUBTYPE OF (part_template_definition);
+END_ENTITY;
+
+ENTITY planar_path_shape_representation_with_parameters
+  SUBTYPE OF (single_area_csg_2d_shape_representation);
+END_ENTITY;
+
+ENTITY planar_closed_path_shape_representation_with_parameters
+    SUBTYPE OF (planar_path_shape_representation_with_parameters);
+END_ENTITY;
+
+ENTITY path_area_with_parameters
+  SUBTYPE OF (complex_area, mapped_item);
+(* TODO  
+  WHERE
+    wr1: "xxx.curve" IN TYPEOF SELF/mapped_item.mapping_source;
+      -- the mapping source must be a curve (open or closed)
+  wr2: -- the mapping_source.mapped_representation must be
+curve_style_parameters_representation;
+  wrx: - don't reall care on mapping_source.mapping_origin. Best to make it the
+line-width
+*)
+END_ENTITY;
+
+ENTITY single_stratum_continuous_template
+  ABSTRACT SUPERTYPE OF (ONEOF (stratum_feature_template, material_removal_feature_template))
+  SUBTYPE OF (continuous_template, single_stratum_template);
+END_ENTITY;
+
+ENTITY single_stratum_template
+  ABSTRACT SUPERTYPE OF (single_stratum_continuous_template)
+  SUBTYPE OF (part_template_definition);
+END_ENTITY;
+
+ENTITY solid_character_glyph_2d_symbol
+  SUBTYPE OF (generic_character_glyph_symbol, csg_2d_shape_representation);
+END_ENTITY;
+  
+ENTITY snowball_template
+  SUBTYPE OF (teardrop_template);
+END_ENTITY;
+
+ENTITY stratum_feature_template
+  SUBTYPE OF (single_stratum_continuous_template);
+END_ENTITY;
+
+ENTITY teardrop_by_angle_template
+  SUBTYPE OF (teardrop_template);
+END_ENTITY;
+
+ENTITY teardrop_by_length_template
+  SUBTYPE OF (teardrop_template);
+END_ENTITY;
+
+ENTITY teardrop_template
+  ABSTRACT SUPERTYPE OF (ONEOF (snowball_template,
+    teardrop_by_angle_template,
+    teardrop_by_length_template))
+  SUBTYPE OF (parametric_template, single_stratum_template);
+END_ENTITY;
+
+ENTITY tile_area_template
+  SUBTYPE OF (fill_area_template);
+END_ENTITY;
+  
+ENTITY trace_template
+  SUPERTYPE OF (default_trace_template)
+  SUBTYPE OF (parametric_template);
+END_ENTITY;
+
+ENTITY unsupported_passage_template
+  SUPERTYPE OF (ONEOF (counterbore_passage_template,
+    countersunk_passage_template,
+    blind_passage_template))
+  SUBTYPE OF (continuous_template, inter_stratum_feature_template);
+END_ENTITY;
+ 
+ENTITY via_template
+  SUBTYPE OF (continuous_template, inter_stratum_feature_template);
+END_ENTITY;
+	
+END_SCHEMA;
+
+

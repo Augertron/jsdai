@@ -1,18 +1,21 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N3958 - ISO/TS 10303-1670 Fabrication technology - EXPRESS MIM
-   Supersedes ISO TC184/SC4/WG12 N3664
+   ISO TC184/SC4/WG12 N5648 - ISO/TS 10303-1670 Fabrication technology - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N3958
 *)
 
 
 SCHEMA Fabrication_technology_mim;
     USE FROM Constructive_solid_geometry_2d_mim; 	-- ISO/TS 10303-1731
 	USE FROM Extended_geometric_tolerance_mim;	-- ISO/TS 10303-1666
-	USE FROM Part_template_shape_with_parameters_mim; -- ISO/TS 10303-1720
+	USE FROM Part_template_mim; -- ISO/TS 10303-1722
+
+TYPE ft_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH (
+	stratum_technology_occurrence_relationship);
+END_TYPE;
 
 TYPE ft_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH 
-   (land_physical_template,
-   stratum_technology);
+   (stratum_technology);
 END_TYPE; 
 	
 TYPE ft_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH 
@@ -23,13 +26,9 @@ END_TYPE;
 TYPE ft_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH 
      (passage_technology,
      stratum_technology,
-     stratum_technology_occurrence);
+     stratum_technology_occurrence,
+     stratum_technology_occurrence_relationship);
 END_TYPE; 
-
-SUBTYPE_CONSTRAINT ft_part_template_definition_subtypes FOR part_template_definition; 
-    (ONEOF (geometric_template,
-	 stratum_stack_model));
-END_SUBTYPE_CONSTRAINT;
 
 SUBTYPE_CONSTRAINT ft_property_definition_subtypes FOR property_definition; 
     (ONEOF (stratum_technology_occurrence_relationship,
@@ -41,50 +40,14 @@ SUBTYPE_CONSTRAINT ft_property_definition_relationship_subtypes FOR property_def
 	 stratum_technology_swap_relationship));
 END_SUBTYPE_CONSTRAINT;
 
-ENTITY blind_passage_template
-  SUBTYPE OF (unsupported_passage_template);
-END_ENTITY;
-
-ENTITY component_termination_passage_template
-  SUBTYPE OF (continuous_template, inter_stratum_feature_template);
-END_ENTITY;
-
-ENTITY continuous_template
-  SUBTYPE OF (geometric_template);
-END_ENTITY;
-
-ENTITY counterbore_passage_template
-  SUBTYPE OF (unsupported_passage_template);
-END_ENTITY;
-
-ENTITY countersunk_passage_template
-  SUBTYPE OF (unsupported_passage_template);
-END_ENTITY;  
+ENTITY allocated_passage_minimum_annular_ring
+  SUBTYPE OF (characterized_object);
+END_ENTITY;    
 
 ENTITY copy_stratum_technology_occurrence_relationship
   SUBTYPE OF (derived_stratum_technology_occurrence_relationship);
 END_ENTITY;
   
-ENTITY default_attachment_size_based_land_physical_template
-  SUBTYPE OF (land_physical_template, shape_aspect);
-  DERIVE
-    SELF\shape_aspect.of_shape : default_attachment_size_based_land_physical_template := SELF;
-END_ENTITY;
-
-ENTITY default_passage_based_land_physical_template
-  ABSTRACT SUPERTYPE OF (ONEOF (default_plated_passage_based_land_physical_template,
-    default_unsupported_passage_based_land_physical_template))
-  SUBTYPE OF (land_physical_template);
-END_ENTITY;
-
-ENTITY default_plated_passage_based_land_physical_template
-  SUBTYPE OF (default_passage_based_land_physical_template);
-END_ENTITY;
-
-ENTITY default_unsupported_passage_based_land_physical_template
-  SUBTYPE OF (default_passage_based_land_physical_template);
-END_ENTITY;
-
 ENTITY derived_stratum_technology_occurrence_relationship
   ABSTRACT SUPERTYPE OF (ONEOF (
     copy_stratum_technology_occurrence_relationship,
@@ -92,37 +55,40 @@ ENTITY derived_stratum_technology_occurrence_relationship
   SUBTYPE OF (stratum_technology_occurrence_relationship);
 END_ENTITY;
 
-ENTITY filled_unsupported_passage_template
-  SUBTYPE OF (unsupported_passage_template);
+ENTITY design_stack_model
+  SUBTYPE OF(stratum_stack_model);
 END_ENTITY;
 
-ENTITY filled_via_template
-  SUBTYPE OF (via_template);
+ENTITY equivalent_stackup_model_definition
+  SUBTYPE OF (product_definition, product_definition_relationship);
+    SELF\product_definition_relationship.relating_product_definition RENAMED primary_stackup_model   : stratum_stack_model;
+    SELF\product_definition_relationship.related_product_definition RENAMED equivalent_stackup_model : stratum_stack_model;
+  WHERE
+    WR1 : primary_stackup_model :<>: equivalent_stackup_model;
+END_ENTITY;
+ 
+ENTITY equivalent_sub_stack_definition
+  SUBTYPE OF (product_definition);
+END_ENTITY;
+
+ENTITY footprint_library_stratum_technology
+  SUBTYPE OF (stratum_technology);
+END_ENTITY;
+
+ENTITY impedance_measurement_setup_requirement
+  SUBTYPE OF (predefined_requirement_view_definition);
+END_ENTITY;
+
+ENTITY impedance_requirement
+  SUBTYPE OF (predefined_requirement_view_definition);
 END_ENTITY;
   
-ENTITY inter_stratum_feature_template
-  SUPERTYPE OF (ONEOF(component_termination_passage_template,
-    unsupported_passage_template,
-    via_template))
-    SUBTYPE OF (geometric_template);
-END_ENTITY;
-
 ENTITY inverse_copy_stratum_technology_occurrence_relationship
   SUBTYPE OF (derived_stratum_technology_occurrence_relationship);
 END_ENTITY;
-  
-ENTITY land_physical_template
-  SUPERTYPE OF (ONEOF (default_passage_based_land_physical_template,
-    default_attachment_size_based_land_physical_template))
-  SUBTYPE OF (stratum_feature_template);
-END_ENTITY;
 
-ENTITY land_template_terminal
-  SUBTYPE OF (shape_aspect);
-END_ENTITY;
-
-ENTITY material_removal_feature_template
-  SUBTYPE OF (single_stratum_continuous_template);
+ENTITY local_linear_stack
+  SUBTYPE OF (stratum_sub_stack);
 END_ENTITY;
 
 ENTITY passage_deposition_material_identification
@@ -143,19 +109,15 @@ UNIQUE
   UR1: SELF\characterized_object.name;
 END_ENTITY;
 
-ENTITY single_stratum_continuous_template
-  ABSTRACT SUPERTYPE OF (ONEOF (stratum_feature_template, material_removal_feature_template))
-  SUBTYPE OF (continuous_template, single_stratum_template);
+ENTITY passage_technology_allocation_to_stack_model
+  SUBTYPE OF (stratum_sub_stack);
 END_ENTITY;
 
-ENTITY single_stratum_template
-  ABSTRACT SUPERTYPE OF (single_stratum_continuous_template)
+ENTITY stratum_sub_stack 
+  ABSTRACT SUPERTYPE OF (ONEOF(local_linear_stack, 
+    passage_technology_allocation_to_stack_model))
   SUBTYPE OF (part_template_definition);
-END_ENTITY;
-
-ENTITY stratum_feature_template
-  SUBTYPE OF (single_stratum_continuous_template);
-END_ENTITY;
+END_ENTITY;      
 
 ENTITY stratum_stack_model
   ABSTRACT SUPERTYPE
@@ -204,15 +166,8 @@ ENTITY stratum_technology_swap_relationship
   SUBTYPE OF(property_definition_relationship);
 END_ENTITY;
 
-ENTITY unsupported_passage_template
-  SUPERTYPE OF (ONEOF (counterbore_passage_template,
-    countersunk_passage_template,
-    blind_passage_template))
-  SUBTYPE OF (continuous_template, inter_stratum_feature_template);
-END_ENTITY;
-
-ENTITY via_template
-  SUBTYPE OF (continuous_template, inter_stratum_feature_template);
+ENTITY stratum_technology_mapping_relationship
+  SUBTYPE OF(property_definition_relationship);
 END_ENTITY;
 
 END_SCHEMA;

@@ -45,12 +45,17 @@ REFERENCE FROM Specification_document_xim(get_document_definition);	-- ISO/TS 10
 --		(Functional_specification_armx);
 --	END_TYPE;
 
+    TYPE fs_node_or_terminal = SELECT
+        (Functional_unit_network_node_definition,
+         Functional_unit_terminal);
+    END_TYPE;
+    
   ENTITY Functional_specification_armx
   	(* CONNOTATIONAL *) SUBTYPE OF (functional_specification);
       associated_definition          	: Functional_specification_definition;
-      reference_signal               	: Signal_specification;
+      reference_signal               	: SET [1:?] OF Signal_specification;
       characterizing_functional_unit 	: Functional_unit_armx;
-      characterizing_signal          	: Signal_specification;
+      characterizing_signal          	: SET [1:?] OF Signal_specification;
     DERIVE
       SELF\representation.items : SET [1:?] OF representation_item := ?;
       SELF\representation.context_of_items : representation_context := ?;
@@ -69,11 +74,12 @@ REFERENCE FROM Specification_document_xim(get_document_definition);	-- ISO/TS 10
 
   ENTITY Signal_specification
   	(* CONNOTATIONAL *) SUBTYPE OF (representation);
-      measurement_access_mechanism : Functional_unit_terminal;
-      reference_access_mechanism   : OPTIONAL Functional_unit_terminal;
-      minimum_characteristic       : Signal_property;
-      maximum_characteristic       : Signal_property;
+      signal_access_mechanism      : fs_node_or_terminal;      
+      reference_access_mechanism   : OPTIONAL fs_node_or_terminal;
+      minimum_characteristic       : OPTIONAL Signal_property;
+      maximum_characteristic       : OPTIONAL Signal_property;
       characterization_network     : Functional_unit_network_definition;
+      nominal_characteristic       : OPTIONAL Signal_property;      
     DERIVE
 	  measurement_condition: SET[1:1] OF Document_definition :=
   			get_document_definition(SELF, 'measurement condition', 
@@ -81,6 +87,10 @@ REFERENCE FROM Specification_document_xim(get_document_definition);	-- ISO/TS 10
       SELF\representation.items : SET [1:?] OF representation_item := ?;
       SELF\representation.context_of_items : representation_context := ?;
       SELF\representation.name : label := ?;
+    WHERE
+      WR1 : EXISTS (minimum_characteristic) OR
+            EXISTS (maximum_characteristic) OR
+            EXISTS (nominal_characteristic);
   END_ENTITY;
 
 END_SCHEMA;

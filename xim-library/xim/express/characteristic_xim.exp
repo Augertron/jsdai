@@ -47,6 +47,14 @@ USE FROM Characteristic_mim;
     Value_set);
   END_TYPE;
 
+  TYPE characteristic_data_table_cell = SELECT ( 
+    Null_representation_item, 
+    descriptive_representation_item, 
+    measure_representation_item, 
+    Value_list, 
+    Value_set); 
+  END_TYPE; 
+
 	TYPE c_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
 	   (Property_value_representation);
 	END_TYPE; 
@@ -63,31 +71,46 @@ USE FROM Characteristic_mim;
      characteristic);
   END_TYPE;
 
-  ENTITY Characteristic_data_table_header_armx
-    SUBTYPE OF (characteristic_data_table_header);
-    DERIVE
-      column : LIST [1:?] OF general_property := get_characterized_column_headers(SELF);
-    WHERE
-      WR1: EXISTS(column) AND (SIZEOF(column) > 1);
-  END_ENTITY;
-
-  ENTITY Characteristic_data_table_header_link_armx
-    SUBTYPE OF (characteristic_data_table_header_link);
-      SELF\general_property_relationship.relating_property RENAMED precedent : general_property;
-      SELF\general_property_relationship.related_property RENAMED subsequent : general_property;
-    DERIVE
-      SELF\general_property_relationship.name : STRING := 'sequence';
-      table : Characteristic_data_table_header_armx := get_table(SELF);            
-    UNIQUE
-      UR1: precedent, table;  
-      UR2: subsequent, table;        
-    WHERE
-      WR1: EXISTS(table);
-  END_ENTITY;
-
   ENTITY Characteristic_data_table_representation
     SUBTYPE OF (Property_value_representation);
-      SELF\representation.items : SET[1:1] OF Characteristic_data_table;
+      SELF\Representation.items : SET[1:1] OF Characteristic_data_table;
+  END_ENTITY;
+
+  ENTITY Characteristic_data_table_row
+    SUBTYPE OF (row_representation_item);
+      SELF\compound_representation_item.item_element RENAMED cell : LIST [1:?] OF characteristic_data_table_cell;
+  END_ENTITY;
+
+  ENTITY Characteristic_data_column_header_armx 
+    SUBTYPE OF (characteristic_data_column_header);
+    INVERSE
+      table_header_usage : Characteristic_data_table_header_decomposition_armx FOR related_property;  
+  END_ENTITY;
+
+  ENTITY Characteristic_data_table_header_armx 
+    SUBTYPE OF (characteristic_data_table_header);
+    INVERSE
+      column : SET [2:?] OF Characteristic_data_table_header_decomposition_armx FOR relating_property;    
+  END_ENTITY;
+
+  ENTITY Characteristic_data_column_header_link_armx
+    SUBTYPE OF (characteristic_data_column_header_link);
+      SELF\general_property_relationship.relating_property RENAMED precedent : Characteristic_data_column_header;
+      SELF\general_property_relationship.related_property RENAMED subsequent : Characteristic_data_column_header;
+    DERIVE
+      SELF\general_property_relationship.name : STRING := 'sequence'; 
+    UNIQUE
+      UR1 : precedent, subsequent;
+    WHERE
+      WR1: subsequent <> precedent;
+  END_ENTITY; 
+
+  ENTITY Characteristic_data_table_header_decomposition_armx
+    SUBTYPE OF (characteristic_data_table_header_decomposition);
+      SELF\general_property_relationship.relating_property : Characteristic_data_table_header;
+      SELF\general_property_relationship.related_property : Characteristic_data_column_header;
+    DERIVE
+      SELF\general_property_relationship.name : STRING := 'decomposition';
   END_ENTITY;
 
 	ENTITY Characteristic_data_table
@@ -103,11 +126,6 @@ USE FROM Characteristic_mim;
         WR3: SIZEOF(USEDIN
           (SELF,'PROPERTY_ASSIGNMENT_XIM.ASSIGNED_PROPERTY.DESCRIBED_ELEMENT')) = 0;
 	END_ENTITY;
-
-  ENTITY Characteristic_data_table_row
-    SUBTYPE OF (row_representation_item);
-      SELF\compound_representation_item.item_element RENAMED cell : LIST [1:?] OF characteristic;
-  END_ENTITY;
 
   ENTITY Externally_defined_type_qualifier
     SUBTYPE OF (type_qualifier);
@@ -163,6 +181,10 @@ USE FROM Characteristic_mim;
     WHERE
       WR1: SELF\Representation.items[1]\qualified_representation_item.qualifiers[1]\type_qualifier.name = 'nominal';
   END_ENTITY;
+
+  ENTITY Null_representation_item_armx 
+    SUBTYPE OF (null_representation_item); 
+  END_ENTITY; 
 
   ENTITY Plus_minus_tolerance_characteristic
     (* CONNOTATIONAL *) SUBTYPE OF (Tolerance_characteristic);
@@ -220,6 +242,11 @@ USE FROM Characteristic_mim;
       WR1: SELF\Representation.context_of_items\Representation_context.context_identifier = 'tolerance values';
   END_ENTITY;
 
+  FUNCTION valid_range(input1 : measure_representation_item;
+                       input2 : measure_representation_item) : BOOLEAN;
+    RETURN(TRUE);
+  END_FUNCTION; 
+
 SUBTYPE_CONSTRAINT exclusive_property_value_representation_characteristic FOR
 Property_value_representation;
           ONEOF (Range_characteristic_armx, Tolerance_characteristic);
@@ -228,92 +255,10 @@ END_SUBTYPE_CONSTRAINT;
  SUBTYPE_CONSTRAINT type_qualifier_subtypes FOR Type_qualifier;
     ONEOF(Externally_defined_type_qualifier, Pre_defined_type_qualifier);
   END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT general_property_subtypes FOR general_property;
+    ONEOF (Characteristic_data_table_header_armx, Characteristic_data_column_header_armx);
+  END_SUBTYPE_CONSTRAINT;
   
-FUNCTION get_value (
-         input1 : STRING;
-         np : SET OF Representation_item) : measure_representation_item;
-REPEAT i := 1 to SIZEOF(np) by 1;
-  IF input1 = np[i]\Representation_item.name THEN
-       RETURN(np[i]);
-  END_IF;
-END_REPEAT;
-  RETURN(?);
-END_FUNCTION; -- get_value
-
-  FUNCTION valid_range(input1 : measure_representation_item;
-                       input2 : measure_representation_item) : BOOLEAN;
-   RETURN(TRUE);
-  END_FUNCTION; 
   
-  FUNCTION get_characterized_column_headers(input : Characteristic_data_table_header_armx): LIST [1:?] OF general_property;
-    LOCAL
-      middle : SET [1:?] OF general_property;
-      result : LIST [1:?] OF general_property;
-      links  : SET [1:?] OF Characteristic_data_table_header_link_armx;
-      temp   : general_property;
-      precedent : SET [0:?] OF Characteristic_data_table_header_link_armx;
-      subsequent : SET [0:?] OF Characteristic_data_table_header_link_armx;
-    END_LOCAL;
-    -- Collect all headers
-    links := bag_to_set(USEDIN(input, 'CHARACTERISTIC_XIM.' + 'CHARACTERISTIC_DATA_TABLE_HEADER_LINK_ARMX.TABLE'));
-    -- Collect all Independent_properties
-    REPEAT i := 1 to HIINDEX(links);
-      middle := middle + links[i]\Characteristic_data_table_header_link_armx.precedent;
-      middle := middle + links[i]\Characteristic_data_table_header_link_armx.subsequent;
-    END_REPEAT;
-    result[1] := ?;
-    -- Now need to construct the resulting list
-    REPEAT i := 1 to HIINDEX(middle);
-      precedent := bag_to_set(QUERY (l <* (USEDIN(middle[i], 'CHARACTERISTIC_XIM.' + 
-        'CHARACTERISTIC_DATA_TABLE_HEADER_LINK_ARMX.PRECEDENT')) | l.table = input));
-      -- illegal chain
-      IF (SIZEOF(precedent) > 1) THEN
-        RETURN(?);
-      END_IF;
-      -- check if this is not last member
-      IF (SIZEOF(precedent) = 1) THEN
-        subsequent := bag_to_set(QUERY (l <* (USEDIN(middle[i], 'CHARACTERISTIC_XIM.' + 
-          'CHARACTERISTIC_DATA_TABLE_HEADER_LINK_ARMX.SUBSEQUENT')) | l.table = input));
-        -- we found first member
-        IF (SIZEOF(subsequent) = 0) THEN
-          result[1] := middle[i];
-          ESCAPE;
-        END_IF;
-      END_IF;
-    END_REPEAT;
-    -- if there is no first member found yet - chain is broken
-    IF (result[1] = ?) THEN
-      RETURN (?);
-    END_IF;
-    temp := result[1];
-    REPEAT i := 2 to HIINDEX(middle);
-      result[i] := precedent[1]\Characteristic_data_table_header_link_armx.subsequent;
-      precedent := bag_to_set(QUERY (l <* (USEDIN(result[i], 'CHARACTERISTIC_XIM.' + 
-        'CHARACTERISTIC_DATA_TABLE_HEADER_LINK_ARMX.PRECEDENT')) | l.table = input));
-      IF (HIINDEX(middle) = i) THEN
-        ESCAPE;
-      END_IF;
-      -- illegal chain
-      IF (SIZEOF(precedent) <> 1) THEN
-        RETURN(?);
-      END_IF;
-    END_REPEAT; 
-    RETURN (result);
-  END_FUNCTION;  
-
-  FUNCTION get_table(input : Characteristic_data_table_header_link_armx): Characteristic_data_table_header_armx;
-    LOCAL
-      middle : BAG [0:?] OF general_property_relationship;
-    END_LOCAL;
-      middle := QUERY (ipr <* (USEDIN(input, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' + 
-        'GENERAL_PROPERTY_RELATIONSHIP.RELATED_PROPERTY')) | ipr.name = 'decomposition');      
-      REPEAT i := 1 to HIINDEX(middle);       
-        IF('CHARACTERISTIC_XIM.CHARACTERISTIC_DATA_TABLE_HEADER_ARMX' IN TYPEOF(middle[i].relating_property))THEN
-          RETURN (middle[i].relating_property);
-        END_IF;
-      END_REPEAT;
-      RETURN (?);
-  END_FUNCTION;
-
 END_SCHEMA;
-

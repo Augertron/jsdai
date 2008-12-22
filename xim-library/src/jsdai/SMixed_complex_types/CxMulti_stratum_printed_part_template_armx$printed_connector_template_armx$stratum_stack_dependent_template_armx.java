@@ -31,11 +31,11 @@ package jsdai.SMixed_complex_types;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.SPart_template_2d_shape_xim.CxMulti_stratum_structured_template_armx;
-import jsdai.SPart_template_2d_shape_xim.CxStratum_stack_dependent_template_armx;
-import jsdai.SPart_template_2d_shape_xim.EMulti_stratum_structured_template_armx;
-import jsdai.SPart_template_2d_shape_xim.EStratum_stack_dependent_template_armx;
-import jsdai.SPhysical_layout_template_xim.*;
+import jsdai.SLayered_interconnect_complex_template_xim.CxMulti_stratum_structured_template_armx;
+import jsdai.SLayered_interconnect_complex_template_xim.CxStratum_stack_dependent_template_armx;
+import jsdai.SLayered_interconnect_complex_template_xim.EMulti_stratum_structured_template_armx;
+import jsdai.SLayered_interconnect_complex_template_xim.EStratum_stack_dependent_template_armx;
+import jsdai.SPart_template_xim.*;
 import jsdai.SPrinted_physical_layout_template_xim.CxMulti_stratum_printed_part_template_armx;
 import jsdai.SPrinted_physical_layout_template_xim.CxPrinted_connector_template_armx;
 import jsdai.SPrinted_physical_layout_template_xim.CxPrinted_part_template_armx;
@@ -601,7 +601,7 @@ public class CxMulti_stratum_printed_part_template_armx$printed_connector_templa
 
  	public static void setStack(SdaiContext context, EStratum_stack_dependent_template_armx armEntity) throws SdaiException
  	{
- 		CxStratum_stack_dependent_template_armx.setLocation(context, armEntity);
+ 		CxStratum_stack_dependent_template_armx.setStack(context, armEntity);
  	}
 
 

@@ -1335,7 +1335,7 @@ public class CxPackage_armx
 	unsetRepresentation_characteristic(context, armEntity, "maximum seating plane installation offset");
    }
 
-   private static void setRepresentation_characteristic(SdaiContext context, EPackage_armx armEntity, String epdName, EEntity item)throws SdaiException{
+   public static void setRepresentation_characteristic(SdaiContext context, EProduct_definition armEntity, String epdName, EEntity item)throws SdaiException{
 	   EProperty_definition epd = (EProperty_definition)
 	   		context.working_model.createEntityInstance(CProperty_definition.definition);
 	   epd.setName(null, epdName);
@@ -1371,7 +1371,7 @@ public class CxPackage_armx
 	   epdr.setUsed_representation(null, er);
    }
 
-   private static void unsetRepresentation_characteristic(SdaiContext context, EPackage_armx armEntity, String epdName)throws SdaiException{
+   public static void unsetRepresentation_characteristic(SdaiContext context, EProduct_definition armEntity, String epdName)throws SdaiException{
 	   AProperty_definition apd = new AProperty_definition();
 	   CProperty_definition.usedinDefinition(null, armEntity, context.domain, apd);
 	   SdaiIterator iterAPD = apd.createIterator();

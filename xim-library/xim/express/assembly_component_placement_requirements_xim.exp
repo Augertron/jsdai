@@ -40,9 +40,9 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
   (bag_to_set);
 
     SUBTYPE_CONSTRAINT acpr_predefined_requirement_view_definition_subtypes FOR Predefined_requirement_view_definition_armx;   
- 	  (ONEOF (Assembly_spacing_requirement_occurrence_armx,
- 	  Assembly_group_spacing_requirement_occurrence_armx,
- 	  Item_restricted_requirement_occurrence_armx));
+ 	  (ONEOF (Assembly_spacing_requirement_armx,
+ 	  Assembly_group_spacing_requirement_armx,
+ 	  Item_restricted_requirement_armx));
     END_SUBTYPE_CONSTRAINT;  
     		
 	TYPE restriction_basis_item = EXTENSIBLE GENERIC_ENTITY SELECT(
@@ -120,16 +120,16 @@ TYPE assembly_spacing_type = EXTENSIBLE ENUMERATION OF
      furthest_boundary);
 END_TYPE;
 
-  ENTITY Assembly_group_spacing_requirement_occurrence_armx
-    SUBTYPE OF (Predefined_requirement_view_definition_armx, assembly_group_spacing_requirement_occurrence);
+  ENTITY Assembly_group_spacing_requirement_armx
+    SUBTYPE OF (Predefined_requirement_view_definition_armx, assembly_group_spacing_requirement);
       reference_group : Placement_group_requirement_definition;
       dependent_group : Placement_group_requirement_definition;
       SELF\Predefined_requirement_view_definition_armx.required_characteristic : Length_tolerance_characteristic;
       of_spacing_type : assembly_spacing_type;
   END_ENTITY;
 
-  ENTITY Assembly_spacing_requirement_occurrence_armx
-    (* CONNOTATIONAL *) SUBTYPE OF (Predefined_requirement_view_definition_armx, assembly_spacing_requirement_occurrence);
+  ENTITY Assembly_spacing_requirement_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Predefined_requirement_view_definition_armx, assembly_spacing_requirement);
       reference_design_object_category                                   : assembly_product_design_object_category_or_group;
       dependent_design_object_category                                   : assembly_product_design_object_category_or_group;
       SELF\Predefined_requirement_view_definition_armx.required_characteristic       : Length_tolerance_characteristic;
@@ -154,7 +154,7 @@ END_TYPE;
       maximum_positive_component_height : OPTIONAL Length_tolerance_characteristic;
       area                              : OPTIONAL Mounting_restriction_area_armx;
       volume                            : OPTIONAL Mounting_restriction_volume_armx;
-      requirement                       : Item_restricted_requirement_occurrence_armx;
+      requirement                       : Item_restricted_requirement_armx;
       components_permitted              : BOOLEAN;
       mounting_clearance                : OPTIONAL Length_tolerance_characteristic;
     DERIVE
@@ -165,8 +165,8 @@ END_TYPE;
       WR1 : EXISTS(area) OR EXISTS(volume);
   END_ENTITY;
 
-  ENTITY Item_restricted_requirement_occurrence_armx
-    (* CONNOTATIONAL *) SUBTYPE OF (Predefined_requirement_view_definition_armx, item_restricted_requirement_occurrence);
+  ENTITY Item_restricted_requirement_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Predefined_requirement_view_definition_armx, item_restricted_requirement);
       basis : restriction_basis_item;
     DERIVE
       SELF\group.name : label := ?;
@@ -178,7 +178,7 @@ END_TYPE;
   ENTITY Mounting_restriction_area_armx
     (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, mounting_restriction_area);
       mounting_surface                     : Interconnect_module_component_surface_feature_armx;
-      SELF\Non_feature_shape_element.scope : Assembly_module;
+      SELF\Non_feature_shape_element.scope : Assembly_module_design_view_armx;
     WHERE
       WR1 : (SIZEOF(SELF\Non_feature_shape_element.element_shape) = 0) OR
             (SIZEOF(QUERY(es <* SELF\Non_feature_shape_element.element_shape | 
@@ -189,7 +189,7 @@ END_TYPE;
   ENTITY Mounting_restriction_volume_armx
     (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, mounting_restriction_volume);
       mounting_surface                     : Interconnect_module_component_surface_feature_armx;
-      SELF\Non_feature_shape_element.scope : Assembly_module;
+      SELF\Non_feature_shape_element.scope : Assembly_module_design_view_armx;
     INVERSE
       volume : non_feature_shape_model FOR associated_element;
   END_ENTITY;

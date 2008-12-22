@@ -33,6 +33,8 @@ import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SFabrication_technology_mim.CStratum_technology_occurrence_link;
 import jsdai.SMaterial_property_definition_schema.EProperty_definition_relationship;
+import jsdai.SProduct_property_definition_schema.AProperty_definition;
+import jsdai.SProduct_property_definition_schema.CProperty_definition;
 import jsdai.SProduct_property_definition_schema.EProperty_definition;
 
 public class CxStratum_technology_occurrence_link_armx extends CStratum_technology_occurrence_link_armx implements EMappedXIMEntity
@@ -108,10 +110,18 @@ public class CxStratum_technology_occurrence_link_armx extends CStratum_technolo
 
 		setMappingConstraints(context, this);
 		
+		// base_stratum_technology_occurrence : OPTIONAL up_or_down;
+		setBase_stratum_technology_occurrence(context, this);
+		
+		// base_stratum_technology_occurrence : OPTIONAL up_or_down;
+		unsetBase_stratum_technology_occurrence(null);
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
 		unsetMappingConstraints(context, this);
+		
+		// base_stratum_technology_occurrence : OPTIONAL up_or_down;
+		unsetBase_stratum_technology_occurrence(context, this);
 	}
 	
 	
@@ -141,4 +151,37 @@ public class CxStratum_technology_occurrence_link_armx extends CStratum_technolo
 	public static void unsetMappingConstraints(SdaiContext context, EStratum_technology_occurrence_link_armx armEntity) throws SdaiException
 	{
 	}
+	
+	/**
+	* Sets/creates data for base_stratum_technology_occurrence attribute.
+	*
+	attribute_mapping base_stratum_technology_occurrence(base_stratum_technology_occurrence, $PATH);
+		stratum_technology_occurrence_link <=
+		stratum_technology_occurrence_relationship <=
+		property_definition
+		property_definition.name
+		{(property_definition.name = 'independent')
+		(property_definition.name = 'precedent')
+		(property_definition.name = 'subsequent')}
+	end_attribute_mapping;	
+	*
+	* @param context SdaiContext.
+	* @param armEntity arm entity.
+	* @throws SdaiException
+	*/
+	public static void setBase_stratum_technology_occurrence(SdaiContext context, EStratum_technology_occurrence_link_armx armEntity) throws SdaiException
+	{
+		unsetBase_stratum_technology_occurrence(context, armEntity);
+		if(armEntity.testBase_stratum_technology_occurrence(null)){
+			int baseSTO = armEntity.getBase_stratum_technology_occurrence(null);
+			String value = EUp_or_down.toString(baseSTO).toLowerCase().replace('_', ' ');
+			armEntity.setName((EProperty_definition)null, value);
+		}
+	}
+
+	public static void unsetBase_stratum_technology_occurrence(SdaiContext context, EStratum_technology_occurrence_link_armx armEntity) throws SdaiException
+	{
+		armEntity.setName((EProperty_definition)null, "");
+	}
+	
 }

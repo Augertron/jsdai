@@ -62,7 +62,7 @@ USE FROM Non_feature_shape_element_mim;
 	 	Geometrically_bounded_surface_shape_representation);
 	END_TYPE;
 
-  ENTITY Interface_requirement_occurrence
+  ENTITY Interface_requirement
     (* CONNOTATIONAL *) SUBTYPE OF (Predefined_requirement_view_definition_armx);
       interface_to_next_higher_assembly : OPTIONAL Next_higher_assembly_interface_requirement;
       reference_protocol                : OPTIONAL Protocol_physical_layer_definition_armx;
@@ -127,10 +127,10 @@ USE FROM Non_feature_shape_element_mim;
     (* CONNOTATIONAL *) SUBTYPE OF (Requirement_assignment_armx, protocol_requirement_allocation_to_part_terminal);
       SELF\Requirement_assignment_armx.assigned_to : Part_terminal;
       protocol_signal													: Functional_unit_usage_view_terminal_definition;
-      SELF\Requirement_assignment_armx.assigned_requirement RENAMED assigned_requirement_property  : Interface_requirement_occurrence;    	
+      SELF\Requirement_assignment_armx.assigned_requirement RENAMED assigned_requirement_property  : Interface_requirement;    	
     WHERE
-      WR1 : EXISTS(assigned_requirement_property\Interface_requirement_occurrence.reference_protocol);
-      WR2 : protocol_signal IN assigned_requirement_property\Interface_requirement_occurrence.reference_protocol.host_functional_definition\Functional_unit_usage_view.access_mechanism;  
+      WR1 : EXISTS(assigned_requirement_property\Interface_requirement.reference_protocol);
+      WR2 : protocol_signal IN assigned_requirement_property\Interface_requirement.reference_protocol.host_functional_definition\Functional_unit_usage_view.access_mechanism;  
    END_ENTITY;
 
   ENTITY Termination_constraint

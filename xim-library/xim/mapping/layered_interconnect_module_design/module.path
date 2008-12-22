@@ -580,30 +580,14 @@ stratum_feature
 
 end_attribute_mapping;
 
-attribute_mapping centreline_shape(centreline_shape, $PATH, Planar_path_shape_model_with_parameters);
+attribute_mapping centreline_shape(centreline_shape, $PATH, Path_area_with_parameters_armx);
 conductive_interconnect_element_with_pre_defined_transitions <=
-conductive_interconnect_element <=
-stratum_feature_template_component <=
-laminate_component <=
-assembly_component <=
-component_definition <=
-product_definition
-characterized_product_definition = product_definition
-characterized_product_definition
-characterized_definition = characterized_product_definition
-characterized_definition <-
-property_definition.definition
-property_definition
-{property_definition
-property_definition.name = 'centreline shape'}
-property_definition <-
-property_definition_representation.definition
-property_definition_representation
-property_definition_representation.used_representation ->
-representation =>
-shape_representation =>
-csg_2d_shape_representation =>
-single_area_csg_2d_shape_representation
+item_identified_representation_usage
+item_identified_representation_usage.identified_item -> 
+representation_item
+representation_item =>
+mapped_item =>
+path_area_with_parameters
 
 end_attribute_mapping;
 
@@ -1213,12 +1197,20 @@ attribute_mapping item(item, , Stratum_armx);
 end_attribute_mapping;
 
 attribute_mapping item(item, , Laminate_component_armx);
-
 				external_identification_item *> limd_external_identification_item
 				limd_external_identification_item = assembly_component
 				assembly_component =>
 				laminate_component
-			
+end_attribute_mapping;
+
+attribute_mapping item(item, , Externally_defined_physical_network_group_armx);
+				external_identification_item *> limd_external_identification_item
+				limd_external_identification_item = externally_defined_physical_network_group
+end_attribute_mapping;
+
+attribute_mapping item(item, , Externally_defined_physical_network_group_element_relationship_armx);
+				external_identification_item *> limd_external_identification_item
+				limd_external_identification_item = externally_defined_physical_network_group_element_relationship
 end_attribute_mapping;
 
 end_entity_mapping;
@@ -1400,20 +1392,18 @@ attribute_mapping name(name, shape_aspect.name);
 				
 end_attribute_mapping;
 
-attribute_mapping current_associated_definition(current_associated_definition, $PATH, Interconnect_module);
+attribute_mapping current_associated_definition(current_associated_definition, $PATH, Layered_interconnect_module_design_view_armx);
 physical_network <=
 shape_aspect
 shape_aspect.of_shape ->
-product_definition_shape
-{product_definition_shape <=
-property_definition
-{property_definition.name = 'interconnect module'}}
 product_definition_shape =>
-physical_unit
+physical_unit =>
+interconnect_module_design_view =>
+layered_interconnect_module_design_view
 
 end_attribute_mapping;
 
-attribute_mapping prior_associated_definition(prior_associated_definition, $PATH, Interconnect_module);
+attribute_mapping prior_associated_definition(prior_associated_definition, $PATH, Layered_interconnect_module_design_view_armx);
 physical_network <=
 shape_aspect <-
 shape_aspect_relationship.related_shape_aspect
@@ -1421,12 +1411,10 @@ shape_aspect_relationship.related_shape_aspect
 shape_aspect_relationship.name = 'prior associated definition'}
 shape_aspect_relationship.relating_shape_aspect ->
 shape_aspect.of_shape ->
-product_definition_shape
-{product_definition_shape <=
-property_definition
-{property_definition.name = 'interconnect module'}}
 product_definition_shape =>
-physical_unit
+physical_unit =>
+interconnect_module_design_view =>
+layered_interconnect_module_design_view
 
 end_attribute_mapping;
 
@@ -1705,21 +1693,28 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Interconnect_module(Interconnect_module, physical_unit);
+entity_mapping Layered_interconnect_panel_design_view_armx(Layered_interconnect_panel_design_view_armx, layered_interconnect_panel_design_view);
 
 mapping_constraints;
-[physical_unit <=
-product_definition_shape <=
-property_definition
-{property_definition.name = 'interconnect module'}]
-[physical_unit <=
-product_definition
-/SUPERTYPE(Assembly_definition_armx)/]
+				layered_interconnect_panel_design_view <=
+       	layered_interconnect_module_design_view <=
+				interconnect_module_design_view <=
+				physical_unit
+end_mapping_constraints;
 
+end_entity_mapping;
 
+entity_mapping Layered_interconnect_module_design_view_armx(Layered_interconnect_module_design_view_armx, layered_interconnect_module_design_view);
+
+mapping_constraints;
+	layered_interconnect_module_design_view <=
+	interconnect_module_design_view <=
+	physical_unit
 end_mapping_constraints;
 
 attribute_mapping used_stack_model(used_stack_model, $PATH, Design_stack_model_armx);
+layered_interconnect_module_design_view <=
+interconnect_module_design_view <=
 physical_unit <=
 product_definition_shape <=
 property_definition <-
@@ -1852,13 +1847,15 @@ attribute_mapping reference_designation(reference_designation, assembly_componen
 
 end_attribute_mapping;
 
-attribute_mapping assembly(assembly, $PATH, Interconnect_module);
+attribute_mapping assembly(assembly, $PATH, Layered_interconnect_module_design_view_armx);
 assembly_component_usage <=
 product_definition_usage <=
 product_definition_relationship
 product_definition_relationship.relating_product_definition ->
 product_definition =>
-physical_unit
+physical_unit =>
+interconnect_module_design_view =>
+layered_interconnect_module_design_view
 
 end_attribute_mapping;
 
@@ -2037,7 +2034,7 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Item_restricted_requirement_occurrence_armx(Item_restricted_requirement_occurrence_armx, item_restricted_requirement_occurrence)
+entity_mapping Item_restricted_requirement_armx(Item_restricted_requirement_armx, item_restricted_requirement)
 extended;
 
 attribute_mapping basis(basis, , stratum_concept);
@@ -2115,16 +2112,14 @@ shape_aspect
 
 end_mapping_constraints;
 
-attribute_mapping associated_layout(associated_layout, $PATH, Interconnect_module);
+attribute_mapping associated_layout(associated_layout, $PATH, Layered_interconnect_module_design_view_armx);
 join_shape_aspect <=
 shape_aspect
 shape_aspect.of_shape ->
-product_definition_shape
-{product_definition_shape <=
-property_definition
-{property_definition.name = 'interconnect module'}}
 product_definition_shape =>
-physical_unit
+physical_unit =>
+interconnect_module_design_view =>
+layered_interconnect_module_design_view
 
 end_attribute_mapping;
 
@@ -2592,16 +2587,14 @@ cartesian_point
 
 end_attribute_mapping;
 
-attribute_mapping associated_definition(associated_definition, $PATH, Interconnect_module);
+attribute_mapping associated_definition(associated_definition, $PATH, Layered_interconnect_module_design_view_armx);
 layout_junction <=
 shape_aspect
 shape_aspect.of_shape ->
-product_definition_shape
-{product_definition_shape <=
-property_definition
-{property_definition.name = 'interconnect module'}}
 product_definition_shape =>
-physical_unit
+physical_unit =>
+interconnect_module_design_view =>
+layered_interconnect_module_design_view
 
 end_attribute_mapping;
 
@@ -2645,11 +2638,13 @@ stratum_sub_stack =>
 local_linear_stack
 end_attribute_mapping;
 
-attribute_mapping containing_shape(containing_shape, $PATH, Interconnect_module);
+attribute_mapping containing_shape(containing_shape, $PATH, Layered_interconnect_module_design_view_armx);
 shape_aspect
 shape_aspect.of_shape ->
 product_definition_shape =>
-physical_unit
+physical_unit =>
+interconnect_module_design_view =>
+layered_interconnect_module_design_view
 end_attribute_mapping;
 
 end_entity_mapping;
@@ -3256,55 +3251,12 @@ end_mapping_constraints;
 
 end_entity_mapping;
 
-entity_mapping Pcb(Pcb, interconnect_definition);
+entity_mapping Interconnect_module_design_view_armx(Interconnect_module_design_view_armx, interconnect_module_design_view);
 
 mapping_constraints;
-[interconnect_definition <=
-physical_unit <=
-product_definition_shape <=
-property_definition
-{property_definition.name = 'interconnect module'}]
-[interconnect_definition <=
-physical_unit <=
-product_definition
-/SUPERTYPE(Assembly_definition_armx)/]
-
-
-
+	interconnect_module_design_view <=
+	physical_unit
 end_mapping_constraints;
-
-attribute_mapping usage_view(usage_view, $PATH, Pcb_usage_view);
-interconnect_definition <=
-physical_unit <=
-product_definition <-
-product_definition_relationship.related_product_definition
-product_definition_relationship
-{product_definition_relationship.name = 'design usage'}
-product_definition_relationship
-product_definition_relationship.relating_product_definition ->
-product_definition =>
-physical_unit =>
-interconnect_definition
-
-end_attribute_mapping;
-
-attribute_mapping used_stack_model(used_stack_model, $PATH, Design_stack_model_armx);
-interconnect_definition <=
-physical_unit <=
-product_definition_shape <=
-property_definition <-
-property_definition_relationship.related_property_definition
-{property_definition_relationship
-property_definition_relationship.name = 'used stack model'}
-property_definition_relationship
-property_definition_relationship.relating_property_definition ->
-property_definition =>
-product_definition_shape =>
-part_template_definition =>
-stratum_stack_model =>
-design_stack_model
-
-end_attribute_mapping;
 
 end_entity_mapping;
 
@@ -3669,6 +3621,14 @@ attribute_mapping assigned_to(assigned_to, , Stratum_feature_conductive_join_arm
 					requirement_assigned_item *> limd_requirement_assigned_item
 					limd_requirement_assigned_item = 
 					stratum_feature_conductive_join
+				
+end_attribute_mapping;
+
+attribute_mapping assigned_to(assigned_to, , Layered_interconnect_module_design_view_armx);
+
+					requirement_assigned_item *> limd_requirement_assigned_item
+					limd_requirement_assigned_item = 
+					layered_interconnect_module_design_view
 				
 end_attribute_mapping;
 
@@ -4455,7 +4415,7 @@ product_definition_relationship
 
 end_mapping_constraints;
 
-attribute_mapping related_product_definition(related_product_definition, $PATH, Assembly_component_armx);
+attribute_mapping related_view(related_view, $PATH, Assembly_component_armx);
 (* GL - Assembly workarround *)
 structured_layout_component_sub_assembly_relationship <=
 next_assembly_usage_occurrence_relationship <=
@@ -4467,7 +4427,7 @@ assembly_component
 
 end_attribute_mapping;
       
-attribute_mapping relating_product_definition(relating_product_definition, $PATH, Structured_layout_component_armx);
+attribute_mapping relating_view(relating_view, $PATH, Structured_layout_component_armx);
 structured_layout_component_sub_assembly_relationship <=
 next_assembly_usage_occurrence_relationship <=
 next_assembly_usage_occurrence <=
@@ -4989,4 +4949,91 @@ shape_aspect.description = 'via template terminal'}
 end_attribute_mapping;
 
 end_entity_mapping;
+
+entity_mapping Physical_network_group_armx(Physical_network_group_armx, physical_network_group);
+
+mapping_constraints;
+	physical_network_group <=
+	group
+end_mapping_constraints;
+
+attribute_mapping elements(elements, $PATH, Generic_physical_network);
+	physical_network_group <=
+	group <- 
+	group_assignment.assigned_group
+	group_assignment => 
+	applied_group_assignment
+	applied_group_assignment.items[i] -> 
+	groupable_item
+	groupable_item *> limd_groupable_item
+	limd_groupable_item = physical_network
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Pre_defined_physical_network_group_armx(Pre_defined_physical_network_group_armx, pre_defined_physical_network_group);
+
+mapping_constraints;
+	pre_defined_physical_network_group <=
+	physical_network_group <=
+	group
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Externally_defined_physical_network_group_armx(Externally_defined_physical_network_group_armx, externally_defined_physical_network_group);
+
+mapping_constraints;
+	externally_defined_physical_network_group <=
+	physical_network_group <=
+	group
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Physical_network_group_element_relationship_armx(Physical_network_group_element_relationship_armx, physical_network_group_element_relationship);
+
+mapping_constraints;
+	physical_network_group_element_relationship <=
+	group_relationship
+end_mapping_constraints;
+
+attribute_mapping relating_group(relating_group, $PATH, Physical_network_group_armx);
+	physical_network_group_element_relationship <=
+	group_relationship
+	group_relationship.relating_group -> 
+	group =>
+	physical_network_group
+end_attribute_mapping;
+
+attribute_mapping related_group(related_group, $PATH, Physical_network_group_armx);
+	physical_network_group_element_relationship <=
+	group_relationship
+	group_relationship.related_group -> 
+	group =>
+	physical_network_group
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Pre_defined_physical_network_group_element_relationship_armx(Pre_defined_physical_network_group_element_relationship_armx, pre_defined_physical_network_group_element_relationship);
+
+mapping_constraints;
+	pre_defined_physical_network_group_element_relationship <=
+  physical_network_group_element_relationship <=
+	group_relationship
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Externally_defined_physical_network_group_element_relationship_armx(Externally_defined_physical_network_group_element_relationship_armx, externally_defined_physical_network_group_element_relationship);
+
+mapping_constraints;
+	externally_defined_physical_network_group_element_relationship <=
+  physical_network_group_element_relationship <=
+	group_relationship
+end_mapping_constraints;
+
+end_entity_mapping;
+
 (*end_schema_mapping;*)

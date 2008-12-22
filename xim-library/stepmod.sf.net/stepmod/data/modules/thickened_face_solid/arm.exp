@@ -1,18 +1,33 @@
 (*
   $Id$
-  ISO TC184/SC4/WG12 N4825 - ISO/CD-TS 10303-1320 Thickened face solid - EXPRESS ARM
+  ISO TC184/SC4/WG12 N5530 - ISO/TS 10303-1320 Thickened face solid - EXPRESS ARM
+  Supersedes ISO TC184/SC4/WG12 N4825
 *)
 
 SCHEMA Thickened_face_solid_arm;
 
 USE FROM Topologically_bounded_surface_arm; -- ISO/TS 10303-1511
 
-  ENTITY Thickened_face_solid
+  ENTITY Solid_model_element
     SUBTYPE OF (Detailed_geometric_model_element);
+  END_ENTITY;
+
+  ENTITY Thickened_face_solid_model_element
+    SUBTYPE OF (Solid_model_element);
       base_face        : Advanced_face;
       base_thickness   : length_measure;       
       top_thickness    : length_measure;
   END_ENTITY;
+
+  SUBTYPE_CONSTRAINT tbsa_detailed_geometric_model_element_subtypes FOR Detailed_geometric_model_element;
+    ONEOF (Advanced_face,
+           Axis_placement, 
+           Cartesian_point,
+           Cartesian_transformation_2d, 
+           Cartesian_transformation_3d,
+           Direction, 
+           Solid_model_element);
+  END_SUBTYPE_CONSTRAINT;
 
 END_SCHEMA;
 

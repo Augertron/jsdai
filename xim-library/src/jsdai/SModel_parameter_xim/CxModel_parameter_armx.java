@@ -32,8 +32,8 @@ package jsdai.SModel_parameter_xim;
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
 import jsdai.util.LangUtils;
-import jsdai.SExtended_measure_representation_mim.AValue_range;
-import jsdai.SExtended_measure_representation_mim.EValue_range;
+import jsdai.SExtended_measure_representation_xim.AValue_range_armx;
+import jsdai.SExtended_measure_representation_xim.EValue_range_armx;
 import jsdai.SModel_parameter_mim.CDefault_value_property_definition_representation;
 import jsdai.SModel_parameter_mim.CModel_parameter;
 import jsdai.SModel_parameter_mim.CValid_range_property_definition_representation;
@@ -275,9 +275,9 @@ public class CxModel_parameter_armx extends CModel_parameter_armx implements EMa
 
 		if (armEntity.testValid_range(null))
 		{
-	      AValue_range valueRanges = armEntity.getValid_range(null);
+	      AValue_range_armx valueRanges = armEntity.getValid_range(null);
 	      for(int i=1,count=valueRanges.getMemberCount(); i<=count; i++){
-	    	  EValue_range valueRange = valueRanges.getByIndex(i); 
+	    	  EValue_range_armx valueRange = valueRanges.getByIndex(i); 
 		      // R
 				LangUtils.Attribute_and_value_structure[] repStructure = {new LangUtils.Attribute_and_value_structure(
 						CRepresentation.attributeItems(null), valueRange)};

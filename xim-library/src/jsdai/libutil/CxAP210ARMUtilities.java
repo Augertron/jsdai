@@ -51,6 +51,7 @@ import jsdai.SDocument_schema.CDocument_type;
 import jsdai.SDocument_schema.EDocument;
 import jsdai.SDocument_schema.EDocument_product_association;
 import jsdai.SDocument_schema.EDocument_type;
+import jsdai.SGeometry_schema.CGeometric_representation_context;
 import jsdai.SGeometry_schema.EAxis2_placement_2d;
 import jsdai.SGroup_schema.EGroup;
 import jsdai.SMeasure_schema.*;
@@ -1149,7 +1150,7 @@ public class CxAP210ARMUtilities extends JsdaiLangAccessor{
 															rcStructure);
 
 		} else {
-			   geometric_representation_context = (jsdai.SGeometry_schema.EGeometric_representation_context) context.working_model.createEntityInstance(CRepresentation_context.definition);
+			   geometric_representation_context = (jsdai.SGeometry_schema.EGeometric_representation_context) context.working_model.createEntityInstance(CGeometric_representation_context.definition);
 			   geometric_representation_context.setContext_identifier(null, identifier);
 			   geometric_representation_context.setContext_type(null, type);
 			   geometric_representation_context.setCoordinate_space_dimension(null, dimension);
@@ -1533,6 +1534,7 @@ public class CxAP210ARMUtilities extends JsdaiLangAccessor{
 					for(int j=1;j<=items.getMemberCount();j++){
 						jsdai.SRepresentation_schema.ERepresentation_item item = items.getByIndex(j);
 						if((item instanceof jsdai.SQualified_measure_schema.EDescriptive_representation_item)&&
+							(item.testName(null))&&	
 							(item.getName(null).equals(keyword))){
 							item.deleteApplicationInstance();
 						}
@@ -2344,6 +2346,9 @@ public class CxAP210ARMUtilities extends JsdaiLangAccessor{
 			}
 			if(emwu instanceof EMass_measure_with_unit){
 				item = (EMeasure_representation_item)working_model.substituteInstance(emwu, CMass_measure_with_unit$measure_representation_item.definition);
+			}
+			if(emwu instanceof ERatio_measure_with_unit){
+				item = (EMeasure_representation_item)working_model.substituteInstance(emwu, CMeasure_representation_item$ratio_measure_with_unit.definition);
 			}
 			if(item != null){
 				item.setName(null, "");

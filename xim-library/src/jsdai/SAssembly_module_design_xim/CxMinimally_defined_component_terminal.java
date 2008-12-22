@@ -57,12 +57,12 @@ public class CxMinimally_defined_component_terminal extends CMinimally_defined_c
 	}
 	
 	/// methods for attribute: product_definitional, base type: LOGICAL
-	public boolean testProduct_definitional(EShape_aspect type) throws SdaiException {
+/*	public boolean testProduct_definitional(EShape_aspect type) throws SdaiException {
 		return test_logical(a3);
 	}
 	public int getProduct_definitional(EShape_aspect type) throws SdaiException {
 		return get_logical(a3);
-	}
+	}*/
 	public void setProduct_definitional(EShape_aspect type, int value) throws SdaiException {
 		a3 = set_logical(value);
 	}

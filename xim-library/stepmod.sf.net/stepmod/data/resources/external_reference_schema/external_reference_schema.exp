@@ -1,64 +1,57 @@
 (*
 $Id$
-ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
-*) 
+
+2008-02-07
+ISO TC184/SC4/WG12 N4883 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+*)
+(*
+Supersedes ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+changes to date_time schema and to measure_schema as per TC1 - WG12 N4884.
+*)
 
 
 SCHEMA external_reference_schema;
+  REFERENCE FROM basic_attribute_schema (description_attribute, get_description_value);
+  REFERENCE FROM support_resource_schema (label, text, identifier, bag_to_set);
+  TYPE message = STRING;
+  END_TYPE;
 
-REFERENCE FROM basic_attribute_schema   -- ISO 10303-41
-  (description_attribute,
-   get_description_value); 
+  TYPE source_item = SELECT (identifier, message);
+  END_TYPE;
 
-REFERENCE FROM support_resource_schema   -- ISO 10303-41
-  (bag_to_set,
-   identifier,
-   label,
-   text); 
+  ENTITY external_source;
+    source_id : source_item;
+  DERIVE
+    description : text := get_description_value(SELF);
+  WHERE
+    WR1: SIZEOF(USEDIN(SELF, 'BASIC_ATTRIBUTE_SCHEMA.' + 'DESCRIPTION_ATTRIBUTE.DESCRIBED_ITEM')) <= 1;
+  END_ENTITY;
 
+  ENTITY external_source_relationship;
+    name : label;
+    description : OPTIONAL text;
+    relating_source : external_source;
+    related_source : external_source;
+  END_ENTITY;
 
-TYPE message = STRING;
-END_TYPE; 
+  ENTITY externally_defined_item;
+    item_id : source_item;
+    source : external_source;
+  END_ENTITY;
 
-TYPE source_item = SELECT
-   (identifier, 
-    message);
-END_TYPE; 
+  ENTITY externally_defined_item_relationship;
+    name : label;
+    description : OPTIONAL text;
+    relating_item : externally_defined_item;
+    related_item : externally_defined_item;
+  END_ENTITY;
 
-ENTITY external_source;
-  source_id : source_item;
-DERIVE
-  description : text := get_description_value (SELF);
-WHERE
-  WR1: SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' + 'DESCRIPTION_ATTRIBUTE.DESCRIBED_ITEM')) <= 1;
-END_ENTITY;
+  ENTITY pre_defined_item;
+    name : label;
+  END_ENTITY;
 
-ENTITY external_source_relationship;
-  name : label;
-  description : OPTIONAL text;
-  relating_source : external_source;
-  related_source : external_source;
-END_ENTITY;
-
-ENTITY externally_defined_item;
-  item_id : source_item;
-  source : external_source;
-END_ENTITY;
-
-ENTITY externally_defined_item_relationship;
-  name : label;
-  description : OPTIONAL text;
-  relating_item : externally_defined_item;
-  related_item : externally_defined_item;
-END_ENTITY;
-
-ENTITY pre_defined_item;
-  name : label;
-END_ENTITY;
-
-FUNCTION acyclic_external_source_relationship
- (relation : external_source_relationship; relatives : SET[1:?] OF external_source; specific_relation : STRING) : BOOLEAN; 
-  LOCAL
+  FUNCTION acyclic_external_source_relationship (relation : external_source_relationship; relatives : SET [1:?] OF external_source; specific_relation : STRING):BOOLEAN;
+    LOCAL
       x : SET OF external_source_relationship;
     END_LOCAL;
 
@@ -72,11 +65,10 @@ FUNCTION acyclic_external_source_relationship
       END_IF;
     END_REPEAT;
     RETURN (TRUE);
-END_FUNCTION; 
+  END_FUNCTION;
 
-FUNCTION acyclic_externally_defined_item_relationship
- (relation : externally_defined_item_relationship; relatives : SET[1:?] OF externally_defined_item; specific_relation : STRING) : BOOLEAN; 
-  LOCAL
+  FUNCTION acyclic_externally_defined_item_relationship (relation : externally_defined_item_relationship; relatives : SET [1:?] OF externally_defined_item; specific_relation : STRING):BOOLEAN;
+    LOCAL
       x : SET OF externally_defined_item_relationship;
     END_LOCAL;
 
@@ -90,6 +82,6 @@ FUNCTION acyclic_externally_defined_item_relationship
       END_IF;
     END_REPEAT;
     RETURN (TRUE);
-END_FUNCTION; 
+  END_FUNCTION;
 
-END_SCHEMA;  -- external_reference_schema
+END_SCHEMA;

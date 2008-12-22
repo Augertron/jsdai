@@ -31,8 +31,8 @@ package jsdai.SPrinted_physical_layout_template_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.SPart_template_2d_shape_xim.CxSingle_stratum_structured_template_armx;
-import jsdai.SPhysical_layout_template_xim.*;
+import jsdai.SLayered_interconnect_complex_template_xim.CxSingle_stratum_structured_template_armx;
+import jsdai.SPart_template_xim.*;
 import jsdai.SPrinted_physical_layout_template_mim.CStructured_printed_part_template;
 import jsdai.SProduct_definition_schema.EProduct_definition;
 import jsdai.SProduct_property_definition_schema.*;

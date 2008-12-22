@@ -61,6 +61,7 @@ public class CxInter_stratum_join_implementation
 			
 			// Clean ARM specific attributes
 			unsetTopological_requirement(null);			
+			
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {

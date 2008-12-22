@@ -1,0 +1,119 @@
+(* Genenerated from: part_52.exp *)
+
+SCHEMA mesh_connectivity_schema;
+  REFERENCE FROM mesh_topology_schema                            -- ISO 10303-52
+    (mesh,
+     unstructured_mesh,
+     structured_mesh,
+     mesh_location,
+     indices_group,
+     indices_range);
+  REFERENCE FROM mathematical_description_of_distribution_schema -- ISO 10303-51
+    (property_distribution_description);
+  REFERENCE FROM mathematical_functions_schema                   -- ISO 10303-50
+    (listed_real_data);
+  REFERENCE FROM support_resource_schema                         -- ISO 10303-41
+    (identifier,
+     label,
+     text);
+
+TYPE mismatched_region_type = EXTENSIBLE ENUMERATION OF
+    (abutting,
+     overset);
+END_TYPE;
+
+ENTITY matched_mesh_connection
+  SUBTYPE OF (mesh_connectivity);
+  SELF\mesh_connectivity.current : structured_mesh;
+  range       : indices_range;
+  donor       : structured_mesh;
+  donor_range : indices_range;
+  transform   : ARRAY [1:index_count] OF INTEGER;
+WHERE
+  wr1 : current :<>: donor;
+  wr2 : donor.index_count = index_count;
+  wr3 : range.nindices = index_count;
+  wr4 : donor_range.nindices = index_count;
+END_ENTITY;
+
+ENTITY mesh_connectivity;
+  name        : label;
+  description : text;
+  id          : identifier;
+  current     : mesh;
+DERIVE
+  index_count : INTEGER := current.index_count;
+END_ENTITY;
+
+SUBTYPE_CONSTRAINT sc1_mesh_connectivity FOR mesh_connectivity;
+  ABSTRACT SUPERTYPE;
+  ONEOF(matched_mesh_connection,
+        mismatched_mesh_connection);
+END_SUBTYPE_CONSTRAINT;
+
+ENTITY mesh_overset_hole
+  SUBTYPE OF (mismatched_mesh_connection);
+END_ENTITY;
+
+ENTITY mismatched_donor_mesh;
+INVERSE
+  connect : mismatched_mesh_region FOR donor;
+END_ENTITY;
+
+SUBTYPE_CONSTRAINT sc1_mismatched_donor_mesh FOR
+                   mismatched_donor_mesh;
+  ABSTRACT SUPERTYPE;
+  ONEOF(structured_donor_mesh,
+        unstructured_donor_mesh);
+END_SUBTYPE_CONSTRAINT;
+
+ENTITY mismatched_mesh_connection
+  SUBTYPE OF (mesh_connectivity);
+  points   : indices_group;
+  gridloc  : mesh_location;
+END_ENTITY;
+
+SUBTYPE_CONSTRAINT sc1_mismatched_mesh_connection FOR 
+                   mismatched_mesh_connection;
+  ABSTRACT SUPERTYPE;
+  ONEOF(mismatched_mesh_region,
+        mesh_overset_hole);
+END_SUBTYPE_CONSTRAINT;
+
+ENTITY mismatched_mesh_region
+  SUBTYPE OF (mismatched_mesh_connection);
+  donor : mismatched_donor_mesh;
+  kind  : mismatched_region_type;
+(*WHERE
+  wr1 : donor :<>: SELF\mesh_connectivity.current;
+*)END_ENTITY;
+
+ENTITY multiple_mesh_block;
+  name           : label; 
+  description    : text;
+  id             : identifier;
+  connectivities : LIST OF mesh_connectivity;
+END_ENTITY;
+
+ENTITY structured_donor_mesh
+  SUBTYPE OF (mismatched_donor_mesh);
+  donor  : structured_mesh;
+  points : listed_real_data;
+  vsize  : INTEGER;
+DERIVE
+  index_count : INTEGER := donor.index_count;
+END_ENTITY;
+
+ENTITY unstructured_donor_mesh
+  SUBTYPE OF (mismatched_donor_mesh);
+  donor       : unstructured_mesh;
+  cells       : indices_group;
+  interpolant : property_distribution_description;
+  vsize       : INTEGER;
+(*DERIVE
+  index_count : INTEGER := donor.index_count;
+  cell_dim    : INTEGER := donor.cell_dim;
+*)
+END_ENTITY;
+
+END_SCHEMA;  -- end of mesh_connectivity_schema

@@ -1,0 +1,28 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N5762 - ISO/TS 10303-1722 Part template - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N4114
+*)
+
+
+SCHEMA Part_template_mim;
+USE FROM Analytical_model_mim;	-- ISO/TS 10303-1603
+USE FROM Feature_and_connection_zone_mim;	-- ISO/TS 10303-1671
+USE FROM Application_context_schema(application_context_element);
+
+  TYPE plt_groupable_item = SELECT BASED_ON groupable_item WITH 
+    (representation_item);
+  END_TYPE; 
+		
+  ENTITY part_template_definition
+    SUBTYPE OF (product_definition, product_definition_shape);
+    DERIVE
+      SELF\property_definition.definition : part_template_definition := SELF;
+    WHERE
+      WR1: SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' +'NAME_ATTRIBUTE.NAMED_ITEM')) = 0;
+      WR2: NOT EXISTS(SELF\property_definition.description);
+  END_ENTITY;	
+	
+END_SCHEMA;
+
+

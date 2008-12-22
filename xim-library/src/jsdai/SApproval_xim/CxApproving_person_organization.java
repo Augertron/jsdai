@@ -30,6 +30,20 @@ package jsdai.SApproval_xim;
  */
 
 import jsdai.SApproval_schema.*;
+import jsdai.SDate_time_assignment_mim.AApplied_date_and_time_assignment;
+import jsdai.SDate_time_assignment_mim.AApplied_date_assignment;
+import jsdai.SDate_time_assignment_mim.ADate_and_time_item;
+import jsdai.SDate_time_assignment_mim.ADate_item;
+import jsdai.SDate_time_assignment_mim.CApplied_date_and_time_assignment;
+import jsdai.SDate_time_assignment_mim.CApplied_date_assignment;
+import jsdai.SDate_time_assignment_mim.EApplied_date_and_time_assignment;
+import jsdai.SDate_time_assignment_mim.EApplied_date_assignment;
+import jsdai.SDate_time_schema.CDate_role;
+import jsdai.SDate_time_schema.CDate_time_role;
+import jsdai.SDate_time_schema.ECalendar_date;
+import jsdai.SDate_time_schema.EDate_and_time;
+import jsdai.SDate_time_schema.EDate_role;
+import jsdai.SDate_time_schema.EDate_time_role;
 import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.util.LangUtils;
@@ -198,7 +212,9 @@ public class CxApproving_person_organization extends CApproving_person_organizat
 	 *  date_and_time_assignment
 	 *  {date_and_time_assignment.role -&gt;
 	 *  date_time_role
-	 *  date_time_role.name = 'sign off'})
+	 *  date_time_role.name = 'sign off'}
+	 *  date_and_time_assignment.assigned_date_and_time ->
+		date_and_time)
 	 * 
 	 *  (date_item = approval_person_organization
 	 *  date_item &lt;- applied_date_assignment.items[i]
@@ -222,17 +238,73 @@ public class CxApproving_person_organization extends CApproving_person_organizat
 		//unset old values
 		unsetApproval_date(context, armEntity);
 		
-		if (armEntity.testRole_x(null)) {
-		
-			LangUtils.Attribute_and_value_structure[] arStructure = {new LangUtils.Attribute_and_value_structure(
-					CApproval_role
-							.attributeRole(null), armEntity.getRole_x(null))};
-			EApproval_role role = (EApproval_role) LangUtils
+		if (armEntity.testApproval_date(null)) {
+			String name = "sign off";
+			EEntity approval_date = armEntity.getApproval_date(null);
+			if(approval_date instanceof ECalendar_date){
+				// date_role
+				LangUtils.Attribute_and_value_structure[] drStructure = {new LangUtils.Attribute_and_value_structure(
+						CDate_role.attributeName(null), name)};
+				EDate_role role = (EDate_role) LangUtils
 					.createInstanceIfNeeded(
-							context,
-							CApproval_role.definition,
-							arStructure);
-			armEntity.setRole(null, role);
+						context,
+						CDate_role.definition,
+						drStructure);
+				// applied_date_assignment
+				LangUtils.Attribute_and_value_structure[] adaStructure = {
+					new LangUtils.Attribute_and_value_structure(
+						CApplied_date_assignment.attributeAssigned_date(null), approval_date),
+					new LangUtils.Attribute_and_value_structure(
+						CApplied_date_assignment.attributeRole(null), role),
+				};
+				EApplied_date_assignment eada = (EApplied_date_assignment) LangUtils
+					.createInstanceIfNeeded(
+						context,
+						CApplied_date_assignment.definition,
+						adaStructure);
+				ADate_item items;
+				if(eada.testItems(null)){
+					items = eada.getItems(null);
+				}else{
+					items = eada.createItems(null);
+				}
+				if(!items.isMember(armEntity)){
+					items.addUnordered(armEntity);
+				}
+			}else if(approval_date instanceof EDate_and_time){
+				// date_role
+				LangUtils.Attribute_and_value_structure[] datrStructure = {new LangUtils.Attribute_and_value_structure(
+						CDate_time_role.attributeName(null), name)};
+				EDate_time_role role = (EDate_time_role) LangUtils
+					.createInstanceIfNeeded(
+						context,
+						CDate_time_role.definition,
+						datrStructure);
+				// applied_date_and_time_assignment
+				LangUtils.Attribute_and_value_structure[] adaStructure = {
+					new LangUtils.Attribute_and_value_structure(
+						CApplied_date_and_time_assignment.attributeAssigned_date_and_time(null), approval_date),
+					new LangUtils.Attribute_and_value_structure(
+						CApplied_date_and_time_assignment.attributeRole(null), role),
+				};
+				EApplied_date_and_time_assignment eadata = (EApplied_date_and_time_assignment) LangUtils
+					.createInstanceIfNeeded(
+						context,
+						CApplied_date_and_time_assignment.definition,
+						adaStructure);
+				ADate_and_time_item items;
+				if(eadata.testItems(null)){
+					items = eadata.getItems(null);
+				}else{
+					items = eadata.createItems(null);
+				}
+				if(!items.isMember(armEntity)){
+					items.addUnordered(armEntity);
+				}
+			}else{
+				System.err.println("Unsupported type of date for CApproving_person_organization.approval_date "+armEntity);
+			}
+			
 		}
 	}
 
@@ -247,11 +319,28 @@ public class CxApproving_person_organization extends CApproving_person_organizat
 	 */
 	public static void unsetApproval_date(SdaiContext context,
 			CxApproving_person_organization armEntity) throws SdaiException {
-		if (armEntity.testRole2(null)) {
-			EApproval_role role = armEntity.getRole2(null);
-			armEntity.unsetRole(null);
-			LangUtils.deleteInstanceIfUnused(context.domain, role);
+		AApplied_date_and_time_assignment adata = new AApplied_date_and_time_assignment();
+		CApplied_date_and_time_assignment.usedinItems(null, armEntity, context.domain, adata);
+		for(int i=1,count=adata.getMemberCount(); i<=count; i++){
+			EApplied_date_and_time_assignment edata = adata.getByIndex(i);
+			ADate_and_time_item items = edata.getItems(null);
+			items.removeUnordered(armEntity);
+			if(items.getMemberCount() == 0){
+				edata.deleteApplicationInstance();
+			}
 		}
+		
+		AApplied_date_assignment ada = new AApplied_date_assignment();
+		CApplied_date_assignment.usedinItems(null, armEntity, context.domain, ada);
+		for(int i=1,count=ada.getMemberCount(); i<=count; i++){
+			EApplied_date_assignment eda = ada.getByIndex(i);
+			ADate_item items = eda.getItems(null);
+			items.removeUnordered(armEntity);
+			if(items.getMemberCount() == 0){
+				eda.deleteApplicationInstance();
+			}
+		}
+		
 	}	
 	
 }

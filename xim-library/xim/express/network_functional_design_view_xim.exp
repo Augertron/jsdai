@@ -50,6 +50,11 @@ USE FROM Network_functional_design_view_mim;
      Bus_structural_definition_armx);
   END_TYPE;
 
+TYPE nfdv_pa_or_parameter_assignment_override = SELECT
+  (Parameter_assignment_armx,
+   Parameter_assignment_override_armx);
+END_TYPE;
+
 TYPE nfdw_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
     (Functional_unit_armx);
 END_TYPE; 
@@ -91,9 +96,9 @@ END_TYPE;
   	(* CONNOTATIONAL *) SUBTYPE OF(Definition_based_product_occurrence, component_functional_unit);
       SELF\Definition_based_product_occurrence.derived_from RENAMED definition   : Functional_unit_definition;
       SELF\Product_definition.id RENAMED reference_designation : STRING; 
-      functional_property   : OPTIONAL SET[1:?] OF Parameter_assignment_override_armx;
+      functional_property   : OPTIONAL SET[1:?] OF nfdv_pa_or_parameter_assignment_override;
     DERIVE  
-		composed_network    : Functional_unit_network_definition := SELF\Definition_based_product_occurrence.occurrence_contexts[1].relating_product_definition;    
+		composed_network    : Functional_unit_network_definition := SELF\Definition_based_product_occurrence.occurrence_contexts[1].relating_view;    
 -- This is already done in supertype		
 --		SELF\Product_view_definition.defined_version : product_definition_formation := SELF\Definition_based_product_occurrence.derived_from.defined_version;
     INVERSE

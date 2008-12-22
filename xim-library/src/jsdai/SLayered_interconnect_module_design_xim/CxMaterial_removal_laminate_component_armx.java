@@ -34,6 +34,8 @@ import jsdai.libutil.*;
 import jsdai.util.LangUtils;
 import jsdai.SGeneric_product_occurrence_xim.*;
 import jsdai.SLayered_interconnect_module_design_mim.*;
+import jsdai.SMaterial_property_definition_schema.CProperty_definition_relationship;
+import jsdai.SMaterial_property_definition_schema.EProperty_definition_relationship;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
@@ -51,6 +53,26 @@ public class CxMaterial_removal_laminate_component_armx
 	public static int apFlag = AP21x; // Default is this style  
 
 	// Taken from PDR
+	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
+		a11 = set_string(value);
+	}
+	public void unsetId(EProduct_definition_relationship type) throws SdaiException {
+		a11 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
+		return a11$;
+	}
+
+	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
+		a12 = set_string(value);
+	}
+	public void unsetName(EProduct_definition_relationship type) throws SdaiException {
+		a12 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
+		return a12$;
+	}
+	
 	// attribute (current explicit or supertype explicit) : relating_product_definition, base type: entity product_definition
 /*	public static int usedinRelating_product_definition(EProduct_definition_relationship type, EProduct_definition instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a14$, domain, result);
@@ -606,12 +628,12 @@ public class CxMaterial_removal_laminate_component_armx
 						shape_aspect_relationship.setRelated_shape_aspect(null, esa);
 				}else{
 					//pdr
-					EProduct_definition_relationship pdr = (EProduct_definition_relationship) 
-						context.working_model.createEntityInstance(CProduct_definition_relationship.definition);
+					EProperty_definition_relationship pdr = (EProperty_definition_relationship) 
+						context.working_model.createEntityInstance(CProperty_definition_relationship.definition);
 					pdr.setName(null, "design intent");
 					pdr.setDescription(null, "");
-					pdr.setRelating_product_definition(null, (EProduct_definition)intent);
-					pdr.setRelated_product_definition(null, armEntity);
+					pdr.setRelating_property_definition(null, (EProperty_definition)intent);
+					pdr.setRelated_property_definition(null, armEntity);
 				}
 			}
 		}

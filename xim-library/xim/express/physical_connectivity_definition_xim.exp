@@ -52,6 +52,13 @@ USE FROM Physical_connectivity_definition_mim;
 		 Physical_connectivity_definition_armx);
 	END_TYPE;
 
+	TYPE physical_connectivity_definition_domain_enumeration = EXTENSIBLE ENUMERATION OF
+		(electrical,
+		 thermal,
+		 optical,
+		 magnetic);
+    END_TYPE;
+
 	TYPE termination_or_junction = EXTENSIBLE GENERIC_ENTITY SELECT
     	(Component_terminal_abstract,
     	 Topological_junction);
@@ -61,11 +68,22 @@ USE FROM Physical_connectivity_definition_mim;
     SUPERTYPE OF (Physical_connectivity_structure_definition)
     (* CONNOTATIONAL *) SUBTYPE OF (Shape_element, physical_connectivity_definition);
       associated_terminals  : SET[2:?] OF Physical_component_terminal_armx;
-      SELF\Shape_element.containing_shape RENAMED associated_definition : Physical_unit_network_definition_armx;      
+      SELF\Shape_element.containing_shape RENAMED associated_definition : Physical_unit_network_definition_armx;
     DERIVE
       SELF\shape_aspect.description : text := ?;
+    INVERSE
+      domain : SET [0:1] OF Physical_connectivity_definition_domain_armx for associated_definition;
     UNIQUE
       UR1 : SELF\Shape_element.element_name, associated_definition;
+  END_ENTITY;
+
+  ENTITY Physical_connectivity_definition_domain_armx
+    SUBTYPE OF (physical_connectivity_definition_domain);
+      domain_type : physical_connectivity_definition_domain_enumeration;
+      SELF\property_definition.definition RENAMED associated_definition : Physical_connectivity_definition_armx;
+    DERIVE
+      -- overlaps with domain_type
+      SELF\property_definition.name : label := ?;
   END_ENTITY;
 
   ENTITY Physical_connectivity_definition_relationship
@@ -81,15 +99,13 @@ USE FROM Physical_connectivity_definition_mim;
 
   ENTITY Physical_connectivity_element_armx
   	(* CONNOTATIONAL *) SUBTYPE OF (physical_connectivity_element);
-      start_terminus       : termination_or_junction;
-      end_terminus         : termination_or_junction;
-      connectivity_context : Physical_connectivity_structure_definition;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED start_terminus : termination_or_junction;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED end_terminus    : termination_or_junction;
+      connectivity_context                                                        : Physical_connectivity_structure_definition;
     DERIVE
       SELF\shape_aspect.of_shape : product_definition_shape := ?;
-      SELF\shape_aspect_relationship.related_shape_aspect : shape_aspect := ?;
       SELF\shape_aspect_relationship.description : text := ?;
       SELF\shape_aspect.product_definitional : LOGICAL := ?;
-      SELF\shape_aspect_relationship.relating_shape_aspect : shape_aspect := ?;
     UNIQUE
       UR1 : name, connectivity_context;
     WHERE
@@ -126,13 +142,15 @@ USE FROM Physical_connectivity_definition_mim;
     (* CONNOTATIONAL *) SUBTYPE OF (Part_design_view, physical_unit_network_definition);
     DERIVE
 	terminals : SET [0:?] OF Component_terminal_abstract := 
-      get_terminals(bag_to_set(USEDIN(SELF,'PHYSICAL_CONNECTIVITY_DEFINITION_XIM.PHYSICAL_CONNECTIVITY_DEFINITION.ASSOCIATED_DEFINITION')));      
+      get_terminals(bag_to_set(USEDIN(SELF,'PHYSICAL_CONNECTIVITY_DEFINITION_XIM.PHYSICAL_CONNECTIVITY_DEFINITION.ASSOCIATED_DEFINITION')));
+       assembly : SET[0:?] of Product_view_definition := pcd_get_assemblies(terminals);            
     WHERE
-      WR1 : NOT ('PHYSICAL_CONNECTIVITY_DEFINITION_XIM.PART_VIEW_DEFINITION' IN TYPEOF(SELF)) OR 
-                ('PHYSICAL_CONNECTIVITY_DEFINITION_XIM.PART_DESIGN_VIEW' IN TYPEOF(SELF));
-      WR2 : NOT (SIZEOF(terminals) > 1) OR
+      WR1 : NOT (SIZEOF(terminals) > 1) OR
            SIZEOF(QUERY(t <* terminals | NOT(SIZEOF(USEDIN(t, 'PHYSICAL_CONNECTIVITY_DEFINITION_XIM.' + 
                           'PHYSICAL_CONNECTIVITY_DEFINITION_ARMX.ASSOCIATED_TERMINALS')) = 1))) = 0;
+      WR2: SIZEOF(QUERY( ass <* assembly |
+      (ass\Product_view_definition.defined_version = SELF\Product_view_definition.defined_version)
+           )) > 0;                          
   END_ENTITY;
 
   ENTITY Topological_junction
@@ -145,6 +163,54 @@ USE FROM Physical_connectivity_definition_mim;
     UNIQUE
       UR1 : name, scope;
   END_ENTITY; 
+
+  ENTITY Physical_connectivity_layout_topology_link_armx
+    SUBTYPE OF(physical_connectivity_layout_topology_link);
+      SELF\Group_relationship.related_group RENAMED subsequent_node : Physical_connectivity_layout_topology_node_armx;
+      SELF\Group_relationship.relating_group RENAMED precedent_node  : Physical_connectivity_layout_topology_node_armx;
+    DERIVE
+      SELF\Group_relationship.name : STRING := '';
+    WHERE  
+      WR1 : acyclic_physical_connectivity_layout_topology_link(SELF, [subsequent_node], 
+        'PHYSICAL_CONNECTIVITY_DEFINITION_XIM.PHYSICAL_CONNECTIVITY_LAYOUT_TOPOLOGY_LINK_ARMX');
+  END_ENTITY;
+
+  ENTITY Physical_connectivity_layout_topology_node_armx
+    SUBTYPE OF(physical_connectivity_layout_topology_node);
+      SELF\Group.name RENAMED terminal_type : STRING;
+    WHERE
+      WR1 : (SIZEOF(SELF\Group.elements) = 0);
+  END_ENTITY;
+
+  ENTITY Physical_connectivity_layout_topology_requirement_armx
+    SUBTYPE OF(Predefined_requirement_view_definition_armx, physical_connectivity_layout_topology_requirement);
+      elements : SET [1:?] OF Physical_connectivity_layout_topology_link_armx;
+    DERIVE
+      nodes : SET [1:?] OF Physical_connectivity_layout_topology_node_armx := pcd_get_pcltn(elements);
+      tree_structure : LOGICAL := (SIZEOF(nodes) = (SIZEOF(elements) + 1));
+    WHERE
+      WR1 : (tree_structure = TRUE);
+  END_ENTITY;
+
+  ENTITY Physical_connectivity_layout_topology_requirement_assignment_armx
+    SUBTYPE OF(Requirement_assignment_armx, Physical_connectivity_layout_topology_requirement_assignment);
+      SELF\Requirement_assignment_armx.assigned_requirement : Physical_connectivity_layout_topology_requirement_armx;
+      SELF\Requirement_assignment_armx.assigned_to          : Physical_connectivity_definition_armx;
+  END_ENTITY;
+
+  FUNCTION pcd_get_assemblies(input : SET OF Component_terminal_armx) : SET OF Product_view_definition;
+    LOCAL
+      ac : SET OF Assembly_component_armx := [];
+     pvd : SET OF Product_view_definition := [];
+    END_LOCAL;
+   REPEAT i := 1 TO HIINDEX(input) BY 1;
+      ac := ac + input[i]\Component_feature_armx.associated_component;
+   END_REPEAT;
+   REPEAT i := 1 to HIINDEX(ac) BY 1;
+     pvd  := pvd + ac[i]\Assembly_component_armx.assemblies;
+   END_REPEAT;
+   RETURN(pvd);
+  END_FUNCTION; 
 
   FUNCTION get_terminals(input : SET OF Physical_connectivity_definition_armx) : SET OF Component_terminal_abstract;
   LOCAL
@@ -190,6 +256,39 @@ FUNCTION get_pct(input : SET OF Physical_connectivity_element_armx) : SET OF Phy
   RETURN(tj);
   END_FUNCTION;
 
+  FUNCTION acyclic_physical_connectivity_layout_topology_link
+    (relation : Physical_connectivity_layout_topology_link_armx; 
+    relatives : SET[1:?] OF Physical_connectivity_layout_topology_node_armx; 
+    specific_relation : STRING) : BOOLEAN; 
+    LOCAL
+      x : SET OF Physical_connectivity_layout_topology_link_armx := [];
+    END_LOCAL;
+    IF relation.precedent_node IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(pd <* bag_to_set(USEDIN(relation.precedent_node,
+      'PHYSICAL_CONNECTIVITY_DEFINITION_XIM.' +
+      'PHYSICAL_CONNECTIVITY_LAYOUT_TOPOLOGY_LINK_ARMX.' +
+      'SUBSEQUENT_NODE')) | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_physical_connectivity_layout_topology_link(x[i], relatives +
+        relation.precedent_node, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION;    
+ 
+  FUNCTION pcd_get_pcltn(input : SET OF Physical_connectivity_layout_topology_link_armx) : SET OF Physical_connectivity_layout_topology_node_armx;
+  LOCAL
+   pcltn : SET OF Physical_connectivity_layout_topology_node_armx := [];
+    i : INTEGER := 0;
+  END_LOCAL;
+  REPEAT  i := 1 TO SIZEOF(input) BY 1;
+   pcltn := pcltn + input[i].precedent_node + input[i].subsequent_node;
+  END_REPEAT;
+  RETURN(pcltn);
+  END_FUNCTION;
   
   
 END_SCHEMA;

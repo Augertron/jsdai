@@ -1,6 +1,9 @@
 (* THIS IS DOCUMENT ISO TC184/SC4/WG12 N4852, CONTAINING REVISED EXPRESS FOR *)
 (* ISO 10303-108, 'PARAMETERIZATION AND CONSTRAINTS FOR EXPLICIT GEOMETRIC   *)
 (* PRODUCT MODELS' TO TAKE INTO ACCOUNT TC1 FOR THAT DOCUMENT -- 2007-04-20  *)                                          
+(* file modifed in accordance with proposed solution in SEDS # 1290          *)
+
+
 
 SCHEMA sketch_schema;
 
@@ -153,15 +156,15 @@ END_ENTITY;
 
 ENTITY positioned_sketch
   SUBTYPE OF (geometric_representation_item);
-  sketch_basis           : sketch_basis_select;
-  auxiliary_elements     : 
+  sketch_basis       : sketch_basis_select;
+  auxiliary_elements : 
     SET[0:?] OF auxiliary_geometric_representation_item;
 WHERE
   WR1: NOT (('GEOMETRY_SCHEMA.CURVE_BOUNDED_SURFACE' IN 
     TYPEOF(sketch_basis)) AND NOT ('GEOMETRY_SCHEMA.PLANE' IN
-    TYPEOF(sketch_basis.basis_surface)));
+    TYPEOF(sketch_basis\curve_bounded_surface.basis_surface)));
   WR2: NOT (('TOPOLOGY_SCHEMA.FACE_SURFACE' IN TYPEOF(sketch_basis)) AND
-    NOT ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(sketch_basis.face_geometry)));
+    NOT ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(sketch_basis\face_surface.face_geometry)));
   WR3: SIZEOF(QUERY(q <* auxiliary_elements | (SIZEOF(TYPEOF(q) * 
     ['GEOMETRY_SCHEMA.POINT','GEOMETRY_SCHEMA.CURVE']) = 0))) = 0;
   WR4: SIZEOF(QUERY(q <* auxiliary_elements | 

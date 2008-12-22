@@ -240,7 +240,7 @@ public class CxLayer_connection_point_armx extends CLayer_connection_point_armx 
             else
             	imsar = (AInterconnect_module_stratum_assembly_relationship)temp;
             //System.err.println(" ELLCPoint.L2D Middle ... " + armEntity.findEntityInstanceSdaiModel().getRepository().getSessionIdentifier("#48").getTemp("AIM"));
-            EInterconnect_module pcb = imsar.getByIndex(1).getAssembly(null);
+            EInterconnect_module_design_view_armx pcb = imsar.getByIndex(1).getAssembly(null);
             EPhysical_unit_planar_shape_model pups = get_PUPS_with_specific_predefined_purpose(pcb, EPredefined_planar_purpose.DESIGN);
             if(pups == null){
                throw new SdaiException(SdaiException.EI_NVLD, " PCB must have PUPS with DESIGN purpose here "+pcb);

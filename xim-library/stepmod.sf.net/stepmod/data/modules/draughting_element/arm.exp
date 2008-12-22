@@ -1,6 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4708 - ISO/CD-TS 10303-1310 Draughting element - EXPRESS ARM
+   ISO TC184/SC4/WG12 N5356 - ISO/TS 10303-1310 Draughting element - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4708
 *)
 
 SCHEMA Draughting_element_arm;
@@ -9,7 +10,12 @@ USE FROM Associative_text_arm; -- ISO/CD-TS 10303-1132
 
 USE FROM Curve_appearance_arm; -- ISO/CD-TS 10303-1003
 
-  TYPE curve_appearance_select = SELECT BASED_ON appearance_select WITH 
+  TYPE annotation_plane_element = SELECT
+   (Draughting_callout,
+    Styled_element);
+  END_TYPE;
+
+  TYPE de_appearance_select = SELECT BASED_ON appearance_select WITH 
     (Curve_appearance, 
      Point_appearance,
      Text_style);
@@ -32,6 +38,7 @@ USE FROM Curve_appearance_arm; -- ISO/CD-TS 10303-1003
 
   ENTITY Annotation_plane
     SUBTYPE OF (Annotation_element);
+      elements : OPTIONAL SET[1:?] OF annotation_plane_element;
       SELF\Styled_element.element : plane_or_planar_box;
   END_ENTITY;
 
@@ -68,7 +75,6 @@ USE FROM Curve_appearance_arm; -- ISO/CD-TS 10303-1003
 
   ENTITY Leader 
     SUBTYPE OF (Annotation_curve);
-    curve : Curve;
   END_ENTITY;
 
   ENTITY Leader_directed_callout
@@ -87,12 +93,6 @@ USE FROM Curve_appearance_arm; -- ISO/CD-TS 10303-1003
       projection_curve : Projection_curve;
     WHERE
       WR1: projection_curve IN SELF\Draughting_callout.contents;
-  END_ENTITY;
-
-  ENTITY Text_style;  
-    font_size_scale  : REAL; 
-    mirror_placement : OPTIONAL Axis_placement;
-    text_colour      : Colour; 
   END_ENTITY;
 
   SUBTYPE_CONSTRAINT annotation_curve_subtypes FOR Annotation_curve;

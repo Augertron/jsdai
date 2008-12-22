@@ -23,6 +23,107 @@
 
 (*schema_mapping physical_node_requirement_to_implementing_component_allocation(Physical_node_requirement_to_implementing_component_allocation_arm, Physical_node_requirement_to_implementing_component_allocation_mim);*)
 
+entity_mapping assembly_to_part_connectivity_structure_allocation_armx(assembly_to_part_connectivity_structure_allocation_armx, assembly_to_part_connectivity_structure_allocation);
+
+mapping_constraints;
+	{[assembly_to_part_connectivity_structure_allocation <=
+	shape_aspect]
+	[assembly_to_part_connectivity_structure_allocation <=
+	shape_aspect_relationship]}
+end_mapping_constraints;
+
+attribute_mapping assembly_element(assembly_element, $PATH, Physical_connectivity_element_armx);
+	assembly_to_part_connectivity_structure_allocation <=
+	shape_aspect_relationship
+	shape_aspect_relationship.related_shape_aspect ->
+	shape_aspect =>
+	physical_connectivity_element
+end_attribute_mapping;
+
+attribute_mapping part_element(part_element, $PATH, Part_connected_terminals_element_armx);
+	assembly_to_part_connectivity_structure_allocation <=
+	shape_aspect_relationship
+	shape_aspect_relationship.relating_shape_aspect ->
+	shape_aspect =>
+	part_connected_terminals_element
+end_attribute_mapping;
+
+attribute_mapping assembly_context(assembly_context, $PATH, Physical_connectivity_definition_armx);
+	assembly_to_part_connectivity_structure_allocation <=
+	shape_aspect <-
+	shape_aspect_relationship.related_shape_aspect
+	{shape_aspect_relationship
+	shape_aspect_relationship.name = 'assembly context'}
+	shape_aspect_relationship.relating_shape_aspect ->
+	shape_aspect =>
+	physical_connectivity_definition
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Physical_node_branch_requirement_to_implementing_component_allocation_armx(Physical_node_branch_requirement_to_implementing_component_allocation_armx, physical_node_branch_requirement_to_implementing_component_allocation);
+
+mapping_constraints;
+	{[physical_node_branch_requirement_to_implementing_component_allocation <=
+	shape_aspect]
+	[physical_node_branch_requirement_to_implementing_component_allocation <=
+	shape_aspect_relationship]}
+end_mapping_constraints;
+
+attribute_mapping physical_node_branch_requirement(physical_node_branch_requirement, $PATH, Physical_connectivity_element_armx);
+	physical_node_branch_requirement_to_implementing_component_allocation <=
+	shape_aspect_relationship
+	shape_aspect_relationship.related_shape_aspect ->
+	shape_aspect =>
+	physical_connectivity_element
+end_attribute_mapping;
+
+attribute_mapping implementation_component(implementation_component, $PATH, Assembly_component_armx);
+	physical_node_branch_requirement_to_implementing_component_allocation <=
+	shape_aspect
+	shape_aspect.of_shape ->
+	product_definition_shape =>
+	assembly_component
+end_attribute_mapping;
+
+attribute_mapping part_element(part_element, $PATH, Part_connected_terminals_element_armx);
+	physical_node_branch_requirement_to_implementing_component_allocation <=
+	shape_aspect_relationship
+	shape_aspect_relationship.relating_shape_aspect ->
+	shape_aspect =>
+	part_connected_terminals_element
+end_attribute_mapping;
+
+attribute_mapping name(name, $PATH);
+	physical_node_branch_requirement_to_implementing_component_allocation <=
+	shape_aspect
+	shape_aspect.name
+end_attribute_mapping;
+
+attribute_mapping implementation_interface_joint_set(implementation_interface_joint_set, $PATH, Interface_mounted_join_armx);
+	physical_node_branch_requirement_to_implementing_component_allocation <=
+	shape_aspect <-
+	shape_aspect_relationship.related_shape_aspect
+	{shape_aspect_relationship
+	shape_aspect_relationship.name = 'implementation interface joint'}
+	shape_aspect_relationship.relating_shape_aspect ->
+	shape_aspect =>
+	interface_mounted_join
+end_attribute_mapping;
+
+attribute_mapping implementation_joint_set(implementation_joint_set, $PATH, Assembly_joint_armx);
+	physical_node_branch_requirement_to_implementing_component_allocation <=
+	shape_aspect <-
+	shape_aspect_relationship.related_shape_aspect
+	{shape_aspect_relationship
+	shape_aspect_relationship.name = 'implementation joint'}
+	shape_aspect_relationship.relating_shape_aspect ->
+	shape_aspect =>
+	component_feature_joint =>
+	assembly_joint
+end_attribute_mapping;
+
+end_entity_mapping;
 
 entity_mapping physical_node_requirement_to_implementing_component_allocation_armx(physical_node_requirement_to_implementing_component_allocation_armx, physical_node_requirement_to_implementing_component_allocation);
 

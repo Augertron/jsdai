@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N3849 - ISO/TS 10303-1634 Assembly component placement requirements - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3291
+   ISO TC184/SC4/WG12 N5569 - ISO/TS 10303-1634 Assembly component placement requirements - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3849
 *)
 
 SCHEMA Assembly_component_placement_requirements_arm;
@@ -11,9 +11,9 @@ REFERENCE FROM Requirement_decomposition_arm(get_rvd);	-- ISO/TS 10303-1740
 REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
 
   SUBTYPE_CONSTRAINT acpr_predefined_requirement_view_definition_subtypes FOR Predefined_requirement_view_definition;   
-    (ONEOF (Assembly_spacing_requirement_occurrence,
- 	 Assembly_group_spacing_requirement_occurrence,
- 	 Item_restricted_requirement_occurrence));
+    (ONEOF (Assembly_spacing_requirement,
+ 	 Assembly_group_spacing_requirement,
+ 	 Item_restricted_requirement));
   END_SUBTYPE_CONSTRAINT;  
  
   TYPE restriction_basis_item = EXTENSIBLE SELECT(
@@ -91,7 +91,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
      furthest_boundary);
   END_TYPE;
 
-  ENTITY Assembly_group_spacing_requirement_occurrence
+  ENTITY Assembly_group_spacing_requirement
     SUBTYPE OF (Predefined_requirement_view_definition);
       dependent_group                                                     : Placement_group_requirement_definition;
       of_spacing_type                                                     : assembly_spacing_type;
@@ -99,7 +99,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       SELF\Predefined_requirement_view_definition.required_characteristic : Length_tolerance_characteristic;
    END_ENTITY;
 
-  ENTITY Assembly_spacing_requirement_occurrence
+  ENTITY Assembly_spacing_requirement
     SUBTYPE OF (Predefined_requirement_view_definition);
       reference_design_object_category                                    : assembly_product_design_object_category_or_group;
       dependent_design_object_category                                    : assembly_product_design_object_category_or_group;
@@ -117,14 +117,14 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       maximum_positive_component_height : OPTIONAL Length_tolerance_characteristic;
       area                              : OPTIONAL Mounting_restriction_area;
       volume                            : OPTIONAL Mounting_restriction_volume;
-      requirement                       : Item_restricted_requirement_occurrence;
+      requirement                       : Item_restricted_requirement;
       components_permitted              : BOOLEAN;
       mounting_clearance                : OPTIONAL Length_tolerance_characteristic;
     WHERE
       WR1 : EXISTS(area) OR EXISTS(volume);
   END_ENTITY;
 
-  ENTITY Item_restricted_requirement_occurrence
+  ENTITY Item_restricted_requirement
     SUBTYPE OF (Predefined_requirement_view_definition);
       basis : restriction_basis_item;
     WHERE
@@ -134,7 +134,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
   ENTITY Mounting_restriction_area
     SUBTYPE OF (Non_feature_shape_element);
       mounting_surface                     : Interconnect_module_component_surface_feature;
-      SELF\Non_feature_shape_element.scope : Assembly_module;
+      SELF\Non_feature_shape_element.scope : Assembly_module_design_view;
     WHERE
       WR1 : (SIZEOF(SELF\Non_feature_shape_element.element_shape) = 0) OR
             (SIZEOF(QUERY(es <* SELF\Non_feature_shape_element.element_shape | 
@@ -145,7 +145,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
   ENTITY Mounting_restriction_volume
     SUBTYPE OF (Non_feature_shape_element);
       mounting_surface                     : Interconnect_module_component_surface_feature;
-      SELF\Non_feature_shape_element.scope : Assembly_module;
+      SELF\Non_feature_shape_element.scope : Assembly_module_design_view;
     INVERSE
       volume : non_feature_shape_model FOR associated_element;
   END_ENTITY;

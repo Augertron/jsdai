@@ -37,34 +37,34 @@ USE FROM Physical_unit_interconnect_definition_mim;
 ENTITY Connector_based_interconnect_definition_armx
 	(* CONNOTATIONAL *) SUBTYPE OF (connector_based_interconnect_definition);
    SELF\property_definition.definition RENAMED associated_definition : Physical_unit_interconnect_definition_armx;
-   connector_in_uv_1                                                 : next_assembly_usage_occurrence;
-   connector_in_uv_2                                                 : next_assembly_usage_occurrence;
-   component_1                                                       : next_assembly_usage_occurrence;
-   component_2                                                       : next_assembly_usage_occurrence;   
+   connector_in_uv_1                                                 : Next_assembly_usage_occurrence_relationship_armx;
+   connector_in_uv_2                                                 : Next_assembly_usage_occurrence_relationship_armx;
+   component_1                                                       : Next_assembly_usage_occurrence_relationship_armx;
+   component_2                                                       : Next_assembly_usage_occurrence_relationship_armx;   
   DERIVE
     SELF\property_definition.description : text := ?;
   UNIQUE
     UR1 : name, associated_definition;
 WHERE
   WR1: 'ASSEMBLY_MODULE_WITH_PACKAGED_CONNECTOR_COMPONENT_XIM.PACKAGED_CONNECTOR_COMPONENT_ARMX' IN 
-        TYPEOF(connector_in_uv_1\product_definition_relationship.related_product_definition);      
+        TYPEOF(connector_in_uv_1.related_view);      
   WR2: 'ASSEMBLY_MODULE_WITH_PACKAGED_CONNECTOR_COMPONENT_XIM.PACKAGED_CONNECTOR_COMPONENT_ARMX' IN 
-        TYPEOF(connector_in_uv_2\product_definition_relationship.related_product_definition);
+        TYPEOF(connector_in_uv_2.related_view);
   WR3: 'PHYSICAL_UNIT_USAGE_VIEW_XIM.PART_USAGE_VIEW' IN 
-        TYPEOF(connector_in_uv_1\product_definition_relationship.relating_product_definition);
+        TYPEOF(connector_in_uv_1.relating_view);
   WR4: 'PHYSICAL_UNIT_USAGE_VIEW_XIM.PART_USAGE_VIEW' IN 
-        TYPEOF(connector_in_uv_2\product_definition_relationship.relating_product_definition);
-  WR5: EXISTS(connector_in_uv_1\assembly_component_usage.location_indicator);
-  WR6: EXISTS(connector_in_uv_2\assembly_component_usage.location_indicator);
-  WR7: EXISTS(component_1\assembly_component_usage.location_indicator);
-  WR8: EXISTS(component_2\assembly_component_usage.location_indicator);
+        TYPEOF(connector_in_uv_2.relating_view);
+  WR5: EXISTS(connector_in_uv_1\Next_assembly_usage_occurrence_relationship_armx.reference_designator);
+  WR6: EXISTS(connector_in_uv_2\Next_assembly_usage_occurrence_relationship_armx.reference_designator);
+  WR7: EXISTS(component_1\Next_assembly_usage_occurrence_relationship_armx.reference_designator);
+  WR8: EXISTS(component_2\Next_assembly_usage_occurrence_relationship_armx.reference_designator);
   WR9: NOT EXISTS(connector_in_uv_1.quantity);
  WR10: NOT EXISTS(connector_in_uv_2.quantity);
  WR11: NOT EXISTS(component_1.quantity);
  WR12: NOT EXISTS(component_2.quantity);
- WR13: component_1\product_definition_usage.related_product_definition\Definition_based_product_occurrence.derived_from = 
+ WR13: component_1.related_view\Definition_based_product_occurrence.derived_from = 
        connector_in_uv_1\product_definition_relationship.relating_product_definition;
- WR14: component_2\product_definition_usage.related_product_definition\Definition_based_product_occurrence.derived_from = 
+ WR14: component_2.related_view\Definition_based_product_occurrence.derived_from = 
        connector_in_uv_2\product_definition_relationship.relating_product_definition;
  WR15: component_1 <> component_2;
  WR16: component_1 <> connector_in_uv_1;
@@ -83,8 +83,8 @@ END_ENTITY;
     (* CONNOTATIONAL *) SUBTYPE OF (Part_view_definition, physical_unit_interconnect_definition);
   WHERE
     WR1 : SIZEOF(QUERY(nauo <* USEDIN(SELF, 'PRODUCT_VIEW_DEFINITION_RELATIONSHIP_XIM.PRODUCT_DEFINITION_RELATIONSHIP.RELATING_PRODUCT_DEFINITION') |
-                 (('PHYSICAL_UNIT_DESIGN_VIEW_XIM.NEXT_ASSEMBLY_USAGE_OCCURRENCE_RELATIONSHIP' IN TYPEOF(nauo)) XOR
-                  ('ASSEMBLY_STRUCTURE_XIM.NEXT_ASSEMBLY_USAGE_OCCURRENCE' IN TYPEOF(nauo)))                 
+                 (('PHYSICAL_UNIT_DESIGN_VIEW_XIM.NEXT_ASSEMBLY_USAGE_OCCURRENCE_RELATIONSHIP_ARMX' IN TYPEOF(nauo))) 
+--                 XOR ('ASSEMBLY_STRUCTURE_XIM.NEXT_ASSEMBLY_USAGE_OCCURRENCE' IN TYPEOF(nauo)))                 
                  )) = 0;    
   END_ENTITY;
 

@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4213 - ISO/TS 10303-1755 Physical connectivity definition - EXPRESS MIM
-   Supersedes ISO TC184/SC4/WG12 N3667
+   ISO TC184/SC4/WG12 N5825 - ISO/TS 10303-1755 Physical connectivity definition - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N4213
 *)
 
 
@@ -11,7 +11,8 @@ SCHEMA Physical_connectivity_definition_mim;
 	USE FROM Requirement_decomposition_mim;	-- ISO/TS 10303-1740
 
 TYPE pcd_groupable_item = SELECT BASED_ON groupable_item WITH 
-   (physical_connectivity_definition);
+   (physical_connectivity_definition,
+   group_relationship);
 END_TYPE; 
 
 TYPE pcd_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH 
@@ -36,12 +37,32 @@ UNIQUE
   UR1: SELF\shape_aspect.name,SELF\shape_aspect.of_shape;
 END_ENTITY;
 
+ENTITY physical_connectivity_definition_domain
+  SUBTYPE OF (property_definition);
+END_ENTITY;
+
 ENTITY physical_connectivity_element
   SUBTYPE OF (shape_aspect_relationship, shape_aspect);
 END_ENTITY;
 
 ENTITY physical_unit_network_definition
  SUBTYPE OF (physical_unit);
+END_ENTITY;
+
+ENTITY physical_connectivity_layout_topology_link
+    SUBTYPE OF(group_relationship);
+END_ENTITY;
+
+ENTITY physical_connectivity_layout_topology_node
+  SUBTYPE OF(group);
+END_ENTITY;
+
+ENTITY physical_connectivity_layout_topology_requirement
+  SUBTYPE OF(predefined_requirement_view_definition, group);
+END_ENTITY;
+
+ENTITY physical_connectivity_layout_topology_requirement_assignment
+  SUBTYPE OF(requirement_assignment);
 END_ENTITY;
 
 END_SCHEMA;

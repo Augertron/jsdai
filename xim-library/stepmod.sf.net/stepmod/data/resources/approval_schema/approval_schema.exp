@@ -1,71 +1,59 @@
 (*
-$Id$
-ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
-*) 
-
-SCHEMA approval_schema; 
-
-REFERENCE FROM basic_attribute_schema   -- ISO 10303-41
-  (description_attribute,
-   get_description_value,
-   get_role,
-   object_role,
-   role_association); 
-
-REFERENCE FROM date_time_schema   -- ISO 10303-41
-  (date_time_select); 
-
-REFERENCE FROM person_organization_schema   -- ISO 10303-41
-  (person_organization_select); 
-
-REFERENCE FROM support_resource_schema   -- ISO 10303-41
-  (bag_to_set,
-   label,
-   text); 
+2008-02-07
+ISO TC184/SC4/WG12 N4883 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+*)
+(*
+Supersedes ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+changes to date_time schema and to measure_schema as per TC1 - WG12 N4884.
+*)
 
 
-ENTITY approval;
-  status : approval_status;
-  level : label;
-END_ENTITY;
+SCHEMA approval_schema;
+  REFERENCE FROM basic_attribute_schema (description_attribute, get_description_value, get_role, object_role, role_association);
+  REFERENCE FROM date_time_schema (date_time_select);
+  REFERENCE FROM person_organization_schema (person_organization_select);
+  REFERENCE FROM support_resource_schema (bag_to_set, label, text);
+  ENTITY approval;
+    status : approval_status;
+    level : label;
+  END_ENTITY;
 
-ENTITY approval_date_time;
-  date_time : date_time_select;
-  dated_approval : approval;
-DERIVE
-  role : object_role := get_role (SELF);
-WHERE
-  WR1: SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' + 'ROLE_ASSOCIATION.ITEM_WITH_ROLE')) <= 1;
-END_ENTITY;
+  ENTITY approval_date_time;
+    date_time : date_time_select;
+    dated_approval : approval;
+  DERIVE
+    role : object_role := get_role(SELF);
+  WHERE
+    WR1: SIZEOF(USEDIN(SELF, 'BASIC_ATTRIBUTE_SCHEMA.' + 'ROLE_ASSOCIATION.ITEM_WITH_ROLE')) <= 1;
+  END_ENTITY;
 
-ENTITY approval_person_organization;
-  person_organization : person_organization_select;
-  authorized_approval : approval;
-  role : approval_role;
-END_ENTITY;
+  ENTITY approval_person_organization;
+    person_organization : person_organization_select;
+    authorized_approval : approval;
+    role : approval_role;
+  END_ENTITY;
 
-ENTITY approval_relationship;
-  name : label;
-  description : OPTIONAL text;
-  relating_approval : approval;
-  related_approval : approval;
-END_ENTITY;
+  ENTITY approval_relationship;
+    name : label;
+    description : OPTIONAL text;
+    relating_approval : approval;
+    related_approval : approval;
+  END_ENTITY;
 
-ENTITY approval_role;
-  role : label;
-DERIVE
-  description : text := get_description_value (SELF);
-WHERE
-  WR1: SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' + 'DESCRIPTION_ATTRIBUTE.DESCRIBED_ITEM')) <= 1;
-END_ENTITY;
+  ENTITY approval_role;
+    role : label;
+  DERIVE
+    description : text := get_description_value(SELF);
+  WHERE
+    WR1: SIZEOF(USEDIN(SELF, 'BASIC_ATTRIBUTE_SCHEMA.' + 'DESCRIPTION_ATTRIBUTE.DESCRIBED_ITEM')) <= 1;
+  END_ENTITY;
 
-ENTITY approval_status;
-  name : label;
-END_ENTITY;
+  ENTITY approval_status;
+    name : label;
+  END_ENTITY;
 
-FUNCTION acyclic_approval_relationship
- (relation : approval_relationship; relatives : SET[1:?] OF approval; specific_relation : STRING) : BOOLEAN; 
- LOCAL
+  FUNCTION acyclic_approval_relationship (relation : approval_relationship; relatives : SET [1:?] OF approval; specific_relation : STRING):BOOLEAN;
+    LOCAL
       x : SET OF approval_relationship;
     END_LOCAL;
 
@@ -79,6 +67,6 @@ FUNCTION acyclic_approval_relationship
       END_IF;
     END_REPEAT;
     RETURN (TRUE);
-END_FUNCTION; 
+  END_FUNCTION;
 
-END_SCHEMA;  -- approval_schema
+END_SCHEMA;

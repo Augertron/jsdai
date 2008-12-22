@@ -26,7 +26,7 @@
 uof_mapping Activity(Activity);
 
 entity_mapping Activity(Activity, executed_action);
-
+(*
 attribute_mapping name(name, action.name);
 executed_action
 				 executed_action <= action
@@ -52,7 +52,7 @@ executed_action
 				 executed_action <= action
 				 action <- id_attribute.identified_item
 				 id_attribute.attribute_value
-end_attribute_mapping;
+end_attribute_mapping; *)
 
 attribute_mapping id_x(id_x, id_attribute.attribute_value);
 executed_action
@@ -60,6 +60,14 @@ executed_action
 				 action <- id_attribute.identified_item
 				 id_attribute.attribute_value
 end_attribute_mapping;
+
+attribute_mapping status(status, action_status.status);
+			executed_action <-
+			action_status.assigned_action
+			action_status
+			action_status.status 
+end_attribute_mapping;
+
 
 end_entity_mapping;
 
@@ -121,13 +129,53 @@ applied_action_assignment
 				 
 end_attribute_mapping;
 
-attribute_mapping role(role, object_role.name);
+attribute_mapping role_x(role_x, object_role.name);
 applied_action_assignment 
 				 applied_action_assignment <= action_assignment
 				 action_assignment.role -> object_role
 				 object_role.name
 				 
 end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Applied_activity_assignment__input(Applied_activity_assignment__input, applied_action_assignment);
+mapping_constraints;
+	{applied_action_assignment 
+	applied_action_assignment <= action_assignment
+	action_assignment.role -> object_role
+	object_role.name = 'input'}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Applied_activity_assignment__output(Applied_activity_assignment__output, applied_action_assignment);
+mapping_constraints;
+	{applied_action_assignment 
+	applied_action_assignment <= action_assignment
+	action_assignment.role -> object_role
+	object_role.name = 'output'}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Applied_activity_assignment__target(Applied_activity_assignment__target, applied_action_assignment);
+mapping_constraints;
+	{applied_action_assignment 
+	applied_action_assignment <= action_assignment
+	action_assignment.role -> object_role
+	object_role.name = 'target'}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Applied_activity_assignment__constraint(Applied_activity_assignment__constraint, applied_action_assignment);
+mapping_constraints;
+	{applied_action_assignment 
+	applied_action_assignment <= action_assignment
+	action_assignment.role -> object_role
+	object_role.name = 'constraint'}
+end_mapping_constraints;
 
 end_entity_mapping;
 end_uof_mapping;

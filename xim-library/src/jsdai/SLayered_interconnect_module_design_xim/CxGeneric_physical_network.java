@@ -271,9 +271,9 @@ public class CxGeneric_physical_network extends CGeneric_physical_network implem
 
        if (armEntity.testPrior_associated_definition(null))
        {
-          AInterconnect_module aim = armEntity.getPrior_associated_definition(null);
+          ALayered_interconnect_module_design_view_armx aim = armEntity.getPrior_associated_definition(null);
           for(int i=1;i<=aim.getMemberCount();i++){
-	          EInterconnect_module eim = aim.getByIndex(i);
+	          EInterconnect_module_design_view_armx eim = aim.getByIndex(i);
 	          // SA
 	          LangUtils.Attribute_and_value_structure[] saStructure = {
 	             new LangUtils.Attribute_and_value_structure(

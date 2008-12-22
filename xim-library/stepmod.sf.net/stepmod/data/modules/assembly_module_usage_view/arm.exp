@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N3873 - ISO/TS 10303-1642 Assembly module usage view - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3300
+   ISO TC184/SC4/WG12 N5593 - ISO/TS 10303-1642 Assembly module usage view - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3873
 *)
 
 SCHEMA Assembly_module_usage_view_arm;
@@ -16,7 +16,7 @@ SCHEMA Assembly_module_usage_view_arm;
 
   ENTITY Assembly_module_terminal
     SUPERTYPE OF (assembly_module_interface_terminal ANDOR
- Pca_terminal)
+ Layered_assembly_module_terminal)
     SUBTYPE OF (Part_terminal);
       SELF\Part_feature.associated_definition : Assembly_module_usage_view;
       reference_terminal                      : OPTIONAL Packaged_part_interface_terminal;
@@ -33,7 +33,7 @@ SCHEMA Assembly_module_usage_view_arm;
   END_ENTITY;
 
   ENTITY Assembly_module_usage_view
-    SUPERTYPE OF (Pca_usage_view)
+    SUPERTYPE OF (Layered_assembly_module_usage_view)
     SUBTYPE OF (Part_usage_view);
       implemented_function              : OPTIONAL Functional_unit_usage_view;
     INVERSE
@@ -42,12 +42,12 @@ SCHEMA Assembly_module_usage_view_arm;
       WR1 : NOT EXISTS(SELF\Product_view_definition.additional_characterization);
   END_ENTITY;
 
-  ENTITY Pca_terminal
+  ENTITY Layered_assembly_module_terminal
     SUBTYPE OF (Assembly_module_terminal);
-      SELF\Part_feature.associated_definition : Pca_usage_view;
+      SELF\Part_feature.associated_definition : Layered_assembly_module_usage_view;
   END_ENTITY;
 
-  ENTITY Pca_usage_view
+  ENTITY Layered_assembly_module_usage_view
     SUBTYPE OF (Assembly_module_usage_view);
       maximum_negative_component_height : OPTIONAL Datum_based_length_measure;
       maximum_positive_component_height : OPTIONAL Datum_based_length_measure;

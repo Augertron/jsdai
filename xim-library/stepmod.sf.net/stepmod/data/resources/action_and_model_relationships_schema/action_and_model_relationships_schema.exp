@@ -1,0 +1,59 @@
+
+(*
+$Id$
+ISO TC184/SC4/WG12 N4312 - ISO/IS 10303-107 *) 
+
+SCHEMA action_and_model_relationships_schema;
+
+REFERENCE FROM action_schema
+  (action);
+
+REFERENCE FROM analysis_schema
+  (model_action_domain);
+
+REFERENCE FROM finite_element_analysis_control_and_result_schema
+  (analysis_step);
+
+REFERENCE FROM product_analysis_schema
+  (physical_action_domain);
+
+REFERENCE FROM support_resource_schema
+  (identifier,
+   label,
+   text);
+
+TYPE discretised_action_model_select = EXTENSIBLE SELECT 
+  (analysis_step,
+   model_action_domain);
+END_TYPE;
+
+TYPE idealised_action_select = EXTENSIBLE SELECT 
+  (action,
+   physical_action_domain);
+END_TYPE;
+
+ENTITY action_view_relationship;
+  id : identifier;
+  name : label;
+  description : OPTIONAL text;
+  discretised_model : discretised_action_model_select;
+  idealised_action : idealised_action_select;
+END_ENTITY;
+
+ENTITY same_discretised_action_model;
+  id : identifier;
+  name : label;
+  description : OPTIONAL text;
+  equivalent_records : SET [2 : ?] OF discretised_action_model_select;
+
+END_ENTITY;
+
+ENTITY same_idealised_action;
+  id : identifier;
+  name : label;
+  description : OPTIONAL text;
+  equivalent_records : SET [2 : ?] OF idealised_action_select;
+END_ENTITY;
+
+END_SCHEMA;
+

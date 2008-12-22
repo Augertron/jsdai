@@ -28,36 +28,55 @@
 
 SCHEMA Ap210_electronic_assembly_interconnect_and_packaging_design_xim;
 
-USE FROM Ap210_device_functional_and_physical_characterization_xim;
-USE FROM Ap210_interconnect_technology_constraints_xim;
-USE FROM Ap210_assembly_technology_constraints_xim;
-USE FROM Ap210_assembly_functional_requirements_xim;
-USE FROM Ap210_assembly_physical_requirements_xim;
-USE FROM Ap210_interconnect_functional_requirements_xim;
-USE FROM Ap210_interconnect_physical_requirements_xim;
-USE FROM Ap210_assembly_physical_design_xim;
-USE FROM Ap210_interconnect_design_for_microwave_xim;
-USE FROM Ap210_production_rule_xim;
-USE FROM Ap210_functional_decomposition_xim;
-USE FROM Ap210_package_functional_and_physical_characterization_xim;
-USE FROM Ap210_laminate_assembly_design_xim;
-USE FROM Ap210_connection_zone_based_model_extraction_xim;
-USE FROM Ap210_functional_specification_xim;
-USE FROM Ap210_physical_unit_physical_characterization_xim;
-USE FROM Ap210_packaged_part_white_box_model_xim;
-USE FROM Ap210_printed_part_functional_and_physical_characterization_xim;
-USE FROM Ap210_assembly_functional_interface_requirements_xim;
-USE FROM Ap210_assembly_physical_interface_requirements_xim;
-USE FROM Ap210_assembly_requirement_allocation_xim;
-USE FROM Ap210_interconnect_requirement_allocation_xim;
-USE FROM Ap210_functional_requirement_allocation_xim;
+	USE FROM Ap203_configuration_controlled_3d_design_of_mechanical_parts_and_assemblies_xim; 	-- ISO/TS 10303-403
+		
+	USE FROM Assembly_2d_shape_xim;	-- ISO/TS 10303-1632
+	USE FROM Assembly_3d_shape_xim;	-- ISO/TS 10303-1633
+	USE FROM Assembly_module_with_cable_component_2d_xim;	-- ISO/TS 10303-1638
+	USE FROM Assembly_module_with_cable_component_3d_xim;	-- ISO/TS 10303-1639
+	USE FROM Assembly_module_with_macro_component_xim;	-- ISO/TS 10303-1640
+	USE FROM Assembly_physical_requirement_allocation_xim;	-- ISO/TS 10303-1648
+	USE FROM Connectivity_allocation_to_physical_network_xim;	-- ISO/TS 10303-1658
+	USE FROM Datum_difference_based_model_xim;	-- ISO/TS 10303-1660
+	USE FROM Design_specific_assignment_to_assembly_usage_view_xim;	-- ISO/TS 10303-1662
+	USE FROM Design_specific_assignment_to_interconnect_usage_view_xim;	-- ISO/TS 10303-1663
+	USE FROM Device_marking_xim;	-- ISO/TS 10303-1664
+	USE FROM Electrical_network_definition_xim;	-- ISO/TS 10303-1665
+	USE FROM Fabrication_requirement_xim;	-- ISO/TS 10303-1669
+	USE FROM Functional_decomposition_to_assembly_design_xim;	-- ISO/TS 10303-1675
+	USE FROM Functional_decomposition_to_interconnect_design_xim;	-- ISO/TS 10303-1677
+	USE FROM Functional_unit_requirement_allocation_xim;	-- ISO/TS 10303-1680
+	USE FROM Interconnect_2d_shape_xim;	-- ISO/TS 10303-1682
+	USE FROM Interconnect_module_to_assembly_module_relationship_xim;	-- ISO/TS 10303-1685
+	USE FROM Interconnect_non_planar_shape_xim;	-- ISO/TS 10303-1688	
+	USE FROM Interconnect_placement_requirements_xim;	-- ISO/TS 10303-1690
+	USE FROM Layered_interconnect_module_2d_design_xim;	-- ISO/TS 10303-1695
+	USE FROM Layered_interconnect_module_3d_design_xim;	-- ISO/TS 10303-1696
+	USE FROM Layout_macro_definition_xim;	-- ISO/TS 10303-1701
+	USE FROM Packaged_part_white_box_model_xim;	-- ISO/TS 10303-1709
+	USE FROM Part_feature_grouping_xim;	-- ISO/TS 10303-1713
+	USE FROM Physical_node_requirement_to_implementing_component_allocation_xim;	-- ISO/TS 10303-1723
+	USE FROM Physical_unit_interconnect_definition_xim;	-- ISO/TS 10303-1729
+	USE FROM Pre_defined_datum_symbol_xim;	-- ISO/TS 10303-1734
+	USE FROM Sequential_laminate_assembly_design_xim;	-- ISO/TS 10303-1741
+	USE FROM Test_requirement_allocation_xim;	-- ISO/TS 10303-1751
+	USE FROM Thermal_network_definition_xim;	-- ISO/TS 10303-1752
+	USE FROM Via_component_xim;	-- ISO/TS 10303-1754
 
 USE FROM drawing_definition_mim; -- 1309
-USE FROM dimension_and_tolerance_callouts_xim; -- 1362 
-USE FROM text_representation_xim; -- 1750
 
+TYPE ap210_analytical_model_port_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON analytical_model_port_assignment_select WITH  
+	(Connection_zone,
+	Part_feature);
+END_TYPE;
 
-USE FROM Ap210_datum_difference_based_model_definition_xim;
+	TYPE ap210_assembly_module_or_assembly_group_component = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON assembly_module_or_assembly_group_component WITH (
+		Assembly_group_component_armx);
+	END_TYPE;
+
+TYPE ap210_ee_product_definition_with_annotation_elements = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ee_product_definition_with_annotation_elements WITH 
+   	(Part_usage_view);
+END_TYPE; 
 
   SUBTYPE_CONSTRAINT ap210_eaiapd_restrict_product_subtypes FOR Product;
     ABSTRACT SUPERTYPE;
@@ -72,7 +91,7 @@ USE FROM Ap210_datum_difference_based_model_definition_xim;
   END_SUBTYPE_CONSTRAINT;
 
   SUBTYPE_CONSTRAINT ap210_eaiapd_restrict_information_product_subtypes FOR Information_product;
-    ONEOF (Software, Analytical_model);
+    ONEOF (Software, Analytical_model_armx);
   END_SUBTYPE_CONSTRAINT;
 
 (** Need a CC having both Assembly_2d_shape and Interconnect_2d_shape_xim *)
@@ -91,15 +110,13 @@ ONEOF (Component_terminal_to_assembly_module_macro_terminal_assignment,
  Component_terminal_to_assembly_module_interface_terminal_assignment,
  Component_terminal_to_interconnect_module_macro_terminal_assignment,
  Component_terminal_to_interconnect_module_interface_terminal_assignment,
- Component_terminal_to_pca_terminal_assignment);
+ Component_terminal_to_layered_assembly_module_terminal_assignment);
 END_SUBTYPE_CONSTRAINT;
 
 (** Subtypes are totally mixed and appear in various schemas - most likely this constraint will remain in some CC *)
 SUBTYPE_CONSTRAINT geometric_representation_relationship_subtypes FOR Shape_representation_relationship;     
-(ONEOF (Component_part_2d_geometric_representation_relationship, -- Physical_unit_2d_design_view_xim
- Component_part_2d_non_planar_geometric_representation_relationship, -- Interconnect_non_planar_shape_xim
- Component_part_3d_geometric_representation_relationship, -- Physical_unit_3d_design_view_xim
- Shape_definition_3d_intersection_armx, -- layered_3d_shape
+(ONEOF (Component_part_2d_non_planar_geometric_representation_relationship,
+Shape_definition_3d_intersection_armx, -- layered_3d_shape
  shape_definition_3d_plane_projection -- layered_3d_shape
  ));    
 END_SUBTYPE_CONSTRAINT;
@@ -115,8 +132,8 @@ END_SUBTYPE_CONSTRAINT;
 
 (** It most likely should be in TOP AP210 schema *)
 SUBTYPE_CONSTRAINT part_design_view_subtypes FOR Part_design_view;  
-    ONEOF (Assembly_module,
- Interconnect_module);
+    ONEOF (Assembly_module_design_view_armx,
+ Interconnect_module_design_view_armx);
 END_SUBTYPE_CONSTRAINT;
 
 TYPE ap210_managed_design_object_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON managed_design_object_armx WITH 
@@ -211,6 +228,7 @@ TYPE ap210_managed_design_object_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_O
  configuration_item,
  Product_definition,
  Product_concept,
+ Product_occurrence_definition_relationship_armx,
  Product_specific_parameter_value_assignment_armx,
  product_definition_formation,
  Predefined_requirement_view_definition_armx,
@@ -268,7 +286,7 @@ TYPE ap210_managed_design_object_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_O
  Model_parameter_armx,
  general_property_relationship, 
  Next_higher_assembly_interface_requirement,
- Operational_requirement_occurrence_relationship_armx,
+ Operational_requirement_relationship_armx,
  Requirement_view_definition_relationship_armx,
  Organization,
  Package_external_reference,
@@ -279,8 +297,7 @@ TYPE ap210_managed_design_object_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_O
  Part_connected_terminals_definition_armx,
  Part_device,
  Part_device_terminal,
- Part_template_shape_representation_relationship,
- Part_terminal_external_reference,
+ Part_terminal_external_reference_armx,
  Passage_technology_armx,
  Person,
  person_and_organization,
@@ -289,7 +306,6 @@ TYPE ap210_managed_design_object_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_O
  Physical_connectivity_definition_relationship,
  Physical_connectivity_element_armx,
  Physical_connectivity_make_from_relationship,
- Physical_unit_shape_representation_relationship,
  Connector_based_interconnect_definition_armx,
  Generic_physical_network,
  Physical_node_requirement_to_implementing_component_allocation_armx,
@@ -385,11 +401,150 @@ TYPE ap210_managed_design_object_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_O
 );
   END_TYPE;
 
+	TYPE ap210_apd_assembly_module_or_assembly_group_component = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON assembly_module_or_assembly_group_component WITH (
+		Assembly_group_component_armx);
+	END_TYPE;
+(** Assembly_module_with_packaged_connector_component_xim and 
+Assembly_module_with_interconnect_component_xim  - most likely in some Assembly CC *)
+	SUBTYPE_CONSTRAINT physical_component_interface_terminal_armx_subtypes FOR Physical_component_interface_terminal_armx;     
+		(ONEOF (Packaged_connector_component_interface_terminal,
+		 Interconnect_component_interface_terminal));
+	END_SUBTYPE_CONSTRAINT;
+
+(** most likely some Assembly_module CC *)
+	SUBTYPE_CONSTRAINT packaged_part_armx_subtypes FOR Packaged_part_armx; 
+	    (ONEOF (Minimally_defined_connector_armx, -- Assembly_functional_interface_requirement_xim
+	 	Packaged_connector_armx) ANDOR -- Packaged_connector_model_xim
+	 	Altered_packaged_part); -- Altered_part_xim
+	END_SUBTYPE_CONSTRAINT;
+	
+	(** It most likely should be in Assembly_module CC *)
+	SUBTYPE_CONSTRAINT ap210_physical_component_subtypes FOR Physical_component_armx;  
+		(ONEOF (Assembly_module_component_armx, --Assembly_module_with_subassembly_xim
+		Bare_die_component_armx, -- Assembly_module_design_xim
+		Cable_component_armx, -- Assembly_module_with_cable_component_xim
+		Interconnect_module_component_armx, -- Assembly_module_with_interconnect_component_xim
+		Packaged_component_armx, -- Assembly_module_design_xim
+		Routed_interconnect_component_armx, -- Assembly_module_design_xim
+		Routed_physical_component_armx)); -- Assembly_module_design_xim 
+	END_SUBTYPE_CONSTRAINT;
+	
+	(** It most likely should be in Assembly_module CC *)
+	SUBTYPE_CONSTRAINT ap210_part_usage_view_subtypes FOR Part_usage_view;  
+	    ONEOF (Package_armx,
+		 Bare_die_armx,
+		 Cable_usage_view_armx,
+		 Packaged_part_armx,
+		 Assembly_module_usage_view_armx,
+		 Layered_interconnect_module_usage_view_armx);
+	END_SUBTYPE_CONSTRAINT;
+
+	SUBTYPE_CONSTRAINT ap210_apd_part_view_definition_subtypes FOR Part_view_definition ; 
+		(ONEOF (Part_usage_view,
+		Part_design_view,
+		Stratum_armx,
+		Physical_unit_interconnect_definition_armx));
+	END_SUBTYPE_CONSTRAINT; 
+
+  TYPE aczbmea_analytical_model_port_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON analytical_model_port_assignment_select WITH 
+           (Connection_zone); 
+  END_TYPE;
+  
+TYPE addbmd_ee_product_definition_with_annotation_elements = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ee_product_definition_with_annotation_elements WITH 
+   	(Part_usage_view);
+END_TYPE; 
+
+(** Most likely it is in CC Interconnect_module *)    
+	SUBTYPE_CONSTRAINT laminate_component_interface_terminal_armx_subtypes FOR Laminate_component_interface_terminal_armx; 
+		 (ONEOF (Printed_connector_component_interface_terminal,
+		 Component_termination_passage_interface_terminal,
+		 Land_interface_terminal));
+	END_SUBTYPE_CONSTRAINT;
+
+(** Most likely it is in CC Interconnect_module *)    
+	SUBTYPE_CONSTRAINT laminate_component_join_terminal_armx_subtypes FOR Laminate_component_join_terminal_armx; 
+		 (ONEOF (Component_termination_passage_join_terminal,
+		 Land_join_terminal,
+		 Embedded_physical_component_terminal,
+		 Printed_component_join_terminal));
+	END_SUBTYPE_CONSTRAINT;
+   
+(** It most likely should be in Interconnect_module CC *)
+SUBTYPE_CONSTRAINT planar_projected_shape_model_subtypes FOR Planar_projected_shape_model;  
+	(ONEOF ((Assembly_component_2d_shape_model ANDOR
+	 (ONEOF (Part_template_planar_shape_model,
+	 Physical_unit_planar_shape_model))),
+	 Stratum_planar_shape_model));
+END_SUBTYPE_CONSTRAINT; 
+
+(** Pre_defined_datum_symbol_arm and Layered_interconnect_module_3d_shape_arm are not linked in any way.
+Most likely it should be defined in Interconnect_module CC *)
+ SUBTYPE_CONSTRAINT shape_definition_3d_intersection_armx_subtypes FOR Shape_definition_3d_intersection_armx;  
+	 (ONEOF (Edge_segment_cross_section_armx,
+	 Pre_defined_perpendicular_datum_plane_symbol_3d_2d_relationship_armx,
+	 Pre_defined_perpendicular_datum_axis_symbol_3d_2d_relationship_armx,
+	 Pre_defined_parallel_datum_axis_symbol_3d_2d_relationship_armx));
+ END_SUBTYPE_CONSTRAINT;  
+
+RULE non_conductive_cross_section_template_population_constraint FOR
+    (Template_definition);
+WHERE
+  WR1:  SIZEOF( QUERY( td <* Template_definition |
+('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.NON_CONDUCTIVE_CROSS_SECTION_TEMPLATE_ARMX' IN TYPEOF(td))
+              )) = 0;
+END_RULE;
+
+RULE printed_part_cross_section_template_population_constraint FOR
+    (Template_definition);
+WHERE
+  WR1:  SIZEOF( QUERY( td <* Template_definition |
+('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.PRINTED_PART_CROSS_SECTION_TEMPLATE_ARMX' IN TYPEOF(td))
+              )) = 0;
+END_RULE;
+
+RULE printed_part_cross_section_template_terminal_population_constraint FOR
+    (Printed_part_template_terminal_armx);
+WHERE
+  WR1:  SIZEOF( QUERY( pptt <* Printed_part_template_terminal_armx |
+('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.PRINTED_PART_CROSS_SECTION_TEMPLATE_TERMINAL_ARMX' IN TYPEOF(pptt))
+              )) = 0;
+END_RULE;
+
+RULE printed_part_template_material_population_constraint FOR
+    (Printed_part_template_material_armx);
+WHERE
+  WR1:  SIZEOF(Printed_part_template_material_armx) = 0;
+END_RULE;
+
+RULE printed_part_template_material_link_population_constraint FOR
+    (Printed_part_template_material_link_armx);
+WHERE
+  WR1:  SIZEOF(Printed_part_template_material_link_armx) = 0;
+END_RULE;
+
+RULE template_material_cross_section_boundary_population_constraint FOR
+    (Template_material_cross_section_boundary_armx);
+WHERE
+  WR1:  SIZEOF(Template_material_cross_section_boundary_armx) = 0;
+END_RULE;
+
+TYPE aitc_ee_product_definition_with_annotation_elements = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ee_product_definition_with_annotation_elements WITH 
+   	(Part_usage_view);
+END_TYPE; 
+
+TYPE apupc_analytical_model_port_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON analytical_model_port_assignment_select WITH  
+	(Part_feature);
+END_TYPE;
+
+TYPE apupc_ee_product_definition_with_annotation_elements = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ee_product_definition_with_annotation_elements WITH 
+   	(Part_usage_view);
+END_TYPE; 
+  
 RULE Physical_unit_network_definition_constraint FOR 
 (Physical_unit_network_definition_armx);
 WHERE
   WR1: SIZEOF ( QUERY ( fund <* Physical_unit_network_definition_armx | 
-('ASSEMBLY_MODULE_DESIGN_XIM.' + 'ASSEMBLY_MODULE' IN TYPEOF (fund)) OR
+('ASSEMBLY_MODULE_DESIGN_XIM.' + 'ASSEMBLY_MODULE_DESIGN_VIEW_ARMX' IN TYPEOF (fund)) OR
   (SIZEOF(USEDIN(fund,'Physical_unit_shape_with_parameters_xim.' + 
 'PHYSICAL_UNIT_SHAPE_MODEL.SHAPE_CHARACTERIZED_DEFINITION')) = 0)
     )) = SIZEOF(Physical_unit_network_definition_armx);

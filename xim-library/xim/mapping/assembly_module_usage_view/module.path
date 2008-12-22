@@ -48,16 +48,13 @@ property_definition
 
 end_mapping_constraints;
 
-attribute_mapping associated_definition(associated_definition, $PATH, Assembly_module_usage_view);
+attribute_mapping associated_definition(associated_definition, $PATH, Assembly_module_usage_view_armx);
 assembly_module_terminal <=
 shape_aspect
 shape_aspect.of_shape ->
-product_definition_shape
-{product_definition_shape <=
-property_definition
-{property_definition.name = 'assembly module'}}
 product_definition_shape =>
-physical_unit
+physical_unit =>
+assembly_module_usage_view
 
 end_attribute_mapping;
 
@@ -120,28 +117,18 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Assembly_module_usage_view(Assembly_module_usage_view, physical_unit);
+entity_mapping Assembly_module_usage_view_armx(Assembly_module_usage_view_armx, assembly_module_usage_view);
 
 mapping_constraints;
-{[physical_unit <=
+assembly_module_usage_view <=
+physical_unit <=
 product_definition_shape <=
 property_definition
-{property_definition.name = 'assembly module'}]
-[physical_unit <=
-product_definition <-
-product_definition_context_association.definition
-product_definition_context_association
-{product_definition_context_association.role ->
-product_definition_context_role
-product_definition_context_role.name = 'part definition type'}
-product_definition_context_association.frame_of_reference ->
-product_definition_context <=
-application_context_element
-application_context_element.name = 'physical design usage']}
 
 end_mapping_constraints;
 
 attribute_mapping implemented_function(implemented_function, $PATH, Functional_unit_usage_view);
+assembly_module_usage_view <=
 physical_unit <=
 product_definition <-
 product_definition_relationship.related_product_definition
@@ -173,17 +160,17 @@ extended;
 
 end_entity_mapping;
 
-entity_mapping Pca_terminal(Pca_terminal, assembly_module_terminal);
+entity_mapping Layered_assembly_module_terminal(Layered_assembly_module_terminal, assembly_module_terminal);
 
 mapping_constraints;
 assembly_module_terminal <=
 shape_aspect
 {shape_aspect
-shape_aspect.description = 'pca terminal'}
+shape_aspect.description = 'layered assembly module terminal'}
 
 end_mapping_constraints;
 
-attribute_mapping associated_definition(associated_definition, $PATH, Pca_usage_view);
+attribute_mapping associated_definition(associated_definition, $PATH, Layered_assembly_module_usage_view_armx);
 assembly_module_terminal <=
 shape_aspect
 shape_aspect.of_shape ->
@@ -193,36 +180,27 @@ property_definition
 {property_definition.name = 'assembly module'}}
 product_definition_shape =>
 physical_unit =>
-assembly_definition
+assembly_module_usage_view =>
+layered_assembly_module_usage_view
 
 end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Pca_usage_view(Pca_usage_view, assembly_definition);
+entity_mapping Layered_assembly_module_usage_view_armx(Layered_assembly_module_usage_view_armx, layered_assembly_module_usage_view);
 
 mapping_constraints;
-{[assembly_definition <=
+layered_assembly_module_usage_view <=
+assembly_module_usage_view <=
 physical_unit <=
 product_definition_shape <=
 property_definition
-{property_definition.name = 'assembly module'}]
-[assembly_definition <=
-physical_unit <=
-product_definition <-
-product_definition_context_association.definition
-product_definition_context_association
-{product_definition_context_association.role ->
-product_definition_context_role
-product_definition_context_role.name = 'part definition type'}
-product_definition_context_association.frame_of_reference ->
-product_definition_context <=
-application_context_element
-application_context_element.name = 'physical design usage']}
 
 end_mapping_constraints;
 
 attribute_mapping maximum_negative_component_height(maximum_negative_component_height, $PATH, Datum_based_length_measure);
+layered_assembly_module_usage_view <=
+assembly_module_usage_view <=
 physical_unit <=
 product_definition
 characterized_product_definition = product_definition
@@ -241,6 +219,8 @@ representation
 end_attribute_mapping;
 
 attribute_mapping maximum_positive_component_height(maximum_positive_component_height, $PATH, Datum_based_length_measure);
+layered_assembly_module_usage_view <=
+assembly_module_usage_view <=
 physical_unit <=
 product_definition
 characterized_product_definition = product_definition

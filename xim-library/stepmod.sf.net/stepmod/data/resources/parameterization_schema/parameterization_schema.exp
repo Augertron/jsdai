@@ -1,6 +1,10 @@
-(* THIS IS DOCUMENT ISO TC184/SC4/WG12 N4852, CONTAINING REVISED EXPRESS FOR *)
-(* ISO 10303-108, 'PARAMETERIZATION AND CONSTRAINTS FOR EXPLICIT GEOMETRIC   *)
-(* PRODUCT MODELS' TO TAKE INTO ACCOUNT TC1 FOR THAT DOCUMENT -- 2007-04-20  *)                                          
+(*
+$Id$ 
+ISO TC184/SC4/WG12 N4852 - ISO 10303-108 paramaterization_schema - EXPRESS
+THIS IS DOCUMENT I CONTAINING REVISED EXPRESS FOR 'PARAMETERIZATION AND CONSTRAINTS FOR EXPLICIT GEOMETRIC  
+PRODUCT MODELS' TO TAKE INTO ACCOUNT TC1 FOR THAT DOCUMENT -- 2008-03-17  
+*)                                          
+
 
 SCHEMA parameterization_schema;
 
@@ -40,11 +44,10 @@ ENTITY variational_parameter
   SUBTYPE OF (variational_representation_item, maths_variable);
   parameter_description : OPTIONAL text; 
   parameter_current_value : maths_value;
-DERIVE
-  SELF\maths_variable.name : label := SELF\representation_item.name;
 WHERE
   WR1 : member_of(parameter_current_value, 
     SELF\maths_variable.values_space);
+  WR2 : SELF\maths_variable.name = SELF\representation_item.name;
 END_ENTITY; 
 
 ENTITY bound_variational_parameter

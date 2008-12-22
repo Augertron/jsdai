@@ -41,6 +41,10 @@ USE FROM Product_view_definition_relationship_xim; -- ISO/TS 10303-1041
 
 USE FROM Shape_property_assignment_mim;
 
+TYPE described_element_select = SELECT (
+  product_definition_usage,
+  Product_occurrence_definition_relationship_armx);
+END_TYPE;
 
 TYPE shape_dependent_select = SELECT
    (Item_shape, 
@@ -63,14 +67,15 @@ TYPE shapeable_item = SELECT
    (Characterized_object, 
     product_definition, 
     product_definition_relationship,
-    product_definition_usage);
+    product_definition_usage,
+    Next_assembly_usage_occurrence_relationship_armx);
 END_TYPE; 
 
 ENTITY Contextual_item_shape
   SUBTYPE OF (Item_shape);
-  SELF\Item_shape.described_element : product_definition_usage;
+  SELF\Item_shape.described_element : described_element_select;
 DERIVE
-  shaped_product : Product_definition := described_element\Product_definition_relationship.related_product_definition;
+  shaped_product : Product_view_definition := spa_get_definition(SELF);
 END_ENTITY;
 
 ENTITY Item_shape
@@ -120,6 +125,21 @@ ENTITY Shape_element_relationship
   SELF\shape_aspect_relationship.relating_shape_aspect RENAMED relating : Shape_element;
   SELF\shape_aspect_relationship.related_shape_aspect RENAMED related : Shape_element;
 END_ENTITY;
+
+  FUNCTION spa_get_definition ( input : Contextual_item_shape ): Product_view_definition;
+    IF ('PRODUCT_VIEW_DEFINITION_RELATIONSHIP_XIM.PRODUCT_DEFINITION_USAGE'
+      IN TYPEOF(input\Item_shape.described_element))
+      THEN
+        RETURN(input\Item_shape.described_element\product_definition_relationship.related_product_definition);
+    END_IF;
+    IF ('ASSEMBLY_STRUCTURE_XIM.PRODUCT_OCCURRENCE_DEFINITION_RELATIONSHIP_ARMX' IN
+        TYPEOF(input\Item_shape.described_element))
+      THEN
+        RETURN(input\Item_shape.described_element\Product_occurrence_definition_relationship_armx.related_view);
+    END_IF;    
+    RETURN(?);
+  END_FUNCTION;
+
 
 END_SCHEMA;  -- Shape_property_assignment_xim
 

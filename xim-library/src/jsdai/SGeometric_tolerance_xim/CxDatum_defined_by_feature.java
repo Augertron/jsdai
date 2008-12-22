@@ -157,9 +157,8 @@ public class CxDatum_defined_by_feature extends CDatum_defined_by_feature implem
 	 */
 	public static void setMappingConstraints(SdaiContext context,
 		EDatum_defined_by_feature armEntity) throws SdaiException {
-		CxSingle_datum.setMappingConstraints(context, armEntity);
 		unsetMappingConstraints(context, armEntity);
-
+		CxSingle_datum.setMappingConstraints(context, armEntity);
 	}
 
 	/**
@@ -171,7 +170,7 @@ public class CxDatum_defined_by_feature extends CDatum_defined_by_feature implem
 	 */
 	public static void unsetMappingConstraints(SdaiContext context,
 			EDatum_defined_by_feature armEntity) throws SdaiException {
-		CxSingle_datum.setMappingConstraints(context, armEntity);
+		CxSingle_datum.unsetMappingConstraints(context, armEntity);
 	}
 
 	/**

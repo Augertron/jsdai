@@ -1,4 +1,5 @@
 (* Genenerated from: ISO.exp *)
+(* This schema incorporates proposed solution in SEDS #1294, #1299.  *)
 
 SCHEMA ISO13584_expressions_schema;
 
@@ -48,8 +49,8 @@ ABSTRACT SUPERTYPE OF (ONEOF (simple_numeric_expression,
 								numeric_defined_function))
 SUBTYPE OF (expression);
 DERIVE
-	is_int: BOOLEAN := is_int_expr (SELF);
-	sql_mappable: BOOLEAN := is_SQL_mappable (SELF);
+	is_int: LOGICAL := is_int_expr (SELF);
+	sql_mappable: LOGICAL := is_SQL_mappable (SELF);
 END_ENTITY;
 
 ENTITY simple_numeric_expression
@@ -304,7 +305,7 @@ ENTITY odd_function
 SUBTYPE OF (unary_Boolean_expression);
 	SELF\unary_generic_expression.operand: numeric_expression;
 WHERE
-	WR1: is_int_expr(SELF\unary_generic_expression.operand);
+	WR1: is_int_expr(operand);
 END_ENTITY;
 
 ENTITY binary_boolean_expression
@@ -526,10 +527,10 @@ ABSTRACT SUPERTYPE
 SUBTYPE OF (defined_function, string_expression);
 END_ENTITY ;
 
-FUNCTION is_int_expr (arg: numeric_expression) : BOOLEAN;
+FUNCTION is_int_expr (arg: numeric_expression) : LOGICAL;
 
 LOCAL
-	i: INTEGER;
+	i: INTEGER := 0;
 END_LOCAL;
 
 IF 'ISO13584_EXPRESSIONS_SCHEMA.INT_LITERAL' IN TYPEOF(arg) 
@@ -643,7 +644,7 @@ RETURN (FALSE);
 
 END_FUNCTION; -- is_int_expr
 
-FUNCTION is_SQL_mappable (arg: expression) : BOOLEAN;
+FUNCTION is_SQL_mappable (arg: expression) : LOGICAL;
 
 LOCAL
 	i: INTEGER;
@@ -889,11 +890,13 @@ THEN
 	RETURN (used_functions (arg\format_function.value_to_format)
 		+ used_functions (arg\format_function.format_string));
 END_IF;
+(*
 IF 'ISO13584_EXPRESSIONS_SCHEMA.LIKE_EXPRESSION' IN TYPEOF (arg) 
 THEN
-	RETURN (used_functions (arg\binary_generic_expression.operands[1])
-		+ used_functions (arg\binary_generic_expression.operands[2]));
+	RETURN (used_functions (arg\comparison_expression.operands[1])
+		+ used_functions (arg\comparison_expression.operands[2]));
 END_IF;
+*)
 RETURN ([ ]);
 
 END_FUNCTION; -- used_functions

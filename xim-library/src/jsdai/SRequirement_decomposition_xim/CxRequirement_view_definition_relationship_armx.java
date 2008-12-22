@@ -131,7 +131,12 @@ public class CxRequirement_view_definition_relationship_armx extends CRequiremen
 		unsetRelation_type(context, armEntity);
 		if(armEntity.testRelation_type(null)){
 			int type = armEntity.getRelation_type(null);
-			armEntity.setName(null, ERequirement_view_relationship_type.toString(type).toLowerCase().replace('_', ' '));
+			if(ERequirement_view_relationship_type.DERIVED_FROM != type){
+				armEntity.setName(null, ERequirement_view_relationship_type.toString(type).toLowerCase().replace('_', ' '));
+			}else{
+				armEntity.setName(null, "derived from operation");
+			}
+			
 		}
 	}
 

@@ -1,15 +1,22 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4569 - ISO/CD-TS 10303-1491 Expression assignment - EXPRESS MIM
+   ISO TC184/SC4/WG12 N5855 - ISO/TS 10303-1491 Expression assignment - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N4569
 *) 
 
 SCHEMA Expression_assignment_mim;
 
 USE FROM Expression_mim;    -- ISO/TS 10303-1342
 
-USE FROM expression_extensions_schema   -- ISO 10303-57
-  (assignment_target_select,
-   expression_assignment); 
+USE FROM systems_engineering_representation_schema   -- ISO 10303-61
+  (expression_assignment);
 
+TYPE expression_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT ;
+END_TYPE;
 
-END_SCHEMA;  -- Expression_assignment_mim
+ENTITY applied_expression_assignment
+SUBTYPE OF (expression_assignment);
+  items : SET [1 : ?] OF expression_assignment_item;
+END_ENTITY;
+
+END_SCHEMA;

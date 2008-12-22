@@ -39,6 +39,7 @@ import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_property_representation_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
+import jsdai.SRepresentation_schema.ERepresentation;
 
 public class CxFunctional_unit_armx
 		extends
@@ -345,10 +346,10 @@ public class CxFunctional_unit_armx
 			EProperty_definition epd = (EProperty_definition) LangUtils
 					.createInstanceIfNeeded(context, CProperty_definition.definition,
 							pdcrStructure);
-			AParameter_assignment_override_armx properties = armEntity.getFunctional_property(null);
+			ANfdv_pa_or_parameter_assignment_override properties = armEntity.getFunctional_property(null);
 			SdaiIterator iter = properties.createIterator();
 			while(iter.next()){
-				EParameter_assignment_override_armx property = properties.getCurrentMember(iter); 
+				ERepresentation property = (ERepresentation)properties.getCurrentMember(iter); 
 				EProperty_definition_representation epdr = (EProperty_definition_representation)
 					context.working_model.createEntityInstance(CProperty_definition_representation.definition);
 				epdr.setDefinition(null, epd);

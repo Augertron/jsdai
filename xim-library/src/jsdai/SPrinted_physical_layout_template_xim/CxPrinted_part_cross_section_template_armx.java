@@ -36,7 +36,7 @@ import jsdai.util.LangUtils;
 import jsdai.SAnalytical_model_xim.*;
 import jsdai.SCharacteristic_xim.ETolerance_characteristic;
 import jsdai.SMaterial_property_definition_schema.*;
-import jsdai.SPhysical_layout_template_xim.*;
+import jsdai.SPart_template_xim.*;
 import jsdai.SPrinted_physical_layout_template_mim.CPrinted_part_cross_section_template;
 import jsdai.SProduct_definition_schema.EProduct_definition;
 import jsdai.SProduct_property_definition_schema.*;

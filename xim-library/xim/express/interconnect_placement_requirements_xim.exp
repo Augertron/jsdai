@@ -72,7 +72,7 @@ USE FROM Interconnect_placement_requirements_mim;
 	    Stratum_constraint_region);
 	END_TYPE; 
 
-  TYPE pca_product_design_object_category = ENUMERATION OF
+  TYPE lam_product_design_object_category = ENUMERATION OF
     (assembly_component_category,
      assembly_module_category,
      assembly_module_component_category,
@@ -81,7 +81,6 @@ USE FROM Interconnect_placement_requirements_mim;
      assembly_module_macro_component_join_terminal_category,
      bare_die_component_category,
      bare_die_component_terminal_category,
-     bonded_conductive_base_blind_via_category,
      buried_via_category,
      cable_component_category,
      component_feature_category,
@@ -162,8 +161,8 @@ USE FROM Interconnect_placement_requirements_mim;
      via_terminal_category);
   END_TYPE;
 
-  TYPE pca_product_design_object_category_or_group = SELECT(
-     pca_product_design_object_category,
+  TYPE lam_product_design_object_category_or_group = SELECT(
+     lam_product_design_object_category,
      Stratum_armx,
      Group);
   END_TYPE;    
@@ -193,17 +192,17 @@ USE FROM Interconnect_placement_requirements_mim;
 	END_SUBTYPE_CONSTRAINT;
 
  	SUBTYPE_CONSTRAINT ipr_predefined_requirement_view_definition_armx_subtypes FOR Predefined_requirement_view_definition_armx;     
-		(ONEOF (Assembly_spacing_requirement_occurrence_armx,
- 	  	Assembly_group_spacing_requirement_occurrence_armx,
- 	  	Layout_spacing_requirement_occurrence_armx,
-		Item_restricted_requirement_occurrence_armx));
+		(ONEOF (Assembly_spacing_requirement_armx,
+ 	  	Assembly_group_spacing_requirement_armx,
+ 	  	Layout_spacing_requirement_armx,
+		Item_restricted_requirement_armx));
 	END_SUBTYPE_CONSTRAINT;
 
   ENTITY Interconnect_module_constraint_region
     (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, group_shape_aspect);
       keepout                                          : BOOLEAN;
       non_conformant_interconnect_module_design_object : OPTIONAL SET[1:?] OF interconnect_module_design_object_select;
-      SELF\Non_feature_shape_element.scope             : Interconnect_module;
+      SELF\Non_feature_shape_element.scope             : Layered_interconnect_module_design_view_armx;
       design_specific_purpose                          : STRING; --ee_name;
       associated_stratum_extent                        : SET[1:?] OF Inter_stratum_extent;
       constrained_design_object_category               : interconnect_module_design_object_category_or_group;
@@ -221,7 +220,7 @@ USE FROM Interconnect_placement_requirements_mim;
     SUBTYPE OF (Non_feature_shape_element);
       keepout                                          : BOOLEAN;
       non_conformant_stratum                           : OPTIONAL SET[1:?] OF Stratum;
-      SELF\Non_feature_shape_element.scope             : Interconnect_module;
+      SELF\Non_feature_shape_element.scope             : Layered_interconnect_module_design_view_armx;
       design_specific_purpose                          : STRING; 
       constrained_stratum                              : SET[1:?] OF Stratum;
     INVERSE
@@ -233,15 +232,29 @@ USE FROM Interconnect_placement_requirements_mim;
       WR3 : valid_non_conformant_stratum_context(non_conformant_stratum, scope);
   END_ENTITY;
   
-  ENTITY Layer_qualified_layout_spacing_requirement_occurrence_armx
-    (* CONNOTATIONAL *) SUBTYPE OF (Layout_spacing_requirement_occurrence_armx, layer_qualified_layout_spacing_requirement_occurrence);
+  ENTITY Layer_qualified_layout_spacing_requirement_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Layout_spacing_requirement_armx, layer_qualified_layout_spacing_requirement);
       layer_context : SET[1:?] OF Inter_stratum_extent;
   END_ENTITY;
 
-  ENTITY Layout_spacing_requirement_occurrence_armx
-    (* CONNOTATIONAL *) SUBTYPE OF (Predefined_requirement_view_definition_armx, layout_spacing_requirement_occurrence);
-      design_object_category_1                                                            : pca_product_design_object_category_or_group;
-      design_object_category_2                                                            : pca_product_design_object_category_or_group;
+  ENTITY Area_qualified_layout_spacing_requirement_armx
+    SUBTYPE OF (Layout_spacing_requirement_armx, area_qualified_layout_spacing_requirement);
+      area_context : SET [1:?] OF Layout_spacing_contextual_area;
+  END_ENTITY;
+
+  ENTITY Layout_spacing_contextual_area_armx
+    SUBTYPE OF (Non_feature_shape_element, layout_spacing_contextual_area);
+      reference_surface : Interconnect_module_component_surface_feature_armx;
+      SELF\Non_feature_shape_element.scope : Assembly_module_design_view_armx;
+    WHERE
+      WR1: (SIZEOF(SELF\Non_feature_shape_element.element_shape) = 0) OR 
+      (SIZEOF(QUERY(es <* SELF\Non_feature_shape_element.element_shape | NOT ('CONSTRUCTION_GEOMETRY_XIM.CONSTRUCTIVE_GEOMETRY' IN TYPEOF(es)) )) = 0);
+  END_ENTITY;
+  
+  ENTITY Layout_spacing_requirement_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Predefined_requirement_view_definition_armx, layout_spacing_requirement);
+      design_object_category_1                                                            : lam_product_design_object_category_or_group;
+      design_object_category_2                                                            : lam_product_design_object_category_or_group;
       SELF\Predefined_requirement_view_definition_armx.required_characteristic RENAMED spacing : Length_tolerance_characteristic;
       of_spacing_type                                                                     : spacing_type;
   END_ENTITY;
@@ -252,7 +265,7 @@ USE FROM Interconnect_placement_requirements_mim;
       non_conformant_design_object	: SET[1:?] OF assembly_or_interconnect_design_object_select;
       design_object_1              : assembly_or_interconnect_design_object_select;
       design_object_2              : assembly_or_interconnect_design_object_select;
-      design_requirement           : Layout_spacing_requirement_occurrence_armx;
+      design_requirement           : Layout_spacing_requirement_armx;
       violation_value              : OPTIONAL Length_measure_with_unit;
       violation_shape              : OPTIONAL shape_representation;
       intersection_violation       : LOGICAL;
@@ -265,7 +278,7 @@ USE FROM Interconnect_placement_requirements_mim;
   END_ENTITY;
 
   FUNCTION valid_non_conformant_design_object_context(input1 : SET OF interconnect_module_design_object_select;
-                  input2 : Interconnect_module) : BOOLEAN;
+                  input2 : Layered_interconnect_module_design_view_armx) : BOOLEAN;
   LOCAL
     vdr : SET OF product_definition_relationship := [];
     valid : BOOLEAN := TRUE;
@@ -290,7 +303,7 @@ USE FROM Interconnect_placement_requirements_mim;
   END_FUNCTION;
 
   FUNCTION valid_non_conformant_stratum_context(input1 : SET OF Stratum_armx;
-                  input2 : Interconnect_module) : BOOLEAN;
+                  input2 : Layered_interconnect_module_design_view_armx) : BOOLEAN;
   LOCAL
     imsar : SET OF Interconnect_module_stratum_assembly_relationship := [];
     valid : BOOLEAN := TRUE;

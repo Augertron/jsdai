@@ -58,6 +58,26 @@ public class CxInternal_probe_access_area_armx$plated_passage_dependent_land_arm
 	public static int apFlag = AP21x; // Default is this style  
 
 	// Taken from PDR
+	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
+		a11 = set_string(value);
+	}
+	public void unsetId(EProduct_definition_relationship type) throws SdaiException {
+		a11 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
+		return a11$;
+	}
+
+	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
+		a12 = set_string(value);
+	}
+	public void unsetName(EProduct_definition_relationship type) throws SdaiException {
+		a12 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
+		return a12$;
+	}
+	
 	// attribute (current explicit or supertype explicit) : relating_product_definition, base type: entity product_definition
 /*	public static int usedinRelating_product_definition(EProduct_definition_relationship type, EProduct_definition instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a14$, domain, result);
@@ -309,6 +329,8 @@ public class CxInternal_probe_access_area_armx$plated_passage_dependent_land_arm
 			
 			setReference_plated_passage(context, this);
 			
+			setCausal_item(context, this);			
+			
 			// Clean ARM specific attributes - this is derived in laminate_component
 			// unsetAdditional_characterization(null);
 			unsetImplementation_or_resident_stratum(null);
@@ -335,6 +357,8 @@ public class CxInternal_probe_access_area_armx$plated_passage_dependent_land_arm
          unsetStratum_feature_implementation(null);
          
          unsetReference_plated_passage(null);
+         
+         unsetCausal_item(null);
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
@@ -376,6 +400,8 @@ public class CxInternal_probe_access_area_armx$plated_passage_dependent_land_arm
 			unsetAlternate_land_definition (context, this); 
          
 			unsetReference_plated_passage(context, this);
+			
+			unsetCausal_item(context, this);			
 	}
 
 	//		************************************* AUTOMOTIVE_DESIGN
@@ -697,6 +723,32 @@ public class CxInternal_probe_access_area_armx$plated_passage_dependent_land_arm
 		CxStratum_feature_template_component_armx.unsetImplementation_or_resident_stratum(context, armEntity);
 	}
 
+	/**
+	* Sets/creates data for causal_item attribute.
+	*
+	* @param context SdaiContext.
+	* @param armEntity arm entity.
+	* @throws SdaiException
+	*/
+	public static void setCausal_item(SdaiContext context, ELand_armx armEntity) throws SdaiException
+	{
+		CxStratum_feature_template_component_armx.setCausal_item(context, armEntity);
+	}
+
+
+	/**
+	* Unsets/deletes data for causal_item attribute.
+	*
+	* @param context SdaiContext.
+	* @param armEntity arm entity.
+	* @throws SdaiException
+	*/
+	public static void unsetCausal_item(SdaiContext context, ELand_armx armEntity) throws SdaiException
+	{
+		CxStratum_feature_template_component_armx.unsetCausal_item(context, armEntity);
+	}
+	
+	
    //********** "land" attributes
 
    /**
@@ -722,7 +774,7 @@ public class CxInternal_probe_access_area_armx$plated_passage_dependent_land_arm
   }
 
   /**
-   * Sets/creates data for alternate_land_definition attribute.
+   * Sets/creates data for Reference_plated_passage attribute.
    *
    * @param context SdaiContext.
    * @param armEntity arm entity.
@@ -733,7 +785,7 @@ public class CxInternal_probe_access_area_armx$plated_passage_dependent_land_arm
   }
 
  /**
-  * Unsets/deletes data for alternate_land_definition attribute.
+  * Unsets/deletes data for Reference_plated_passage attribute.
   *
   * @param context SdaiContext.
   * @param armEntity arm entity.

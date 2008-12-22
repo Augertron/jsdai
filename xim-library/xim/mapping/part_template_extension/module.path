@@ -435,42 +435,61 @@ end_mapping_constraints;
 end_entity_mapping;
 
 
-entity_mapping Planar_path_shape_model_with_parameters(Planar_path_shape_model_with_parameters, planar_path_shape_representation_with_parameters);
+entity_mapping Path_area_with_parameters_armx(Path_area_with_parameters_armx, path_area_with_parameters);
 
 mapping_constraints;
-{planar_path_shape_representation_with_parameters<=
-single_area_csg_2d_shape_representation <=
-csg_2d_shape_representation <=
-shape_representation <=
-representation}
+{path_area_with_parameters <=
+mapped_item <=
+representation_item}
 
 end_mapping_constraints;
+
+attribute_mapping parameters(parameters, $PATH, Curve_style_parameters);
+path_area_with_parameters <=
+mapped_item
+mapped_item.mapping_source ->
+representation_map
+representation_map.mapped_representation ->
+representation =>
+curve_style_parameters_representation
+end_attribute_mapping;
+
+attribute_mapping centreline(centreline, $PATH, Curve);
+path_area_with_parameters <=
+mapped_item                
+mapped_item.mapping_target ->
+representation_item => 
+geometric_representation_item => 
+curve
+end_attribute_mapping;
 
 end_entity_mapping;
 
 
-entity_mapping Planar_closed_path_shape_model_with_parameters(Planar_closed_path_shape_model_with_parameters, planar_path_shape_representation_with_parameters);
+entity_mapping Closed_path_area_with_parameters(Closed_path_area_with_parameters, path_area_with_parameters);
 
 mapping_constraints;
-{planar_path_shape_representation_with_parameters <=
-single_area_csg_2d_shape_representation <=
-csg_2d_shape_representation <=
-shape_representation <=
-representation 
-representation.items[i] ->
-representation_item
-representation_item =>
-geometric_representation_item =>
-solid_model =>
-csg_solid
-{csg_solid =>
-csg_solid_2d =>
-csg_primitive_solid_2d}
-csg_solid.tree_root_expression ->
-csg_select = csg_primitive
-csg_primitive = primitive_2d
-primitive_2d =>
-complex_area =>
+(* GL added - strong no allowed for redeclared attributes *)
+{path_area_with_parameters <=
+mapped_item
+mapped_item.mapping_target ->
+representation_item => 
+geometric_representation_item => 
+curve =>
+bounded_curve =>
+composite_curve}
+
+path_area_with_parameters <=
+mapped_item
+{mapped_item.mapping_source ->
+representation_map
+representation_map.mapped_representation ->
+representation =>
+curve_style_parameters_representation =>
+closed_curve_style_parameters}
+end_mapping_constraints;
+
+attribute_mapping parameters(parameters, $PATH, Closed_curve_style_parameters);
 path_area_with_parameters <=
 mapped_item
 mapped_item.mapping_source ->
@@ -478,74 +497,22 @@ representation_map
 representation_map.mapped_representation ->
 representation =>
 curve_style_parameters_representation =>
-closed_curve_style_parameters}
-
-end_mapping_constraints;
-(* Made derived
-attribute_mapping parameters(parameters, $PATH, Trace_template_armx);
-single_area_csg_2d_shape_representation <=
-csg_2d_shape_representation <=
-shape_representation <=
-representation <-
-representation_relationship.rep_1
-representation_relationship
-{representation_relationship.name = 'parameters'}
-representation_relationship.rep_2 ->
-representation <-
-property_definition_representation.used_representation
-property_definition_representation
-property_definition_representation.definition ->
-property_definition =>
-product_definition_shape =>
-part_template_definition =>
-parametric_template =>
-trace_template
-
-end_attribute_mapping;
-*)
-(* Not allowed for XIMs
-attribute_mapping items(items, $PATH, primitive_2d_planar_path_with_parameters_or_axis_placement_2d);
-single_area_csg_2d_shape_representation <=
-csg_2d_shape_representation <=
-shape_representation <=
-representation 
-representation.items[i] ->
-representation_item
-(representation_item =>
-mapped_item =>
-primitive_2d_planar_path_with_parameters)
-(representation_item =>
-geometric_representation_item =>
-placement =>
-axis2_placement_2d)
+closed_curve_style_parameters
 end_attribute_mapping;
 
-attribute_mapping items(items, $PATH, Primitive_2d_planar_path_with_parameters_armx);
-single_area_csg_2d_shape_representation <=
-csg_2d_shape_representation <=
-shape_representation <=
-representation 
-representation.items[i] ->
-representation_item =>
-mapped_item =>
-primitive_2d_planar_path_with_parameters
-
+attribute_mapping centreline(centreline, $PATH, Closed_curve);
+path_area_with_parameters <=
+mapped_item
+mapped_item.mapping_target ->
+representation_item => 
+geometric_representation_item => 
+curve =>
+bounded_curve =>
+composite_curve
 end_attribute_mapping;
 
-attribute_mapping items(items, $PATH, axis2_placement_2d);
-single_area_csg_2d_shape_representation <=
-csg_2d_shape_representation <=
-shape_representation <=
-representation 
-representation.items[i] ->
-representation_item =>
-geometric_representation_item =>
-placement =>
-axis2_placement_2d
-
-end_attribute_mapping;
-*)
 end_entity_mapping;
+
 
 entity_mapping Part_string_template_armx(Part_string_template_armx, part_string_template);
 

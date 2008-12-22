@@ -56,7 +56,7 @@ end_entity;
 entity characterized_object;
   strong_users;
 end_entity;
-
+(* IDA STEP only
 entity process_operation_resource_assignment;
 	attribute reference_tool;
 		mapped_values
@@ -64,7 +64,7 @@ entity process_operation_resource_assignment;
 			.FALSE. : 'non reference tool';
 	end_attribute;
 end_entity;
-
+*)
 entity datum_based_length_measure;
 	attribute measure_orientation;
 		mapped_values
@@ -160,6 +160,10 @@ entity Shape_description_association;
 	attribute representation;
 		strong;
 	end_attribute;
+(* relax this constraint as it is not allowing AP203/AP214 imports
+	attribute role;
+		strong;
+	end_attribute; *)
 end_entity;
 (* TODO - add strongs on Styled_model_replication, when available in XIM level
 entity Mapping_based_styled_model;
@@ -188,7 +192,7 @@ entity Functional_element_version;
 		strong;
 	end_attribute;
 end_entity;
-
+(* IDA STEP only
 entity Zone_element_version;
 	attribute of_product;
 		strong;
@@ -200,7 +204,7 @@ entity Zone_breakdown_version;
 		strong;
 	end_attribute;
 end_entity;
-
+*)
 
 entity Functional_breakdown_version;
 	attribute of_product;
@@ -249,7 +253,7 @@ entity Surface_texture_parameter__value_range;
 		strong;
 	end_attribute;
 end_entity;
-
+(* IDA STEP only
 entity Person_or_organization_or_person_in_organization_in_position_relationship;
 	attribute related;
 		strong;
@@ -257,7 +261,7 @@ entity Person_or_organization_or_person_in_organization_in_position_relationship
 	attribute relating;
 		strong;
 	end_attribute;
-end_entity;
+end_entity; *)
 
 entity Person_in_organization_relationship;
 	attribute relating;
@@ -267,22 +271,13 @@ entity Person_in_organization_relationship;
 		strong;
 	end_attribute;
 end_entity;
-
+(* IDA STEP only
 entity Task_method_assignment;
 	attribute assigned_activity_method;
 		strong;
 	end_attribute;
-end_entity;
-(*
-entity View_area_relationship;
-	attribute related;
-		strong;
-	end_attribute;
-	attribute relating;
-		strong;
-	end_attribute;
-end_entity;
-*)
+end_entity; *)
+
 entity Shape_placement_association;
 	attribute represented_characteristic;
 		strong;
@@ -365,7 +360,7 @@ entity Configuration;
       .NO_INHERITANCE. : 'local';
 	end_attribute;
 end_entity;
-
+(* IDA STEP only
 entity Scheme_version_relationship;
   attribute relating_scheme_version;
 		strong;
@@ -392,7 +387,7 @@ entity Activity_happening;
 		strong;
 	end_attribute;
 end_entity;
-
+*)
 entity Breakdown_node_relationship;
   attribute relating;
 		strong;
@@ -544,14 +539,23 @@ entity definition_based_product_occurrence;
 	end_attribute;
 end_entity;
 
-entity part_occurrence_definition_relationship;
-	attribute related_product_definition;
+entity product_occurrence_definition_relationship_armx;
+	attribute related_view;
 		strong;
 	end_attribute;
-(* Temp - comment out	
-	attribute relating_product_definition;
+	attribute relating_view;
 		strong;
-	end_attribute;	*)
+	end_attribute;
+end_entity;
+
+entity part_occurrence_definition_relationship;
+	attribute related_view;
+		strong;
+	end_attribute;
+(* Temp - comment out	 *)
+	attribute relating_view;
+		strong;
+	end_attribute;
 end_entity;
 
 entity shape_dependent_property_representation;
@@ -840,7 +844,7 @@ end_entity;
 	end_attribute;
 end_entity; *)
 
-entity operational_requirement_occurrence_relationship_armx;
+entity operational_requirement_relationship_armx;
 	attribute operand_1;
 		strong;
 	end_attribute;
@@ -1413,16 +1417,6 @@ entity Boundary_curve;
 end_entity;
 *)
 
-entity land_template_terminal_armx;
-	attribute connection_zone_category;
-		mapped_values
-			.EDGE_CURVE_CLASS. : 'edge curve',
-			.EDGE_POINT_CLASS. : 'edge point',
-			.SURFACE_AREA_CLASS. : 'surface area',
-			.SURFACE_POINT_CLASS. : 'surface point';
-	end_attribute;
-end_entity;
-
 (* MODULE entities *)
 
 entity angular_size_dimension;
@@ -1535,12 +1529,6 @@ entity non_feature_shape_element;
 	end_attribute;
 end_entity;
 
-entity datum_shape_element;
-	attribute scope;
-		strong;
-	end_attribute;
-end_entity;
-
 entity datum_defined_by_targets;
 	attribute defined_by;
 		strong;
@@ -1549,6 +1537,54 @@ end_entity;
 
 entity datum_defined_by_feature;
 	attribute defined_by;
+		strong;
+	end_attribute;
+end_entity;
+
+entity functional_element_usage_armx;
+	attribute parent_element;
+		strong;
+	end_attribute;
+	attribute child_element;
+		strong;
+	end_attribute;	
+end_entity;
+
+entity physical_element_usage_armx;
+	attribute parent_element;
+		strong;
+	end_attribute;
+	attribute child_element;
+		strong;
+	end_attribute;	
+end_entity;
+
+entity zone_element_usage_armx;
+	attribute parent_element;
+		strong;
+	end_attribute;
+	attribute child_element;
+		strong;
+  end_attribute;	
+end_entity;
+	
+entity zone_breakdown_version;
+	attribute of_product;
+		strong;
+	end_attribute;
+end_entity;
+
+entity zone_element_version;
+	attribute of_product;
+		strong;
+	end_attribute;
+end_entity;
+
+entity person_or_organization_or_person_in_organization_in_position_relationship;
+	attribute relating;
+		strong;
+	end_attribute;
+	attribute related;
 		strong;
 	end_attribute;
 end_entity;

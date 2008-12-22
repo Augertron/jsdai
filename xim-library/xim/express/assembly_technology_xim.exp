@@ -53,7 +53,7 @@ USE FROM Assembly_technology_mim;
     (Connection_zone_in_layout_template,
     Connection_zone_in_usage_view,
     Default_attachment_size_based_land_physical_template_armx,
-    Feature_definition_with_connection_area,
+    Feature_definition_with_connection_area_armx,
     Part_feature);
   END_TYPE;     
   
@@ -113,16 +113,17 @@ USE FROM Assembly_technology_mim;
         ('PHYSICAL_UNIT_USAGE_VIEW_XIM.PART_FEATURE' IN TYPEOF(bonded_feature_2)));
       WR4 : NOT(('PHYSICAL_UNIT_USAGE_VIEW_XIM.CONNECTION_ZONE_IN_USAGE_VIEW' IN TYPEOF (bonded_feature_1)) XOR 
         ('PHYSICAL_UNIT_USAGE_VIEW_XIM.CONNECTION_ZONE_IN_USAGE_VIEW' IN TYPEOF(bonded_feature_2)));
-      WR5 : NOT((('PHYSICAL_LAYOUT_TEMPLATE_XIM.CONNECTION_ZONE_IN_LAYOUT_TEMPLATE' IN
+      WR5 : NOT((('PART_TEMPLATE_XIM.CONNECTION_ZONE_IN_LAYOUT_TEMPLATE' IN
         TYPEOF (bonded_feature_1)) OR
-        ('FABRICATION_TECHNOLOGY_XIM.DEFAULT_ATTACHMENT_SIZE_BASED_LAND_PHYSICAL_TEMPLATE_ARMX' IN TYPEOF
+        ('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_XIM.DEFAULT_ATTACHMENT_SIZE_BASED_LAND_PHYSICAL_TEMPLATE_ARMX' IN TYPEOF
+        
         (bonded_feature_1)) OR
-        ('FEATURE_AND_CONNECTION_ZONE_XIM.FEATURE_DEFINITION_WITH_CONNECTION_AREA' IN TYPEOF(bonded_feature_2)))
+        ('FEATURE_AND_CONNECTION_ZONE_XIM.FEATURE_DEFINITION_WITH_CONNECTION_AREA_ARMX' IN TYPEOF(bonded_feature_2)))
         XOR 
-        (('PHYSICAL_LAYOUT_TEMPLATE_XIM.CONNECTION_ZONE_IN_LAYOUT_TEMPLATE' IN TYPEOF(bonded_feature_2)) OR
-        ('FABRICATION_TECHNOLOGY_XIM.DEFAULT_ATTACHMENT_SIZE_BASED_LAND_PHYSICAL_TEMPLATE_ARMX' IN TYPEOF
+        (('PART_TEMPLATE_XIM.CONNECTION_ZONE_IN_LAYOUT_TEMPLATE' IN TYPEOF(bonded_feature_2)) OR
+        ('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_XIM.DEFAULT_ATTACHMENT_SIZE_BASED_LAND_PHYSICAL_TEMPLATE_ARMX' IN TYPEOF
         (bonded_feature_1)) OR
-        ('FEATURE_AND_CONNECTION_ZONE_XIM.FEATURE_DEFINITION_WITH_CONNECTION_AREA' IN TYPEOF(bonded_feature_2))));            
+        ('FEATURE_AND_CONNECTION_ZONE_XIM.FEATURE_DEFINITION_WITH_CONNECTION_AREA_ARMX' IN TYPEOF(bonded_feature_2))));            
   END_ENTITY;
 
   ENTITY Assembly_joint_armx
@@ -137,10 +138,8 @@ USE FROM Assembly_technology_mim;
         associated_assembly;
     WHERE
       WR1 : assembly_feature_1 :<>: assembly_feature_2;
-      WR2 : ('ASSEMBLY_TECHNOLOGY_xim.ASSEMBLED_WITH_FASTENERS' IN TYPEOF(SELF)) OR (('ASSEMBLY_TECHNOLOGY_xim.Component_feature_armx' IN TYPEOF(assembly_feature_1)) AND (SIZEOF(QUERY(ay <* assembly_feature_1\Shape_element.containing_shape\Definition_based_product_occurrence.occurrence_contexts | ay.related_product_definition <> associated_assembly)) = 0));
-      WR3 : ('ASSEMBLY_TECHNOLOGY_xim.ASSEMBLED_WITH_FASTENERS' IN TYPEOF(SELF)) OR (('ASSEMBLY_TECHNOLOGY_xim.Component_feature_armx' IN TYPEOF(assembly_feature_2)) AND (SIZEOF(QUERY(ay <* assembly_feature_2\Shape_element.containing_shape\Definition_based_product_occurrence.occurrence_contexts | ay.related_product_definition <> associated_assembly)) = 0));
-      WR4 : ['ASSEMBLY_MODULE_DESIGN_XIM.ASSEMBLY_MODULE', 
-        'COMPONENT_GROUPING_XIM.ASSEMBLY_GROUP_COMPONENT_ARMX'] in TYPEOF(SELF\Component_feature_joint_armx.associated_definition);                   
+      WR2 : ('ASSEMBLY_TECHNOLOGY_xim.ASSEMBLED_WITH_FASTENERS' IN TYPEOF(SELF)) OR (('ASSEMBLY_TECHNOLOGY_xim.Component_feature_armx' IN TYPEOF(assembly_feature_1)) AND (SIZEOF(QUERY(ay <* assembly_feature_1\Shape_element.containing_shape\Definition_based_product_occurrence.occurrence_contexts | ay.related_view<> associated_assembly)) = 0));
+      WR3 : ('ASSEMBLY_TECHNOLOGY_xim.ASSEMBLED_WITH_FASTENERS' IN TYPEOF(SELF)) OR (('ASSEMBLY_TECHNOLOGY_xim.Component_feature_armx' IN TYPEOF(assembly_feature_2)) AND (SIZEOF(QUERY(ay <* assembly_feature_2\Shape_element.containing_shape\Definition_based_product_occurrence.occurrence_contexts | ay.related_view <> associated_assembly)) = 0));
   END_ENTITY;
 
   ENTITY Assembly_technology_specification

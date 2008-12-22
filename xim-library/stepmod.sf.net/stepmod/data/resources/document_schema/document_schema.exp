@@ -1,75 +1,66 @@
 (*
 $Id$
-ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
-*) 
+
+2008-02-07
+ISO TC184/SC4/WG12 N4883 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+*)
+(*
+Supersedes ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+changes to date_time schema and to measure_schema as per TC1 - WG12 N4884.
+*)
 
 
 SCHEMA document_schema;
+  REFERENCE FROM product_definition_schema (product, product_definition, product_definition_formation);
+  REFERENCE FROM support_resource_schema (bag_to_set, identifier, label, text);
+  TYPE product_or_formation_or_definition = SELECT (product, product_definition_formation, product_definition);
+  END_TYPE;
 
-REFERENCE FROM product_definition_schema   -- ISO 10303-41
-  (product,
-   product_definition,
-   product_definition_formation); 
+  ENTITY document;
+    id : identifier;
+    name : label;
+    description : OPTIONAL text;
+    kind : document_type;
+  INVERSE
+    representation_types : SET [0:?] OF document_representation_type FOR represented_document;
+  END_ENTITY;
 
-REFERENCE FROM support_resource_schema   -- ISO 10303-41
-  (bag_to_set,
-   identifier,
-   label,
-   text); 
+  ENTITY document_product_association;
+    name : label;
+    description : OPTIONAL text;
+    relating_document : document;
+    related_product : product_or_formation_or_definition;
+  END_ENTITY;
 
+  ENTITY document_relationship;
+    name : label;
+    description : OPTIONAL text;
+    relating_document : document;
+    related_document : document;
+  END_ENTITY;
 
-TYPE product_or_formation_or_definition = SELECT
-   (product, 
-    product_definition_formation, 
-    product_definition);
-END_TYPE; 
+  ENTITY document_representation_type;
+    name : label;
+    represented_document : document;
+  END_ENTITY;
 
-ENTITY document;
-  id : identifier;
-  name : label;
-  description : OPTIONAL text;
-  kind : document_type;
-INVERSE
-  representation_types : SET[0:?] OF document_representation_type FOR represented_document;
-END_ENTITY;
+  ENTITY document_type;
+    product_data_type : label;
+  END_ENTITY;
 
-ENTITY document_product_association;
-  name : label;
-  description : OPTIONAL text;
-  relating_document : document;
-  related_product : product_or_formation_or_definition;
-END_ENTITY;
+  ENTITY document_usage_constraint;
+    source : document;
+    subject_element : label;
+    subject_element_value : text;
+  END_ENTITY;
 
-ENTITY document_relationship;
-  name : label;
-  description : OPTIONAL text;
-  relating_document : document;
-  related_document : document;
-END_ENTITY;
+  ENTITY document_with_class
+    SUBTYPE OF (document);
+    class : identifier;
+  END_ENTITY;
 
-ENTITY document_representation_type;
-  name : label;
-  represented_document : document;
-END_ENTITY;
-
-ENTITY document_type;
-  product_data_type : label;
-END_ENTITY;
-
-ENTITY document_usage_constraint;
-  source : document;
-  subject_element : label;
-  subject_element_value : text;
-END_ENTITY;
-
-ENTITY document_with_class
-  SUBTYPE OF (document);
-  class : identifier;
-END_ENTITY;
-
-FUNCTION acyclic_document_relationship
- (relation : document_relationship; relatives : SET[1:?] OF document; specific_relation : STRING) : BOOLEAN; 
- LOCAL
+  FUNCTION acyclic_document_relationship (relation : document_relationship; relatives : SET [1:?] OF document; specific_relation : STRING):BOOLEAN;
+    LOCAL
       x : SET OF document_relationship;
     END_LOCAL;
 
@@ -83,6 +74,6 @@ FUNCTION acyclic_document_relationship
       END_IF;
     END_REPEAT;
     RETURN (TRUE);
-END_FUNCTION; 
+  END_FUNCTION;
 
-END_SCHEMA;  -- document_schema
+END_SCHEMA;

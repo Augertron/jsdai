@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4059 - ISO/TS 10303-1704 Network functional design view - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3339
+   ISO TC184/SC4/WG12 N5713 - ISO/TS 10303-1704 Network functional design view - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4059
 *)
 
 SCHEMA Network_functional_design_view_arm;
@@ -20,6 +20,11 @@ SCHEMA Network_functional_design_view_arm;
     (Functional_unit_network_node_definition,
      Bus_structural_definition);
   END_TYPE;
+
+TYPE nfdv_pa_or_parameter_assignment_override = SELECT
+  (Parameter_assignment,
+   Parameter_assignment_override);
+END_TYPE;
 
 TYPE nfdw_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
     (Functional_unit);
@@ -50,7 +55,7 @@ END_TYPE;
   	SUBTYPE OF(Definition_based_product_occurrence);
       SELF\Definition_based_product_occurrence.derived_from RENAMED definition   : Functional_unit_definition;
       SELF\Product_view_definition.id RENAMED reference_designation : STRING; 
-      functional_property   : OPTIONAL SET[1:?] OF Parameter_assignment_override;
+      functional_property   : OPTIONAL SET[1:?] OF nfdv_pa_or_parameter_assignment_override;
     DERIVE  
 		composed_network    : Functional_unit_network_definition := SELF\Product_occurrence.occurrence_contexts[1].relating_view;    
 		SELF\Product_view_definition.defined_version : Product_version := SELF\Definition_based_product_occurrence.derived_from.defined_version;

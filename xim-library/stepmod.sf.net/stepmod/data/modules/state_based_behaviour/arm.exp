@@ -1,245 +1,223 @@
 (*
    $Id$
-   ISO TC184/SC4/WG3 N2327 - ISO/CD-TS 10303-1371 State based behaviour - EXPRESS ARM
+   ISO TC184/SC4/WG3 N2511 - ISO/TS 10303-1371 State based behaviour - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N2327
 *)
 
 SCHEMA State_based_behaviour_arm;
 
-USE FROM Activity_method_arm;    -- ISO/TS 10303-1049
+USE FROM Activity_method_assignment_arm;    -- ISO/TS 10303-1249
 
 USE FROM Alias_identification_arm;    -- ISO/TS 10303-1025
 
 USE FROM Behaviour_description_assignment_arm;    -- ISO/CD-TS 10303-1483
 
-USE FROM Behaviour_identification_and_version_arm;    -- ISO/CD-TS 10303-1482
-
-USE FROM Behaviour_view_definition_arm;    -- ISO/CD-TS 10303-1481
-
-USE FROM Class_arm;    -- ISO/TS 10303-1070
-
-USE FROM Classification_assignment_arm;    -- ISO/TS 10303-1114
-
 USE FROM Condition_arm;    -- ISO/TS 10303-1253
 
 USE FROM Description_assignment_arm;    -- ISO/CD-TS 10303-1473
 
-USE FROM Expression_arm;    -- ISO/TS 10303-1342
-
 USE FROM Expression_assignment_arm;    -- ISO/CD-TS 10303-1491
-
-USE FROM External_class_arm;    -- ISO/TS 10303-1275
-
-USE FROM External_item_identification_assignment_arm;    -- ISO/TS 10303-1128
 
 USE FROM External_state_based_behaviour_model_arm;    -- ISO/CD-TS 10303-1468
 
-USE FROM File_identification_arm;    -- ISO/TS 10303-1127
-
-USE FROM Foundation_representation_arm;    -- ISO/TS 10303-1006
-
-USE FROM Foundation_state_definition_arm;    -- ISO/CD-TS 10303-1469
-
-USE FROM General_model_parameter_arm;    -- ISO/CD-TS 10303-1472
-
-USE FROM Generic_expression_arm;    -- ISO/TS 10303-1341
-
-USE FROM Identification_assignment_arm;    -- ISO/TS 10303-1021
-
-USE FROM Independent_property_arm;    -- ISO/TS 10303-1036
-
-USE FROM Independent_property_representation_arm;    -- ISO/TS 10303-1038
-
-USE FROM Numeric_function_arm;    -- ISO/TS 10303-1346
-
-USE FROM Parameter_value_specification_arm;    -- ISO/CD-TS 10303-1470
-
-USE FROM Product_categorization_arm;    -- ISO/TS 10303-1016
-
-USE FROM Product_identification_arm;    -- ISO/TS 10303-1017
-
-USE FROM Product_version_arm;    -- ISO/TS 10303-1018
-
-USE FROM Product_version_relationship_arm;    -- ISO/TS 10303-1020
-
-USE FROM Product_view_definition_arm;    -- ISO/TS 10303-1019
-
-USE FROM Property_assignment_arm;    -- ISO/TS 10303-1030
-
-USE FROM State_based_behaviour_representation_arm;    -- ISO/CD-TS 10303-1471
+USE FROM General_model_parameter_arm;    -- ISO/CD-TS 10303-1472			
 
 USE FROM Textual_expression_representation_arm;    -- ISO/CD-TS 10303-1367
 
-USE FROM Value_with_unit_arm;    -- ISO/TS 10303-1054
+TYPE sbb_activity_method_item = SELECT BASED_ON activity_method_item  WITH 
+	(State_definition);
+END_TYPE;
 
+TYPE sbb_behaviour_item  = SELECT BASED_ON behaviour_item WITH 
+	(State_definition);
+END_TYPE; 
 
 TYPE sbb_behaviour_model = SELECT BASED_ON behaviour_model WITH 
-   (State_based_behaviour_model);
+	(State_based_behaviour_model, State_definition, Activity_method);
 END_TYPE; 
 
 TYPE sbb_classification_item = SELECT BASED_ON classification_item WITH 
-   (Activity_method, 
-    Applied_state_definition_assignment, 
-    Behaviour, 
-    Behaviour_view_definition, 
-    Condition, 
-    Description_text, 
-    Description_text_assignment, 
-    External_source_identification, 
-    File, 
-    General_model_parameter, 
-    Product, 
-    Product_version, 
-    Product_view_definition, 
-    Representation, 
-    State_based_behaviour_model, 
-    State_definition, 
-    State_definition_relationship);
-END_TYPE; 
-
-TYPE sbb_pmri_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH 
-   (Conversion_based_unit, 
-    Derived_unit, 
-    External_class_library, 
-    External_item_identification, 
-    External_source_identification, 
-    Supplied_part_relationship);
-END_TYPE; 
-
-TYPE sbb_ss_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH 
-   (Assigned_property);
+	(Activity_method,
+	Applied_activity_method_assignment,
+	Applied_state_definition_assignment, 
+	Assigned_property,
+	Behaviour, 
+	Behaviour_view_definition, 
+	Class,				
+	Condition, 
+	Condition_assignment,		
+	Condition_parameter,	
+	Condition_relationship,	
+	Constrained_general_parameter_relationship,
+	Context_dependent_unit,	
+	Conversion_based_unit, 
+	Derived_unit, 
+	Description_text, 
+	Description_text_assignment, 
+	Digital_file,	
+	Expression, 
+	Expression_assignment, 
+	External_class_library, 
+	External_item_identification, 
+	External_source_identification, 
+	File, 
+	File_location_identification,	
+	General_model_parameter, 
+	Hardcopy,		
+	Identification_assignment,	
+	Independent_property,		
+	Independent_property_relationship,	
+	Independent_property_representation,	
+	Parameter_value_representation_item,	
+	Product, 
+	Product_category,	
+	Product_version, 
+	Product_version_relationship,	
+	Product_view_definition, 
+	Property_representation,
+	Representation, 
+	Representation_context,	
+	Representation_item,	
+	State_based_behaviour_model, 
+	State_definition, 
+	State_definition_relationship,
+	String_representation_item,	
+	Supplied_part_relationship,
+	Text_based_representation,	
+	Uncertainty_with_unit,	
+	Unit,			
+	Value_with_unit);	
 END_TYPE; 
 
 TYPE sbb_condition_item = SELECT BASED_ON condition_item WITH 
-   (State_transition_definition);
-END_TYPE; 
-
-TYPE sbb_ss_condition_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_item WITH 
-   (Assigned_property, 
-    State_definition, 
-    State_definition_relationship);
+	(Assigned_property, 
+	Expression_assignment, 
+	State_definition, 
+	State_definition_relationship,
+	State_transition_definition);
 END_TYPE; 
 
 TYPE sbb_condition_parameter_item = SELECT BASED_ON condition_parameter_item WITH 
-   (parameter_value_select);
-END_TYPE; 
-
-TYPE sbb_pmri_condition_parameter_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_parameter_item WITH 
-   (Classification_assignment, 
-    Identification_assignment, 
-    Independent_property_representation, 
-    Product, 
-    Product_category_assignment, 
-    Product_version, 
-    Product_view_definition, 
-    Representation);
-END_TYPE; 
-
-TYPE sbb_ss_condition_parameter_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_parameter_item WITH 
-   (Activity_method, 
-    Assigned_property, 
-    Property_representation, 
-    State_definition);
+	(Activity_method, 
+	Assigned_property, 
+	Classification_assignment, 
+	Condition_relationship,		
+	Expression, 
+	Identification_assignment, 
+	Independent_property_representation, 
+	parameter_value_select,
+	Product, 
+	Product_category_assignment, 
+	Product_version, 
+	Product_view_definition, 
+	Property_representation, 
+	Representation,
+	State_definition);
 END_TYPE; 
 
 TYPE sbb_description_item = SELECT BASED_ON description_item WITH 
-   (Activity_method, 
-    Behaviour, 
-    Behaviour_version, 
-    Behaviour_view_definition, 
-    Condition, 
-    General_model_parameter, 
-    Product, 
-    Product_version, 
-    Product_view_definition, 
-    Representation, 
-    State_based_behaviour_model, 
-    State_definition, 
-    State_definition_relationship);
-END_TYPE; 
-
-TYPE sbb_ap233_description_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON description_item WITH 
-   (behaviour_model);
+	(Activity_method, 
+	Applied_activity_method_assignment, 
+	Assigned_property, 
+	Behaviour, 
+	behaviour_model,
+	Behaviour_version, 
+	Behaviour_view_definition,
+	Class,	
+	Condition,
+	Condition_parameter,
+	Expression,
+	External_source,
+	File,
+	General_model_parameter, 
+	Product, 
+	Product_category, 
+	Product_version, 
+	Product_view_definition, 
+	Property_definition_representation, 
+	Representation, 
+	Representation_item, 
+	State_based_behaviour_model, 
+	State_definition, 
+	State_definition_relationship,
+	Unit, 
+	Value_with_unit);
 END_TYPE; 
 
 TYPE sbb_expression_assignment_item = SELECT BASED_ON expression_assignment_item WITH 
-   (Condition);
+	(Condition);
 END_TYPE; 
 
-TYPE sbb_ap233_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH 
-   (Product);
+TYPE sbb_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH 
+	(File,
+	Product);
 END_TYPE; 
 
 TYPE sbb_identification_item = SELECT BASED_ON identification_item WITH 
-   (Activity_method, 
-    Condition, 
-    Description_text_assignment, 
-    External_source_identification, 
-    File, 
-    General_model_parameter, 
-    Product, 
-    Product_version, 
-    Product_view_definition, 
-    Representation, 
-    State_based_behaviour_model, 
-    State_definition, 
-    State_transition_definition);
-END_TYPE; 
-
-TYPE sbb_pmri_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH 
-   (Digital_file, 
-    External_class_library, 
-    External_source_identification, 
-    File, 
-    Independent_property, 
-    Independent_property_relationship, 
-    Product_category, 
-    Representation, 
-    View_definition_context);
-END_TYPE; 
-
-TYPE sbb_ss_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH 
-   (State_definition, 
-    State_definition_relationship);
-END_TYPE; 
-
-TYPE sbb_ap233_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH 
-   (Applied_state_definition_assignment);
+	(Activity_method, 
+	Applied_activity_method_assignment, 
+	Applied_state_definition_assignment,
+	Assigned_property,	
+	Behaviour,		
+	Behaviour_version,	
+	Behaviour_view_definition,	
+	Condition, 
+	Description_text_assignment, 
+	Digital_file, 
+	External_class_library, 
+	External_source_identification, 
+	File, 
+	General_model_parameter, 
+	Hardcopy,		
+	Independent_property, 
+	Independent_property_relationship, 
+	Product, 
+	Product_category, 
+	Product_version, 
+	Product_view_definition, 
+	Representation, 
+	Representation_item,
+	State_based_behaviour_model, 
+	State_definition, 
+	State_definition_relationship,
+	State_transition_definition,
+	View_definition_context);
 END_TYPE; 
 
 TYPE sbb_parameter_value_select = SELECT BASED_ON parameter_value_select WITH 
-   (Product_view_definition);
-END_TYPE; 
-
-TYPE sbb_ap233_parameter_value_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON parameter_value_select WITH 
-   (Representation, 
-    Representation_item, 
-    State_definition);
+	(Product_view_definition,
+	Representation, 
+	Representation_item, 
+	State_definition);
 END_TYPE; 
 
 TYPE sbb_property_assignment_select = SELECT BASED_ON property_assignment_select WITH 
-   (Activity_method, 
-    Behaviour_view_definition, 
-    Product_view_definition);
-END_TYPE; 
-
-TYPE sbb_ap233_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH 
-   (Assigned_property, 
-    Condition_parameter, 
-    Generic_expression, 
-    Independent_property, 
-    Independent_property_relationship, 
-    Product, 
-    Product_category, 
-    Product_version, 
-    Product_version_relationship, 
-    Property_definition_representation, 
-    Representation, 
-    Representation_context, 
-    Representation_item);
+	(Activity_method, 
+	Assigned_property, 
+	Behaviour_view_definition, 
+	Condition_parameter, 
+	File,		
+	Generic_expression, 
+	Independent_property, 
+	Independent_property_relationship, 
+	Product, 
+	Product_category, 
+	Product_version, 
+	Product_version_relationship, 
+	Product_view_definition,
+	Property_definition_representation, 
+	Representation, 
+	Representation_context, 
+	Representation_item);
 END_TYPE; 
 
 TYPE sbb_state_definition_of_item = SELECT BASED_ON state_definition_of_item WITH 
-   (Product_view_definition);
-END_TYPE; 
+	(Activity_method,	
+	Behaviour_description_association,
+	File_location_identification,	
+	Product_version,		
+	Product_view_definition);
+END_TYPE;
 
 END_SCHEMA;  -- State_based_behaviour_arm
+

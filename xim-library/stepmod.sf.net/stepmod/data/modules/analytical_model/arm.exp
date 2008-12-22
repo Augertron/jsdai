@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N3831 - ISO/TS 10303-1603 Analytical model - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3288
+   ISO TC184/SC4/WG12 N5557 - ISO/TS 10303-1603 Analytical model - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N3831
 *)
 
 SCHEMA Analytical_model_arm;
@@ -18,6 +18,10 @@ REFERENCE FROM Specification_document_arm(get_document_definition);	-- ISO/TS 10
   END_TYPE;
 	
   TYPE am_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
+    (Analytical_model_definition);
+  END_TYPE; 
+
+  TYPE am_property_assignment_select = EXTENSIBLE SELECT BASED_ON property_assignment_select WITH
     (Analytical_model_definition);
   END_TYPE; 
 
@@ -74,7 +78,7 @@ REFERENCE FROM Specification_document_arm(get_document_definition);	-- ISO/TS 10
 
   ENTITY Analytical_model_application
     SUBTYPE OF (Representation);  
-      model_parameter_assignment     : SET[1:?] OF Parameter_assignment;
+      model_parameter_assignment     : OPTIONAL SET[1:?] OF Parameter_assignment;
       model_representation           : Analytical_model_definition;
     UNIQUE
       UR1 : SELF\Representation.name;
@@ -105,11 +109,10 @@ REFERENCE FROM Specification_document_arm(get_document_definition);	-- ISO/TS 10
   END_ENTITY;
 
   ENTITY Analytical_model_parameter
-    SUBTYPE OF (Model_parameter);
-      accessed_analytical_model : Analytical_model_definition;
+    SUBTYPE OF (Applied_independent_property);
+      SELF\Assigned_property.described_element RENAMED accessed_analytical_model : Analytical_model_definition;
     UNIQUE
-      UR1 : SELF\Independent_property.id,
- accessed_analytical_model;
+      UR1 : SELF\Assigned_property.id,  accessed_analytical_model;
   END_ENTITY;
 
   ENTITY Analytical_model_port

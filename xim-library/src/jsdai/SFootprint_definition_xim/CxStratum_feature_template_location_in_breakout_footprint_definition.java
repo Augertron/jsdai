@@ -32,13 +32,13 @@ package jsdai.SFootprint_definition_xim;
 import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.util.LangUtils;
+import jsdai.SLayered_interconnect_complex_template_xim.CxStratum_specific_template_location_armx;
+import jsdai.SLayered_interconnect_complex_template_xim.CxTemplate_location_in_structured_template;
+import jsdai.SLayered_interconnect_complex_template_xim.ETemplate_location_in_structured_template;
 import jsdai.SMaterial_property_definition_schema.AProperty_definition_relationship;
 import jsdai.SMaterial_property_definition_schema.CProperty_definition_relationship;
 import jsdai.SMaterial_property_definition_schema.EProperty_definition_relationship;
-import jsdai.SPart_template_2d_shape_mim.CStratum_specific_template_location;
-import jsdai.SPart_template_2d_shape_xim.CxStratum_specific_template_location_armx;
-import jsdai.SPart_template_2d_shape_xim.CxTemplate_location_in_structured_template;
-import jsdai.SPart_template_2d_shape_xim.ETemplate_location_in_structured_template;
+import jsdai.SLayered_interconnect_complex_template_mim.CStratum_specific_template_location;
 import jsdai.SProduct_definition_schema.EProduct_definition_relationship;
 import jsdai.SProduct_property_definition_schema.AProperty_definition;
 import jsdai.SProduct_property_definition_schema.CProperty_definition;
@@ -84,6 +84,23 @@ public class CxStratum_feature_template_location_in_breakout_footprint_definitio
 	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
 		return a1$;
 	}
+	/// methods for attribute: description, base type: STRING
+	/*	public boolean testDescription(EProduct_definition_relationship type) throws SdaiException {
+			return test_string(a2);
+		}
+		public String getDescription(EProduct_definition_relationship type) throws SdaiException {
+			return get_string(a2);
+		}*/
+		public void setDescription(EProduct_definition_relationship type, String value) throws SdaiException {
+			a2 = set_string(value);
+		}
+		public void unsetDescription(EProduct_definition_relationship type) throws SdaiException {
+			a2 = unset_string();
+		}
+		public static jsdai.dictionary.EAttribute attributeDescription(EProduct_definition_relationship type) throws SdaiException {
+			return a2$;
+		}
+	
 	// ENDOF Taken from Product_definition_relationship
 
 	// From Property_definition

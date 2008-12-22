@@ -106,16 +106,16 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
     LOCAL
       x : SET OF Part_feature_placement_link := [];
     END_LOCAL;
-    IF relation.subsequent_element IN relatives THEN
+    IF relation.precedent_element IN relatives THEN
       RETURN (FALSE);
     END_IF;
-    x := QUERY(pd <* bag_to_set(USEDIN(relation.subsequent_element,
+    x := QUERY(pd <* bag_to_set(USEDIN(relation.precedent_element,
       'PART_FEATURE_GROUPING_XIM.' +
       'PART_FEATURE_PLACEMENT_LINK.' +
       'SUBSEQUENT_ELEMENT')) | specific_relation IN TYPEOF(pd));
     REPEAT i := 1 TO HIINDEX(x);
       IF NOT acyclic_part_feature_placement_link(x[i], relatives +
-        relation.subsequent_element, specific_relation) THEN
+        relation.precedent_element, specific_relation) THEN
         RETURN (FALSE);
       END_IF;
     END_REPEAT;
@@ -128,16 +128,16 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
     LOCAL
       x : SET OF Part_linear_array_feature_link := [];
     END_LOCAL;
-    IF relation.subsequent_element IN relatives THEN
+    IF relation.precedent_element IN relatives THEN
       RETURN (FALSE);
     END_IF;
-    x := QUERY(pd <* bag_to_set(USEDIN(relation.subsequent_element,
+    x := QUERY(pd <* bag_to_set(USEDIN(relation.precedent_element,
       'PART_FEATURE_GROUPING_XIM.' +
       'PART_LINEAR_ARRAY_FEATURE_LINK.' +
       'SUBSEQUENT_ELEMENT')) | specific_relation IN TYPEOF(pd));
     REPEAT i := 1 TO HIINDEX(x);
       IF NOT acyclic_part_linear_array_feature_link(x[i], relatives +
-        relation.subsequent_element, specific_relation) THEN
+        relation.precedent_element, specific_relation) THEN
         RETURN (FALSE);
       END_IF;
     END_REPEAT;

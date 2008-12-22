@@ -32,7 +32,7 @@ package jsdai.SMixed_complex_types;
 import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SPart_and_version_identification_xim.CxPart_version;
-import jsdai.SPhysical_layout_template_xim.CxTemplate_version;
+import jsdai.SPart_template_xim.CxTemplate_version;
 import jsdai.SProduct_definition_schema.CProduct_definition_formation;
 
 public class CxPart_version$template_version extends CPart_version$template_version implements EMappedXIMEntity

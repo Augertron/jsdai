@@ -28,7 +28,7 @@
 
 SCHEMA Footprint_definition_xim;
 
-    USE FROM Part_template_2d_shape_xim; -- ISO/TS 10303-1716
+    USE FROM Layered_interconnect_complex_template_xim; -- ISO/TS 10303-1716
 	USE FROM Package_xim;	-- ISO/TS 10303-1707
 	USE FROM Footprint_definition_mim;	-- ISO/TS 10303-1646	
 	
@@ -69,18 +69,23 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
     ABSTRACT SUPERTYPE OF (ONEOF (Footprint_definition_armx, Breakout_footprint_definition_armx))
      SUBTYPE OF (generic_footprint_definition, Multi_stratum_structured_template_armx);
     DERIVE
-      SELF\Multi_stratum_structured_template_armx.location : template_arrangement := get_template_arrangement(padstacks);
-      padstacks : SET[1:?] OF Template_location_in_structured_template := QUERY(tlict <* SELF\Structured_template_armx.templates |
-         ('PART_TEMPLATE_2D_SHAPE_XIM.PADSTACK_DEFINITION_ARMX' IN TYPEOF(tlict.template)));
+      padstack_based_location : template_arrangement := get_template_arrangement(padstacks);
+      padstacks : SET[1:?] OF Template_location_in_structured_template := bag_to_set(QUERY(tlict <* SELF\Structured_template_armx.templates |
+         ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.PADSTACK_DEFINITION_ARMX' IN TYPEOF(tlict.template))));
+      single_stratum_components : SET[0:?] OF Single_stratum_template_armx := bag_to_set(QUERY(tlict <* SELF\Structured_template_armx.templates |
+         ('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_XIM.SINGLE_STRATUM_TEMPLATE_ARMX' IN TYPEOF(tlict.template))));   
     WHERE
-      WR1 : SIZEOF(QUERY(ps <* templates | (ps.template\Multi_stratum_structured_template_armx.location <> location)
-              AND (ps.template\Multi_stratum_structured_template_armx.location <> template_arrangement.symmetrical))) = 0;              
-      WR2 : ((location = template_arrangement.top) AND (SELF\Product_view_definition.initial_context\product_definition_context.description = 'top')) OR 
-            (NOT (location = template_arrangement.top) AND NOT (SELF\Product_view_definition.initial_context\product_definition_context.description = 'top'));
-      WR3 : ((location = template_arrangement.bottom) AND (SELF\Product_view_definition.initial_context\product_definition_context.description = 'bottom')) OR 
-            (NOT (location = template_arrangement.bottom) AND NOT (SELF\Product_view_definition.initial_context\product_definition_context.description = 'bottom'));
-      WR4 : ((location = template_arrangement.symmetrical) AND (SELF\Product_view_definition.initial_context\product_definition_context.description = 'symmetrical')) OR 
-            (NOT (location = template_arrangement.symmetrical) AND NOT (SELF\Product_view_definition.initial_context\product_definition_context.description = 'symmetrical'));            
+      WR1 : SIZEOF(QUERY(ps <* templates | (ps.template\Multi_stratum_structured_template_armx.location <> SELF\Multi_stratum_structured_template_armx.location)
+              AND (ps.template\Multi_stratum_structured_template_armx.location <> template_arrangement.symmetrical))) = 0;
+      WR2 : ((SELF\Multi_stratum_structured_template_armx.location = template_arrangement.top) AND (SELF\Product_view_definition.initial_context\product_definition_context.description = 'top')) OR 
+            (NOT (SELF\Multi_stratum_structured_template_armx.location = template_arrangement.top) AND NOT (SELF\Product_view_definition.initial_context\product_definition_context.description = 'top'));
+      WR3 : ((SELF\Multi_stratum_structured_template_armx.location = template_arrangement.bottom) AND (SELF\Product_view_definition.initial_context\product_definition_context.description = 'bottom')) OR 
+            (NOT (SELF\Multi_stratum_structured_template_armx.location = template_arrangement.bottom) AND NOT (SELF\Product_view_definition.initial_context\product_definition_context.description = 'bottom'));
+      WR4 : ((SELF\Multi_stratum_structured_template_armx.location = template_arrangement.symmetrical) AND (SELF\Product_view_definition.initial_context\product_definition_context.description = 'symmetrical')) OR 
+            (NOT (SELF\Multi_stratum_structured_template_armx.location = template_arrangement.symmetrical) AND NOT (SELF\Product_view_definition.initial_context\product_definition_context.description = 'symmetrical'));
+      WR5 : ((SELF\Multi_stratum_structured_template_armx.location = template_arrangement.swappable) AND (SELF\Product_view_definition.initial_context\product_definition_context.description = 'swappable')) OR 
+            (NOT (SELF\Multi_stratum_structured_template_armx.location = template_arrangement.swappable) AND NOT (SELF\Product_view_definition.initial_context\product_definition_context.description = 'swappable'));
+      WR6 : NOT (SIZEOF(single_stratum_components) = 0) OR (SELF\Multi_stratum_structured_template_armx.location = padstack_based_location);      
   END_ENTITY;
 
   ENTITY Footprint_definition_armx
@@ -88,7 +93,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
       reference_package : OPTIONAL Part_usage_view;
     WHERE
       WR1 : SIZEOF (QUERY(shape <* SELF\Structured_template_armx.shapes |
-               NOT ('PART_TEMPLATE_2D_SHAPE_XIM.FOOTPRINT_DEFINITION_SHAPE_MODEL' IN TYPEOF(shape))
+               NOT ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.FOOTPRINT_DEFINITION_SHAPE_MODEL' IN TYPEOF(shape))
               )) = 0;
       WR2 : SIZEOF (QUERY(tlist <* SELF\Structured_template_armx.templates |
                ('FOOTPRINT_DEFINITION_XIM.FOOTPRINT_DEFINITION_ARMX' IN TYPEOF(tlist.template))
@@ -99,22 +104,58 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
     SUBTYPE OF (Structured_template_planar_shape_model);
       SELF\Structured_template_planar_shape_model.shape_characterized_definition : SET[1:1] OF Footprint_definition_armx;
       reference_shape : OPTIONAL physical_unit_shape_model_select;
+      reference_seating_plane_placement : OPTIONAL Usage_concept_usage_relationship_armx;      
     DERIVE
-      SELF\Representation.description : STRING := '';
+      SELF\Representation.description : STRING := ?;
     WHERE
       WR1 : NOT (SIZEOF(['PHYSICAL_UNIT_3D_SHAPE_XIM.PHYSICAL_UNIT_3D_SHAPE_MODEL',
                          'PHYSICAL_UNIT_2D_SHAPE_XIM.PHYSICAL_UNIT_PLANAR_SHAPE_MODEL'] * TYPEOF(reference_shape)) = 1) OR 
 			NOT ('PHYSICAL_UNIT_USAGE_VIEW_XIM.PART_USAGE_VIEW' IN TYPEOF(reference_shape\Physical_unit_shape_model.shape_characterized_definition)) OR            
-            NOT ('PART_TEMPLATE_2D_SHAPE_XIM.FOOTPRINT_DEFINITION_ARMX' IN TYPEOF(shape_characterized_definition[1])) OR      
+            NOT ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.FOOTPRINT_DEFINITION_ARMX' IN TYPEOF(shape_characterized_definition[1])) OR      
                  (shape_characterized_definition[1]\Footprint_definition_armx.reference_package :=: 
                   reference_shape\Physical_unit_shape_model.shape_characterized_definition);
       WR2 : NOT (SIZEOF(['PHYSICAL_UNIT_3D_SHAPE_XIM.PHYSICAL_UNIT_3D_SHAPE_MODEL',
                          'PHYSICAL_UNIT_2D_SHAPE_XIM.PHYSICAL_UNIT_PLANAR_SHAPE_MODEL'] * TYPEOF(reference_shape)) = 1) OR 
                 ('PHYSICAL_UNIT_USAGE_VIEW_XIM.PART_USAGE_VIEW' IN TYPEOF(reference_shape\Physical_unit_shape_model.shape_characterized_definition));                
-      WR3 : NOT (SIZEOF(['PART_TEMPLATE_3D_SHAPE_XIM.PART_TEMPLATE_3D_SHAPE_MODEL'] * TYPEOF(reference_shape)) = 1) OR 
-                ('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.PRINTED_PART_TEMPLATE_ARMX' 
-                   IN TYPEOF(reference_shape\Part_template_shape_model.shape_characterized_definition));
-      WR4 : NOT EXISTS(SELF\Representation.description);                
+      WR4 : NOT EXISTS(reference_shape) OR EXISTS(shape_characterized_definition[1]\Footprint_definition_armx.reference_package);
+      WR5 : NOT EXISTS(reference_seating_plane_placement) OR EXISTS(reference_shape);
+      WR6 : NOT EXISTS(reference_seating_plane_placement) OR ('PACKAGE_XIM.PACKAGE_ARMX' IN TYPEOF(shape_characterized_definition[1]\Footprint_definition_armx.reference_package));
+      WR7 : NOT EXISTS(reference_seating_plane_placement) OR ('NON_FEATURE_SHAPE_ELEMENT_XIM.SEATING_PLANE' IN 
+                TYPEOF(reference_seating_plane_placement\Usage_concept_usage_relationship_armx.associated_usage));
+      WR8 : NOT EXISTS(reference_seating_plane_placement) OR 
+                ((reference_seating_plane_placement\Usage_concept_usage_relationship_armx.associating_usage_shape\Usage_view_level_non_feature_shape_model.model_shape) =
+                reference_shape);
+      WR9 : NOT EXISTS(reference_seating_plane_placement) OR 
+                ((reference_seating_plane_placement\Usage_concept_usage_relationship_armx.associated_usage\Non_feature_shape_element.scope) =
+                SELF\Footprint_definition_armx.reference_package);
+     WR10 : NOT EXISTS(reference_seating_plane_placement) OR ('PHYSICAL_UNIT_3D_SHAPE_XIM.PHYSICAL_UNIT_3D_SHAPE_MODEL' IN 
+                TYPEOF(reference_seating_plane_placement\Usage_concept_usage_relationship_armx.associating_usage_shape\Usage_view_level_non_feature_shape_model.model_shape));
+     WR11 : NOT (EXISTS(reference_seating_plane_placement) AND ('PHYSICAL_UNIT_2D_SHAPE_XIM.PHYSICAL_UNIT_2D_SHAPE_MODEL' IN TYPEOF(reference_shape)));
+     WR12 : NOT ('PHYSICAL_UNIT_2D_SHAPE_ARM.PHYSICAL_UNIT_2D_SHAPE_MODEL' IN TYPEOF(reference_shape)) OR
+                 (SELF\shape_representation.context_of_items = reference_shape\shape_representation.context_of_items);                           
+  END_ENTITY;
+
+  ENTITY Package_footprint_relationship_definition_armx
+    SUBTYPE OF (Product_view_definition, package_footprint_relationship_definition);
+    DERIVE
+      associated_model : SET [1:1] OF shape_representation := fd_get_amodel(SELF);
+      related_models : SET [2:2] OF shape_representation := fd_get_rmodels(related_elements);
+      related_transforms : SET [2:2] OF representation_relationship_with_transformation := 
+                           fd_get_transforms(associated_model, related_models);      
+    INVERSE
+      related_elements : SET [2:2] OF product_definition_relationship for related_product_definition;
+    WHERE
+      WR1: 'PACKAGE_XIM.PACKAGE_ARMX' IN fd_get_components(related_elements);
+      WR2: 'FOOTPRINT_DEFINITION_XIM.FOOTPRINT_DEFINITION_ARMX' in fd_get_components(related_elements);
+      WR3: SIZEOF(related_models) = 2;
+      WR4: SIZEOF(associated_model) = 1;
+      WR5: SIZEOF(QUERY(rm <* related_models |
+                  ('PHYSICAL_UNIT_2D_SHAPE_XIM.PHYSICAL_UNIT_PLANAR_SHAPE_MODEL' IN TYPEOF(rm))
+              )) = 1;
+      WR6: SIZEOF(QUERY(rm <* related_models |
+                  ('FOOTPRINT_DEFINITION_XIM.FOOTPRINT_DEFINITION_SHAPE_MODEL' IN TYPEOF(rm))
+              )) = 1;
+      WR7: 'LAYERED_2D_SHAPE_XIM.PLANAR_SHAPE_MODEL' IN TYPEOF(associated_model[1]);
   END_ENTITY;
 
   ENTITY Part_feature_based_template_location
@@ -123,7 +164,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
     DERIVE
       all_reference_feature : SET [1:?] OF Part_feature := bag_to_set(USEDIN
       (SELF\Template_location_in_structured_template.assembly,
-      'PART_TEMPLATE_2D_SHAPE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.ASSEMBLY')); 
+      'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.ASSEMBLY')); 
       SELF\Template_location_in_structured_template.reference_designation :
         STRING := reference_feature\Shape_element.element_name;      
     WHERE
@@ -148,11 +189,12 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
   ) : template_arrangement;
 
     LOCAL
-      tlist : SET OF Template_location_in_structured_template := 
-        (QUERY(inx <* input | ('PART_TEMPLATE_2D_SHAPE_XIM.MULTI_STRATUM_STRUCTURED_TEMPLATE_ARMX' IN TYPEOF(inx.template))));
-      pabt : BAG OF STRING := [];
-      pabb : BAG OF STRING := [];
-      pabs : BAG OF STRING := [];
+      tlist          : SET OF Template_location_in_structured_template := 
+        (QUERY(inx <* input | ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.MULTI_STRATUM_STRUCTURED_TEMPLATE_ARMX' IN TYPEOF(inx.template))));
+      pabt           : BAG OF STRING := [];
+      pabb           : BAG OF STRING := [];
+      pabsymmetrical : BAG OF STRING := [];
+      pabswappable   : BAG OF STRING := [];
     END_LOCAL;
 
     REPEAT i := 1 TO SIZEOF(tlist) BY 1;
@@ -163,7 +205,11 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
         pabb := pabb + 'bottom';
       END_IF;
       IF (tlist[i].template\Multi_stratum_structured_template_armx.location = template_arrangement.symmetrical) THEN
-        pabs := pabs + 'symmetrical';
+        pabsymmetrical := pabsymmetrical + 'symmetrical';
+      END_IF;
+      IF (tlist[i].template\Multi_stratum_structured_template_armx.location = template_arrangement.swappable) THEN
+        pabswappable := pabswappable + 'swappable';
+
       END_IF;
     END_REPEAT;
     IF ((SIZEOF(pabt) > 0) AND (SIZEOF(pabb) = 0)) THEN
@@ -172,10 +218,83 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
     IF ((SIZEOF(pabb) > 0) AND (SIZEOF(pabt) = 0)) THEN
       RETURN(template_arrangement.bottom);
     END_IF;
-    IF ((SIZEOF(pabb) = 0) AND (SIZEOF(pabt) = 0) AND (SIZEOF(pabs) > 0)) THEN
+    IF ((SIZEOF(pabb) = 0) AND (SIZEOF(pabt) = 0) AND (SIZEOF(pabsymmetrical) > 0)) THEN    
       RETURN(template_arrangement.symmetrical);
+    END_IF;
+    IF ((SIZEOF(pabb) = 0) AND (SIZEOF(pabt) = 0) AND (SIZEOF(pabsymmetrical) = 0) AND (SIZEOF(pabswappable) > 0)) THEN
+      RETURN(template_arrangement.swappable);
     END_IF;
     RETURN(?);
   END_FUNCTION;
+
+  FUNCTION fd_get_components(input : SET[2:2] OF product_definition_relationship) : SET OF Product_view_definition;
+    LOCAL
+      pvd : SET OF Product_view_definition := [];
+    END_LOCAL;
+    REPEAT i := 1 TO HIINDEX(input);
+      pvd := pvd + input[i]\product_definition_relationship.relating_product_definition;
+    END_REPEAT;
+    RETURN (pvd);
+  END_FUNCTION; 
+
+  FUNCTION fd_get_amodel (input : Product_view_definition) : SET OF shape_representation;
+    LOCAL
+      gm : SET OF shape_representation := [];
+      is : SET OF Item_shape := [];
+      sda : SET OF Shape_description_association := [];      
+    END_LOCAL;
+    
+    is := bag_to_set(USEDIN(input,'SHAPE_PROPERTY_ASSIGNMENT_XIM.ITEM_SHAPE.DESCRIBED_ELEMENT'));
+
+    IF (SIZEOF(is) >= 0) THEN
+      REPEAT i := 1 TO HIINDEX(is);
+      sda := sda + bag_to_set(USEDIN(input,'SHAPE_PROPERTY_ASSIGNMENT_XIM.SHAPE_DESCRIPTION_ASSOCIATION.REPRESENTED_CHARACTERISTIC'));
+      END_REPEAT;
+     IF (SIZEOF(sda) >= 0) THEN
+       REPEAT i := 1 TO HIINDEX(sda);
+       gm := gm + sda[i]\Shape_description_association.representation;
+       END_REPEAT;    
+       RETURN (gm);
+     END_IF;
+    END_IF;
+    RETURN(?);  
+  END_FUNCTION; 
+
+  FUNCTION fd_get_rmodels (input : SET[2:2] OF product_definition_relationship) : SET OF shape_representation;
+    LOCAL
+      gm : SET OF shape_representation := [];
+      pvd : SET OF Product_view_definition := [];
+    END_LOCAL;
+      pvd := fd_get_components(input);
+    IF (SIZEOF(pvd) >= 0) THEN      
+      REPEAT i := 1 TO HIINDEX(pvd);
+        gm := gm + fd_get_amodel(pvd[i]);
+      END_REPEAT;
+      RETURN (gm);
+    END_IF;
+    RETURN(?);
+  END_FUNCTION; 
+
+  FUNCTION fd_get_transforms(input1 : SET[1:1] OF shape_representation;
+                             input2 : SET[2:2] OF shape_representation) 
+                             : SET OF representation_relationship_with_transformation;
+    LOCAL
+      gmrwt : SET OF representation_relationship_with_transformation := [];
+    END_LOCAL;
+    gmrwt := bag_to_set(USEDIN(input1[1],'EXTENDED_BASIC_GEOMETRY_XIM.SHAPE_REPRESENTATION_RELATIONSHIP.REP_1'));
+    REPEAT i := 1 TO HIINDEX(gmrwt);
+      IF NOT
+      ((gmrwt[i]\shape_representation_relationship.rep_2 IN input2)
+        AND
+        ('EXTENDED_BASIC_GEOMETRY_XIM.REPRESENTATION_RELATIONSHIP_WITH_TRANSFORMATION' IN 
+                                        TYPEOF(gmrwt[i]\Shape_representation_relationship.rep_2)))
+       THEN
+       RETURN(?);
+      END_IF;
+      RETURN(gmrwt);
+      END_REPEAT;
+    RETURN (?);
+  END_FUNCTION; 
+
 
 END_SCHEMA;

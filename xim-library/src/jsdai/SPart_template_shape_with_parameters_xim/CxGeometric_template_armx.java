@@ -32,7 +32,7 @@ package jsdai.SPart_template_shape_with_parameters_xim;
 import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SPart_template_shape_with_parameters_mim.CGeometric_template;
-import jsdai.SPhysical_layout_template_xim.*;
+import jsdai.SPart_template_xim.*;
 import jsdai.SProduct_definition_schema.EProduct_definition;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;

@@ -7,20 +7,21 @@
 SCHEMA Physical_unit_design_view_mim;
 
 USE FROM Component_grouping_mim;	-- ISO/TS 10303-1656
-USE FROM Physical_layout_template_mim;	-- ISO/TS 10303-1722
+USE FROM Part_template_mim;	-- ISO/TS 10303-1722
 USE FROM Physical_unit_usage_view_mim;	-- ISO/TS 10303-1732
 USE FROM Specification_document_mim;	-- ISO/TS 10303-1747
 
 USE FROM application_context_schema(application_context_element);
 
-  TYPE component_material_relationship_assignment_item = SELECT 
+  TYPE component_material_relationship_assignment_item = EXTENSIBLE SELECT (* GL fix for XIM *) 
     (assembly_item_number, 
      assembly_component_usage, 
      specification_definition);
   END_TYPE;
  
   TYPE pudv_groupable_item = SELECT BASED_ON groupable_item WITH 
-    (assembly_component_usage);
+    (assembly_component,
+    assembly_component_usage);
   END_TYPE; 
 	
   TYPE pudv_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH 
@@ -34,8 +35,7 @@ USE FROM application_context_schema(application_context_element);
     DERIVE
       SELF\property_definition.definition : assembly_component := SELF;
     WHERE
-      WR1: SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' +'NAME_ATTRIBUTE.NAMED_ITEM')) = 0;
-      WR2: NOT EXISTS(SELF\property_definition.description);
+      WR1: NOT EXISTS(SELF\property_definition.description);
   END_ENTITY;
 
   ENTITY assembly_item_number 
@@ -53,7 +53,8 @@ USE FROM application_context_schema(application_context_element);
       WR1: NOT EXISTS(SELF\product_definition_relationship.description);
       WR2: NOT EXISTS(SELF\property_definition.description);    
       WR3: SELF\product_definition_relationship.id = SELF\product_definition.id;
-      WR4: SELF\product_definition_relationship.name = '';
+      WR4: SELF\product_definition_relationship.name = 'definition usage';
+      WR5: NOT ('PRODUCT_STRUCTURE_SCHEMA.' + 'PRODUCT_DEFINITION_USAGE' IN TYPEOF(SELF));
   END_ENTITY;
 
   ENTITY component_material_relationship 

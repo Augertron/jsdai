@@ -35,6 +35,7 @@ import jsdai.util.LangUtils;
 import jsdai.SBare_die_mim.CBare_die_template_terminal;
 import jsdai.SFeature_and_connection_zone_mim.EConnection_zone_interface_plane_relationship;
 import jsdai.SFeature_and_connection_zone_xim.CxShape_feature;
+import jsdai.SFeature_and_connection_zone_xim.EShape_feature;
 import jsdai.SPhysical_unit_usage_view_xim.*;
 import jsdai.SProduct_property_definition_schema.*;
 
@@ -46,19 +47,19 @@ public class CxBare_die_template_terminal_armx extends CBare_die_template_termin
 	// From CShape_aspect.java
 	/// methods for attribute: product_definitional, base type: LOGICAL
 /*	public boolean testProduct_definitional(EShape_aspect type) throws SdaiException {
-		return test_logical(a7);
+		return test_logical(a8);
 	}
 	public int getProduct_definitional(EShape_aspect type) throws SdaiException {
-		return get_logical(a7);
+		return get_logical(a8);
 	}*/
 	public void setProduct_definitional(EShape_aspect type, int value) throws SdaiException {
-		a7 = set_logical(value);
+		a8 = set_logical(value);
 	}
 	public void unsetProduct_definitional(EShape_aspect type) throws SdaiException {
-		a7 = unset_logical();
+		a8 = unset_logical();
 	}
 	public static jsdai.dictionary.EAttribute attributeProduct_definitional(EShape_aspect type) throws SdaiException {
-		return a7$;
+		return a8$;
 	}
 	// ENDOF From CShape_aspect.java
 	
@@ -83,7 +84,7 @@ public class CxBare_die_template_terminal_armx extends CBare_die_template_termin
 		// Clean ARM
 
 		// external_connection_area
-		unsetConnection_area(null);
+		unsetConnection_area((EShape_feature)null);
 		
       // seating_plane_zone		
 		unsetSeating_plane_zone(null);

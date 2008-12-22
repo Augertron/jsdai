@@ -32,7 +32,7 @@ USE FROM Functional_usage_view_xim;
 
 USE FROM Printed_physical_layout_template_mim;
 
-USE FROM Part_template_2d_shape_xim; -- ISO/CD-TS 10303-1716
+USE FROM Layered_interconnect_complex_template_xim; -- ISO/CD-TS 10303-1716
 
 REFERENCE FROM support_resource_schema   -- ISO 10303-41
   (bag_to_set);
@@ -288,7 +288,7 @@ END_SUBTYPE_CONSTRAINT;
           (SIZEOF(QUERY(tsm <* tiebar_shape_model |
           (ap2d_geometrically_in_tiebar(pcl,tsm)) )) > 0)
           )) = SIZEOF(passage_component_location));
-        WR4: SIZEOF(QUERY(t <* SELF\Structured_template.templates | 'FABRICATION_TECHNOLOGY_ARM.STRATUM_FEATURE_TEMPLATE' IN TYPEOF(t\Template_location_in_structured_template.template))) > 0;
+        WR4: SIZEOF(QUERY(t <* SELF\Structured_template.templates | 'LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_XIM.STRATUM_FEATURE_TEMPLATE' IN TYPEOF(t\Template_location_in_structured_template.template))) > 0;
         WR5: SIZEOF(QUERY(spptt <* SELF\Printed_part_template.access_mechanisms | 
           NOT(SIZEOF(USEDIN(spptt,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION.CONNECTED_TERMINALS')) = 1)
           )) = 0;
@@ -318,7 +318,7 @@ END_SUBTYPE_CONSTRAINT;
             NOT ('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.STRUCTURED_PRINTED_PART_TEMPLATE_TERMINAL_ARMX'
                   IN TYPEOF(t)))) = 0;
       WR2 : SIZEOF(QUERY(t <* SELF\Structured_template_armx.templates |
-            'PART_TEMPLATE_2D_SHAPE_XIM.STRUCTURED_TEMPLATE_ARMX' IN TYPEOF(t.template))) = 0;
+            'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.STRUCTURED_TEMPLATE_ARMX' IN TYPEOF(t.template))) = 0;
   END_ENTITY;
 
   ENTITY Structured_printed_part_template_terminal_armx
@@ -326,7 +326,7 @@ END_SUBTYPE_CONSTRAINT;
       SELF\Printed_part_template_terminal_armx.associated_definition : Structured_printed_part_template_armx;
       associated_composition_relationship : Template_location_in_structured_template;    
     WHERE
-      WR1 : associated_composition_relationship.assembly :=: associated_definition;
+      WR1 : associated_composition_relationship\Template_location_in_structured_template.assembly :=: associated_definition;      
 (* used attribute has been deleted      
       WR2 : SIZEOF(QUERY(t <* SELF\Placed_feature_armx.feature_shape |
              NOT (associated_composition_relationship.template IN t.composed_model[1]\Part_template_shape_model.shape_characterized_definition))) = 0;

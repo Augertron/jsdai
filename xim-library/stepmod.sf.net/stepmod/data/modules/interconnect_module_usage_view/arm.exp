@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4005 - ISO/TS 10303-1686 Interconnect module usage view - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3447
+   ISO TC184/SC4/WG12 N5668 - ISO/TS 10303-1686 Interconnect module usage view - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4005
 *)
 
 SCHEMA Interconnect_module_usage_view_arm;
@@ -23,7 +23,7 @@ SCHEMA Interconnect_module_usage_view_arm;
       WR2 : SIZEOF(QUERY(ucur <* USEDIN(SELF,
             'PART_FEATURE_LOCATION_ARM.USAGE_CONCEPT_USAGE_RELATIONSHIP.' +
             'ASSOCIATED_USAGE') | NOT
-            ('PART_TEMPLATE_EXTENSION_ARM.PLANAR_CLOSED_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN TYPEOF(ucur.associated_shape_definition))
+            ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_ARM.SINGLE_BOUNDARY_CSG_2D_MODEL' IN TYPEOF(ucur.associated_shape_definition))
             )) = 0;  
   END_ENTITY;
 
@@ -34,12 +34,6 @@ SCHEMA Interconnect_module_usage_view_arm;
       end_vertex       : Edge_segment_vertex;
     WHERE
       WR1 : start_vertex :<>: end_vertex;
-      WR2 : SIZEOF(QUERY(ucur <* USEDIN(SELF,
-            'PART_FEATURE_LOCATION_ARM.USAGE_CONCEPT_USAGE_RELATIONSHIP.' +
-            'ASSOCIATED_USAGE') | NOT
-            (('PART_TEMPLATE_EXTENSION_ARM.PLANAR_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN TYPEOF(ucur.associated_shape_definition)) AND NOT
-            ('PART_TEMPLATE_EXTENSION_ARM.PLANAR_CLOSED_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN TYPEOF(ucur.associated_shape_definition)))            
-            )) = 0;  
   END_ENTITY;
 
   ENTITY Interconnect_module_cutout_surface
@@ -48,7 +42,7 @@ SCHEMA Interconnect_module_usage_view_arm;
     WR1: SIZEOF(QUERY(ucur <* USEDIN(SELF,
          'PART_FEATURE_LOCATION_ARM.USAGE_CONCEPT_USAGE_RELATIONSHIP.' +
          'ASSOCIATED_USAGE') | NOT
-         ('PART_TEMPLATE_EXTENSION_ARM.PLANAR_CLOSED_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN
+         ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_ARM.SINGLE_BOUNDARY_CSG_2D_MODEL' IN
          TYPEOF(ucur.associated_shape_definition)))) = 0;  
   END_ENTITY;
 
@@ -59,12 +53,6 @@ SCHEMA Interconnect_module_usage_view_arm;
       end_vertex       : Edge_segment_vertex;
     WHERE
       WR1 : start_vertex :<>: end_vertex;
-      WR2 : SIZEOF(QUERY(ucur <* USEDIN(SELF,
-            'PART_FEATURE_LOCATION_ARM.USAGE_CONCEPT_USAGE_RELATIONSHIP.' +
-            'ASSOCIATED_USAGE') | NOT
-            (('PART_TEMPLATE_EXTENSION_ARM.PLANAR_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN TYPEOF(ucur.associated_shape_definition)) AND NOT
-            ('PART_TEMPLATE_EXTENSION_ARM.PLANAR_CLOSED_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN TYPEOF(ucur.associated_shape_definition)))            
-            )) = 0;  
   END_ENTITY;
 
   ENTITY Interconnect_module_edge_surface
@@ -73,7 +61,7 @@ SCHEMA Interconnect_module_usage_view_arm;
     WR1: SIZEOF(QUERY(ucur <* USEDIN(SELF,
          'PART_FEATURE_LOCATION_ARM.USAGE_CONCEPT_USAGE_RELATIONSHIP.' +
          'ASSOCIATED_USAGE') | NOT
-         ('PART_TEMPLATE_EXTENSION_ARM.PLANAR_CLOSED_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN
+         ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_ARM.SINGLE_BOUNDARY_CSG_2D_MODEL' IN
          TYPEOF(ucur.associated_shape_definition)))) = 0;  
   END_ENTITY;
 
@@ -98,13 +86,13 @@ SCHEMA Interconnect_module_usage_view_arm;
  Interconnect_module_edge_surface,
  Interconnect_module_edge_segment_surface))
     SUBTYPE OF (Part_feature);
-      SELF\Part_feature.associated_definition : Interconnect_module_usage_view;
+      SELF\Part_feature.associated_definition : Layered_interconnect_module_usage_view;
   END_ENTITY;
 
   ENTITY Interconnect_module_terminal
     SUBTYPE OF (Part_terminal);
       SELF\Shape_feature.connection_area      : OPTIONAL SET[1:?] OF Connection_zone_in_usage_view;            
-      SELF\Part_feature.associated_definition : Interconnect_module_usage_view;
+      SELF\Part_feature.associated_definition : Layered_interconnect_module_usage_view;
   END_ENTITY;
 
   ENTITY Interconnect_module_terminal_surface_constituent_relationship
@@ -114,8 +102,12 @@ SCHEMA Interconnect_module_usage_view_arm;
   END_ENTITY;
 
   ENTITY Interconnect_module_usage_view
-    SUPERTYPE OF (Pcb_usage_view)
+    SUPERTYPE OF (Layered_interconnect_module_usage_view)
     SUBTYPE OF (Part_usage_view);
+  END_ENTITY;
+
+  ENTITY Layered_interconnect_module_usage_view
+    SUBTYPE OF (Interconnect_module_usage_view);
       thickness_over_dielectric_requirement : OPTIONAL Length_tolerance_characteristic;
       thickness_over_metal_requirement      : OPTIONAL Length_tolerance_characteristic;
       measurement_condition                 : OPTIONAL Restraint_condition;
@@ -135,16 +127,10 @@ SCHEMA Interconnect_module_usage_view_arm;
       reference_location    : Axis_placement;
       thickness_requirement : Length_tolerance_characteristic;
     INVERSE
-      design : SET[1:?] OF interconnect_module_usage_view FOR located_thickness_requirement;
+      design : SET[1:?] OF Layered_interconnect_module_usage_view FOR located_thickness_requirement;
     UNIQUE
       UR1 : design,
  reference_location;
-  END_ENTITY;
-
-  ENTITY Pcb_usage_view
-    SUBTYPE OF (Interconnect_module_usage_view);
-    WHERE
-      WR1 : EXISTS(thickness_over_metal_requirement) OR EXISTS(thickness_over_dielectric_requirement);
   END_ENTITY;
 
 END_SCHEMA;

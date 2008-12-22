@@ -84,6 +84,7 @@ public class CxPhysical_unit_planar_keepout_shape_model extends CPhysical_unit_p
 		setConstrained_design_object_category(context, this);
       setAssociated_element(context, this);
       setModel_shape(context, this);
+      setSide(context, this);
 		// PUPKS
       setShape_distance_from_seating_plane(context, this);
 		setShape_location_with_respect_to_seating_plane(context, this);
@@ -105,6 +106,7 @@ public class CxPhysical_unit_planar_keepout_shape_model extends CPhysical_unit_p
       unsetAssociated_element(null);
       unsetModel_shape(null);
       unsetComponent_application(null);
+      unsetSide(null);
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
@@ -125,6 +127,7 @@ public class CxPhysical_unit_planar_keepout_shape_model extends CPhysical_unit_p
       unsetAssociated_element(context, null);
       unsetModel_shape(context, null);
       unsetComponent_application(context, this);
+      unsetSide(context, this);
 	}
 	
 	
@@ -636,6 +639,61 @@ public static void unsetModel_shape(SdaiContext context, ENon_feature_shape_mode
         "compliant components permitted",
         "no components permitted"};
      String keyword = "component application";
+     CxPhysical_unit_shape_model.unsetRepresentation_item(context, armEntity, keyword, list);
+  }
+  
+  /**
+   * Sets/creates data for side attribute.
+   *
+   * <p>
+	attribute_mapping side(side, descriptive_representation_item);
+		shape_representation <=
+		representation <-
+		representation_relationship.rep_1 
+		representation_relationship 
+		representation_relationship.rep_2 -> 
+		representation 
+		{representation.name = 'side'}
+		representation.items[i] ->
+		representation_item
+		{(representation_item.name = 'same side')
+		(representation_item.name = 'opposite side')
+		(representation_item.name = 'both sides')}
+		representation_item =>
+		descriptive_representation_item
+	end_attribute_mapping;
+   * </p>
+   * @param context SdaiContext.
+   * @param armEntity arm entity.
+   * @throws SdaiException
+   */
+  public static void setSide(SdaiContext context,
+     EPhysical_unit_planar_keepout_shape_model armEntity) throws SdaiException {
+     //unset is done inside this method
+     String[] list = {
+    	        "same side",
+    	        "opposite side",
+    	        "both sides"};
+     String keyword = "side";
+     CxPhysical_unit_shape_model.setRepresentation_item(context, armEntity,
+        CPhysical_unit_planar_keepout_shape_model.attributeSide(null),
+        keyword, list);
+  }
+
+  /**
+   * Unsets/deletes data for side attribute.
+   *
+   * @param context SdaiContext.
+   * @param armEntity arm entity.
+   * @throws SdaiException
+   */
+  public static void unsetSide(SdaiContext context,
+     EPhysical_unit_planar_keepout_shape_model armEntity) throws SdaiException {
+     String[] list = {
+ 	        "same side",
+	        "opposite side",
+	        "both sides"};
+     String keyword = "side";
      CxPhysical_unit_shape_model.unsetRepresentation_item(context, armEntity, keyword, list);
   }
   

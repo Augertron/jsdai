@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4041 - ISO/TS 10303-1698 Layered interconnect module design - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3483
+   ISO TC184/SC4/WG12 N5701 - ISO/TS 10303-1698 Layered interconnect module design - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4041
 *)
 
 SCHEMA Layered_interconnect_module_design_arm;
@@ -14,7 +14,21 @@ USE FROM Physical_connectivity_definition_arm;	-- ISO/TS 10303-1755
 USE FROM Interconnect_module_connection_routing_arm;
 USE FROM Assembly_component_placement_requirements_arm;	-- ISO/TS 10303-1634	
 
+REFERENCE FROM Physical_unit_design_view_arm(get_assemblies);  -- ISO/TS 10303-1765
 REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
+
+ CONSTANT
+   Pre_defined_physical_network_group_types : SET OF STRING := [
+      'differential pair',
+      'balanced length',
+      'coaxial group',
+      'multi line bus'];
+
+   Pre_defined_physical_network_group_relation_types : SET OF STRING := [
+      'group to higher order group',
+      'element to ordered multiple line bus'];
+
+ END_CONSTANT;
 
   TYPE area_component_templates = SELECT (
     Stratum_feature_template, -- when area_component comes from library
@@ -124,7 +138,9 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
   END_TYPE; 
 
   TYPE limd_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH  
-    (Stratum_feature_based_derived_pattern,
+    (Externally_defined_physical_network_group,
+     Externally_defined_physical_network_group_element_relationship,
+     Stratum_feature_based_derived_pattern,
      Stratum,
      Laminate_component);
   END_TYPE;
@@ -133,8 +149,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     (Printed_part_template_terminal,
      Land_template_terminal,
      Component_termination_passage_template_terminal,
-     Via_template_terminal,
-     Part_terminal_external_reference);
+     Via_template_terminal);
   END_TYPE; 
 
   TYPE limd_physical_feature_or_part_template = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON physical_feature_or_part_template WITH 
@@ -146,7 +161,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
   TYPE limd_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
     (Stratum_feature_conductive_join,
      Dielectric_crossover_area,
-     Interconnect_module);
+     Layered_interconnect_module_design_view);
   END_TYPE; 
 
   TYPE limd_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
@@ -316,7 +331,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
 
   ENTITY Conductive_interconnect_element_with_pre_defined_transitions
     SUBTYPE OF (Conductive_interconnect_element);
-      centreline_shape                                                           : Planar_path_shape_model_with_parameters;
+      centreline_shape                                                           : Path_area_with_parameters;
       SELF\Definition_based_product_occurrence.derived_from                      : Trace_template;
       SELF\Stratum_feature_template_component.implementation_or_resident_stratum : Stratum_feature;
     WHERE
@@ -470,14 +485,14 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     WHERE
       WR1 : terminal_location.assembly :=: relating_view.derived_from;
       WR2 : terminal_location.template :=: sub_assembly_reference_designation.assembly;
-      WR3 : 'PART_TEMPLATE_2D_SHAPE_ARM.PADSTACK_DEFINITION' IN TYPEOF(sub_assembly_reference_designation.assembly);
+      WR3 : 'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.PADSTACK_DEFINITION' IN TYPEOF(sub_assembly_reference_designation.assembly);
   END_ENTITY;
 
   ENTITY Generic_physical_network
     ABSTRACT SUPERTYPE OF (ONEOF(Unrouted_physical_network, Routed_physical_network));
       name                                         : STRING;
-      current_associated_definition                : Interconnect_module;
-      prior_associated_definition                  : OPTIONAL SET[1:?] OF Interconnect_module;      
+      current_associated_definition                : Layered_interconnect_module_design_view;
+      prior_associated_definition                  : OPTIONAL SET[1:?] OF Layered_interconnect_module_design_view;      
       connectivity_requirement_element             : SET[1:?] OF Laminate_component_join_terminal;
       reference_connected_terminals                : OPTIONAL Part_connected_terminals_definition;    
       unrouted_connectivity_requirement_element    : OPTIONAL SET[1:?] OF Unrouted_join_relationship;
@@ -501,7 +516,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       WR1 : NOT EXISTS(SELF\View_definition_relationship.relation_type);
       WR2 : from_stratum IN included_stratum;
       WR3 : to_stratum IN included_stratum;
-      WR4 : EXISTS(from_stratum\Stratum.assembly[1]\Interconnect_module_stratum_assembly_relationship.assembly\Interconnect_module.used_stack_model);
+      WR4 : EXISTS(from_stratum\Stratum.assembly[1]\Interconnect_module_stratum_assembly_relationship.assembly\Layered_interconnect_module_design_view.used_stack_model);
   END_ENTITY;
 
   ENTITY Inter_stratum_feature
@@ -513,9 +528,9 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       SELF\Definition_based_product_occurrence.derived_from : Inter_stratum_feature_template;
     WHERE
       WR1: NOT EXISTS(vertical_extent) OR (SIZEOF(QUERY(pvd <* get_assemblies(SELF) |
-         NOT(('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.INTERCONNECT_MODULE' IN TYPEOF(pvd)) AND             
+         NOT(('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.LAYERED_INTERCONNECT_MODULE_DESIGN_VIEW' IN TYPEOF(pvd)) AND             
               (vertical_extent\Stratum_sub_stack.associated_stackup =
-                   pvd\Interconnect_module.used_stack_model))
+                   pvd\Layered_interconnect_module_design_view.used_stack_model))
                    )) = 0);
   END_ENTITY;
 
@@ -533,13 +548,13 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       associated_usage                            : Connection_zone_in_design_view;
       associated_connection_zone_shape_definition : Geometric_model;
       associated_usage_placement                  : Axis_placement;
-      associating_design_view                     : Interconnect_module;
+      associating_design_view                     : Layered_interconnect_module_design_view;
   END_ENTITY;
 
-  ENTITY Interconnect_module
-  	SUPERTYPE OF (Pcb)
-    SUBTYPE OF (Assembly_definition, Part_design_view);
-      used_stack_model : OPTIONAL Design_stack_model;
+  ENTITY Layered_interconnect_module_design_view
+  	SUPERTYPE OF (Layered_interconnect_panel_design_view)
+    SUBTYPE OF (Interconnect_module_design_view);
+      used_stack_model : Design_stack_model;
     INVERSE
       requirements : SET[0:?] OF Requirement_assignment FOR assigned_to;
     WHERE
@@ -554,6 +569,15 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
               ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.INTERCONNECT_MODULE_EDGE' IN TYPEOF(vdr.related_view)))
                   )) = 1;
   END_ENTITY;
+
+  ENTITY Layered_interconnect_panel_design_view
+    SUBTYPE OF (Layered_interconnect_module_design_view);
+  END_ENTITY;
+
+  ENTITY Interconnect_module_design_view
+    SUPERTYPE OF (Layered_interconnect_module_design_view)
+    SUBTYPE OF (Assembly_definition, Part_design_view);
+  END_ENTITY; 
 
   ENTITY Interconnect_module_edge
     SUPERTYPE OF (ONEOF (Partially_plated_interconnect_module_edge,
@@ -590,7 +614,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
   END_ENTITY;
 
   ENTITY Interconnect_module_stratum_assembly_relationship;
-      assembly              : Interconnect_module;
+      assembly              : Layered_interconnect_module_design_view;
       component             : Stratum;
       reference_designation : STRING; 
     UNIQUE
@@ -639,7 +663,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
   ENTITY Join_relationship
     ABSTRACT SUPERTYPE OF (ONEOF (Routed_join_relationship,
 	 	Unrouted_join_relationship));
-      associated_layout : Interconnect_module;
+      associated_layout : Layered_interconnect_module_design_view;
   END_ENTITY;
 
   ENTITY Laminate_component
@@ -654,7 +678,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     INVERSE
 	  cad_layer						: SET[0:1] OF External_source_identification FOR item;      	  
     WHERE
-      WR1:('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.INTERCONNECT_MODULE' IN TYPEOF(SELF\Assembly_component.occurrence_contexts[1]\Product_occurrence_definition_relationship.relating_view))
+      WR1:('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.LAYERED_INTERCONNECT_MODULE_DESIGN_VIEW' IN TYPEOF(SELF\Assembly_component.occurrence_contexts[1]\Product_occurrence_definition_relationship.relating_view))
          OR
         ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRUCTURED_LAYOUT_COMPONENT_SUB_ASSEMBLY_RELATIONSHIP' IN TYPEOF(SELF\Assembly_component.occurrence_contexts[1]));
   END_ENTITY;
@@ -694,9 +718,10 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
   ENTITY Layer_stack_region
     SUBTYPE OF (Instanced_feature);
       applied_stack                       : SET [1:?] OF Local_linear_stack;
-      SELF\Shape_element.containing_shape : Interconnect_module;
+      SELF\Shape_element.containing_shape : Layered_interconnect_module_design_view;
     WHERE
       WR1: SIZEOF(SELF\Shape_feature_definition.feature_model) = 1;
+      WR2: 'CONSTRUCTIVE_SOLID_GEOMETRY_2D_ARM.SINGLE_BOUNDARY_CSG_2D_MODEL' IN TYPEOF (SELF\Shape_feature_definition.feature_model[1]);
   END_ENTITY;
 
   ENTITY Generic_laminate_text_component
@@ -754,7 +779,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
 
   ENTITY Layout_junction;
       name                  : STRING;  
-      associated_definition : Interconnect_module;
+      associated_definition : Layered_interconnect_module_design_view;
       net                   : Generic_physical_network;
       location              : Cartesian_point;
     UNIQUE
@@ -846,16 +871,57 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       WR1 : NOT EXISTS(SELF\Product_view_definition.name);
   END_ENTITY;
 
-  ENTITY Pcb
-    SUBTYPE OF (Interconnect_module);
-      SELF\Interconnect_module.used_stack_model : Design_stack_model;    
-      SELF\Part_design_view.usage_view          : OPTIONAL Pcb_usage_view;
-  END_ENTITY;
-
   ENTITY Physical_connectivity_interrupting_cutout
     SUBTYPE OF (Cutout);
       interrupted_connectivity_element : SET[1:?] OF Conductive_interconnect_element;
   END_ENTITY;
+
+ ENTITY Physical_network_group
+   ABSTRACT SUPERTYPE OF (ONEOF (Pre_defined_physical_network_group,
+                                 Externally_defined_physical_network_group))
+   SUBTYPE OF (Group);
+    SELF\Group.elements : SET [1:?] OF Generic_physical_network;
+ END_ENTITY;
+
+ ENTITY Pre_defined_physical_network_group
+   SUBTYPE OF (Physical_network_group);
+ WHERE
+   WR1: SELF\Group.membership_meaning IN Pre_defined_physical_network_group_types;
+ END_ENTITY;
+
+ ENTITY Externally_defined_physical_network_group
+   SUBTYPE OF (Physical_network_group);
+ INVERSE
+          source : External_source_identification FOR item;
+ WHERE
+   WR1: NOT (SELF\Group.membership_meaning IN Pre_defined_physical_network_group_types);
+ END_ENTITY; 
+
+ ENTITY Physical_network_group_element_relationship
+   ABSTRACT SUPERTYPE OF (ONEOF (Pre_defined_physical_network_group_element_relationship,
+                                 Externally_defined_physical_network_group_element_relationship))
+   SUBTYPE OF (Group_relationship);
+    SELF\Group_relationship.relating_group : Physical_network_group;
+    SELF\Group_relationship.related_group : Physical_network_group;
+   WHERE
+    WR1 : acyclic_physical_network_group_element_relationship(SELF,
+        [related_group], 
+        'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.PHYSICAL_NETWORK_GROUP_ELEMENT_RELATIONSHIP');
+ END_ENTITY;
+
+ ENTITY Pre_defined_physical_network_group_element_relationship
+   SUBTYPE OF (Physical_network_group_element_relationship);
+ WHERE
+   WR1: SELF\Group_relationship.relation_type IN Pre_defined_physical_network_group_relation_types;
+ END_ENTITY;
+
+ ENTITY Externally_defined_physical_network_group_element_relationship
+   SUBTYPE OF (Physical_network_group_element_relationship);
+ INVERSE
+          source : External_source_identification FOR item;
+ WHERE
+   WR1: NOT (SELF\Group_relationship.relation_type IN Pre_defined_physical_network_group_relation_types);
+ END_ENTITY; 
 
   ENTITY Plated_cutout
     SUBTYPE OF (Cutout, Plated_inter_stratum_feature);
@@ -1069,7 +1135,13 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     WHERE
       WR1: NOT EXISTS(SELF\Product_view_definition.name);
       WR2: ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.CONDUCTIVE_INTERCONNECT_ELEMENT_WITH_PRE_DEFINED_TRANSITIONS' IN TYPEOF(SELF)) OR
-        NOT('PART_TEMPLATE_EXTENSION_ARM.TRACE_TEMPLATE' IN TYPEOF(derived_from));        
+        NOT('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_ARM.TRACE_TEMPLATE' IN TYPEOF(derived_from));        
+  END_ENTITY;
+
+  ENTITY Stratum_feature_template_component_with_stratum_feature
+    SUBTYPE OF (Stratum_feature_template_component, Stratum_feature);
+    DERIVE
+      SELF\Stratum_feature_template_component.implementation_or_resident_stratum : Stratum_feature := SELF;
   END_ENTITY;
 
   ENTITY Stratum_surface;
@@ -1126,6 +1198,12 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       WR8: NOT EXISTS(overriding_shape) OR (related_view.derived_from IN overriding_shape.shape_characterized_definition);
       WR9: NOT ((first_location\Template_location_in_structured_template.placement_status = template_location_placement_status.is_fixed) AND 
                  design_specific_placement);
+  END_ENTITY;
+
+  ENTITY Structured_layout_component_sub_assembly_relationship_with_component
+    SUBTYPE OF (Structured_layout_component_sub_assembly_relationship, Assembly_component);
+    DERIVE
+	  SELF\Structured_layout_component_sub_assembly_relationship.related_view : Assembly_component := SELF;
   END_ENTITY;
 
   ENTITY Unplated_cutout_edge_segment
@@ -1186,15 +1264,15 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       WR1 : NOT EXISTS(SELF\Shape_element.description);
   END_ENTITY;
 
-RULE limd_unique_stratum FOR (Stratum, Interconnect_module, Stratum_technology_occurrence);
+RULE limd_unique_stratum FOR (Stratum, Layered_interconnect_module_design_view, Stratum_technology_occurrence);
  LOCAL
       s : BAG OF Stratum := [];
       imsar : BAG OF Interconnect_module_stratum_assembly_relationship := [];
       sto : BAG OF Stratum_technology_occurrence := [];
 	  pass : BOOLEAN := TRUE;
  END_LOCAL;
- REPEAT i := 1 to SIZEOF(Interconnect_module) by 1;
-    imsar := bag_to_set(USEDIN(Interconnect_module[i], 
+ REPEAT i := 1 to SIZEOF(Layered_interconnect_module_design_view) by 1;
+    imsar := bag_to_set(USEDIN(Layered_interconnect_module_design_view[i], 
                         'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.INTERCONNECT_MODULE_STRATUM_ASSEMBLY_RELATIONSHIP.ASSEMBLY'));
 	REPEAT j := 1 to SIZEOF(imsar) by 1;
 	   s := s + imsar[j].component;
@@ -1216,7 +1294,7 @@ RULE limd_unique_stratum FOR (Stratum, Interconnect_module, Stratum_technology_o
 END_RULE;
   
 (*
-  desc: for each interconnect_module in a data set, no more than one stratum shall reference the same stratum_technology_occurrence as a definition.
+  desc: for each interconnect_module_design_view in a data set, no more than one stratum shall reference the same stratum_technology_occurrence as a definition.
 *)
 
   FUNCTION acyclic_area_component
@@ -1260,6 +1338,30 @@ END_RULE;
     REPEAT i := 1 TO HIINDEX(x);
       IF NOT acyclic_conductive_interconnect_element_terminal_link(x[i], relatives +
         relation.precedent_point, specific_relation) THEN
+        RETURN (FALSE);
+      END_IF;
+    END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION; 
+  
+  FUNCTION acyclic_physical_network_group_element_relationship
+    (relation : Physical_network_group_element_relationship; 
+    relatives : SET[1:?] OF Physical_network_group; 
+    specific_relation : STRING) : BOOLEAN; 
+  LOCAL
+     x : SET OF Physical_network_group_element_relationship := [];
+  END_LOCAL;
+
+    IF relation.relating_group IN relatives THEN
+      RETURN (FALSE);
+    END_IF;
+    x := QUERY(pd <* bag_to_set(USEDIN(relation.relating_group,
+      'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.' +
+      'PHYSICAL_NETWORK_GROUP_ELEMENT_RELATIONSHIP.' +
+      'RELATED_GROUP')) | specific_relation IN TYPEOF(pd));
+    REPEAT i := 1 TO HIINDEX(x);
+      IF NOT acyclic_physical_network_group_element_relationship(x[i], relatives +
+        relation.relating_group, specific_relation) THEN
         RETURN (FALSE);
       END_IF;
     END_REPEAT;
@@ -1338,26 +1440,6 @@ END_RULE;
 
     v1 := v1 + input2 + input3 + input4;
     RETURN(v1);
-  END_FUNCTION;
-
-  FUNCTION get_assemblies(input : Assembly_component) : SET OF Product_view_definition;
-    LOCAL
-      acr : SET OF Assembly_component_relationship := input\Assembly_component.occurrence_contexts;
-      pvd : SET OF Product_view_definition := [];
-    END_LOCAL;
-
-    REPEAT i := 1 TO HIINDEX(acr) BY 1;
-      IF NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.' +
-        'STRUCTURED_LAYOUT_COMPONENT' IN
-        TYPEOF(acr[i]\Product_occurrence_definition_relationship.relating_view))
-      THEN
-        pvd := pvd + acr[i]\Product_occurrence_definition_relationship.relating_view; 
-      ELSE
-        pvd := pvd + get_assemblies(acr[i]\Product_occurrence_definition_relationship.relating_view);
-      END_IF;
-    END_REPEAT;
-
-    RETURN (pvd);
   END_FUNCTION;
 
   FUNCTION get_ims(input : Stratum) : SET OF Product_view_definition;

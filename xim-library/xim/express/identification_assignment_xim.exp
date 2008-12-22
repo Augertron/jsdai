@@ -44,12 +44,8 @@ Pre_defined_identification_assignment_types : SET OF STRING := [
 	'alias'];
 END_CONSTANT;
 
-TYPE ia_external_identification_item_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH (
-	  Externally_defined_identification_assignment);
-END_TYPE;
-
 ENTITY Pre_defined_identification_assignment
-	ABSTRACT SUPERTYPE OF (Applied_identification_assignment__alias)
+	ABSTRACT SUPERTYPE
   SUBTYPE OF (applied_identification_assignment);
   WHERE
     WR1: SELF\identification_assignment.role.name IN Pre_defined_identification_assignment_types;
@@ -61,12 +57,6 @@ INVERSE
   source : External_source_identification FOR item;
 WHERE
   WR1: NOT (SELF\identification_assignment.role.name IN Pre_defined_identification_assignment_types);
-END_ENTITY;
-
-ENTITY Applied_identification_assignment__alias
-  SUBTYPE OF (Pre_defined_identification_assignment);
-DERIVE
-   SELF\identification_assignment.role : identification_role := identification_role('alias', ?);
 END_ENTITY;
 
 SUBTYPE_CONSTRAINT ia_applied_identification_assignment_subtypes FOR applied_identification_assignment;

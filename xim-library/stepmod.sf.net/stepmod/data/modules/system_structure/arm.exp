@@ -1,6 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG3 N2351 - ISO/CD-TS 10303-1450 System structure - EXPRESS ARM 
+   ISO TC184/SC4/WG3 N2526 - ISO/TS 10303-1450 System structure - EXPRESS ARM 
+   Supersedes ISO TC184/SC4/WG12 N2351
 *)
 
 SCHEMA System_structure_arm;
@@ -19,610 +20,867 @@ USE FROM System_view_definition_arm;
 
 USE FROM Zonal_breakdown_arm;
 
-
-TYPE system_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
-  (Interface_connection,
-   Interface_connector,
-   Interface_connector_definition,
-   Interface_specification);
+TYPE syss_activity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_item WITH
+		(Activity,
+		Activity_method,
+		Activity_property,
+		Applied_activity_assignment,
+		Approval,
+		Assigned_document_property,
+		Assigned_property,
+		Certification,
+		Contract,
+		Descriptive_document_property,
+		Document,
+		Document_definition,
+		Document_version,
+		Effectivity,
+		Event,
+		File,
+		Independent_property,
+		Interface_connection,
+		Interface_connector_occurrence,
+		Interface_definition_connection,
+		Numerical_document_property,
+		Organization,
+		Person,
+		Person_in_organization,
+		Product,
+		Product_category,
+		Product_concept,
+		Product_configuration,
+		Product_version_relationship,
+		Project,
+		Work_order,
+		Work_request);
 END_TYPE;
 
-TYPE system_pmri_activity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_item WITH
-	(Assigned_document_property,
-	Contract,
-	Descriptive_document_property,
-	Independent_property,
-	Numerical_document_property,
-	Product,
-	Product_concept,
-	Product_configuration,
-	Product_version,
-	Product_version_relationship,
-	Product_view_definition,
-	View_definition_relationship);
+TYPE syss_affected_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON affected_item_select WITH
+		(Activity,
+		Activity_method,
+		Activity_property,
+		Approval_assignment,
+		Certification_assignment,
+		Contract,
+		Document,
+		Document_assignment,
+		Document_definition,
+		Document_version,
+		Event_assignment,
+		File,
+		Interface_connection,
+		Interface_connector_occurrence,
+		Interface_definition_connection,
+		Organization,
+		Person,
+		Person_in_organization,
+		Product,
+		Product_configuration,
+		Project_assignment,
+		Work_request);
 END_TYPE;
 
-TYPE system_pb_activity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_item WITH
-	(Interface_connection,
-	Interface_connector_occurrence,
-	Interface_definition_connection);
+TYPE syss_alias_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON alias_identification_item WITH
+		(Address,
+		Approval,
+		Approval_status,
+		Breakdown,
+		Breakdown_element,
+		Breakdown_element_definition,
+		Breakdown_element_version,
+		Breakdown_version,
+		Certification,
+		Event,
+		Interface_connection,
+		Interface_connector,
+		Interface_connector_definition,
+		Interface_connector_occurrence,
+		Interface_connector_version,
+		Interface_definition_connection,
+		Interface_definition_for,
+		Interface_specification,
+		Interface_specification_definition,
+		Interface_specification_version,
+		Item_shape,
+		Organization_or_person_in_organization_assignment,
+		Part,
+		Part_version,
+		Part_view_definition,
+		Person,
+		Person_in_organization,
+		Product_as_individual,
+		Product_as_individual_view,
+		Product_as_planned,
+		Product_as_realized,
+		Product_concept,
+		Product_configuration,
+		Project,
+		Security_classification_assignment,
+		Shape_element_relationship,
+		View_definition_relationship);
 END_TYPE;
 
-TYPE system_ss_activity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_item WITH
-	(Activity_property,
-	Assigned_property);
+TYPE syss_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
+		(Activity_method,
+		Activity_method_assignment,
+		Activity_property,
+		Address_assignment,
+		Affected_items_assignment,
+		Alternate_part_relationship,
+		Alternate_product_relationship,
+		Assembly_component_relationship,
+		Assembly_relationship_substitution,
+		Assigned_property,
+		Breakdown,
+		Breakdown_element,
+		Breakdown_element_definition,
+		Breakdown_element_realization,
+		Breakdown_element_usage,
+		Breakdown_element_version,
+		Breakdown_version,
+		Certification,
+		Classification_assignment,
+		Contract,
+		Contract_assignment,
+		Date_or_date_time_assignment,
+		Digital_document_definition,
+		Directed_activity,
+		Document_assignment,
+		Document_definition,
+		Document_definition_relationship,
+		Document_version,
+		Effectivity,
+		Effectivity_assignment,
+		Event,
+		Event_assignment,
+		Identification_assignment,
+		In_zone,
+		Independent_property,
+		Independent_property_relationship,
+		Interface_connection,
+		Interface_connector_definition,
+		Interface_connector_occurrence,
+		Interface_connector_version,
+		Interface_definition_connection,
+		Interface_definition_for,
+		Interface_specification,
+		Interface_specification_definition,
+		Interface_specification_version,
+		Organization_or_person_in_organization_assignment,
+		Organization_relationship,
+		Part,
+		Part_version,
+		Part_view_definition,
+		Person_in_organization,
+		Physical_document_definition,
+		Product,
+		Product_as_individual,
+		Product_as_planned,
+		Product_as_realized,
+		Product_category_assignment,
+		Product_concept,
+		Product_configuration,
+		Product_definition_element_relationship,
+		Product_design_to_individual,
+		Product_design_version_to_individual,
+		Product_planned_to_realized,
+		Product_version,
+		Product_version_relationship,
+		Product_view_definition,
+		Project,
+		Project_assignment,
+		Security_classification,
+		Security_classification_assignment,
+		Supplied_part_relationship,
+		View_definition_context,
+		View_definition_relationship,
+		Work_order);
 END_TYPE;
 
-TYPE system_ap233_activity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_item WITH
-	(Approval,
-	Certification,
-	Product_category,
-	Work_order,
-	Work_request);
+TYPE syss_assigned_name_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON assigned_name_select WITH
+		(Breakdown_element_realization,
+		Event,
+		Product,
+		Product_view_definition);
 END_TYPE;
 
-TYPE system_pmri_affected_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON affected_item_select WITH
-	(Contract,
-	Document,
-	Document_definition,
-	Document_version,
-	File,
-	Product,
-	Product_version,
-	Product_view_definition,
-	View_definition_relationship);
+TYPE syss_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
+		(Activity,
+		Activity_method,
+		Alternate_product_relationship,
+		Approving_person_organization,
+		Assembly_relationship_substitution,
+		Assigned_property,
+		Breakdown,
+		Document,
+		Document_version,
+		Interface_connection,
+		Interface_connector_version,
+		Interface_definition_connection,
+		Interface_specification_version,
+		Part,
+		Part_version,
+		Product,
+		Product_as_individual,
+		Product_as_planned,
+		Product_as_realized,
+		Product_configuration,
+		Product_version,
+		Project,
+		View_definition_relationship);
 END_TYPE;
 
-TYPE system_os_affected_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON affected_item_select WITH
-	(Organization,
-	Person,
-	Person_in_organization);
+TYPE syss_characterized_activity_definition = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON characterized_activity_definition WITH
+		(Activity,			
+		Activity_method);		
 END_TYPE;
 
-TYPE system_pb_affected_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON affected_item_select WITH
-	(Interface_connection,
-	Interface_connector_occurrence,
-	Interface_definition_connection);
+TYPE syss_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
+		(Activity_property_representation,
+		Activity_relationship,
+		Activity_status,
+		Alternate_part_relationship,
+		Applied_activity_assignment,
+		Breakdown,
+		Breakdown_context,
+		Breakdown_element,
+		Breakdown_element_realization,
+		Breakdown_element_usage,
+		Breakdown_element_version,
+		Breakdown_of,
+		Certification_assignment,
+		Characterizable_object,
+		Digital_document_definition,
+		Digital_file,
+		Document,
+		Document_location_identification,
+		Document_version,
+		Effectivity_assignment,
+		Effectivity_relationship,
+		Event_relationship,
+		External_class_library,
+		External_item_identification,
+		File_location_identification,
+		Hardcopy,
+		In_zone,
+		Interface_connection,
+		Interface_connector,
+		Interface_connector_definition,
+		Interface_connector_occurrence,
+		Interface_connector_version,
+		Interface_definition_connection,
+		Interface_definition_for,
+		Interface_specification,
+		Interface_specification_definition,
+		Interface_specification_version,
+		Item_design_association,
+		Item_shape,
+		Item_usage_effectivity,
+		Language_indication,
+		Local_time,
+		Market,
+		Part,
+		Part_version,
+		Part_view_definition,
+		Partial_document_assignment,
+		Person_in_organization,
+		Physical_document_definition,
+		Product_as_planned,
+		Product_as_realized,
+		Product_configuration,
+		Product_design_to_individual,
+		Product_design_version_to_individual,
+		Product_planned_to_realized,
+		Property_representation,
+		Supplied_part_relationship,
+		Time_interval_relationship,
+		Unit);
 END_TYPE;
 
-TYPE system_ss_affected_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON affected_item_select WITH
-	(Activity_method,
-	Activity_property,
-	Assigned_property);
+TYPE syss_contract_item = EXTENSIBLE SELECT BASED_ON contract_item WITH
+		(Activity,
+		Activity_method,
+		Applied_activity_assignment,
+		Breakdown,
+		Breakdown_element,
+		Breakdown_version,
+		Document,
+		Document_version,
+		External_class,
+		External_class_library,
+		Interface_connector_version,
+		Interface_specification_version,
+		Organization,
+		organization_or_person_in_organization_item,
+		Part,
+		Part_version,
+		Person_in_organization,
+		Product_as_individual,
+		Product_as_planned,
+		Product_as_realized,
+		Product_configuration,
+		Product_version,
+		Project,
+		Security_classification,
+		Work_order);
 END_TYPE;
 
-TYPE system_ap233_affected_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON affected_item_select WITH
-	(Activity,
-	Approval_assignment,
-	Certification_assignment,
-	Document_assignment,
-	Event_assignment,
-	Product_configuration,
-	Project_assignment,
-	Work_request);
+TYPE syss_date_or_date_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_or_date_time_item WITH
+		(Activity_method,
+		Activity_method_assignment,
+		Activity_property,
+		Activity_property_representation,
+		Activity_relationship,
+		Address_assignment,
+		Affected_items_assignment,
+		Alias_identification,
+		Alternate_part_relationship,
+		Alternate_product_relationship,
+		Approval,
+		Approving_person_organization,
+		Assembly_component_relationship,
+		Assembly_relationship_substitution,
+		Assigned_property,
+		Breakdown,
+		Breakdown_element,
+		Breakdown_element_realization,
+		Breakdown_element_usage,
+		Breakdown_element_version,
+		Certification,
+		Certification_assignment,
+		Contract,
+		Contract_assignment,
+		Date_or_date_time_assignment,
+		Digital_document_definition,
+		Digital_file,
+		Directed_activity,
+		Document,
+		Document_assignment,
+		Document_definition,
+		Document_definition_relationship,
+		Document_version,
+		Effectivity,
+		Effectivity_assignment,
+		Event_assignment,
+		Hardcopy,
+		Hierarchical_interface_connection,
+		Identification_assignment,
+		Independent_property,
+		Independent_property_relationship,
+		Independent_property_representation,
+		Interface_connection,
+		Interface_connector_definition,
+		Interface_connector_occurrence,
+		Interface_connector_version,
+		Interface_definition_connection,
+		Interface_definition_for,
+		Interface_specification_definition,
+		Interface_specification_version,
+		Organization_or_person_in_organization_assignment,
+		Organization_relationship,
+		Part,
+		Part_version,
+		Part_view_definition,
+		Person,
+		Person_in_organization,
+		Product_as_planned,
+		Product_as_realized,
+		Product_category_assignment,
+		Product_concept,
+		Product_configuration,
+		Product_design_to_individual,
+		Product_design_version_to_individual,
+		Product_planned_to_realized,
+		Product_version,
+		Product_version_relationship,
+		Product_view_definition,
+		Project,
+		Project_assignment,
+		Property_representation,
+		Representation,
+		View_definition_context,
+		Work_order);
 END_TYPE;
 
-TYPE system_pmri_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
-	(Certification,
-	Effectivity,
-	Identification_assignment,
-	Independent_property,
-	Independent_property_relationship,
-	Product_concept,
-	Product_configuration,
-	Product_version_relationship,
-	Product_view_definition,
-	View_definition_relationship,
-	Supplied_part_relationship,
-	View_definition_context);
+TYPE syss_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
+		(Activity_property,
+		Activity_property_representation,
+		Alternate_part_relationship,
+		Alternate_product_relationship,
+		Applied_activity_assignment,
+		Approval,
+		Approval_assignment,
+		Assembly_component_relationship,
+		Assembly_relationship_substitution,
+		Assigned_property,
+		Breakdown,
+		Breakdown_context,
+		Breakdown_element,
+		Breakdown_element_realization,
+		Breakdown_element_usage,
+		Breakdown_element_version,
+		Certification,
+		Certification_assignment,
+		Class,
+		Contract,
+		Contract_assignment,
+		Document,
+		Document_assignment,
+		Document_definition,
+		Document_version,
+		Effectivity,
+		Effectivity_assignment,
+		External_item_identification,
+		Identification_assignment,
+		Independent_property,
+		Independent_property_relationship,
+		Independent_property_representation,
+		Interface_connection, 
+		Interface_connector_definition,
+		Interface_connector_occurrence,
+		Interface_connector_version, 
+		Interface_definition_connection,
+		Interface_specification,
+		Interface_specification_version, 
+		Market,
+		Organization,
+		Organization_or_person_in_organization_assignment,
+		Part,
+		Part_version,
+		Part_view_definition,
+		Person,
+		Product,
+		Product_as_planned,
+		Product_as_realized,
+		Product_category,
+		Product_concept,
+		Product_configuration,
+		Product_design_to_individual,
+		Product_design_version_to_individual,
+		Product_planned_to_realized,
+		Product_version,
+		Product_version_relationship,
+		Product_view_definition,
+		Project,
+		Property_representation,
+		Representation,
+		Representation_item,
+		Security_classification,
+		Security_classification_assignment,
+		Shape_element,
+		Shape_element_relationship,
+		View_definition_relationship,
+		Work_order,
+		Work_request);
 END_TYPE;
 
-TYPE system_pb_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
-	(Alternate_part_relationship,
-	Alternate_product_relationship,
-	Assembly_component_relationship,
-	Assembly_relationship_substitution,
-	Breakdown,
-	Breakdown_element,
-	Breakdown_element_definition,
-	Breakdown_element_realization,
-	Breakdown_element_usage,
-	Breakdown_element_version,
-	Breakdown_version,
-	In_zone,
-	Interface_connection,
-	Interface_connector_definition,
-	Interface_connector_occurrence,
-	Interface_definition_connection,
-	Interface_definition_for,
-	Interface_specification,
-	Interface_specification_definition,
-	Interface_specification_version,
-	Part,
-	Part_version,
-	Part_view_definition,
-	Product_as_individual,
-	Product_as_planned,
-	Product_as_realized,
-	Product_definition_element_relationship,
-	Product_design_to_individual,
-	Product_design_version_to_individual,
-	Product_planned_to_realized);
+TYPE syss_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
+		(Activity,
+		Activity_method,
+		Activity_method_assignment,
+		Activity_property,
+		Activity_property_representation, 
+		Address_assignment,
+		Alternate_part_relationship,
+		Alternate_product_relationship,
+		Applied_activity_assignment,
+		Approval_assignment,
+		Assembly_component_relationship,
+		Assembly_relationship_substitution,
+		Assigned_property,
+		Attribute_translation_assignment,
+		Breakdown,
+		Breakdown_element,
+		Breakdown_element_definition,
+		Breakdown_element_realization,
+		Breakdown_element_usage,
+		Breakdown_element_version,
+		Breakdown_of,
+		Breakdown_version,
+		Certification_assignment,
+		Classification_assignment, 
+		Contract_assignment,
+		Date_or_date_time_assignment,
+		Document,
+		Document_assignment,
+		Document_definition,
+		Document_definition_relationship,
+		Document_location_identification,
+		Document_version,
+		Effectivity_assignment,
+		Event,
+		Event_assignment,
+		External_source_identification,
+		File,
+		File_relationship,
+		Identification_assignment,
+		Independent_property_representation, 
+		Interface_connection,
+		Interface_connector_occurrence,
+		Interface_definition_for,
+		Make_from_relationship,
+		Organization_or_person_in_organization_assignment,
+		Organization_relationship,
+		Part,
+		Part_version,
+		Part_view_definition,
+		Person_in_organization,
+		Product,
+		Product_as_individual,
+		Product_as_individual_version,
+		Product_as_individual_view,
+		Product_configuration,
+		Product_design_to_individual,
+		Product_design_version_to_individual,
+		Product_planned_to_realized,
+		Product_version,
+		Product_version_relationship,
+		Product_view_definition,
+		Project_assignment,
+		Security_classification_assignment,
+		View_definition_usage,
+		Work_order);
 END_TYPE;
 
-TYPE system_ss_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
-	(Activity_property,
-	Assigned_property,
-	Event);
+TYPE syss_event_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON event_item WITH
+		(Activity,
+		Approval,
+		Certification,
+		Contract,
+		Product,
+		Project,
+		Work_request);
 END_TYPE;
 
-TYPE system_ap233_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
-	(Product,
-	Product_version);
+TYPE syss_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH
+		(Document_definition,
+		File,
+		Person_in_organization,
+		Product,
+		Project);
 END_TYPE;
 
---
-TYPE system_ap233_assigned_name_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON assigned_name_select WITH
-	(Breakdown_element_realization,
-	Event);
+TYPE syss_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
+		(Activity,
+		Activity_method,
+		Activity_property,
+		Address,
+		Affected_items_assignment,
+		Applied_activity_assignment,
+		Approval,
+		Approval_status,
+		Assembly_relationship_substitution,
+		Assigned_property,
+		Breakdown,
+		Breakdown_element,
+		Breakdown_element_definition,
+		Breakdown_element_version,
+		Breakdown_version,
+		Certification,
+		Class,
+		Contract,
+		Descriptive_document_property,
+		Digital_document_definition,
+		Digital_file,
+		Directed_activity,
+		Document,
+		Document_assignment,
+		Document_version,
+		Effectivity,
+		Event,
+		External_class_library,
+		External_source_identification,
+		File,
+		Hardcopy,
+		Independent_property,
+		Independent_property_relationship,
+		Interface_connection,
+		Interface_connector,
+		Interface_connector_definition,
+		Interface_connector_occurrence,
+		Interface_connector_version,
+		Interface_definition_connection,
+		Interface_definition_for,
+		Interface_specification,
+		Interface_specification_definition,
+		Interface_specification_version,
+		Item_shape,
+		Market,
+		Numerical_document_property,
+		Organization,
+		Organization_or_person_in_organization_assignment,
+		Part,
+		Part_version,
+		Part_view_definition,
+		Person,
+		Person_in_organization,
+		Physical_document_definition,
+		Product,
+		Product_as_individual,
+		Product_as_individual_version,
+		Product_as_individual_view,
+		Product_as_planned,
+		Product_as_realized,
+		Product_category,
+		Product_concept,
+		Product_configuration,
+		Product_version,
+		Product_view_definition,
+		Project,
+		Representation,
+		Security_classification,
+		Security_classification_assignment,
+		View_definition_context,
+		View_definition_relationship,
+		View_definition_usage,
+		Work_order,
+		Work_request);
 END_TYPE;
 
-TYPE system_pmri_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
-	(Document,
-	Document_version,
-	Product_configuration,
-	Product_version_relationship,
-	Project,
-	View_definition_relationship);
+TYPE syss_in_zone_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON in_zone_item WITH
+		(Hierarchical_interface_connection,
+		Interface_connection,
+		Interface_connector_occurrence,
+		Interface_definition_connection,
+		Product_view_definition);
 END_TYPE;
 
-TYPE system_pb_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
-	(Alternate_product_relationship,
-	Breakdown,
-	Interface_connection,
-	Interface_connector_version,
-	Interface_definition_connection,
-	Interface_specification_version,
-	Part,
-	Part_version,
-	Product_as_individual,
-	Product_as_planned,
-	Product_as_realized);
+TYPE syss_organization_or_person_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_or_person_in_organization_item WITH
+		(Activity_property,
+		Activity_property_representation,
+		Address,
+		Affected_items_assignment,
+		Alternate_part_relationship,
+		Alternate_product_relationship,
+		Applied_independent_activity_property,
+		Approval_status,
+		Assembly_component_relationship,
+		Assembly_relationship_substitution,
+		Assigned_property,
+		Breakdown,
+		Breakdown_element,
+		Breakdown_element_realization,
+		Breakdown_element_usage,
+		Breakdown_version,
+		Certification,
+		Digital_document_definition,
+		Directed_activity,
+		Document,
+		Document_assignment,
+		Document_version,
+		Effectivity,
+		Event,
+		Hardcopy,
+		Independent_property_representation,
+		Interface_connection,
+		Interface_connector_definition,
+		Interface_connector_occurrence,
+		Interface_connector_version,
+		Interface_definition_connection,
+		Interface_definition_for,
+		Interface_specification,
+		Interface_specification_definition,
+		Interface_specification_version,
+		Organization,
+		Organization_or_person_in_organization_assignment,
+		Part,
+		Part_version,
+		Part_view_definition,
+		Person,
+		Person_in_organization,
+		Physical_document_definition,
+		Product,
+		Product_as_individual,
+		Product_as_individual_version,
+		Product_as_individual_view,
+		Product_as_planned,
+		Product_as_realized,
+		Product_version,
+		Product_view_definition,
+		Project,
+		Security_classification_assignment,
+		Shape_element_relationship,
+		Supplied_part_relationship,
+		System,
+		System_version,
+		System_view_definition,
+		View_definition_relationship,
+		Work_order);
 END_TYPE;
 
-TYPE system_ap233_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
-	(Approving_person_organization,
-	Assembly_relationship_substitution,
-	Assigned_property);
+TYPE syss_product_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON product_item WITH
+		(Interface_connector_occurrence,
+		Product_view_definition,
+		View_definition_usage);
 END_TYPE;
 
-TYPE system_ap233_characterized_activity_definition = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON characterized_activity_definition WITH
-	(Breakdown_of,
-	Event,
-	Product);
+TYPE syss_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
+		(Activity_method,
+		Alternate_product_relationship,
+		Applied_activity_assignment,
+		Assembly_relationship_substitution,
+		Breakdown,
+		Independent_property,
+		Interface_connection,
+		Interface_definition_connection,
+		Product,
+		Product_configuration,
+		Product_view_definition,
+		Representation,
+		View_definition_relationship);
 END_TYPE;
 
-TYPE system_pmri_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
-	(Characterizable_object,
-	Conversion_based_unit,
-	Derived_unit,
-	External_class_library,
-	External_item_identification,
-	External_source_identification,
-	Independent_property,
-	Independent_property_relationship,
-	Item_usage_effectivity,
-	Market,
-	Product,
-	Product_category,
-	Product_concept,
-	Product_configuration,
-	Product_version,
-	Product_version_relationship,
-	Product_view_definition,
-	Supplied_part_relationship,
-	Uncertainty_with_unit,
-	Unit,
-	Value_with_unit,
-	View_definition_context,
-	View_definition_relationship);
+TYPE syss_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
+		(Activity,
+		Activity_method,
+		Activity_property,
+		Address,
+		Alternate_product_relationship,
+		Applied_activity_assignment,
+		Assigned_property,
+		Breakdown_element_realization,
+		Breakdown_element_usage,
+		Document_assignment,
+		Document_definition,
+		File,
+		Hierarchical_interface_connection,
+		In_zone,
+		Independent_property,
+		Independent_property_relationship,
+		Interface_connection,
+		Interface_connector_occurrence,
+		Interface_definition_connection,
+		Organization_or_person_in_organization_assignment,
+		Part_view_definition,
+		Person,
+		Person_in_organization,
+		Product,
+		Product_category,
+		Product_concept,
+		Product_configuration,
+		Product_version,
+		Product_version_relationship,
+		Product_view_definition,
+		Project,
+		Property_definition_representation,
+		Representation,
+		Representation_context,
+		Representation_item,
+		Security_classification,
+		View_definition_relationship,
+		Work_order,
+		Work_request);
 END_TYPE;
 
-TYPE system_pb_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
-	(Alternate_part_relationship,
-	Breakdown,
-	Breakdown_context,
-	Breakdown_element,
-	Breakdown_element_realization,
-	Breakdown_element_usage,
-	Breakdown_element_version,
-	Breakdown_of,
-	In_zone,
-	Interface_connector_version,
-	Interface_definition_connection,
-	Interface_definition_for,
-	Interface_specification_definition,
-	Interface_specification_version,
-	Item_shape,
-	Part,
-	Part_version,
-	Product_as_planned,
-	Product_as_realized,
-	Product_design_to_individual,
-	Product_design_version_to_individual,
-	Product_planned_to_realized);
+TYPE syss_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
+		(Activity,
+		Activity_method,
+		Activity_method_assignment,
+		Activity_property,
+		Affected_items_assignment,
+		Alternate_part_relationship,
+		Alternate_product_relationship,
+		Applied_activity_assignment,
+		Assembly_relationship_substitution,
+		Assigned_property,
+		Breakdown,
+		Breakdown_element_definition,
+		Breakdown_element_realization,
+		Breakdown_element_usage,
+		Breakdown_element_version,
+		Digital_document_definition,
+		Digital_file,
+		Directed_activity,
+		Document,
+		Document_assignment,
+		Document_version,
+		Event,
+		Hardcopy,
+		Hierarchical_interface_connection,
+		In_zone,
+		Interface_connection,
+		Interface_connector,
+		Interface_connector_definition,
+		Interface_connector_occurrence,
+		Interface_definition_connection,
+		Interface_definition_for,
+		Interface_specification_definition,
+		Interface_specification_version,
+		Part,
+		Part_version,
+		Part_view_definition,
+		Physical_document_definition,
+		Product,
+		Product_as_individual,
+		Product_as_individual_version,
+		Product_as_individual_view,
+		Product_as_planned,
+		Product_as_realized,
+		Product_configuration,
+		Product_design_to_individual,
+		Product_design_version_to_individual,
+		Product_version,
+		Product_view_definition,
+		Project_relationship,
+		Promissory_usage,
+		Work_order,
+		Work_request,
+		Work_request_status);
 END_TYPE;
 
-TYPE system_ss_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
-	(Activity,
-	Activity_property_representation,
-	Activity_relationship,
-	Applied_activity_assignment,
-	Assigned_property,
-	Property_representation);
+TYPE syss_string_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON string_select WITH
+		(Activity,
+		Activity_method,
+		Activity_method_assignment,
+		Activity_property,
+		Activity_relationship,
+		Alternate_part_relationship,
+		Applied_activity_assignment,
+		Assembly_component_relationship,
+		Assembly_relationship_substitution,
+		Assigned_property,
+		Breakdown,
+		Breakdown_element,
+		Breakdown_element_realization,
+		Breakdown_element_usage,
+		Breakdown_element_version,
+		Date_or_date_time_assignment,
+		Digital_document_definition,
+		Document,
+		Document_definition_relationship,
+		Document_version,
+		Event,
+		External_source_identification,
+		Identification_assignment,
+		Independent_property,
+		Independent_property_relationship,
+		Interface_connection,
+		Interface_connector,
+		Interface_connector_definition,
+		Interface_connector_occurrence,
+		Interface_connector_version, 
+		Interface_definition_connection,
+		Interface_definition_for,
+		Part,
+		Part_version,
+		Part_view_definition, 
+		Physical_document_definition,
+		Product_as_individual,
+		Product_as_individual_version,
+		Product_as_individual_view,
+		Product_configuration,
+		Representation_item,
+		Work_order,
+		Work_request);
 END_TYPE;
 
-TYPE system_pmri_contract_item = EXTENSIBLE SELECT BASED_ON contract_item WITH
-	(External_class_library,
-	organization_or_person_in_organization_item,
-	Product_configuration,
-	Product_version);
-END_TYPE;
-
-TYPE system_pb_contract_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON contract_item WITH
-	(Breakdown,
-	Breakdown_element,
-	Breakdown_version,
-	Interface_connector_version,
-	Interface_specification_version,
-	Part,
-	Part_version,
-	Product_as_individual,
-	Product_as_planned,
-	Product_as_realized);
-END_TYPE;
-
-TYPE system_pmri_date_or_date_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_or_date_time_item WITH
-	(Identification_assignment,
-	Independent_property,
-	Independent_property_relationship,
-	Independent_property_representation,
-	Product_concept,
-	Product_configuration,
-	Product_version,
-	Product_version_relationship,
-	Product_view_definition,
-	View_definition_context);
-END_TYPE;
-
-TYPE system_pb_date_or_date_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_or_date_time_item WITH
-	(Alternate_part_relationship,
-	Assembly_component_relationship,
-	Assembly_relationship_substitution,
-	Breakdown,
-	Breakdown_element,
-	Breakdown_element_realization,
-	Breakdown_element_usage,
-	Breakdown_element_version,
-	Interface_connection,
-	Interface_connector_definition,
-	Interface_connector_occurrence,
-	Interface_connector_version,
-	Interface_definition_connection,
-	Interface_definition_for,
-	Interface_specification_definition,
-	Interface_specification_version,
-	Part,
-	Part_version,
-	Part_view_definition,
-	Product_as_planned,
-	Product_as_realized,
-	Product_design_to_individual,
-	Product_design_version_to_individual,
-	Product_planned_to_realized);
-END_TYPE;
-
-TYPE system_ss_date_or_date_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_or_date_time_item WITH
-	(Activity_property,
-	Activity_property_representation);
-END_TYPE;
-
-TYPE system_ap233_date_or_date_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_or_date_time_item WITH
-	(Alternate_product_relationship);
-END_TYPE;
-
-TYPE system_pmri_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
-	(Document_definition,
-	Document_definition_relationship,
-	File_relationship,
-	Product_configuration);
-END_TYPE;
-
-TYPE system_pb_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
-	(Alternate_part_relationship,
-	Assembly_component_relationship,
-	Assembly_relationship_substitution,
-	Breakdown,
-	Breakdown_element,
-	Breakdown_element_definition,
-	Breakdown_element_realization,
-	Breakdown_element_usage,
-	Breakdown_element_version,
-	Breakdown_of,
-	Breakdown_version,
-	Interface_connection,
-	Interface_connector_occurrence,
-	Interface_definition_for,
-	Part,
-	Part_version,
-	Part_view_definition,
-	Product_as_individual,
-	Product_as_individual_version,
-	Product_as_individual_view,
-	Product_design_to_individual,
-	Product_design_version_to_individual,
-	Product_planned_to_realized);
-END_TYPE;
-
-TYPE system_ss_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
-	(Activity_property);
-END_TYPE;
-
-TYPE system_ap233_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
+TYPE syss_time_interval_item = SELECT BASED_ON time_interval_item WITH 
 	(Activity_method_assignment,
-	Alternate_product_relationship,
-	Event,
-	Event_assignment,
-	External_source_identification);
-END_TYPE;
-
-TYPE system_ap233_event_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON event_item WITH
-	(Activity,
-	Approval,
-	Contract,
-	Product,
-	Work_request);
-END_TYPE;
-
-TYPE system_ap233_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH
-	(Person_in_organization,
-	Product,
-	Project);
-END_TYPE;
-
-TYPE system_pmri_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
-	(Digital_file,
-	External_class_library,
-	External_source_identification,
-	File,
-	Independent_property,
-	Independent_property_relationship,
-	Market,
-	Numerical_document_property,
-	Product_category,
-	Product_concept,
-	Product_configuration,
-	Representation,
-	View_definition_context,
-	View_definition_usage);
-END_TYPE;
-
-TYPE system_pb_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
-	(Breakdown,
-	Breakdown_element,
-	Breakdown_element_definition,
-	Breakdown_element_version,
-	Breakdown_version,
-	Interface_connection,
-	Interface_connector,
-	Interface_connector_definition,
-	Interface_connector_occurrence,
-	Interface_definition_connection,
-	Interface_specification,
-	Interface_specification_definition,
-	Interface_specification_version,
-	Item_shape,
-	Product_as_planned,
-	Product_as_realized);
-END_TYPE;
-
-TYPE system_ss_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
-	(Activity_method,
-	Activity_property);
-END_TYPE;
-
-TYPE system_ap233_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
-	(Assembly_relationship_substitution);
-END_TYPE;
-
-TYPE system_pb_in_zone_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON in_zone_item WITH
-	(Hierarchical_interface_connection,
-	Interface_connection,
-	Interface_connector_occurrence,
-	Interface_definition_connection);
-END_TYPE;
-
-TYPE system_pmri_organization_or_person_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_or_person_in_organization_item WITH
-	(Independent_property_representation,
-	Supplied_part_relationship);
-END_TYPE;
-
-TYPE system_pb_organization_or_person_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_or_person_in_organization_item WITH
-	(Alternate_part_relationship,
-	Assembly_component_relationship,
-	Assembly_relationship_substitution,
-	Breakdown,
-	Breakdown_element,
-	Breakdown_element_realization,
-	Breakdown_element_usage,
-	Interface_connection,
-	Interface_connector_definition,
-	Interface_connector_occurrence,
-	Interface_connector_version,
-	Interface_definition_connection,
-	Interface_definition_for,
-	Interface_specification,
-	Interface_specification_definition,
-	Interface_specification_version,
-	Product_as_individual,
-	Product_as_planned,
-	Product_as_realized);
-END_TYPE;
-
-TYPE system_ss_organization_or_person_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_or_person_in_organization_item WITH
-	(Activity_property,
-	Activity_property_representation,
-	Applied_independent_activity_property);
-END_TYPE;
-
-TYPE system_ap233_organization_or_person_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_or_person_in_organization_item WITH
-	(Alternate_product_relationship);
-END_TYPE;
-
-TYPE system_pb_product_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON product_item WITH
-	(Interface_connector_occurrence);
-END_TYPE;
-
-TYPE system_pmri_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
-	(Independent_property,
-	Product_configuration);
-END_TYPE;
-
-TYPE system_pb_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
-	(Breakdown);
-END_TYPE;
-
-TYPE system_ss_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
-	(Activity_method,
-	Applied_activity_assignment);
-END_TYPE;
-
-TYPE system_ap233_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
-	(Alternate_product_relationship,
-	Assembly_relationship_substitution,
-	Interface_connection,
-	Interface_definition_connection,
-	Product_view_definition,
-	Representation,
-	View_definition_relationship);
-END_TYPE;
-
-TYPE system_pmri_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
-	(Document_assignment,
-	Organization_or_person_in_organization_assignment,
-	Project);
-END_TYPE;
-
-TYPE system_os_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
-	(Address,
-	Person,
-	Person_in_organization);
-END_TYPE;
-
-TYPE system_pb_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
-	(Hierarchical_interface_connection,
-	Interface_connection,
-	Interface_connector_occurrence,
-	Interface_definition_connection);
-END_TYPE;
-
-TYPE system_ss_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
-	(Applied_activity_assignment);
-END_TYPE;
-
-TYPE system_ap233_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
-	(Activity,
-	Activity_property,
-	Alternate_product_relationship,
-	Assigned_property,
-	In_zone,
-	Independent_property,
-	Independent_property_relationship,
-	Product,
-	Product_category,
-	Product_concept,
-	Product_configuration,
-	Product_version,
-	Product_version_relationship,
-	Property_definition_representation,
-	Representation,
-	Representation_context,
-	Representation_item,
-	Security_classification,
+	Affected_items_assignment,
+	Directed_activity,
 	Work_order,
 	Work_request);
-END_TYPE;
-
-TYPE system_pmri_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
-	(Product_configuration,
-	Product_version,
-	Product_view_definition,
-	Project_relationship);
-END_TYPE;
-
-TYPE system_pb_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
-	(Alternate_part_relationship,
-	Alternate_product_relationship,
-	Assembly_relationship_substitution,
-	Breakdown,
-	Breakdown_element_definition,
-	Breakdown_element_realization,
-	Breakdown_element_usage,
-	Breakdown_element_version,
-	Interface_connection,
-	Interface_connector,
-	Interface_connector_definition,
-	Interface_connector_occurrence,
-	Interface_definition_connection,
-	Interface_definition_for,
-	Interface_specification_definition,
-	Interface_specification_version,
-	Part,
-	Part_version,
-	Part_view_definition,
-	Product_as_individual,
-	Product_as_individual_view,
-	Product_as_planned,
-	Product_as_realized,
-	Product_design_to_individual,
-	Product_design_version_to_individual,
-	Promissory_usage);
-END_TYPE;
-
-TYPE system_ap233_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
-	(Activity_property,
-	Assigned_property,
-	Event,
-	In_zone,
-	Product);
-END_TYPE;
-
-TYPE system_pmri_string_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON string_select WITH
-	(Product_configuration);
-END_TYPE;
-
-TYPE system_pb_string_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON string_select WITH
-	(Alternate_part_relationship,
-	Assembly_relationship_substitution,
-	Breakdown,
-	Breakdown_element,
-	Breakdown_element_realization,
-	Breakdown_element_usage,
-	Breakdown_element_version,
-	Interface_connection,
-	Interface_connector,
-	Interface_connector_definition,
-	Interface_connector_occurrence,
-	Interface_definition_connection,
-	Interface_definition_for,
-	Product_as_individual,
-	Product_as_individual_version,
-	Product_as_individual_view);
-END_TYPE;
-
-TYPE system_ss_string_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON string_select WITH
-	(Activity_property);
-END_TYPE;
+END_TYPE; 
 
 END_SCHEMA;
 

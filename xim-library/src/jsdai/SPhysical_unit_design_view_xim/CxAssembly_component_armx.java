@@ -168,6 +168,26 @@ public class CxAssembly_component_armx
 	// ENDOF From CProperty_definition.java
 	
 	// Taken from PDR
+	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
+		a11 = set_string(value);
+	}
+	public void unsetId(EProduct_definition_relationship type) throws SdaiException {
+		a11 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
+		return a11$;
+	}
+
+	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
+		a12 = set_string(value);
+	}
+	public void unsetName(EProduct_definition_relationship type) throws SdaiException {
+		a12 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
+		return a12$;
+	}
+	
 	// attribute (current explicit or supertype explicit) : relating_product_definition, base type: entity product_definition
 /*	public static int usedinRelating_product_definition(EProduct_definition_relationship type, EProduct_definition instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a14$, domain, result);
@@ -278,9 +298,9 @@ public class CxAssembly_component_armx
 		// Important AIM gap. as it is invoked earlier than subtype constraints,
 		// it is safe to set attributes without testing
 		armEntity.setDefinition(null, armEntity);
-//		if(!armEntity.testFrame_of_reference(null)){
-//			armEntity.setFrame_of_reference(null, armEntity.getDerived_from(null).getFrame_of_reference(null));
-//		}
+		if(armEntity.testDerived_from(null)){
+			armEntity.setFrame_of_reference(null, armEntity.getDerived_from(null).getFrame_of_reference(null));
+		}
 //		if(!armEntity.testName((EProperty_definition)null)){
 			armEntity.setName((EProperty_definition)null, "");
 //		}
@@ -288,7 +308,10 @@ public class CxAssembly_component_armx
 		if(armEntity.testDerived_from(null)){
 			armEntity.setRelating_product_definition(null, armEntity.getDerived_from(null));
 		}
-		
+		// component_definition WR3
+		armEntity.setId((EProduct_definition_relationship)null, armEntity.getId((EProduct_definition)null));
+		// component_definition WR4
+		armEntity.setName((EProduct_definition_relationship)null, "definition usage");
 	}
 
 	/**

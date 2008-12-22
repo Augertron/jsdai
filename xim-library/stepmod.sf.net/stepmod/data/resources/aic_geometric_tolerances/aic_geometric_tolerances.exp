@@ -1,8 +1,13 @@
+(*
+$Id$ 
+ISO TC184/SC4/WG12 N5256 - ISO/IS 10303-519 Geometric tolerances - EXPRESS
+*)
+
 SCHEMA aic_geometric_tolerances;
   
 USE FROM measure_schema ( derived_unit, named_unit);
  USE FROM product_property_definition_schema ( shape_aspect_relationship);
- USE FROM shape_aspect_definition_schema ( apex, centre_of_symmetry, composite_shape_aspect, datum, datum_feature, datum_reference, datum_target, derived_shape_aspect, extension, geometric_alignment, geometric_intersection, parallel_offset, perpendicular_to, referenced_modified_datum, shape_aspect_deriving_relationship, symmetric_shape_aspect, tangent);
+ USE FROM shape_aspect_definition_schema ( apex, centre_of_symmetry, composite_shape_aspect, common_datum, datum, datum_feature, datum_reference, datum_target, derived_shape_aspect, extension, geometric_alignment, geometric_intersection, parallel_offset, perpendicular_to, referenced_modified_datum, shape_aspect_deriving_relationship, symmetric_shape_aspect, tangent);
  USE FROM shape_tolerance_schema ( dimension_related_tolerance_zone_element, geometric_tolerance, geometric_tolerance_relationship, geometric_tolerance_with_datum_reference, geometric_tolerance_with_defined_unit, modified_geometric_tolerance, projected_zone_definition, runout_zone_definition, runout_zone_orientation_reference_direction, tolerance_zone, tolerance_zone_definition);
   
 ENTITY angularity_tolerance 
@@ -22,15 +27,6 @@ ENTITY coaxiality_tolerance
  WHERE 
 WR1 : 
 SIZEOF (SELF\geometric_tolerance_with_datum_reference.datum_system) <= 2;
- END_ENTITY ;
-ENTITY common_datum 
- SUBTYPE OF ( composite_shape_aspect , datum );
- WHERE 
-WR1 : 
-SIZEOF (SELF.component_relationships) = 2;
-WR2 : 
-SIZEOF ( 
-QUERY ( sar <* SELF.component_relationships| NOT (('AIC_GEOMETRIC_TOLERANCES.DATUM' IN TYPEOF (sar.related_shape_aspect)) AND NOT ('AIC_GEOMETRIC_TOLERANCES.COMMON_DATUM' IN TYPEOF (sar.related_shape_aspect))) )) = 0;
  END_ENTITY ;
 ENTITY concentricity_tolerance 
  SUBTYPE OF ( geometric_tolerance_with_datum_reference );

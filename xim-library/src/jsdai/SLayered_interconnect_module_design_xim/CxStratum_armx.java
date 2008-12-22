@@ -35,7 +35,6 @@ import jsdai.SProduct_definition_schema.EProduct_definition;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SShape_property_assignment_xim.*;
 //import jsdai.SProduct_property_representation_schema.*;
-import jsdai.SFabrication_technology_xim.EStratum_technology_armx;
 import jsdai.SFabrication_technology_xim.EStratum_technology_occurrence_armx;
 import jsdai.SLayered_interconnect_module_design_mim.CStratum;
 import jsdai.SMaterial_property_definition_schema.*;

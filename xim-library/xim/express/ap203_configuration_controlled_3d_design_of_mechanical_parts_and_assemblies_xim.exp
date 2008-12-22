@@ -1,0 +1,106 @@
+(*
+$Id$
+ISO TC184/SC4/WG3 N2461 - ISO/CD-TS 10303-403 AP203 configuration controlled 3d design of mechanical parts and assemblies - EXPRESS ARM
+Supersedes ISO TC184/SC4/WG3 N2372
+*) 
+
+
+SCHEMA Ap203_configuration_controlled_3d_design_of_mechanical_parts_and_assemblies_xim;
+
+-- MODULES ON CONFIGURATION CONTROL (AP214CC8)
+USE FROM Design_product_data_management_xim; -- ISO/CD-TS 10303-1628
+
+-- GD&T REPRESENTATION
+USE FROM Default_tolerance_xim; -- ISO/TS 10303-1052
+USE FROM Dimension_tolerance_xim; -- ISO/TS 10303-1050
+USE FROM Geometric_tolerance_xim; -- ISO/TS 10303-1051
+
+-- GD&T PRESENTATION
+USE FROM Associative_text_xim; -- ISO/CD-TS 10303-1132
+USE FROM Group_xim; -- ISO/TS 10303-1113
+USE FROM Dimension_and_tolerance_callouts_xim; -- ISO/CD-TS 10303-1362
+(* USE FROM Mechanical_design_presentation_representation_with_draughting_xim; -- ISO/CD-TS 10303-1315
+USE FROM Mechanical_design_geometric_presentation_xim; -- ISO/CD-TS 10303-1313 
+USE FROM Mechanical_design_shaded_presentation_xim; -- ISO/CD-TS 10303-1314 
+USE FROM Presentation_hierarchy_xim; -- ISO/CD-TS 10303-1330 *)
+USE FROM Text_representation_xim;	-- ISO/TS 10303-1750
+
+-- SOLID MODELS for parts 
+USE FROM Advanced_boundary_representation_xim; -- ISO/CD-TS 10303-1514
+-- USE FROM Elementary_boundary_representation_xim; -- ISO/CD-TS 10303-1329
+USE FROM Faceted_boundary_representation_xim; -- ISO/TS 10303-1512
+USE FROM Curve_swept_solid_xim; -- ISO/TS 10303-1659
+(* USE FROM Modified_swept_solid_xim; -- ISO/TS 10303-1322
+USE FROM Thickened_face_solid_xim; -- ISO/CD-TS 10303-1320
+USE FROM Solid_with_local_modification_xim; -- ISO/CD-TS 10303-1319 *)
+USE FROM Constructive_solid_geometry_3d_xim; -- ISO/TS 10303-1068
+
+-- OTHER SPECIALIZED 3D MODELS for parts 
+USE FROM Manifold_surface_xim; -- ISO/CD-TS 10303-1509
+-- USE FROM Non_manifold_surface_xim; -- ISO/CD-TS 10303-1324
+USE FROM Geometrically_bounded_surface_xim; -- ISO/TS 10303-1507
+USE FROM Geometrically_bounded_wireframe_xim; -- ISO/TS 10303-1510
+(* USE FROM Edge_based_wireframe_xim; -- ISO/TS 10303-1501
+USE FROM Shell_based_wireframe_xim; -- ISO/TS 10303-1502
+USE FROM Compound_shape_representation_xim; -- ISO/CD-TS 10303-1327 *)
+USE FROM Wireframe_2d_xim; -- ISO/TS 10303-1347
+
+-- OTHER GEOMETRY RELATED
+-- USE FROM Representation_with_uncertainty_xim; -- ISO/TS 10303-1228
+USE FROM Manifold_subsurface_xim; -- ISO/TS 10303-1702
+-- USE FROM Geometric_validation_property_representation_xim; -- ISO/TS 10303-1039
+
+USE FROM Inertia_characteristics_xim; --10303-1350
+USE FROM Part_collection_xim; --10303-1115 
+USE FROM Surface_conditions_xim; --10303-1110 
+USE FROM Chemical_substance_xim; --10303-1655 
+USE FROM Information_product_xim; --10303-1761 
+USE FROM Planned_characteristic_xim; --10303-1733
+USE FROM Specification_document_xim; --10303-1747
+USE FROM Physical_breakdown_xim;    -- ISO/TS 10303-1215
+USE FROM Shape_feature_xim;    -- ISO/TS 10303-1764
+-- USE FROM Drawing_definition_xim;  -- ISO/TS 10303-1309
+USE FROM Picture_representation_xim;  -- ISO/TS 10303-1308
+
+-- Cataloguing modules
+USE FROM Basic_data_representation_xim; -- ISO/CD-TS 10303-1773
+(* USE FROM Extended_date_xim; -- ISO/CD-TS 10303-1776
+USE FROM External_currency_xim; -- ISO/CD-TS 10303-1777
+USE FROM External_library_xim; -- ISO/CD-TS 10303-1778
+USE FROM External_representation_item_xim; -- ISO/CD-TS 10303-1779
+USE FROM External_unit_xim; -- ISO/CD-TS 10303-1780 *)
+USE FROM Qualified_measure_xim; -- ISO/CD-TS 10303-1780
+
+-- Composite material structures and properties 
+(* USE FROM Composite_material_aspects_xim; -- ISO/CD-TS 10303-1768
+USE FROM Composite_constituent_shape_xim;  -- ISO/CD-TS 10303-1767
+USE FROM Part_and_zone_laminate_tables_xim;  -- ISO/CD-TS 10303-1770
+USE FROM Ply_orientation_specification_xim;  -- ISO/CD-TS 10303-1772
+USE FROM Stock_material_xim;  -- ISO/CD-TS 10303-1771 *)
+
+USE FROM Ap203_configuration_controlled_3d_design_of_mechanical_parts_and_assemblies_mim; 
+
+  SUBTYPE_CONSTRAINT exclusive_product_versions_203e2 FOR product_definition_formation;
+    ONEOF (Document_version,
+         Part_version);
+  END_SUBTYPE_CONSTRAINT;
+
+  RULE addresses_are_assigned FOR 
+      (Address);
+    WHERE
+      WR1: SIZEOF(QUERY(a <* Address | SIZEOF(USEDIN(a, 'PERSON_ORGANIZATION_XIM' + '.ADDRESS_ASSIGNMENT.ASSIGNED_ADDRESS')) = 0)) = 0;
+  END_RULE; 
+
+  RULE person_requires_person_and_organization FOR 
+      (Person);
+    WHERE
+      WR1: SIZEOF(QUERY(p <* Person | SIZEOF(USEDIN(p, 'PERSON_ORGANIZATION_XIM' + '.PERSON_IN_ORGANIZATION.CONCERNED_PERSON')) = 0)) = 0;
+  END_RULE; 
+
+  RULE shape_requires_product_view FOR 
+      (Item_shape);
+    WHERE
+      WR1: SIZEOF(QUERY(is <* Item_shape | NOT ('PRODUCT_VIEW_DEFINITION_XIM' + '.PRODUCT_VIEW_DEFINITION' IN TYPEOF(is.described_element)))) = 0;
+  END_RULE; 
+
+END_SCHEMA;

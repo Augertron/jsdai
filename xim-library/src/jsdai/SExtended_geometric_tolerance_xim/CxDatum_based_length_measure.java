@@ -109,6 +109,9 @@ public class CxDatum_based_length_measure extends CDatum_based_length_measure im
 		//of_datum
 		setOf_datum(context, this);
 
+		unsetMeasure(null);
+		unsetMeasure_orientation(null);
+		unsetOf_datum(null);
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException

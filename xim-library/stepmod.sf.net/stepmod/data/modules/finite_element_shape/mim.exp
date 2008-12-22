@@ -1,0 +1,23 @@
+(*
+   $Id$
+   N - ISO/CD-TS - 10303- finite_element_shape - EXPRESS MIM*)
+   
+  
+SCHEMA Finite_element_shape_mim;
+
+USE FROM Analysis_shape_mim;
+
+USE FROM Elemental_geometric_shape_mim;
+
+USE FROM representation_schema;
+
+USE FROM Shape_property_assignment_mim;
+
+ENTITY point_representation
+SUBTYPE OF (shape_representation);
+WHERE
+    WR1: SIZEOF(QUERY(it <* SELF\representation.items | ( NOT (SIZEOF(['STRUCTURAL_RESPONSE_REPRESENTATION_SCHEMA.NODE_SET', 'REPRESENTATION_SCHEMA.MAPPED_ITEM', 'STRUCTURAL_RESPONSE_REPRESENTATION_SCHEMA.' + 'FEA_AXIS2_PLACEMENT_3D'] * TYPEOF(it)) = 1)))) = 0;
+    WR2: SIZEOF(QUERY(it <* SELF\representation.items | (SIZEOF(['STRUCTURAL_RESPONSE_REPRESENTATION_SCHEMA.NODE_SET', 'REPRESENTATION_SCHEMA.MAPPED_ITEM'] * TYPEOF(it)) = 1))) >= 1;
+END_ENTITY;
+
+END_SCHEMA;

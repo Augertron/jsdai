@@ -61,11 +61,11 @@ USE FROM Physical_unit_2d_design_view_mim;
      SELF\representation_relationship.rep_2 RENAMED assembly_model : Physical_unit_planar_shape_model;  -- CHANGED
      SELF\representation_relationship.rep_1 RENAMED component_model : shape_representation; -- CHANGED
    DERIVE
-     component : next_assembly_usage_occurrence := SELF\Contextual_shape_representation.contextual_shape.described_element;   
+     component : Next_assembly_usage_occurrence_relationship_armx := SELF\Contextual_shape_representation.contextual_shape.described_element;   
      substrate_location : BOOLEAN := substrate_in_assembly(SELF);
   	 the_context : geometric_representation_context := assembly_model\Shape_representation\Representation.context_of_items;
      SELF\context_dependent_shape_representation.representation_relation : shape_representation_relationship := SELF;   -- NEW
-     SELF\Representation_relationship.name : label := '';
+     SELF\Representation_relationship.name : label := 'component 2d location';
 --	 component : next_assembly_usage_occurrence := SELF\context_dependent_shape_representation.represented_product_relation\property_definition.definition;     
    WHERE
      WR1: EXISTS (component);  
@@ -77,19 +77,6 @@ USE FROM Physical_unit_2d_design_view_mim;
      WR4: NOT('PART_TEMPLATE_SHAPE_WITH_PARAMETERS_XIM.PART_TEMPLATE_SHAPE_MODEL' IN TYPEOF(component_model)) OR
      (component\Next_assembly_usage_occurrence_relationship_armx.related_view\Assembly_component_armx.derived_from IN
       component_model\Part_template_shape_model.shape_characterized_definition);
-  END_ENTITY;
-
-  ENTITY Component_part_2d_geometric_representation_relationship
-    (* CONNOTATIONAL *) SUBTYPE OF (shape_representation_relationship);
-      SELF\Shape_representation_relationship.rep_1 RENAMED part_shape  			: part_template_or_physical_unit_2d_shape_model_select;
-      SELF\Shape_representation_relationship.rep_2 RENAMED component_shape 	: Assembly_component_2d_shape_model;
-    DERIVE
-      SELF\Representation_relationship.name : label := 'component part planar shape';
-    WHERE
-      WR1 : SIZEOF(QUERY(ac <* component_shape.shape_characterized_component |
-                   NOT(part_shape.shape_characterized_definition :=: ac\Assembly_component_armx.derived_from)
-                   )) = 0;
-      WR2 : part_shape :<>: component_shape;      
   END_ENTITY;
 
 RULE unique_assembly_component_2d_shape_model FOR (Assembly_component_2d_shape_model);

@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4014 - ISO/TS 10303-1689 Interconnect physical requirement allocation - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3456
+   ISO TC184/SC4/WG12 N5677 - ISO/TS 10303-1689 Interconnect physical requirement allocation - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4014
 *)
 
  SCHEMA Interconnect_physical_requirement_allocation_arm;
@@ -23,13 +23,13 @@
     SUBTYPE OF (Electrical_isolation_removal_template);
       associated_item : land_physical_template_or_inter_stratum_feature_template;
     WHERE
-      WR1 : SIZEOF(QUERY (dtlipd <* USEDIN(SELF,'PART_TEMPLATE_2D_SHAPE_ARM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+      WR1 : SIZEOF(QUERY (dtlipd <* USEDIN(SELF,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
                   NOT(
-                     (SIZEOF(QUERY (tlist <* USEDIN(associated_item,'PART_TEMPLATE_2D_SHAPE_ARM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+                     (SIZEOF(QUERY (tlist <* USEDIN(associated_item,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
                              NOT(
                                  (tlist\Template_location_in_structured_template.assembly :=: 
                                   dtlipd\Template_location_in_structured_template.assembly) AND
-                                 ('PART_TEMPLATE_2D_SHAPE_ARM.DEPENDENT_TEMPLATE_LOCATION_IN_PADSTACK_DEFINITION' IN TYPEOF(dtlipd)) AND                                 
+                                 ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.DEPENDENT_TEMPLATE_LOCATION_IN_PADSTACK_DEFINITION' IN TYPEOF(dtlipd)) AND                                 
                                  (tlist :=: dtlipd\Dependent_template_location_in_padstack_definition.reference_location)
                                  )
                       )) = 0)
@@ -41,13 +41,13 @@
     SUBTYPE OF (Thermal_isolation_removal_template);
       associated_item : Land_physical_template;
     WHERE
-      WR1 : SIZEOF(QUERY (dtlipd <* USEDIN(SELF,'PART_TEMPLATE_2D_SHAPE_ARM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+      WR1 : SIZEOF(QUERY (dtlipd <* USEDIN(SELF,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
                   NOT(
-                     (SIZEOF(QUERY (tlist <* USEDIN(associated_item,'PART_TEMPLATE_2D_SHAPE_ARM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+                     (SIZEOF(QUERY (tlist <* USEDIN(associated_item,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
                              NOT(
                                  (tlist\Template_location_in_structured_template.assembly :=: 
                                   dtlipd\Template_location_in_structured_template.assembly) AND
-                                 ('PART_TEMPLATE_2D_SHAPE_ARM.DEPENDENT_TEMPLATE_LOCATION_IN_PADSTACK_DEFINITION' IN TYPEOF(dtlipd)) AND                                 
+                                 ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.DEPENDENT_TEMPLATE_LOCATION_IN_PADSTACK_DEFINITION' IN TYPEOF(dtlipd)) AND                                 
                                  (tlist :=: dtlipd\Dependent_template_location_in_padstack_definition.reference_location)
                                  )
                       )) = 0)
@@ -65,7 +65,7 @@
          NOT('INTERCONNECT_PHYSICAL_REQUIREMENT_ALLOCATION_ARM.ELECTRICAL_ISOLATION_REQUIREMENT'
         IN TYPEOF(eisr)) )) =0;
       WR2: SIZEOF(QUERY(s <* SELF\Geometric_template.shapes |
-        ('PART_TEMPLATE_EXTENSION_ARM.PLANAR_CLOSED_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN TYPEOF(s)))) = 0;
+        ('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_ARM.PLANAR_CLOSED_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN TYPEOF(s)))) = 0;
       WR3: SIZEOF(QUERY(s <* SELF\Geometric_template.shapes |
         NOT ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_ARM.SINGLE_BOUNDARY_CSG_2D_MODEL' IN TYPEOF(s)))) = 0;        
   END_ENTITY;
@@ -75,14 +75,14 @@
   effective_voltage_withstand_capacity_requirement : OPTIONAL Value_limit;
     DERIVE
   electrical_isolation_spacing_requirement         : SET[1:1] OF Predefined_requirement_view_definition := 
-    get_specific_requirement_type_for_primary_rvd_relationship(SELF, 'electrical isolation spacing requirement', 
-              'INTERCONNECT_PLACEMENT_REQUIREMENTS_ARM.LAYOUT_SPACING_REQUIREMENT_OCCURRENCE');
+    get_specific_requirement_type_for_primary_rvd_relationship(SELF, 'derived from', 
+              'INTERCONNECT_PLACEMENT_REQUIREMENTS_ARM.LAYOUT_SPACING_REQUIREMENT');
     WHERE
       WR1 : NOT EXISTS(effective_voltage_withstand_capacity_requirement) OR
              ((effective_voltage_withstand_capacity_requirement\Qualified_representation_item.qualifiers[1]\Type_qualifier.name in ['minimum'])
               AND
              ('VALUE_WITH_UNIT_EXTENSION_ARM.ELECTRIC_POTENTIAL_DATA_ELEMENT' IN TYPEOF(effective_voltage_withstand_capacity_requirement)));
-      WR2 : 'INTERCONNECT_PLACEMENT_REQUIREMENTS_ARM.LAYOUT_SPACING_REQUIREMENT_OCCURRENCE' IN TYPEOF(electrical_isolation_spacing_requirement[1]);
+      WR2 : 'INTERCONNECT_PLACEMENT_REQUIREMENTS_ARM.LAYOUT_SPACING_REQUIREMENT' IN TYPEOF(electrical_isolation_spacing_requirement[1]);
       WR3 : NOT EXISTS(SELF\Product_view_definition.additional_characterization);
   END_ENTITY;
 
@@ -114,11 +114,11 @@
     effective_thermal_resistance_requirement : OPTIONAL Value_limit;
    DERIVE
     thermal_isolation_spacing_requirement    : SET[1:1] OF Predefined_requirement_view_definition := 
-            get_specific_requirement_type_for_primary_rvd_relationship(SELF, 'thermal isolation spacing requirement', 'INTERCONNECT_PLACEMENT_REQUIREMENTS_ARM.LAYOUT_SPACING_REQUIREMENT_OCCURRENCE');
+            get_specific_requirement_type_for_primary_rvd_relationship(SELF, 'derived from', 'INTERCONNECT_PLACEMENT_REQUIREMENTS_ARM.LAYOUT_SPACING_REQUIREMENT');
    WHERE
       WR1 : NOT EXISTS(SELF\Product_view_definition.additional_characterization);
       WR2 : NOT(EXISTS(thermal_bar_width) XOR EXISTS(number_of_bars));
-      WR3 : 'INTERCONNECT_PLACEMENT_REQUIREMENTS_ARM.LAYOUT_SPACING_REQUIREMENT_OCCURRENCE' IN TYPEOF(thermal_isolation_spacing_requirement[1]);
+      WR3 : 'INTERCONNECT_PLACEMENT_REQUIREMENTS_ARM.LAYOUT_SPACING_REQUIREMENT' IN TYPEOF(thermal_isolation_spacing_requirement[1]);
       WR4 : NOT EXISTS(effective_current_capacity_requirement) OR
               ((effective_current_capacity_requirement\Qualified_representation_item.qualifiers[1]\Type_qualifier.name in ['minimum'])
               AND
@@ -137,12 +137,12 @@ LOCAL
     rvdr : SET[0:?] OF Requirement_view_definition_relationship := [];
     rdp : SET[0:?] OF Predefined_requirement_view_definition := [];  --this gives us access to the information base
 END_LOCAL;
-	rvdr := bag_to_set(QUERY(rvdre <* USEDIN (input, 'REQUIREMENT_DECOMPOSITION_ARM.'+ 'REQUIREMENT_VIEW_DEFINITION_RELATIONSHIP.SECONDARY')|
-	                           ((rvdre.relation_type = id) AND (reqType IN TYPEOF(rvdre.primary)))
+	rvdr := bag_to_set(QUERY(rvdre <* USEDIN (input, 'REQUIREMENT_DECOMPOSITION_ARM.'+ 'REQUIREMENT_VIEW_DEFINITION_RELATIONSHIP.PRIMARY')|
+	                           ((rvdre.relation_type = id) AND (reqType IN TYPEOF(rvdre.secondary)))
                        ));
 	-- iterate over rvdr
 	REPEAT i := 1 to SIZEOF(rvdr) by 1;
-      rdp := rdp + rvdr[i].primary;
+      rdp := rdp + rvdr[i].secondary;
 	END_REPEAT;
 
 	RETURN(rdp);

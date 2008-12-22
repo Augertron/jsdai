@@ -48,13 +48,13 @@ REFERENCE FROM Requirement_decomposition_xim(get_rvd);
     SUBTYPE OF (Electrical_isolation_removal_template_armx, dependent_electrical_isolation_removal_template);
       associated_item : land_physical_template_or_inter_stratum_feature_template;
     WHERE
-      WR1 : SIZEOF(QUERY (dtlipd <* USEDIN(SELF,'PART_TEMPLATE_2D_SHAPE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+      WR1 : SIZEOF(QUERY (dtlipd <* USEDIN(SELF,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
                   NOT(
-                     (SIZEOF(QUERY (tlist <* USEDIN(associated_item,'PART_TEMPLATE_2D_SHAPE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+                     (SIZEOF(QUERY (tlist <* USEDIN(associated_item,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
                              NOT(
                                  (tlist\Template_location_in_structured_template.assembly :=: 
                                   dtlipd\Template_location_in_structured_template.assembly) AND
-                                 ('PART_TEMPLATE_2D_SHAPE_XIM.DEPENDENT_TEMPLATE_LOCATION_IN_PADSTACK_DEFINITION' IN TYPEOF(dtlipd)) AND                                 
+                                 ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.DEPENDENT_TEMPLATE_LOCATION_IN_PADSTACK_DEFINITION' IN TYPEOF(dtlipd)) AND                                 
                                  (tlist :=: dtlipd\Dependent_template_location_in_padstack_definition.reference_location)
                                  )
                       )) = 0)
@@ -66,13 +66,13 @@ REFERENCE FROM Requirement_decomposition_xim(get_rvd);
     SUBTYPE OF (Thermal_isolation_removal_template_armx, dependent_thermal_isolation_removal_template);
       associated_item : Land_physical_template_armx;
     WHERE
-      WR1 : SIZEOF(QUERY (dtlipd <* USEDIN(SELF,'PART_TEMPLATE_2D_SHAPE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+      WR1 : SIZEOF(QUERY (dtlipd <* USEDIN(SELF,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
                   NOT(
-                     (SIZEOF(QUERY (tlist <* USEDIN(associated_item,'PART_TEMPLATE_2D_SHAPE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+                     (SIZEOF(QUERY (tlist <* USEDIN(associated_item,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
                              NOT(
                                  (tlist\Template_location_in_structured_template.assembly :=: 
                                   dtlipd\Template_location_in_structured_template.assembly) AND
-                                 ('PART_TEMPLATE_2D_SHAPE_XIM.DEPENDENT_TEMPLATE_LOCATION_IN_PADSTACK_DEFINITION' IN TYPEOF(dtlipd)) AND                                 
+                                 ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.DEPENDENT_TEMPLATE_LOCATION_IN_PADSTACK_DEFINITION' IN TYPEOF(dtlipd)) AND                                 
                                  (tlist :=: dtlipd\Dependent_template_location_in_padstack_definition.reference_location)
                                  )
                       )) = 0)
@@ -90,7 +90,7 @@ REFERENCE FROM Requirement_decomposition_xim(get_rvd);
          NOT('INTERCONNECT_PHYSICAL_REQUIREMENT_ALLOCATION_XIM.ELECTRICAL_ISOLATION_REQUIREMENT'
         IN TYPEOF(eisr)) )) =0;
       WR2: SIZEOF(QUERY(s <* SELF\Geometric_template_armx.shapes |
-        ('PART_TEMPLATE_EXTENSION_XIM.PLANAR_CLOSED_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN TYPEOF(s)))) = 0;
+        ('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_MIM.PLANAR_CLOSED_PATH_SHAPE_REPRESENTATION_WITH_PARAMETERS' IN TYPEOF(s)))) = 0;
       WR3: SIZEOF(QUERY(s <* SELF\Geometric_template_armx.shapes |
         NOT ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_XIM.SINGLE_BOUNDARY_CSG_2D_SHAPE_REPRESENTATION' IN TYPEOF(s)))) = 0;                
   END_ENTITY;
@@ -100,14 +100,15 @@ REFERENCE FROM Requirement_decomposition_xim(get_rvd);
       effective_voltage_withstand_capacity_requirement : OPTIONAL Value_limit;
     DERIVE
       electrical_isolation_spacing_requirement         : SET[1:1] OF Predefined_requirement_view_definition_armx := 
-        get_specific_requirement_type_for_primary_rvd_relationship(SELF, 'electrical isolation spacing requirement', 
-              'INTERCONNECT_PLACEMENT_REQUIREMENTS_XIM.LAYOUT_SPACING_REQUIREMENT_OCCURRENCE_ARMX');
+        get_specific_requirement_type_for_primary_rvd_relationship(SELF, 'derived from', 
+              'INTERCONNECT_PLACEMENT_REQUIREMENTS_XIM.LAYOUT_SPACING_REQUIREMENT_ARMX');
+      SELF\Product_view_definition.additional_characterization: STRING := 'electrical isolation requirement';        
     WHERE
       WR1 : NOT EXISTS(effective_voltage_withstand_capacity_requirement) OR
              ((effective_voltage_withstand_capacity_requirement\Qualified_representation_item.qualifiers[1]\Type_qualifier.name in ['minimum'])
               AND
              ('VALUE_WITH_UNIT_EXTENSION_XIM.ELECTRIC_POTENTIAL_MEASURE_WITH_UNIT' IN TYPEOF(effective_voltage_withstand_capacity_requirement)));
-      WR2 : 'INTERCONNECT_PLACEMENT_REQUIREMENTS_XIM.LAYOUT_SPACING_REQUIREMENT_OCCURRENCE_ARMX' IN TYPEOF(electrical_isolation_spacing_requirement[1]);
+      WR2 : 'INTERCONNECT_PLACEMENT_REQUIREMENTS_XIM.LAYOUT_SPACING_REQUIREMENT_ARMX' IN TYPEOF(electrical_isolation_spacing_requirement[1]);
       WR3 : NOT EXISTS(SELF\Product_view_definition.additional_characterization);
   END_ENTITY;
 
@@ -135,15 +136,16 @@ ENTITY Interconnect_shield_allocation_armx
     thermal_bar_width                        : OPTIONAL Length_tolerance_characteristic;
     number_of_bars                           : OPTIONAL INTEGER;
     effective_current_capacity_requirement   : OPTIONAL Value_limit;
-    angular_orientation_requirement          : OPTIONAL Value_range;
+    angular_orientation_requirement          : OPTIONAL Value_range_armx;
     effective_thermal_resistance_requirement : OPTIONAL Value_limit;
    DERIVE
     thermal_isolation_spacing_requirement    : SET[1:1] OF Predefined_requirement_view_definition_armx := 
-            get_specific_requirement_type_for_primary_rvd_relationship(SELF, 'thermal isolation spacing requirement', 'INTERCONNECT_PLACEMENT_REQUIREMENTS_XIM.LAYOUT_SPACING_REQUIREMENT_OCCURRENCE_ARMX');
+            get_specific_requirement_type_for_primary_rvd_relationship(SELF, 'derived from', 'INTERCONNECT_PLACEMENT_REQUIREMENTS_XIM.LAYOUT_SPACING_REQUIREMENT_ARMX');
+    SELF\Product_view_definition.additional_characterization: STRING := 'thermal isolation requirement';            
    WHERE
       WR1 : NOT EXISTS(SELF\Product_view_definition.additional_characterization);
       WR2 : NOT(EXISTS(thermal_bar_width) XOR EXISTS(number_of_bars));
-      WR3 : 'INTERCONNECT_PLACEMENT_REQUIREMENTS_XIM.LAYOUT_SPACING_REQUIREMENT_OCCURRENCE_ARMX' IN TYPEOF(thermal_isolation_spacing_requirement[1]);
+      WR3 : 'INTERCONNECT_PLACEMENT_REQUIREMENTS_XIM.LAYOUT_SPACING_REQUIREMENT_ARMX' IN TYPEOF(thermal_isolation_spacing_requirement[1]);
       WR4 : NOT EXISTS(effective_current_capacity_requirement) OR
               ((effective_current_capacity_requirement\Qualified_representation_item.qualifiers[1]\Type_qualifier.name in ['minimum'])
               AND
@@ -166,12 +168,12 @@ LOCAL
     rvdr : SET[0:?] OF Requirement_view_definition_relationship := [];
     rdp : SET[0:?] OF Predefined_requirement_view_definition_armx := [];  --this gives us access to the information base
 END_LOCAL;
-	rvdr := bag_to_set(QUERY(rvdre <* USEDIN (input, 'REQUIREMENT_DECOMPOSITION_XIM.'+ 'REQUIREMENT_VIEW_DEFINITION_RELATIONSHIP.SECONDARY')|
-	                           ((rvdre.relation_type = id) AND (reqType IN TYPEOF(rvdre.primary)))
+	rvdr := bag_to_set(QUERY(rvdre <* USEDIN (input, 'REQUIREMENT_DECOMPOSITION_XIM.'+ 'REQUIREMENT_VIEW_DEFINITION_RELATIONSHIP.PRIMARY')|
+	                           ((rvdre.relation_type = id) AND (reqType IN TYPEOF(rvdre.secondary)))
                        ));
 	-- iterate over rvdr
 	REPEAT i := 1 to SIZEOF(rvdr) by 1;
-		rdp := rdp + rvdr[i].primary;
+		rdp := rdp + rvdr[i].secondary;
 	END_REPEAT;
 
 	RETURN(rdp);

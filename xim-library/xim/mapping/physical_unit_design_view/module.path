@@ -69,6 +69,8 @@ product_definition <-
 product_definition_relationship.related_product_definition
 product_definition_relationship
 {product_definition_relationship.name = 'definition usage'}
+!{product_definition_relationship =>
+product_definition_usage}
 product_definition_relationship.relating_product_definition ->
 product_definition =>
 part_template_definition =>
@@ -86,6 +88,8 @@ product_definition <-
 product_definition_relationship.related_product_definition
 product_definition_relationship
 {product_definition_relationship.name = 'definition usage'}
+!{product_definition_relationship =>
+product_definition_usage}
 product_definition_relationship.relating_product_definition ->
 product_definition =>
 part_template_definition =>
@@ -103,6 +107,8 @@ product_definition <-
 product_definition_relationship.related_product_definition
 product_definition_relationship
 {product_definition_relationship.name = 'definition usage'}
+!{product_definition_relationship =>
+product_definition_usage}
 product_definition_relationship.relating_product_definition ->
 product_definition =>
 part_template_definition
@@ -140,7 +146,7 @@ attribute_mapping item_number(item_number, group.name);
 		group.name
 end_attribute_mapping;
 
-attribute_mapping assembly_usage(assembly_usage, $PATH, assembly_component_usage);
+attribute_mapping assembly_usage(assembly_usage, $PATH, Next_assembly_usage_occurrence_relationship_armx);
 		assembly_item_number <=
 		applied_group_assignment
 		applied_group_assignment.items[i] ->
@@ -206,7 +212,7 @@ attribute_mapping component_1(component_1, $PATH, Assembly_item_number_armx);
 		component_material_relationship_assignment_item = assembly_item_number
 end_attribute_mapping;
 
-attribute_mapping component_1(component_1, $PATH, assembly_component_usage);
+attribute_mapping component_1(component_1, $PATH, Next_assembly_usage_occurrence_relationship_armx);
 		component_material_relationship <=
 		group <-
 		group_assignment.assigned_group
@@ -258,7 +264,7 @@ attribute_mapping component_2(component_2, $PATH, Assembly_item_number_armx);
 		component_material_relationship_assignment_item = assembly_item_number
 end_attribute_mapping;
 
-attribute_mapping component_2(component_2, $PATH, assembly_component_usage);
+attribute_mapping component_2(component_2, $PATH, Next_assembly_usage_occurrence_relationship_armx);
 		component_material_relationship <=
 		group <-
 		group_assignment.assigned_group
@@ -310,7 +316,7 @@ attribute_mapping material(material, $PATH, Assembly_item_number_armx);
 		component_material_relationship_assignment_item = assembly_item_number
 end_attribute_mapping;
 
-attribute_mapping material(material, $PATH, assembly_component_usage);
+attribute_mapping material(material, $PATH, Next_assembly_usage_occurrence_relationship_armx);
 		component_material_relationship <=
 		group <-
 		group_assignment.assigned_group
@@ -460,6 +466,54 @@ end_mapping_constraints;
 
 end_entity_mapping;
 
+entity_mapping Product_occurrence_definition_relationship_armx(Product_occurrence_definition_relationship_armx, product_definition_usage);
+
+mapping_constraints;
+{product_definition_usage <=
+product_definition_relationship}
+end_mapping_constraints;
+
+attribute_mapping relating_view(relating_view, $PATH, Product_view_definition);
+product_definition_usage <=
+product_definition_relationship
+product_definition_relationship.relating_product_definition ->
+product_definition
+
+end_attribute_mapping;
+
+(* GL - Workarround mapping *)
+attribute_mapping related_view(related_view, $PATH, Definition_based_product_occurrence);
+      product_definition_usage <=
+      product_definition_relationship
+(*			[product_definition_relationship
+			product_definition_relationship.related_product_definition ->
+			product_definition <- 
+			product_definition_relationship.relating_product_definition
+			product_definition_relationship
+			{product_definition_relationship.name = 'definition usage'}
+			product_definition_relationship.related_product_definition ->]
+			[(product_definition_relationship =>
+			product_definition_usage =>
+			assembly_component_usage <-
+			product_definition_occurrence_relationship.occurrence_usage
+			product_definition_occurrence_relationship) *)
+			(* GL - extra case added in order to avoid problems with interpreting derived attributes in JSDAI *)
+			(*(*)product_definition_relationship =>
+			product_definition_usage =>
+			assembly_component_usage =>
+			next_assembly_usage_occurrence =>
+			next_assembly_usage_occurrence_relationship <=
+			product_definition_occurrence_relationship(*)*)
+			product_definition_occurrence_relationship
+			product_definition_occurrence_relationship.occurrence ->(*])*)
+(*			(product_definition_relationship
+			product_definition_relationship.related_product_definition ->)			*)
+			product_definition
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
 entity_mapping Next_assembly_usage_occurrence_relationship_armx(Next_assembly_usage_occurrence_relationship_armx, next_assembly_usage_occurrence_relationship);
 
 mapping_constraints;
@@ -468,25 +522,13 @@ next_assembly_usage_occurrence]
 [next_assembly_usage_occurrence_relationship <=
 product_definition_occurrence_relationship]
 
-
 end_mapping_constraints;
 
-(* GL - Workarround mapping *)
-attribute_mapping related_product_definition(related_product_definition, $PATH, Definition_based_product_occurrence);
-assembly_component_usage =>
-next_assembly_usage_occurrence =>
+attribute_mapping reference_designator(reference_designator, assembly_component_usage.reference_designator);
 next_assembly_usage_occurrence_relationship <=
-product_definition_occurrence_relationship
-product_definition_occurrence_relationship.occurrence -> product_definition
-(* GL - added more constraints in order to avoid mapping problems *)
-{product_definition <-
-product_definition_relationship.related_product_definition
-{product_definition_relationship
-product_definition_relationship.name = 'definition usage'}
-product_definition_relationship
-product_definition_relationship.relating_product_definition ->
-product_definition}
-
+next_assembly_usage_occurrence <=
+assembly_component_usage
+assembly_component_usage.reference_designator
 end_attribute_mapping;
 
 end_entity_mapping;

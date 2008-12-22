@@ -50,6 +50,7 @@ USE FROM shape_tolerance_schema(
 	tolerance_zone_definition);
 	
 USE FROM shape_aspect_definition_schema(
+    common_datum,
 	datum,
 	datum_reference,
 	datum_target,
@@ -59,7 +60,6 @@ USE FROM aic_geometric_tolerances(
 	angularity_tolerance,
   circular_runout_tolerance,
   coaxiality_tolerance,
-  common_datum,
   concentricity_tolerance,
   cylindricity_tolerance,
   flatness_tolerance,
@@ -117,7 +117,13 @@ END_ENTITY;
 
 ENTITY Datum_defined_by_feature
   (* CONNOTATIONAL *) SUBTYPE OF (Single_datum);
-  defined_by : Shape_element;
+  defined_by : Datum_feature_shape_element_xim;
+END_ENTITY;
+
+(* GL - artificial entity in order to workarround problem stated in SC-4 issue #2555)
+(* Likely many complexes has to be made Datum_feature_shape_element_xim+subtype_of_shape_element *)
+ENTITY Datum_feature_shape_element_xim
+  SUBTYPE OF (Shape_element, datum_feature);
 END_ENTITY;
 
 ENTITY Datum_defined_by_targets

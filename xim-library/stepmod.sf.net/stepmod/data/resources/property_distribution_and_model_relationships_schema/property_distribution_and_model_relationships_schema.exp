@@ -1,0 +1,59 @@
+
+(*
+$Id$
+ISO TC184/SC4/WG12 Nxxx - ISO/IS 10303-107 *) 
+
+
+SCHEMA property_distribution_and_model_relationships_schema;
+
+REFERENCE FROM analysis_schema
+  (model_property_distribution);
+
+REFERENCE FROM finite_element_analysis_control_and_result_schema
+  (state_definition);
+
+REFERENCE FROM product_analysis_schema
+  (domain_property);
+
+REFERENCE FROM product_property_definition_schema
+  (property_definition);
+
+REFERENCE FROM support_resource_schema
+  (identifier,
+   label,
+   text);
+
+TYPE discretised_distribution_model_select = EXTENSIBLE SELECT 
+  (model_property_distribution,
+   state_definition);
+END_TYPE;
+
+TYPE idealised_distribution_select = EXTENSIBLE SELECT 
+  (domain_property,
+   property_definition);
+END_TYPE;
+
+ENTITY distribution_view_relationship;
+  id : identifier;
+  name : label;
+  description : OPTIONAL text;
+  discretised_model : discretised_distribution_model_select;
+  idealised_distribution : idealised_distribution_select;
+END_ENTITY;
+
+ENTITY same_discretised_distribution_model;
+  id : identifier;
+  name : label;
+  description : OPTIONAL text;
+  equivalent_records : SET [1 : ?] OF discretised_distribution_model_select;
+END_ENTITY;
+
+ENTITY same_idealised_distribution;
+  id : identifier;
+  name : label;
+  description : OPTIONAL text;
+  equivalent_records : LIST [2 : ?] OF idealised_distribution_select;
+END_ENTITY;
+
+END_SCHEMA;
+

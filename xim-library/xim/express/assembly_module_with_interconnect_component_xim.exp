@@ -74,11 +74,14 @@ USE FROM Assembly_module_with_interconnect_component_mim;
       SELF\Shape_element.containing_shape(* TEMP-CF! *) : Physical_component_armx;
     DERIVE
       SELF\shape_aspect.description : text := 'interconnect component join terminal';
+    WHERE
+      WR1: NOT EXISTS(SELF\Component_feature_armx.definition) OR
+           NOT('FUNCTIONAL_ASSIGNMENT_TO_PART_XIM.PART_TERMINAL' IN TYPEOF(SELF\Component_feature_armx.definition));
   END_ENTITY;
 
   ENTITY Interconnect_module_component_armx
     (* CONNOTATIONAL *) SUBTYPE OF (Physical_component_armx, Single_instance, interconnect_module_component);
-      SELF\Definition_based_product_occurrence.derived_from : Interconnect_module_usage_view;
+      SELF\Definition_based_product_occurrence.derived_from : Layered_interconnect_module_usage_view_armx;
     DERIVE
       SELF\Product_view_definition.name_x : STRING := '';
   END_ENTITY;

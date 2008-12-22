@@ -1,0 +1,1919 @@
+(*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ *)
+
+(*schema_mapping part_template_extension(Part_template_extension_arm, Part_template_extension_mim);*)
+
+(* Mapping of entity not existing in the ARM *)
+entity_mapping Path_area_with_parameters_armx(Path_area_with_parameters_armx, path_area_with_parameters);
+
+mapping_constraints;
+path_area_with_parameters <=
+[complex_area]
+[mapped_item]
+
+end_mapping_constraints;
+
+attribute_mapping parameters(parameters, $PATH, Curve_style_parameters);
+path_area_with_parameters <=
+mapped_item
+mapped_item.mapping_source ->
+representation_map
+representation_map.mapped_representation ->
+representation =>
+curve_style_parameters_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Closed_curve_style_parameters_armx(Closed_curve_style_parameters_armx, closed_curve_style_parameters);
+
+mapping_constraints;
+closed_curve_style_parameters <=
+curve_style_parameters_representation <=
+representation
+[representation
+representation.context_of_items ->
+representation_context
+[representation_context
+representation_context =>
+global_uncertainty_assigned_context]
+[representation_context
+representation_context =>
+parametric_representation_context]]
+[representation
+representation.context_of_items ->
+representation_context
+representation_context.context_type
+representation_context.context_type = 'curve style parametric context']
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Curve_style_parameters(Curve_style_parameters, curve_style_parameters_representation);
+
+mapping_constraints;
+curve_style_parameters_representation <=
+representation
+[representation
+representation.context_of_items ->
+representation_context
+[representation_context
+representation_context =>
+global_uncertainty_assigned_context]
+[representation_context
+representation_context =>
+parametric_representation_context]]
+[representation
+representation.context_of_items ->
+representation_context
+representation_context.context_type
+representation_context.context_type = 'curve style parametric context']
+
+end_mapping_constraints;
+
+attribute_mapping name_x(name_x, descriptive_representation_item.description);
+curve_style_parameters_representation <=
+representation
+representation.items[i] ->
+representation_item
+{representation_item.name = 'curve style name'}
+representation_item =>
+descriptive_representation_item
+descriptive_representation_item.description
+
+end_attribute_mapping;
+
+attribute_mapping corner_style(corner_style, $PATH);
+curve_style_parameters_representation <=
+representation
+representation.items[i] ->
+representation_item
+{{representation_item.name = 'corner style'}
+representation_item =>
+descriptive_representation_item
+(descriptive_representation_item.description = 'chord 2 extend')
+(descriptive_representation_item.description = 'extend')
+(descriptive_representation_item.description = 'round')
+(descriptive_representation_item.description = 'truncate')
+}
+
+end_attribute_mapping;
+
+attribute_mapping curve_width(curve_width, $PATH, length_measure_with_unit);
+curve_style_parameters_representation <=
+representation
+representation.items[i] ->
+representation_item
+{representation_item
+representation_item.name = 'curve width'}
+representation_item =>
+measure_representation_item <= 
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping width_uncertainty(width_uncertainty, $PATH, length_measure_with_unit);
+curve_style_parameters_representation <=
+representation
+representation.context_of_items ->
+representation_context
+representation_context =>
+global_uncertainty_assigned_context
+global_uncertainty_assigned_context.uncertainty[i] ->
+uncertainty_measure_with_unit <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Curve_style_parameters_with_ends_armx(Curve_style_parameters_with_ends_armx, curve_style_parameters_with_ends);
+
+mapping_constraints;
+curve_style_parameters_with_ends <=
+curve_style_parameters_representation <=
+representation
+[representation
+representation.context_of_items ->
+representation_context
+[representation_context
+representation_context =>
+global_uncertainty_assigned_context]
+[representation_context
+representation_context =>
+parametric_representation_context]]
+[representation
+representation.context_of_items ->
+representation_context
+representation_context.context_type
+representation_context.context_type = 'curve style parametric context']
+
+end_mapping_constraints;
+
+attribute_mapping end_extension(end_extension, $PATH);
+curve_style_parameters_with_ends <=
+curve_style_parameters_representation <=
+representation
+representation.items[i] ->
+representation_item
+{{representation_item.name = 'end extension'}
+representation_item =>
+descriptive_representation_item
+(descriptive_representation_item.description = 'extend')
+(descriptive_representation_item.description = 'truncate')}
+
+end_attribute_mapping;
+
+attribute_mapping end_style(end_style, $PATH);
+curve_style_parameters_with_ends <=
+curve_style_parameters_representation <=
+representation
+representation.items[i] ->
+representation_item
+{{representation_item.name = 'end style'}
+representation_item =>
+descriptive_representation_item
+(descriptive_representation_item.description = 'round')
+(descriptive_representation_item.description = 'square')}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Default_trace_template_armx(Default_trace_template_armx, default_trace_template);
+
+mapping_constraints;
+default_trace_template <=
+trace_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_stratum_technology(of_stratum_technology, $PATH, Stratum_technology_armx);
+default_trace_template <=
+trace_template <=
+parametric_template <=
+part_template_definition <=
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'of stratum technology'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+stratum_technology
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Hatch_area_template_armx(Hatch_area_template_armx, hatch_area_template);
+
+mapping_constraints;
+
+hatch_area_template <=
+fill_area_template <=
+parametric_template <=
+part_template_definition
+
+end_mapping_constraints;
+
+attribute_mapping fill_boundary_style(fill_boundary_style, $PATH, Curve_style_parameters_with_ends_armx);
+hatch_area_template <=
+fill_area_template <=
+parametric_template <=					
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+{property_definition
+property_definition.name = 'fill boundary style'}
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+curve_style_parameters_representation =>
+curve_style_parameters_with_ends
+end_attribute_mapping;
+
+attribute_mapping hatch_pattern(hatch_pattern, $PATH, Hatch_line_element_armx);
+hatch_area_template <=
+fill_area_template <=
+parametric_template <=					
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+{property_definition
+property_definition.name = 'hatch pattern'}
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+geometric_representation_item =>
+hatch_line_element
+end_attribute_mapping;
+
+attribute_mapping min_feature(min_feature, $PATH, length_measure_with_unit);
+hatch_area_template <=
+fill_area_template <=
+parametric_template <=					
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+{property_definition
+property_definition.name = 'min feature'}
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Hatch_line_element_armx(Hatch_line_element_armx, hatch_line_element);
+
+mapping_constraints;
+[hatch_line_element <=
+geometric_representation_item]
+[hatch_line_element <=
+representation_item_relationship]
+end_mapping_constraints;
+
+attribute_mapping hatch_line(hatch_line, $PATH, line);
+hatch_line_element <=
+representation_item_relationship
+representation_item_relationship.relating_representation_item ->
+representation_item =>
+geometric_representation_item =>
+curve =>
+line
+end_attribute_mapping;
+
+attribute_mapping offset(offset, $PATH, length_measure_with_unit);
+hatch_line_element <=
+representation_item_relationship
+representation_item_relationship.related_representation_item ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Tile_area_template_armx(Tile_area_template_armx, tile_area_template);
+
+mapping_constraints;
+tile_area_template <=
+fill_area_template <=
+parametric_template <=
+part_template_definition
+end_mapping_constraints;
+
+attribute_mapping fill_template(fill_template, $PATH, Single_stratum_template_armx);
+tile_area_template <=
+fill_area_template <=
+parametric_template <=					
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+property_definition_relationship
+{property_definition_relationship.name = 'fill template'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+part_template_definition => 
+single_stratum_template
+end_attribute_mapping;
+
+attribute_mapping start_placement(start_placement, $PATH, axis2_placement_2d);
+tile_area_template <=
+fill_area_template <=
+parametric_template <=					
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+{property_definition
+property_definition.name = 'start placement'}
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+geometric_representation_item =>
+placement =>
+axis2_placement_2d
+end_attribute_mapping;
+
+attribute_mapping first_repeat_factor(first_repeat_factor, $PATH, vector);
+tile_area_template <=
+fill_area_template <=
+parametric_template <=					
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+{property_definition
+property_definition.name = 'repeat factor'}
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+geometric_representation_item =>
+one_direction_repeat_factor
+{one_direction_repeat_factor =>
+two_direction_repeat_factor}
+one_direction_repeat_factor.repeat_factor ->
+vector
+end_attribute_mapping;
+
+attribute_mapping second_repeat_factor(second_repeat_factor, $PATH, vector);
+tile_area_template <=
+fill_area_template <=
+parametric_template <=					
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+{property_definition
+property_definition.name = 'repeat factor'}
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+geometric_representation_item =>
+one_direction_repeat_factor =>
+two_direction_repeat_factor
+two_direction_repeat_factor.second_repeat_factor ->
+vector
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Fill_area_template_armx(Fill_area_template_armx, fill_area_template);
+
+mapping_constraints;
+
+fill_area_template <=
+parametric_template <=
+part_template_definition
+
+end_mapping_constraints;
+
+attribute_mapping outer_boundary_style(outer_boundary_style, $PATH, Closed_curve_style_parameters_armx);
+fill_area_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+{property_definition
+property_definition.name = 'outer boundary style'}
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+curve_style_parameters_representation =>
+closed_curve_style_parameters
+
+end_attribute_mapping;
+
+attribute_mapping inner_boundary_style(inner_boundary_style, $PATH, Closed_curve_style_parameters_armx);
+fill_area_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+{property_definition
+property_definition.name = 'inner boundary style'}
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+curve_style_parameters_representation =>
+closed_curve_style_parameters
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Inter_stratum_feature_edge_segment_template_armx(Inter_stratum_feature_edge_segment_template_armx, inter_stratum_feature_edge_segment_template);
+
+mapping_constraints;
+[inter_stratum_feature_edge_segment_template <=
+part_template_definition]
+[inter_stratum_feature_edge_segment_template <=
+shape_aspect_relationship]
+
+end_mapping_constraints;
+
+attribute_mapping composed_edge(composed_edge, $PATH, Inter_stratum_feature_edge_template_armx);
+inter_stratum_feature_edge_segment_template <=
+part_template_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship.relating_product_definition ->
+product_definition =>
+part_template_definition =>
+inter_stratum_feature_edge_template
+
+end_attribute_mapping;
+
+attribute_mapping end_vertex(end_vertex, $PATH, Edge_segment_vertex_armx);
+inter_stratum_feature_edge_segment_template <=
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.name = 'single datum'}
+shape_aspect =>
+datum =>
+edge_segment_vertex
+
+end_attribute_mapping;
+
+attribute_mapping start_vertex(start_vertex, $PATH, Edge_segment_vertex_armx);
+inter_stratum_feature_edge_segment_template <=
+shape_aspect_relationship
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.name = 'single datum'}
+shape_aspect =>
+datum =>
+edge_segment_vertex
+
+end_attribute_mapping;
+
+attribute_mapping reference_path(reference_path, $PATH, Trimmed_curve);
+inter_stratum_feature_edge_segment_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation.used_representation ->
+representation.items[i] ->
+representation_item =>
+geometric_representation_item =>
+curve =>
+bounded_curve =>
+trimmed_curve
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Inter_stratum_feature_edge_template_armx(Inter_stratum_feature_edge_template_armx, inter_stratum_feature_edge_template);
+
+mapping_constraints;
+inter_stratum_feature_edge_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Parametric_template_armx(Parametric_template_armx, parametric_template);
+
+mapping_constraints;
+
+parametric_template <=
+part_template_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Path_area_with_parameters_armx(Path_area_with_parameters_armx, path_area_with_parameters);
+
+mapping_constraints;
+{path_area_with_parameters <=
+mapped_item <=
+representation_item}
+
+end_mapping_constraints;
+
+attribute_mapping parameters(parameters, $PATH, Curve_style_parameters);
+path_area_with_parameters <=
+mapped_item
+mapped_item.mapping_source ->
+representation_map
+representation_map.mapped_representation ->
+representation =>
+curve_style_parameters_representation
+end_attribute_mapping;
+
+attribute_mapping centreline(centreline, $PATH, Curve);
+path_area_with_parameters <=
+mapped_item                
+mapped_item.mapping_target ->
+representation_item => 
+geometric_representation_item => 
+curve
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Closed_path_area_with_parameters(Closed_path_area_with_parameters, path_area_with_parameters);
+
+mapping_constraints;
+(* GL added - strong no allowed for redeclared attributes *)
+{path_area_with_parameters <=
+mapped_item
+mapped_item.mapping_target ->
+representation_item => 
+geometric_representation_item => 
+curve =>
+bounded_curve =>
+composite_curve}
+
+path_area_with_parameters <=
+mapped_item
+{mapped_item.mapping_source ->
+representation_map
+representation_map.mapped_representation ->
+representation =>
+curve_style_parameters_representation =>
+closed_curve_style_parameters}
+end_mapping_constraints;
+
+attribute_mapping parameters(parameters, $PATH, Closed_curve_style_parameters);
+path_area_with_parameters <=
+mapped_item
+mapped_item.mapping_source ->
+representation_map
+representation_map.mapped_representation ->
+representation =>
+curve_style_parameters_representation =>
+closed_curve_style_parameters
+end_attribute_mapping;
+
+attribute_mapping centreline(centreline, $PATH, Closed_curve);
+path_area_with_parameters <=
+mapped_item
+mapped_item.mapping_target ->
+representation_item => 
+geometric_representation_item => 
+curve =>
+bounded_curve =>
+composite_curve
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Part_string_template_armx(Part_string_template_armx, part_string_template);
+
+mapping_constraints;
+part_string_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping string_alignment(string_alignment, $PATH, text_alignment);
+part_string_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'string alignment'}
+{(property_definition.description = 'top right')
+(property_definition.description = 'top centre')
+(property_definition.description = 'top left')
+(property_definition.description = 'centre right')
+(property_definition.description = 'centre centre')
+(property_definition.description = 'centre left')
+(property_definition.description = 'bottom right')
+(property_definition.description = 'bottom centre')
+(property_definition.description = 'bottom left')}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Part_text_template_armx(Part_text_template_armx, part_text_template);
+
+mapping_constraints;
+part_text_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_character(of_character, $PATH, Character_glyph_symbol);
+part_text_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.description = 'of character'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+symbol_representation =>
+generic_character_glyph_symbol
+
+end_attribute_mapping;
+
+end_entity_mapping;
+(* Now we use entity from AIM
+entity_mapping Solid_character_glyph_2d_symbol_armx(Solid_character_glyph_2d_symbol_armx, solid_character_glyph_2d_symbol);
+
+mapping_constraints;
+solid_character_glyph_2d_symbol <=
+generic_character_glyph_symbol <=
+symbol_representation <=
+representation
+
+end_mapping_constraints;
+
+end_entity_mapping;
+*)
+entity_mapping Snowball_template_armx(Snowball_template_armx, snowball_template);
+
+mapping_constraints;
+snowball_template <=
+teardrop_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping snowball_quantity_per_trace(snowball_quantity_per_trace, $PATH);
+snowball_template <=
+teardrop_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition.name = 'snowball quantity per trace'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit
+{measure_with_unit.unit_component ->
+unit
+unit = named_unit
+named_unit =>
+context_dependent_unit}
+measure_with_unit.value_component ->
+measure_value
+measure_value = count_measure
+count_measure
+
+end_attribute_mapping;
+
+attribute_mapping snowball_start_distance(snowball_start_distance, $PATH, length_measure_with_unit);
+snowball_template <=
+teardrop_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition.name = 'snowball start distance'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping snowball_end_distance(snowball_end_distance, $PATH, length_measure_with_unit);
+snowball_template <=
+teardrop_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition.name = 'snowball end distance'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping snowball_initial_spacing(snowball_initial_spacing, $PATH, length_measure_with_unit);
+snowball_template <=
+teardrop_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition.name = 'snowball initial spacing'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping snowball_end_spacing(snowball_end_spacing, $PATH, length_measure_with_unit);
+snowball_template <=
+teardrop_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition.name = 'snowball end spacing'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping snowball_initial_radius(snowball_initial_radius, $PATH, length_measure_with_unit);
+snowball_template <=
+teardrop_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition.name = 'snowball initial radius'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping snowball_end_radius(snowball_end_radius, $PATH, length_measure_with_unit);
+snowball_template <=
+teardrop_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition.name = 'snowball end radius'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Teardrop_by_angle_template_armx(Teardrop_by_angle_template_armx, teardrop_by_angle_template);
+
+mapping_constraints;
+teardrop_by_angle_template <=
+teardrop_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping teardrop_angle(teardrop_angle, $PATH, plane_angle_measure_with_unit);
+teardrop_by_angle_template <=
+teardrop_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'teardrop angle'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+plane_angle_measure_with_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Teardrop_by_length_template_armx(Teardrop_by_length_template_armx, teardrop_by_length_template);
+
+mapping_constraints;
+teardrop_by_length_template <=
+teardrop_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+
+
+end_mapping_constraints;
+
+attribute_mapping teardrop_taper_start_distance(teardrop_taper_start_distance, $PATH, length_measure_with_unit);
+teardrop_by_length_template <=
+teardrop_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'teardrop taper start distance'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+attribute_mapping teardrop_taper_end_distance(teardrop_taper_end_distance, $PATH, length_measure_with_unit);
+teardrop_by_length_template <=
+teardrop_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+characterized_product_definition = product_definition
+characterized_definition = characterized_product_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'teardrop taper end distance'}
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item
+representation_item =>
+measure_representation_item <=
+measure_with_unit =>
+length_measure_with_unit
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Teardrop_template_armx(Teardrop_template_armx, teardrop_template);
+
+mapping_constraints;
+teardrop_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Trace_template_armx(Trace_template_armx, trace_template);
+
+mapping_constraints;
+trace_template <=
+parametric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping trace_style(trace_style, $PATH, Curve_style_parameters);
+trace_template <=
+parametric_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation =>
+curve_style_parameters_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Blind_passage_template_armx(Blind_passage_template_armx, blind_passage_template);
+
+mapping_constraints;
+blind_passage_template <=
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_measure_orientation(of_measure_orientation, descriptive_representation_item);
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'blind passage template measure orientation'}
+representation_item =>
+descriptive_representation_item
+{descriptive_representation_item
+(descriptive_representation_item.description = 'normal')
+(descriptive_representation_item.description = 'reversed')}
+
+end_attribute_mapping;
+
+attribute_mapping datum_reference_layer(datum_reference_layer, $PATH, Stratum_technology_occurrence_armx);
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'datum reference layer'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+stratum_technology_occurrence
+end_attribute_mapping;
+
+attribute_mapping datum_reference_side(datum_reference_side, $PATH, Stratum_technology_occurrence_link_armx);
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'datum reference side'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+stratum_technology_occurrence_relationship =>
+stratum_technology_occurrence_link
+end_attribute_mapping;
+
+attribute_mapping bottom_distance_from_datum_reference(bottom_distance_from_datum_reference, $PATH, Shape_dimension_representation);
+part_template_definition <=
+product_definition_shape <-
+shape_aspect.of_shape					
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+shape_aspect_relationship =>
+dimensional_location
+dimensional_characteristic = dimensional_location
+dimensional_characteristic
+dimensional_characteristic <-
+dimensional_characteristic_representation.dimension
+dimensional_characteristic_representation
+dimensional_characteristic_representation.representation ->
+shape_dimension_representation
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Continuous_template_armx(Continuous_template_armx, continuous_template);
+
+mapping_constraints;
+continuous_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Counterbore_passage_template_armx(Counterbore_passage_template_armx, counterbore_passage_template);
+
+mapping_constraints;
+counterbore_passage_template <=
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping smaller_passage(smaller_passage, $PATH, Unsupported_passage_template_armx);
+counterbore_passage_template <=
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition <-
+product_definition_relationship.relating_product_definition
+product_definition_relationship
+{product_definition_relationship.description = 'smaller passage'}
+product_definition_relationship.related_product_definition ->
+product_definition =>
+part_template_definition =>
+geometric_template =>
+inter_stratum_feature_template =>
+unsupported_passage_template
+
+end_attribute_mapping;
+
+attribute_mapping larger_passage(larger_passage, $PATH, Blind_passage_template_armx);
+counterbore_passage_template <=
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition <-
+product_definition_relationship.relating_product_definition
+product_definition_relationship
+{product_definition_relationship.description = 'larger passage'}
+product_definition_relationship.related_product_definition ->
+product_definition =>
+part_template_definition =>
+geometric_template =>
+inter_stratum_feature_template =>
+unsupported_passage_template =>
+blind_passage_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Countersunk_passage_template_armx(Countersunk_passage_template_armx, countersunk_passage_template);
+
+mapping_constraints;
+countersunk_passage_template <=
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping constant_diameter_passage(constant_diameter_passage, $PATH, Unsupported_passage_template_armx);
+countersunk_passage_template <=
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition <-
+product_definition_relationship.relating_product_definition
+product_definition_relationship
+{product_definition_relationship.description = 'constant diameter passage'}
+product_definition_relationship.related_product_definition ->
+product_definition =>
+part_template_definition =>
+geometric_template =>
+inter_stratum_feature_template =>
+unsupported_passage_template
+
+end_attribute_mapping;
+
+attribute_mapping tapered_passage(tapered_passage, $PATH, Blind_passage_template_armx);
+countersunk_passage_template <=
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition <-
+product_definition_relationship.relating_product_definition
+product_definition_relationship
+{product_definition_relationship.description = 'larger passage'}
+product_definition_relationship.related_product_definition ->
+product_definition =>
+part_template_definition =>
+geometric_template =>
+inter_stratum_feature_template =>
+unsupported_passage_template =>
+blind_passage_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Component_termination_passage_template_armx(Component_termination_passage_template_armx, component_termination_passage_template);
+
+mapping_constraints;
+component_termination_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_passage_technology(of_passage_technology, $PATH, Default_component_termination_passage_definition);
+component_termination_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'technology usage'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+passage_technology
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Component_termination_passage_template_interface_terminal(Component_termination_passage_template_interface_terminal, shape_aspect);
+
+mapping_constraints;
+{shape_aspect
+shape_aspect.description =  'component termination passage template interface terminal'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Component_termination_passage_template_join_terminal(Component_termination_passage_template_join_terminal, shape_aspect);
+
+mapping_constraints;
+{shape_aspect
+shape_aspect.description = 'component termination passage template join terminal'}
+
+end_mapping_constraints;
+
+attribute_mapping disallowed_inter_stratum_extent(disallowed_inter_stratum_extent, $PATH, Stratum_technology_occurrence_link_armx);
+shape_aspect
+shape_definition = shape_aspect
+shape_definition 
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'disallowed inter stratum extent'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+stratum_technology_occurrence_relationship =>
+stratum_technology_occurrence_link
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Component_termination_passage_template_terminal(Component_termination_passage_template_terminal, shape_aspect);
+
+mapping_constraints;
+{shape_aspect
+(shape_aspect.description =  'component termination passage template interface terminal')
+(shape_aspect.description =  'component termination passage template join terminal')}
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Component_termination_passage_template_armx);
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+geometric_template =>
+inter_stratum_feature_template =>
+component_termination_passage_template
+
+
+end_attribute_mapping;
+
+attribute_mapping connection_area(connection_area, $PATH, Connection_zone_in_layout_template);
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'connection area'}
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+shape_aspect =>
+instanced_feature
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Default_attachment_size_based_land_physical_template_armx(Default_attachment_size_based_land_physical_template_armx, default_attachment_size_based_land_physical_template);
+
+mapping_constraints;
+default_attachment_size_based_land_physical_template <=
+land_physical_template <=
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Default_passage_based_land_physical_template_armx(Default_passage_based_land_physical_template_armx, default_passage_based_land_physical_template);
+
+mapping_constraints;
+default_passage_based_land_physical_template <=
+land_physical_template <=
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_passage_technology(of_passage_technology, $PATH, Passage_technology_armx);
+default_passage_based_land_physical_template <=
+land_physical_template <=
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'technology usage'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+passage_technology
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Default_plated_passage_based_land_physical_template_armx(Default_plated_passage_based_land_physical_template_armx, default_plated_passage_based_land_physical_template);
+
+mapping_constraints;
+default_plated_passage_based_land_physical_template <=
+default_passage_based_land_physical_template <=
+land_physical_template <=
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Default_unsupported_passage_based_land_physical_template_armx(Default_unsupported_passage_based_land_physical_template_armx, default_unsupported_passage_based_land_physical_template);
+
+mapping_constraints;
+default_unsupported_passage_based_land_physical_template <=
+default_passage_based_land_physical_template <=
+land_physical_template <=
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_passage_technology(of_passage_technology, $PATH, Default_unsupported_passage_definition);
+default_unsupported_passage_based_land_physical_template <=
+default_passage_based_land_physical_template <=
+land_physical_template <=
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'technology usage'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+passage_technology
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Inter_stratum_feature_template_armx(Inter_stratum_feature_template_armx, inter_stratum_feature_template);
+
+mapping_constraints;
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_passage_technology(of_passage_technology, $PATH, Passage_technology_armx);
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'technology usage'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+passage_technology
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+entity_mapping Land_physical_template_armx(Land_physical_template_armx, land_physical_template);
+
+mapping_constraints;
+land_physical_template <=
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Land_template_interface_terminal(Land_template_interface_terminal, land_template_terminal);
+
+mapping_constraints;
+land_template_terminal <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'interface terminal'}
+
+end_mapping_constraints;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Default_attachment_size_based_land_physical_template_armx);
+land_template_terminal <=
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+land_physical_template =>
+default_attachment_size_based_land_physical_template
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Land_template_join_terminal(Land_template_join_terminal, land_template_terminal);
+
+mapping_constraints;
+land_template_terminal <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'join terminal'}
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Connection_zone_in_layout_template(Connection_zone_in_layout_template, instanced_feature);
+
+mapping_constraints;
+instanced_feature <=
+[shape_aspect
+{shape_aspect
+shape_aspect.name = 'connection zone in layout template'}]
+[shape_feature_definition <=
+characterized_object]
+
+end_mapping_constraints;
+
+attribute_mapping containing_shape(containing_shape, $PATH, Template_definition);
+instanced_feature <= 
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition
+
+end_attribute_mapping;
+
+attribute_mapping connection_zone_category(connection_zone_category, $PATH);
+instanced_feature <=
+shape_feature_definition <=
+characterized_object
+characterized_definition = characterized_object
+characterized_definition <-
+property_definition.definition
+property_definition
+{property_definition.name = 'connection zone category'}
+property_definition.description
+{(property_definition.description = 'surface point class')
+(property_definition.description = 'edge area class')
+(property_definition.description = 'edge curve class')
+(property_definition.description = 'edge point class')
+(property_definition.description = 'surface area class')}
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping External_source_identification(External_source_identification, applied_external_identification_assignment)
+extended;
+
+attribute_mapping item(item, , Land_physical_template_armx);
+				external_identification_item *> list_external_identification_item
+				list_external_identification_item = land_physical_template
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Land_template_terminal_armx(Land_template_terminal_armx, land_template_terminal);
+
+mapping_constraints;
+land_template_terminal <=
+shape_aspect
+{shape_aspect
+(shape_aspect.description = 'interface terminal')
+(shape_aspect.description = 'join terminal')}
+
+end_mapping_constraints;
+
+attribute_mapping terminal_category(terminal_category, property_definition.description);
+land_template_terminal <=
+shape_aspect 
+shape_definition = shape_aspect
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+{property_definition.name = 'terminal category'}
+property_definition.description
+{(property_definition.description = 'edge curve class')
+(property_definition.description = 'edge area class')
+(property_definition.description = 'edge point class')
+(property_definition.description =  'surface area class')
+(property_definition.description = 'surface point class')}
+
+end_attribute_mapping;
+
+attribute_mapping connection_area(connection_area, $PATH, Connection_zone_in_layout_template);
+land_template_terminal <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'connection area'}
+shape_aspect_relationship
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+shape_aspect =>
+instanced_feature
+
+end_attribute_mapping;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Land_physical_template_armx);
+land_template_terminal <=
+shape_aspect					
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+single_stratum_template =>
+single_stratum_continuous_template =>
+stratum_feature_template =>
+land_physical_template
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Material_removal_feature_template_armx(Material_removal_feature_template_armx, material_removal_feature_template);
+
+mapping_constraints;
+material_removal_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Single_stratum_continuous_template_armx(Single_stratum_continuous_template_armx, single_stratum_continuous_template);
+
+mapping_constraints;
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Single_stratum_template_armx(Single_stratum_template_armx, single_stratum_template);
+
+mapping_constraints;
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+
+entity_mapping Stratum_feature_template_armx(Stratum_feature_template_armx, stratum_feature_template);
+
+mapping_constraints;
+stratum_feature_template <=
+single_stratum_continuous_template <=
+single_stratum_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Unsupported_passage_template_armx(Unsupported_passage_template_armx, unsupported_passage_template);
+
+mapping_constraints;
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_passage_technology(of_passage_technology, $PATH, Default_unsupported_passage_definition);
+unsupported_passage_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'technology usage'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+passage_technology
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Via_template_armx(Via_template_armx, via_template);
+
+mapping_constraints;
+via_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition
+
+end_mapping_constraints;
+
+attribute_mapping of_passage_technology(of_passage_technology, $PATH, Default_via_definition);
+via_template <=
+inter_stratum_feature_template <=
+geometric_template <=
+part_template_definition <=
+product_definition_shape <=
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'technology usage'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+product_definition_shape =>
+passage_technology
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Via_template_terminal(Via_template_terminal, shape_aspect);
+
+mapping_constraints;
+{shape_aspect
+shape_aspect.description = 'via template terminal'}
+
+end_mapping_constraints;
+
+attribute_mapping connection_area(connection_area, $PATH, Connection_zone_in_layout_template);
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'connection area'}
+shape_aspect_relationship.related_shape_aspect ->
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'connection zone'}
+shape_aspect =>
+instanced_feature
+
+end_attribute_mapping;
+
+attribute_mapping disallowed_inter_stratum_extent(disallowed_inter_stratum_extent, $PATH, Stratum_technology_occurrence_link_armx);
+shape_aspect
+shape_definition = shape_aspect
+shape_definition 
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_relationship.related_property_definition
+{property_definition_relationship
+property_definition_relationship.name = 'disallowed inter stratum extent'}
+property_definition_relationship.relating_property_definition ->
+property_definition =>
+stratum_technology_occurrence_relationship =>
+stratum_technology_occurrence_link
+
+
+end_attribute_mapping;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Via_template_armx);
+shape_aspect
+shape_aspect.of_shape ->
+product_definition_shape =>
+part_template_definition =>
+geometric_template =>
+inter_stratum_feature_template =>
+via_template
+
+
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Plated_passage_template_shape_model(Plated_passage_template_shape_model, shape_representation);
+
+mapping_constraints;
+	shape_representation <=
+	representation
+	{representation.name = 'pptsm'}
+end_mapping_constraints;
+
+attribute_mapping data_qualification(data_qualification, $PATH);
+	shape_representation <=
+	representation.id
+	{(representation.id = 'drilled passage context')
+	(representation.id = 'finished passage context')
+	(representation.id = 'unknown context')}
+end_attribute_mapping;
+
+attribute_mapping shape_characterized_definition(shape_characterized_definition, $PATH, Via_template_armx);
+	shape_representation <=
+	representation <-
+	property_definition_representation.used_representation
+	property_definition_representation
+	{property_definition_representation =>
+	shape_definition_representation}
+	property_definition_representation.definition ->
+	property_definition =>
+	product_definition_shape =>
+	part_template_definition =>
+	geometric_template =>
+	inter_stratum_feature_template =>
+	via_template
+end_attribute_mapping;
+
+attribute_mapping shape_characterized_definition(shape_characterized_definition, $PATH, Component_termination_passage_template_armx);
+	shape_representation <=
+	representation <-
+	property_definition_representation.used_representation
+	property_definition_representation
+	{property_definition_representation =>
+	shape_definition_representation}
+	property_definition_representation.definition ->
+	property_definition =>
+	product_definition_shape =>
+	part_template_definition =>
+	geometric_template =>
+	inter_stratum_feature_template =>
+	component_termination_passage_template
+end_attribute_mapping;
+
+end_entity_mapping;
+
+(*end_schema_mapping;*)

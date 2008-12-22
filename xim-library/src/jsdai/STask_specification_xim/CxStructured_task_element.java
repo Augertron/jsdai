@@ -29,9 +29,9 @@ package jsdai.STask_specification_xim;
  * @version $$
  */
 
+import jsdai.STask_element_mim.CTask_element;
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
-import jsdai.STask_specification_mim.CTask_element;
 
 public class CxStructured_task_element extends CStructured_task_element implements EMappedXIMEntity{
 

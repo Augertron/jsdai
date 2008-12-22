@@ -64,9 +64,10 @@ component_definition is by purpose skipped, since it should vanish in order to b
   ENTITY Assembly_group_component_armx
     (* CONNOTATIONAL *) SUBTYPE OF (Assembly_component_armx, Single_instance, assembly_group_component);
     INVERSE
-      components : SET[1:?] OF next_assembly_usage_occurrence FOR relating_product_definition;
+      components : SET[1:?] OF Next_assembly_usage_occurrence_relationship_armx FOR relating_view;
     WHERE
-      WR1: SIZEOF(QUERY(co <* components | NOT(('PHYSICAL_UNIT_DESIGN_VIEW_XIM.ASSEMBLY_COMPONENT_ARMX') IN TYPEOF(co\product_definition_relationship.related_product_definition)))) = 0;      
+      WR1: SIZEOF(QUERY(co <* components | NOT(('PHYSICAL_UNIT_DESIGN_VIEW_XIM.ASSEMBLY_COMPONENT_ARMX') IN TYPEOF(co\product_definition_relationship.related_product_definition)))) = 0;
+      -- TODO - write a rule to require either components > 0 or specific subtype like padstack_occurrence       
   END_ENTITY;
 
   ENTITY Interfaced_group_component_armx

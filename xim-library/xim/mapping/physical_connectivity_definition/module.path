@@ -23,6 +23,102 @@
 
 (*schema_mapping physical_connectivity_definition(Physical_connectivity_definition_arm, Physical_connectivity_definition_mim);*)
 
+entity_mapping Physical_connectivity_definition_domain_armx(Physical_connectivity_definition_domain_armx, physical_connectivity_definition_domain);
+
+mapping_constraints;
+	physical_connectivity_definition_domain <=
+	property_definition
+end_mapping_constraints;
+
+attribute_mapping domain_type(domain_type, property_definition.name);
+	physical_connectivity_definition_domain <=
+	property_definition
+	property_definition.name
+	{(property_definition.name = 'electrical')
+	(property_definition.name = 'thermal')
+	(property_definition.name = 'optical')
+	(property_definition.name = 'magnetic')}
+end_attribute_mapping;
+
+attribute_mapping associated_definition(associated_definition, $PATH, Physical_connectivity_definition_armx);
+	physical_connectivity_definition_domain <=
+	property_definition
+	property_definition.definition -> 
+	characterized_definition 
+	characterized_definition = shape_definition
+	shape_definition 
+	shape_definition = shape_aspect 
+	shape_aspect =>
+	physical_connectivity_definition
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Physical_connectivity_layout_topology_link_armx(Physical_connectivity_layout_topology_link_armx, physical_connectivity_layout_topology_link);
+
+attribute_mapping precedent_node(precedent_node, $PATH, Physical_connectivity_layout_topology_node_armx);
+	physical_connectivity_layout_topology_link <=
+	group_relationship
+	group_relationship.relating_group -> group
+	group =>
+	physical_connectivity_layout_topology_node
+end_attribute_mapping;
+
+attribute_mapping subsequent_node(subsequent_node, $PATH, Physical_connectivity_layout_topology_node_armx);
+	physical_connectivity_layout_topology_link <=
+	group_relationship
+	group_relationship.related_group -> group
+	group =>
+	physical_connectivity_layout_topology_node
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Physical_connectivity_layout_topology_node_armx(Physical_connectivity_layout_topology_node_armx, physical_connectivity_layout_topology_node);
+end_entity_mapping;
+
+entity_mapping Physical_connectivity_layout_topology_requirement_armx(Physical_connectivity_layout_topology_requirement_armx, physical_connectivity_layout_topology_requirement);
+
+attribute_mapping elements(elements, $PATH, Physical_connectivity_layout_topology_link_armx);
+	physical_connectivity_layout_topology_requirement <=
+	group <- 
+	group_assignment.assigned_group
+	group_assignment => 
+	applied_group_assignment
+	applied_group_assignment.items[i] -> 
+	groupable_item *> pcd_groupable_item
+	pcd_groupable_item = group_relationship
+	group_relationship =>
+	physical_connectivity_layout_topology_link
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Physical_connectivity_layout_topology_requirement_assignment_armx(Physical_connectivity_layout_topology_requirement_assignment_armx, physical_connectivity_layout_topology_requirement_assignment);
+
+attribute_mapping assigned_to(assigned_to, $PATH, Physical_connectivity_definition_armx);
+	physical_connectivity_layout_topology_requirement_assignment <=
+	requirement_assignment <-
+	requirement_assigned_object.assigned_group
+	requirement_assigned_object
+	requirement_assigned_object.items ->
+	requirement_assigned_item
+	requirement_assigned_item = physical_connectivity_definition
+	physical_connectivity_definition
+end_attribute_mapping;
+
+attribute_mapping assigned_requirement(assigned_requirement, $PATH, Physical_connectivity_layout_topology_requirement_armx);
+	physical_connectivity_layout_topology_requirement_assignment <=
+	requirement_assignment <-
+	assigned_requirement.assigned_group
+	assigned_requirement
+	assigned_requirement.items ->
+	product_definition =>
+	predefined_requirement_view_definition =>
+	physical_connectivity_layout_topology_requirement
+end_attribute_mapping;
+
+end_entity_mapping;
 
 entity_mapping Physical_connectivity_definition_armx(Physical_connectivity_definition_armx, physical_connectivity_definition);
 

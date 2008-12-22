@@ -72,7 +72,7 @@ REFERENCE FROM support_resource_schema
          'REPRESENTATION_SCHEMA.'+'REPRESENTATION');
        WR2: NOT('REPRESENTATION_SCHEMA.'+'DEFINITIONAL_REPRESENTATION_RELATIONSHIP_WITH_SAME_CONTEXT' 
          IN TYPEOF(SELF)) XOR
-         (SELF\representation_relationship.rep_1.context_of_items = 
+         (SELF\representation_relationship.rep_1.context_of_items :=: 
           SELF\representation_relationship.rep_2.context_of_items);
   END_ENTITY;  
 
@@ -209,7 +209,7 @@ REFERENCE FROM support_resource_schema
     (parent_set   : SET OF representation;
      children_set : SET OF representation_item) : BOOLEAN;
     LOCAL
-      x,y : SET OF representation_item;
+      x,y,u : SET OF representation_item := [];
     END_LOCAL;
     -- Determine the subset of children_set that are mapped_items
     x := QUERY(z <* children_set | 'REPRESENTATION_SCHEMA.MAPPED_ITEM'
@@ -235,14 +235,14 @@ REFERENCE FROM support_resource_schema
     END_IF;
     -- Determine the subset of children_set that are not
     -- mapped_items
-    x := children_set - x;
+    u := children_set - x;
     -- Determine that the subset has elements
-    IF SIZEOF(x) > 0 THEN
+    IF SIZEOF(u) > 0 THEN
       -- For each element of the set:
-      REPEAT i := 1 TO HIINDEX(x);
+      REPEAT i := 1 TO HIINDEX(u);
         -- Determine the set of representation_items referenced
-        y := QUERY(z <* bag_to_set( USEDIN(x[i], '')) |
-             'REPRESENTATION_SCHEMA.REPRESENTATION_ITEM' IN TYPEOF(z));
+        y := QUERY(z <* bag_to_set( USEDIN(u[i], '')) |
+             'REPRESENTATION_SCHEMA.REPRESENTATION_ITEM' IN TYPEOF(z));     
         -- Recursively check for an offending mapped_item
         -- Return false for any errors encountered
         IF NOT acyclic_mapped_representation(parent_set, y) THEN

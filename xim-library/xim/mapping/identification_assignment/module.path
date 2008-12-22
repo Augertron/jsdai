@@ -28,22 +28,11 @@ uof_mapping Identification_Assignment(Identification_Assignment);
 entity_mapping Pre_defined_identification_assignment(Pre_defined_identification_assignment, identification_assignment);
 
 mapping_constraints;
-			identification_assignment
+			{identification_assignment
 			identification_assignment.role -> identification_role
 			identification_role.name
-			{identification_role.name = 'alias'}
-			
-end_mapping_constraints;
-
-end_entity_mapping;
-
-entity_mapping Applied_identification_assignment__alias(Applied_identification_assignment__alias, identification_assignment);
-
-mapping_constraints;
-			identification_assignment
-			identification_assignment.role -> identification_role
-			identification_role.name
-			{identification_role.name = 'alias'}
+			(identification_role.name = 'alias')
+			(identification_role.name = 'uri')}
 			
 end_mapping_constraints;
 
@@ -53,6 +42,13 @@ entity_mapping Externally_defined_identification_assignment(Externally_defined_i
 
 mapping_constraints;
 			identification_assignment
+			{identification_assignment
+(*			external_identification_item_203e2 = identification_assignment
+			external_identification_item *> external_identification_item_203e2 *)
+			external_identification_item = identification_assignment
+			external_identification_item <-
+			applied_external_identification_assignment.items[i]
+			applied_external_identification_assignment}
 			identification_assignment.role -> identification_role
 			identification_role.name
 			!{identification_role.name = 'alias'}

@@ -33,11 +33,9 @@ import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SAssembly_module_design_mim.CRouted_physical_component;
 import jsdai.SGeneric_product_occurrence_xim.*;
-import jsdai.SPart_template_extension_xim.EPlanar_path_shape_model_with_parameters;
 import jsdai.SPhysical_unit_design_view_xim.CxPhysical_component_armx;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
-import jsdai.SProduct_property_representation_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
 import jsdai.SShape_property_assignment_xim.*;
 
@@ -53,6 +51,26 @@ public class CxRouted_physical_component_armx
 	public static int apFlag = AP21x; // Default is this style  
 
 	// Taken from PDR
+	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
+		a11 = set_string(value);
+	}
+	public void unsetId(EProduct_definition_relationship type) throws SdaiException {
+		a11 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
+		return a11$;
+	}
+
+	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
+		a12 = set_string(value);
+	}
+	public void unsetName(EProduct_definition_relationship type) throws SdaiException {
+		a12 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
+		return a12$;
+	}
+	
 	// attribute (current explicit or supertype explicit) : relating_product_definition, base type: entity product_definition
 /*	public static int usedinRelating_product_definition(EProduct_definition_relationship type, EProduct_definition instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a14$, domain, result);
@@ -224,7 +242,7 @@ public class CxRouted_physical_component_armx
 			setDerived_from(context, this);
 			
 			// selected_package_alternate 
-			setRouted_centreline_shape (context, this); 
+			// setRouted_centreline_shape (context, this); 
 			
 			// Clean ARM specific attributes
 			unsetAdditional_characterization(null);
@@ -235,7 +253,7 @@ public class CxRouted_physical_component_armx
 			unsetId_x(null);
 
 			// selected_package_alternate 
-			unsetRouted_centreline_shape (null); 
+			// unsetRouted_centreline_shape (null); 
 			
 	}
 
@@ -263,7 +281,7 @@ public class CxRouted_physical_component_armx
 			unsetId_x(context, this);	
 			
 			// selected_package_alternate 
-			unsetRouted_centreline_shape(context, this); 
+			// unsetRouted_centreline_shape(context, this); 
 			
 	}
 
@@ -454,6 +472,7 @@ public class CxRouted_physical_component_armx
 	*  end_attribute_mapping;
 	*
 	*/
+/* Became redeclared no need to do anything	
 	public static void setRouted_centreline_shape(SdaiContext context, ERouted_physical_component_armx armEntity) throws SdaiException {
 		//unset old values
 		unsetRouted_centreline_shape(context, armEntity);
@@ -475,13 +494,14 @@ public class CxRouted_physical_component_armx
 			   epdr.setUsed_representation(null, armRouted_centreline_shape);
 		}
 	}
-
+*/
 	/**
 	 *
 	 * @param context
 	 * @param armEntity
 	 * @throws SdaiException
 	 */
+	/* Became redeclared no need to do anything	
 	public static void unsetRouted_centreline_shape(SdaiContext context, ERouted_physical_component_armx armEntity) throws SdaiException {
 		AProperty_definition aProperty_definition = new AProperty_definition();
 		CProperty_definition.usedinDefinition(null, armEntity, context.domain, aProperty_definition);
@@ -501,5 +521,5 @@ public class CxRouted_physical_component_armx
 			}
 		}
 	}	
-
+*/
 }

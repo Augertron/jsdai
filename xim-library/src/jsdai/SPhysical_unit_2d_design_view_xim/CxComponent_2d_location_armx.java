@@ -33,9 +33,28 @@ import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SContextual_shape_positioning_xim.*;
 import jsdai.SPhysical_unit_2d_design_view_mim.CComponent_2d_location;
+import jsdai.SRepresentation_schema.ERepresentation_relationship;
 
 public class CxComponent_2d_location_armx extends CComponent_2d_location_armx implements EMappedXIMEntity
 {
+	// From RR
+	/// methods for attribute: name, base type: STRING
+	public boolean testName(ERepresentation_relationship type) throws SdaiException {
+		return test_string(a2);
+	}
+	public String getName(ERepresentation_relationship type) throws SdaiException {
+		return get_string(a2);
+	}
+	public void setName(ERepresentation_relationship type, String value) throws SdaiException {
+		a2 = set_string(value);
+	}
+	public void unsetName(ERepresentation_relationship type) throws SdaiException {
+		a2 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(ERepresentation_relationship type) throws SdaiException {
+		return a2$;
+	}
+	// ENDOF RR
 
 	public int attributeState = ATTRIBUTES_MODIFIED;	
 
@@ -90,12 +109,14 @@ public class CxComponent_2d_location_armx extends CComponent_2d_location_armx im
 		unsetMappingConstraints(context, armEntity);
 		CxContextual_shape_representation.setMappingConstraints(context, armEntity);
 		CxGeometric_composition_with_operator_transformation.setMappingConstraints(context, armEntity);
+		armEntity.setName(null, "component 2d location");
 	}
 
 	public static void unsetMappingConstraints(SdaiContext context, EComponent_2d_location_armx armEntity) throws SdaiException
 	{
 		CxContextual_shape_representation.unsetMappingConstraints(context, armEntity);
 		CxGeometric_composition_with_operator_transformation.unsetMappingConstraints(context, armEntity);
+		armEntity.unsetName(null);
 	}
 
 	//**********component_2d_location attributes

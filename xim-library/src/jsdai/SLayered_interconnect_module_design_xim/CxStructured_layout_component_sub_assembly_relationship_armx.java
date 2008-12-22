@@ -32,17 +32,19 @@ package jsdai.SLayered_interconnect_module_design_xim;
 import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.util.LangUtils;
+import jsdai.SLayered_interconnect_complex_template_xim.ETemplate_location_in_structured_template;
 import jsdai.SLayered_interconnect_module_design_mim.CStructured_layout_component_sub_assembly_relationship;
+import jsdai.SLayered_interconnect_module_design_mim.EStructured_layout_component_sub_assembly_relationship;
 import jsdai.SMaterial_property_definition_schema.*;
-import jsdai.SPart_template_2d_shape_xim.ETemplate_location_in_structured_template;
 import jsdai.SPart_template_shape_with_parameters_xim.EPart_template_shape_model;
-import jsdai.SPhysical_unit_design_view_xim.CxNext_assembly_usage_occurrence_relationship_armx;
+import jsdai.SAssembly_structure_xim.CxNext_assembly_usage_occurrence_relationship_armx;
+import jsdai.SAssembly_structure_xim.CxProduct_occurrence_definition_relationship_armx;
+import jsdai.SAssembly_structure_xim.ENext_assembly_usage_occurrence_relationship_armx;
 import jsdai.SProduct_definition_schema.EProduct_definition_relationship;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_property_representation_schema.*;
-import jsdai.SProduct_structure_schema.EProduct_definition_occurrence_relationship;
 
-public class CxStructured_layout_component_sub_assembly_relationship_armx extends CStructured_layout_component_sub_assembly_relationship_armx implements EMappedXIMEntity
+public class CxStructured_layout_component_sub_assembly_relationship_armx extends CStructured_layout_component_sub_assembly_relationship_armx implements EMappedXIMEntity,XimEntityStandalone
 {
 
 	public int attributeState = ATTRIBUTES_MODIFIED;	
@@ -57,7 +59,7 @@ public class CxStructured_layout_component_sub_assembly_relationship_armx extend
 	}
 	public jsdai.SProduct_definition_schema.EProduct_definition getOccurrence(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		return (jsdai.SProduct_definition_schema.EProduct_definition)get_instance(a8);
-	}*/
+	}
 	public void setOccurrence(EProduct_definition_occurrence_relationship type, jsdai.SProduct_definition_schema.EProduct_definition value) throws SdaiException {
 		a8 = set_instance(a8, value);
 	}
@@ -67,14 +69,14 @@ public class CxStructured_layout_component_sub_assembly_relationship_armx extend
 	public static jsdai.dictionary.EAttribute attributeOccurrence(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		return a8$;
 	}
-	
+*/	
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		return test_string(a6);
 	}
 	public String getName(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		return get_string(a6);
-	}*/
+	}
 	public void setName(EProduct_definition_occurrence_relationship type, String value) throws SdaiException {
 		a6 = set_string(value);
 	}
@@ -85,7 +87,7 @@ public class CxStructured_layout_component_sub_assembly_relationship_armx extend
 		return a6$;
 	}
 	// END of taken from PDOR
-	
+*/	
 	// Taken from PDR
 	/// methods for attribute: id, base type: STRING
 /*	public boolean testId(EProduct_definition_relationship type) throws SdaiException {
@@ -93,7 +95,7 @@ public class CxStructured_layout_component_sub_assembly_relationship_armx extend
 	}
 	public String getId(EProduct_definition_relationship type) throws SdaiException {
 		return get_string(a0);
-	}*/
+	}
 	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
 		a0 = set_string(value);
 	}
@@ -103,14 +105,14 @@ public class CxStructured_layout_component_sub_assembly_relationship_armx extend
 	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
 		return a0$;
 	}
-
+*/
 	//<01> generating methods for consolidated attribute:  name
 /*	public boolean testName(EProduct_definition_relationship type) throws SdaiException {
 		return test_string(a1);
 	}
 	public String getName(EProduct_definition_relationship type) throws SdaiException {
 		return get_string(a1);
-	}*/
+	}
 	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
 		a1 = set_string(value);
 	}
@@ -120,7 +122,7 @@ public class CxStructured_layout_component_sub_assembly_relationship_armx extend
 	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
 		return a1$;
 	}
-
+*/
 	
 	// ENDOF taken from PDR
 	
@@ -178,7 +180,16 @@ public class CxStructured_layout_component_sub_assembly_relationship_armx extend
 		// design_specific_placement
 		setDesign_specific_placement(context, this);
 		
-		CxNext_assembly_usage_occurrence_relationship_armx.processAssemblyTrick(context, this);
+		// relating_view : product_view_definition;
+        setRelating_view(context, this);
+		
+		// related_view : product_occurrence;		
+        setRelated_view(context, this);
+        
+        // reference_designator
+        setReference_designator(context, this);
+		
+		//CxNext_assembly_usage_occurrence_relationship_armx.processAssemblyTrick(context, this);
 		
         // first_location : template_location_in_structured_template;
 		unsetFirst_location(null);
@@ -192,6 +203,15 @@ public class CxStructured_layout_component_sub_assembly_relationship_armx extend
 		unsetOverriding_shape(null);
 		
 		unsetDesign_specific_placement(null);
+		
+		// relating_view : product_view_definition;
+        unsetRelating_view(null);
+		
+		// related_view : product_occurrence;		
+        unsetRelated_view(null);
+        
+        // reference_designator
+        unsetReference_designator(null);
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
@@ -210,6 +230,15 @@ public class CxStructured_layout_component_sub_assembly_relationship_armx extend
 		
 		// design_specific_placement
 		unsetDesign_specific_placement(context, this);
+		
+		// relating_view : product_view_definition;
+        unsetRelating_view(context, this);
+		
+		// related_view : product_occurrence;		
+        unsetRelated_view(context, this);
+        
+        // reference_designator
+        unsetReference_designator(context, this);
 	}
 	
 	
@@ -225,11 +254,12 @@ public class CxStructured_layout_component_sub_assembly_relationship_armx extend
 		unsetMappingConstraints(context, armEntity);
 		CxNext_assembly_usage_occurrence_relationship_armx.setMappingConstraints(context, armEntity);
 //		if(!armEntity.testName((EProduct_definition_relationship)null)){
-			armEntity.setName((EProduct_definition_relationship)null, "");
+//OPT			armEntity.setName((EProduct_definition_relationship)null, "");
 //		}
 //		if(!armEntity.testId((EProduct_definition_relationship)null)){
-			armEntity.setId((EProduct_definition_relationship)null, armEntity.getRelated_product_definition(null).getId(null));
-//		}
+//OPT		if(armEntity.testRelated_view(null)){
+//OPT			armEntity.setId((EProduct_definition_relationship)null, armEntity.getRelated_view(null).getId(null));
+//OPT		}
 		
 	}
 
@@ -314,13 +344,15 @@ public class CxStructured_layout_component_sub_assembly_relationship_armx extend
 		}
 		// SLCSAR <- PD
 		AProperty_definition apd2 = new AProperty_definition();
-		CProperty_definition.usedinDefinition(null, armEntity, context.domain, apd2);
+		XimEntityStandalone ximInstance = (XimEntityStandalone)armEntity;
+		EEntity aimInstance = ximInstance.getAimInstance(context);
+		CProperty_definition.usedinDefinition(null, aimInstance, context.domain, apd2);
 		EProperty_definition epd2 = null;
 		if(apd2.getMemberCount() > 0){
 			epd2 = apd2.getByIndex(1);
 		}else{
 			epd2 = (EProperty_definition)context.working_model.createEntityInstance(CProperty_definition.definition);
-			epd2.setDefinition(null, armEntity);
+			epd2.setDefinition(null, aimInstance);
 			epd2.setName(null, "");
 		}
 		
@@ -349,7 +381,9 @@ public class CxStructured_layout_component_sub_assembly_relationship_armx extend
 			EStructured_layout_component_sub_assembly_relationship_armx armEntity,
 			String name) throws SdaiException {
 		AProperty_definition apd = new AProperty_definition();
-		CProperty_definition.usedinDefinition(null, armEntity, context.domain, apd);
+		XimEntityStandalone ximInstance = (XimEntityStandalone)armEntity;
+		EEntity aimInstance = ximInstance.getAimInstance(context);
+		CProperty_definition.usedinDefinition(null, aimInstance, context.domain, apd);
 		SdaiIterator apdIter = apd.createIterator();
 		while(apdIter.next()){
 			EProperty_definition epd = apd.getCurrentMember(apdIter);
@@ -430,11 +464,13 @@ public class CxStructured_layout_component_sub_assembly_relationship_armx extend
 		unsetOverriding_shape(context, armEntity);
 		if(armEntity.testOverriding_shape(null)){
 			EPart_template_shape_model shape = armEntity.getOverriding_shape(null);
+			XimEntityStandalone ximInstance = (XimEntityStandalone)armEntity;
+			EEntity aimInstance = ximInstance.getAimInstance(context);
 			// SLCSAR <- PD
 			LangUtils.Attribute_and_value_structure[] structure2 = {
 				new LangUtils.Attribute_and_value_structure(
 				   CProperty_definition.attributeDefinition(null), 
-				   armEntity)};
+				   aimInstance)};
 			EProperty_definition epd2 = (EProperty_definition)
 				LangUtils.createInstanceIfNeeded(context, CProperty_definition.definition, structure2);
 			if(!epd2.testName(null)){
@@ -449,7 +485,9 @@ public class CxStructured_layout_component_sub_assembly_relationship_armx extend
 
 	public static void unsetOverriding_shape(SdaiContext context, EStructured_layout_component_sub_assembly_relationship_armx armEntity) throws SdaiException{
 		AProperty_definition apd = new AProperty_definition();
-		CProperty_definition.usedinDefinition(null, armEntity, context.domain, apd);
+		XimEntityStandalone ximInstance = (XimEntityStandalone)armEntity;
+		EEntity aimInstance = ximInstance.getAimInstance(context);
+		CProperty_definition.usedinDefinition(null, aimInstance, context.domain, apd);
 		SdaiIterator apdIter = apd.createIterator();
 		while(apdIter.next()){
 			EProperty_definition epd = apd.getCurrentMember(apdIter);
@@ -488,17 +526,68 @@ public class CxStructured_layout_component_sub_assembly_relationship_armx extend
 		unsetDesign_specific_placement(context, armEntity);
 		if(armEntity.testDesign_specific_placement(null)){
 			boolean placement = armEntity.getDesign_specific_placement(null);
+			XimEntityStandalone ximInstance = (XimEntityStandalone)armEntity;
+			EStructured_layout_component_sub_assembly_relationship aimInstance = (EStructured_layout_component_sub_assembly_relationship)
+				ximInstance.getAimInstance(context);
 			if(placement){
-				armEntity.setName((EProduct_definition_relationship)null, "design specific placement");
+				aimInstance.setName((EProduct_definition_relationship)null, "design specific placement");
 			}else{
-				armEntity.setName((EProduct_definition_relationship)null, "design independent placement");
+				aimInstance.setName((EProduct_definition_relationship)null, "design independent placement");
 			}
 		}
 	}
 	
 	public static void unsetDesign_specific_placement(SdaiContext context, EStructured_layout_component_sub_assembly_relationship_armx armEntity) throws SdaiException{
-		armEntity.unsetName((EProduct_definition_relationship)null);
+		XimEntityStandalone ximInstance = (XimEntityStandalone)armEntity;
+		EStructured_layout_component_sub_assembly_relationship aimInstance = (EStructured_layout_component_sub_assembly_relationship)
+			ximInstance.getAimInstance(context);
+		aimInstance.unsetName((EProduct_definition_relationship)null);
 	}
 
+	public static void setRelated_view(SdaiContext context, ENext_assembly_usage_occurrence_relationship_armx armEntity) throws SdaiException
+	{
+		CxNext_assembly_usage_occurrence_relationship_armx.setRelated_view(context, armEntity);
+	}
+	
+	public static void unsetRelated_view(SdaiContext context, ENext_assembly_usage_occurrence_relationship_armx armEntity) throws SdaiException
+	{
+		CxNext_assembly_usage_occurrence_relationship_armx.unsetRelated_view(context, armEntity);
+	}
+
+
+	public static void setRelating_view(SdaiContext context, ENext_assembly_usage_occurrence_relationship_armx armEntity) throws SdaiException
+	{
+		CxProduct_occurrence_definition_relationship_armx.setRelating_view(context, armEntity);
+	}
+	
+	public static void unsetRelating_view(SdaiContext context, ENext_assembly_usage_occurrence_relationship_armx armEntity) throws SdaiException
+	{
+		CxProduct_occurrence_definition_relationship_armx.unsetRelating_view(context, armEntity);
+	}
+
+	public static void setReference_designator(SdaiContext context, ENext_assembly_usage_occurrence_relationship_armx armEntity) throws SdaiException
+	{
+		CxNext_assembly_usage_occurrence_relationship_armx.setReference_designator(context, armEntity);
+	}
+	
+	public static void unsetReference_designator(SdaiContext context, ENext_assembly_usage_occurrence_relationship_armx armEntity) throws SdaiException
+	{
+		CxNext_assembly_usage_occurrence_relationship_armx.unsetReference_designator(context, armEntity);
+	}
+	
+	
+	EStructured_layout_component_sub_assembly_relationship aimInstance;
+	
+	public EEntity getAimInstance(SdaiContext context) throws SdaiException {
+		if(aimInstance == null){
+			aimInstance = (EStructured_layout_component_sub_assembly_relationship)
+				context.working_model.createEntityInstance(CStructured_layout_component_sub_assembly_relationship.definition);
+		}
+		return aimInstance;
+	}
+
+	public void unsetAimInstance(SdaiContext context) throws SdaiException{
+		aimInstance = null;
+	}
 	
 }

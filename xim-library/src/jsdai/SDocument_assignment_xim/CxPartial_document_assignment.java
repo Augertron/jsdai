@@ -153,6 +153,7 @@ public class CxPartial_document_assignment extends CPartial_document_assignment 
 			
 	        // document_portion : STRING
 			unsetDocument_portion(null);
+			
 	}
 
 	/* (non-Javadoc)
@@ -363,6 +364,25 @@ public class CxPartial_document_assignment extends CPartial_document_assignment 
 			}else{
 				document = (EDocument)ee;
 			}
+			
+			// DPE
+			LangUtils.Attribute_and_value_structure[] dpeStructure =
+			{new LangUtils.Attribute_and_value_structure(
+				CDocument_product_equivalence.attributeRelated_product(null),
+				ee),
+			new LangUtils.Attribute_and_value_structure(
+				CDocument_product_equivalence.attributeRelating_document(null),
+				document)				
+			};
+			EDocument_product_equivalence edpe = (EDocument_product_equivalence)
+				LangUtils.createInstanceIfNeeded(context, CDocument_product_equivalence.definition, dpeStructure);
+			if(!edpe.testName(null)){
+				// According WR1
+				edpe.setName(null, "equivalence");
+			}
+			armEntity.setAssigned_document(null, document);
+			
+			
 			String portion = null;
 			if(armEntity.testDocument_portion(null)){
 				portion = armEntity.getDocument_portion(null);

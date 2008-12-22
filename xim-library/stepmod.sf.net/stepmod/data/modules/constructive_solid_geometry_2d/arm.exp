@@ -1,24 +1,41 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4140 - ISO/TS 10303-1731 Constructive solid geometry 2d - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3330
+   ISO TC184/SC4/WG12 N5788 - ISO/TS 10303-1731 Constructive solid geometry 2d - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4140
 *) 
 SCHEMA Constructive_solid_geometry_2d_arm;
  
-	USE FROM Elemental_geometric_shape_arm;	-- ISO/TS 10303-1004
+USE FROM Area_2d_arm;	-- ISO/TS 10303-1631
+
+TYPE primitive_or_boolean_result_2d = SELECT (
+    Primitive_2d, 
+    Boolean_result_2d);
+END_TYPE;    
+
+  ENTITY Area_with_outer_boundary
+    SUBTYPE OF (Primitive_2d);
+  END_ENTITY;
+
+  ENTITY Boolean_result_2d
+    SUBTYPE OF (Detailed_geometric_model_element);
+  END_ENTITY;
 	
-ENTITY Csg_2d_model
-  SUBTYPE OF (Geometric_model);
-END_ENTITY;
+  ENTITY Csg_2d_model
+    SUBTYPE OF (Geometric_model);
+      SELF\Representation.items : SET [1:?] OF primitive_or_boolean_result_2d;   
+  END_ENTITY;
+
+  ENTITY Primitive_2d_with_inner_boundary
+    SUBTYPE OF (Primitive_2d);
+  END_ENTITY;
 
  ENTITY Single_area_csg_2d_model
     SUBTYPE OF (Csg_2d_model);
+      SELF\Representation.items : SET [1:1] OF Primitive_2d;    
  END_ENTITY;
 
  ENTITY Single_boundary_csg_2d_model
     SUBTYPE OF (Single_area_csg_2d_model);
---  WHERE
---    WR: only one outline (no holes)
   END_ENTITY;
 
-END_SCHEMA;  -- Constructive_solid_geometry_2d_arm
+END_SCHEMA;

@@ -1,0 +1,71 @@
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N5761 - ISO/TS 10303-1722 Part template - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4113
+*)
+
+SCHEMA Part_template_arm;
+
+USE FROM Analytical_model_arm;	-- ISO/TS 10303-1603
+USE FROM Feature_and_connection_zone_arm;	-- ISO/TS 10303-1671
+   
+REFERENCE FROM product_identification_arm(types_of_product); -- ISO/TS 10303-1017 
+
+  TYPE correlated_or_independent = SELECT
+    (Property_value_representation,
+     characteristic);
+  END_TYPE;
+
+  TYPE plp_material_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON
+     material_item_select  WITH
+   		(Template_definition);
+  END_TYPE;
+	
+  TYPE physical_unit_or_part_template = SELECT (Part_view_definition, Template_definition);
+  END_TYPE;
+
+  ENTITY Reference_part_template_for_analytical_model ;
+      template                  : Template_definition;
+      analytical_representation : Analytical_model_definition;
+    UNIQUE
+      UR1 : template;
+  END_ENTITY;
+
+  ENTITY Template
+  	SUBTYPE OF (Product);
+    UNIQUE 
+      UR1: SELF\Product.id;
+  	WHERE 
+      WR1 : SIZEOF([ 'template model' ] * types_of_product(SELF))= 1 ;
+  END_ENTITY;
+
+  ENTITY Template_definition
+    SUBTYPE OF (Item_shape, Product_view_definition);
+      SELF\Product_view_definition.defined_version : Template_version;
+      physical_characteristic                      : OPTIONAL SET[1:?] OF correlated_or_independent;
+    DERIVE	
+      SELF\Item_shape.described_element : template_definition := SELF;      
+    WHERE
+      WR1 : SIZEOF(QUERY(prpc <* USEDIN(SELF\Product_view_definition.defined_version.of_product,
+        'PRODUCT_IDENTIFICATION_ARM.PRODUCT_CATEGORY_ASSIGNMENT.PRODUCTS') | (prpc.category\Product_category.name = 'template model'))) > 0;
+  END_ENTITY;
+
+  ENTITY Template_version
+ 	SUBTYPE OF (Product_version);
+      SELF\Product_version.of_product : Template;
+  END_ENTITY;
+
+  RULE template_version_constraint FOR (Product_version);
+    WHERE
+      WR1: SIZEOF ( QUERY ( pv <* Product_version | ( NOT ( 'PHYSICAL_LAYOUT_TEMPLATE_ARM.' + 'TEMPLATE_VERSION' IN TYPEOF ( pv) ) ) AND ( 'PHYSICAL_LAYOUT_TEMPLATE_ARM.' + 'TEMPLATE' IN TYPEOF ( pv.of_product) ) ) ) =0 ;
+  END_RULE; 
+
+  RULE template_definition_constraint FOR (Product_view_definition);
+    WHERE
+      WR1: SIZEOF ( QUERY ( pvd <* Product_view_definition | ( NOT ( 'PHYSICAL_LAYOUT_TEMPLATE_ARM.' + 'TEMPLATE_DEFINITION' IN TYPEOF (pvd) ) ) AND ( 'PHYSICAL_LAYOUT_TEMPLATE_ARM.' + 'TEMPLATE_VERSION' IN TYPEOF ( pvd.defined_version) ) ) ) =0 ;
+  END_RULE; 
+
+END_SCHEMA;
+
+
+

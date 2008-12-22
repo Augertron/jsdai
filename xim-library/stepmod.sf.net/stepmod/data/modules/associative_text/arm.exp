@@ -1,14 +1,20 @@
 (*
  $Id$
- ISO TC184/SC4/WG12 N4660 - ISO/CD-TS 10303-1132 Associative text - EXPRESS ARM
- Supersedes ISO TC184/SC4/WG12 N2693
+ ISO TC184/SC4/WG12 N5293 - ISO/TS 10303-1132 Associative text - EXPRESS ARM
+ Supersedes ISO TC184/SC4/WG12 N4660
 *)
 
 SCHEMA Associative_text_arm;
 
 USE FROM Appearance_assignment_arm; -- ISO/CD-TS 10303-1136
 
+USE FROM Colour_arm;          -- ISO/TS 10303-1002
+
 USE FROM Text_appearance_arm; -- ISO/CD-TS 10303-1136
+
+  TYPE at_appearance_select = SELECT BASED_ON appearance_select  WITH
+    (Text_style);
+  END_TYPE; 
 
   TYPE text_or_composite_text = EXTENSIBLE GENERIC_ENTITY SELECT
     (Annotation_text,
@@ -62,5 +68,11 @@ USE FROM Text_appearance_arm; -- ISO/CD-TS 10303-1136
     SUBTYPE OF (Styled_model);
     SELF\Representation.items : SET [1:1] OF text_string_representation_item_select;
   END_ENTITY; 
+
+  ENTITY Text_style;  
+    font_size_scale  : REAL; 
+    mirror_placement : OPTIONAL Axis_placement;
+    text_colour      : Colour; 
+  END_ENTITY;
 
 END_SCHEMA;

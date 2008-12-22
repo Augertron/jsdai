@@ -31,10 +31,9 @@ package jsdai.SInterconnect_physical_requirement_allocation_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.SFabrication_technology_xim.CxMaterial_removal_feature_template_armx;
-import jsdai.SFabrication_technology_xim.EMaterial_removal_feature_template_armx;
 import jsdai.SInterconnect_physical_requirement_allocation_mim.CElectrical_isolation_removal_template;
-import jsdai.SPhysical_layout_template_xim.*;
+import jsdai.SLayered_interconnect_simple_template_xim.CxMaterial_removal_feature_template_armx;
+import jsdai.SPart_template_xim.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;

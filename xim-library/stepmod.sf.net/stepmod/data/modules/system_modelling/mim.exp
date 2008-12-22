@@ -1,2001 +1,716 @@
 (*
    $Id$
-   ISO TC184/SC4/WG3 N2344 - ISO/CD-TS 10303-1477 System modelling - EXPRESS MIM
+   ISO TC184/SC4/WG3 N2522 - ISO/TS 10303-1477 System modelling - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N2344
 *)
 
 SCHEMA System_modelling_mim;
 
   USE FROM Decision_support_mim;
+  USE FROM Functional_breakdown_mim;
   USE FROM Group_mim;
   USE FROM System_behaviour_mim;
   USE FROM System_structure_mim;
   USE FROM product_property_definition_schema   -- ISO 10303-41
-  (characterized_object); 
-
-
-TYPE sm_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH
-  (product,
-   product_definition_group_assignment, breakdown_element_group_assignment,
-   breakdown_element_usage,
-   product_definition_formation, product_definition,
-   product_as_individual_version,
-   product_as_planned,
-   product_as_realized,
-   configuration_item,
-   organizational_project,
-   action_resource_requirement);
-END_TYPE;
-
-TYPE sm_requirement_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_source_item WITH
-  (product_definition_formation,
-   product_as_individual_version,
-   product_definition);
-END_TYPE;
-
---		the set of action_items that are associated with the assigned_activity.
---			action_items
-
-TYPE smpushup_pmri_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
-	(product_definition,
-	contract,
-	descriptive_representation_item,
-	general_property,
-	measure_representation_item,
-	product,
-	product_concept,
-	configuration_item,
-	product_definition_formation,
-	product_definition_formation_relationship,
-	product_definition_relationship);
-END_TYPE;
-
-
-TYPE smpushup_pb_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
-	(interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection);
-END_TYPE;
-
-TYPE smpushup_ss_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
-	(executed_action,
-	action_method,
-	action_property,
-	applied_action_assignment,
-	property_definition,
-	action_resource,
-	resource_property,
-	task_element);
-END_TYPE;
-
-TYPE smpushup_ap233_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
-	(approval,
-	group,
-	certification,
-	product,
-	product_category,
-	action_resource_requirement,
-	requirement_source,
-	applied_action_method_assignment,
-	action_method_assignment_relationship,
-	verification,
-	action_method,
-	versioned_action_request);
-END_TYPE;
-
-
---		the set of data associated to the assigned_activity_method.
---			action_method_items
-
-TYPE smpushup_pmri_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(product_definition,
-	contract,
-	product,
-	product_definition_formation,
-	document_file,
-	product_concept,
-	configuration_item,
-	product_definition_formation_relationship,
-	organizational_project,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE smpushup_os_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(organization,
-	person,
-	person_and_organization);
-END_TYPE;
-
-TYPE smpushup_pb_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(product,
-	product_definition,
-	breakdown_element_usage,
-	product_definition_formation,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	product_as_individual,
-	product_as_individual_version,
-	product_as_individual_view);
-END_TYPE;
-
-TYPE smpushup_ss_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(executed_action,
-	action_property,
-	applied_action_assignment,
-	property_definition,
-	event_occurrence);
-END_TYPE;
-
-TYPE smpushup_ap233_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(analysis_assignment,
-	applied_approval_assignment,
-	group,
-	certification,
-	condition,
-	date_assignment, date_and_time_assignment,
-	in_zone,
-	product,
-	requirement_assignment,
-	security_classification,
-	state_type,
-	applied_action_method_assignment,
-	action_method_assignment_relationship,
-	verification);
-END_TYPE;
-
-
---		the set of things that are affected by the Work_request.
---			action_request_item
-
-TYPE smpushup_pmri_action_request_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_request_item WITH
-	(contract,
-	product,
-	product_definition,
-	product_definition_formation,
-	document_file,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE smpushup_os_action_request_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_request_item WITH
-	(organization,
-	person,
-	person_and_organization);
-END_TYPE;
-
-TYPE smpushup_pb_action_request_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_request_item WITH
-	(interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection);
-END_TYPE;
-
-TYPE smpushup_ss_action_request_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_request_item WITH
-	(action_method,
-	action_property,
-	property_definition,
-	action_resource,
-	Resource_property);
-END_TYPE;
-
-TYPE smpushup_ap233_action_request_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_request_item WITH
-	(executed_action,
-	analysis_assignment,
-	applied_approval_assignment,
-	group,
-	applied_certification_assignment,
-	applied_document_reference,  applied_document_usage_constraint_assignment,
-	applied_event_occurrence_assignment,
-	information_usage_right,
-	justification_group_assignment,  justification_assignment,
-	configuration_item,
-	applied_organizational_project_assignment,
-	state_type,
-	verification,
-	versioned_action_request);
-END_TYPE;
-
-
---		the inherited items  attribute shall not contain any element that is not aliasable
---			aliasable_item
-
-TYPE smpushup_pmri_aliasable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON aliasable_item WITH
-	(approval,
-	approval_status,
-	certification,
-	applied_organization_assignment, applied_person_and_organization_assignment,
-	product_concept,
-	configuration_item,
-	organizational_project,
-	applied_security_classification_assignment,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE smpushup_os_aliasable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON aliasable_item WITH
-	(address,
-	person,
-	person_and_organization);
-END_TYPE;
-
-TYPE smpushup_pb_aliasable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON aliasable_item WITH
-	(product,
-	product_definition_formation, product_definition,
-	interface_connection,
-	interface_connector_definition,
-	interface_connector_occurrence,
-	interface_connector_version,
-	interface_definition_connection,
-	interface_definition_for,
-	interface_specification_definition,
-	interface_specification_version,
-	product_definition_shape,
-	product_as_individual,
-	product_as_individual_view,
-	product_as_planned,
-	product_as_realized,
-	shape_aspect_relationship);
-END_TYPE;
-
-TYPE smpushup_ss_aliasable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON aliasable_item WITH
-	(event_occurrence,
-	product,
-	justification_group_assignment,  justification_assignment,
-	product_relationship,
-	justification_support_assignment
-	);
-END_TYPE;
-
-
---			analysed_item
-
-TYPE smpushup_ap233_analysed_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON analysed_item WITH
-	(executed_action,
-	action_method,
-	action_method_relationship,
-	action_property,
-	action_relationship,
-	alternate_product_relationship,
-	assembly_component_usage_substitute,
-	property_definition,
-	group,
-	groupable_item,
-	condition,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	interface_definition_for,
-	organization,
-	organization_relationship,
-	product,
-	product_concept,
-	product_design_to_individual,
-	product_design_version_to_individual,
-	product_planned_to_realized,
-	product_definition_formation_relationship,
-	product_definition,
-	organizational_project_relationship,
-	requirement_assignment,
-	action_resource_relationship,
-	resource_property,
-	applied_action_method_assignment,
-	verification,
-	verification_evidence,
-	verification_relationship,
-	product_definition_context,
-	product_definition_relationship);
-END_TYPE;
-
-
---		the activity or product data to which the Approval is assigned.
---			approval_item
-
-TYPE smpushup_pmri_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
-	(certification,
-	condition,
-	applied_action_method_assignment,
-	effectivity,
-	group,
-	group_relationship,
-	applied_identification_assignment,
-	general_property,
-	general_property_relationship,
-	product_concept,
-	configuration_item,
-	product_definition_formation_relationship,
-	product_definition,
-	product_definition_relationship,
-	product_definition_context);
-END_TYPE;
-
-
-TYPE smpushup_pb_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage,
-	assembly_component_usage_substitute,
-	product,
-	product_definition,
-	product_definition_group_assignment, breakdown_element_group_assignment,
-	breakdown_element_usage,
-	product_definition_formation,
-	in_zone,
-	interface_connection,
-	interface_connector_definition,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	interface_definition_for,
-	interface_specification_definition,
-	interface_specification_version,
-	product_as_individual,
-	product_as_planned,
-	product_as_realized,
-	product_design_to_individual,
-	product_design_version_to_individual,
-	product_planned_to_realized);
-END_TYPE;
-
-TYPE smpushup_ss_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
-	(action_method_relationship,
-	action_property,
-	applied_action_method_assignment,
-	state_type_assignment,
-	property_definition,
-	event_occurrence,
-	product,
-	justification_group_assignment,  justification_assignment,
-	product_relationship,
-	justification_support_assignment,
-	action_resource_requirement,
-	action_method,
-	action_resource_requirement_relationship,
-	action_resource,
-	action_resource_relationship,
-	resource_property,
-	task_element);
-END_TYPE;
-
-TYPE smpushup_ap233_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
-	(product,
-	product_definition_formation,
-	state_type,
-	state_type_relationship,
-	verification,
-	verification_evidence,
-	verification_relationship);
-END_TYPE;
-
---		the things to which the name is assigned.
---			assigned_name_select
-
-TYPE smpushup_pmri_name_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON name_item WITH
-	(group,
-	group_relationship);
-END_TYPE;
-
-TYPE smpushup_ap233_name_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON name_item WITH
-	(product,
-	product_definition_group_assignment, breakdown_element_group_assignment,
-	event_occurrence);
-END_TYPE;
-
-
---		the activity or product data to which the Certification is assigned.
---			certification_item
-
-TYPE smpushup_pmri_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
-	(product,
-	product_definition_formation,
-	configuration_item,
-	product_definition_formation_relationship,
-	organizational_project,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE smpushup_pb_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
-	(alternate_product_relationship,
-	product,
-	interface_connection,
-	interface_connector_version,
-	interface_definition_connection,
-	interface_specification_version,
-	product_definition_formation,
-	product_as_individual,
-	product_as_planned,
-	product_as_realized);
-END_TYPE;
-
-TYPE smpushup_ss_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
-	(applied_action_method_assignment,
-	action_resource,
-	task_element);
-END_TYPE;
-
-TYPE smpushup_ap233_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
-	(approval_person_organization,
-	assembly_component_usage_substitute,
-	property_definition,
-	groupable_item,
-	product,
-	state_type,
-	applied_action_method_assignment,
-	verification_evidence);
-END_TYPE;
-
-
---		the object of which the Activity_property identifies a characteristic.
---			characterized_action_definition
-
-(*TYPE smpushup_pmri_characterized_activity_definition = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON characterized_activity_definition WITH
-	(condition,
-	action_method_relationship);
-END_TYPE;*)
-
-(*TYPE smpushup_ss_characterized_activity_definition = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON characterized_activity_definition WITH
-	(action_method_relationship,
-	action_method,
-	action_method);
-END_TYPE;*)
-
-(*TYPE smpushup_ap233_characterized_activity_definition = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON characterized_activity_definition WITH
-	(--Analysis,
-	breakdown_of,
-	event_occurrence,
-	product,
-	state_type,
-	applied_action_method_assignment
-	--Verification
-	);
-END_TYPE;*)
-
-
---		the object of which the Resource_property identifies a characteristic.
---			characterized_resource_definition
-
-(*TYPE smpushup_ss_characterized_resource_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON characterized_resource_select WITH
-	(action_resource_requirement,
-	action_resource,
-	action_method,
-	action_resource_relationship);
-END_TYPE;*)
-
---		the set or more instances of types listed in classification_item that are classified.
---			classification_item
-
-TYPE smpushup_pmri_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
-	(characterized_object,
-	conversion_based_unit,
-	derived_unit,
-	external_class_library,
-	applied_external_identification_assignment,
-	configuration_effectivity,
-	general_property,
-	general_property_relationship,
-	product_concept_context,
-	product,
-	product_category,
-	product_concept,
-	configuration_item,
-	product_definition_formation,
-	product_definition_formation_relationship,
-	product_definition,
-	uncertainty_measure_with_unit,
-	named_unit,
-	measure_with_unit,
-	product_definition_context,
-	product_definition_relationship);
-END_TYPE;
-
-
-TYPE smpushup_pb_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
-	(alternate_product_relationship,
-	product,
-	breakdown_context,
-	product_definition_group_assignment, breakdown_element_group_assignment,
-	breakdown_element_usage,
-	product_definition_formation,
-	breakdown_of,
-	in_zone,
-	interface_connector_version,
-	interface_definition_connection,
-	interface_definition_for,
-	interface_specification_definition,
-	interface_specification_version,
-	product_definition_shape,
-	product_as_planned,
-	product_as_realized,
-	product_design_to_individual,
-	product_design_version_to_individual,
-	product_planned_to_realized);
-END_TYPE;
-
-TYPE smpushup_ss_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
-	(executed_action,
-	action_property_representation,
-	action_relationship,
-	applied_action_assignment,
-	property_definition,
-	property_definition_representation);
-END_TYPE;
-
-
-
---		the product or activity data to which the Condition is being assigned.
---			action_method_items
-
-TYPE smpushup_pmri_condition_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_action_method_items WITH
-	(approval,
-	applied_approval_assignment,
-	applied_document_reference,  applied_document_usage_constraint_assignment,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE smpushup_pb_condition_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_action_method_items WITH
-	(hierarchical_interface_connection,
-	interface_connection,
-	interface_definition_connection,
-	product_definition_group_assignment, breakdown_element_group_assignment);
-END_TYPE;
-
-TYPE smpushup_ss_condition_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_action_method_items WITH
-	(executed_action,
-	action_property,
-	applied_action_assignment,
-	property_definition,
-	resource_property,
-	state_type,
-	state_type_relationship);
-END_TYPE;
-
-TYPE smpushup_ap233_condition_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_action_method_items WITH
-	(analysis_assignment,
-	applied_certification_assignment,
-	applied_contract_assignment,
-	date_assignment, date_and_time_assignment,
-	applied_event_occurrence_assignment,
-	justification_group_assignment,  justification_assignment,
-	applied_organizational_project_assignment,
-	requirement_assignment,
-	applied_security_classification_assignment,
-	verification_evidence);
-END_TYPE;
-
---		the product or activity data which acts as a parameter to the condition.
---			action_method_items
-
-TYPE smpushup_pmri3_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(approval,
-	applied_approval_assignment,
-	calendar_date,
-	applied_certification_assignment,
-	applied_classification_assignment,
-	applied_contract_assignment,
-	date_assignment, date_and_time_assignment,
-	date_and_time,
-	applied_document_reference,  applied_document_usage_constraint_assignment,
-	applied_identification_assignment,
-	property_definition_representation,
-	applied_organization_assignment, applied_person_and_organization_assignment,
-	product,
-	product_related_product_category,
-	product_concept,
-	product_definition_formation,
-	product_definition,
-	representation,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE smpushup_pb3_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(hierarchical_interface_connection,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	product_as_individual,
-	product_definition_group_assignment, breakdown_element_group_assignment
-	);
-END_TYPE;
-
-TYPE smpushup_ss3_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(executed_action,
-	action_method,
-	action_property,
-	action_property_representation,
-	property_definition,
-	property_definition_representation,
-	action_resource_requirement,
-	resource_property,
-	resource_property_representation,
-	state_type);
-END_TYPE;
-
-TYPE smpushup_ap233_3_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(product);
-END_TYPE;
-
---		the activity or product data to which the Contract is assigned.
---			contract_item
-
-TYPE smpushup_pmri_contract_item = EXTENSIBLE SELECT BASED_ON contract_item WITH
-	(external_class_library,
-	organization_item, person_and_organization_item,
-	configuration_item,
-	product_definition_formation);
-END_TYPE;
-
-TYPE smpushup_pb_contract_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON contract_item WITH
-	(product,
-	product_definition,
-	interface_connector_version,
-	interface_specification_version,
-	product_definition_formation,
-	product_as_individual,
-	product_as_planned,
-	product_as_realized);
-END_TYPE;
-
-TYPE smpushup_ss_contract_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON contract_item WITH
-	(action_method_relationship,
-	applied_action_method_assignment,
-	action_resource,
-	task_element,
-	task_element_relationship);
-END_TYPE;
-
-TYPE smpushup_ap233_contract_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON contract_item WITH
-	(product,
-	applied_action_method_assignment,
-	verification);
-END_TYPE;
-
-
---		the activity or product data to which the Calendar_date or Date_time is assigned.
---			date_and_time_item
-
-TYPE smpushup_pmri_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_and_time_item WITH
-	(condition,
-	applied_action_method_assignment,
-	applied_identification_assignment,
-	general_property,
-	general_property_relationship,
-	property_definition_representation,
-	product_concept,
-	configuration_item,
-	product_definition_formation,
-	product_definition_formation_relationship,
-	product_definition,
-	product_definition_context);
-END_TYPE;
-
-TYPE smpushup_pmri_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_item WITH
-	(condition,
-	applied_action_method_assignment,
-	applied_identification_assignment,
-	general_property,
-	general_property_relationship,
-	property_definition_representation,
-	product_concept,
-	configuration_item,
-	product_definition_formation,
-	product_definition_formation_relationship,
-	product_definition,
-	product_definition_context);
-END_TYPE;
-
-
-TYPE smpushup_pb_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_and_time_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage,
-	assembly_component_usage_substitute,
-	product,
-	product_definition_group_assignment, breakdown_element_group_assignment,
-	breakdown_element_usage,
-	product_definition_formation,
-	interface_connection,
-	interface_connector_definition,
-	interface_connector_occurrence,
-	interface_connector_version,
-	interface_definition_connection,
-	interface_definition_for,
-	interface_specification_definition,
-	interface_specification_version,
-	product_definition,
-	product_as_planned,
-	product_as_realized,
-	product_design_to_individual,
-	product_design_version_to_individual,
-	product_planned_to_realized);
-END_TYPE;
-
-TYPE smpushup_pb_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage,
-	assembly_component_usage_substitute,
-	product,
-	product_definition_group_assignment, breakdown_element_group_assignment,
-	breakdown_element_usage,
-	product_definition_formation,
-	interface_connection,
-	interface_connector_definition,
-	interface_connector_occurrence,
-	interface_connector_version,
-	interface_definition_connection,
-	interface_definition_for,
-	interface_specification_definition,
-	interface_specification_version,
-	product_definition,
-	product_as_planned,
-	product_as_realized,
-	product_design_to_individual,
-	product_design_version_to_individual,
-	product_planned_to_realized);
-END_TYPE;
-
-TYPE smpushup_ss_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_and_time_item WITH
-	(action_method_relationship,
-	action_property,
-	action_property_representation,
-	applied_action_method_assignment,
-	action_resource_requirement,
-	action_method,
-	action_resource,
-	resource_property,
-	resource_property_representation,
-	task_element,
-	task_element_relationship);
-END_TYPE;
-
-TYPE smpushup_ss_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_item WITH
-	(action_method_relationship,
-	action_property,
-	action_property_representation,
-	applied_action_method_assignment,
-	action_resource_requirement,
-	action_method,
-	action_resource,
-	resource_property,
-	resource_property_representation,
-	task_element,
-	task_element_relationship);
-END_TYPE;
-
-TYPE smpushup_ap233_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_and_time_item WITH
-	(alternate_product_relationship,
-	analysis_assignment,
-	applied_action_method_assignment);
-END_TYPE;
-
-TYPE smpushup_ap233_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_item WITH
-	(alternate_product_relationship,
-	analysis_assignment,
-	applied_action_method_assignment);
-END_TYPE;
-
-
---		the set of items being described
---			description_item
-
-(*TYPE smpushup_ap233_description_attribute_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON description_attribute_select WITH
-	(analysed_item,
-	product,
-	groupable_item,
-	event_occurrence,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	interface_definition_for,
-	applied_action_method_assignment);
-END_TYPE;*)
-
-
---		the document_reference_item for the applied_document_reference,  applied_document_usage_constraint_assignment.
---			document_reference_item
-
-TYPE smpushup_pmri_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH
-	(applied_external_identification_assignment,
-	group,
-	group_relationship,
-	property_definition_representation,
-	product_concept_context,
-	product_category,
-	product_concept,
-	configuration_item);
-END_TYPE;
-
-
-TYPE smpushup_pb_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage,
-	assembly_component_usage_substitute,
-	product,
-	breakdown_context,
-	product_definition_group_assignment, breakdown_element_group_assignment,
-	breakdown_element_usage,
-	product_definition_formation,
-	interface_connector_definition,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	product_as_planned,
-	product_as_realized,
-	product_design_to_individual,
-	product_design_version_to_individual,
-	product_planned_to_realized);
-END_TYPE;
-
-TYPE smpushup_ss_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH
-	(action_method_relationship,
-	action_property,
-	action_property_representation,
-	applied_action_method_assignment,
-	action_resource_requirement,
-	action_method,
-	action_resource_requirement_relationship,
-	action_resource,
-	action_resource_relationship,
-	resource_property,
-	resource_property_representation,
-	state_type,
-	task_element,
-	task_element_relationship);
-END_TYPE;
-
-TYPE smpushup_ap233_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH
-	(alternate_product_relationship,
-	product,
-	applied_action_method_assignment);
-END_TYPE;
-
-
---		the set of effectivity_item whose effectivity is characterized by this entity.
---			effectivity_item
-
-TYPE smpushup_pmri_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
-	(product_definition,
-	product_definition_relationship,
-	document_relationship,
-	configuration_item);
-END_TYPE;
-
-
-TYPE smpushup_pb_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage,
-	assembly_component_usage_substitute,
-	product,
-	product_definition,
-	product_definition_group_assignment, breakdown_element_group_assignment,
-	breakdown_element_usage,
-	product_definition_formation,
-	breakdown_of,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_definition_for,
-	product_as_individual,
-	product_as_individual_version,
-	product_as_individual_view,
-	product_design_to_individual,
-	product_design_version_to_individual,
-	product_planned_to_realized);
-END_TYPE;
-
-TYPE smpushup_ss_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
-	(action_property,
-	applied_action_method_assignment,
-	state_type_assignment,
-	action_method,
-	action_resource_requirement_relationship,
-	action_resource_relationship,
-	resource_property,
-	state_type_relationship);
-END_TYPE;
-
-TYPE smpushup_ap233_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
-	(action_request_solution,
-	alternate_product_relationship,
-	analysis_assignment,
-	action_method_relationship,
-	constrained_general_parameter_relationship,
-	event_occurrence,
-	applied_event_occurrence_assignment,
-	applied_external_identification_assignment);
-END_TYPE;
-
-
---		the product or activity data to which the Event is assigned.
---			event_occurrence_item
-
-TYPE smpushup_ap233_event_occurrence_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON event_occurrence_item WITH
-	(executed_action,
-	approval,
-	contract,
-	product,
-	action_resource_requirement,
-	verification,
-	versioned_action_request);
-END_TYPE;
-
-
---		the external_identification_item whose source is identified.
---			external_identification_item
-
-TYPE smpushup_ap233_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH
-	(person_and_organization,
-	product,
-	organizational_project,
-	action_resource_requirement);
-END_TYPE;
-
-
---		the groupable_item instances that are included in the Group.
---			groupable_item
-
-TYPE smpushup_pmri_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON groupable_item WITH
-	(group_relationship);
-END_TYPE;
-
-TYPE smpushup_ap233_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON groupable_item WITH
-	(executed_action,
-	action_method,
-	approval,
-	breakdown_of,
-	certification,
-	condition,
-	contract,
-	effectivity,
-	event_occurrence,
-	document_file,
-	interface_connection,
-	interface_definition_for,
-	product,
-	organizational_project,
-	action_resource_requirement,
-	action_resource,
-	applied_action_method_assignment,
-	verification,
-	versioned_action_request);
-END_TYPE;
-
---		the data to which the identification is assigned.
---			identification_item
-
-TYPE smpushup_pmri_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
-	(document_file,
-	external_class_library,
-	applied_external_identification_assignment,
-	group,
-	group_relationship,
-	general_property,
-	general_property_relationship,
-	product_concept_context,
-	measure_representation_item,
-	product_category,
-	product_concept,
-	configuration_item,
-	representation,
-	product_definition_context,
-	product_definition_usage);
-END_TYPE;
-
-TYPE smpushup_pb_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
-	(product,
-	product_definition,
-	product_definition_formation,
-	interface_connection,
-	interface_connector_definition,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	interface_specification_definition,
-	interface_specification_version,
-	product_definition_shape,
-	product_as_planned,
-	product_as_realized);
-END_TYPE;
-
-TYPE smpushup_ss_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
-	(action_method,
-	action_method_relationship,
-	action_property,
-	action_resource_requirement_relationship,
-	resource_property,
-	state_type,
-	state_type_relationship,
-	task_element,
-	task_element_relationship);
-END_TYPE;
-
-TYPE smpushup_ap233_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
-	(state_type_assignment,
-	assembly_component_usage_substitute,
-	applied_action_method_assignment);
-END_TYPE;
-
-
---		the item that exists in the zone.
---			in_zone
-
-TYPE smpushup_pb_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON groupable_item WITH
-	(hierarchical_interface_connection,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection);
-END_TYPE;
-
-
---		the set of information usage right items to which the usage right applies.
---			ir_usage_item
-
-TYPE smpushup_pmri_ir_usage_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ir_usage_item WITH
-	(configuration_item);
-END_TYPE;
-
-TYPE smpushup_pb_ir_usage_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ir_usage_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage,
-	assembly_component_usage_substitute,
-	product,
-	product_definition_group_assignment, breakdown_element_group_assignment,
-	breakdown_element_usage,
-	product_definition_formation, product_definition,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_connector_version,
-	interface_definition_connection,
-	interface_definition_for,
-	interface_specification_definition,
-	interface_specification_version,
-	product_as_individual,
-	product_as_individual_view,
-	product_as_planned,
-	product_as_realized);
-END_TYPE;
-
-TYPE smpushup_ss_ir_usage_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ir_usage_item WITH
-	(task_element);
-END_TYPE;
-
-TYPE smpushup_ap233_ir_usage_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ir_usage_item WITH
-	(action_method,
-	action_property,
-	alternate_product_relationship,
-	property_definition,
-	contract,
-	in_zone,
-	product,
-	organizational_project,
-	action_resource_requirement,
-	action_resource,
-	applied_action_method_assignment,
-	verification_evidence);
-END_TYPE;
-
-
-
---		the data item for which Justification  is provided.
---			justification_item
-
-TYPE smpushup_pmri_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_item WITH
-	(descriptive_representation_item,
-	product_definition_relationship,
-	document_relationship,
-	measure_representation_item);
-END_TYPE;
-
-TYPE smpushup_pb_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_item WITH
-	(interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection);
-END_TYPE;
-
-TYPE smpushup_ss_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_item WITH
-	(action_method_relationship,
-	action_property,
-	applied_action_method_assignment,
-	action_resource_requirement,
-	action_method,
-	action_resource_requirement_relationship,
-	action_resource,
-	action_resource_relationship,
-	resource_property,
-	task_element,
-	task_element_relationship,
-	action_method_assignment_relationship);
-END_TYPE;
-
-TYPE smpushup_ap233_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_item WITH
-	(analysis_assignment,
-	applied_usage_right,
-	assembly_component_usage_substitute,
-	group,
-	product,
-	breakdown_of,
-	certification,
-	condition,
-	contract,
-	description_attribute,
-	information_usage_right,
-	applied_organizational_project_assignment,
-	requirement_assignment,
-	security_classification);
-END_TYPE;
-
-
---		the item which provides evidential support for a Justification.
---			justification_support_item
-
-TYPE smpushup_pmri_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_support_item WITH
-	(descriptive_representation_item,
-	product_definition_relationship,
-	document_relationship,
-	measure_representation_item,
-	product_definition_context);
-END_TYPE;
-
-TYPE smpushup_pb_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_support_item WITH
-	(interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection);
-END_TYPE;
-
-TYPE smpushup_ss_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_support_item WITH
-	(action_property,
-	applied_action_method_assignment,
-	state_type_assignment,
-	resource_property,
-	state_type,
-	action_directive);
-END_TYPE;
-
-TYPE smpushup_ap233_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_support_item WITH
-	(analysis_assignment);
-END_TYPE;
-
-
---		the activity or product data to which the organization or person in an organization is assigned.
---			person_and_organization_item
-
-TYPE smpushup_pmri_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_and_organization_item WITH
-	(condition,
-	applied_action_method_assignment,
-	property_definition_representation,
-	product_definition_formation_relationship);
-END_TYPE;
-
-TYPE smpushup_pmri_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_item WITH
-	(condition,
-	applied_action_method_assignment,
-	property_definition_representation,
-	product_definition_formation_relationship);
-END_TYPE;
-
-
-TYPE smpushup_pb_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_and_organization_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage,
-	assembly_component_usage_substitute,
-	product,
-	product_definition_group_assignment, breakdown_element_group_assignment,
-	breakdown_element_usage,
-	interface_connection,
-	interface_connector_definition,
-	interface_connector_occurrence,
-	interface_connector_version,
-	interface_definition_connection,
-	interface_definition_for,
-	interface_specification_definition,
-	interface_specification_version,
-	product_as_individual,
-	product_as_planned,
-	product_as_realized);
-END_TYPE;
-
-TYPE smpushup_pb_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage,
-	assembly_component_usage_substitute,
-	product,
-	product_definition_group_assignment, breakdown_element_group_assignment,
-	breakdown_element_usage,
-	interface_connection,
-	interface_connector_definition,
-	interface_connector_occurrence,
-	interface_connector_version,
-	interface_definition_connection,
-	interface_definition_for,
-	interface_specification_definition,
-	interface_specification_version,
-	product_as_individual,
-	product_as_planned,
-	product_as_realized);
-END_TYPE;
-
-TYPE smpushup_ss_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_and_organization_item WITH
-	(action_method_relationship,
-	action_property,
-	action_property_representation,
-	applied_action_method_assignment,
-	action_resource_requirement,
-	action_method,
-	action_resource,
-	resource_property,
-	resource_property_representation,
-	task_element,
-	task_element_relationship);
-END_TYPE;
-
-TYPE smpushup_ss_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_item WITH
-	(action_method_relationship,
-	action_property,
-	action_property_representation,
-	applied_action_method_assignment,
-	action_resource_requirement,
-	action_resource,
-	action_method,
-	resource_property,
-	resource_property_representation,
-	task_element,
-	task_element_relationship);
-END_TYPE;
-
-TYPE smpushup_ap233_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_and_organization_item WITH
-	(Alternate_product_relationship);
-
---		the value of the parameter
---			parameter_value_select
-END_TYPE;
-
-TYPE smpushup_ap233_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_item WITH
-	(Alternate_product_relationship);
-END_TYPE;
-
-TYPE smpushup_ap233_parameter_value_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON parameter_value_select WITH
-	(representation,
-	representation_item,
-	state_type);
-END_TYPE;
-
-
-
---		the View_definition_relationship or Product_view_definition that is related to the Breakdown_element_definition or a Breakdown_element_usage.
---			product_item
-
-TYPE smpushup_pb_product_definition_or_product_definition_relationship = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON product_definition_or_product_definition_relationship WITH
-	(interface_connector_occurrence);
-END_TYPE;
-
---		the set of instances of entity types listed in project_item, that are associated with the Project. 
---			project_item
-
-TYPE smpushup_pmri_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
-	(general_property,
-	configuration_item);
-END_TYPE;
-
-TYPE smpushup_pb_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
-	(product);
-END_TYPE;
-
-TYPE smpushup_ss_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
-	(action_method,
-	action_method_relationship,
-	applied_action_assignment,
-	applied_action_method_assignment,
-	task_element);
-END_TYPE;
-
-TYPE smpushup_ap233_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage_substitute,
-	interface_connection,
-	interface_definition_connection,
-	product_definition,
-	representation,
-	applied_action_method_assignment,
-	product_definition_relationship);
-END_TYPE;
-
---		the element to which the property is assigned.
---			property_assignment_select
-
-(*TYPE smpushup_pmri_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
-	(applied_document_reference,  applied_document_usage_constraint_assignment,
-	applied_organization_assignment, applied_person_and_organization_assignment,
-	product_definition,
-	organizational_project);
-END_TYPE;*)
-
-
-ENTITY smpushup_pmri_characterizable_applied_document_reference  
-  SUBTYPE OF (applied_document_reference, characterized_object);
-END_ENTITY;
-
-  
-ENTITY smpushup_pmri_characterizable_applied_document_usage_constraint_assignment
-  SUBTYPE OF (applied_document_usage_constraint_assignment, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_pmri_characterizable_applied_organization_assignment 
-  SUBTYPE OF (applied_organization_assignment, characterized_object);
-END_ENTITY;
-
- 
-ENTITY smpushup_pmri_characterizable_applied_person_and_organization_assignment
-  SUBTYPE OF (applied_person_and_organization_assignment, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_pmri_characterizable_organizational_project
-  SUBTYPE OF (organizational_project, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_pmri_characterizable_product_definition
-  SUBTYPE OF (product_definition, characterized_object);
-END_ENTITY;
-
-
-
-(*TYPE smpushup_os_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
-	(address,
-	person,
-	person_and_organization);
-END_TYPE;*)
-
-
-ENTITY smpushup_os_characterizable_address
-  SUBTYPE OF (address, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_os_characterizable_person
-  SUBTYPE OF (person, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_os_characterizable_person_and_organization
-  SUBTYPE OF (person_and_organization, characterized_object);
-END_ENTITY;
-
-
-
-(*TYPE smpushup_pb_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
-	(hierarchical_interface_connection,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection);
-END_TYPE;*)
-
-ENTITY smpushup_pb_characterizable_hierarchical_interface_connection
-  SUBTYPE OF (hierarchical_interface_connection, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_pb_characterizable_interface_connection
-  SUBTYPE OF (interface_connection, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_pb_characterizable_interface_connector_occurrence
-  SUBTYPE OF (interface_connector_occurrence, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_pb_characterizable_interface_definition_connection
-  SUBTYPE OF (interface_definition_connection, characterized_object);
-END_ENTITY;
-
-
-
-
-(*TYPE smpushup_ss_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
-	(applied_action_assignment,
-	applied_action_method_assignment);
-END_TYPE;*)
-
-
-ENTITY smpushup_ss_characterizable_applied_action_assignment
-  SUBTYPE OF (applied_action_assignment, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ss_characterizable_applied_action_method_assignment
-  SUBTYPE OF (applied_action_method_assignment, characterized_object);
-END_ENTITY;
-
-
-
-
-(*TYPE smpushup_ap233_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
-	(executed_action,
-	action_relationship,
-	action_property,
-	alternate_product_relationship,
-	--Analysis_assignment,
-	property_definition,
-	applied_action_method_assignment,
-	generic_expression,
-	in_zone,
-	general_property,
-	general_property_relationship,
-	information_usage_right,
-	product,
-	product_category,
-	product_concept,
-	configuration_item,
-	product_definition_formation,
-	product_definition_formation_relationship,
-	property_definition_representation,
-	representation,
-	representation_context,
-	representation_item,
-	action_resource_requirement,
-	requirement_source,
-	resource_property,
-	security_classification,
-	action_method_assignment_relationship,
-	verification,
-	verification_evidence,
-	verification_relationship,
-	action_method,
-	versioned_action_request);
-END_TYPE;*)
-
-
-ENTITY smpushup_ap233_characterizable_action_method
-  SUBTYPE OF (action_method, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_action_property
-  SUBTYPE OF (action_property, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_action_relationship
-  SUBTYPE OF (action_relationship, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_action_resource_requirement
-  SUBTYPE OF (action_resource_requirement, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_alternate_product_relationship
-  SUBTYPE OF (alternate_product_relationship, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_applied_action_method_assignment
-  SUBTYPE OF (applied_action_method_assignment, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_configuration_item
-  SUBTYPE OF (configuration_item, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_executed_action
-  SUBTYPE OF (executed_action, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_general_property
-  SUBTYPE OF (general_property, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_general_property_relationship
-  SUBTYPE OF (general_property_relationship, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_generic_expression
-  SUBTYPE OF (generic_expression, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_in_zone
-  SUBTYPE OF (in_zone, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_information_usage_right
-  SUBTYPE OF (information_usage_right, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_product
-  SUBTYPE OF (product, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_product_category
-  SUBTYPE OF (product_category, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_product_concept
-  SUBTYPE OF (product_concept, characterized_object);
-END_ENTITY;
-
-
-ENTITY vcharacterizable_product_definition_formation
-  SUBTYPE OF (product_definition_formation, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_product_definition_formation_relationship
-  SUBTYPE OF (product_definition_formation_relationship, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_property_definition
-  SUBTYPE OF (property_definition, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_property_definition_representation
-  SUBTYPE OF (property_definition_representation, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_representation
-  SUBTYPE OF (representation, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_representation_context
-  SUBTYPE OF (representation_context, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_representation_item
-  SUBTYPE OF (representation_item, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_requirement_source
-  SUBTYPE OF (requirement_source, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_resource_property
-  SUBTYPE OF (resource_property, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_security_classification
-  SUBTYPE OF (security_classification, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_versioned_action_request	
-  SUBTYPE OF (versioned_action_request, characterized_object);
-END_ENTITY;
-
-ENTITY smpushup_ap233_characterizable_analysis_assignment
-  SUBTYPE OF (analysis_assignment, characterized_object);
-END_ENTITY;
-
-ENTITY smpushup_ap233_characterizable_action_method_assignment_relationship
-  SUBTYPE OF (action_method_assignment_relationship, characterized_object);
-END_ENTITY;
-
-ENTITY smpushup_ap233_characterizable_verification
-  SUBTYPE OF (verification, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_verification_evidence
-  SUBTYPE OF (verification_evidence, characterized_object);
-END_ENTITY;
-
-
-ENTITY smpushup_ap233_characterizable_verification_relationship
-  SUBTYPE OF (verification_relationship, characterized_object);
-END_ENTITY;
-
-
-
---		 the entity to which the required resource statement is assigned.
---			action_method_items
-
-
-TYPE smpushup_ss4_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(executed_action,
-	action_method,
-	applied_action_assignment,
-	event_occurrence,
-	task_element);
-END_TYPE;
-
-TYPE smpushup_ap233_4_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(analysis_assignment,
-	applied_certification_assignment,
-	applied_contract_assignment,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	interface_definition_for,
-	product,
-	organization,
-	person_and_organization,
-	product_definition_formation,
-	product_definition,
-	organizational_project,
-	state_type,
-	verification,
-	action_directive);
-END_TYPE;
-
-
---		the item which has the requirement assigned to it.
---			requirement_assigned_item
-
-TYPE smpushup_pmri_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH
-	(product_definition_relationship);
-END_TYPE;
-
-TYPE smpushup_pb_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage_substitute,
-	interface_connector_occurrence,
-	product,
-	product_definition_formation);
-END_TYPE;
-
-TYPE smpushup_ss_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH
-	(applied_action_method_assignment,
-	state_type_assignment,
-	state_type);
-END_TYPE;
-
-TYPE smpushup_ap233_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH
-	(action_property,
-	alternate_product_relationship,
-	in_zone,
-	interface_definition_for);
-END_TYPE;
-
-
---		the item which is the source of the requirement.
---			requirement_source_item
-
-TYPE smpushup_pmri_requirement_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_source_item WITH
-	(characterized_object,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE smpushup_pb_requirement_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_source_item WITH
-	(interface_connector_occurrence,
-	product_definition_formation,
-	shape_aspect);
-END_TYPE;
-
-TYPE smpushup_ss_requirement_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_source_item WITH
-	(applied_action_method_assignment,
-	state_type_assignment,
-	state_type);
-END_TYPE;
-
-TYPE smpushup_ap233_requirement_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_source_item WITH
-	(alternate_product_relationship,
-	applied_approval_assignment,
-	approval_person_organization,
-	applied_certification_assignment,
-	applied_contract_assignment,
-	directed_action,
-	in_zone,
-	interface_definition_for,
-	applied_organization_assignment, applied_person_and_organization_assignment,
-	product_concept,
-	applied_organizational_project_assignment);
-END_TYPE;
-
-
---		the resource assignment item to which the resource item is assigned.
---			action_method_items
-
-TYPE smpushup2_pmri_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(contract,
-	organizational_project);
-END_TYPE;
-
-TYPE smpushup2_pb_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(product,
-	product_definition_formation,
-	product_definition,
-	product_as_individual,
-	product_as_individual_version,
-	product_as_individual_view);
-END_TYPE;
-
-TYPE smpushup2_ap233_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(action_method,
-	analysis_assignment,
-	event_occurrence,
-	interface_connector_occurrence,
-	person_and_organization,
-	verification_evidence,
-	action_directive);
-END_TYPE;
-
---		the items that are designated as resources within the application context. 
---			action_method_items
-
-TYPE smpushup_pmri4_action_method_items= EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(product,
-	product_definition,
-	product_definition_formation,
-	document_file);
-END_TYPE;
-
-TYPE smpushup_os2_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(organization,
-	person,
-	person_and_organization);
-END_TYPE;
-
-TYPE smpushup_pb4_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(product,
-	product_definition_formation,
-	product_definition,
-	product_as_individual,
-	product_as_individual_version,
-	product_as_individual_view);
-END_TYPE;
-
-TYPE smpushup_ap233_5_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(action_directive);
-END_TYPE;
-
-
---		the activity or product data to which the Security_classification is assigned.
---			security_classification_item
-
-TYPE smpushup_pmri_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
-	(configuration_item,
-	product_definition_formation,
-	product_definition,
-	organizational_project_relationship);
-END_TYPE;
-
-TYPE smpushup_pb_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage_substitute,
-	product,
-	product_definition,
-	product_definition_group_assignment, breakdown_element_group_assignment,
-	breakdown_element_usage,
-	product_definition_formation,
-	interface_connection,
-	interface_connector_definition,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	interface_definition_for,
-	interface_specification_definition,
-	interface_specification_version,
-	product_as_individual,
-	product_as_individual_view,
-	product_as_planned,
-	product_as_realized,
-	product_design_to_individual,
-	product_design_version_to_individual,
-	promissory_usage_occurrence);
-END_TYPE;
-
-TYPE smpushup_ss_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
-	(action_method_relationship,
-	applied_action_method_assignment,
-	action_resource,
-	task_element,
-	task_element_relationship);
-END_TYPE;
-
-TYPE smpushup_ap233_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
-	(action_property,
-	property_definition,
-	event_occurrence,
-	in_zone,
-	product);
-END_TYPE;
-
-
-
---		the object whose State_definition is given by the described_state_definition.
---			state_type_of_item
-
-TYPE smpushup_pmri_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_type_of_item WITH
-	(certification,
-	contract,
-	product,
-	product_category,
-	product_concept,
-	configuration_item,
-	product_definition_formation,
-	organizational_project,
-	security_classification,
-	product_definition_relationship);
-END_TYPE;
-
-TYPE smpushup_os_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_type_of_item WITH
-	(organization,
-	person_and_organization);
-END_TYPE;
-
-TYPE smpushup_pb_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_type_of_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage,
-	assembly_component_usage_substitute,
-	product_definition,
-	product_definition_formation,
-	interface_connector_definition,
-	interface_connector_occurrence,
-	interface_connector_version,
-	interface_definition_connection,
-	product,
-	interface_specification_definition,
-	interface_specification_version,
-	product_as_individual,
-	product_as_individual_view,
-	product_as_planned,
-	product_as_realized);
-END_TYPE;
-
-TYPE smpushup_ss_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_type_of_item WITH
-	(executed_action,
-	action_method,
-	applied_action_assignment,
-	applied_action_method_assignment,
-	action_resource,
-	action_resource_relationship);
-END_TYPE;
-
-TYPE smpushup_ap233_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_type_of_item WITH
-	(alternate_product_relationship,
-	analysis_assignment,
-	group,
-	product_definition,
-	document_file,
-	product,
-	product_definition_formation,
-	event_occurrence,
-	applied_external_identification_assignment,
-	action_method_assignment_relationship,
-	verification);
-END_TYPE;
-
-
---		the instance for which the Language of the considered_attribute has been identified.
---			multi_language_attribute_item
-
-TYPE smpushup_pmri_multi_language_attribute_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON multi_language_attribute_item WITH
-	(condition,
-	applied_action_method_assignment,
-	action_method_relationship,
-	configuration_item);
-END_TYPE;
-
-TYPE smpushup_pmri_attribute_language_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON attribute_language_item WITH
-	(condition,
-	applied_action_method_assignment,
-	action_method_relationship,
-	configuration_item);
-END_TYPE;
-
-
-TYPE smpushup_pb_multi_language_attribute_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON multi_language_attribute_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage_substitute,
-	product,
-	product_definition_group_assignment, breakdown_element_group_assignment,
-	breakdown_element_usage,
-	product_definition_formation,
-	interface_connection,
-	interface_connector_definition,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	interface_definition_for,
-	product_as_individual,
-	product_as_individual_version,
-	product_as_individual_view);
-END_TYPE;
-
-TYPE smpushup_pb_attribute_language_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON attribute_language_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage_substitute,
-	product,
-	product_definition_group_assignment, breakdown_element_group_assignment,
-	breakdown_element_usage,
-	product_definition_formation,
-	interface_connection,
-	interface_connector_definition,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	interface_definition_for,
-	product_as_individual,
-	product_as_individual_version,
-	product_as_individual_view);
-END_TYPE;
-
-TYPE smpushup_ss_multi_language_attribute_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON multi_language_attribute_item WITH
-	(action_method_relationship,
-	action_property,
-	applied_action_method_assignment,
-	action_resource_requirement,
-	action_resource_requirement_relationship,
-	action_resource,
-	action_method,
-	action_resource_relationship,
-	resource_property,
-	task_element,
-	task_element_relationship);
-END_TYPE;
-
-TYPE smpushup_ss_attribute_language_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON attribute_language_item WITH
-	(action_method_relationship,
-	action_property,
-	applied_action_method_assignment,
-	action_resource_requirement,
-	action_resource_requirement_relationship,
-	action_resource,
-	action_method,
-	action_resource_relationship,
-	resource_property,
-	task_element,
-	task_element_relationship);
-END_TYPE;
-
-
-
---		the component data items used to support this evidence.
---			verification_evidence_item
-
-TYPE smpushup_ap233_verification_evidence_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON verification_evidence_item WITH
-	(action_actual,
-	action_request_solution,
-	action_method_relationship,
-	action_relationship,
-	action_status,
-	applied_action_request_assignment,
-	alternate_product_relationship,
-	analysis_assignment,
-	applied_action_method_assignment,
-	applied_usage_right,
-	applied_approval_assignment,
-	assembly_component_usage_substitute,
-	property_definition,
-	group,
-	groupable_item,
-	breakdown_of,
-	applied_contract_assignment,
-	date_assignment, date_and_time_assignment,
-	description_attribute,
-	directed_action,
-	applied_effectivity_assignment,
-	applied_event_occurrence_assignment,
-	expression_assignment,
-	interface_connector_definition,
-	interface_definition_connection,
-	interface_definition_for,
-	justification_group_assignment,  justification_assignment,
-	product_relationship,
-	justification_support_assignment,
-	applied_organization_assignment, applied_person_and_organization_assignment,
-	person,
-	person_and_organization,
-	product,
-	product_design_to_individual,
-	product_definition_formation,
-	product_definition_formation_relationship,
-	product_definition,
-	applied_organizational_project_assignment,
-	representation,
-	representation_context,
-	representation_item,
-	action_method,
-	action_method_assignment_relationship,
-	applied_time_interval_assignment,
-	product_definition_context,
-	product_definition_relationship,
-	versioned_action_request);
+  	(characterized_object); 
+  USE FROM systems_engineering_representation_schema
+  	(description_text);
+
+TYPE sysm_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
+		(action_method_assignment_relationship,
+		action_resource,
+		action_resource_requirement,
+		applied_action_method_assignment,
+		group,
+		requirement_source,
+		resource_property,
+		state_type_assignment,
+		task_element);
+END_TYPE;
+
+TYPE sysm_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
+		(action_directive,
+		action_method,
+		action_property,
+		action_property_representation,
+		analysis_assignment,
+		applied_action_assignment,
+		applied_approval_assignment,
+		applied_certification_assignment,
+		applied_contract_assignment,
+		applied_document_reference,
+		applied_document_usage_constraint_assignment,
+		applied_event_occurrence_assignment,
+		applied_organization_assignment,
+		applied_organizational_project_assignment,
+		applied_person_and_organization_assignment,
+		applied_security_classification_assignment,
+		approval,
+		breakdown_element_group_assignment,
+		breakdown_element_usage,
+		calendar_date,
+		certification,
+		configuration_item,
+		contract,
+		date_and_time,
+		date_and_time_assignment,
+		date_assignment,
+		document_file,
+		effectivity,
+		event_occurrence,
+		executed_action,
+		general_property,
+		hierarchical_interface_connection,
+		in_zone,
+		interface_connection,
+		interface_connector_occurrence,
+		interface_definition_connection,
+		interface_definition_for,
+		justification_assignment,
+		justification_group_assignment,
+		justification_item_group_assignment,
+		organization,
+		organizational_project,
+		person,
+		person_and_organization,
+		product,
+		product_as_individual,
+		product_as_individual_version,
+		product_as_individual_view,
+		product_concept,
+		product_definition,
+		product_definition_formation,
+		product_definition_group_assignment,
+		product_definition_relationship,
+		property_definition,
+		requirement_assignment,
+		security_classification,
+		state_type,
+		task_element,
+		verification,
+		verification_evidence,
+		versioned_action_request);
+END_TYPE;
+
+TYPE sysm_action_request_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_request_item WITH
+		(action_resource,
+		analysis_assignment,
+		group,
+		information_usage_right,
+		justification_assignment,
+		justification_group_assignment,
+		justification_item_group_assignment,
+		resource_property,
+		state_type,
+		verification);
+END_TYPE;
+
+TYPE sysm_aliasable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON aliasable_item WITH
+		(justification_assignment,
+		justification_group_assignment,
+		justification_item_group_assignment,
+		justification_support_assignment,
+		justification_support_item_group_assignment,
+		product,
+		product_relationship);
+END_TYPE;
+
+TYPE sysm_analysed_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON analysed_item WITH
+		(action_method_relationship,
+		action_property,
+		action_relationship,
+		action_resource_relationship,
+		alternate_product_relationship,
+		applied_action_method_assignment,
+		assembly_component_usage_substitute,
+		condition,
+		group,
+		groupable_item,
+		interface_connection,
+		interface_connector_occurrence,
+		interface_definition_connection,
+		interface_definition_for,
+		organizational_project_relationship,
+		product_concept,
+		product_design_to_individual,
+		product_design_version_to_individual,
+		product_planned_to_realized,
+		resource_property);
+END_TYPE;
+
+TYPE sysm_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
+		(action_method,
+		action_method_relationship,
+		action_resource,
+		action_resource_relationship,
+		action_resource_requirement,
+		action_resource_requirement_relationship,
+		applied_action_method_assignment,
+		applied_usage_right,
+		condition,
+		group,
+		group_relationship,
+		product_definition_relationship,
+		requirement_assignment,
+		requirement_source,
+		resource_property,
+		state_type,
+		state_type_assignment,
+		state_type_relationship,
+		task_element,
+		task_element_relationship);
+END_TYPE;
+
+TYPE sysm_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
+		(action_resource,
+		applied_action_method_assignment,
+		groupable_item,
+		state_type,
+		task_element);
+END_TYPE;
+
+TYPE sysm_contract_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON contract_item WITH
+		(action_method_relationship,
+		action_resource,
+		applied_action_method_assignment,
+		task_element,
+		task_element_relationship);
+END_TYPE;
+
+TYPE sysm_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_item WITH
+		(action_method,
+		action_resource,
+		action_resource_requirement,
+		applied_action_method_assignment,
+		condition,
+		product_definition_relationship,
+		resource_property,
+		resource_property_representation,
+		task_element,
+		task_element_relationship);
+END_TYPE;
+
+TYPE sysm_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_and_time_item WITH
+		(action_method,
+		action_resource,
+		action_resource_requirement,
+		applied_action_method_assignment,
+		condition,
+		product_definition_relationship,
+		resource_property,
+		resource_property_representation,
+		task_element,
+		task_element_relationship);
+END_TYPE;
+
+TYPE sysm_description_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON description_item WITH
+		(analysed_item,
+		applied_action_method_assignment,
+		event_occurrence,
+		interface_connection,
+		interface_connector_occurrence,
+		interface_definition_connection,
+		interface_definition_for,
+		product);
+END_TYPE;
+
+TYPE sysm_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH
+		(action_method,
+		action_method_relationship,
+		action_resource,
+		action_resource_relationship,
+		action_resource_requirement,
+		action_resource_requirement_relationship,
+		applied_action_method_assignment,
+		condition,
+		group,
+		group_relationship,
+		product_definition_formation,
+		resource_property,
+		resource_property_representation,
+		state_type,
+		task_element,
+		task_element_relationship);
+END_TYPE;
+
+TYPE sysm_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
+		(action_method,
+		action_method_relationship,
+		action_resource_relationship,
+		action_resource_requirement_relationship,
+		analysis_assignment,
+		applied_action_method_assignment,
+		applied_usage_right,
+		constrained_general_parameter_relationship,
+		resource_property,
+		resource_property_representation,
+		state_type_assignment,
+		state_type_relationship);
+END_TYPE;
+
+TYPE sysm_event_occurrence_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON event_occurrence_item WITH
+		(action_resource_requirement,
+		group);
+END_TYPE;
+
+TYPE sysm_external_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON external_identification_item WITH
+		(action_resource_requirement);
+END_TYPE;
+
+TYPE sysm_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON groupable_item WITH
+		(action_directive,
+		action_method,
+		action_resource,
+		action_resource_requirement,
+		applied_action_method_assignment,
+		approval,
+		breakdown_of,
+		certification,
+		condition,
+		contract,
+		document_file,
+		effectivity,
+		event_occurrence,
+		executed_action,
+		group,
+		group_relationship,
+		interface_connection,
+		interface_definition_for,
+		organizational_project,
+		product,
+		product_definition,
+		verification,
+		versioned_action_request);
+END_TYPE;
+
+TYPE sysm_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
+		(group,
+		group_relationship);
+END_TYPE;
+
+TYPE sysm_ir_usage_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ir_usage_item WITH
+		(action_property,
+		action_resource,
+		action_resource_requirement,
+		alternate_product_relationship,
+		applied_action_method_assignment,
+		assembly_component_usage,
+		assembly_component_usage_substitute,
+		breakdown_element_group_assignment,
+		breakdown_element_usage,
+		configuration_item,
+		in_zone,
+		interface_connection,
+		interface_connector_occurrence,
+		interface_connector_version,
+		interface_definition_connection,
+		interface_definition_for,
+		interface_specification_definition,
+		interface_specification_version,
+		product,
+		product_as_individual,
+		product_as_individual_view,
+		product_as_planned,
+		product_as_realized,
+		product_definition,
+		product_definition_formation,
+		product_definition_group_assignment,
+		quantified_assembly_component_usage,
+		task_element,
+		verification_evidence);
+END_TYPE;
+
+TYPE sysm_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_item WITH
+		(action_directive,
+		action_method,
+		action_method_assignment_relationship,
+		action_method_relationship,
+		action_property,
+		action_request_solution,
+		action_resource,
+		action_resource_relationship,
+		action_resource_requirement,
+		action_resource_requirement_relationship,
+		analysis_assignment,
+		applied_action_method_assignment,
+		applied_action_request_assignment,
+		applied_organizational_project_assignment,
+		assembly_component_usage_substitute,
+		breakdown_of,
+		condition,
+		description_text,
+		directed_action,
+		document_relationship,
+		group,
+		information_usage_right,
+		interface_connection,
+		interface_connector_occurrence,
+		interface_definition_connection,
+		product,
+		product_definition_relationship,
+		resource_property,
+		task_element,
+		task_element_relationship,
+		versioned_action_request);
+END_TYPE;
+
+TYPE sysm_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_support_item WITH
+		(action_directive,
+		action_property,
+		action_request_solution,
+		analysis_assignment,
+		applied_action_method_assignment,
+		document_relationship,
+		interface_connection,
+		interface_connector_occurrence,
+		interface_definition_connection,
+		product_definition_relationship,
+		resource_property,
+		state_type,
+		state_type_assignment,
+		state_type_relationship,
+		versioned_action_request);
+END_TYPE;
+
+TYPE sysm_name_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON name_item WITH
+		(group,
+		group_relationship,
+		product);
+END_TYPE;
+
+TYPE sysm_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_item WITH
+		(action_method,
+		action_method_relationship,
+		action_request_solution,
+		action_resource,
+		action_resource_requirement,
+		applied_action_method_assignment,
+		applied_certification_assignment,
+		applied_classification_assignment,
+		applied_contract_assignment,
+		applied_effectivity_assignment,
+		applied_event_occurrence_assignment,
+		applied_identification_assignment,
+		applied_organizational_project_assignment,
+		approval,
+		condition,
+		configuration_item,
+		date_and_time_assignment,
+		date_assignment,
+		document_file,
+		general_property,
+		general_property_relationship,
+		organizational_address,
+		person,
+		person_and_organization_address,
+		product,
+		product_category,
+		product_definition,
+		product_definition_context,
+		product_definition_formation,
+		product_definition_formation_relationship,
+		product_definition_relationship,
+		product_related_product_category,
+		property_definition_representation,
+		representation,
+		requirement_assignment,
+		requirement_source,
+		resource_property,
+		resource_property_representation,
+		security_classification,
+		shape_aspect_relationship,
+		task_element,
+		task_element_relationship,
+		versioned_action_request);
+END_TYPE;
+
+TYPE sysm_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_and_organization_item WITH
+		(action_method,
+		action_method_relationship,
+		action_request_solution,
+		action_resource,
+		action_resource_requirement,
+		applied_action_method_assignment,
+		applied_certification_assignment,
+		applied_classification_assignment,
+		applied_contract_assignment,
+		applied_effectivity_assignment,
+		applied_event_occurrence_assignment,
+		applied_identification_assignment,
+		applied_organizational_project_assignment,
+		approval,
+		condition,
+		configuration_item,
+		date_and_time_assignment,
+		date_assignment,
+		document_file,
+		general_property,
+		general_property_relationship,
+		organizational_address,
+		person,
+		person_and_organization_address,
+		product,
+		product_category,
+		product_definition,
+		product_definition_context,
+		product_definition_formation,
+		product_definition_formation_relationship,
+		product_definition_relationship,
+		product_related_product_category,
+		property_definition_representation,
+		representation,
+		requirement_assignment,
+		requirement_source,
+		resource_property,
+		resource_property_representation,
+		security_classification,
+		shape_aspect_relationship,
+		task_element,
+		task_element_relationship,
+		versioned_action_request);
+END_TYPE;
+
+TYPE sysm_product_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON product_definition_or_breakdown_element_usage WITH
+		(breakdown_element_usage,
+		product_definition);
+END_TYPE;
+
+TYPE sysm_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
+		(action_method_relationship,
+		applied_action_method_assignment,
+		product_concept,
+		task_element);
+END_TYPE;
+
+		ENTITY sysm_characterizable_action_method_assignment_relationship  
+		  SUBTYPE OF (action_method_assignment_relationship, characterized_object);
+		END_ENTITY;
+		
+		ENTITY sysm_characterizable_action_resource_requirement  
+		  SUBTYPE OF (action_resource_requirement, characterized_object);
+		END_ENTITY;
+		
+		ENTITY sysm_characterizable_address  
+		  SUBTYPE OF (address, characterized_object);
+		END_ENTITY;
+		
+		ENTITY sysm_characterizable_applied_action_method_assignment  
+		  SUBTYPE OF (applied_action_method_assignment, characterized_object);
+		END_ENTITY;
+		
+		ENTITY sysm_characterizable_resource_property  
+		  SUBTYPE OF (resource_property, characterized_object);
+		END_ENTITY;
+
+TYPE sysm_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH
+		(action_property,
+		action_resource_requirement,
+		alternate_product_relationship,
+		applied_action_method_assignment,
+		assembly_component_usage,
+		assembly_component_usage_substitute,
+		breakdown_element_group_assignment,
+		breakdown_element_usage,
+		configuration_item,
+		in_zone,
+		interface_connector_occurrence,
+		interface_definition_for,
+		product,
+		product_as_individual_version,
+		product_as_planned,
+		product_as_realized,
+		product_definition,
+		product_definition_formation,
+		product_definition_group_assignment,
+		quantified_assembly_component_usage,
+		state_type,
+		state_type_assignment);
+END_TYPE;
+
+TYPE sysm_requirement_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_source_item WITH
+		(alternate_product_relationship,
+		applied_action_method_assignment,
+		characterized_object,
+		directed_action,
+		in_zone,
+		interface_connector_occurrence,
+		interface_definition_for,
+		product,
+		product_as_individual_version,
+		product_concept,
+		product_definition,
+		product_definition_formation,
+		product_definition_relationship,
+		shape_aspect,
+		state_type,
+		state_type_assignment);
+END_TYPE;
+
+TYPE sysm_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
+		(action_method_relationship,
+		action_resource,
+		applied_action_method_assignment,
+		task_element,
+		task_element_relationship);
+END_TYPE;
+
+TYPE sysm_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_type_of_item WITH
+		(action_method,
+		action_method_assignment_relationship,
+		action_resource,
+		action_resource_relationship,
+		alternate_product_relationship,
+		analysis_assignment,
+		applied_action_assignment,
+		applied_action_method_assignment,
+		applied_external_identification_assignment, 
+		assembly_component_usage,
+		assembly_component_usage_substitute,
+		breakdown_element_group_assignment,
+		breakdown_element_usage,
+		certification,
+		configuration_item,
+		contract,
+		document_file,
+		event_occurrence,
+		executed_action,
+		group,
+		interface_connection,
+		interface_connector_definition,
+		interface_connector_occurrence,
+		interface_connector_version,
+		interface_definition_connection,
+		interface_specification_definition,
+		interface_specification_version,
+		organization,
+		organizational_project,
+		person_and_organization,
+		product,
+		product_as_individual,
+		product_as_individual_view,
+		product_as_planned,
+		product_as_realized,
+		product_category,
+		product_concept,
+		product_definition,
+		product_definition_formation,
+		product_definition_group_assignment,
+		product_definition_relationship,
+		quantified_assembly_component_usage,
+		security_classification,
+		verification);
+END_TYPE;
+
+TYPE sysm_attribute_language_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON attribute_language_item WITH
+		(action_method,
+		action_method_relationship,
+		action_property,
+		action_request_solution,
+		action_resource,
+		action_resource_relationship,
+		action_resource_requirement,
+		action_resource_requirement_relationship,
+		alternate_product_relationship,
+		applied_action_method_assignment,
+		applied_document_reference,
+		applied_document_usage_constraint_assignment,
+		assembly_component_usage_substitute,
+		breakdown_element_group_assignment,
+		breakdown_element_usage,
+		condition,
+		configuration_item,
+		document_relationship,
+		information_right,
+		information_usage_right,
+		interface_connection,
+		interface_connector_definition,
+		interface_connector_occurrence,
+		interface_definition_connection,
+		interface_definition_for,
+		product,
+		product_as_individual,
+		product_as_individual_version,
+		product_as_individual_view,
+		product_category,
+		product_definition,
+		product_definition_formation,
+		product_definition_formation_relationship,
+		product_definition_group_assignment,
+		product_definition_relationship,
+		requirement_assignment,
+		requirement_source,
+		resource_property,
+		task_element,
+		task_element_relationship);
+END_TYPE;
+
+TYPE sysm_multi_language_attribute_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON multi_language_attribute_item WITH
+		(action_method,
+		action_method_relationship,
+		action_property,
+		action_request_solution,
+		action_resource,
+		action_resource_relationship,
+		action_resource_requirement,
+		action_resource_requirement_relationship,
+		alternate_product_relationship,
+		applied_action_method_assignment,
+		applied_document_reference,
+		applied_document_usage_constraint_assignment,
+		assembly_component_usage_substitute,
+		breakdown_element_group_assignment,
+		breakdown_element_usage,
+		condition,
+		configuration_item,
+		document_relationship,
+		information_right,
+		information_usage_right,
+		interface_connection,
+		interface_connector_definition,
+		interface_connector_occurrence,
+		interface_definition_connection,
+		interface_definition_for,
+		product,
+		product_as_individual,
+		product_as_individual_version,
+		product_as_individual_view,
+		product_category,
+		product_definition,
+		product_definition_formation,
+		product_definition_formation_relationship,
+		product_definition_group_assignment,
+		product_definition_relationship,
+		requirement_assignment,
+		requirement_source,
+		resource_property,
+		task_element,
+		task_element_relationship);
+END_TYPE;
+
+TYPE sysm_verification_evidence_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON verification_evidence_item WITH
+		(action_directive,
+		action_method,
+		action_method_assignment_relationship,
+		action_method_relationship,
+		action_request_solution,
+		alternate_product_relationship,
+		applied_action_method_assignment,
+		applied_action_request_assignment,
+		applied_description_text_assignment,
+		applied_time_interval_assignment,
+		assembly_component_usage_substitute,
+		breakdown_of,
+		directed_action,
+		expression_assignment,
+		group,
+		groupable_item,
+		interface_connector_definition,
+		interface_definition_connection,
+		interface_definition_for,
+		product_design_to_individual,
+		property_definition,
+		versioned_action_request);
 END_TYPE;
 
 END_SCHEMA;
+

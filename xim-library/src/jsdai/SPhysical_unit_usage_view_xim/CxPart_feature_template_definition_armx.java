@@ -48,13 +48,13 @@ public class CxPart_feature_template_definition_armx extends CPart_feature_templ
 		return get_string(a2);
 	}*/
 	public void setName(EGroup type, String value) throws SdaiException {
-		a2 = set_string(value);
+		a3 = set_string(value);
 	}
 	public void unsetName(EGroup type) throws SdaiException {
-		a2 = unset_string();
+		a3 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(EGroup type) throws SdaiException {
-		return a2$;
+		return a3$;
 	}
 	// ENDOF taken from CGroup
 	

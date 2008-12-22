@@ -34,7 +34,7 @@ import jsdai.libutil.*;
 import jsdai.SFabrication_technology_xim.*;
 import jsdai.SMeasure_schema.*;
 import jsdai.SMixed_complex_types.CLength_measure_with_unit$measure_representation_item;
-import jsdai.SPhysical_layout_template_xim.*;
+import jsdai.SPart_template_xim.*;
 import jsdai.SPrinted_physical_layout_template_mim.CNon_conductive_cross_section_template;
 import jsdai.SProduct_definition_schema.EProduct_definition;
 import jsdai.SProduct_property_definition_schema.*;

@@ -34,5 +34,21 @@ USE FROM Identification_assignment_xim;    -- ISO/TS 10303-1021
 
 USE FROM Alias_identification_mim;
 
+TYPE uri_item = EXTENSIBLE GENERIC_ENTITY SELECT;
+END_TYPE;
+
+  ENTITY Applied_identification_assignment__alias
+    SUBTYPE OF (Pre_defined_identification_assignment);
+    DERIVE
+      SELF\identification_assignment.role : identification_role := identification_role('alias', ?);
+  END_ENTITY;
+
+  ENTITY applied_identification_assignment__uri
+    SUBTYPE OF (pre_defined_identification_assignment);
+      SELF\applied_identification_assignment.items : SET [1:1] OF uri_item;
+    DERIVE
+      SELF\identification_assignment.role : identification_role := identification_role ('uri' , ? ) ;
+  END_ENTITY;
+
 END_SCHEMA;  -- Alias_identification_xim
 

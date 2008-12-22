@@ -59,10 +59,10 @@ USE FROM Physical_unit_3d_design_view_mim;
       SELF\shape_representation_relationship.rep_1 RENAMED component_model : Assembly_component_3d_shape_model;
       SELF\shape_representation_relationship.rep_2 RENAMED assembly_model : Physical_unit_3d_shape_model;
     DERIVE
-      component : next_assembly_usage_occurrence := SELF\Contextual_shape_representation.contextual_shape.described_element;    
+      component : Next_assembly_usage_occurrence_relationship_armx := SELF\Contextual_shape_representation.contextual_shape.described_element;    
       the_context : geometric_representation_context := assembly_model\Shape_representation\Representation.context_of_items;
       SELF\Contextual_shape_representation.representing_relationship : Shape_representation_relationship := SELF;   -- NEW
-      SELF\representation_relationship.name : label := '';
+      SELF\representation_relationship.name : label := 'component 3d location';
     WHERE
      WR1: NOT('PHYSICAL_UNIT_3D_DESIGN_VIEW_XIM.ASSEMBLY_COMPONENT_3D_SHAPE_MODEL' IN TYPEOF(component_model)) OR
      (component\Next_assembly_usage_occurrence_relationship_armx.related_view IN component_model.shape_characterized_component);
@@ -74,19 +74,6 @@ USE FROM Physical_unit_3d_design_view_mim;
      WR4: NOT('PART_TEMPLATE_SHAPE_WITH_PARAMETERS_XIM.PART_TEMPLATE_SHAPE_MODEL' IN TYPEOF(component_model)) OR
      (component\Next_assembly_usage_occurrence_relationship_armx.related_view\Assembly_component_armx.derived_from IN
       component_model\Part_template_shape_model.shape_characterized_definition);
-  END_ENTITY;
-
-  ENTITY Component_part_3d_geometric_representation_relationship
-    (* CONNOTATIONAL *) SUBTYPE OF (shape_representation_relationship);
-		SELF\Shape_representation_relationship.rep_1 RENAMED part_shape				: part_template_or_physical_unit_3d_shape_model_select;
-	  SELF\Shape_representation_relationship.rep_2 RENAMED component_shape	: Assembly_component_3d_shape_model;
-	DERIVE
-	  SELF\Representation_relationship.name : label := 'component part 3d shape';
-	WHERE
-      WR1 : SIZEOF(QUERY(ac <* component_shape.shape_characterized_component |
-                   NOT(part_shape.shape_characterized_definition :=: ac\Assembly_component_armx.derived_from)
-                   )) = 0;
-      WR2 : part_shape :<>: component_shape;	  
   END_ENTITY;
 
 RULE unique_assembly_component_3d_shape_model FOR (Assembly_component_3d_shape_model);

@@ -1,6 +1,10 @@
- (* part 521 Manifold subsurface AIC EXPRESS listing WG12 N1308
- 2002-07-23 *)
- SCHEMA aic_manifold_subsurface;  --- extracted from part 521 IS WG12 N1307
+
+(*
+$Id$ 
+ISO TC184/SC4/WG12 N5258 - ISO/IS 10303-521 Manifold subsurface - EXPRESS
+*)
+
+ SCHEMA aic_manifold_subsurface;  --- as modified by TC1 WG12 N4503
   USE FROM aic_topologically_bounded_surface; -- ISO 10303-511
 
   USE FROM geometry_schema    -- ISO  10303-42
@@ -41,10 +45,10 @@
    WR5: SIZEOF (QUERY (cfss <* QUERY (it <* SELF.items |
            'AIC_MANIFOLD_SUBSURFACE.CONNECTED_FACE_SUB_SET' IN TYPEOF(it)) |
           NOT( (('AIC_MANIFOLD_SUBSURFACE.CONNECTED_FACE_SUB_SET' IN
-                   TYPEOF(cfss.parent_face_set)) AND
-            (SIZEOF (QUERY (fac <* cfss.parent_face_set.cfs_faces | NOT
+                   TYPEOF(cfss\connected_face_sub_set.parent_face_set))AND
+           (SIZEOF(QUERY(fac <* cfss\connected_face_sub_set.parent_face_set\connected_face_set.cfs_faces | NOT
                  advanced_face_properties(fac))) = 0)) OR
-             (SIZEOF (QUERY (fac <* cfss.parent_face_set.cfs_faces | NOT
+            (SIZEOF(QUERY(fac <* cfss\connected_face_sub_set.parent_face_set\connected_face_set.cfs_faces | NOT
               ('AIC_MANIFOLD_SUBSURFACE.ADVANCED_FACE' IN TYPEOF(fac)))) = 0)
                     ))) = 0;
    WR6: SIZEOF (QUERY (cfss <* QUERY (it <* SELF.items |
@@ -150,9 +154,9 @@ END_IF;
 (* if testface is a subface recursively test the parent_face,
 return FALSE for all other types of face *)
 IF  ('AIC_MANIFOLD_SUBSURFACE.SUBFACE' IN TYPEOF(testface)) THEN
-   RETURN(advanced_face_properties(testface.parent_face));
-   ELSE  RETURN (FALSE);
+     RETURN(advanced_face_properties(testface\subface.parent_face));
+   ELSE RETURN (FALSE);
 END_IF;
 END_FUNCTION;
 
-END_SCHEMA; -- end AIC_MANIFOLD_SUBSURFACE SCHEMA
+ END_SCHEMA; -- end AIC_MANIFOLD_SUBSURFACE SCHEMA

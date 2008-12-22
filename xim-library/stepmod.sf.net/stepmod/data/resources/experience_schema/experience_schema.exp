@@ -1,47 +1,47 @@
+
 (*
 $Id$
-ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
-*) 
+
+2008-02-07
+ISO TC184/SC4/WG12 N4883 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+*)
+(*
+Supersedes ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+changes to date_time schema and to measure_schema as per TC1 - WG12 N4834.
+*)
 
 
 SCHEMA experience_schema;
+  REFERENCE FROM support_resource_schema (identifier, label, text, bag_to_set);
+  ENTITY experience;
+    id : identifier;
+    name : label;
+    description : OPTIONAL text;
+  END_ENTITY;
 
-REFERENCE FROM support_resource_schema   -- ISO 10303-41
-  (bag_to_set,
-   identifier,
-   label,
-   text); 
+  ENTITY experience_relationship;
+    id : identifier;
+    name : label;
+    description : OPTIONAL text;
+    relating_experience : experience;
+    related_experience : experience;
+  END_ENTITY;
 
+  ENTITY experience_type;
+    id : identifier;
+    name : label;
+    description : OPTIONAL text;
+  END_ENTITY;
 
-ENTITY experience;
-  id : identifier;
-  name : label;
-  description : OPTIONAL text;
-END_ENTITY;
+  ENTITY experience_type_relationship;
+    id : identifier;
+    name : label;
+    description : OPTIONAL text;
+    relating_experience_type : experience_type;
+    related_experience_type : experience_type;
+  END_ENTITY;
 
-ENTITY experience_relationship;
-  id : identifier;
-  name : label;
-  description : OPTIONAL text;
-  relating_experience : experience;
-  related_experience : experience;
-END_ENTITY;
-
-ENTITY experience_type;
-  id : identifier;
-  name : label;
-  description : OPTIONAL text;
-END_ENTITY;
-
-ENTITY experience_type_relationship;
-  id : identifier;
-  name : label;
-  description : OPTIONAL text;
-  relating_experience_type : experience_type;
-  related_experience_type : experience_type;
-END_ENTITY;
-
-FUNCTION acyclic_experience_relationship (relation : experience_relationship; relatives : SET OF experience; specific_relation : STRING):BOOLEAN;
+  FUNCTION acyclic_experience_relationship (relation : experience_relationship; relatives : SET OF experience; specific_relation : STRING):BOOLEAN;
     LOCAL
       x : SET OF experience_relationship;
     END_LOCAL;
@@ -75,4 +75,4 @@ FUNCTION acyclic_experience_relationship (relation : experience_relationship; re
     RETURN (TRUE);
   END_FUNCTION;
 
-END_SCHEMA;  -- experience_schema
+END_SCHEMA;

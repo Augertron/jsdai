@@ -23,16 +23,16 @@
 
 (*schema_mapping assembly_component_placement_requirements(Assembly_component_placement_requirements_arm, Assembly_component_placement_requirements_mim);*)
 
-entity_mapping Assembly_group_spacing_requirement_occurrence_armx(Assembly_group_spacing_requirement_occurrence_armx, assembly_group_spacing_requirement_occurrence);
+entity_mapping Assembly_group_spacing_requirement_armx(Assembly_group_spacing_requirement_armx, assembly_group_spacing_requirement);
 
 mapping_constraints;
-assembly_group_spacing_requirement_occurrence <=
+assembly_group_spacing_requirement <=
 predefined_requirement_view_definition
 
 end_mapping_constraints;
 
 attribute_mapping of_spacing_type(of_spacing_type, $PATH);
-assembly_group_spacing_requirement_occurrence <=
+assembly_group_spacing_requirement <=
 predefined_requirement_view_definition <=
 product_definition			
 characterized_product_definition = product_definition
@@ -50,7 +50,7 @@ property_definition.description
 end_attribute_mapping;
 
 attribute_mapping dependent_group(dependent_group, $PATH, Placement_group_requirement_definition);
-assembly_group_spacing_requirement_occurrence <=
+assembly_group_spacing_requirement <=
 predefined_requirement_view_definition <=
 product_definition <-
 product_definition_relationship.related_product_definition
@@ -64,7 +64,7 @@ group_product_definition
 end_attribute_mapping;
 
 attribute_mapping reference_group(reference_group, $PATH, Placement_group_requirement_definition);
-assembly_group_spacing_requirement_occurrence <=
+assembly_group_spacing_requirement <=
 predefined_requirement_view_definition <=
 product_definition <-
 product_definition_relationship.related_product_definition
@@ -78,7 +78,7 @@ group_product_definition
 end_attribute_mapping;
 
 attribute_mapping required_characteristic(required_characteristic, $PATH, Length_tolerance_characteristic);
-assembly_group_spacing_requirement_occurrence <=
+assembly_group_spacing_requirement <=
 predefined_requirement_view_definition <=
 product_definition			
 characterized_product_definition = product_definition
@@ -98,16 +98,16 @@ end_attribute_mapping;
 end_entity_mapping;
 
 
-entity_mapping Assembly_spacing_requirement_occurrence_armx(Assembly_spacing_requirement_occurrence_armx, assembly_spacing_requirement_occurrence);
+entity_mapping Assembly_spacing_requirement_armx(Assembly_spacing_requirement_armx, assembly_spacing_requirement);
 
 mapping_constraints;
-assembly_spacing_requirement_occurrence <=
+assembly_spacing_requirement <=
 predefined_requirement_view_definition
 
 end_mapping_constraints;
 
 attribute_mapping of_spacing_type(of_spacing_type, $PATH);
-assembly_spacing_requirement_occurrence <=
+assembly_spacing_requirement <=
 predefined_requirement_view_definition <=
 product_definition			
 characterized_product_definition = product_definition
@@ -125,8 +125,8 @@ property_definition.description
 end_attribute_mapping;
 
 attribute_mapping dependent_design_object_category(dependent_design_object_category, group);
-assembly_spacing_requirement_occurrence
-groupable_item = assembly_spacing_requirement_occurrence 
+assembly_spacing_requirement
+groupable_item = assembly_spacing_requirement 
 groupable_item <-
 applied_group_assignment.items[i]
 applied_group_assignment <=
@@ -139,7 +139,7 @@ group
 end_attribute_mapping;
 
 attribute_mapping dependent_design_object_category(dependent_design_object_category, characterized_object.name);
-assembly_spacing_requirement_occurrence <=
+assembly_spacing_requirement <=
 predefined_requirement_view_definition <=
 product_definition			
 characterized_product_definition = product_definition
@@ -207,8 +207,8 @@ characterized_object.name
 end_attribute_mapping;
 
 attribute_mapping reference_design_object_category(reference_design_object_category, group);
-assembly_spacing_requirement_occurrence
-groupable_item = assembly_spacing_requirement_occurrence 
+assembly_spacing_requirement
+groupable_item = assembly_spacing_requirement 
 groupable_item <-
 applied_group_assignment.items[i]
 applied_group_assignment <=
@@ -221,7 +221,7 @@ group
 end_attribute_mapping;
 
 attribute_mapping reference_design_object_category(reference_design_object_category, characterized_object.name);
-assembly_spacing_requirement_occurrence <=
+assembly_spacing_requirement <=
 predefined_requirement_view_definition <=
 product_definition			
 characterized_product_definition = product_definition
@@ -289,7 +289,7 @@ characterized_object.name
 end_attribute_mapping;
 
 attribute_mapping required_characteristic(required_characteristic, $PATH, Tolerance_characteristic);
-assembly_spacing_requirement_occurrence <=
+assembly_spacing_requirement <=
 predefined_requirement_view_definition <=
 product_definition			
 characterized_product_definition = product_definition
@@ -425,7 +425,7 @@ representation
 
 end_attribute_mapping;
 
-attribute_mapping requirement(requirement, $PATH, Item_restricted_requirement_occurrence_armx);
+attribute_mapping requirement(requirement, $PATH, Item_restricted_requirement_armx);
 representation <-
 property_definition_representation.used_representation
 property_definition_representation
@@ -437,7 +437,7 @@ characterized_product_definition
 characterized_product_definition = product_definition
 product_definition =>
 predefined_requirement_view_definition =>
-item_restricted_requirement_occurrence
+item_restricted_requirement
 
 end_attribute_mapping;
 
@@ -485,10 +485,10 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Item_restricted_requirement_occurrence_armx(Item_restricted_requirement_occurrence_armx, item_restricted_requirement_occurrence);
+entity_mapping Item_restricted_requirement_armx(Item_restricted_requirement_armx, item_restricted_requirement);
 
 mapping_constraints;
-item_restricted_requirement_occurrence <=
+item_restricted_requirement <=
 [group]
 [predefined_requirement_view_definition <=
 product_definition]
@@ -496,7 +496,7 @@ product_definition]
 end_mapping_constraints;
 
 attribute_mapping basis(basis, $PATH, restriction_basis_item);
-item_restricted_requirement_occurrence <=
+item_restricted_requirement <=
 group <- 
 group_assignment.assigned_group
 group_assignment =>
@@ -508,7 +508,7 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Item_restricted_requirement_occurrence_armx(Item_restricted_requirement_occurrence_armx, item_restricted_requirement_occurrence)
+entity_mapping Item_restricted_requirement_armx(Item_restricted_requirement_armx, item_restricted_requirement)
 extended;
 
 attribute_mapping basis(basis, $PATH, Predefined_requirement_view_definition_armx);
@@ -551,16 +551,13 @@ interconnect_module_component_surface_feature
 
 end_attribute_mapping;
 
-attribute_mapping scope(scope, $PATH, Assembly_module);
+attribute_mapping scope(scope, $PATH, Assembly_module_design_view_armx);
 mounting_restriction_area <=
 shape_aspect
 shape_aspect.of_shape ->
-product_definition_shape
-{product_definition_shape <=
-property_definition
-{property_definition.name = 'assembly module'}}
 product_definition_shape =>
-physical_unit
+physical_unit =>
+assembly_module_design_view
 
 end_attribute_mapping;
 
@@ -590,16 +587,13 @@ interconnect_module_component_surface_feature
 
 end_attribute_mapping;
 
-attribute_mapping scope(scope, $PATH, Assembly_module);
+attribute_mapping scope(scope, $PATH, Assembly_module_design_view_armx);
 mounting_restriction_volume <=
 shape_aspect
 shape_aspect.of_shape ->
-product_definition_shape
-{product_definition_shape <=
-property_definition
-{property_definition.name = 'assembly module'}}
 product_definition_shape =>
-physical_unit
+physical_unit =>
+assembly_module_design_view
 
 end_attribute_mapping;
 

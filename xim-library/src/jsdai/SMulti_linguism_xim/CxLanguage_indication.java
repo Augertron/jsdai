@@ -156,7 +156,8 @@ public class CxLanguage_indication extends CLanguage_indication implements EMapp
 	  		  	"primary")};
 	    EClassification_role cr = (EClassification_role)
 	  		  LangUtils.createInstanceIfNeeded(context, CClassification_role.definition, crStructure);
-		// ALA
+	    armEntity.setRole(null, cr);
+/*		// ALA
 	    LangUtils.Attribute_and_value_structure[] alaStructure = {
 	  		  new LangUtils.Attribute_and_value_structure(CAttribute_language_assignment.attributeRole(null), 
 		  		cr)};
@@ -173,7 +174,7 @@ public class CxLanguage_indication extends CLanguage_indication implements EMapp
 	    }
 	    if(!items.isMember(armEntity)){
 	    	items.addUnordered(armEntity);
-	    }
+	    }*/
 	}
 
 	/**
@@ -212,7 +213,12 @@ public class CxLanguage_indication extends CLanguage_indication implements EMapp
 		if (armEntity.testConsidered_instance(null))
 		{
 	      EEntity eci = armEntity.getConsidered_instance(null);
-	      armEntity.createItems(null).addUnordered(eci);
+	      try {
+			armEntity.createItems(null).addUnordered(eci);
+	      } catch (SdaiException e) {
+			System.err.println("Problem with setting language_indication.considered_instance "+armEntity+" -> "+eci);
+			e.printStackTrace();
+		}
 		}
 	}
 

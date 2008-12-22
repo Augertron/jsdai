@@ -378,7 +378,8 @@ ENTITY Pre_defined_organization_or_person_in_organization_assignment__aoa
 								Applied_organization_assignment__custodian,								
                                 Applied_organization_assignment__customer,
 								Applied_organization_assignment__design_supplier,                                
-								Applied_organization_assignment__editor,								
+								Applied_organization_assignment__editor,	
+								Applied_organization_assignment__design_owner,							
                                 Applied_organization_assignment__id_owner,
 								Applied_organization_assignment__location,                                
 								Applied_organization_assignment__manufacturer,
@@ -458,6 +459,12 @@ ENTITY Applied_organization_assignment__editor
   SUBTYPE OF (Pre_defined_organization_or_person_in_organization_assignment__aoa);
 DERIVE
   SELF\organization_assignment.role : organization_role := organization_role('editor'); 
+END_ENTITY;
+
+ENTITY Applied_organization_assignment__design_owner
+  SUBTYPE OF (Pre_defined_organization_or_person_in_organization_assignment__aoa);
+DERIVE
+  SELF\organization_assignment.role : organization_role := organization_role('design owner'); 
 END_ENTITY;
 
 ENTITY Applied_organization_assignment__id_owner
@@ -552,7 +559,8 @@ ENTITY Pre_defined_organization_or_person_in_organization_assignment__apaoa
 								Applied_person_and_organization_assignment__custodian,								
                                 Applied_person_and_organization_assignment__customer,
 								Applied_person_and_organization_assignment__design_supplier,                                
-								Applied_person_and_organization_assignment__editor,								
+								Applied_person_and_organization_assignment__editor,
+								Applied_person_and_organization_assignment__design_owner,								
                                 Applied_person_and_organization_assignment__id_owner,
 								Applied_person_and_organization_assignment__location,                                
 								Applied_person_and_organization_assignment__manufacturer,
@@ -618,6 +626,12 @@ ENTITY Applied_person_and_organization_assignment__editor
   SUBTYPE OF (Pre_defined_organization_or_person_in_organization_assignment__apaoa);
 DERIVE
   SELF\person_and_organization_assignment.role : person_and_organization_role := person_and_organization_role('editor'); 
+END_ENTITY;
+
+ENTITY Applied_person_and_organization_assignment__design_owner
+  SUBTYPE OF (Pre_defined_organization_or_person_in_organization_assignment__apaoa);
+DERIVE
+  SELF\person_and_organization_assignment.role : person_and_organization_role := person_and_organization_role('design owner'); 
 END_ENTITY;
 
 ENTITY Applied_person_and_organization_assignment__id_owner
@@ -886,7 +900,11 @@ ENTITY Pre_defined_date_or_date_time_assignment__data
                                 Applied_date_and_time_assignment__end_date,
                                 Applied_date_and_time_assignment__release_date,
 								Applied_date_and_time_assignment__request_date,
-								Applied_date_and_time_assignment__sign_off))
+								Applied_date_and_time_assignment__sign_off,
+								Applied_date_and_time_assignment__actual_end,
+								Applied_date_and_time_assignment__actual_start,
+								Applied_date_and_time_assignment__planned_end,
+								Applied_date_and_time_assignment__planned_start))
   SUBTYPE OF (applied_date_and_time_assignment);
   WHERE
     WR1: SELF\date_and_time_assignment.role.name IN Pre_defined_date_or_date_time_assignment_types;
@@ -970,6 +988,30 @@ ENTITY Applied_date_and_time_assignment__sign_off
   SUBTYPE OF (Pre_defined_date_or_date_time_assignment__data);
 DERIVE
   SELF\date_and_time_assignment.role : date_time_role := date_time_role('sign off');
+END_ENTITY;
+
+ENTITY Applied_date_and_time_assignment__actual_end
+  SUBTYPE OF (Pre_defined_date_or_date_time_assignment__data);
+DERIVE
+  SELF\date_and_time_assignment.role : date_time_role := date_time_role('actual end');
+END_ENTITY;
+
+ENTITY Applied_date_and_time_assignment__actual_start
+  SUBTYPE OF (Pre_defined_date_or_date_time_assignment__data);
+DERIVE
+  SELF\date_and_time_assignment.role : date_time_role := date_time_role('actual start');
+END_ENTITY;
+
+ENTITY Applied_date_and_time_assignment__planned_end
+  SUBTYPE OF (Pre_defined_date_or_date_time_assignment__data);
+DERIVE
+  SELF\date_and_time_assignment.role : date_time_role := date_time_role('planned end');
+END_ENTITY;
+
+ENTITY Applied_date_and_time_assignment__planned_start
+  SUBTYPE OF (Pre_defined_date_or_date_time_assignment__data);
+DERIVE
+  SELF\date_and_time_assignment.role : date_time_role := date_time_role('planned start');
 END_ENTITY;
 
 ENTITY Pre_defined_work_request

@@ -29,9 +29,9 @@ package jsdai.STask_specification_xim;
  * @version $$
  */
 
+import jsdai.STask_element_mim.CTask_step;
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
-import jsdai.STask_specification_mim.CTask_step;
 
 public class CxTask_step_armx extends CTask_step_armx implements EMappedXIMEntity{
 

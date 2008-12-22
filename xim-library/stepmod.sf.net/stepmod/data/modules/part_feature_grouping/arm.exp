@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N4086 - ISO/TS 10303-1713 Part feature grouping - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N3513
+   ISO TC184/SC4/WG12 N5740 - ISO/TS 10303-1713 Part feature grouping - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N4086
 *)
 
 SCHEMA Part_feature_grouping_arm;
@@ -68,16 +68,16 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     LOCAL
       x : SET OF Part_feature_placement_link := [];
     END_LOCAL;
-    IF relation.subsequent_element IN relatives THEN
+    IF relation.precedent_element IN relatives THEN
       RETURN (FALSE);
     END_IF;
-    x := QUERY(pd <* bag_to_set(USEDIN(relation.subsequent_element,
+    x := QUERY(pd <* bag_to_set(USEDIN(relation.precedent_element,
       'PART_FEATURE_GROUPING_ARM.' +
       'PART_FEATURE_PLACEMENT_LINK.' +
       'SUBSEQUENT_ELEMENT')) | specific_relation IN TYPEOF(pd));
     REPEAT i := 1 TO HIINDEX(x);
       IF NOT acyclic_part_feature_placement_link(x[i], relatives +
-        relation.subsequent_element, specific_relation) THEN
+        relation.precedent_element, specific_relation) THEN
         RETURN (FALSE);
       END_IF;
     END_REPEAT;
@@ -90,16 +90,16 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     LOCAL
       x : SET OF Part_linear_array_feature_link := [];
     END_LOCAL;
-    IF relation.subsequent_element IN relatives THEN
+    IF relation.precedent_element IN relatives THEN
       RETURN (FALSE);
     END_IF;
-    x := QUERY(pd <* bag_to_set(USEDIN(relation.subsequent_element,
+    x := QUERY(pd <* bag_to_set(USEDIN(relation.precedent_element,
       'PART_FEATURE_GROUPING_ARM.' +
       'PART_LINEAR_ARRAY_FEATURE_LINK.' +
       'SUBSEQUENT_ELEMENT')) | specific_relation IN TYPEOF(pd));
     REPEAT i := 1 TO HIINDEX(x);
       IF NOT acyclic_part_linear_array_feature_link(x[i], relatives +
-        relation.subsequent_element, specific_relation) THEN
+        relation.precedent_element, specific_relation) THEN
         RETURN (FALSE);
       END_IF;
     END_REPEAT;

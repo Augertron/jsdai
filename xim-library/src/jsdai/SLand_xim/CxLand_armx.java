@@ -31,18 +31,16 @@ package jsdai.SLand_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.SFabrication_technology_xim.ELand_physical_template_armx;
 import jsdai.SLand_mim.CLand;
 import jsdai.SLayered_interconnect_module_design_xim.CxStratum_feature_template_component_armx;
+import jsdai.SLayered_interconnect_simple_template_xim.ELand_physical_template_armx;
 import jsdai.SGeneric_product_occurrence_xim.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
 import jsdai.SShape_property_assignment_xim.*;
 
-public class CxLand_armx
-		extends
-			CLand_armx implements EMappedXIMEntity{
+public class CxLand_armx extends CLand_armx implements EMappedXIMEntity{
 
 	// Flags, which are used to determine the type of assembly, which has to be generated 
 	public static final int AP203 = 1;
@@ -52,6 +50,26 @@ public class CxLand_armx
 	public static int apFlag = AP21x; // Default is this style  
 
 	// Taken from PDR
+	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
+		a11 = set_string(value);
+	}
+	public void unsetId(EProduct_definition_relationship type) throws SdaiException {
+		a11 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
+		return a11$;
+	}
+
+	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
+		a12 = set_string(value);
+	}
+	public void unsetName(EProduct_definition_relationship type) throws SdaiException {
+		a12 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
+		return a12$;
+	}
+	
 	// attribute (current explicit or supertype explicit) : relating_product_definition, base type: entity product_definition
 /*	public static int usedinRelating_product_definition(EProduct_definition_relationship type, EProduct_definition instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a14$, domain, result);

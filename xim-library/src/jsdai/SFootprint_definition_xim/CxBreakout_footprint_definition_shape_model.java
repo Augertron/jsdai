@@ -33,7 +33,7 @@ import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SFootprint_definition_mim.EGeneric_footprint_definition;
 import jsdai.SLayered_2d_shape_xim.*;
-import jsdai.SPart_template_2d_shape_xim.CxStructured_template_planar_shape_model;
+import jsdai.SLayered_interconnect_complex_template_xim.CxStructured_template_planar_shape_model;
 import jsdai.SPart_template_shape_with_parameters_xim.CxPart_template_shape_model;
 import jsdai.SPhysical_unit_shape_with_parameters_xim.CxPhysical_unit_shape_model;
 import jsdai.SProduct_property_representation_schema.*;

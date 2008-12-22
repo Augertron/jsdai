@@ -32,9 +32,9 @@ package jsdai.SFootprint_definition_xim;
 import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SFootprint_definition_mim.CBreakout_footprint_definition;
-import jsdai.SPart_template_2d_shape_xim.CxMulti_stratum_structured_template_armx;
-import jsdai.SPart_template_2d_shape_xim.EMulti_stratum_structured_template_armx;
-import jsdai.SPhysical_layout_template_xim.*;
+import jsdai.SLayered_interconnect_complex_template_xim.CxMulti_stratum_structured_template_armx;
+import jsdai.SLayered_interconnect_complex_template_xim.EMulti_stratum_structured_template_armx;
+import jsdai.SPart_template_xim.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
@@ -168,6 +168,7 @@ public class CxBreakout_footprint_definition_armx extends CBreakout_footprint_de
 		unsetAdditional_contexts(null);
 		unsetPhysical_characteristic(null);
 		unsetReference_footprint(null);
+		unsetLocation(null);
 		
 		// It is derived, so can't unset it unsetLocation(null);
 	}

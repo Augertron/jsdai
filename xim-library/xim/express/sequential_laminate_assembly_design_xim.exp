@@ -104,12 +104,12 @@ USE FROM Sequential_laminate_assembly_design_mim;
 
   ENTITY Sequential_laminate_assembly_relationship
     SUBTYPE OF(Assembled_part_association);
-      SELF\product_definition_relationship.relating_product_definition RENAMED assembly : Sequential_laminate_stackup_definition_armx;
-      SELF\product_definition_relationship.related_product_definition RENAMED component : Sequential_laminate_stackup_component_armx;
-    DERIVE
-      SELF\product_definition_relationship.name : label := 'sequential laminate assembly relationship';       
+      SELF\Product_occurrence_definition_relationship_armx.relating_view RENAMED assembly : Sequential_laminate_stackup_definition_armx;
+      SELF\Product_occurrence_definition_relationship_armx.related_view RENAMED component : Sequential_laminate_stackup_component_armx;
+(*OPT    DERIVE
+      SELF\product_definition_relationship.name : label := 'sequential laminate assembly relationship'; *)       
     WHERE
-      WR1: related_product_definition\Definition_based_product_occurrence.derived_from <> relating_product_definition;
+      WR1: related_view\Definition_based_product_occurrence.derived_from <> relating_view;
   END_ENTITY;
 
   ENTITY Sequential_laminate_stackup_component_armx 
@@ -126,7 +126,7 @@ USE FROM Sequential_laminate_assembly_design_mim;
 
   ENTITY Stackup_requirement_to_design_relationship  
     SUBTYPE OF(product_definition_relationship);
-      SELF\product_definition_relationship.relating_product_definition : Interconnect_module;
+      SELF\product_definition_relationship.relating_product_definition : Layered_interconnect_module_design_view_armx;
       SELF\product_definition_relationship.related_product_definition : Sequential_laminate_stackup_definition_armx;
       -- note that the reference is the design view! no need for usage view
     DERIVE

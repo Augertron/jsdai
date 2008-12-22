@@ -25,7 +25,7 @@ package jsdai.SMixed_complex_types;
 
 /**
  * 
- * @author Valdas Zigas, Giedrius Liutkus
+ * @author Giedrius Liutkus
  * @version $$
  */
 

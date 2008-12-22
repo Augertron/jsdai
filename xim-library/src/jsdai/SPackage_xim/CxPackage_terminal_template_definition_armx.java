@@ -35,6 +35,8 @@ import jsdai.libutil.EMappedXIMEntity;
 import jsdai.util.LangUtils;
 import jsdai.SCharacteristic_xim.*;
 import jsdai.SFeature_and_connection_zone_mim.EConnection_zone_interface_plane_relationship;
+import jsdai.SFeature_and_connection_zone_xim.AConnection_zone;
+import jsdai.SFeature_and_connection_zone_xim.EConnection_zone;
 import jsdai.SGroup_mim.*;
 import jsdai.SGroup_schema.EGroup;
 import jsdai.SPackage_mim.CPackage_terminal_template_definition;
@@ -53,13 +55,13 @@ public class CxPackage_terminal_template_definition_armx extends CPackage_termin
 		return get_string(a2);
 	}*/
 	public void setName(EGroup type, String value) throws SdaiException {
-		a2 = set_string(value);
+		a3 = set_string(value);
 	}
 	public void unsetName(EGroup type) throws SdaiException {
-		a2 = unset_string();
+		a3 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(EGroup type) throws SdaiException {
-		return a2$;
+		return a3$;
 	}
 
 	public int attributeState = ATTRIBUTES_MODIFIED;	
@@ -214,8 +216,8 @@ public class CxPackage_terminal_template_definition_armx extends CPackage_termin
 
       if (armEntity.testExternal_connection_zone(null)) {
 
-         AConnection_zone_in_part_feature_template_definition aArmExternal_connection_zone = armEntity.getExternal_connection_zone(null);
-         EConnection_zone_in_part_feature_template_definition armExternal_connection_zone = null;
+         AConnection_zone aArmExternal_connection_zone = armEntity.getExternal_connection_zone(null);
+         EConnection_zone armExternal_connection_zone = null;
 
          for (int i = 1; i <= aArmExternal_connection_zone.getMemberCount(); i++) {
             armExternal_connection_zone = aArmExternal_connection_zone.getByIndex(i);

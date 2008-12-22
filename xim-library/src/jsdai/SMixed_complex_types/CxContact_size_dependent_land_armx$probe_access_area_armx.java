@@ -36,10 +36,8 @@ import jsdai.SLand_xim.CxLand_armx;
 import jsdai.SLand_xim.CxPlated_passage_dependent_land_armx;
 import jsdai.SLand_xim.ELand_armx;
 import jsdai.SLand_xim.EPlated_passage_dependent_land_armx;
-import jsdai.SLayered_interconnect_module_design_xim.CxInternal_probe_access_area_armx;
 import jsdai.SLayered_interconnect_module_design_xim.CxProbe_access_area_armx;
 import jsdai.SLayered_interconnect_module_design_xim.CxStratum_feature_template_component_armx;
-import jsdai.SLayered_interconnect_module_design_xim.EInternal_probe_access_area_armx;
 import jsdai.SLayered_interconnect_module_design_xim.EProbe_access_area_armx;
 import jsdai.SGeneric_product_occurrence_xim.*;
 import jsdai.SProduct_definition_schema.*;
@@ -59,6 +57,26 @@ public class CxContact_size_dependent_land_armx$probe_access_area_armx
 	public static int apFlag = AP21x; // Default is this style  
 
 	// Taken from PDR
+	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
+		a9 = set_string(value);
+	}
+	public void unsetId(EProduct_definition_relationship type) throws SdaiException {
+		a9 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
+		return a9$;
+	}
+
+	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
+		a10 = set_string(value);
+	}
+	public void unsetName(EProduct_definition_relationship type) throws SdaiException {
+		a10 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
+		return a10$;
+	}
+	
 	// attribute (current explicit or supertype explicit) : relating_product_definition, base type: entity product_definition
 /*	public static int usedinRelating_product_definition(EProduct_definition_relationship type, EProduct_definition instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a12$, domain, result);
@@ -607,49 +625,6 @@ public class CxContact_size_dependent_land_armx$probe_access_area_armx
 		CxProbe_access_area_armx.unsetStratum_feature_material_stackup(context, armEntity);		
 	}
 
-	/**
-	* Sets/creates data for probed_layout_item attribute.
-	*
-	* <p>
-	*  <aa attribute="stratum_feature_implementation" assertion_to="Stratum_feature">
-	*  <aimelt xml:space="preserve">PATH</aimelt>
-	*  <refpath xml:space="preserve">probe_access_area &lt;
-	*  probe_access_area &lt;=
-	*  assembly_component &lt;=	
-	*  product_definition_shape &lt;-
-	*  shape_aspect.of_shape
-	*  shape_aspect &lt;-
-	*  shape_aspect_relationship.relating_shape_aspect
-	*  shape_aspect_relationship
-	*  {shape_aspect_relationship
-	*  shape_aspect_relationship.name = 'stratum feature implementation'}
-	*  shape_aspect_relationship.related_shape_aspect -&gt;
-	*  shape_aspect =&gt; 
-	*  stratum_feature
-	*  </refpath>	
-	* </p>
-	* @param context SdaiContext.
-	* @param armEntity arm entity.
-	* @throws SdaiException
-	*/
-	public static void setStratum_feature_implementation(SdaiContext context, EInternal_probe_access_area_armx armEntity) throws SdaiException
-	{
-		CxInternal_probe_access_area_armx.setStratum_feature_implementation(context, armEntity);
-	}
-
-
-	/**
-	* Unsets/deletes data for probed_layout_item attribute.
-	*
-	* @param context SdaiContext.
-	* @param armEntity arm entity.
-	* @throws SdaiException
-	*/
-	public static void unsetStratum_feature_implementation(SdaiContext context, EInternal_probe_access_area_armx armEntity) throws SdaiException
-	{
-		CxInternal_probe_access_area_armx.unsetStratum_feature_implementation(context, armEntity);
-	}
-	
 	/**
 	* Sets/creates data for stratum_feature_implementation attribute.
 	*

@@ -33,10 +33,29 @@ import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SFabrication_technology_mim.CPassage_technology;
 import jsdai.SProduct_property_definition_schema.ECharacterized_object;
-import jsdai.SProduct_property_definition_schema.EShape_aspect;
+import jsdai.SProduct_property_definition_schema.EProperty_definition;
 
 public class CxDefault_via_definition extends CDefault_via_definition implements EMappedXIMEntity
 {
+
+	// From CProperty_definition.java
+	/// methods for attribute: name, base type: STRING
+/*	public boolean testName(EProperty_definition type) throws SdaiException {
+		return test_string(a0);
+	}
+	public String getName(EProperty_definition type) throws SdaiException {
+		return get_string(a0);
+	}*/
+	public void setName(EProperty_definition type, String value) throws SdaiException {
+		a0 = set_string(value);
+	}
+	public void unsetName(EProperty_definition type) throws SdaiException {
+		a0 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EProperty_definition type) throws SdaiException {
+		return a0$;
+	}
+	// ENDOF From CProperty_definition.java
 
 	public int attributeState = ATTRIBUTES_MODIFIED;	
 
@@ -86,6 +105,7 @@ public class CxDefault_via_definition extends CDefault_via_definition implements
 		// maximum_aspect_ratio
 		setMaximum_aspect_ratio(context, this);
 
+		setPassage_terminus_condition(context, this);		
 		// Clean ARM
 		
 		// as_finished_inter_stratum_extent 		
@@ -104,6 +124,7 @@ public class CxDefault_via_definition extends CDefault_via_definition implements
 		// maximum_aspect_ratio
 		unsetMaximum_aspect_ratio(null);
 		
+		unsetPassage_terminus_condition(null);		
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
@@ -124,6 +145,8 @@ public class CxDefault_via_definition extends CDefault_via_definition implements
 		
 		// maximum_aspect_ratio
 		unsetMaximum_aspect_ratio(context, this);
+		
+		unsetPassage_terminus_condition(context, this);		
 		
 		CxPassage_technology_armx.cleanAIM_stuff(context, this);
 	}
@@ -278,4 +301,27 @@ public class CxDefault_via_definition extends CDefault_via_definition implements
  	CxPassage_technology_armx.unsetPlated_passage(context, armEntity);
  }
 
+ /**
+  * Sets/creates data for Passage_terminus_condition attribute.
+  *
+  * @param context SdaiContext.
+  * @param armEntity arm entity.
+  * @throws SdaiException
+  */
+ // PT <- PD <- PDR -> R
+ public static void setPassage_terminus_condition(SdaiContext context, EPassage_technology_armx armEntity) throws SdaiException {
+ 	CxPassage_technology_armx.setPassage_terminus_condition(context, armEntity);
+ }
+
+ /**
+  * Unsets/deletes data for Passage_terminus_condition attribute.
+  *
+  * @param context SdaiContext.
+  * @param armEntity arm entity.
+  * @throws SdaiException
+  */
+ public static void unsetPassage_terminus_condition(SdaiContext context, EPassage_technology_armx armEntity) throws SdaiException {
+ 	CxPassage_technology_armx.unsetPassage_terminus_condition(context, armEntity);
+ }
+ 
 }

@@ -1,0 +1,130 @@
+(*
+ $Id$
+ ISO TC184/SC4/WG12 N2175 ISO/CD 10303-110 Document WG12 N2176, 2003/07/09
+   Complete EXPRESS code extracted from WG12 N2175
+*)
+
+
+SCHEMA basis_schema;
+  REFERENCE FROM analysis_schema                        -- ISO 10303-53
+                 (model_property_distribution);
+  REFERENCE FROM conditions_schema                      -- ISO 10303-110
+                 (Riemann_1D_data_name);
+  REFERENCE FROM domain_schema                          -- ISO 10303-110
+                 (coordinate_data_name);
+  REFERENCE FROM equations_schema                       -- ISO 10303-110
+                 (force_moment_data_name,
+                  gas_model_data_name,
+                  thermal_conductivity_model_data_name,
+                  turbulence_closure_data_name,
+                  turbulence_model_data_name,
+                  viscosity_model_data_name);
+  REFERENCE FROM external_reference_schema              -- ISO 10303-41
+                 (externally_defined_item);
+  REFERENCE FROM mathematical_context_schema            -- ISO 10303-51
+                 (value_context_select);
+  REFERENCE FROM mathematical_description_of_distribution_schema -- ISO 10303-51
+                 (property_distribution_select);
+  REFERENCE FROM product_property_definition_schema     -- ISO 10303-41
+                 (general_property);
+  REFERENCE FROM product_property_representation_schema -- ISO 10303-41
+                 (shape_representation);
+  REFERENCE FROM representation_schema                  -- ISO 10303-43
+                 (representation_context);
+  REFERENCE FROM results_schema                         -- ISO 10303-110
+                 (flow_solution_data_name);
+  REFERENCE FROM support_resource_schema                -- ISO 10303-41
+                 (text);
+
+TYPE choose_general_property_identifier = EXTENSIBLE SELECT
+     (externally_defined_item,
+      defined_data_name);
+END_TYPE;
+
+TYPE choose_geometry_location = EXTENSIBLE SELECT
+    (externally_defined_item,
+     shape_representation);
+END_TYPE;
+
+TYPE choose_representation_context_identifier = EXTENSIBLE SELECT
+     (externally_defined_item,
+      defined_data_class);
+END_TYPE;
+
+TYPE defined_data_class = EXTENSIBLE ENUMERATION OF
+     (unspecified,
+      application_defined,
+      dimensional,
+      normalised_by_dimensional,
+      normalise_by_unknown_dimensional,
+      dimensionless_parameter,
+      dimensionless_constant);
+END_TYPE;
+
+TYPE defined_data_name = EXTENSIBLE SELECT
+     (coordinate_data_name,
+      fd_defined_data_name);
+END_TYPE;
+
+TYPE fd_defined_data_name = EXTENSIBLE SELECT
+     (fd_nondimensional_parameter_name,
+      Riemann_1D_data_name,
+      force_moment_data_name,
+      gas_model_data_name,
+      viscosity_model_data_name,
+      thermal_conductivity_model_data_name,
+      turbulence_closure_data_name,
+      turbulence_model_data_name,
+      flow_solution_data_name);
+END_TYPE;
+
+TYPE fd_nondimensional_parameter_name = EXTENSIBLE ENUMERATION OF  
+     (Mach,
+      Mach_velocity,
+      Mach_velocity_sound,
+      Reynolds,
+      Reynolds_velocity,
+      Reynolds_length,
+      Reynolds_viscosity_kinematic,
+      Prandtl,
+      Prandtl_thermal_conductivity,
+      Prandtl_viscosity_molecular,
+      Prandtl_specific_heat_pressure,
+      specific_heat_ratio,
+      specific_heat_ratio_pressure,
+      specific_heat_ratio_volume,
+      coef_pressure,
+      coef_skin_friction_x,
+      coef_skin_friction_y,
+      coef_skin_friction_z,
+      coef_pressure_dynamic,
+      coef_pressure_reference,
+      length_reference);
+END_TYPE;
+
+TYPE mbna_property_distribution_select = EXTENSIBLE SELECT
+     BASED_ON property_distribution_select WITH
+     (model_property_distribution);
+END_TYPE;
+
+TYPE mbna_value_context_select = EXTENSIBLE SELECT
+     BASED_ON value_context_select WITH
+     (choose_representation_context_identifier);
+END_TYPE;
+
+ENTITY geometry_reference;
+  description : text;
+  data        : choose_geometry_location;
+END_ENTITY;
+
+ENTITY specified_general_property
+  SUBTYPE OF (general_property);
+  name_specifier : choose_general_property_identifier;
+END_ENTITY;
+
+ENTITY specified_representation_context
+  SUBTYPE OF (representation_context);
+  class_specifier : choose_representation_context_identifier;
+END_ENTITY;
+
+END_SCHEMA; -- end of basis_schema

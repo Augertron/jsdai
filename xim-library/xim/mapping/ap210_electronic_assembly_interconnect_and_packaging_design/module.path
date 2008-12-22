@@ -115,7 +115,7 @@ end_entity_mapping;
 
 entity_mapping descriptive_representation_item(descriptive_representation_item, descriptive_representation_item);
 mapping_constraints;
-{descriptive_representation_item <=
+({descriptive_representation_item <=
 representation_item <-
 representation.items[i]
 representation <-
@@ -123,7 +123,20 @@ property_definition_representation.used_representation
 property_definition_representation
 property_definition_representation.definition ->
 property_definition
-{property_definition.name = 'required characteristic'}}
+{property_definition.name = 'required characteristic'}})
+({descriptive_representation_item <=
+representation_item <-
+item_identified_representation_usage.identified_item
+item_identified_representation_usage
+item_identified_representation_usage.definition ->
+represented_definition
+represented_definition = property_definition
+property_definition
+property_definition.definition ->
+characterized_definition
+characterized_definition = characterized_object
+characterized_object =>
+partial_document_with_structured_text_representation_assignment})
 end_mapping_constraints;
 
 end_entity_mapping;
@@ -219,6 +232,9 @@ entity_mapping axis2_placement_2d(axis2_placement_2d, axis2_placement_2d);
 end_entity_mapping;
 
 entity_mapping axis2_placement_3d(axis2_placement_3d, axis2_placement_3d);
+end_entity_mapping;
+
+entity_mapping direction(direction, direction);
 end_entity_mapping;
 
 entity_mapping cartesian_transformation_operator(cartesian_transformation_operator, cartesian_transformation_operator);
@@ -343,9 +359,13 @@ end_entity_mapping;
 
 entity_mapping measure_with_unit(measure_with_unit, measure_with_unit);
 end_entity_mapping;
-
+(* no need for it after breakage in assembly structures
 entity_mapping next_assembly_usage_occurrence(next_assembly_usage_occurrence, next_assembly_usage_occurrence);
+end_entity_mapping; 
+
+entity_mapping product_definition_usage(product_definition_usage, product_definition_usage);
 end_entity_mapping;
+*)
 
 entity_mapping organizational_address(organizational_address, organizational_address);
 end_entity_mapping;
@@ -372,8 +392,6 @@ end_entity_mapping;
 entity_mapping product_definition_relationship(product_definition_relationship, product_definition_relationship);
 end_entity_mapping;
 *)
-entity_mapping product_definition_usage(product_definition_usage, product_definition_usage);
-end_entity_mapping;
 (* it is made ABSTRACT SUPERTYPE in Product_identification_xim
 entity_mapping product_related_product_category(product_related_product_category, product_related_product_category);
 end_entity_mapping;
@@ -1337,21 +1355,14 @@ attribute_mapping current_design_object(current_design_object, , Passage_technol
 				
 end_attribute_mapping;
 
-attribute_mapping current_design_object(current_design_object, , Physical_unit_shape_representation_relationship);
+attribute_mapping current_design_object(current_design_object, , Part_terminal_external_reference_armx);
 
 					managed_design_object
 					managed_design_object *> ap210_managed_design_object
 					ap210_managed_design_object
-					ap210_managed_design_object = shape_representation_relationship
-				
-end_attribute_mapping;
-
-attribute_mapping current_design_object(current_design_object, , Part_terminal_external_reference);
-
-					managed_design_object
-					managed_design_object *> ap210_managed_design_object
-					ap210_managed_design_object
-					ap210_managed_design_object = representation
+					ap210_managed_design_object = shape_aspect
+					shape_aspect =>
+					part_terminal_external_reference
 				
 end_attribute_mapping;
 
@@ -1436,14 +1447,14 @@ attribute_mapping current_design_object(current_design_object, , Organization);
 				
 end_attribute_mapping;
 
-attribute_mapping current_design_object(current_design_object, , Operational_requirement_occurrence_relationship_armx);
+attribute_mapping current_design_object(current_design_object, , Operational_requirement_relationship_armx);
 
 					managed_design_object
 					managed_design_object *> ap210_managed_design_object
 					ap210_managed_design_object
 					ap210_managed_design_object = product_definition_relationship
 					product_definition_relationship =>
-					operational_requirement_occurrence_relationship
+					operational_requirement_relationship
 				
 end_attribute_mapping;
 
@@ -3791,30 +3802,14 @@ attribute_mapping previous_design_object(previous_design_object, , Passage_techn
 				
 end_attribute_mapping;
 
-attribute_mapping previous_design_object(previous_design_object, , Physical_unit_shape_representation_relationship);
+attribute_mapping previous_design_object(previous_design_object, , Part_terminal_external_reference_armx);
 
 					managed_design_object
 					managed_design_object *> ap210_managed_design_object
 					ap210_managed_design_object
-					ap210_managed_design_object = shape_representation_relationship
-				
-end_attribute_mapping;
-
-attribute_mapping previous_design_object(previous_design_object, , Part_template_shape_representation_relationship);
-
-					managed_design_object
-					managed_design_object *> ap210_managed_design_object
-					ap210_managed_design_object
-					ap210_managed_design_object = shape_representation_relationship
-				
-end_attribute_mapping;
-
-attribute_mapping previous_design_object(previous_design_object, , Part_terminal_external_reference);
-
-					managed_design_object
-					managed_design_object *> ap210_managed_design_object
-					ap210_managed_design_object
-					ap210_managed_design_object = representation
+					ap210_managed_design_object = shape_aspect
+					shape_aspect =>
+					part_terminal_external_reference
 				
 end_attribute_mapping;
 
@@ -3899,14 +3894,14 @@ attribute_mapping previous_design_object(previous_design_object, , Organization)
 				
 end_attribute_mapping;
 
-attribute_mapping previous_design_object(previous_design_object, , Operational_requirement_occurrence_relationship_armx);
+attribute_mapping previous_design_object(previous_design_object, , Operational_requirement_relationship_armx);
 
 					managed_design_object
 					managed_design_object *> ap210_managed_design_object
 					ap210_managed_design_object
 					ap210_managed_design_object = product_definition_relationship
 					product_definition_relationship =>
-					operational_requirement_occurrence_relationship
+					operational_requirement_relationship
 				
 end_attribute_mapping;
 
@@ -6094,30 +6089,14 @@ attribute_mapping current_design_object(current_design_object, , Passage_technol
 				
 end_attribute_mapping;
 
-attribute_mapping current_design_object(current_design_object, , Physical_unit_shape_representation_relationship);
+attribute_mapping current_design_object(current_design_object, , Part_terminal_external_reference_armx);
 
 					managed_design_object
 					managed_design_object *> ap210_managed_design_object
 					ap210_managed_design_object
-					ap210_managed_design_object = shape_representation_relationship
-				
-end_attribute_mapping;
-
-attribute_mapping current_design_object(current_design_object, , Part_template_shape_representation_relationship);
-
-					managed_design_object
-					managed_design_object *> ap210_managed_design_object
-					ap210_managed_design_object
-					ap210_managed_design_object = shape_representation_relationship
-				
-end_attribute_mapping;
-
-attribute_mapping current_design_object(current_design_object, , Part_terminal_external_reference);
-
-					managed_design_object
-					managed_design_object *> ap210_managed_design_object
-					ap210_managed_design_object
-					ap210_managed_design_object = representation
+					ap210_managed_design_object = shape_aspect
+					shape_aspect =>
+					part_terminal_external_reference
 				
 end_attribute_mapping;
 
@@ -6202,14 +6181,14 @@ attribute_mapping current_design_object(current_design_object, , Organization);
 				
 end_attribute_mapping;
 
-attribute_mapping current_design_object(current_design_object, , Operational_requirement_occurrence_relationship_armx);
+attribute_mapping current_design_object(current_design_object, , Operational_requirement_relationship_armx);
 
 					managed_design_object
 					managed_design_object *> ap210_managed_design_object
 					ap210_managed_design_object
 					ap210_managed_design_object = product_definition_relationship
 					product_definition_relationship =>
-					operational_requirement_occurrence_relationship
+					operational_requirement_relationship
 				
 end_attribute_mapping;
 
@@ -8426,30 +8405,14 @@ attribute_mapping previous_design_object(previous_design_object, , Passage_techn
 				
 end_attribute_mapping;
 
-attribute_mapping previous_design_object(previous_design_object, , Physical_unit_shape_representation_relationship);
+attribute_mapping previous_design_object(previous_design_object, , Part_terminal_external_reference_armx);
 
 					managed_design_object
 					managed_design_object *> ap210_managed_design_object
 					ap210_managed_design_object
-					ap210_managed_design_object = shape_representation_relationship
-				
-end_attribute_mapping;
-
-attribute_mapping previous_design_object(previous_design_object, , Part_template_shape_representation_relationship);
-
-					managed_design_object
-					managed_design_object *> ap210_managed_design_object
-					ap210_managed_design_object
-					ap210_managed_design_object = shape_representation_relationship
-				
-end_attribute_mapping;
-
-attribute_mapping previous_design_object(previous_design_object, , Part_terminal_external_reference);
-
-					managed_design_object
-					managed_design_object *> ap210_managed_design_object
-					ap210_managed_design_object
-					ap210_managed_design_object = representation
+					ap210_managed_design_object = shape_aspect
+					shape_aspect =>
+					part_terminal_external_reference
 				
 end_attribute_mapping;
 
@@ -8534,14 +8497,14 @@ attribute_mapping previous_design_object(previous_design_object, , Organization)
 				
 end_attribute_mapping;
 
-attribute_mapping previous_design_object(previous_design_object, , Operational_requirement_occurrence_relationship_armx);
+attribute_mapping previous_design_object(previous_design_object, , Operational_requirement_relationship_armx);
 
 					managed_design_object
 					managed_design_object *> ap210_managed_design_object
 					ap210_managed_design_object
 					ap210_managed_design_object = product_definition_relationship
 					product_definition_relationship =>
-					operational_requirement_occurrence_relationship
+					operational_requirement_relationship
 				
 end_attribute_mapping;
 
@@ -10777,30 +10740,14 @@ attribute_mapping frozen_item(frozen_item, , Passage_technology_armx);
 				
 end_attribute_mapping;
 
-attribute_mapping frozen_item(frozen_item, , Physical_unit_shape_representation_relationship);
+attribute_mapping frozen_item(frozen_item, , Part_terminal_external_reference_armx);
 
 					managed_design_object
 					managed_design_object *> ap210_managed_design_object
 					ap210_managed_design_object
-					ap210_managed_design_object = shape_representation_relationship
-				
-end_attribute_mapping;
-
-attribute_mapping frozen_item(frozen_item, , Part_template_shape_representation_relationship);
-
-					managed_design_object
-					managed_design_object *> ap210_managed_design_object
-					ap210_managed_design_object
-					ap210_managed_design_object = shape_representation_relationship
-				
-end_attribute_mapping;
-
-attribute_mapping frozen_item(frozen_item, , Part_terminal_external_reference);
-
-					managed_design_object
-					managed_design_object *> ap210_managed_design_object
-					ap210_managed_design_object
-					ap210_managed_design_object = representation
+					ap210_managed_design_object = shape_aspect
+					shape_aspect =>
+					part_terminal_external_reference
 				
 end_attribute_mapping;
 
@@ -10885,14 +10832,14 @@ attribute_mapping frozen_item(frozen_item, , Organization);
 				
 end_attribute_mapping;
 
-attribute_mapping frozen_item(frozen_item, , Operational_requirement_occurrence_relationship_armx);
+attribute_mapping frozen_item(frozen_item, , Operational_requirement_relationship_armx);
 
 					managed_design_object
 					managed_design_object *> ap210_managed_design_object
 					ap210_managed_design_object
 					ap210_managed_design_object = product_definition_relationship
 					product_definition_relationship =>
-					operational_requirement_occurrence_relationship
+					operational_requirement_relationship
 				
 end_attribute_mapping;
 

@@ -30,7 +30,7 @@ SCHEMA Physical_unit_design_view_xim;
 
 USE FROM Physical_unit_usage_view_xim;
 
-USE FROM Physical_layout_template_xim; -- ISO/TS 10303-1722
+USE FROM Part_template_xim; -- ISO/TS 10303-1722
 
 USE FROM Physical_unit_design_view_mim;
 
@@ -45,8 +45,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
 
 	SUBTYPE_CONSTRAINT pudv_connection_zone_subtypes FOR Connection_zone;     
 		 ONEOF (Connection_zone_in_usage_view,
-		 Connection_zone_in_design_view,
-		 Connection_zone_in_layout_template);
+		 Connection_zone_in_design_view);
 	END_SUBTYPE_CONSTRAINT;
 
 	SUBTYPE_CONSTRAINT pudv_part_view_definition_subtypes FOR Part_view_definition ; 
@@ -56,7 +55,8 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
 
 	TYPE assembly_component_or_item_number = SELECT
     	(Assembly_item_number_armx,
-    	 assembly_component_usage);
+    	 assembly_component_usage,
+    	 Next_assembly_usage_occurrence_relationship_armx);
 	END_TYPE;
 	
 	TYPE assembly_item_number_or_process_specification = SELECT
@@ -92,7 +92,6 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
   END_ENTITY;
 
   ENTITY Assembly_component_armx
-    ABSTRACT SUPERTYPE
    (* CONNOTATIONAL *) SUBTYPE OF (Definition_based_product_occurrence, Item_shape, assembly_component);
 	SELF\Definition_based_product_occurrence.derived_from : physical_unit_or_part_template;
     DERIVE
@@ -106,7 +105,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
     	SELF\product_definition_relationship.description : text := ?;
     	SELF\product_definition_relationship.relating_product_definition : product_definition := SELF\Definition_based_product_occurrence.derived_from;
     INVERSE
-      SELF\Product_occurrence.occurrence_contexts : SET[1:?] OF assembly_component_usage FOR related_product_definition;
+      SELF\Product_occurrence.occurrence_contexts : SET[1:?] OF Product_occurrence_definition_relationship_armx FOR related_view;
 (** Need to encode it as Global rules TODO for Tom
       component_2d_shape         : SET[0:1] OF assembly_component_2d_shape FOR shape_characterized_component;
       component_3d_shape         : SET[0:1] OF assembly_component_3d_shape FOR shape_characterized_component;
@@ -114,7 +113,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
 *)      
     WHERE
       WR1 : NOT(('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.FOOTPRINT_OCCURRENCE_ARMX' IN TYPEOF(SELF)) XOR ('FOOTPRINT_DEFINITION_XIM.FOOTPRINT_DEFINITION_ARMX' IN TYPEOF(derived_from))) OR 
-            NOT(('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.PADSTACK_OCCURRENCE_ARMX' IN TYPEOF(SELF)) XOR ('PART_TEMPLATE_2D_SHAPE_XIM.PADSTACK_DEFINITION_ARMX' IN TYPEOF(SELF\Definition_based_product_occurrence.derived_from)));      
+            NOT(('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.PADSTACK_OCCURRENCE_ARMX' IN TYPEOF(SELF)) XOR ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.PADSTACK_DEFINITION_ARMX' IN TYPEOF(SELF\Definition_based_product_occurrence.derived_from)));      
       WR2 : SELF\Product_view_definition.defined_version :=: SELF\Definition_based_product_occurrence.derived_from.defined_version;
 	  WR3 : SIZEOF(assemblies) = SIZEOF(versions);
 	  WR4 : SIZEOF(product) = 1;
@@ -125,16 +124,18 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
 
   ENTITY Assembly_item_number_armx 
   	(* CONNOTATIONAL *) SUBTYPE OF (assembly_item_number);
-      SELF\assembly_item_number.items RENAMED assembly_usage : SET[1:?] OF assembly_component_usage; 
-      SELF\group.name RENAMED item_number	                 : STRING;  	
+      assembly_usage                      : SET[1:?] OF Next_assembly_usage_occurrence_relationship_armx; 
+      SELF\group.name RENAMED item_number : STRING;  	
     DERIVE
       assembly : part_design_view := assembly_usage[1].relating_product_definition;
       part     : product:= assembly_usage[1].related_product_definition\Definition_based_product_occurrence.derived_from\Product_definition.formation.of_product;
       SELF\group.description : text :=?;
+      -- Can't redeclare it to assembly_usage because of 'cut' in Next_assembly_usage_occurrence_relationship_armx & co
+      SELF\assembly_item_number.items : SET[1:?] OF assembly_component_usage := ?;
     UNIQUE
       UR1 : assembly, item_number;
     WHERE
-      WR1 : SIZEOF(QUERY(au <* assembly_usage | NOT (au.relating_product_definition\Definition_based_product_occurrence.derived_from\Product_definition.formation.of_product = Part))) = 0;
+      WR1 : SIZEOF(QUERY(au <* assembly_usage | NOT (au.relating_view\Definition_based_product_occurrence.derived_from\Product_definition.formation.of_product = Part))) = 0;
       WR2 : SIZEOF(QUERY(au <* assembly_usage | NOT (au.relating_view = assembly))) = 0;
   END_ENTITY;
 
@@ -191,18 +192,6 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
   		SELF\Shape_element.element_name : STRING := '';
   END_ENTITY; 
 
-  ENTITY Next_assembly_usage_occurrence_relationship_armx
-    SUBTYPE OF (next_assembly_usage_occurrence_relationship);
-  DERIVE
-    SELF\product_definition_occurrence_relationship.description : text := ?;
-    SELF\product_definition_occurrence_relationship.name : label := ?;
-    -- Make life easier for the tools
-    SELF\product_definition_occurrence_relationship.occurrence : product_definition := ?; --SELF\product_definition_relationship.related_product_definition;
-  UNIQUE
-    UR1 : SELF\product_definition_relationship.relating_product_definition, 
-          SELF\assembly_component_usage.reference_designator;
-  END_ENTITY;
-
   ENTITY Part_design_view
     (* CONNOTATIONAL *) SUBTYPE OF (Item_shape, Part_view_definition, physical_unit);
       usage_view : OPTIONAL Part_usage_view;
@@ -212,8 +201,8 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
       WR1 : ('LAYOUT_MACRO_DEFINITION_XIM.LAYOUT_MACRO_DEFINITION_ARMX' IN TYPEOF(SELF)) 
       OR EXISTS(usage_view);
       WR2 : SIZEOF(QUERY(nauo <* USEDIN(SELF, 'PRODUCT_VIEW_DEFINITION_RELATIONSHIP_XIM.PRODUCT_DEFINITION_RELATIONSHIP.RELATING_PRODUCT_DEFINITION') |
-                 (('PHYSICAL_UNIT_DESIGN_VIEW_XIM.NEXT_ASSEMBLY_USAGE_OCCURRENCE_RELATIONSHIP' IN TYPEOF(nauo)) XOR
-                  ('ASSEMBLY_STRUCTURE_XIM.NEXT_ASSEMBLY_USAGE_OCCURRENCE' IN TYPEOF(nauo)))                 
+                 (('PHYSICAL_UNIT_DESIGN_VIEW_XIM.NEXT_ASSEMBLY_USAGE_OCCURRENCE_RELATIONSHIP_ARMX' IN TYPEOF(nauo))) 
+--                 XOR ('ASSEMBLY_STRUCTURE_XIM.NEXT_ASSEMBLY_USAGE_OCCURRENCE' IN TYPEOF(nauo)))                 
                  )) = 0;      
   END_ENTITY;
 
@@ -227,7 +216,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
 
   RULE unique_assembly_item_number FOR (Assembly_item_number_armx);
    LOCAL
-     acr : BAG OF assembly_component_usage := [];
+     acr : BAG OF Next_assembly_usage_occurrence_relationship_armx := [];
    END_LOCAL;
    REPEAT i := 1 to SIZEOF(Assembly_item_number_armx) by 1;
      acr  := acr + Assembly_item_number_armx[i].assembly_usage;
@@ -260,15 +249,15 @@ END_FUNCTION;
 
 FUNCTION pudv_get_assemblies(input : Assembly_component_armx) : SET OF Product_view_definition;
 LOCAL
-  acr : SET OF assembly_component_usage := input\Assembly_component_armx.occurrence_contexts;
+  acr : SET OF Product_occurrence_definition_relationship_armx := input\Assembly_component_armx.occurrence_contexts;
   pvd : SET OF Product_view_definition := [];
 END_LOCAL;
 REPEAT i := 1 TO HIINDEX(acr) BY 1;
-  IF NOT('COMPONENT_GROUPING_XIM.' + 'ASSEMBLY_GROUP_COMPONENT_ARMX' IN TYPEOF(acr[i]\Product_definition_relationship.relating_product_definition))
+  IF NOT('COMPONENT_GROUPING_XIM.' + 'ASSEMBLY_GROUP_COMPONENT_ARMX' IN TYPEOF(acr[i].relating_view))
   THEN
-  pvd := pvd + acr[i]\Product_definition_relationship.relating_product_definition; 
+  pvd := pvd + acr[i].relating_view; 
   ELSE
-  pvd := pvd + get_assemblies(acr[i]\Product_definition_relationship.relating_product_definition);
+  pvd := pvd + get_assemblies(acr[i].relating_view);
   END_IF;
 END_REPEAT;
 RETURN (pvd);
@@ -276,13 +265,13 @@ END_FUNCTION;
 
 FUNCTION pudv_get_groups(input : Assembly_component_armx) : SET OF Assembly_group_component_armx;
 LOCAL
-  acr : SET OF assembly_component_usage := input\Assembly_component.occurrence_contexts;
+  acr : SET OF Product_occurrence_definition_relationship_armx := input\Assembly_component_armx.occurrence_contexts;
   agc : SET OF Assembly_group_component_armx := [];
 END_LOCAL;
 REPEAT i := 1 TO HIINDEX(acr) BY 1;
-  IF ('COMPONENT_GROUPING_ARM.' + 'ASSEMBLY_GROUP_COMPONENT_ARMX' IN TYPEOF(acr[i]\Product_definition_relationship.relating_product_definition))
+  IF ('COMPONENT_GROUPING_XIM.' + 'ASSEMBLY_GROUP_COMPONENT_ARMX' IN TYPEOF(acr[i].relating_view))
   THEN
-  agc := agc + acr[i]\Product_definition_relationship.relating_product_definition; 
+  agc := agc + acr[i].relating_view; 
   END_IF;
 END_REPEAT;
 RETURN (agc);
@@ -290,7 +279,7 @@ END_FUNCTION;
 
 FUNCTION pudv_get_group_assemblies(input : SET OF Assembly_group_component_armx) : SET OF Product_view_definition;
 LOCAL
-  acr : SET OF assembly_component_usage := [];
+  acr : SET OF Next_assembly_usage_occurrence_relationship_armx := [];
   pvd : SET OF Product_view_definition := [];
 END_LOCAL;
 
@@ -299,11 +288,11 @@ REPEAT i := 1 TO HIINDEX(input) BY 1;
 END_REPEAT;
 
 REPEAT i := 1 TO HIINDEX(acr) BY 1;
-  IF NOT('COMPONENT_GROUPING_ARM.' + 'ASSEMBLY_GROUP_COMPONENT_ARMX' IN TYPEOF(acr[i]\Product_definition_relationship.relating_product_definition))
+  IF NOT('COMPONENT_GROUPING_XIM.' + 'ASSEMBLY_GROUP_COMPONENT_ARMX' IN TYPEOF(acr[i]\Next_assembly_usage_occurrence_relationship_armx.relating_view))
   THEN
-  pvd := pvd + acr[i]\Product_definition_relationship.relating_product_definition; 
+  pvd := pvd + acr[i]\Next_assembly_usage_occurrence_relationship_armx.relating_view; 
   ELSE
-  pvd := pvd + get_assemblies(acr[i]\Product_definition_relationship.relating_product_definition);
+  pvd := pvd + get_assemblies(acr[i]\Next_assembly_usage_occurrence_relationship_armx.relating_view);
   END_IF;
 END_REPEAT;
 RETURN (pvd);

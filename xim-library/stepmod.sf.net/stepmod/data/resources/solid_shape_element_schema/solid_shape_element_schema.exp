@@ -1,18 +1,20 @@
-(* THIS IS DOCUMENT ISO TC184/SC4/WG12 N4492, CONTAINING EXPRESS CODE FOR *)
-(* ISO 10303-111, 'ELEMENTS FOR THE PROCEDURAL MODELLING OF SOLID SHAPES  *)
-(* -- 2007-01-24 -- *)                          
+(*
+$Id$ 
+ISO TC184/SC4/WG12 N5267 - ISO/IS 10303-111 solid_shape_element_schema - EXPRESS
+ISO 10303-111, 'ELEMENTS FOR THE PROCEDURAL MODELLING OF SOLID SHAPES'
+UPDATED ACCORDING TO TC1  -- 2008-07-31 -- *)                          
 
 SCHEMA solid_shape_element_schema;
 
 REFERENCE FROM support_resource_schema                 -- ISO 10303-41
   (text);
 
-REFERENCE FROM  measure_schema                         -- ISO 10303-41
+REFERENCE FROM measure_schema                          -- ISO 10303-41
   (length_measure,
    non_negative_length_measure,
    plane_angle_measure, 
    positive_length_measure,
-   positive_plane_angle_measure); 
+   positive_plane_angle_measure);
 
 REFERENCE FROM geometry_schema                         -- ISO 10303-42
   (axis2_placement_3d,
@@ -48,9 +50,6 @@ REFERENCE FROM representation_schema                    --ISO 10303-43
 REFERENCE FROM mathematical_functions_schema            --ISO 10303-50
   (positive_integer);
  
---REFERENCE FROM explicit_geometric_constraint_schema     --ISO 10303-108
---  (non_negative_length_measure);
-
 REFERENCE FROM sketch_schema                            --ISO 10303-108
   (positioned_sketch); 
  
@@ -82,9 +81,9 @@ TYPE trim_condition_select = SELECT
 END_TYPE;
 
 TYPE blend_radius_variation_type = ENUMERATION OF 
-  (linear,  
-   cubic, 
-   unspecified);
+  (linear_blend,  
+   cubic_blend, 
+   unspecified_blend);
 END_TYPE;
  
 TYPE trim_intent = ENUMERATION OF
@@ -321,32 +320,26 @@ END_ENTITY;
 ENTITY solid_with_flat_bottom_round_hole
   SUBTYPE OF (solid_with_stepped_round_hole);
   fillet_radius : non_negative_length_measure;
-DERIVE
-  fr : REAL := fillet_radius;
-  sr : REAL := SELF\solid_with_stepped_round_hole.segment_radii[segments];
 WHERE
-  WR1 : fr < sr;
+  WR1 : fillet_radius < 
+          SELF\solid_with_stepped_round_hole.segment_radii[segments];
 END_ENTITY;
 
 ENTITY solid_with_spherical_bottom_round_hole
   SUBTYPE OF (solid_with_stepped_round_hole);
   sphere_radius : positive_length_measure;
-DERIVE
-  sphr : REAL := sphere_radius;
-  sr   : REAL := SELF\solid_with_stepped_round_hole.segment_radii[segments];
 WHERE
-  WR1 : sphr >= sr;
+  WR1 : sphere_radius >= 
+          SELF\solid_with_stepped_round_hole.segment_radii[segments];
 END_ENTITY;
 
 ENTITY solid_with_conical_bottom_round_hole
   SUBTYPE OF (solid_with_stepped_round_hole);
   semi_apex_angle : positive_plane_angle_measure;
   tip_radius      : non_negative_length_measure;
-DERIVE
-  tr : REAL := tip_radius;
-  sr : REAL := SELF\solid_with_stepped_round_hole.segment_radii[segments];
 WHERE
-  WR1 : tr < sr;
+  WR1 : tip_radius < 
+          SELF\solid_with_stepped_round_hole.segment_radii[segments];
 END_ENTITY;
 
 ENTITY solid_with_pocket
@@ -364,22 +357,16 @@ ENTITY solid_with_rectangular_pocket
   pocket_length : positive_length_measure;
   pocket_width  : positive_length_measure;
   corner_radius : non_negative_length_measure;
-DERIVE
-  cr : REAL := corner_radius;
-  pw : REAL := pocket_width;
-  pl : REAL := pocket_length;
 WHERE
-  WR1: (cr < pw/2) AND (cr < pl/2);
+  WR1: (corner_radius < pocket_width/2) 
+         AND (corner_radius < pocket_length/2);
 END_ENTITY;
 
 ENTITY solid_with_circular_pocket
   SUBTYPE OF (solid_with_pocket);
-  pocket_radius: positive_length_measure;
-DERIVE
-  fbr : REAL := SELF\solid_with_pocket.floor_blend_radius;
-  pr  : REAL := pocket_radius;
+  pocket_radius: positive_length_measure; 
 WHERE 
-  WR1: fbr <= pr;
+  WR1: SELF\solid_with_pocket.floor_blend_radius <= pocket_radius;
 END_ENTITY;
 
 ENTITY solid_with_general_pocket  
@@ -560,24 +547,28 @@ WHERE
          IN TYPEOF(second_trim_condition)));
   WR2: NOT ((('MEASURE_SCHEMA.LENGTH_MEASURE' 
          IN TYPEOF(first_trim_condition)) AND 
-         ((first_trim_intent = offset) 
-         OR (first_trim_intent = up_to_next))) OR  
+         ((first_trim_intent = trim_intent.offset) 
+         OR (first_trim_intent = trim_intent.up_to_next))) OR  
          (('MEASURE_SCHEMA.LENGTH_MEASURE' 
          IN TYPEOF(second_trim_condition)) AND 
-         ((second_trim_intent = offset) 
-         OR (second_trim_intent = up_to_next))));
+         ((second_trim_intent = trim_intent.offset) 
+         OR (second_trim_intent = trim_intent.up_to_next))));
   WR3: NOT (((NOT ('MEASURE_SCHEMA.LENGTH_MEASURE' 
          IN TYPEOF(first_trim_condition))) AND 
-         ((first_trim_intent = blind) 
-         OR (first_trim_intent = through_all))) OR  
+         ((first_trim_intent = trim_intent.blind) 
+         OR (first_trim_intent = trim_intent.through_all))) OR  
          ((NOT('MEASURE_SCHEMA.LENGTH_MEASURE' 
          IN TYPEOF(second_trim_condition))) AND 
-         ((second_trim_intent = blind) 
-         OR (second_trim_intent = through_all))));
-  WR4: (((first_trim_intent = offset) AND (first_offset > 0)) XOR
-         ((first_trim_intent <> offset) AND (first_offset = 0))) AND 
-         (((second_trim_intent = offset) AND (second_offset > 0)) XOR
-         ((second_trim_intent <> offset) AND (second_offset = 0)));
+         ((second_trim_intent = trim_intent.blind) 
+         OR (second_trim_intent = trim_intent.through_all))));
+  WR4: (((first_trim_intent = trim_intent.offset) 
+           AND (first_offset > 0)) XOR
+         ((first_trim_intent <> trim_intent.offset) 
+           AND (first_offset = 0))) AND 
+         (((second_trim_intent = trim_intent.offset) 
+           AND (second_offset > 0)) XOR
+         ((second_trim_intent <> trim_intent.offset) 
+            AND (second_offset = 0)));
   WR5: NOT((('MEASURE_SCHEMA.LENGTH_MEASURE' 
          IN TYPEOF(first_trim_condition)) AND
             ('MEASURE_SCHEMA.LENGTH_MEASURE' 
@@ -630,7 +621,7 @@ WHERE
 END_ENTITY;
 
 FUNCTION check_continuous_edges (edges : LIST OF UNIQUE edge_curve)
-                                      : BOOLEAN;
+                                       : BOOLEAN;
 
   LOCAL
     i           : INTEGER;
@@ -681,18 +672,23 @@ FUNCTION check_continuous_edges (edges : LIST OF UNIQUE edge_curve)
 
 END_FUNCTION;
 
-FUNCTION compute_total_depth (swsrh : solid_with_stepped_round_hole) 
+FUNCTION compute_total_depth (swsrh : solid_with_stepped_round_hole)
                                     : positive_length_measure;
 
-  LOCAL
-    i  : INTEGER;
-    td : positive_length_measure := 0;
-  END_LOCAL;
+LOCAL
+i  : positive_integer;
+n  : positive_integer := swsrh.segments;
+td : positive_length_measure := swsrh.segment_depths[1];
+END_LOCAL;
 
-  REPEAT i := 1 TO swsrh.segments;
+IF n = 1 
+THEN RETURN(td);
+ELSE
+  REPEAT i := 2 TO n;
     td := td + swsrh.segment_depths[i];
   END_REPEAT;
-  RETURN(td); 
+END_IF;
+RETURN(td);
 
 END_FUNCTION;
 
@@ -710,7 +706,7 @@ FUNCTION validate_countersink_radii
   REPEAT i := 1 TO SIZEOF(cskhole.conical_transitions);
 
   -- First check whether transition i applies to the entry of the hole or 
-  -- the exit of a blind hole - those cases only need to be checked for 
+  -- the exit of a through hole - those cases only need to be checked for 
   -- the sign of the cone apex angle.
 
   IF (((cskhole.conical_transitions[i].transition_number = 1)
@@ -725,6 +721,7 @@ FUNCTION validate_countersink_radii
 
   -- For all remaining transitions, check that the cone base radius 
   -- lies in the range of validity.
+
 
       BEGIN
         j := cskhole.conical_transitions[i].transition_number;
@@ -750,10 +747,10 @@ FUNCTION validate_countersink_radii
             smaller 
               := cskhole\solid_with_stepped_round_hole.segment_radii[j];
           END;
-          IF ((cskhole.conical_transitions[i].cone_base_radius > larger)
-            OR (cskhole.conical_transitions[i].cone_base_radius < smaller))
-          THEN RETURN(FALSE);
-          END_IF;
+        END_IF; 
+        IF ((cskhole.conical_transitions[i].cone_base_radius > larger)
+          OR (cskhole.conical_transitions[i].cone_base_radius < smaller))
+        THEN RETURN(FALSE);
         END_IF;
       END;
     END_IF;

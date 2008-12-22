@@ -39,10 +39,52 @@ import jsdai.SClassification_with_attributes_mim.CCharacterized_class;
 import jsdai.SClassification_with_attributes_mim.EClass_system;
 import jsdai.SIdentification_assignment_mim.*;
 import jsdai.SManagement_resources_schema.*;
+import jsdai.SProduct_property_definition_schema.ECharacterized_object;
 
 public class CxClass_with_attributes extends CClass_with_attributes implements EMappedXIMEntity
 {
 
+	// Taken from Characterized_object
+	/// methods for attribute: name, base type: STRING
+	public boolean testName(ECharacterized_object type) throws SdaiException {
+		return test_string(a3);
+	}
+	public String getName(ECharacterized_object type) throws SdaiException {
+		return get_string(a3);
+	}
+	public void setName(ECharacterized_object type, String value) throws SdaiException {
+		a3 = set_string(value);
+	}
+	public void unsetName(ECharacterized_object type) throws SdaiException {
+		a3 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(ECharacterized_object type) throws SdaiException {
+		return a3$;
+	}
+
+	//going through all the attributes: #5629499534229132=EXPLICIT_ATTRIBUTE('description',#5629499534229129,1,#5629499534229328,$,.T.);
+	//<01> generating methods for consolidated attribute:  description
+	//<01-0> current entity
+	//<01-0-0> explicit attribute - generateExplicitCurrentEntityMethodsX()
+	/// methods for attribute: description, base type: STRING
+	public boolean testDescription(ECharacterized_object type) throws SdaiException {
+		return test_string(a4);
+	}
+	public String getDescription(ECharacterized_object type) throws SdaiException {
+		return get_string(a4);
+	}
+	public void setDescription(ECharacterized_object type, String value) throws SdaiException {
+		a4 = set_string(value);
+	}
+	public void unsetDescription(ECharacterized_object type) throws SdaiException {
+		a4 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeDescription(ECharacterized_object type) throws SdaiException {
+		return a4$;
+	}
+	
+	// ENDOF from Characterized_object
+	
 	public int attributeState = ATTRIBUTES_MODIFIED;	
 
 	public void createAimData(SdaiContext context) throws SdaiException {
@@ -103,6 +145,8 @@ public class CxClass_with_attributes extends CClass_with_attributes implements E
 	public static void setMappingConstraints(SdaiContext context, EClass_with_attributes armEntity) throws SdaiException
 	{
 		unsetMappingConstraints(context, armEntity);
+		// AIM gap
+		armEntity.setName((ECharacterized_object)null, "");
 	}
 
 	public static void unsetMappingConstraints(SdaiContext context, EClass_with_attributes armEntity) throws SdaiException

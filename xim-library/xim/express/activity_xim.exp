@@ -50,8 +50,9 @@ USE FROM support_resource_schema(identifier);
 USE FROM Activity_mim;
 
 ENTITY Activity
-	(* CONNOTATIONAL *) SUBTYPE OF (Executed_action);
+	(* CONNOTATIONAL *) SUBTYPE OF (executed_action);
   	id_x : STRING;
+  	status: OPTIONAL STRING;
   DERIVE
   	SELF\Action.id : identifier := id_x;
 END_ENTITY;
@@ -71,12 +72,33 @@ ENTITY Applied_activity_assignment
 	(* CONNOTATIONAL *) SUBTYPE OF (Applied_action_assignment);
   	SELF\Action_assignment.assigned_action RENAMED assigned_activity : Activity;
   	role_x : STRING;
--- impossible to have this way  	
---  DERIVE
---  	SELF\Action_assignment.role : object_role := role_x;
-  
+DERIVE
+   SELF\action_assignment.role : object_role := object_role(role_x, ?);
 END_ENTITY;
 
+ENTITY Applied_activity_assignment__input
+  SUBTYPE OF (Applied_activity_assignment);
+DERIVE
+  SELF\Applied_activity_assignment.role_x : STRING := 'input';
+END_ENTITY;
+
+ENTITY Applied_activity_assignment__target
+  SUBTYPE OF (Applied_activity_assignment);
+DERIVE
+  SELF\Applied_activity_assignment.role_x : STRING := 'target';
+END_ENTITY;
+
+ENTITY Applied_activity_assignment__output
+  SUBTYPE OF (Applied_activity_assignment);
+DERIVE
+  SELF\Applied_activity_assignment.role_x : STRING := 'output';
+END_ENTITY;
+
+ENTITY applied_activity_assignment__constraint
+  SUBTYPE OF (Applied_activity_assignment);
+DERIVE
+  SELF\Applied_activity_assignment.role_x : STRING := 'constraint';
+END_ENTITY;
 
 END_SCHEMA;
 

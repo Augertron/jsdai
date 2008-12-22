@@ -31,7 +31,7 @@ package jsdai.SPrinted_physical_layout_template_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.SPhysical_layout_template_xim.*;
+import jsdai.SPart_template_xim.*;
 import jsdai.SPrinted_physical_layout_template_mim.CPrinted_connector_template;
 import jsdai.SProduct_definition_schema.EProduct_definition;
 import jsdai.SProduct_property_definition_schema.EProperty_definition;
