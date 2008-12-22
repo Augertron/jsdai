@@ -8085,12 +8085,16 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 		}
 		int i;
 		Object [] myDataA;
+		CEntity to_ent;
 		if (myType == null || myType.express_type == DataType.LIST) {
 			ListElement element;
 			if (sel_number <= 0) {
 				if (myLength == 1) {
 					if (myData instanceof CEntity) {
-						((CEntity)myData).inverseRemoveAll(owning_instance);
+						to_ent = (CEntity)myData;
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							to_ent.inverseRemoveAll(owning_instance);
+						}
 					} else if (myData instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myData).disconnect();
 					} else if (myData instanceof CAggregate) {
@@ -8100,7 +8104,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					myDataA = (Object [])myData;
 					for (i = 0; i < 2; i++) {
 						if (myDataA[i] instanceof CEntity) {
-							((CEntity)myDataA[i]).inverseRemoveAll(owning_instance);
+							to_ent = (CEntity)myDataA[i];
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+								to_ent.inverseRemoveAll(owning_instance);
+							}
 						} else if (myDataA[i] instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)myDataA[i]).disconnect();
 						} else if (myDataA[i] instanceof CAggregate) {
@@ -8116,7 +8123,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					}
 					while (element != null) {
 						if (element.object instanceof CEntity) {
-							((CEntity)element.object).inverseRemoveAll(owning_instance);
+							to_ent = (CEntity)element.object;
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+								to_ent.inverseRemoveAll(owning_instance);
+							}
 						} else if (element.object instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)element.object).disconnect();
 						} else if (element.object instanceof CAggregate) {
@@ -8129,7 +8139,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				if (myLength == 1) {
 					myDataA = (Object [])myData;
 					if (myDataA[0] instanceof CEntity) {
-						((CEntity)myDataA[0]).inverseRemoveAll(owning_instance);
+						to_ent = (CEntity)myDataA[0];
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							to_ent.inverseRemoveAll(owning_instance);
+						}
 					} else if (myDataA[0] instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myDataA[0]).disconnect();
 					} else if (myDataA[0] instanceof CAggregate) {
@@ -8144,7 +8157,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					}
 					while (element != null) {
 						if (element.object instanceof CEntity) {
-							((CEntity)element.object).inverseRemoveAll(owning_instance);
+							to_ent = (CEntity)element.object;
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+								to_ent.inverseRemoveAll(owning_instance);
+							}
 						} else if (element.object instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)element.object).disconnect();
 						} else if (element.object instanceof CAggregate) {
@@ -8158,7 +8174,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			if (sel_number <= 0) {
 				if (myLength == 1) {
 					if (myData instanceof CEntity) {
-						((CEntity)myData).inverseRemoveAll(owning_instance);
+						to_ent = (CEntity)myData;
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							to_ent.inverseRemoveAll(owning_instance);
+						}
 					} else if (myData instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myData).disconnect();
 					} else if (myData instanceof CAggregate) {
@@ -8168,7 +8187,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					myDataA = (Object [])myData;
 					for (i = 0; i < myLength; i++) {
 						if (myDataA[i] instanceof CEntity) {
-							((CEntity)myDataA[i]).inverseRemoveAll(owning_instance);
+							to_ent = (CEntity)myDataA[i];
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+								to_ent.inverseRemoveAll(owning_instance);
+							}
 						} else if (myDataA[i] instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)myDataA[i]).disconnect();
 						} else if (myDataA[i] instanceof CAggregate) {
@@ -8181,7 +8203,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				for (i = 0; i < myLength; i++) {
 					int index = i * 2;
 					if (myDataA[index] instanceof CEntity) {
-						((CEntity)myDataA[index]).inverseRemoveAll(owning_instance);
+						to_ent = (CEntity)myDataA[index];
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							to_ent.inverseRemoveAll(owning_instance);
+						}
 					} else if (myDataA[index] instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myDataA[index]).disconnect();
 					} else if (myDataA[index] instanceof CAggregate) {
@@ -8217,12 +8242,16 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 		}
 		int i;
 		Object [] myDataA;
+		CEntity to_ent;
 		if (myType == null || myType.express_type == DataType.LIST) {
 			ListElement element;
 			if (sel_number <= 0) {
 				if (myLength == 1) {
 					if (myData instanceof CEntity) {
-						((CEntity)myData).inverseRemoveAll(instance);
+						to_ent = (CEntity)myData;
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							to_ent.inverseRemoveAll(instance);
+						}
 					} else if (myData instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myData).disconnect();
 					} else if (myData instanceof CAggregate) {
@@ -8232,7 +8261,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					myDataA = (Object [])myData;
 					for (i = 0; i < 2; i++) {
 						if (myDataA[i] instanceof CEntity) {
-							((CEntity)myDataA[i]).inverseRemoveAll(instance);
+							to_ent = (CEntity)myDataA[i];
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+								to_ent.inverseRemoveAll(instance);
+							}
 						} else if (myDataA[i] instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)myDataA[i]).disconnect();
 						} else if (myDataA[i] instanceof CAggregate) {
@@ -8248,7 +8280,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					}
 					while (element != null) {
 						if (element.object instanceof CEntity) {
-							((CEntity)element.object).inverseRemoveAll(instance);
+							to_ent = (CEntity)element.object;
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+								to_ent.inverseRemoveAll(instance);
+							}
 						} else if (element.object instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)element.object).disconnect();
 						} else if (element.object instanceof CAggregate) {
@@ -8261,7 +8296,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				if (myLength == 1) {
 					myDataA = (Object [])myData;
 					if (myDataA[0] instanceof CEntity) {
-						((CEntity)myDataA[0]).inverseRemoveAll(instance);
+						to_ent = (CEntity)myDataA[0];
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							to_ent.inverseRemoveAll(instance);
+						}
 					} else if (myDataA[0] instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myDataA[0]).disconnect();
 					} else if (myDataA[0] instanceof CAggregate) {
@@ -8276,7 +8314,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					}
 					while (element != null) {
 						if (element.object instanceof CEntity) {
-							((CEntity)element.object).inverseRemoveAll(instance);
+							to_ent = (CEntity)element.object;
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+								to_ent.inverseRemoveAll(instance);
+							}
 						} else if (element.object instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)element.object).disconnect();
 						} else if (element.object instanceof CAggregate) {
@@ -8290,7 +8331,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			if (sel_number <= 0) {
 				if (myLength == 1) {
 					if (myData instanceof CEntity) {
-						((CEntity)myData).inverseRemoveAll(instance);
+						to_ent = (CEntity)myData;
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							to_ent.inverseRemoveAll(instance);
+						}
 					} else if (myData instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myData).disconnect();
 					} else if (myData instanceof CAggregate) {
@@ -8300,7 +8344,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					myDataA = (Object [])myData;
 					for (i = 0; i < myLength; i++) {
 						if (myDataA[i] instanceof CEntity) {
-							((CEntity)myDataA[i]).inverseRemoveAll(instance);
+							to_ent = (CEntity)myDataA[i];
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+								to_ent.inverseRemoveAll(instance);
+							}
 						} else if (myDataA[i] instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)myDataA[i]).disconnect();
 						} else if (myDataA[i] instanceof CAggregate) {
@@ -8313,7 +8360,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				for (i = 0; i < myLength; i++) {
 					int index = i * 2;
 					if (myDataA[index] instanceof CEntity) {
-						((CEntity)myDataA[index]).inverseRemoveAll(instance);
+						to_ent = (CEntity)myDataA[index];
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							to_ent.inverseRemoveAll(instance);
+						}
 					} else if (myDataA[index] instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myDataA[index]).disconnect();
 					} else if (myDataA[index] instanceof CAggregate) {
@@ -8348,12 +8398,16 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 		}
 		int i;
 		Object [] myDataA;
+		CEntity to_ent;
 		if (myType == null || myType.express_type == DataType.LIST) {
 			ListElement element;
 			if (sel_number <= 0) {
 				if (myLength == 1) {
 					if (myData instanceof CEntity) {
-						((CEntity)myData).inverseRemove(owning_instance);
+						to_ent = (CEntity)myData;
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							to_ent.inverseRemove(owning_instance);
+						}
 					} else if (myData instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myData).disconnect();
 					} else if (myData instanceof CAggregate) {
@@ -8363,7 +8417,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					myDataA = (Object [])myData;
 					for (i = 0; i < 2; i++) {
 						if (myDataA[i] instanceof CEntity) {
-							((CEntity)myDataA[i]).inverseRemove(owning_instance);
+							to_ent = (CEntity)myDataA[i];
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+								to_ent.inverseRemove(owning_instance);
+							}
 						} else if (myDataA[i] instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)myDataA[i]).disconnect();
 						} else if (myDataA[i] instanceof CAggregate) {
@@ -8379,7 +8436,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					}
 					while (element != null) {
 						if (element.object instanceof CEntity) {
-							((CEntity)element.object).inverseRemove(owning_instance);
+							to_ent = (CEntity)element.object;
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+								to_ent.inverseRemove(owning_instance);
+							}
 						} else if (element.object instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)element.object).disconnect();
 						} else if (element.object instanceof CAggregate) {
@@ -8392,7 +8452,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				if (myLength == 1) {
 					myDataA = (Object [])myData;
 					if (myDataA[0] instanceof CEntity) {
-						((CEntity)myDataA[0]).inverseRemove(owning_instance);
+						to_ent = (CEntity)myDataA[0];
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							to_ent.inverseRemove(owning_instance);
+						}
 					} else if (myDataA[0] instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myDataA[0]).disconnect();
 					} else if (myDataA[0] instanceof CAggregate) {
@@ -8407,7 +8470,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					}
 					while (element != null) {
 						if (element.object instanceof CEntity) {
-							((CEntity)element.object).inverseRemove(owning_instance);
+							to_ent = (CEntity)element.object;
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+								to_ent.inverseRemove(owning_instance);
+							}
 						} else if (element.object instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)element.object).disconnect();
 						} else if (element.object instanceof CAggregate) {
@@ -8421,7 +8487,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			if (sel_number <= 0) {
 				if (myLength == 1) {
 					if (myData instanceof CEntity) {
-						((CEntity)myData).inverseRemove(owning_instance);
+						to_ent = (CEntity)myData;
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							to_ent.inverseRemove(owning_instance);
+						}
 					} else if (myData instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myData).disconnect();
 					} else if (myData instanceof CAggregate) {
@@ -8431,7 +8500,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					myDataA = (Object [])myData;
 					for (i = 0; i < myLength; i++) {
 						if (myDataA[i] instanceof CEntity) {
-							((CEntity)myDataA[i]).inverseRemove(owning_instance);
+							to_ent = (CEntity)myDataA[i];
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+								to_ent.inverseRemove(owning_instance);
+							}
 						} else if (myDataA[i] instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)myDataA[i]).disconnect();
 						} else if (myDataA[i] instanceof CAggregate) {
@@ -8444,7 +8516,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				for (i = 0; i < myLength; i++) {
 					int index = i * 2;
 					if (myDataA[index] instanceof CEntity) {
-						((CEntity)myDataA[index]).inverseRemove(owning_instance);
+						to_ent = (CEntity)myDataA[index];
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							to_ent.inverseRemove(owning_instance);
+						}
 					} else if (myDataA[index] instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myDataA[index]).disconnect();
 					} else if (myDataA[index] instanceof CAggregate) {

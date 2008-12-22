@@ -33,11 +33,11 @@ import jsdai.xml.InstanceReader;
 import jsdai.xml.SdaiInputSource;
 
 /**
- * The SchemaInstance class represents a logical collection of 
+ * The SchemaInstance class represents a logical collection of
  * <code>SdaiModel</code>s.
 
  * <p>
- * Conceptionally, the <code>SchemaInstance</code> can be represented by 
+ * Conceptionally, the <code>SchemaInstance</code> can be represented by
  * the following EXPRESS entity:
 
  * <P><TT><pre>ENTITY SchemaInstance;
@@ -69,13 +69,13 @@ import jsdai.xml.SdaiInputSource;
  *END_ENTITY;</TT></pre>
  * <P>
 
- * All attributes are read-only, and for each of them a corresponding 
- * <code>get</code> method (or methods sometimes) is defined. 
- * Both the <code>changeDate</code> and <code>validationDate</code> 
- * can be retrieved either as <code>String</code> or as <code>long</code>. 
- * Similarly, <code>nativeSchema</code> can be retrieved 
- * either as <code>ESchema_definition</code> or as <code>String</code>. 
- * For <code>preprocessorVersion</code>, <code>originatingSystem</code>, <code>authorization</code>, 
+ * All attributes are read-only, and for each of them a corresponding
+ * <code>get</code> method (or methods sometimes) is defined.
+ * Both the <code>changeDate</code> and <code>validationDate</code>
+ * can be retrieved either as <code>String</code> or as <code>long</code>.
+ * Similarly, <code>nativeSchema</code> can be retrieved
+ * either as <code>ESchema_definition</code> or as <code>String</code>.
+ * For <code>preprocessorVersion</code>, <code>originatingSystem</code>, <code>authorization</code>,
  * and <code>defaultLanguage</code> the corresponding <code>set</code> methods are given.
 
  * <p>
@@ -125,63 +125,65 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 	String authorization;
 
 /**
-	It is renamed attribute 'default_language' of the header entity 'section_language', 
+	It is renamed attribute 'default_language' of the header entity 'section_language',
 	see new edition of ISO 10303-21, clause 8.2.5.
 */
 	String language;
 
 /**
-	EXPRESS attribute of the header entity 'section_context', see new edition of 
+	EXPRESS attribute of the header entity 'section_context', see new edition of
 	ISO 10303-21, clause 8.2.6.
 */
 	A_string context_identifiers;
 
+	protected ASchemaInstance included_schemas;
+
 /**
-	Data dictionary model describing the same Express schema whose definition 
-	is given by the field 'native_schema'. In particular, the value of this 
+	Data dictionary model describing the same Express schema whose definition
+	is given by the field 'native_schema'. In particular, the value of this
 	field can be obtained from this model.
 */
 	SdaiModel dictionary;
 
 /**
-	Data dictionary model describing the Express schema for which this 
-	schema instance is created. Each Express schema having a directory in 
-	JSDAI library has its 'own' schema instance created during 
+	Data dictionary model describing the Express schema for which this
+	schema instance is created. Each Express schema having a directory in
+	JSDAI library has its 'own' schema instance created during
 	<code>openSession</code>.
 */
 	SdaiModel defining_schema_model;
 
 /**
-	An indicator used to set values for attributes of header entities 
+	An indicator used to set values for attributes of header entities
 	when reading an exchange structure (method importClearTextEncoding).
-	The value is 1 if schema instance is created during this process 
-	(in class PhFileReader) and the above mentioned values need to be set. 
-	The value is 2 if the above values already are set; this happens at 
+	The value is 1 if schema instance is created during this process
+	(in class PhFileReader) and the above mentioned values need to be set.
+	The value is 2 if the above values already are set; this happens at
 	the end of execution of moveDataAfterImportClearTextEncoding method
 	(in this class).
 */
 	int moved_data_status;
 
 /**
-	Has value 'true' if and only if something in the schema instance  
-	is modified (renamed, model added or removed, value to some field 
+	Has value 'true' if and only if something in the schema instance
+	is modified (renamed, model added or removed, value to some field
 	is assigned and so on).
 	The value is switched to 'false' during the commit operation.
 */
 	boolean modified;
 
 /**
-	Has value 'true' if modifications in the schema instance are 
-	because of its preparation during the import from the exchange 
+	Has value 'true' if modifications in the schema instance are
+	because of its preparation during the import from the exchange
 	structure (part 21 file).
 	The value is switched to 'false' during first commit operation.
 */
 	boolean modified_by_import;
 
 /**
-	Has value 'true' if the data of this SchemaInstance have been written 
-	to binary file (either in the current session using commit operation 
-	of SdaiTransaction or in previous sessions; in the latter case 
+	Has value 'true' if the data of this SchemaInstance have been written
+	to binary file (either in the current session using commit operation
+	of SdaiTransaction or in previous sessions; in the latter case
 	'true' is set within openRepository method).
 */
 	boolean committed;
@@ -192,17 +194,17 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 	boolean exists;
 
 /**
-	Has value 'true' when adding/removing of models to/from this 
-	SchemaInstance is allowed. This takes place only for 
-	"SDAI_DICTIONARY_SCHEMA_INSTANCE" and "SDAI_MAPPING_SCHEMA_INSTANCE" 
+	Has value 'true' when adding/removing of models to/from this
+	SchemaInstance is allowed. This takes place only for
+	"SDAI_DICTIONARY_SCHEMA_INSTANCE" and "SDAI_MAPPING_SCHEMA_INSTANCE"
 	in SystemRepository and only restricted time period during 'open session'
 	operation.
 */
 	boolean allow_model;
 
 /**
-	Has value "true" only when this schema instance was created after the 
-	last invocation of commit or abort operation, whichever of them 
+	Has value "true" only when this schema instance was created after the
+	last invocation of commit or abort operation, whichever of them
 	appeared more recently.
 */
 	boolean created;
@@ -267,10 +269,10 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 /**
 	Used in the following contexts:
 	- in createSchemaInstance method;
-	- to create schema instances with the names "SDAI_DICTIONARY_SCHEMA_INSTANCE" 
+	- to create schema instances with the names "SDAI_DICTIONARY_SCHEMA_INSTANCE"
 	  and "SDAI_MAPPING_SCHEMA_INSTANCE" in SystemRepository.
 */
-	protected SchemaInstance(String given_name, CSchema_definition schema, 
+	protected SchemaInstance(String given_name, CSchema_definition schema,
 							 SdaiRepository given_repository) throws SdaiException {
 		repository = given_repository;
 		initLocal(given_name, schema);
@@ -286,7 +288,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 /**
 	Used to create a SchemaInstance when reading a repository binary file.
 */
-	protected SchemaInstance(String given_name, SdaiRepository given_repository, 
+	protected SchemaInstance(String given_name, SdaiRepository given_repository,
 							 SdaiModel given_dictionary) throws SdaiException {
 		repository = given_repository;
 		initLocal(given_name, given_dictionary);
@@ -300,12 +302,12 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 
 /**
-	Used to create schema instances corresponding to the Express schemas 
-	in JSDAI library, while reading binary file 'repository' produced by 
-	Express compiler. More specifically, this constructor is invoked in 
+	Used to create schema instances corresponding to the Express schemas
+	in JSDAI library, while reading binary file 'repository' produced by
+	Express compiler. More specifically, this constructor is invoked in
 	method loadSchemaInstances in class SdaiRepository.
 */
-	protected SchemaInstance(String given_name, SdaiRepository given_repository, 
+	protected SchemaInstance(String given_name, SdaiRepository given_repository,
 							 SdaiModel given_dictionary, SdaiModel given_schema_model
 							 ) throws SdaiException {
 		repository = given_repository;
@@ -344,7 +346,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 	}
 
 
-/** 
+/**
  * Returns the name of the schema instance as a <code>String</code>.
  * <p> The schema instances within a <code>SdaiRepository</code> must have unique names.
  * @return the name of this <code>SchemaInstance</code>.
@@ -368,13 +370,13 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 /**
  * Returns an aggregate of strings <code>A_string</code> containing optional
- * descriptions about the <code>SchemaInstance</code>. 
- * <p> After invocation of 
- * {@link SdaiSession#importClearTextEncoding importClearTextEncoding} 
- * this aggregate within each <code>SchemaInstance</code> with which 
- * at least one <code>SdaiModel</code> in the resulting repository 
- * is associated contains strings taken from the field 
- * <code>description</code> of the entity 
+ * descriptions about the <code>SchemaInstance</code>.
+ * <p> After invocation of
+ * {@link SdaiSession#importClearTextEncoding importClearTextEncoding}
+ * this aggregate within each <code>SchemaInstance</code> with which
+ * at least one <code>SdaiModel</code> in the resulting repository
+ * is associated contains strings taken from the field
+ * <code>description</code> of the entity
  * <code>file_description</code> in the header of the exchange structure
  * (see ISO 10303-21::8.2.1 file_description).
  * During a read-write transaction the aggregate can be
@@ -399,23 +401,23 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 
 /**
- * Returns an aggregate of strings <code>A_string</code> identifying the person 
- * responsible for creating <code>SdaiModel</code>s associated with 
- * this schema instance. The aggregate shall have its name at the 
+ * Returns an aggregate of strings <code>A_string</code> identifying the person
+ * responsible for creating <code>SdaiModel</code>s associated with
+ * this schema instance. The aggregate shall have its name at the
  * first position and mail and/or email addresses at the following
  * positions.
- * <p> After invocation of 
- * {@link SdaiSession#importClearTextEncoding importClearTextEncoding} 
- * this aggregate within each <code>SchemaInstance</code> with which 
- * at least one <code>SdaiModel</code> in the resulting repository 
- * is associated contains strings taken from the field <code>author</code> 
- * of the entity <code>file_name</code> in the header of the exchange 
+ * <p> After invocation of
+ * {@link SdaiSession#importClearTextEncoding importClearTextEncoding}
+ * this aggregate within each <code>SchemaInstance</code> with which
+ * at least one <code>SdaiModel</code> in the resulting repository
+ * is associated contains strings taken from the field <code>author</code>
+ * of the entity <code>file_name</code> in the header of the exchange
  * structure (see ISO 10303-21::8.2.2 file_name).
  * During a read-write transaction the aggregate can be
  * modified by adding/modifying/removing its members.
  * It is a responsibility of the application to fill this aggregate with
  * useful information.
- * @return aggregate identifying an author of the <code>SdaiModel</code>s 
+ * @return aggregate identifying an author of the <code>SdaiModel</code>s
  * associated with this schema instance.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
  * @throws SdaiException RP_NOPN, repository is not open.
@@ -436,14 +438,14 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 
 /**
- * Returns an aggregate of strings <code>A_string</code> containing the 
+ * Returns an aggregate of strings <code>A_string</code> containing the
  * organizations with whom the author of this schema instance is associated.
- * <p> After invocation of 
- * {@link SdaiSession#importClearTextEncoding importClearTextEncoding} 
- * this aggregate within each <code>SchemaInstance</code> with which 
- * at least one <code>SdaiModel</code> in the resulting repository 
- * is associated contains strings taken from the field <code>organization</code> 
- * of the entity <code>file_name</code> in the header of the exchange 
+ * <p> After invocation of
+ * {@link SdaiSession#importClearTextEncoding importClearTextEncoding}
+ * this aggregate within each <code>SchemaInstance</code> with which
+ * at least one <code>SdaiModel</code> in the resulting repository
+ * is associated contains strings taken from the field <code>organization</code>
+ * of the entity <code>file_name</code> in the header of the exchange
  * structure (see ISO 10303-21::8.2.2 file_name).
  * During a read-write transaction the aggregate can be
  * modified by adding/modifying/removing its members.
@@ -469,17 +471,17 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 
 /**
- * Returns a <code>String</code> characterizing the system used to 
+ * Returns a <code>String</code> characterizing the system used to
  * build <code>SdaiModel</code>s associated with this schema instance.
- * <p> After invocation of 
- * {@link SdaiSession#importClearTextEncoding importClearTextEncoding} 
- * this string within each <code>SchemaInstance</code> with which 
- * at least one <code>SdaiModel</code> in the resulting repository 
- * is associated has value taken from the field 
- * <code>preprocessor_version</code> of the entity 
+ * <p> After invocation of
+ * {@link SdaiSession#importClearTextEncoding importClearTextEncoding}
+ * this string within each <code>SchemaInstance</code> with which
+ * at least one <code>SdaiModel</code> in the resulting repository
+ * is associated has value taken from the field
+ * <code>preprocessor_version</code> of the entity
  * <code>file_name</code> in the header of the exchange structure
  * (see ISO 10303-21::8.2.2 file_name).
- * @return string describing the system used to build 
+ * @return string describing the system used to build
  * <code>SdaiModel</code>s associated with this schema instance.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
  * @throws SdaiException RP_NOPN, repository is not open.
@@ -498,12 +500,12 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 
 /**
- * Assigns a <code>String</code> value to the attribute characterizing 
- * the system used to build <code>SdaiModel</code>s associated with 
+ * Assigns a <code>String</code> value to the attribute characterizing
+ * the system used to build <code>SdaiModel</code>s associated with
  * this schema instance.
- * This assignment is allowed only if the repository containing 
+ * This assignment is allowed only if the repository containing
  * this schema instance is open.
- * @param value string describing the system used to build <code>SdaiModel</code>s 
+ * @param value string describing the system used to build <code>SdaiModel</code>s
  * associated with this schema instance.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
  * @throws SdaiException RP_NOPN, repository is not open.
@@ -527,18 +529,18 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 
 /**
- * Returns a <code>String</code> characterizing the system from  
- * which the data contained in <code>SdaiModel</code>s 
+ * Returns a <code>String</code> characterizing the system from
+ * which the data contained in <code>SdaiModel</code>s
  * associated with this schema instance are originated.
- * <p> After invocation of 
- * {@link SdaiSession#importClearTextEncoding importClearTextEncoding} 
- * this string within each <code>SchemaInstance</code> with which 
- * at least one <code>SdaiModel</code> in the resulting repository 
- * is associated has value taken from the field 
- * <code>originating_system</code> of the entity 
+ * <p> After invocation of
+ * {@link SdaiSession#importClearTextEncoding importClearTextEncoding}
+ * this string within each <code>SchemaInstance</code> with which
+ * at least one <code>SdaiModel</code> in the resulting repository
+ * is associated has value taken from the field
+ * <code>originating_system</code> of the entity
  * <code>file_name</code> in the header of the exchange structure
  * (see ISO 10303-21::8.2.2 file_name).
- * @return string describing the system that is a source of the data 
+ * @return string describing the system that is a source of the data
  * in <code>SdaiModel</code>s associated with this schema instance.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
  * @throws SdaiException RP_NOPN, repository is not open.
@@ -557,12 +559,12 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 
 /**
- * Assigns a <code>String</code> value to the attribute characterizing 
- * the system from which the data contained in <code>SdaiModel</code>s 
+ * Assigns a <code>String</code> value to the attribute characterizing
+ * the system from which the data contained in <code>SdaiModel</code>s
  * associated with this schema instance are originated.
- * This assignment is allowed only if the repository containing 
+ * This assignment is allowed only if the repository containing
  * this schema instance is open.
- * @param value string describing the system that is a source of the data 
+ * @param value string describing the system that is a source of the data
  * in <code>SdaiModel</code>s associated with this schema instance.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
  * @throws SdaiException RP_NOPN, repository is not open.
@@ -587,14 +589,14 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 /**
  * Returns a <code>String</code> containing the name and mailing address
- * of the person who authorizes the data contained in <code>SdaiModel</code>s 
+ * of the person who authorizes the data contained in <code>SdaiModel</code>s
  * associated with this schema instance.
- * <p> After invocation of 
- * {@link SdaiSession#importClearTextEncoding importClearTextEncoding} 
- * this string within each <code>SchemaInstance</code> with which 
- * at least one <code>SdaiModel</code> in the resulting repository 
+ * <p> After invocation of
+ * {@link SdaiSession#importClearTextEncoding importClearTextEncoding}
+ * this string within each <code>SchemaInstance</code> with which
+ * at least one <code>SdaiModel</code> in the resulting repository
  * is associated has value taken from the field
- * <code>authorization</code> of the entity <code>file_name</code> in 
+ * <code>authorization</code> of the entity <code>file_name</code> in
  * the header of the exchange structure (see ISO 10303-21::8.2.2 file_name).
  * @return string describing the person who authorizes this schema instance.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
@@ -614,10 +616,10 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 
 /**
- * Assigns a <code>String</code> value to the attribute characterizing 
+ * Assigns a <code>String</code> value to the attribute characterizing
  * the person who authorizes the data contained in <code>SdaiModel</code>s
  * associated with this schema instance.
- * This assignment is allowed only if the repository containing 
+ * This assignment is allowed only if the repository containing
  * this schema instance is open.
  * @param value string describing the person who authorizes this schema instance.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
@@ -643,20 +645,20 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 /**
  * Returns a <code>String</code> identifying the default language
- * for string values in those <code>SdaiModel</code>s associated 
- * with this schema instance, for which their own default language 
+ * for string values in those <code>SdaiModel</code>s associated
+ * with this schema instance, for which their own default language
  * is not specified. More precisely, for a model, the default language
- * can be assigned individually. <code>String</code> returned by this 
- * method serves as a default language for those models for which 
+ * can be assigned individually. <code>String</code> returned by this
+ * method serves as a default language for those models for which
  * an individual assignment was not made.
- * <p> After invocation of 
- * {@link SdaiSession#importClearTextEncoding importClearTextEncoding} 
- * this string within each <code>SchemaInstance</code> with which 
- * at least one <code>SdaiModel</code> in the resulting repository 
- * is associated can take value extracted from the header of the exchange structure 
- * (see ISO 10303-21::8.2.4 section_language) provided 
+ * <p> After invocation of
+ * {@link SdaiSession#importClearTextEncoding importClearTextEncoding}
+ * this string within each <code>SchemaInstance</code> with which
+ * at least one <code>SdaiModel</code> in the resulting repository
+ * is associated can take value extracted from the header of the exchange structure
+ * (see ISO 10303-21::8.2.4 section_language) provided
  * an appropriate value is given there (otherwise it is set to null).
- * @return <code>String</code> identifying the default language for string 
+ * @return <code>String</code> identifying the default language for string
  * values in <code>SdaiModel</code>s associated with this schema instance.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
  * @throws SdaiException RP_NOPN, repository is not open.
@@ -677,13 +679,13 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 
 /**
- * Assigns a <code>String</code> to the attribute identifying 
- * the default language for string values in those <code>SdaiModel</code>s 
- * associated with this schema instance, 
+ * Assigns a <code>String</code> to the attribute identifying
+ * the default language for string values in those <code>SdaiModel</code>s
+ * associated with this schema instance,
  * for which their own default language is not specified.
- * This assignment is allowed only if the repository containing 
+ * This assignment is allowed only if the repository containing
  * this schema instance is open.
- * @param value <code>String</code> identifying the default language for string 
+ * @param value <code>String</code> identifying the default language for string
  * values in <code>SdaiModel</code>s associated with this schema instance.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
  * @throws SdaiException RP_NOPN, repository is not open.
@@ -706,23 +708,23 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 /**
  * Returns an aggregate <code>A_string</code> containing information
- * describing the contexts within which the instances in the 
- * <code>SdaiModel</code>s associated with this schema instance are applicable. 
- * Both the schema instance and each model associated with it have 
+ * describing the contexts within which the instances in the
+ * <code>SdaiModel</code>s associated with this schema instance are applicable.
+ * Both the schema instance and each model associated with it have
  * their own aggregates <code>A_string</code> for writing context identifiers.
- * But for those models, for which their own aggregate is empty, 
- * contexts are described by the aggregate returned by this method, 
+ * But for those models, for which their own aggregate is empty,
+ * contexts are described by the aggregate returned by this method,
  * that is, by the schema instance aggregate.
- * <p> After invocation of 
- * {@link SdaiSession#importClearTextEncoding importClearTextEncoding} 
- * this aggregate within each <code>SchemaInstance</code> with which 
- * at least one <code>SdaiModel</code> in the resulting repository 
- * is associated will contain information extracted from the header of the 
- * exchange structure (see ISO 10303-21::8.2.5 section_context) provided 
+ * <p> After invocation of
+ * {@link SdaiSession#importClearTextEncoding importClearTextEncoding}
+ * this aggregate within each <code>SchemaInstance</code> with which
+ * at least one <code>SdaiModel</code> in the resulting repository
+ * is associated will contain information extracted from the header of the
+ * exchange structure (see ISO 10303-21::8.2.5 section_context) provided
  * an appropriate information is given there.
  * During a read-write transaction the aggregate can be
  * modified by adding/modifying/removing its members.
- * @return aggregate containing information describing the contexts. 
+ * @return aggregate containing information describing the contexts.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
  * @throws SdaiException RP_NOPN, repository is not open.
  * @see SdaiModel#getContextIdentifiers
@@ -746,9 +748,9 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 	 * Returns this schema instance effective permission which determines
 	 * the model's access rights.
 	 * @return the effective permission
-	 * @throws SdaiException if an error occurs performing underlying JSDAI operations  
+	 * @throws SdaiException if an error occurs performing underlying JSDAI operations
 	 * @see #checkRead
-	 * @see #checkWrite 
+	 * @see #checkWrite
 	 * @see SdaiPermission
 	 * @since 4.0.1
 	 */
@@ -760,9 +762,9 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 	 * with no action.
 	 * @throws SdaiException <code>SY_SEC</code> if the owning session is
 	 *         not granted the read access
-	 * @throws SdaiException if an error occurs performing underlying JSDAI operations  
+	 * @throws SdaiException if an error occurs performing underlying JSDAI operations
 	 * @see #checkPermission
-	 * @see #checkWrite 
+	 * @see #checkWrite
 	 * @see SdaiPermission
 	 * @since 4.0.1
 	 */
@@ -774,7 +776,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 	 * with no action.
 	 * @throws SdaiException <code>SY_SEC</code> if the owning session is
 	 *         not granted the write access
-	 * @throws SdaiException if an error occurs performing underlying JSDAI operations  
+	 * @throws SdaiException if an error occurs performing underlying JSDAI operations
 	 * @see #checkPermission
 	 * @see #checkRead
 	 * @see SdaiPermission
@@ -783,9 +785,9 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 	public abstract void checkWrite() throws SdaiException;
 
 /**
-	Method is used to set values for attributes of header entities 
+	Method is used to set values for attributes of header entities
 	when reading an exchange structure (method importClearTextEncoding).
-	It is invoked only once, in the class PhFileReader, for a schema 
+	It is invoked only once, in the class PhFileReader, for a schema
 	instances for which the indicator 'moved_data_status' has value 1.
 */
 	void moveDataAfterImportClearTextEncoding() throws SdaiException {
@@ -834,9 +836,9 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 
 /**
- * Returns the set of <code>SdaiModel</code>s associated with this 
+ * Returns the set of <code>SdaiModel</code>s associated with this
  * schema instance.
- * An <code>SdaiModel</code> may be associated with no, one or 
+ * An <code>SdaiModel</code> may be associated with no, one or
  * several schema instances.
  * @return the set of models associated with this schema instance.
  * @throws SdaiException RP_NOPN, repository is not open.
@@ -927,7 +929,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 		modified = modif;
 	}
 
-/** 
+/**
  * Returns the name of the schema upon which this schema instance is based.
  * @return the name of the native schema for this schema instance.
  * @throws SdaiException RP_NOPN, repository is not open.
@@ -956,7 +958,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 	}
 
 
-/** 
+/**
  * Returns definition of the schema upon which this schema instance is based.
  * @return native schema definition for this schema instance.
  * @throws SdaiException RP_NOPN, repository is not open.
@@ -1024,15 +1026,15 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 /**
  * Puts definition of the Express schema upon which this schema instance will be based.
  * As a consequence of this operation, new <code>change_date</code> is set.
- * The value submitted to the parameter during invocation of the method shall be 
- * a special java class with the name constructed from the schema name. This class 
+ * The value submitted to the parameter during invocation of the method shall be
+ * a special java class with the name constructed from the schema name. This class
  * is contained in the package corresponding to the schema of interest.
- * For example, if the schema name is "geometry_schema", then the package name is 
- * "jsdai.SGeometry_schema" and the value for the parameter shall 
+ * For example, if the schema name is "geometry_schema", then the package name is
+ * "jsdai.SGeometry_schema" and the value for the parameter shall
  * be "jsdai.SGeometry_schema.SGeometry_schema.class".
  * Passing null value to the method's
  * parameter results in SdaiException SD_NDEF.
- * @param schema_def Java class for the Express schema which has to be 
+ * @param schema_def Java class for the Express schema which has to be
  * established as a native schema for this schema instance.
  * @throws SdaiException RP_NOPN, repository is not open.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
@@ -1062,7 +1064,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 	}
 
 
-/** 
+/**
  * Returns the <code>SdaiRepository</code> to which this schema instance belongs.
  * @return the owning repository.
  * @throws SdaiException RP_NOPN, repository is not open.
@@ -1079,10 +1081,10 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 	}
 
 
-/** 
- * Checks if the creation date or date of the most recent 
+/**
+ * Checks if the creation date or date of the most recent
  * modification of the aggregate "associated_models" was set.
- * @return <code>true</code> if the date was set, and 
+ * @return <code>true</code> if the date was set, and
  * <code>false</code> otherwise.
  * @throws SdaiException RP_NOPN, repository is not open.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
@@ -1105,7 +1107,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 
 /**
- * Returns the date and time when this <code>SchemaInstance</code> was 
+ * Returns the date and time when this <code>SchemaInstance</code> was
  * created or its aggregate "associated_models" most recently modified.
  * @return a <code>String</code> representing the date and time.
  * @throws SdaiException RP_NOPN, repository is not open.
@@ -1132,7 +1134,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 
 /**
- * Returns a <code>long</code> value of the date and time when 
+ * Returns a <code>long</code> value of the date and time when
  * this <code>SchemaInstance</code> was created or its aggregate
  * "associated_models" most recently modified.
  * @return a <code>long</code> representing the date and time.
@@ -1247,21 +1249,21 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 	}
 
 
-/** 
+/**
  * Returns definition of the Express schema represented by this schema instance.
- * Each Express schema having a directory in JSDAI library has its 'own' 
+ * Each Express schema having a directory in JSDAI library has its 'own'
  * schema instance created during <code>openSession</code>.
- * The name of the schema instance is the same as that of the related 
+ * The name of the schema instance is the same as that of the related
  * Express schema.
- * The set <code>associated_models</code> of such a schema instance 
- * for an Express schema consists of all data dictionary models containing 
- * definition of at least one entity (or defined type) either defined, 
- * or declared(through USED or REFERENCED) or 
+ * The set <code>associated_models</code> of such a schema instance
+ * for an Express schema consists of all data dictionary models containing
+ * definition of at least one entity (or defined type) either defined,
+ * or declared(through USED or REFERENCED) or
  * implicitly interfaced in this Express schema.
  * All such schema instances belong to SystemRepository.
- * If method is applied to schema instance of different kind, 
+ * If method is applied to schema instance of different kind,
  * then SdaiException FN_NAVL is thrown.
- * @return schema definition for the Express schema represented 
+ * @return schema definition for the Express schema represented
  * by this schema instance.
  * @throws SdaiException RP_NOPN, repository is not open.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
@@ -1311,7 +1313,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 	}
 
 	/**
-	 * This method should be always overridden by remote repository 
+	 * This method should be always overridden by remote repository
 	 */
 	protected String doGetLockingUser() throws SdaiException {
 		return null;
@@ -1319,7 +1321,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 /**
  * Deletes this <code>SchemaInstance</code>.
- * <p> Deleting of a <code>SchemaInstance</code> from "SystemRepository" 
+ * <p> Deleting of a <code>SchemaInstance</code> from "SystemRepository"
  * is forbidden. In this case, SdaiException VT_NVLD is thrown.
  * @throws SdaiException TR_NEXS, transaction does not exist.
  * @throws SdaiException TR_NRW, transaction not read-write.
@@ -1328,7 +1330,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
  * @throws SdaiException SI_NEXS, schema instance does not exist.
  * @throws SdaiException VT_NVLD, value type invalid.
  * @throws SdaiException RP_RO, read-only access to repository.
- * @throws SdaiException RP_LOCK, repository locked by another user. 
+ * @throws SdaiException RP_LOCK, repository locked by another user.
  * @throws SdaiException SY_ERR,  underlying system error.
  * @see "ISO 10303-22::10.6.1 Delete schema instance"
  */
@@ -1370,15 +1372,15 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 		}
 		repository = null;
 	}
-	
+
 
 /**
  * Assigns a new name to this <code>SchemaInstance</code>.
- * This new name must differ from the names of other schema instances in the 
+ * This new name must differ from the names of other schema instances in the
  * same <code>SdaiRepository</code>. If this condition is violated, then
- * SdaiException SI_DUP is thrown. Passing null value to the method's 
+ * SdaiException SI_DUP is thrown. Passing null value to the method's
  * parameter results in SdaiException VA_NSET.
- * <p> Renaming of a <code>SchemaInstance</code> from "SystemRepository" 
+ * <p> Renaming of a <code>SchemaInstance</code> from "SystemRepository"
  * is forbidden.
  * In the case of such an attempt, SdaiException VT_NVLD is thrown.
  * @param provided_name new name of this schema instance.
@@ -1391,7 +1393,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
  * @throws SdaiException VT_NVLD, value type invalid.
  * @throws SdaiException VA_NSET, value not set.
  * @throws SdaiException RP_RO, read-only access to repository.
- * @throws SdaiException RP_LOCK, repository locked by another user. 
+ * @throws SdaiException RP_LOCK, repository locked by another user.
  * @throws SdaiException SY_ERR,  underlying system error.
  * @see "ISO 10303-22::10.6.2 Rename schema instance"
  */
@@ -1423,27 +1425,27 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 		}
 		if((repository.location!=null)&& (((String)repository.location).startsWith(session.LOCATION_PREFIX))) {
 			try {  //Checking for access rigths to repository
-				repository.ostream.writeByte('W');		
+				repository.ostream.writeByte('W');
 				if(repository.istream.readByte()==0) {
 					throw new SdaiException(SdaiException.RP_RO);
-				}	
-				repository.ostream.writeUTF(name);		
+				}
+				repository.ostream.writeUTF(name);
 				int result = repository.istream.readByte();
 				if(result==0) {
 					throw new SdaiException(SdaiException.RP_RO);
-				}	
+				}
 				if(result==-3) {
 					throw new SdaiException(SdaiException.SI_NEXS);
-				}	
+				}
 				if(result == -5) {
 					throw new SdaiException(SdaiException.RP_LOCK);
-				}	
-				repository.ostream.writeUTF(provided_name);		
+				}
+				repository.ostream.writeUTF(provided_name);
 			}  catch (IOException ex) {
 				String base = SdaiSession.line_separator + AdditionalMessages.NE_IOEX;
 				throw new SdaiException(SdaiException.SY_ERR, base);
-			}			
-		}	
+			}
+		}
 
 		repository.internal_usage = true;
 		SchemaInstance sch_inst = repository.findSchemaInstance(provided_name);
@@ -1454,10 +1456,10 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 		repository.correctSchemaInstancePosition(name, provided_name);
 		name = provided_name;
 		modified = true;
-/*		if(repository.location!=null) { 
+/*		if(repository.location!=null) {
 			if(((String)repository.location).startsWith(session.LOCATION_PREFIX)) {
 				repository.saveContentsStream(repository.ostream);
-			}	
+			}
 		}	*/
 //		} // syncObject
 	}
@@ -1468,7 +1470,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
  * that are associated with this schema instance.
  * If null value is passed to the method's parameter,
  * then SdaiException VA_NSET is thrown.
- * <p> Adding a model to a <code>SchemaInstance</code> in "SystemRepository" 
+ * <p> Adding a model to a <code>SchemaInstance</code> in "SystemRepository"
  * is forbidden.
  * In the case of such an attempt, SdaiException VT_NVLD is thrown.
  * @param model the <code>SdaiModel</code> submitted to associate with
@@ -1481,7 +1483,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
  * @throws SdaiException VT_NVLD, value type invalid.
  * @throws SdaiException VA_NSET, value not set.
  * @throws SdaiException RP_RO, read-only access to repository.
- * @throws SdaiException RP_LOCK, repository locked by another user. 
+ * @throws SdaiException RP_LOCK, repository locked by another user.
  * @throws SdaiException SY_ERR,  underlying system error.
  * @see "ISO 10303-22::10.6.3 Add SDAI-model"
  */
@@ -1523,7 +1525,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
  * that are associated with this schema instance.
  * If null value is passed to the method's parameter,
  * then SdaiException VA_NSET is thrown.
- * <p> Removing a model from a <code>SchemaInstance</code> in "SystemRepository" 
+ * <p> Removing a model from a <code>SchemaInstance</code> in "SystemRepository"
  * is forbidden.
  * In the case of such an attempt, SdaiException VT_NVLD is thrown.
  * @param model the <code>SdaiModel</code> that is to be removed
@@ -1536,7 +1538,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
  * @throws SdaiException VT_NVLD, value type invalid.
  * @throws SdaiException VA_NSET, value not set.
  * @throws SdaiException RP_RO, read-only access to repository.
- * @throws SdaiException RP_LOCK, repository locked by another user. 
+ * @throws SdaiException RP_LOCK, repository locked by another user.
  * @throws SdaiException SY_ERR,  underlying system error.
  * @see "ISO 10303-22::10.6.4 Remove SDAI-model"
  */
@@ -1649,13 +1651,13 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 	}
 
 /**
- * Determines if the submitted global rule is satisfied by the population 
- * associated with this <code>SchemaInstance</code>. Validation is performed 
- * for all entity instances of the entity types to which the specified global 
+ * Determines if the submitted global rule is satisfied by the population
+ * associated with this <code>SchemaInstance</code>. Validation is performed
+ * for all entity instances of the entity types to which the specified global
  * rule applies in all <code>SdaiModel</code>s associated with the schema instance.
  * @param rule the global rule to validate
- * @param nonConf the non-persistent list to which those instances of the 
- * entity <code>where_rule</code> within the validated global rule to which they did not 
+ * @param nonConf the non-persistent list to which those instances of the
+ * entity <code>where_rule</code> within the validated global rule to which they did not
  * conform are appended (if the return value is 1)
  * @return number 2 if global rule is satisfied, number 1 if it is violated,
  * and number 3 if evaluation value is indeterminate.
@@ -1701,7 +1703,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 		AWhere_rule where_rules = rule.getWhere_rules(null, null);
 		CWhere_rule [] w_rules_ord = ((GlobalRule)rule).getWhereRules(where_rules);
-//System.out.println("SchemaInstance    where_rules aggregation type: " + ((AEntity)where_rules).myType + 
+//System.out.println("SchemaInstance    where_rules aggregation type: " + ((AEntity)where_rules).myType +
 //"    count: " + where_rules.getMemberCount() + "   global rule: " + rule.getName(null));
 		if (param == null) {
 			param = new Class[1];
@@ -1790,13 +1792,13 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 
 /**
- * Determines if specified global rule is satisfied by the population 
- * associated with this <code>SchemaInstance</code>. Validation is performed 
- * for all entity instances of the entity types to which the specified global 
+ * Determines if specified global rule is satisfied by the population
+ * associated with this <code>SchemaInstance</code>. Validation is performed
+ * for all entity instances of the entity types to which the specified global
  * rule applies in all <code>SdaiModel</code>s associated with the schema instance.
  * @param rule the name of the global rule to validate
- * @param nonConf the non-persistent list to which those instances of the 
- * entity <code>where_rule</code> within the validated global rule to which they did not 
+ * @param nonConf the non-persistent list to which those instances of the
+ * entity <code>where_rule</code> within the validated global rule to which they did not
  * conform are appended (if the return value is 1)
  * @return number 2 if global rule is satisfied, number 1 if it is violated,
  * and number 3 if evaluation value is indeterminate.
@@ -1817,7 +1819,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 		SdaiModel model_dict = native_schema.modelDictionary;
 		CEntity [] instances = model_dict.instances_sim[SdaiSession.IMPLICIT_DECL_RULE_DECL];
 		for (i = 0; i < model_dict.lengths[SdaiSession.IMPLICIT_DECL_RULE_DECL]; i++) {
-			CImplicit_declaration$rule_declaration dec_impl = 
+			CImplicit_declaration$rule_declaration dec_impl =
 				(CImplicit_declaration$rule_declaration)instances[i];
 			gl_rule = (EGlobal_rule)dec_impl.getDefinition(null);
 			if (rule.equals(gl_rule.getName(null))) {
@@ -1828,7 +1830,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 		if (rule_found == null) {
 			instances = model_dict.instances_sim[SdaiSession.LOCAL_DECL_RULE_DECL];
 			for (i = 0; i < model_dict.lengths[SdaiSession.LOCAL_DECL_RULE_DECL]; i++) {
-				CLocal_declaration$rule_declaration dec_loc = 
+				CLocal_declaration$rule_declaration dec_loc =
 					(CLocal_declaration$rule_declaration)instances[i];
 				gl_rule = (EGlobal_rule)dec_loc.getDefinition(null);
 				if (rule.equals(gl_rule.getName(null))) {
@@ -1845,12 +1847,12 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 
 /**
- * Determines whether the submitted uniqueness rule is satisfied by the population 
- * associated with this <code>SchemaInstance</code>. Validation is performed 
- * for all entity instances of the entity type in which the specified uniqueness 
+ * Determines whether the submitted uniqueness rule is satisfied by the population
+ * associated with this <code>SchemaInstance</code>. Validation is performed
+ * for all entity instances of the entity type in which the specified uniqueness
  * rule was defined in all <code>SdaiModel</code>s associated with the schema instance.
  * @param rule the uniqueness rule to validate
- * @param nonConf the non-persistent list to which instances not conforming to 
+ * @param nonConf the non-persistent list to which instances not conforming to
  * validation are appended (if the return value is 1)
  * @return number 2 if uniqueness rule is satisfied, number 1 if it is violated,
  * and number 3 if evaluation value is indeterminate.
@@ -2236,7 +2238,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 					mod.startReadOnlyAccess();
 				}
 				int ind_type_true;
-				if ((mod.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY && 
+				if ((mod.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY &&
 						mod.repository != SdaiSession.systemRepository) {
 					ind_type_true = mod.find_entityRO(mod.dictionary.schemaData.entities[ind_type]);
 				} else {
@@ -2251,7 +2253,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 				int subtypes[] = mod.underlying_schema.getSubtypes(ind_type);
 				if (subtypes != null) {
 					for (int i = 0; i < subtypes.length; i++) {
-						if ((mod.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY && 
+						if ((mod.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY &&
 								mod.repository != SdaiSession.systemRepository) {
 							ind_type_true = mod.find_entityRO(mod.dictionary.schemaData.entities[subtypes[i]]);
 						} else {
@@ -2379,17 +2381,17 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 
 /**
- * Determines whether the submitted uniqueness rule is satisfied by the population 
- * associated with this <code>SchemaInstance</code>. Validation is performed 
- * for all entity instances of the entity type in which the uniqueness 
+ * Determines whether the submitted uniqueness rule is satisfied by the population
+ * associated with this <code>SchemaInstance</code>. Validation is performed
+ * for all entity instances of the entity type in which the uniqueness
  * rule was defined in all <code>SdaiModel</code>s associated with the schema instance.
- * The rule is specified by the string of the form "entity_name.rule_name", where 
- * 'entity_name' is the name of the entity data type within which the rule is declared 
- * and 'rule_name' is the name (if present) of the rule. If the rule has no name, then 
+ * The rule is specified by the string of the form "entity_name.rule_name", where
+ * 'entity_name' is the name of the entity data type within which the rule is declared
+ * and 'rule_name' is the name (if present) of the rule. If the rule has no name, then
  * the supplied string shall be of the form "entity_name." or just "entity_name".
- * @param rule the name of the uniqueness rule to validate qualified by the name 
+ * @param rule the name of the uniqueness rule to validate qualified by the name
  * of its owning entity data type
- * @param nonConf the non-persistent list to which instances not conforming to 
+ * @param nonConf the non-persistent list to which instances not conforming to
  * validation are appended (if the return value is 1)
  * @return number 2 if uniqueness rule is satisfied, number 1 if it is violated,
  * and number 3 if evaluation value is indeterminate.
@@ -2504,7 +2506,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 	}
 
 
-	private int validateInstances(AEntity instances, AAttribute attrs_aggr, 
+	private int validateInstances(AEntity instances, AAttribute attrs_aggr,
 			SdaiIterator it_insts, SdaiIterator it_rules, ASdaiModel models_dom) throws SdaiException {
 		int valid_result = ELogical.TRUE;
 		while (it_insts.next()){
@@ -2771,6 +2773,11 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 //	}
 
 
+	/**
+	 * The name of this method might by misleading.
+	 * The implementation is responsible for committing
+	 * BOTH associated models and included schema instances.
+	 */
 	abstract protected void committingAssocModels() throws SdaiException;
 
 
@@ -2903,41 +2910,41 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 /**
  * Creates a STEP file in a form of the exchange structure
- * containing the data of this schema instance, that is, the header information 
- * and all its associated models. This operation is allowed only if this 
+ * containing the data of this schema instance, that is, the header information
+ * and all its associated models. This operation is allowed only if this
  * schema instance was not modified and no associated model was created, deleted
  * or modified since the most recent commit or abort operation was performed.
  * If this condition is not satisfied, then SdaiException TR_RW is thrown.
- * At the moment of invocation of the method the repository owning this schema 
- * instance must be opened. 
+ * At the moment of invocation of the method the repository owning this schema
+ * instance must be opened.
  * If parameter <code>location</code> gets some <code>String</code> value,
  * then this value is used as a name for the resulting file.
- * If, however, <code>location</code> is null, then the file name is constructed by 
+ * If, however, <code>location</code> is null, then the file name is constructed by
  * taking the name of this schema instance and combining it with the extension "stp".
  * The contents of each associated model is written down to
  * the file as a separate data section. The header of the file includes
  * time-stamp which specifies the date and time when the schema instance was
  * created or most recently modified.
- * The attribute <code>name</code> of the entity <code>file_name</code> in the 
- * header of the exchange structure (see ISO 10303-21::8.2.2 file_name) is set 
- * to the name of this schema instance. 
+ * The attribute <code>name</code> of the entity <code>file_name</code> in the
+ * header of the exchange structure (see ISO 10303-21::8.2.2 file_name) is set
+ * to the name of this schema instance.
  * The value of the attribute <code>implementation_level</code> of the
- * entity <code>file_description</code> (see ISO 10303-21::8.2.1 file_description) 
+ * entity <code>file_description</code> (see ISO 10303-21::8.2.1 file_description)
  * can take one of the following values:
  * <ul><li>"2;1" if the aggregate <code>associated_models</code> contains at most one model;
- * <li>"3;1" otherwise; in this case for the schema instance an instance of 
- * the entity <code>file_population</code> in the header of the exchange structure 
+ * <li>"3;1" otherwise; in this case for the schema instance an instance of
+ * the entity <code>file_population</code> in the header of the exchange structure
  * (see ISO 10303-21::8.2.4 file_population) is created;
  * </ul>
- * In this <code>file_population</code> instance the value standing for 
- * <code>associated_models</code> is missing, that is, dollar sign is used. 
- * This happens because all the data sections in the 
- * resulting exchange structure file correspond to models in the 
+ * In this <code>file_population</code> instance the value standing for
+ * <code>associated_models</code> is missing, that is, dollar sign is used.
+ * This happens because all the data sections in the
+ * resulting exchange structure file correspond to models in the
  * <code>associated_models</code> set (see ISO 10303-21::8.2.4 file_population).
  * <p> After execution of this method the schema instance itself remains unchanged.
- * The method is disabled for the special schema instance <code>data_dictionary</code> 
+ * The method is disabled for the special schema instance <code>data_dictionary</code>
  * defined in <code>SdaiSession</code> class.
- * In this case SdaiException FN_NAVL is thrown. 
+ * In this case SdaiException FN_NAVL is thrown.
  * @param location the name of the file created by the method.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
  * @throws SdaiException RP_NOPN, repository is not open.
@@ -2958,43 +2965,43 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 /**
  * Creates a STEP file in a form of the exchange structure
- * containing the data of this schema instance, that is, the header information 
- * and all its associated models. This operation is allowed only if this 
+ * containing the data of this schema instance, that is, the header information
+ * and all its associated models. This operation is allowed only if this
  * schema instance was not modified and no associated model was created, deleted
  * or modified since the most recent commit or abort operation was performed.
  * If this condition is not satisfied, then SdaiException TR_RW is thrown.
- * At the moment of invocation of the method the repository owning this schema 
- * instance must be opened. 
+ * At the moment of invocation of the method the repository owning this schema
+ * instance must be opened.
  * If parameter <code>location</code> gets some <code>String</code> value,
  * then this value is used as a name for the resulting file.
- * If, however, <code>location</code> is null, then the file name is constructed by 
+ * If, however, <code>location</code> is null, then the file name is constructed by
  * taking the name of this schema instance and combining it with the extension "stp".
  * The contents of each associated model is written down to
  * the file as a separate data section. The header of the file includes
  * time-stamp which specifies the date and time when the schema instance was
  * created or most recently modified.
- * The attribute <code>name</code> of the entity <code>file_name</code> in the 
- * header of the exchange structure (see ISO 10303-21::8.2.2 file_name) is set 
- * to the string value submitted through the second method's parameter provided 
- * this value is nonnull. If this value is <code>null</code>, then the attribute 
+ * The attribute <code>name</code> of the entity <code>file_name</code> in the
+ * header of the exchange structure (see ISO 10303-21::8.2.2 file_name) is set
+ * to the string value submitted through the second method's parameter provided
+ * this value is nonnull. If this value is <code>null</code>, then the attribute
  * <code>name</code> is set to the name of this schema instance.
  * The value of the attribute <code>implementation_level</code> of the
- * entity <code>file_description</code> (see ISO 10303-21::8.2.1 file_description) 
+ * entity <code>file_description</code> (see ISO 10303-21::8.2.1 file_description)
  * can take one of the following values:
  * <ul><li>"2;1" if the aggregate <code>associated_models</code> contains at most one model;
- * <li>"3;1" otherwise; in this case for the schema instance an instance of 
- * the entity <code>file_population</code> in the header of the exchange structure 
+ * <li>"3;1" otherwise; in this case for the schema instance an instance of
+ * the entity <code>file_population</code> in the header of the exchange structure
  * (see ISO 10303-21::8.2.4 file_population) is created;
  * </ul>
- * In this <code>file_population</code> instance the value standing for 
- * <code>associated_models</code> is missing, that is, dollar sign is used. 
- * This happens because all the data sections in the 
- * resulting exchange structure file correspond to models in the 
+ * In this <code>file_population</code> instance the value standing for
+ * <code>associated_models</code> is missing, that is, dollar sign is used.
+ * This happens because all the data sections in the
+ * resulting exchange structure file correspond to models in the
  * <code>associated_models</code> set (see ISO 10303-21::8.2.4 file_population).
  * <p> After execution of this method the schema instance itself remains unchanged.
- * The method is disabled for the special schema instance <code>data_dictionary</code> 
+ * The method is disabled for the special schema instance <code>data_dictionary</code>
  * defined in <code>SdaiSession</code> class.
- * In this case SdaiException FN_NAVL is thrown. 
+ * In this case SdaiException FN_NAVL is thrown.
  * @param location the name of the file created by the method.
  * @param file_name the name of the exchange structure to which this schema instance is exported.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
@@ -3016,12 +3023,12 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 /**
  * Creates a STEP file in a form of the exchange structure
- * containing the data of this schema instance, that is, the header information 
- * and all its associated models. At the moment of invocation of the method the 
+ * containing the data of this schema instance, that is, the header information
+ * and all its associated models. At the moment of invocation of the method the
  * repository owning this schema instance must be opened.
  * The exchange structure is written to the supplied stream.
- * The attribute <code>name</code> of the entity <code>file_name</code> in the 
- * header of the exchange structure (see ISO 10303-21::8.2.2 file_name) is set 
+ * The attribute <code>name</code> of the entity <code>file_name</code> in the
+ * header of the exchange structure (see ISO 10303-21::8.2.2 file_name) is set
  * to the name of this schema instance.
  * For more details about the exchange format see
  * {@link #exportClearTextEncoding(String location)}.
@@ -3046,14 +3053,14 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 
 /**
  * Creates a STEP file in a form of the exchange structure
- * containing the data of this schema instance, that is, the header information 
- * and all its associated models. At the moment of invocation of the method the 
+ * containing the data of this schema instance, that is, the header information
+ * and all its associated models. At the moment of invocation of the method the
  * repository owning this schema instance must be opened.
  * The exchange structure is written to the supplied stream.
- * The attribute <code>name</code> of the entity <code>file_name</code> in the 
- * header of the exchange structure (see ISO 10303-21::8.2.2 file_name) is set 
- * to the string value submitted through the second method's parameter provided 
- * this value is nonnull. If this value is <code>null</code>, then the attribute 
+ * The attribute <code>name</code> of the entity <code>file_name</code> in the
+ * header of the exchange structure (see ISO 10303-21::8.2.2 file_name) is set
+ * to the string value submitted through the second method's parameter provided
+ * this value is nonnull. If this value is <code>null</code>, then the attribute
  * <code>name</code> is set to the name of this schema instance.
  * For more details about the exchange format see
  * {@link #exportClearTextEncoding(String location, String file_name)}.
@@ -3075,7 +3082,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 		exportClearTextEncodingGeneric(null, location, file_name);
 	}
 
-	private void exportClearTextEncodingGeneric(String location, OutputStream location_stream, String file_name) 
+	private void exportClearTextEncodingGeneric(String location, OutputStream location_stream, String file_name)
 			throws SdaiException {
 //		synchronized (syncObject) {
 		if (repository == null) {
@@ -3105,7 +3112,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 		}
 /*		for (int i = 0; i < associated_models.myLength; i++) {
 			SdaiModel model = (SdaiModel)associated_models.myData[i];
-			if (model.modified || model.modified_by_import || model.modified_outside_contents || 
+			if (model.modified || model.modified_by_import || model.modified_outside_contents ||
 					model.modified_outside_contents_by_import) {
 				throw new SdaiException(SdaiException.TR_RW, session.active_transaction);
 			}
@@ -3219,7 +3226,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 							if (mod.inst_idents == null) {
 								mod.loadInstanceIdentifiers();
 							}
-//System.out.println("SchemaInstance   !!!!! instance.instance_identifier " + instance.instance_identifier + 
+//System.out.println("SchemaInstance   !!!!! instance.instance_identifier " + instance.instance_identifier +
 //"   ind: " + ind + "  mod: " + mod.name + "   all_inst_count: " + mod.all_inst_count);
 							if (mod.find_instance_id(instance.instance_identifier) >= 0) {
 								found = true;
@@ -3260,7 +3267,7 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 	}
 
 
-	private void removeDuplicateModNames(StaticFields staticFields, SdaiModel model, SdaiModel [] other_repo_mods, int mods_count) 
+	private void removeDuplicateModNames(StaticFields staticFields, SdaiModel model, SdaiModel [] other_repo_mods, int mods_count)
 			throws SdaiException {
 		int i;
 		int count = 0;
@@ -3585,27 +3592,115 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
  */
 	/*public*/private void reduceToReadOnly() throws SdaiException { }
 
-/** DRAFT.
- * Returns the set of <code>SdaiModel</code>s associated with this 
- * schema instance.
- * An <code>SdaiModel</code> may be associated with no, one or 
- * several schema instances.
- * @return the set of models associated with this schema instance.
+/**
+ * Returns the set of <code>SchemaInstance</code>s included by the
+ * current schema instance.
+ * The inclusion relation defined on the set of schema instances forms
+ * a graph, which must be acyclic.
+ * @return the set of schema instances included by this schema instance.
  * @throws SdaiException RP_NOPN, repository is not open.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
+ * @since 4.2.0
  */
-	/*public*/private ASchemaInstance getIncludedSchemaInstances() throws SdaiException { return null; }
+	public abstract ASchemaInstance getIncludedSchemaInstances() throws SdaiException;
 
-/** DRAFT.
- * Adds a specified <code>SdaiModel</code> to the set of models
- * that are associated with this schema instance.
+
+/**
+ * Adds a new member to the set of schema instances
+ * that are included by this schema instance.
  * If null value is passed to the method's parameter,
  * then SdaiException VA_NSET is thrown.
- * <p> Adding a model to a <code>SchemaInstance</code> in "SystemRepository" 
+ * The inclusion relation defined on the set of schema instances forms
+ * a graph, which must be acyclic. Therefore, the submitted schema instance
+ * is checked against this condition. If inclusion is found to violate this condition,
+ * then SdaiException VA_NVLD is thrown. The exception of the same type is
+ * also thrown in the case of autoinclusion - when a schema instance is
+ * submitted to itself - and also in the case where a schema instance
+ * provided as a parameter belongs to "SystemRepository".
+ * <p> Applying inclusion operation to a <code>SchemaInstance</code> in
+ * "SystemRepository" is forbidden.
+ * In the case of such an attempt, SdaiException VT_NVLD is thrown.
+ * @param schemaInstance the <code>SchemaInstance</code> submitted to include into
+ * disposition of this schema instance.
+ * @throws SdaiException TR_NEXS, transaction does not exist.
+ * @throws SdaiException TR_NRW, transaction not read-write.
+ * @throws SdaiException TR_EAB, transaction ended abnormally.
+ * @throws SdaiException RP_NOPN, repository is not open.
+ * @throws SdaiException SI_NEXS, schema instance does not exist.
+ * @throws SdaiException VT_NVLD, value type invalid.
+ * @throws SdaiException VA_NVLD, value invalid.
+ * @throws SdaiException VA_NSET, value not set.
+ * @throws SdaiException RP_RO, read-only access to repository.
+ * @throws SdaiException RP_LOCK, repository locked by another user.
+ * @throws SdaiException SY_ERR,  underlying system error.
+ * @since 4.2.0
+ */
+	public void addSchemaInstance(SchemaInstance schemaInstance) throws SdaiException {
+		addSchemaInstanceCommon(schemaInstance);
+	}
+
+	protected void addSchemaInstanceCommon(SchemaInstance schemaInstance) throws SdaiException {
+		if (repository == null || schemaInstance.repository == null) {
+			throw new SdaiException(SdaiException.SI_NEXS);
+		}
+		if (schemaInstance == null) {
+			throw new SdaiException(SdaiException.VA_NSET);
+		}
+		if (!repository.active) {
+			throw new SdaiException(SdaiException.RP_NOPN, repository);
+		}
+		SdaiSession session = repository.session;
+		if (session.active_transaction == null) {
+			throw new SdaiException(SdaiException.TR_NEXS);
+		}
+		if (session.active_transaction.mode != SdaiTransaction.READ_WRITE) {
+			throw new SdaiException(SdaiException.TR_NRW, session.active_transaction);
+		}
+		if (schemaInstance.repository == SdaiSession.systemRepository) {
+			String base = SdaiSession.line_separator + AdditionalMessages.SI_SYRE;
+			throw new SdaiException(SdaiException.VA_NVLD, base);
+		}
+		if (schemaInstance == this) {
+			String base = SdaiSession.line_separator + AdditionalMessages.SI_AUTO;
+			throw new SdaiException(SdaiException.VA_NVLD, base);
+		}
+		if (included_schemas == null) {
+			getIncludedSchemaInstances();
+		}
+		if (schemaInstance.isIncluded(this)) {
+			String base = SdaiSession.line_separator + AdditionalMessages.SI_CYCL;
+			throw new SdaiException(SdaiException.VA_NVLD, base);
+		}
+		included_schemas.addUnorderedRO(schemaInstance);
+		modified = true;
+	}
+
+	boolean isIncluded(SchemaInstance sch_inst) throws SdaiException {
+		ASchemaInstance included = getIncludedSchemaInstances();
+		for (int i = 0; i < included.myLength; i++) {
+			SchemaInstance si = (SchemaInstance)included.myData[i];
+			if (si == sch_inst) {
+				return true;
+			}
+			boolean res = si.isIncluded(sch_inst);
+			if (res) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+
+/**
+ * Removes a specified member from the set of schema instances
+ * that are included by this schema instance.
+ * If null value is passed to the method's parameter,
+ * then SdaiException VA_NSET is thrown.
+ * <p> Applying removal operation to a <code>SchemaInstance</code> in "SystemRepository"
  * is forbidden.
  * In the case of such an attempt, SdaiException VT_NVLD is thrown.
- * @param model the <code>SdaiModel</code> submitted to associate with
- * this schema instance.
+ * @param schemaInstance the <code>SchemaInstance</code> that is to be removed
+ * from the set of included schema instances.
  * @throws SdaiException TR_NEXS, transaction does not exist.
  * @throws SdaiException TR_NRW, transaction not read-write.
  * @throws SdaiException TR_EAB, transaction ended abnormally.
@@ -3614,38 +3709,97 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
  * @throws SdaiException VT_NVLD, value type invalid.
  * @throws SdaiException VA_NSET, value not set.
  * @throws SdaiException RP_RO, read-only access to repository.
- * @throws SdaiException RP_LOCK, repository locked by another user. 
+ * @throws SdaiException RP_LOCK, repository locked by another user.
  * @throws SdaiException SY_ERR,  underlying system error.
- * @see "ISO 10303-22::10.6.3 Add SDAI-model"
+ * @since 4.2.0
  */
-	/*public*/private void addSchemaInstance(SchemaInstance schemaInstance) throws SdaiException { }
+		public void removeSchemaInstance(SchemaInstance schemaInstance) throws SdaiException {
+		if (repository == null || schemaInstance.repository == null) {
+			throw new SdaiException(SdaiException.SI_NEXS);
+		}
+		if (schemaInstance == null) {
+			throw new SdaiException(SdaiException.VA_NSET);
+		}
+		if (!repository.active) {
+			throw new SdaiException(SdaiException.RP_NOPN, repository);
+		}
+		if (repository == SdaiSession.systemRepository) {
+			throw new SdaiException(SdaiException.VT_NVLD);
+		}
+		SdaiSession session = repository.session;
+		if (session.active_transaction == null) {
+			throw new SdaiException(SdaiException.TR_NEXS);
+		}
+		if (session.active_transaction.mode != SdaiTransaction.READ_WRITE) {
+			throw new SdaiException(SdaiException.TR_NRW, session.active_transaction);
+		}
 
-/** DRAFT.
- * Removes a specified <code>SdaiModel</code> from the set of models
- * that are associated with this schema instance.
- * If null value is passed to the method's parameter,
- * then SdaiException VA_NSET is thrown.
- * <p> Removing a model from a <code>SchemaInstance</code> in "SystemRepository" 
- * is forbidden.
- * In the case of such an attempt, SdaiException VT_NVLD is thrown.
- * @param model the <code>SdaiModel</code> that is to be removed
- * from the set "associated_models" of this schema instance.
- * @throws SdaiException TR_NEXS, transaction does not exist.
- * @throws SdaiException TR_NRW, transaction not read-write.
- * @throws SdaiException TR_EAB, transaction ended abnormally.
+		if (included_schemas == null) {
+			getIncludedSchemaInstances();
+		}
+		included_schemas.removeUnorderedRO(schemaInstance);
+		modified = true;
+	}
+
+/**
+ * Returns the set of <code>SdaiModel</code>s associated either with this
+ * schema instance or a schema instance reached from this schema instance
+ * following the inclusion relation (directly or indirectly).
+ * Duplicate appearances of a model are not taken into account.
+ * @return the set of models referenced by this schema instance.
  * @throws SdaiException RP_NOPN, repository is not open.
  * @throws SdaiException SI_NEXS, schema instance does not exist.
- * @throws SdaiException VT_NVLD, value type invalid.
- * @throws SdaiException VA_NSET, value not set.
- * @throws SdaiException RP_RO, read-only access to repository.
- * @throws SdaiException RP_LOCK, repository locked by another user. 
- * @throws SdaiException SY_ERR,  underlying system error.
- * @see "ISO 10303-22::10.6.4 Remove SDAI-model"
+ * @since 4.2.0
  */
-	/*public*/private void removeSchemaInstance(SchemaInstance schemaInstance) throws SdaiException { }
+	public ASdaiModel getReferencedModels() throws SdaiException {
+		return getReferencedModelsCommon();
+	}
 
-/** DRAFT.
- */
-	/*public*/private ASdaiModel getReferencedModels() throws SdaiException { return null; }
+
+	protected ASdaiModel getReferencedModelsCommon() throws SdaiException {
+		check_schemaInstance();
+		ASdaiModel ref_mods = new ASdaiModel(SdaiSession.setType0toN, this);
+		ref_mods.myData = new Object[SessionAggregate.INIT_SIZE_SET_SESSION];
+		ref_mods.myLength = 0;
+		return collectReferencedModels(ref_mods);
+	}
+
+
+	protected ASdaiModel collectReferencedModels(ASdaiModel ref_mods) throws SdaiException {
+		int i;
+		ASdaiModel assoc_mods = getAssociatedModels();
+		if (assoc_mods.myData != null && assoc_mods.myLength > 0) {
+			int new_ln = ref_mods.myLength + assoc_mods.myLength;
+			if (new_ln > ref_mods.myData.length) {
+				ref_mods.ensureCapacity(new_ln);
+			}
+			for (i = 0; i < assoc_mods.myLength; i++) {
+				ref_mods.try_to_addUnordered((SdaiModel)assoc_mods.myData[i]);
+			}
+		}
+		ASchemaInstance included = getIncludedSchemaInstances();
+		for (i = 0; i < included.myLength; i++) {
+			SchemaInstance si = (SchemaInstance)included.myData[i];
+			if (si == this) {
+				SdaiSession ss = repository.session;
+				if (ss != null && ss.logWriterSession != null) {
+					ss.printlnSession(AdditionalMessages.SI_LOOP + si.name + ".");
+				} else {
+					SdaiSession.println(AdditionalMessages.SI_LOOP + si.name + ".");
+				}
+				continue;
+			}
+			ref_mods = si.collectReferencedModels(ref_mods);
+		}
+		return ref_mods;
+	}
+
+	protected void newIncludedSchemas() {
+		included_schemas = new ASchemaInstance(SdaiSession.setType0toN, this);
+	}
+
+	protected void addSchemaInstanceInternal(SchemaInstance schemaInstance) throws SdaiException {
+		included_schemas.addUnorderedRO(schemaInstance);
+	}
 
 }

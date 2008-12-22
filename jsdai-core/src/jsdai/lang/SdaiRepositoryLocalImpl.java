@@ -43,28 +43,28 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 	*/
 	private static final String REPOSITORY_FILE_NAME = "repository";
 
-	
+
 	SdaiRepositoryLocalImpl(SdaiSession session, String name, Object location,
 							boolean fCheckNameLocation) throws SdaiException {
 		super(session, name, location, fCheckNameLocation);
 	}
-	
+
 	SdaiRepositoryLocalImpl(SdaiSession session, String name) throws SdaiException {
 		super(session, name);
 	}
-	
+
 	protected SdaiModel createModel(String model_name, CSchema_definition schema) throws SdaiException {
 		return new SdaiModelLocalImpl(model_name, schema, this);
 	}
-	
+
 	protected SdaiModel createModel(String model_name) {
 		return new SdaiModelLocalImpl(model_name, this);
 	}
-	
+
 	protected SdaiModel createModel(String model_name, SdaiModel dict) throws SdaiException {
 		return new SdaiModelLocalImpl(model_name, this, dict);
 	}
-	
+
 	/**
 	 * Creates a repository called 'virtual'. In this repository only
 	 * the following fields from those defined in Part 22 are set with values:
@@ -98,7 +98,10 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 				} else if(externalDataObject instanceof CEntity) {
 					removeEntityExternalDataLocalImpl(((CEntity)externalDataObject).instance_identifier);
 				} else {
-					removeEntityExternalDataLocalImpl((ExternalDataLocalImpl)externalDataObject);
+					ExternalDataLocalImpl externalData =
+						(ExternalDataLocalImpl)externalDataObject;
+					externalData.removed();
+					removeEntityExternalDataLocalImpl(externalData);
 				}
 			}
 			entityRemovedExternalData.clear();
@@ -113,7 +116,7 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 		}
 		updateExtDataProperties();
 	}
-	
+
 	/* deletes external data associated with given entity */
 	private void removeEntityExternalDataLocalImpl(long instIdent)
 		throws SdaiException {
@@ -121,11 +124,11 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 		String str_inst_id = String.valueOf(instIdent);
 		File removeFile = new File(this.getLocation(), "e"+ str_inst_id);
 		removeFile.delete();
-		
+
 		//delete entry from extdata.properties file
 		extDataProps.remove(str_inst_id);
 	}
-	
+
 	/* deletes what we have just created */
 	private void removeEntityExternalDataLocalImpl(ExternalDataLocalImpl externalDataObject)
 		throws SdaiException {
@@ -135,14 +138,12 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 			if((externalDataObject.getFD() != null) && externalDataObject.getFD().exists()){
 				externalDataObject.getFD().delete();
 				//System.out.println("removed2");
-			} 
+			}
 			externalDataObject.unsetFD();
 			extDataProps.remove(String.valueOf(((CEntity)externalDataObject.getInstance()).instance_identifier));
-		}else{
-			throw new SdaiException(SdaiException.SY_ERR, "file does not exist or could not be deleted");
 		}
 	}
-	
+
 	/* creates/gets external data for entity according to existing parameter, if its */
 	/* "true" - that means external data for entity already exist and only needs to be taken,*/
 	/* if its "false" - we create and return external data */
@@ -155,22 +156,22 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 
 		if(existing){
 			String name = getExtDataProps().getProperty(String.valueOf(entity.instance_identifier));
-			
+
 			if (name == null) {
 				throw new SdaiException(SdaiException.VA_NSET, "ExternalData is not set for this instance");
-			} 
+			}
 
 			if(entityExternalData != null){
 				newEntityExternalData = (ExternalDataLocalImpl) entityExternalData.get(instanceIdentifier);
 			}
-				
+
 			if(newEntityExternalData == null){
 				newEntityExternalData = new ExternalDataLocalImpl(entity, false);
 				entityExternalData.put(instanceIdentifier, newEntityExternalData);
 			}
 		}else{
-// 			if(fileD.exists()) { 
-// 				fileD.delete(); 
+// 			if(fileD.exists()) {
+// 				fileD.delete();
 // 			}
 			if(entityExternalData.containsKey(instanceIdentifier)){
 				throw new SdaiException(SdaiException.SI_DUP);
@@ -180,19 +181,19 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 				entityExternalData.put(instanceIdentifier, newEntityExternalData);
 			}
 		}
-		
+
 		newEntityExternalData.setFD(fileD);
 		//if(entityRemovedExternalData != null) entityRemovedExternalData.remove(instanceIdentifier);
-		
+
 		return newEntityExternalData;
 	}
-	
+
 	/* checks if given enity has external data */
 	protected boolean testNewEntityExternalData(CEntity entity) throws SdaiException {
 		String name = getExtDataProps().getProperty(String.valueOf(entity.instance_identifier));
 		if (name == null) {
 			return false;
-		} 
+		}
 		return true;
 	}
 
@@ -216,17 +217,17 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Returns an object of java class Properties obtained
 	 * from the file 'extdata.properties'.
 	 * This file belongs to the conrete repository directory.
 	 */
-	
+
 	protected Properties takeExtDataProperties() throws SdaiException {
 		extDataProps = new Properties();
 		File f = new File(this.getLocation(), "extdata.properties");
-		
+
 		if (f.exists()) {
 			try {
 				InputStream istr = new BufferedInputStream(new FileInputStream(f));
@@ -242,7 +243,7 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 		}
 		return extDataProps;
 	}
-	
+
 	/**
 	 * Saves updated properties to "extdata.properties" file in the special
 	 * repositories directory.
@@ -261,7 +262,7 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 			throw new SdaiException(SdaiException.SY_ERR, base, e);
 		}
 	}
-	
+
 	Properties getExtDataProps() throws SdaiException {
 		if(extDataProps == null)  extDataProps =  takeExtDataProperties();
 		return extDataProps;
@@ -392,7 +393,7 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 
 	public SdaiModel createSdaiModel(String model_name, ESchema_definition schema) throws  SdaiException {
 //		synchronized (syncObject) {
-			createSdaiModelCommonChecking(model_name, schema, false, model_created_during_simulation ? 
+			createSdaiModelCommonChecking(model_name, schema, false, model_created_during_simulation ?
 										  SdaiTransaction.READ_ONLY : SdaiTransaction.READ_WRITE);
 			return createSdaiModelCommonCreating(model_name, schema, false);
 //		} // syncObject
@@ -410,7 +411,7 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 			CSchema_definition schema_def = session.getSchemaDefinition(schema);
 			if (schema_def != null) {
 				createSdaiModelCommonChecking(model_name, schema_def, false,
-											  model_created_during_simulation ? 
+											  model_created_during_simulation ?
 											  SdaiTransaction.READ_ONLY : SdaiTransaction.READ_WRITE);
 				return createSdaiModelCommonCreating(model_name, schema_def, false);
 			}
@@ -641,6 +642,7 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 		int count;
 		int context_count;
 		int schemas_count;
+		int is_count;
 		byte bt;
 		boolean found;
 		String str;
@@ -648,6 +650,7 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 		SECTION_CONTEXT sec_con;
 		SdaiModel model, mod;
 		SchemaInstance sch_instance, sch;
+		ASchemaInstance inc_schemas;
 		A_string strings;
 
 		for (i = 0; i < schemas.myLength; i++) {
@@ -1007,8 +1010,13 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 				String base = SdaiSession.line_separator + AdditionalMessages.FL_OSZE;
 				throw new SdaiException(SdaiException.SY_ERR, base);
 			}
+			byte sym = ' ';
 			for (i = 0; i < sch_count; i++) {
-				bt = stream.readByte();
+				if (i == 0) {
+					bt = stream.readByte();
+				} else {
+					bt = sym;
+				}
 				if (bt != 'B') {
 					String base = SdaiSession.line_separator + AdditionalMessages.BF_DAM;
 					throw new SdaiException(SdaiException.SY_ERR, base);
@@ -1201,9 +1209,66 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 				} else {
 					sch_instance.modified = false;
 				}
+				sym = stream.readByte();
+				if (sym != 'I') {
+					continue;
+				}
+				is_count = stream.readShort();
+				//System.out.println("SdaiRepository  count of included schemas: " + is_count);
+				if (is_count <= 0) {
+					String base = SdaiSession.line_separator + AdditionalMessages.BF_NEGL;
+					throw new SdaiException(SdaiException.SY_ERR, base);
+				}
+				SchemaInstance incl_schema;
+				for (j = 0; j < is_count; j++) {
+					bt = stream.readByte();
+					if (bt == 'L') {
+						Integer pointer_to_sch_inst = new Integer(stream.readInt());
+						if (sch_instance.included_schemas == null) {
+							sch_instance.included_schemas = new ASchemaInstance(SdaiSession.setType0toN, sch_instance);
+						}
+						inc_schemas = sch_instance.included_schemas;
+						inc_schemas.addUnorderedRO(pointer_to_sch_inst);
+					} else {
+						str = stream.readUTF();
+						rep_name = stream.readUTF();
+						repo = null;
+						for (k = 0; k < session.known_servers.myLength; k++) {
+							SdaiRepository r = (SdaiRepository)session.known_servers.myData[k];
+							if (r.name.equals(rep_name)) {
+								repo = r;
+								break;
+							}
+						}
+						if (repo == null) {
+							printWarningToLogo2(session, AdditionalMessages.BF_RPNF, rep_name, sch_instance, str);
+							continue;
+						}
+						incl_schema = null;
+						if (repo.active) {
+							repo.internal_usage = true;
+							incl_schema = repo.findSchemaInstance(str);
+							repo.internal_usage = false;
+						}
+						if (incl_schema == null) {
+							printWarningToLogo2(session, AdditionalMessages.BF_RCLO, rep_name, sch_instance, str);
+							continue;
+						}
+						if (sch_instance.included_schemas == null) {
+							sch_instance.included_schemas = new ASchemaInstance(SdaiSession.setType0toN, sch_instance);
+						}
+						inc_schemas = sch_instance.included_schemas;
+						inc_schemas.addUnorderedRO(incl_schema);
+					}
+				}
+				sym = stream.readByte();
 			}
 
-			bt = stream.readByte();
+			if (sch_count <= 0) {
+				bt = stream.readByte();
+			} else {
+				bt = sym;
+			}
 			if (bt != 'E') {
 				String base = SdaiSession.line_separator + AdditionalMessages.BF_DAM;
 				throw new SdaiException(SdaiException.SY_ERR, base);
@@ -1232,6 +1297,25 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 				}
 			}
 			models.myLength = index;
+			for (i = 0; i < schemas.myLength; i++) {
+				sch_instance = (SchemaInstance)schemas.myData[i];
+				if (sch_instance.included_schemas == null) {
+					continue;
+				}
+				inc_schemas = sch_instance.included_schemas;
+				for (j = 0; j < inc_schemas.myLength; j++) {
+					Object obj = inc_schemas.myData[j];
+					if (!(obj instanceof Integer)) {
+						continue;
+					}
+					index = ((Integer)obj).intValue();
+					if (index < 0 || index >= schemas.myLength) {
+						String base = SdaiSession.line_separator + AdditionalMessages.BF_WISI;
+						throw new SdaiException(SdaiException.SY_ERR, base);
+					}
+					inc_schemas.myData[j] = (SchemaInstance)schemas.myData[index];
+				}
+			}
 			committed = true;
 		} catch (IOException ex) {
 			String base = SdaiSession.line_separator + AdditionalMessages.BF_ERR;
@@ -1657,7 +1741,7 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 						}
 					}
 				}
-				
+
 				next_used_identifier = next_used_pl;
 			}
 			else {
@@ -1667,15 +1751,15 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 			current_identifier = newPersistentLabel;
 			//System.out.println("setPL > MODEL: current="+current_identifier);
 			//System.out.println("setPL > MODEL: next_used="+next_used_identifier);
-			//System.out.println("setPL > MODEL: largest="+largest_identifier);                
+			//System.out.println("setPL > MODEL: largest="+largest_identifier);
 //		} // syncObject
 	}
 
 	boolean validateNameFromFile(String nameFromFile) throws SdaiException {
 		return name.equals(nameFromFile);
 	}
-	
-	
+
+
 	/**
 	   Loads the repository name contained in the binary file 'repository'.
 	*/
@@ -1691,7 +1775,7 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 				String base = SdaiSession.line_separator + AdditionalMessages.BF_DAM;
 				throw new SdaiException(SdaiException.SY_ERR, base);
 			}
-			
+
 			stream.skipBytes(10);
 			bt = stream.readByte();
 			if (bt != 'B') {
@@ -1718,5 +1802,5 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 		}
 		return nameFromFile;
 	}
-	
+
 }

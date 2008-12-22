@@ -66,6 +66,11 @@ class AdditionalMessages {
 	static final String RP_DICT = "The repository containing data dictionary cannot be deleted"; // deleteRepository()
 	static final String EI_LANV = "Label supplied is invalid";  // getSessionIdentifier()
 	static final String FL_OSZE = "Only one schema allowed in SINGLE runtime environment"; // creation of SchemaInstance
+//   SchemaInstance
+	static final String SI_CYCL = "Inclusion of submitted schema instance will create loops in schema instances tree.";
+	static final String SI_SYRE = "Inclusion of a schema instance from the System Repository is disallowed.";
+	static final String SI_AUTO = "Autoinclusion for a schema instance is disallowed.";
+	static final String SI_LOOP = "Warning: autoinclusion for schema instance ";
 //   SdaiModel
 	static final String EI_NVLI = "Entity instance identifier cannot be set";  // ident reached an upper limit
 	static final String EI_EDNV = "Entity definition is not in the context of the schema underlying for this model.";  // creation of entity instances
@@ -104,6 +109,7 @@ class AdditionalMessages {
 	static final String BF_REP  = "   Repository: ";
 	static final String BF_MOD  = "   Model: ";
 	static final String BF_SCH  = "   Schema instance: ";
+	static final String BF_ISCH = "   Included schema instance: ";
 	static final String BF_REPS = "   Repository containing schema instance: ";
 	static final String BF_NEGL = "Negative counts in binary file"; // SdaiRepository
 	static final String BF_DAM  = "Binary file is damaged"; // SdaiRepository, SdaiModel
@@ -116,6 +122,7 @@ class AdditionalMessages {
 	static final String BF_IINC = "Instance with specification taken from the binary file was not found: #"; // CEntity
 	static final String BF_IDIF = "Instance specified differs from the current instance"; // CEntity
 	static final String BF_WVAL = "Wrong value in binary file"; // SdaiModel
+	static final String BF_WISI = "Wrong index to schema instance in binary file"; // SdaiRepository
 	static final String BF_ERVC = "Error in values for complex instances"; // save_instance() in SdaiModel
 	static final String BF_ERR  = "Error in binary file"; // SdaiRepository, SdaiModel, SdaiSession
 	static final String BF_NOD1 = "Directory for binary files cannot be created: check whether a file with the name \"";
@@ -133,6 +140,8 @@ class AdditionalMessages {
 	static final String BF_REND = "Different repository name in binary file was found: "; // loadRepositoryStream() in SdaiRepository
 	static final String RE_MINC = "Reference model is incorrect"; // resolveInConnectors() in SdaiModel
 	static final String BF_RENF = "Warning: repository does not exist, model was not associated with schema instance."; // loadRepositoryStream() in SdaiRepository
+	static final String BF_RPNF = "Warning: repository does not exist, schema instance was not included."; // loadRepositoryStream() in SdaiRepository
+	static final String BF_RCLO = "Warning: owning repository is closed, schema instance was not included."; // loadRepositoryStream() in SdaiRepository
 	static final String SS_RFMI = "Warning: binary file for System Repository is missing."; // loadSchemaInstances() in SdaiSession
 	static final String SS_RFNR = "Warning: cannot open binary file for System Repository."; // loadSchemaInstances() in SdaiSession
 	static final String SS_UMOD = "Warning: unknown model associated with schema instance "; // loadSchemaInstances() in SdaiRepository
@@ -289,6 +298,7 @@ class AdditionalMessages {
 	static final String RD_WLFP = "Error: wrong or missing value of logical type in an instance of 'file_population', replaced by unset value."; // process_logical() in PhFileReader
 	static final String RD_WDFP = "Error: wrong or missing digit in an instance of 'file_population', replaced by zero."; // process_digit() in PhFileReader
 	static final String RD_WAFP = "Error: wrong aggregate in an instance of 'file_population'."; // process_aggregate() in PhFileReader
+	static final String RD_UNSI = "Error: included schema instance from unknown repository in 'file_population'.";
 	static final String RD_WRIL = "Warning: wrong implementation level in header section entity FILE_DESCRIPTION.";
 	static final String RD_OSC1 = "Warning: exchange structure "; // PhFileReader
 	static final String RD_OSC2 = " does not contain FILE_SCHEMA. "; // PhFileReader

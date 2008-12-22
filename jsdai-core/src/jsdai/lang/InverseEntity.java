@@ -377,18 +377,19 @@ break;
 	final protected void unsetInverseReferences(boolean replace_by_connector) throws SdaiException {
 		Object o = inverseList;
 		SdaiModel.Connector con;
+		CEntity inst;
 		CEntity old_inst = (CEntity)this;
 		while (o != null) {
 			Inverse inv = null;
 			if (o instanceof Inverse) {
 				inv = (Inverse) o;
-				InverseEntity inst = (InverseEntity) inv.value;
-				if ( ((CEntity)inst).owning_model != null &&
-						((CEntity)inst).owning_model != old_inst.owning_model) {
+				inst = (CEntity) inv.value;
+				if (inst.owning_model != null && inst.owning_model != old_inst.owning_model && 
+						!inst.owning_model.closingAll) {
 					if (replace_by_connector) {
-						con = ((CEntity)inst).owning_model.newConnector(old_inst.owning_model, 
+						con = inst.owning_model.newConnector(old_inst.owning_model, 
 							((CEntityDefinition)old_inst.getInstanceType()).getCorrectName(), 
-							old_inst.instance_identifier, (CEntity)inst);
+							old_inst.instance_identifier, inst);
 						inst.changeReferences(old_inst, con);
 					} else {
 						inst.changeReferences(old_inst, null);
@@ -397,13 +398,13 @@ break;
 				inv.value = null;
 				o = inv.next;
 			} else {
-				InverseEntity inst = (InverseEntity) o;
-				if ( ((CEntity)inst).owning_model != null &&
-						((CEntity)inst).owning_model != old_inst.owning_model) {
+				inst = (CEntity) o;
+				if (inst.owning_model != null &&
+						inst.owning_model != old_inst.owning_model && !inst.owning_model.closingAll) {
 					if (replace_by_connector) {
-						con = ((CEntity)inst).owning_model.newConnector(old_inst.owning_model, 
+						con = inst.owning_model.newConnector(old_inst.owning_model, 
 							((CEntityDefinition)old_inst.getInstanceType()).getCorrectName(), 
-							old_inst.instance_identifier, (CEntity)inst);
+							old_inst.instance_identifier, inst);
 						inst.changeReferences(old_inst, con);
 					} else {
 						inst.changeReferences(old_inst, null);
@@ -564,7 +565,8 @@ break;
 
 
 // Methods below are for debugging purposes
-	final protected void printInverses() {
+	final void printInverses() {
+System.out.println("InverseEntity ------------ printing inverse list");
 		Object o = inverseList;
 		while (o != null) {
 			if (o instanceof Inverse) {

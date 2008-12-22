@@ -1105,7 +1105,7 @@ STRING	:
     ;
 
 INT	:
-		(DIGIT)+
+		( '-' )? (DIGIT)+
 		( DOT (DIGIT)* { $setType(FLOAT); }	)?
 	;
 

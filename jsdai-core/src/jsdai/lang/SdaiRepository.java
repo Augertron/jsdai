@@ -715,7 +715,7 @@ public abstract class SdaiRepository extends SdaiCommon implements SdaiEventSour
 		return name;
 	}
 
-     
+
 /**
  * Returns repository identifier as a <code>String</code>.
  * <p> The repositories within a <code>SdaiSession</code> have unique identifiers,
@@ -1396,9 +1396,9 @@ public abstract class SdaiRepository extends SdaiCommon implements SdaiEventSour
 	 * Returns this repository effective permission which determines
 	 * the repository's access rights.
 	 * @return the effective permission
-	 * @throws SdaiException if an error occurs performing underlying JSDAI operations  
+	 * @throws SdaiException if an error occurs performing underlying JSDAI operations
 	 * @see #checkRead
-	 * @see #checkWrite 
+	 * @see #checkWrite
 	 * @see SdaiPermission
 	 * @since 4.0.1
 	 */
@@ -1410,9 +1410,9 @@ public abstract class SdaiRepository extends SdaiCommon implements SdaiEventSour
 	 * with no action.
 	 * @throws SdaiException <code>SY_SEC</code> if the owning session is
 	 *         not granted the read access
-	 * @throws SdaiException if an error occurs performing underlying JSDAI operations  
+	 * @throws SdaiException if an error occurs performing underlying JSDAI operations
 	 * @see #checkPermission
-	 * @see #checkWrite 
+	 * @see #checkWrite
 	 * @see SdaiPermission
 	 * @since 4.0.1
 	 */
@@ -1424,7 +1424,7 @@ public abstract class SdaiRepository extends SdaiCommon implements SdaiEventSour
 	 * with no action.
 	 * @throws SdaiException <code>SY_SEC</code> if the owning session is
 	 *         not granted the write access
-	 * @throws SdaiException if an error occurs performing underlying JSDAI operations  
+	 * @throws SdaiException if an error occurs performing underlying JSDAI operations
 	 * @see #checkPermission
 	 * @see #checkRead
 	 * @see SdaiPermission
@@ -1436,12 +1436,12 @@ public abstract class SdaiRepository extends SdaiCommon implements SdaiEventSour
 	 * Returns <code>false</code> if the owning session is not permitted to
 	 * create a new schema instance in this repository for specified native
 	 * schema. Otherwise, if schema instance could be created, it returns
-	 * <code>true</code>. 
+	 * <code>true</code>.
 	 * @param nativeSchema the native EXPRESS schema
 	 * @return <code>false</code> if the owning session is permitted to create
-	 *         a new schema instance; <code>true</code> otherwise. 
+	 *         a new schema instance; <code>true</code> otherwise.
 	 * @throws SdaiException if an error occurs performing underlying JSDAI operations
-	 * @see #checkCreateSchemaInstance(Class)  
+	 * @see #checkCreateSchemaInstance(Class)
 	 * @since 4.0.1
 	 */
 	public boolean checkCreateSchemaInstance(ESchema_definition nativeSchema) throws SdaiException {
@@ -1458,12 +1458,12 @@ public abstract class SdaiRepository extends SdaiCommon implements SdaiEventSour
 	 * Returns <code>false</code> if the owning session is not permitted to
 	 * create a new schema instance in this repository for specified native
 	 * schema. Otherwise, if schema instance could be created, it returns
-	 * <code>true</code>. 
+	 * <code>true</code>.
 	 * @param nativeSchema the native EXPRESS schema class
 	 * @return <code>false</code> if the owning session is permitted to create
-	 *         a new schema instance; <code>true</code> otherwise. 
+	 *         a new schema instance; <code>true</code> otherwise.
 	 * @throws SdaiException if an error occurs performing underlying JSDAI operations
-	 * @see #checkCreateSchemaInstance(ESchema_definition)  
+	 * @see #checkCreateSchemaInstance(ESchema_definition)
 	 * @since 4.0.1
 	 */
 	public boolean checkCreateSchemaInstance(Class nativeSchema) throws SdaiException {
@@ -1483,12 +1483,12 @@ public abstract class SdaiRepository extends SdaiCommon implements SdaiEventSour
 	/**
 	 * Returns <code>false</code> if the owning session is not permitted to
 	 * create a new model in this repository with specified underlying schema.
-	 * Otherwise, if model could be created, it returns <code>true</code>. 
+	 * Otherwise, if model could be created, it returns <code>true</code>.
 	 * @param underlyingSchema the underlying EXPRESS schema
 	 * @return <code>false</code> if the owning session is permitted to create
-	 *         a new model; <code>true</code> otherwise. 
+	 *         a new model; <code>true</code> otherwise.
 	 * @throws SdaiException if an error occurs performing underlying JSDAI operations
-	 * @see #checkCreateSdaiModel(Class)  
+	 * @see #checkCreateSdaiModel(Class)
 	 * @since 4.0.1
 	 */
 	public boolean checkCreateSdaiModel(ESchema_definition underlyingSchema) throws SdaiException {
@@ -1504,10 +1504,10 @@ public abstract class SdaiRepository extends SdaiCommon implements SdaiEventSour
 	/**
 	 * Returns <code>false</code> if the owning session is not permitted to
 	 * create a new model in this repository with specified underlying schema.
-	 * Otherwise, if model could be created, it returns <code>true</code>. 
+	 * Otherwise, if model could be created, it returns <code>true</code>.
 	 * @param underlyingSchema the underlying EXPRESS schema class
 	 * @return <code>false</code> if the owning session is permitted to create
-	 *         a new model; <code>true</code> otherwise. 
+	 *         a new model; <code>true</code> otherwise.
 	 * @throws SdaiException if an error occurs performing underlying JSDAI operations
 	 * @see #checkCreateSdaiModel(ESchema_definition)
 	 * @since 4.0.1
@@ -1549,7 +1549,7 @@ public abstract class SdaiRepository extends SdaiCommon implements SdaiEventSour
 	}
 
 	/**
-	 * This method should be always overridden by remote repository 
+	 * This method should be always overridden by remote repository
 	 */
 	protected String doGetLockingUser() throws SdaiException {
 		return null;
@@ -1680,7 +1680,7 @@ public abstract class SdaiRepository extends SdaiCommon implements SdaiEventSour
 		throws  SdaiException;
 
 
-	protected boolean createSdaiModelCommonChecking(String model_name, ESchema_definition schema, 
+	protected boolean createSdaiModelCommonChecking(String model_name, ESchema_definition schema,
 													boolean remote, int transactionMode)
 			throws  SdaiException {
 		if (session == null) {
@@ -1748,7 +1748,7 @@ System.out.println("  SdaiRepository   dictionary: " + dict.name);
 		for (int i = 0; i < sch_data.noOfEntityDataTypes; i++) {
 			edeff = (EEntity_definition)sch_data.entities[i];
 CEntity eee = (CEntity)edeff;
-System.out.println("  SdaiRepository  i = " + i + "   ====== entity: " + edeff.getName(null) + 
+System.out.println("  SdaiRepository  i = " + i + "   ====== entity: " + edeff.getName(null) +
 " ident: #" + eee.instance_identifier);
 		}
 
@@ -1873,7 +1873,7 @@ System.out.println("  SdaiRepository   its count: " + cc);
 		} else {
 			model_created_during_simulation = true;
 			try {
-				createSdaiModelCommonChecking(modelHeader.name, dictionary.described_schema, 
+				createSdaiModelCommonChecking(modelHeader.name, dictionary.described_schema,
 											  true, SdaiTransaction.READ_ONLY);
 				model = createSdaiModelCommonCreating(modelHeader.name, dictionary.described_schema, true);
 // 				model = createSdaiModelCommon(modelHeader.name, dictionary.described_schema, true);
@@ -1965,7 +1965,7 @@ System.out.println("  SdaiRepository   its count: " + cc);
 		}
 		return false;
 	}
-	
+
 	protected void postCreateSchemaInstance(SchemaInstance instance, boolean remote) throws SdaiException {
 		schema_count++;
 		instance.created = true;
@@ -2623,21 +2623,21 @@ System.out.println("  SdaiRepository   its count: " + cc);
  * the value standing for <code>associated_models</code> in the
  * corresponding instance of <code>file_population</code> is missing,
  * that is, dollar sign is used (see ISO 10303-21::8.2.4 file_population).
- * <p> The repository may contain instances which reference instances in other 
+ * <p> The repository may contain instances which reference instances in other
  * repositories. In this case the strategy is as follows:
- * <ul><li>if such a reference is a non-aggregate value of an attribute or belongs 
- * to an aggregate of Express type ARRAY, then this reference in an exchange 
+ * <ul><li>if such a reference is a non-aggregate value of an attribute or belongs
+ * to an aggregate of Express type ARRAY, then this reference in an exchange
  * structure being formed is replaced by an unset value (dollar sign "$");
  * <li>if such a reference belongs to an aggregate of Express type either LIST or
- * SET or BAG, then when writing data to an exchange structure this reference 
+ * SET or BAG, then when writing data to an exchange structure this reference
  * is simply dropped;
  * </ul>
  * <p> After execution of this method the repository itself remains unchanged.
- * In particular, all references (if any) from the current repository to other 
+ * In particular, all references (if any) from the current repository to other
  * repositories are retained.
  * The method is disabled for special repository "SystemRepository",
  * containing dictionary and mapping data.
- * In this case SdaiException FN_NAVL is thrown. 
+ * In this case SdaiException FN_NAVL is thrown.
  * @param location the name of the file created by the method.
  * @throws SdaiException RP_NEXS, repository does not exist.
  * @throws SdaiException RP_NOPN, repository is not open.
@@ -2669,13 +2669,13 @@ System.out.println("  SdaiRepository   its count: " + cc);
  * {@link SdaiSession#createRepository createRepository} or linked by
  * {@link SdaiSession#linkRepository linkRepository}, the name of the
  * resulting file coincides with the name of the repository.
- * The second parameter of the method can be used to set the value of the attribute 
- * <code>name</code> of the header entity <code>file_name</code> 
+ * The second parameter of the method can be used to set the value of the attribute
+ * <code>name</code> of the header entity <code>file_name</code>
  * (see ISO 10303-21::8.2.2 file_name). If this parameter is <code>null</code>,
- * then the value of <code>name</code> depends on the origin of the 
+ * then the value of <code>name</code> depends on the origin of the
  * repository. If it has been imported from an exchange structure, then
- * the existing value of <code>name</code> is taken. If, however, the repository 
- * was created, then its name as the value of the attribute 
+ * the existing value of <code>name</code> is taken. If, however, the repository
+ * was created, then its name as the value of the attribute
  * <code>name</code> is used.
  *
  * <p> The contents of each model of the repository is written down to
@@ -2700,32 +2700,32 @@ System.out.println("  SdaiRepository   its count: " + cc);
  * the value standing for <code>associated_models</code> in the
  * corresponding instance of <code>file_population</code> is missing,
  * that is, dollar sign is used (see ISO 10303-21::8.2.4 file_population).
- * <p> The repository may contain instances which reference instances in other 
+ * <p> The repository may contain instances which reference instances in other
  * repositories. In this case the strategy is as follows:
- * <ul><li>if such a reference is a non-aggregate value of an attribute or belongs 
- * to an aggregate of Express type ARRAY, then this reference in an exchange 
+ * <ul><li>if such a reference is a non-aggregate value of an attribute or belongs
+ * to an aggregate of Express type ARRAY, then this reference in an exchange
  * structure being formed is replaced by an unset value (dollar sign "$");
  * <li>if such a reference belongs to an aggregate of Express type either LIST or
- * SET or BAG, then when writing data to an exchange structure this reference 
+ * SET or BAG, then when writing data to an exchange structure this reference
  * is simply dropped;
  * </ul>
- * <p> Applying this method, it is possible to write entity names either in usual form or in short form. 
- * For example, for entity <code>cartesian_point</code> any of the following cases can be chosen: 
+ * <p> Applying this method, it is possible to write entity names either in usual form or in short form.
+ * For example, for entity <code>cartesian_point</code> any of the following cases can be chosen:
  * <ul><li> #1016=CARTESIAN_POINT('cp5',(0.0,0.0,-0.25));
  * <li> #1016=CRTPNT('cp5',(0.0,0.0,-0.25));
  * </ul>
- * To change the current alternative, {@link #shortNameSupport shortNameSupport} 
+ * To change the current alternative, {@link #shortNameSupport shortNameSupport}
  * method should be used.
- * Selecting the short form can give the desired result only if the short names of entities 
+ * Selecting the short form can give the desired result only if the short names of entities
  * are defined in the data dictionary (provided by an Express compiler).
- * If, for an entity, the method fails to identify its short name, then the full entity 
+ * If, for an entity, the method fails to identify its short name, then the full entity
  * name is used instead of.
  * <p> After execution of this method the repository itself remains unchanged.
- * In particular, all references (if any) from the current repository to other 
+ * In particular, all references (if any) from the current repository to other
  * repositories are retained.
  * The method is disabled for special repository "SystemRepository",
  * containing dictionary and mapping data.
- * In this case SdaiException FN_NAVL is thrown. 
+ * In this case SdaiException FN_NAVL is thrown.
  * @param location the name of the file created by the method.
  * @param file_name the name of the exchange structure to which this repository is exported.
  * @throws SdaiException RP_NEXS, repository does not exist.
@@ -3250,10 +3250,11 @@ System.out.println("   SdaiRepository   *****  model: " + model.name +
 					ln = assoc_mod.myLength;
 				}
 				stream.writeShort(ln);
+				int res;
 				for (j = 0; j < ln; j++) {
 					mod = (SdaiModel)assoc_mod.myData[j];
 					if (mod.repository == this) {
-						int res = findModel(0, models.myLength - 1, mod.name);
+						res = findModel(0, models.myLength - 1, mod.name);
 						if (res < 0) {
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
@@ -3263,6 +3264,26 @@ System.out.println("   SdaiRepository   *****  model: " + model.name +
 						stream.writeByte('E');
 						stream.writeUTF(mod.name);
 						stream.writeUTF(mod.repository.name);
+					}
+				}
+				if (sch.included_schemas != null && sch.included_schemas.myLength > 0) {
+					stream.writeByte('I');
+					ln = sch.included_schemas.myLength;
+					stream.writeShort(ln);
+					for (j = 0; j < ln; j++) {
+						SchemaInstance incl_sch = (SchemaInstance)sch.included_schemas.myData[j];
+						if (incl_sch.repository == this) {
+							res = findSchemaInstance(0, schemas.myLength - 1, incl_sch.name);
+							if (res < 0) {
+								throw new SdaiException(SdaiException.SY_ERR);
+							}
+							stream.writeByte('L');
+							stream.writeInt(res);
+						} else {
+							stream.writeByte('E');
+							stream.writeUTF(incl_sch.name);
+							stream.writeUTF(incl_sch.repository.name);
+						}
 					}
 				}
 			}
@@ -4277,6 +4298,23 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
 	}
 
 
+	SdaiModel verify_schema_name(String pattern_schema, String sch_name) throws SdaiException {
+		String search_mod_name = pattern_schema + SdaiSession.DICTIONARY_NAME_SUFIX;
+		SdaiModelDictionaryImpl mod =
+			(SdaiModelDictionaryImpl)SdaiSession.systemRepository.findSdaiModel(search_mod_name);
+		if (mod == null || mod.property_schemas == null) {
+			return null;
+		}
+		for (int j = 0; j < mod.property_schemas.length; j++) {
+			String [] line = mod.property_schemas[j];
+			if (line.length == 1 && compare_against_pattern(sch_name, line[0])) {
+				return mod;
+			}
+		}
+		return null;
+	}
+
+
 /**
 	Finds entity definition for a given entity java class.
 	The method is used in isKindOf(Class type) in CEntity.
@@ -4461,6 +4499,24 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
 	}
 
 
+	static void printWarningToLogo2(SdaiSession session, String text, String repo_name,
+			SchemaInstance schema, String included_schema) throws SdaiException {
+		if (session != null && session.logWriterSession != null) {
+			session.printlnSession(text + SdaiSession.line_separator +
+				AdditionalMessages.BF_REP + repo_name + SdaiSession.line_separator +
+				AdditionalMessages.BF_SCH + schema.name + SdaiSession.line_separator +
+				AdditionalMessages.BF_REPS + schema.repository.name + SdaiSession.line_separator +
+				AdditionalMessages.BF_ISCH + included_schema);
+		} else {
+			SdaiSession.println(text + SdaiSession.line_separator +
+				AdditionalMessages.BF_REP + repo_name + SdaiSession.line_separator +
+				AdditionalMessages.BF_SCH + schema.name + SdaiSession.line_separator +
+				AdditionalMessages.BF_REPS + schema.repository.name + SdaiSession.line_separator +
+				AdditionalMessages.BF_ISCH + included_schema);
+		}
+	}
+
+
 /* Creates a new target SdaiModel in this repository
  * and invoke copyApplicationInstance for all instances in source model for the target model
  * and finally update references between target instances to become local.
@@ -4623,7 +4679,7 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
 				exData.abort();
 			}
 		}
-		
+
 		abortingInternal(modified, contents_modified);
 		modified = false;
 	}
@@ -4787,28 +4843,93 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
 		}
 	}
 
-	void removeEntityExternalData(CEntity instance, boolean deletingInstance) throws SdaiException {
+	void removeEntityExternalData(CEntity instance, boolean deletingInstance, boolean deletedExternalData) throws SdaiException {
 		Long instanceIdentifier = new Long(instance.instance_identifier);
 		Object externalDataObject = (entityExternalData != null) ?
 			entityExternalData.remove(instanceIdentifier) : null;
 		if(externalDataObject == null) {
-			if(!deletingInstance) {
-				//entityRemovedExternalData = null;
-				// FIXME: some one should make this statement more clear before uncommenting, 
-				// because it brakes code in SdaiRepositoryRMIIml class commitExternalData method.
-				if(entityRemovedExternalData == null) {
-					entityRemovedExternalData = new HashMap();
-				}
-				entityRemovedExternalData.put(instanceIdentifier, instance);
-				//System.out.println("sheduled for remove");
+			if(deletingInstance && !testNewEntityExternalData(instance)) {
+				return;
 			}
+			//entityRemovedExternalData = null;
+			// FIXME: some one should make this statement more clear before uncommenting,
+			// because it brakes code in SdaiRepositoryRMIIml class commitExternalData method.
+			if(entityRemovedExternalData == null) {
+				entityRemovedExternalData = new HashMap();
+			}
+			entityRemovedExternalData.put(instanceIdentifier, instance);
+			//System.out.println("sheduled for remove");
 		} else {
 			if(entityRemovedExternalData == null) {
 				entityRemovedExternalData = new HashMap();
 			}
 			entityRemovedExternalData.put(instanceIdentifier, externalDataObject);
-			((ExternalData)externalDataObject).removed();
+			((ExternalData)externalDataObject).setDeleted(deletedExternalData);
 			//System.out.println("sheduled for remove2");
+		}
+	}
+
+	void removeLoadedEntityExternalData(CEntity instance, boolean deletedExternalData) throws SdaiException {
+		Long instanceIdentifier = new Long(instance.instance_identifier);
+		Object externalDataObject = (entityExternalData != null) ?
+			entityExternalData.remove(instanceIdentifier) : null;
+		if(externalDataObject != null) {
+			if(entityRemovedExternalData == null) {
+				entityRemovedExternalData = new HashMap();
+			}
+			entityRemovedExternalData.put(instanceIdentifier, externalDataObject);
+			((ExternalData)externalDataObject).setDeleted(deletedExternalData);
+		}
+	}
+
+	void restoreExternalDataForInstance(CEntity instance) {
+		Long instanceIdentifier = new Long(instance.instance_identifier);
+		ExternalData externalData =
+			(ExternalData) ((entityRemovedExternalData != null) ?
+				entityRemovedExternalData.get(instanceIdentifier) : null);
+		if(externalData != null && !externalData.isDeleted()) {
+			entityRemovedExternalData.remove(instanceIdentifier);
+			if(entityExternalData == null) {
+				entityExternalData = new HashMap();
+			}
+			entityExternalData.put(instanceIdentifier, externalData);
+			externalData.owningEntity = instance;
+		}
+	}
+
+	void deleteUndoRedoExternalData(long inst_id) {
+		Long instanceIdentifier = new Long(inst_id);
+		Object externalDataObject = (entityExternalData != null) ?
+				entityExternalData.remove(instanceIdentifier) : null;
+		if(externalDataObject != null) {
+			if(entityRemovedExternalData == null) {
+				entityRemovedExternalData = new HashMap();
+			}
+			entityRemovedExternalData.put(instanceIdentifier, externalDataObject);
+			((ExternalData)externalDataObject).setDeleted(true);
+		} else if(entityRemovedExternalData != null) {
+			externalDataObject = entityRemovedExternalData.get(instanceIdentifier);
+			if(externalDataObject != null) {
+				((ExternalData)externalDataObject).setDeleted(true);
+			}
+		}
+	}
+
+	void restoreUndoRedoExternalData(long inst_id) {
+		Long instanceIdentifier = new Long(inst_id);
+		Object externalDataObject = (entityRemovedExternalData != null) ?
+				entityRemovedExternalData.remove(instanceIdentifier) : null;
+		if(externalDataObject != null) {
+			if(entityExternalData == null) {
+				entityExternalData = new HashMap();
+			}
+			entityExternalData.put(instanceIdentifier, externalDataObject);
+			((ExternalData)externalDataObject).setDeleted(false);
+		} else if(entityExternalData != null) {
+			externalDataObject = entityExternalData.get(instanceIdentifier);
+			if(externalDataObject != null) {
+				((ExternalData)externalDataObject).setDeleted(false);
+			}
 		}
 	}
 
@@ -4882,11 +5003,11 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
 //		}
 //	}
 
-    
+
 //    public long getMaxPersistentLabel() {
 //        return largest_identifier;
 //    }
-    
+
 //    public void setMaxPersistentLabel( long newMaxPersistentLabel) throws SdaiException {
 //        if (newMaxPersistentLabel >= largest_identifier) {
 //            largest_identifier = newMaxPersistentLabel;
@@ -4896,7 +5017,7 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
 //            throw new SdaiException(SdaiException.VA_NVLD, "New maximal persistent label is lesser than current maximal persistent label");
 //        }
 //    }
-    
+
 /**
  * Returns current persistent label.
  * @return persistent label.
@@ -4905,7 +5026,7 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
     public long getPersistentLabel() {
         return current_identifier;
     }
-    
+
 //    public long getNextUsedPersistentLabel() {
 //        return next_used_identifier;
 //    }
@@ -4957,7 +5078,7 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
 //                            }
 //                        //}
 //                    }
-//                    
+//
 //                    next_used_identifier = next_used_pl;
 //                }
 //                else {
@@ -4967,12 +5088,12 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
 //                current_identifier = newPersistentLabel;
 //                //System.out.println("setPL > MODEL: current="+current_identifier);
 //                //System.out.println("setPL > MODEL: next_used="+next_used_identifier);
-//                //System.out.println("setPL > MODEL: largest="+largest_identifier);                
+//                //System.out.println("setPL > MODEL: largest="+largest_identifier);
 //            }
 //            else {
 //                throw new SdaiException(SdaiException.FN_NAVL);
 //            }
-//            
+//
 //		} // syncObject
 //    }
 
@@ -5073,7 +5194,7 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
 		}
 		return null;
 	}
-    
+
 
 /**
  * Returns remote <code>SchemaInstance</code> using specified schema instance reference.
@@ -5087,7 +5208,7 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
     public SchemaInstance getSchemaInstanceByRef(SerializableRef schemaRef) throws SdaiException {
 	    throw new SdaiException(SdaiException.FN_NAVL);
 	}
-    
+
     protected SchemaInstance findSchemaInstanceById(long schemaId) throws SdaiException {
         SchemaInstance schema;
 		for (int i = 0; i < schemas.myLength; i++) {
@@ -5118,10 +5239,10 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
     public EEntity getInstanceByRef(SerializableRef entityRef) throws SdaiException {
 	    throw new SdaiException(SdaiException.FN_NAVL);
 	}
-    
+
     protected void preCommitting() throws SdaiException {
 	}
-    
+
     //String removeRecurrenceNumber(String name) throws SdaiException {
     //    return name;
     //}
@@ -5141,11 +5262,11 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
 		}
         return name;
     }
-    
+
     void postCommittingRelease(boolean restore) throws SdaiException {
     }
-    
-    
+
+
 /**
  * Makes a copy of all models together with instances and schema instances
  * from the specified repository to this repository.
@@ -5177,16 +5298,16 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
         AEntity allSourceInstances;
         AEntity allTargetInstances;
         SdaiIterator itTargetInstances;
-        
+
         while (itSourceModel.next()) {
             sourceModel = aSourceModel.getCurrentMember(itSourceModel);
             if (sourceModel.getMode() == SdaiModel.NO_ACCESS) {
                 sourceModel.startReadOnlyAccess();
             }
         }
-        
+
         itSourceModel.beginning();
-        
+
         if (itSourceModel.next()) {
             //--Copying all instances into one model to retain references between them
             allSourceInstances = aSourceModel.getInstances();
@@ -5197,12 +5318,12 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
             allTargetInstances = targetModel.copyInstances(allSourceInstances);
 				targetModel.bypass = false;
             itTargetInstances = allTargetInstances.createIterator();
-            
+
             //--Passing instances of first model
             for (long i = 0; i < sourceModel.getInstanceCount(); i++) {
                 itTargetInstances.next();
             }
-            
+
             //--Moving instances to appropriate models
             while (itSourceModel.next()) {
                 sourceModel = aSourceModel.getCurrentMember(itSourceModel);
@@ -5221,7 +5342,7 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
                 }
             }
         }
-        
+
         ASchemaInstance aSourceSI = sourceRepository.getSchemas();
         SdaiIterator itSourceSI = aSourceSI.createIterator();
         while (itSourceSI.next()) {
@@ -5236,8 +5357,8 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
             }
         }
     }
-    
-    
+
+
 /**
  * Makes a copy of all instances from the specified schema instance to this repository.
  * References between instances of the given repository are mapped
@@ -5268,16 +5389,16 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
         AEntity allSourceInstances;
         AEntity allTargetInstances;
         SdaiIterator itTargetInstances;
-        
+
         while (itSourceModel.next()) {
             sourceModel = aSourceModel.getCurrentMember(itSourceModel);
             if (sourceModel.getMode() == SdaiModel.NO_ACCESS) {
                 sourceModel.startReadOnlyAccess();
             }
         }
-        
+
         itSourceModel.beginning();
-        
+
         if (itSourceModel.next()) {
             //--Copying all instances into one model to retain references between them
             allSourceInstances = aSourceModel.getInstances();
@@ -5288,12 +5409,12 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
             allTargetInstances = targetModel.copyInstances(allSourceInstances);
 				targetModel.bypass = false;
             itTargetInstances = allTargetInstances.createIterator();
-            
+
             //--Passing instances of first model
             for (long i = 0; i < sourceModel.getInstanceCount(); i++) {
                 itTargetInstances.next();
             }
-            
+
             //--Moving instances to appropriate models
             while (itSourceModel.next()) {
                 sourceModel = aSourceModel.getCurrentMember(itSourceModel);
@@ -5312,7 +5433,7 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
                 }
             }
         }
-        
+
         SchemaInstance targetSI = this.createSchemaInstance(sourceSchemaInstance.getName(), sourceSchemaInstance.getNativeSchema());
         ASdaiModel aSourceAssociatedModel = sourceSchemaInstance.getAssociatedModels();
         SdaiIterator itSourceAssociatedModel = aSourceAssociatedModel.createIterator();
@@ -5321,10 +5442,10 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
             SdaiModel targetAssociatedModel = this.findSdaiModel(sourceAssociatedModel.getName());
             targetSI.addSdaiModel(targetAssociatedModel);
         }
-        
+
     }
-    
-    
+
+
 /**
  * Makes a copy of all instances from the specified schema instance aggregate to this repository.
  * References between instances of the given repository are mapped
@@ -5355,16 +5476,16 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
         AEntity allSourceInstances;
         AEntity allTargetInstances;
         SdaiIterator itTargetInstances;
-        
+
         while (itSourceModel.next()) {
             sourceModel = aSourceModel.getCurrentMember(itSourceModel);
             if (sourceModel.getMode() == SdaiModel.NO_ACCESS) {
                 sourceModel.startReadOnlyAccess();
             }
         }
-        
+
         itSourceModel.beginning();
-        
+
         if (itSourceModel.next()) {
             //--Copying all instances into one model to retain references between them
             allSourceInstances = aSourceModel.getInstances();
@@ -5377,14 +5498,14 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
 				targetModel.bypass = false;
             itTargetInstances = allTargetInstances.createIterator();
             //System.out.println("-- T instances = "+allTargetInstances);
-            
+
             //--Passing instances of first model
             //System.out.println("-- S model = "+sourceModel.getName());
             //System.out.println("-- S count = "+sourceModel.getInstanceCount());
             for (long i = 0; i < sourceModel.getInstanceCount(); i++) {
                 itTargetInstances.next();
             }
-            
+
             //--Moving instances to appropriate models
             while (itSourceModel.next()) {
                 sourceModel = aSourceModel.getCurrentMember(itSourceModel);
@@ -5406,7 +5527,7 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
                 }
             }
         }
-        
+
         SdaiIterator itSourceSI = aSourceSchemaInstance.createIterator();
         while (itSourceSI.next()) {
             SchemaInstance sourceSI = aSourceSchemaInstance.getCurrentMember(itSourceSI);
@@ -5419,7 +5540,7 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
                 targetSI.addSdaiModel(targetAssociatedModel);
             }
         }
-        
+
     }
 
     protected final String getNameFast() /*throws SdaiException*/ {
@@ -5483,6 +5604,15 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
 	protected static final void forwardExternalDataSetOwningEntity(ExternalData externalData,
 			CEntity owningEntity) throws SdaiException {
 		externalData.owningEntity = owningEntity;
+	}
+
+	protected static final void forwardExternalDataSetStoreStream(ExternalData externalData,
+			InputStream storeStream) throws SdaiException {
+		externalData.storeStream = storeStream;
+	}
+
+	protected static void forwardExternalDataRemoved(ExternalData extData) throws SdaiException {
+		extData.removed();
 	}
 
  /**

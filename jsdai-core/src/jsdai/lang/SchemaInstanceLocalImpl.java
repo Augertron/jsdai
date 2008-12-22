@@ -30,14 +30,14 @@ import jsdai.dictionary.*;
  * @author  Vaidas Nargėlas
  */
 class SchemaInstanceLocalImpl extends SchemaInstance {
-	
-	SchemaInstanceLocalImpl(String given_name, CSchema_definition schema, 
+
+	SchemaInstanceLocalImpl(String given_name, CSchema_definition schema,
 			SdaiRepository given_repository) throws SdaiException {
 		super(given_name, schema, given_repository);
 	}
 
 
-	SchemaInstanceLocalImpl(String given_name, SdaiRepository given_repository, 
+	SchemaInstanceLocalImpl(String given_name, SdaiRepository given_repository,
 			SdaiModel given_dictionary) throws SdaiException {
 		super(given_name, given_repository, given_dictionary);
 	}
@@ -66,6 +66,14 @@ class SchemaInstanceLocalImpl extends SchemaInstance {
 //		} // syncObject
 	}
 
+	public ASchemaInstance getIncludedSchemaInstances() throws SdaiException {
+		check_schemaInstance();
+		if (included_schemas == null) {
+			included_schemas = new ASchemaInstance(SdaiSession.setType0toN, this);
+		}
+		return included_schemas;
+	}
+
 
 	public void delete() throws SdaiException {
 //		synchronized (syncObject) {
@@ -80,7 +88,6 @@ class SchemaInstanceLocalImpl extends SchemaInstance {
 			addSdaiModelCommon(model);
 //		} // syncObject
 	}
-
 
 	protected ASdaiModel getAssociatedModelsPrivateCommon() throws SdaiException {
 		return null;

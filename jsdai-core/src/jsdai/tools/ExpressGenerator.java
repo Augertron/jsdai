@@ -158,6 +158,7 @@ public class ExpressGenerator {
 	static String specified_schema = null;
 	static boolean flag_print_schemas = false;
 	static int flag_printed_schema = 0;
+	static boolean flag_do_not_allign_LOCAL = false;
 	static boolean flag_help = false;
 	static boolean flag_long_form = false;
 	static boolean flag_include_arm = false;
@@ -208,6 +209,7 @@ public class ExpressGenerator {
 				if (args[i].equalsIgnoreCase("-end_comment")) flag_end_comment = true;
 				if (args[i].equalsIgnoreCase("-format_expressions")) flag_format_expressions = true;
 				if (args[i].equalsIgnoreCase("-format")) flag_format_expressions = true;
+				if (args[i].equalsIgnoreCase("-dont_allign_local")) flag_do_not_allign_LOCAL = true;
 				if (args[i].equalsIgnoreCase("-include_arm")) flag_include_arm = true;
 				if (args[i].equalsIgnoreCase("-exclude_arm")) flag_exclude_arm = true;
 				if (args[i].equalsIgnoreCase("-skip_conflicts")) flag_skip_conflicts = true;
@@ -2478,9 +2480,20 @@ public class ExpressGenerator {
                 partType += print(" );");
 			}
 		}
-        else {
-            partType += print("GENERIC");
-        }
+    else if (type instanceof EData_type) {
+
+	  	if (((EData_type)type).getName(null).equals("_ENTITY")) {
+		 		partType += print("GENERIC_ENTITY");
+    	} else 
+      if (((EData_type)type).getName(null).equals("_GENERIC")) {
+	    	partType += print("GENERIC");
+			} else {
+		  	partType += print("UNKNOWN_DATA_TYPE");
+			}     
+  
+    } else {
+	    partType += print("UNKNOWN_NON_DATA_TYPE");
+   	}
 		return partType;
 	}
 
@@ -2523,6 +2536,7 @@ public class ExpressGenerator {
 			}
             else {  // --VV--
                 partType += print("AGGREGATE");
+  
             }
             if (bound1!=null || bound2!=null) {
                 partType += printBound(bound1);
@@ -2693,9 +2707,21 @@ public class ExpressGenerator {
                 partType += print(" );");
 			}
 		}
-        else {
-            partType += print("GENERIC");
-        }
+    else if (type instanceof EData_type) {
+//    	System.out.println("generic or generic_entity type: " + type);
+
+			if (((EData_type)type).getName(null).equals("_ENTITY")) {
+	    	partType += print("GENERIC_ENTITY");
+  	  } else 
+    	if (((EData_type)type).getName(null).equals("_GENERIC")) {
+	    	partType += print("GENERIC");
+			} else {
+		  	partType += print("UNKNOWN_DATA_TYPE");
+			}     
+  
+    } else {
+			partType += print("UNKNOWN_NON_DATA_TYPE");
+    }
 		return partType;
 	}
 
@@ -2973,7 +2999,12 @@ public class ExpressGenerator {
                     	sEC=replaceAll( sEC, "-- LOCAL", "-- L0CAL\n");
                     	sEC=replaceAll( sEC, "LOCAL", "LOCAL\n");
                     	sEC=replaceAll( sEC, ";", ";\n");
-										} // format expressions
+                  	} else {
+	                  	// trying to allign LOCAL and END_LOCAL
+	                  	sEC = "\n" + allignLOCAL(sEC);
+                  		
+                  	}
+
 /*
 
                     sEC=replaceAll( sEC, ";", ";<BR>\n");
@@ -3050,7 +3081,11 @@ public class ExpressGenerator {
 	                    sEC=replaceAll( sEC, "-- LOCAL", "-- L0CAL\n");
   	                  sEC=replaceAll( sEC, "LOCAL", "LOCAL\n");
     	                sEC=replaceAll( sEC, ";", ";\n");
-                  	} // format
+                  	} else {
+	                  	// trying to allign LOCAL and END_LOCAL
+	                  	sEC = "\n" + allignLOCAL(sEC);
+                  		
+                  	}
 
 /*
 
@@ -3104,6 +3139,294 @@ public class ExpressGenerator {
 	}
 
 
+	  private String insertMultipleLabels(String a_parameter, A_string labels)  throws SdaiException {
+
+
+//System.out.println("MULTI - parameter: " + a_parameter + ", labels: " + labels);
+
+
+      String result = a_parameter;
+//      String result2 = "";
+    	SdaiIterator iter_labels = labels.createIterator();
+      String a_label = "";
+      int index = 0;
+      int current_index = 0;
+      boolean first_time = true;
+      while (iter_labels.next()) {
+      	a_label = labels.getCurrentMember(iter_labels);
+
+//System.out.println("MULTI - current label: " + a_label);
+      	/*
+      		 this label goes after the current occurence of AGGREGATE,
+      		 if a_label is not "", then it must be AGGREGATE,
+      		 if a_label is "" then it might be either AGGREGATE, or ARRAY, BAG, LISI, SET, but all of them have OF and the label is not present
+      		 
+      	*/
+				if ((a_label != null) && (!a_label.equals(""))) {
+					// this MUST match AGGREGATE OF
+				  index = result.indexOf("AGGREGATE OF ",current_index);
+      		if (index >= 0) { // it must be
+//   			  	String substring_1 = result.substring(index,index + 9);
+   			  	String substring_1 = result.substring(0,index + 9);
+   			    String substring_2 = result.substring(index + 9);
+   			    result = substring_1 + ": " + a_label + substring_2;
+                 
+//System.out.println("MULTI - index: " + index);
+//System.out.println("MULTI - substring 1: " + substring_1);
+//System.out.println("MULTI - substring 2: " + substring_2);
+//System.out.println("MULTI - result: " + result);
+				
+				/*
+				
+				   ... AGGREGATE OF .........
+				   substring_1 = ....AGGREGATE
+				   substring_2 =  OF .................
+				    
+				    ...AGGREGATE: a_label OF ............
+			
+			     should be safe to leave the same index and search in result again
+				
+				*/
+				
+				 // needed to make sure that when a label is not present the same OF is not taken again instead of the next one
+				 int index2 = result.indexOf(" OF ", current_index);
+				 if (index2 > index) {
+						index = index2;
+				 }
+				
+				} else {
+					// the label is present and AGGREGATE OF not found 
+					// that means it must be the label of the final member of the aggregate
+					// we need to add this label at the very end.
+					// however we could add more checking to catch internal errors:
+					// 1) the label must the the last one
+					// 2) the final member must be "GENERIC" or "GENERIC ENTITY"
+					int index2 = result.lastIndexOf("GENERIC_ENTITY",current_index); // if found, it has to be the end of the string
+//						System.out.println("current result: " + result + ", current_index: " + current_index);
+//						System.out.println("result.lastIndexOf(\"GENERIC_ENTITY\",current_index): " + result.lastIndexOf("GENERIC_ENTITY",current_index));
+//						System.out.println("result.length(): " + result.length());
+//						System.out.println("\"GENERIC_ENTITY\".length(): " + "GENERIC_ENTITY".length());
+////						System.out.println("result.lastIndexOf(\"GENERIC\",current_index): " + result.lastIndexOf("GENERIC",current_index));
+//						System.out.println("result.lastIndexOf(\"GENERIC\",current_index): " + result.indexOf("GENERIC",current_index));
+//						System.out.println("result.length(): " + result.length());
+//						System.out.println("\"GENERIC\".length(): " + "GENERIC".length());
+					
+					if (
+						 	((result.indexOf("GENERIC_ENTITY",current_index) == result.length() - "GENERIC_ENTITY".length()) ||
+						 	(result.lastIndexOf("GENERIC_ENTITY") == result.indexOf("GENERIC_ENTITY",current_index))) || (
+						 	(result.indexOf("GENERIC",current_index) == result.length() - "GENERIC".length()) &&
+						 	(result.lastIndexOf("GENERIC") == result.indexOf("GENERIC",current_index))) 
+						 ) {
+						 	// ok, the element is correct, but is the label the last one?
+						 	if (!iter_labels.next()) {
+						 		// ok, we really can add the label here:
+						 		result += ": " + a_label;
+						 	} else {
+						 		// INTERNAL ERROR not last label but does not match an AGGREGATE
+								System.out.println("ExpressGenerator INTERNAL ERROR: the label does not match an AGGREGATE even though it is not the last one: " + a_label);
+						 	}
+					} else {
+						// INTERNAL ERROR wrong element 
+						System.out.println("ExpressGenerator INTERNAL ERROR: wrong inner-most member of a nested aggregate, must be GENERIC or GENERIC ENTITY: " + result);
+					}
+				 
+					
+					
+				} // index < 0 - AGGREGATE OF not found for an existing label, thus, it was the last element
+			} else { // if the label is not present
+					// this must match AGGREGATE OF, ARRAY [] OF, BAG [] OF, LIST [] OF, SET [] OF
+					// skip by one " OF "  because the label is not present
+				  index = result.indexOf(" OF ",current_index);
+// System.out.println("MULTI - index 3: " + index + ", string: " + result + ", current_index: " + current_index);
+			}
+
+		  current_index = index + 1;
+
+	  } // while
+		return result;
+	}  
+
+
+   	private String insert2Labels(String a_parameter, String aggr_label, String element_label) {
+   		String result = a_parameter;
+   		// at least the aggregate has a valid label, therefore also it is AGGREGATE, not SET or anything else
+   		// AGGREGATE OF must be transformed into
+   		// AGGREGATE: label1 OF element:label2
+
+      // Correction - the last label (the element label) is not included at all if absent,
+      // so AGGREGATE: label1 OF AGGREGATE: label2 OF GENERIC is also possible and should be supported
+
+
+      // so here are the possible cases:
+      // if both labels are present:  "label1","label2"
+      // 1) AGGREGATE:label1 OF GENERIC:label2
+      // 2) AGGREGATE:label1 OF AGGREGATE:label2 of GENERIC
+
+      // empty labels "" are also generated for general sets, etc. so these cases are also possible 
+      // if the first label is absent:  "","label2"  
+      // 3) AGGREGATE OF GENERIC:label2
+			// 3b) SET OF GENERIC:label2  - and other such cases ARRAY, BAG, LIST
+			// 3c) SET[0:?] OF GENERIC:label2 - the same but with bound
+      // 4) AGGREGATE OF AGGREGATE:label2 OF GENERIC
+      // 4b) SET OF AGGREGATE:label2 OF GENERIC
+      // 4c) SET[0:?] OF AGGREGATE:label2 OF GENERIC
+
+      // if the 2nd label is absent: "label1",""
+      // not sure if such case is generated or always just "label1"
+      // but in case it is or may be introduced later by the changes in the express compiler,
+      // 5)  AGGREGATE:label1 OF AGGREGATE OF GENERIC
+			// 5b) AGGREGATE:label1 OF SET OF GENERIC
+			// 5c) AGGREGATE:label1 OF SET[0:?] OF GENERIC
+      // 6) AGGREGATE:label1 OF GENERIC - because currently absent label for the final element is not included, still better to support it just in case
+
+      // if both labels are absent: "","" - again, currently this case is probably not in the dictionary, the whole OPTIONAL aggregate is probably absent,
+      // however - there is nothing to support for this case anyway, so it is OK.
+      // 7) - nothing to do, because you can add an empty label anywhere and that makes no difference
+
+      boolean label_1_present = false;
+      boolean label_2_present = false;
+
+   		if ((aggr_label != null) && (!aggr_label.equals(""))) {
+				label_1_present = true;
+			}
+   		if ((element_label != null) && (!element_label.equals(""))) {
+				label_2_present = true;
+			}
+
+			int index1 = a_parameter.indexOf(" OF ");
+			if (index1 >= 0) {
+				// at least one aggregate present
+				int index2 = a_parameter.indexOf(" OF ", index1+1);
+				if (index2 >= 0) {
+					// two aggregates present
+					int index3 = a_parameter.indexOf(" OF ", index2+1);
+					if (index3 >= 0) {
+						// INTERNAL ERROR - more than two aggregates with only 2 labels
+						System.out.println("ExpressGenerator INTERNAL ERROR - more than two aggregates with two labels: " + a_parameter + ", labels: " + aggr_label + ", " + element_label);
+					} else {
+						// ok, we have 2 aggregates
+						// cases 2),4),4b),4c),5),5b),5c)
+	          if (label_1_present && label_2_present) {
+  	        	// case 2)
+				      // 2) AGGREGATE:label1 OF AGGREGATE:label2 of GENERIC
+				   		int index = a_parameter.indexOf("AGGREGATE"); 
+   						if (index >= 0) { // it must be
+				   			String substring_1 = a_parameter.substring(0,index + 9);
+   							int index5 = a_parameter.indexOf(" OF AGGREGATE");
+   							if (index5 >= 0) {
+   								String substring_2 = a_parameter.substring(index + 9, index5 + 12);
+   								String substring_3 = a_parameter.substring(index5 + 12);
+   								result = substring_1 + ": " + aggr_label + substring_2 + ": " + element_label + substring_3;
+   							} else {
+   								// INTERNAL ERROR
+		          		System.out.println("ExpressGenerator INTERNAL ERROR - inserting 2 labels 03: " + a_parameter + ", " + aggr_label + ", " + element_label);
+   							}
+    	      	} else {
+    	      		// INTERNAL ERROR
+	          		System.out.println("ExpressGenerator INTERNAL ERROR - inserting 2 labels 04: " + a_parameter + ", " + aggr_label + ", " + element_label);
+    	      	}
+    	      } else
+      	    if (!label_1_present && label_2_present) {
+        	  	// cases 4),4b),4c)
+				      // 4) AGGREGATE OF AGGREGATE:label2 OF GENERIC
+				      // 4b) SET OF AGGREGATE:label2 OF GENERIC
+      				// 4c) SET[0:?] OF AGGREGATE:label2 OF GENERIC
+        	  	int index = a_parameter.indexOf(" OF AGGREGATE OF ");
+			   			String substring_1 = null;
+ 							String substring_2 = null;
+ 							if (index >= 0) {
+				   			substring_1 = a_parameter.substring(0,index + 13);
+   							substring_2 = a_parameter.substring(index + 13);
+ 								result = substring_1 + ": " + element_label + substring_2;
+ 							}
+          	} else
+	          if (label_1_present && !label_2_present) {
+  	        	// case 5),5b),5c)
+				      // 5)  AGGREGATE:label1 OF AGGREGATE OF GENERIC
+							// 5b) AGGREGATE:label1 OF SET OF GENERIC
+							// 5c) AGGREGATE:label1 OF SET[0:?] OF GENERIC
+				   		int index = a_parameter.indexOf("AGGREGATE"); 
+   						if (index >= 0) { // it must be
+				   			String substring_1 = a_parameter.substring(0,index + 9);
+   							String substring_2 = a_parameter.substring(index + 9);
+								result = substring_1 + ": " + aggr_label + substring_2;
+							}		
+    	      }
+					}
+				} else {
+					// only one aggregate present
+		   		int index = a_parameter.indexOf("AGGREGATE OF"); 
+	   			String substring_1 = null;
+ 					String substring_2 = null;
+		   		if (index >= 0) {
+		   			substring_1 = a_parameter.substring(0,index + 9);
+   					substring_2 = a_parameter.substring(index + 9);
+		   			
+		   		}
+					// cases 1),3),3b),3c),6)
+          if (label_1_present && label_2_present) {
+          	// case 1)
+			      // 1) AGGREGATE:label1 OF GENERIC:label2
+          	if ((substring_1 != null) && (substring_2 != null)) {
+			   			result = substring_1 + ": " + aggr_label + substring_2 + ": " + element_label;
+          	} else {
+          		// INTERNAL ERROR
+          		System.out.println("ExpressGenerator INTERNAL ERROR - inserting 2 labels 01: " + a_parameter + ", " + aggr_label + ", " + element_label);
+          	} 
+          } else
+          if (!label_1_present && label_2_present) {
+          	// cases 3),3b),3c)
+				    // 3) AGGREGATE OF GENERIC:label2
+						// 3b) SET OF GENERIC:label2  - and other such cases ARRAY, BAG, LIST
+						// 3c) SET[0:?] OF GENERIC:label2 - the same but with bound
+      			result = a_parameter + ": " + element_label;
+          } else
+          if (label_1_present && !label_2_present) {
+          	// case 6)
+			      // 6) AGGREGATE:label1 OF GENERIC - because currently absent label for the final element is not included, still better to support it just in case
+          	if ((substring_1 != null) && (substring_2 != null)) {
+			   			result = substring_1 + ": " + aggr_label + substring_2;
+          	} else {
+          		// INTERNAL ERROR
+          		System.out.println("ExpressGenerator INTERNAL ERROR - inserting 2 labels 02: " + a_parameter + ", " + aggr_label + ", " + element_label);
+          	} 
+          }
+
+				}
+					
+			} else {
+				// INTERNAL ERROR no aggregates at all
+				System.out.println("ExpressGenerator INTERNAL ERROR - no aggregates with two labels: " + a_parameter + ", labels: " + aggr_label + ", " + element_label);
+			}
+
+			return result;
+   	}
+
+   	private String insert1Label(String a_parameter, String a_label) {
+   		String result = a_parameter;
+   		// there is a valid label, but it may be either a label of a single type, or the aggregate label when AGGREGATE OF is present and the element has no label
+   		// if present, AGGREGATE OF must be transformed into
+   		// AGGREGATE: label1 OF element
+   		// if absent, 
+   		// element: label1
+//System.out.println("a_parameter 1: " + a_parameter);
+   		if (a_parameter.indexOf("AGGREGATE OF") >= 0) { // the label is an aggregate label
+	   		int index = a_parameter.lastIndexOf("AGGREGATE"); 
+  	 		if (index >= 0) { // it must be
+   				String substring_1 = a_parameter.substring(index,index + 9);
+   				String substring_2 = a_parameter.substring(index + 9);
+   				result = substring_1 + ": " + a_label + substring_2;
+   			} else {
+   				// seems like an internal error
+   			}
+   		} else { // the label is a single type label
+   			result = a_parameter + ": " + a_label;
+   		}	
+			return result;
+   	}
+
+
+
     private String printExpressForAlgorithm(EAlgorithm_definition algorithm) throws SdaiException {
 		String result = "";
         String parameter_list = "";
@@ -3123,8 +3446,53 @@ public class ExpressGenerator {
                     }
                     parameter_list += p.getName(null);
                     if (p.testParameter_type(null)) {
-                        parameter_list += " : "+printType(p.getParameter_type(null));
+//                        parameter_list += " : "+printType(p.getParameter_type(null));
+                        String a_parameter = printType(p.getParameter_type(null));
                         if (p.testType_labels(null)) {
+                        	  // to support labels for aggregates and nested aggregates, 
+                        	  // either printType should take Parameter as argument
+                        	  // or here we need to insert labels into the string.
+                            A_string atl=p.getType_labels(null);
+                            int number_of_labels = atl.getMemberCount();
+                            if (number_of_labels < 1) { // nothing to do
+                            } else 
+                            if (number_of_labels == 1) { // should be a non-aggregate type
+                            	// CAUTION - check in the dictionary what is generated for AGGREGATE:label OF GENERIC
+                            	// if a single label is generated, then there is an ambiguous situation
+                            	// checked - yes, a single label may meen GENERIC:label or AGGREGATE:label OF GENERIC
+                            	String stl = atl.getByIndex(1);
+				                    	// CORRECTION - it still may be an aggregate
+        				            	// as currently implemented, in the dictionary, if an element has no label, then it is not added to the list of labels
+                				    	// perhaps we could check if the type is an aggregation type or not - or just by analyzing the type string - the same thing
+	
+                             	if ((stl != null) && (!stl.equals(""))) { // just an additional protection
+//                              	a_parameter += ": " + stl;
+        	  	                  a_parameter = insert1Label(a_parameter, stl);
+				                    	}
+
+
+
+                            } else 
+                            if (number_of_labels == 2) { // a simple aggregate - correction, also a nested aggregate with the inner element without label
+                            	String st_aggregate_label = atl.getByIndex(1);
+                            	String st_element_label = atl.getByIndex(2);
+//                            	if ((st_aggregate_label != null) && (!st_aggregate_label.equals(""))){
+	                            	// have to insert into a_parameter
+  	                          	a_parameter = insert2Labels(a_parameter,st_aggregate_label,st_element_label);
+//                            	} else {
+                            		// aggregate does not have a label, possibly only the element
+//	                             	if ((st_element_label != null) && (!st_element_label.equals(""))) { // just an additional protection
+//  	                            	a_parameter += ": " + st_element_label;
+//    	                        	}
+//                            	}
+                            } else
+                            if (number_of_labels > 2) { // a nested aggregate
+	                          	a_parameter = insertMultipleLabels(a_parameter,atl);
+                            } else {
+                          		// internal error
+                          	}	
+                        
+                    /*    
                             parameter_list += ":";
                             A_string atl=p.getType_labels(null);
                             SdaiIterator iter_atl=atl.createIterator();
@@ -3138,10 +3506,19 @@ public class ExpressGenerator {
                             }
                             parameter_list += stl;
                         }
-                    }
-                }
-            }
-        }
+                    */
+// moved down for the cases without labels as well
+//                          parameter_list += ": " + a_parameter;
+                  
+//                        parameter_list += a_parameter;
+                    
+                    } // if labels present
+                    parameter_list += ": " + a_parameter;
+
+                	} // if parameter_type not null
+            		} // if parameter name
+            } // loop through parameters
+        } // if parameters not null
         
         
         AEntity aeUsers = new AEntity();
@@ -3198,8 +3575,15 @@ public class ExpressGenerator {
                         sEC = replaceAll( sEC, ad.getName(null)+" (", ad.getName(null) + " (");
                     }
 
-                  } // if format expressions
+                  } else { // if NOT format expressions
 
+												        
+                  	// we had an issue with LOCAL and END_LOCAL; not always alligned perfectly
+                  	// let's try to find END_LOCAL, and if present, double check that LOCAL is at the very beginning of the string
+                  	// and then go back from END_LOCAL until we find a new line there, and take everything that is between the new line and END_LOCAL
+                  	// and att it also before the LOCAL, i.e, before the string itself.
+                  	sEC = allignLOCAL(sEC);
+                  } 
 
                     algorithm_body += sEC;
                     //lFCt=System.currentTimeMillis(); //--VV--
@@ -3215,10 +3599,59 @@ public class ExpressGenerator {
             //result += printTab("("+parameter_list+")");
             result += "\t("+parameter_list+")";
             if (function.testReturn_type(null)) {
-                result += " : "+printType(function.getReturn_type(null));
-                if (function.testReturn_type_label(null)) {
-                    result += ":"+function.getReturn_type_label(null);
-                }
+                String f_return_type = printType(function.getReturn_type(null));
+//                result += " : "+printType(function.getReturn_type(null));
+//                if (function.testReturn_type_label(null)) {
+//                    result += ":"+function.getReturn_type_label(null);
+//                }
+
+
+                if (function.testReturn_type_labels(null)) {
+                	A_string atl=function.getReturn_type_labels(null);
+//System.out.println("function: " + function.getName(null) + ", labels: " + atl); 
+                  int number_of_labels = atl.getMemberCount();
+                  if (number_of_labels < 1) { // nothing to do
+                  } else 
+                  if (number_of_labels == 1) { // should be a non-aggregate type
+                  	String stl = atl.getByIndex(1);
+                    if ((stl != null) && (!stl.equals(""))) { // just an additional protection
+                    	// CORRECTION - it still may be an aggregate
+                    	// as currently implemented, in the dictionary, if an element has no label, then it is not added to the list of labels
+                    	// perhaps we could check if the type is an aggregation type or not - or just by analyzing the type string - the same thing
+                    	// f_return_type += ": " + stl;
+  	                  f_return_type = insert1Label(f_return_type, stl);
+                    }
+                  } else 
+                  if (number_of_labels == 2) { // a simple aggregate
+                  	String st_aggregate_label = atl.getByIndex(1);
+                    String st_element_label = atl.getByIndex(2);
+//                    if ((st_aggregate_label != null) && (!st_aggregate_label.equals(""))){
+	                  	// have to insert into a_parameter
+  	                   f_return_type = insert2Labels(f_return_type, st_aggregate_label, st_element_label);
+//                    } else {
+                    	// aggregate does not have a label, possibly only the element
+//	                  	if ((st_element_label != null) && (!st_element_label.equals(""))) { // just an additional protection
+//  	                  	f_return_type += ": " + st_element_label;
+//    	                }
+//                    }
+                  } else
+                  if (number_of_labels > 2) { // a nested aggregate
+	                 	f_return_type = insertMultipleLabels(f_return_type,atl);
+                  } else {
+                          		// internal error
+                  }	
+                        
+// moved down
+//                  result += " : " + f_return_type;
+                  
+                   
+                    } // if labels present
+
+                  result += " : " + f_return_type;
+
+
+
+
             }
             //result += println(";");
             result += ";\n";
@@ -3254,6 +3687,33 @@ public class ExpressGenerator {
         }
 		return result;
 	}
+
+
+ 	// we had an issue with LOCAL and END_LOCAL; not always alligned perfectly
+ 	// let's try to find END_LOCAL, and if present, double check that LOCAL is at the very beginning of the string
+ 	// and then go back from END_LOCAL until we find a new line there, and take everything that is between the new line and END_LOCAL
+ 	// and att it also before the LOCAL, i.e, before the string itself.
+	private String allignLOCAL(String source_str) {
+		if (flag_do_not_allign_LOCAL) return source_str;
+		String result_str = source_str;
+		int index_end_local = source_str.indexOf("END_LOCAL");
+    if (index_end_local > 0) {
+    	int index_local = source_str.indexOf("LOCAL");
+    	if (index_local == 0) {
+    		int index_stuff = source_str.lastIndexOf("\n",index_end_local);
+    		// some stupid double-checks
+    		if (index_stuff > 0) {
+    			if (index_stuff < index_end_local) {  
+						String stuff_str = source_str.substring(index_stuff+1, index_end_local);    			
+    				result_str = stuff_str + source_str;
+    				return result_str;
+    			}
+    		}
+    	}
+    }		
+		return result_str;
+	}
+
 	
 
 	private String printExpressForAttribute(EAttribute attribute) throws SdaiException {

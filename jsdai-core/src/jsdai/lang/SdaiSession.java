@@ -747,7 +747,7 @@ static long tmbind0=0, tmbind1=0, tmbind2=0, tmbind3=0, tmbind4=0, tmbind5=0, tm
 	File UR_file;
 
 	RandomAccessFile undo_redo_file;
-	
+
 	RandomAccessFile undo_redo_file_saved;
 
 	CEntity undoRedoInstance = null;
@@ -887,10 +887,10 @@ static long tmbind0=0, tmbind1=0, tmbind2=0, tmbind3=0, tmbind4=0, tmbind5=0, tm
     boolean methodCallsCacheInUse = false;
 	QueryLibProvider queryLibProvider = null;
 	Map jarFileURLStreamHandlers = new HashMap();
-    
+
 /**
 	HashMap to store models from index files.
-*/    
+*/
     HashMap models_from_index_files = new HashMap(1024);
 
 /** The name of the reserved SdaiModel "SDAI_DICTIONARY_SCHEMA_DICTIONARY_DATA". */
@@ -903,14 +903,14 @@ static long tmbind0=0, tmbind1=0, tmbind2=0, tmbind3=0, tmbind4=0, tmbind5=0, tm
     public static final String DICT_SCHEMA_NAME = "SDAI_DICTIONARY_SCHEMA";
 /** The name of the reserved SchemaInstance "SDAI_MAPPING_SCHEMA". */
     public static final String MAPP_SCHEMA_NAME = "SDAI_MAPPING_SCHEMA";
-    
-    
+
+
 /**
     Loading from index file modes.
 */
     private static final String LOAD_SI = "SI"; // Loads schema instances
     private static final String LOAD_MO = "MO"; // Loads models (also loads and sets next persistent label)
-    
+
 /**
 	Returns null since a session has no owner.
 */
@@ -1333,7 +1333,7 @@ static long tmbind0=0, tmbind1=0, tmbind2=0, tmbind3=0, tmbind4=0, tmbind5=0, tm
 
 
 /**
- * Prints a message to the log Writer accessable only for the current 
+ * Prints a message to the log Writer accessable only for the current
  * <code>Object</code> of <code>SdaiSession</code>.
  * If null value is passed to the method's parameter,
  * then <code>SdaiException</code> VA_NSET is thrown.
@@ -1634,22 +1634,22 @@ static long tmbind0=0, tmbind1=0, tmbind2=0, tmbind3=0, tmbind4=0, tmbind5=0, tm
 /*  36 */ addNewEntityDefinition(dicsd, "entity_declaration$local_declaration"); ENTITY_DECL_LOCAL_DECL = counter;
 /*  37 */ addNewEntityDefinition(dicsd, "entity_declaration$referenced_declaration"); ENTITY_DECL_REFERENCED_DECL = counter;
 /*  38 */ addNewEntityDefinition(dicsd, "entity_declaration$used_declaration"); ENTITY_DECL_USED_DECL = counter;
-		CEntity_definition eEntity_definition = 
+		CEntity_definition eEntity_definition =
 /*  39 */ addNewEntityDefinition(dicsd, "entity_definition"); ENTITY_DEFINITION = counter;
-		CEntity_definition eEntity_or_view_definition = 
+		CEntity_definition eEntity_or_view_definition =
 /*  40 */ addNewEntityDefinition(dicsd, "entity_or_view_definition");
-		CEntity_definition eEntity_select_type = 
+		CEntity_definition eEntity_select_type =
 /*  41 */ addNewEntityDefinition(dicsd, "entity_select_type"); ENTITY_SELECT_TYPE = counter;
-		CEntity_definition eEntity_extended_extensible_select_type = 
+		CEntity_definition eEntity_extended_extensible_select_type =
 /*  42 */ addNewEntityDefinition(dicsd, "entity_select_type$extended_select_type$extensible_select_type");
 			ENT_EXT_EXT_SELECT_TYPE = counter;
-		CEntity_definition eEntity_extended_non_extensible_select_type = 
+		CEntity_definition eEntity_extended_non_extensible_select_type =
 /*  43 */ addNewEntityDefinition(dicsd, "entity_select_type$extended_select_type$non_extensible_select_type");
 			ENT_EXT_NON_EXT_SELECT_TYPE = counter;
-		CEntity_definition eEntity_extensible_select_type = 
+		CEntity_definition eEntity_extensible_select_type =
 /*  44 */ addNewEntityDefinition(dicsd, "entity_select_type$extensible_select_type");
 			ENT_EXT_SELECT_TYPE = counter;
-		CEntity_definition eEntity_non_extensible_select_type = 
+		CEntity_definition eEntity_non_extensible_select_type =
 /*  45 */ addNewEntityDefinition(dicsd, "entity_select_type$non_extensible_select_type");
 			ENT_NON_EXT_SELECT_TYPE = counter;
 		CEntity_definition eEnumeration_type =
@@ -1657,18 +1657,18 @@ static long tmbind0=0, tmbind1=0, tmbind2=0, tmbind3=0, tmbind4=0, tmbind5=0, tm
 /*  47 */ addNewEntityDefinition(dicsd, "explicit_attribute"); EXPLICIT_ATTRIBUTE = counter;
 		CEntity_definition eExpress_code =
 /*  48 */ addNewEntityDefinition(dicsd, "express_code");
-		CEntity_definition eExtended_enumeration_type = 
+		CEntity_definition eExtended_enumeration_type =
 /*  49 */ addNewEntityDefinition(dicsd, "extended_enumeration_type"); EXTENDED_ENUM_TYPE = counter;
-		CEntity_definition eExtended_extensible_enumeration_type = 
-/*  50 */ addNewEntityDefinition(dicsd, "extended_enumeration_type$extensible_enumeration_type"); 
+		CEntity_definition eExtended_extensible_enumeration_type =
+/*  50 */ addNewEntityDefinition(dicsd, "extended_enumeration_type$extensible_enumeration_type");
 			 EXTENDED_EXTENSIBLE_ENUM_TYPE = counter;
 		CEntity_definition eExtended_select_type =
 /*  51 */ addNewEntityDefinition(dicsd, "extended_select_type"); EXTENDED_SELECT_TYPE = counter;
-		CEntity_definition eExtended_extensible_select_type = 
+		CEntity_definition eExtended_extensible_select_type =
 /*  52 */ addNewEntityDefinition(dicsd, "extended_select_type$extensible_select_type"); EXT_EXT_SELECT_TYPE = counter;
-		CEntity_definition eExtended_non_extensible_select_type = 
+		CEntity_definition eExtended_non_extensible_select_type =
 /*  53 */ addNewEntityDefinition(dicsd, "extended_select_type$non_extensible_select_type"); EXT_NON_EXT_SELECT_TYPE = counter;
-		CEntity_definition eExtensible_enumeration_type = 
+		CEntity_definition eExtensible_enumeration_type =
 /*  54 */ addNewEntityDefinition(dicsd, "extensible_enumeration_type"); EXTENSIBLE_ENUM_TYPE = counter;
 		CEntity_definition eExtensible_select_type =
 /*  55 */ addNewEntityDefinition(dicsd, "extensible_select_type"); EXTENSIBLE_SELECT_TYPE = counter;
@@ -1691,7 +1691,7 @@ static long tmbind0=0, tmbind1=0, tmbind2=0, tmbind3=0, tmbind4=0, tmbind5=0, tm
 /*  70 */ addNewEntityDefinition(dicsd, "implicit_declaration$subtype_constraint_declaration");
 /*  71 */ addNewEntityDefinition(dicsd, "implicit_declaration$type_declaration"); IMPLICIT_DECL_TYPE_DECL = counter;
 /*  72 */ addNewEntityDefinition(dicsd, "implicit_declaration$view_declaration");
-		CEntity_definition eIndependent_view_definition = 
+		CEntity_definition eIndependent_view_definition =
 /*  73 */ addNewEntityDefinition(dicsd, "independent_view_definition");
 /*  74 */ addNewEntityDefinition(dicsd, "inner_declaration");
 /*  75 */ addNewEntityDefinition(dicsd, "inner_declaration$procedure_declaration");
@@ -1700,9 +1700,9 @@ static long tmbind0=0, tmbind1=0, tmbind2=0, tmbind3=0, tmbind4=0, tmbind5=0, tm
 /*  78 */ addNewEntityDefinition(dicsd, "inner_declaration$type_declaration");
 /*  79 */ addNewEntityDefinition(dicsd, "integer_bound");
 /*  80 */ addNewEntityDefinition(dicsd, "integer_type"); INTEGER_TYPE = counter;
-		CEntity_definition eInterfaced_declaration = 
+		CEntity_definition eInterfaced_declaration =
 /*  81 */ addNewEntityDefinition(dicsd, "interfaced_declaration");
-		CEntity_definition eInterface_specification = 
+		CEntity_definition eInterface_specification =
 /*  82 */ addNewEntityDefinition(dicsd, "interface_specification");
 /*  83 */ addNewEntityDefinition(dicsd, "inverse_attribute"); INVERSE_ATTRIBUTE = counter;
 /*  84 */ addNewEntityDefinition(dicsd, "list_type"); LIST_TYPE = counter;
@@ -1739,13 +1739,13 @@ static long tmbind0=0, tmbind1=0, tmbind2=0, tmbind3=0, tmbind4=0, tmbind5=0, tm
 /* 110 */ addNewEntityDefinition(dicsd, "referenced_declaration");
 /* 111 */ addNewEntityDefinition(dicsd, "referenced_declaration$type_declaration"); REFERENCED_DECL_TYPE_DECL = counter;
 /* 112 */ addNewEntityDefinition(dicsd, "referenced_declaration$view_declaration");
-		CEntity_definition eReference_from_specification = 
+		CEntity_definition eReference_from_specification =
 /* 113 */ addNewEntityDefinition(dicsd, "reference_from_specification");
-		CEntity_definition eReference_from_specification_as = 
+		CEntity_definition eReference_from_specification_as =
 /* 114 */ addNewEntityDefinition(dicsd, "reference_from_specification_as");
-		CEntity_definition eReference_from_specification_as_source = 
+		CEntity_definition eReference_from_specification_as_source =
 /* 115 */ addNewEntityDefinition(dicsd, "reference_from_specification_as_source");
-		CEntity_definition eReference_from_specification_as_target = 
+		CEntity_definition eReference_from_specification_as_target =
 /* 116 */ addNewEntityDefinition(dicsd, "reference_from_specification_as_target");
 /* 117 */ addNewEntityDefinition(dicsd, "rule_declaration");
 /* 118 */ addNewEntityDefinition(dicsd, "schema_definition"); SCHEMA_DEFINITION = counter;
@@ -1769,12 +1769,12 @@ static long tmbind0=0, tmbind1=0, tmbind2=0, tmbind3=0, tmbind4=0, tmbind5=0, tm
 /* 132 */ addNewEntityDefinition(dicsd, "uniqueness_rule");UNIQUENESS_RULE = counter;
 /* 133 */ addNewEntityDefinition(dicsd, "used_declaration");
 /* 134 */ addNewEntityDefinition(dicsd, "used_declaration$view_declaration");
-		CEntity_definition eUse_from_specification = 
+		CEntity_definition eUse_from_specification =
 /* 135 */ addNewEntityDefinition(dicsd, "use_from_specification");
 /* 136 */ addNewEntityDefinition(dicsd, "variable_size_aggregation_type");
 /* 137 */ addNewEntityDefinition(dicsd, "view_attribute");
 /* 138 */ addNewEntityDefinition(dicsd, "view_declaration");
-		CEntity_definition eView_definition = 
+		CEntity_definition eView_definition =
 /* 139 */ addNewEntityDefinition(dicsd, "view_definition");
 /* 140 */ addNewEntityDefinition(dicsd, "view_partition");
 /* 141 */ addNewEntityDefinition(dicsd, "view_partition_attribute");
@@ -1866,17 +1866,17 @@ static long tmbind0=0, tmbind1=0, tmbind2=0, tmbind3=0, tmbind4=0, tmbind5=0, tm
 			sDictionary.setDataField(CExtended_select_type.class, "a1$", attrib_extended_sel);
 			sDictionary.setDataField(CExtensible_select_type.class, "a1$", attrib_extensible_sel);
 			sDictionary.setDataField(CNon_extensible_select_type.class, "a1$", attrib_non_extensible_sel);
-			sDictionary.setDataField(CEntity_select_type$extended_select_type$extensible_select_type.class, 
+			sDictionary.setDataField(CEntity_select_type$extended_select_type$extensible_select_type.class,
 				"a1$", attrib_ent_extended_extensible_sel);
-			sDictionary.setDataField(CEntity_select_type$extended_select_type$non_extensible_select_type.class, 
+			sDictionary.setDataField(CEntity_select_type$extended_select_type$non_extensible_select_type.class,
 				"a1$", attrib_ent_extended_non_extensible_sel);
-			sDictionary.setDataField(CEntity_select_type$extensible_select_type.class, 
+			sDictionary.setDataField(CEntity_select_type$extensible_select_type.class,
 				"a1$", attrib_ent_extensible_sel);
-			sDictionary.setDataField(CEntity_select_type$non_extensible_select_type.class, 
+			sDictionary.setDataField(CEntity_select_type$non_extensible_select_type.class,
 				"a1$", attrib_ent_non_extensible_sel);
-			sDictionary.setDataField(CExtended_select_type$extensible_select_type.class, 
+			sDictionary.setDataField(CExtended_select_type$extensible_select_type.class,
 				"a1$", attrib_extended_extensible_sel);
-			sDictionary.setDataField(CExtended_select_type$non_extensible_select_type.class, 
+			sDictionary.setDataField(CExtended_select_type$non_extensible_select_type.class,
 				"a1$", attrib_extended_non_extensible_sel);
 		} catch (java.lang.IllegalAccessException ex) {
 			throw new SdaiException(SdaiException.SY_ERR);
@@ -1914,7 +1914,7 @@ static long tmbind0=0, tmbind1=0, tmbind2=0, tmbind3=0, tmbind4=0, tmbind5=0, tm
 			sDictionary.setDataField(CEnumeration_type.class, "a1$", attrib_enum);
 			sDictionary.setDataField(CExtended_enumeration_type.class, "a1$", attrib_extended_enum);
 			sDictionary.setDataField(CExtensible_enumeration_type.class, "a1$", attrib_extensible_enum);
-			sDictionary.setDataField(CExtended_enumeration_type$extensible_enumeration_type.class, 
+			sDictionary.setDataField(CExtended_enumeration_type$extensible_enumeration_type.class,
 				"a1$", attrib_extended_extensible_enum);
 		} catch (java.lang.IllegalAccessException ex) {
 			throw new SdaiException(SdaiException.SY_ERR);
@@ -2190,9 +2190,9 @@ static long tmbind0=0, tmbind1=0, tmbind2=0, tmbind3=0, tmbind4=0, tmbind5=0, tm
 			sDictionary.setDataField(CInterface_specification.class, "a2$", attrib_interf_spec);
 			sDictionary.setDataField(CReference_from_specification.class, "a2$", attrib_refer_spec);
 			sDictionary.setDataField(CReference_from_specification_as.class, "a2$", attrib_refer_spec_as);
-			sDictionary.setDataField(CReference_from_specification_as_source.class, 
+			sDictionary.setDataField(CReference_from_specification_as_source.class,
 				"a2$", attrib_refer_spec_as_source);
-			sDictionary.setDataField(CReference_from_specification_as_target.class, 
+			sDictionary.setDataField(CReference_from_specification_as_target.class,
 				"a2$", attrib_refer_spec_as_target);
 			sDictionary.setDataField(CUse_from_specification.class, "a2$", attrib_use_spec);
 		} catch (java.lang.IllegalAccessException ex) {
@@ -2355,14 +2355,14 @@ static long tmbind0=0, tmbind1=0, tmbind2=0, tmbind3=0, tmbind4=0, tmbind5=0, tm
 
         Implementation implementation = session.getSdaiImplementation();
         String model_version =  implementation.getSdaiVersion();
-        
+
 		if (!sysrepo_exists) {
 			systemRepository.description = new A_string(listTypeSpecial, systemRepository);
 			systemRepository.description.addByIndexPrivate(1,
 				"A REPOSITORY CONTAINING DICTIONARY AND MAPPING DATA");
 			systemRepository.models.myType = setType0toN;
 			systemRepository.schemas.myType = setType0toN;
-			baseDictionaryModel = 
+			baseDictionaryModel =
 				(SdaiModelDictionaryImpl)systemRepository.createModel("SDAI_DICTIONARY_SCHEMA_DICTIONARY_DATA", (CSchema_definition)null);
             baseDictionaryModel.setVersion(-1);
 			systemRepository.models.addUnorderedRO(baseDictionaryModel);
@@ -2515,7 +2515,7 @@ throw new SdaiException(SdaiException.SY_ERR, base);
 						} else {
 							updated_dir_name = subdirs[i];
 						}
-					
+
 						for (j = 0; j < files.length; j++) {
 							if (files[j].equals("contents")) {
 								is_rep_contents = true;
@@ -2531,7 +2531,7 @@ throw new SdaiException(SdaiException.SY_ERR, base);
 						repository_name = prop_value;
 						repository_location = subdir.getAbsolutePath();
 					}
-					
+
 					SdaiRepository repo = (SdaiRepository)linkRepository(repository_name, repository_location);
 					repo.dir_name = updated_dir_name;
 					if (!new_formats && !is_rep_contents) {
@@ -2550,7 +2550,7 @@ throw new SdaiException(SdaiException.SY_ERR, base);
 	//------------------------------------------------------------------------------------------
 
 		if (!sysrepo_exists) {
-			data_dictionary = 
+			data_dictionary =
 				((SdaiRepositoryDictionaryImpl)systemRepository).createDictionarySchemaInstance(DICTIONARY_SCHEMA_INSTANCE_NAME, dicsd);
 			data_dictionary.allow_model = true;
 			data_dictionary.committed = true;
@@ -2571,7 +2571,7 @@ throw new SdaiException(SdaiException.SY_ERR, base);
 			data_dictionary.addSdaiModel(baseMappingModel);
 			baseMappingModel.startReadOnlyAccess();
 			mappingSchemaDefinition = (CSchema_definition)baseMappingModel.described_schema;
-			data_mapping = 
+			data_mapping =
 				((SdaiRepositoryDictionaryImpl)systemRepository).createDictionarySchemaInstance(MAPPING_SCHEMA_INSTANCE_NAME, mappingSchemaDefinition);
 			data_mapping.committed = true;
 			data_mapping.allow_model = true;
@@ -2714,7 +2714,7 @@ System.out.println("   SdaiSession  str = " + line[j]);
 				String l_side = PROPERTY_FOR_SYSTEM_REPOSITORY + "." + index_file_idx;
 				String r_side = props.getProperty(l_side, "");
 				if (!r_side.equals("")) {
-					URL repositoryPropertyUrl = 
+					URL repositoryPropertyUrl =
 						classLoader.getResource("jsdai/" + r_side + ".properties");
 					if (repositoryPropertyUrl == null) {
 						if (logWriterSession != null) {
@@ -2779,11 +2779,11 @@ System.out.println("   SdaiSession  str = " + line[j]);
 		}
 		try {
 			if (Implementation.major_version != 0 && !index.getProperty("JSDAIVersion", "$")
-				.equalsIgnoreCase(Implementation.major_version + "." + 
-								  Implementation.middle_version + "." + 
+				.equalsIgnoreCase(Implementation.major_version + "." +
+								  Implementation.middle_version + "." +
 								  Implementation.minor_version)) {
-				String base = 
-					line_separator + "JSDAI versions in repository index file " + 
+				String base =
+					line_separator + "JSDAI versions in repository index file " +
 					repositoryPropertyUrl + " and jsdai.lang do not match";
 				throw new SdaiException(SdaiException.SY_ERR, base);
 			}
@@ -3737,8 +3737,8 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
             return repository;
 		}
 	}
-    
-    
+
+
 	SdaiRepository linkRepositoryFast(String name, String location) throws SdaiException {
 //System.out.println("Begining name="+name);
 //		synchronized (syncObject) {
@@ -3750,7 +3750,7 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 			throw new SdaiException(SdaiException.TR_NEXS);
 		}
 
-		
+
 		SdaiRepository repository;
 		File fileSource = null;
 		if (location != null) {
@@ -3768,7 +3768,7 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 					try {
 						ZipEntry zipEntry = zipFile.getEntry("repository");
 						if (zipEntry != null) {
-							InputStream inputStream = 
+							InputStream inputStream =
 								new BufferedInputStream(zipFile.getInputStream( zipEntry));
 							DataInputStream dataInputStream = new DataInputStream(inputStream);
 							try {
@@ -3790,7 +3790,7 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 					String base = SdaiSession.line_separator + "Could not read from specified file '"+location+"'.";
 					throw (SdaiException)new SdaiException(SdaiException.SY_ERR, base).initCause(ex);
 				}
-				
+
 				if (name == null || name.length() == 0) {
 					int lastIndex = location.lastIndexOf(File.separatorChar);
 					if (lastIndex > -1) {
@@ -3799,7 +3799,7 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 					else {
 						name = location;
 					}
-					
+
 					lastIndex = name.lastIndexOf('.');
 					if (lastIndex > 0) {
 						name = name.substring(0, lastIndex);
@@ -3813,7 +3813,7 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 			String current_name;
 			while (!bFreeNameFound) {
 				current++;
-				
+
 				if (current > 0) {
 					current_name = name + "_" +String.valueOf(current);
 				}
@@ -3842,7 +3842,7 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 					}
 				}
 			}
-			
+
 			repository = new SdaiRepositoryZipImpl(this, name, location, false);
 			repository.modified = false;
 			repository.dir_name = location;
@@ -3873,7 +3873,7 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 			} else {
 				modifiedName = name;
 			}
-			
+
 			for (int i = 0; i < known_servers.myLength; i++) {
 				repository = (SdaiRepository)known_servers.myData[i];
 				if (location == null) {
@@ -3922,9 +3922,9 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 	//				   bridge = (SdaiBridgeRemote)Class.forName("jsdai.rmiclient.RMIBridgeClient").newInstance();
 	//				   SdaiBridgeHome home = (SdaiBridgeHome)PortableRemoteObject.narrow(objref, SdaiBridgeHome.class);
 	//				   bridge = home.create();
-	
+
 	//				 ((jsdai.rmiclient.RMIBridgeClient)bridge).initUser(getUser(location), getPassword(location));
-	
+
 					}
 	//System.out.println("Modified name="+modifiedName);
 					repository.setRepoRemote(bridgeSession.linkRepository(modifiedName));
@@ -4025,8 +4025,8 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 		String loc = (String)location;
 		SdaiRepository repository;
 		String newRepositoryFormat = props.getProperty("new.repository.format", "DIR");
-		
-		
+
+
 		if ( ((loc == null && newRepositoryFormat.equalsIgnoreCase("SDAI")) && (repository_name == null || repository_name.length() != 0))
 			|| (loc != null && (!loc.endsWith(DIRECTORY_SUFFIX) && !loc.endsWith(File.separator))) ) {
 			// Deriving repository name from location
@@ -4039,7 +4039,7 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 					else {
 						repository_name = loc;
 					}
-					
+
 					lastIndex = repository_name.lastIndexOf('.');
 					if (lastIndex > 0) {
 						repository_name = repository_name.substring(0, lastIndex);
@@ -4063,7 +4063,7 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 			String current_name;
 			while (!bFreeNameFound) {
 				current++;
-				
+
 				if (current > 0) {
 					current_name = repository_name + "_" +String.valueOf(current);
 				}
@@ -4087,7 +4087,7 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 					repository_name = current_name;
 				}
 			}
-			
+
 			repository = new SdaiRepositoryZipImpl(this, repository_name, loc, false);
 			repository.temporary = false;
 			known_servers.addUnorderedRO(repository);
@@ -4096,7 +4096,7 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 			repository.description = new A_string(listTypeSpecial, repository);
 			repository.implementation_level = "1";
 			repository.dir_name = loc;
-			
+
 			FILE_NAME file_name = new FILE_NAME(repository);
 			file_name.name = repository_name;
 			long time = System.currentTimeMillis();
@@ -4108,7 +4108,7 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 			if (current > 0) {
 				((SdaiRepositoryZipImpl)repository).nameWithRecurrenceNumber = true;
 			}
-			
+
 			repository.file_schema = new FILE_SCHEMA(repository);
 			boolean successful = false;
 			try {
@@ -4151,16 +4151,16 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 			} else if ((!repository_name.startsWith(LOCATION_PREFIX)) && (!checkRepoName(repository_name))) {
 				throw new SdaiException(SdaiException.VA_NVLD);
 			}
-			
+
 			repository = createSdaiRepositoryImpl(repository_name, loc, true);
 			repository.temporary = temp;
 			known_servers.addUnorderedRO(repository);
 			repository.created_or_imported = true;
 			repository.physical_file_name = repository_name;
-	
+
 			repository.description = new A_string(listTypeSpecial, repository);
 			repository.implementation_level = "1";
-	
+
 			FILE_NAME file_name = new FILE_NAME(repository);
 			file_name.name = repository_name;
 			long time = System.currentTimeMillis();
@@ -4169,9 +4169,9 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 			file_name.originating_system = " ";
 			file_name.authorization = " ";
 			repository.file_name = file_name;
-	
+
 			repository.file_schema = new FILE_SCHEMA(repository);
-	
+
 			if (repository_name.startsWith(SdaiSession.LOCATION_PREFIX) ||
 			(loc != null && loc.startsWith(LOCATION_PREFIX))) {
 				if (oldConnectionProtocol) {
@@ -4340,13 +4340,13 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
  * instances whose encoding is found in the corresponding data section.
  * <p> This method automatically creates all needed data dictionary models, if any.
  * Read-only access to these models is automatically started.
- * <p> It should be noted that the method imports exchange structures in which 
- * all or some names of entities are presented in a short form. 
- * For example, any of the following cases for entity <code>cartesian_point</code> is apt: 
+ * <p> It should be noted that the method imports exchange structures in which
+ * all or some names of entities are presented in a short form.
+ * For example, any of the following cases for entity <code>cartesian_point</code> is apt:
  * <ul><li> #1016=CARTESIAN_POINT('cp5',(0.0,0.0,-0.25));
  * <li> #1016=CRTPNT('cp5',(0.0,0.0,-0.25));
  * </ul>
- * To identify an entity instance correctly from its short name, the latter 
+ * To identify an entity instance correctly from its short name, the latter
  * must be defined in the data dictionary (provided by an Express compiler).
  * <p> When importing part21 file it may happen that some complex instance in it is of
  * entity type that is not defined or declared in the underlying schema. In this case
@@ -4537,7 +4537,7 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 				}
 			}
 		}
-        
+
         if (feature_level == 0) {
 			int count = 0;
 			for (int i = 0; i < active_servers.myLength; i++) {
@@ -4609,13 +4609,13 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 		known_servers.addUnorderedRO(repository);
 		active_servers.addUnorderedRO(repository);
 		repository.temporary = temp;
-		
+
         String loc = "SdaiRepository/";
         if (destination_location instanceof String) {
             loc = (String)destination_location;
         }
         String newRepositoryFormat = props.getProperty("new.repository.format", "DIR");
-        
+
         if ((loc == null && newRepositoryFormat.equalsIgnoreCase("SDAI")) || (loc != null && (!loc.endsWith(DIRECTORY_SUFFIX) && !loc.endsWith(File.separator)))) {
             boolean successful = false;
             try {
@@ -4672,8 +4672,8 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
                 } else {
                     try {
                         if (bridgeSession == null) {
-                            throw new 
-                                SdaiException(SdaiException.SY_ERR, 
+                            throw new
+                                SdaiException(SdaiException.SY_ERR,
                                               "Can not import into remote repository. Bridge is not linked.");
                         }
                         //System.out.println(" SdaiSession remote repo: " + for_name);
@@ -4710,21 +4710,21 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 
 /**
  * Imports an exchange structure (part21 file) into an existing repository
- * submitted through the second method's parameter. 
- * It is not required for it to be empty: the new <code>SdaiModel</code>s and 
- * <code>SchemaInstance</code>s are simply added to the existing ones. 
+ * submitted through the second method's parameter.
+ * It is not required for it to be empty: the new <code>SdaiModel</code>s and
+ * <code>SchemaInstance</code>s are simply added to the existing ones.
  * The new schema instances constitute an aggregate that is returned by the method.
- * In the case when a data section in the exchange structure being imported has the name 
- * which is already used by a model in the repository, the name of the new model 
- * corresponding to this data section is constructed by appending to it the letter "x", 
- * for example, data section "polytope" becomes a <code>SdaiModel</code> with 
- * the name "polytopex". An analogous operation is applied 
+ * In the case when a data section in the exchange structure being imported has the name
+ * which is already used by a model in the repository, the name of the new model
+ * corresponding to this data section is constructed by appending to it the letter "x",
+ * for example, data section "polytope" becomes a <code>SdaiModel</code> with
+ * the name "polytopex". An analogous operation is applied
  * to the schema instances found in the exchange structure file.
- * Other functionality of the method is the same as of its main variant 
+ * Other functionality of the method is the same as of its main variant
  * {@link #importClearTextEncoding(String, Object, Object) importClearTextEncoding}.
  * @param sourceLocation the location of the exchange structure, e.g. "c:\a_path\the_file.stp".
  * @param targetRepo the repository where to import the data from the exchange structure.
- * @return the <code>ASchemaInstance</code> with the schema instances created or imported 
+ * @return the <code>ASchemaInstance</code> with the schema instances created or imported
  * from the exchange structure.
  * @throws SdaiException SS_NOPN, session is not open.
  * @throws SdaiException TR_NEXS, transaction does not exist.
@@ -4736,12 +4736,12 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
  * @see #importClearTextEncoding(String, Object, Object)
  */
 /*	public void
-	importClearTextEncoding(String sourceLocation, SdaiRepository destinationLocation) 
+	importClearTextEncoding(String sourceLocation, SdaiRepository destinationLocation)
 	throws SdaiException {
 		importClearTextEncoding(null, sourceLocation, destinationLocation);
 	}*/
 
-	public ASchemaInstance importClearTextEncoding(String sourceLocation, SdaiRepository targetRepo) 
+	public ASchemaInstance importClearTextEncoding(String sourceLocation, SdaiRepository targetRepo)
 			throws SdaiException {
 //		synchronized (syncObject) {
 		int i;
@@ -4773,12 +4773,12 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
 
 /**
  * Imports an exchange structure (part21 file) into an existing repository
- * submitted through the second method's parameter. 
- * The repository is required to be empty.  
- * This method is applicable when the location of the exchange structure file is 
+ * submitted through the second method's parameter.
+ * The repository is required to be empty.
+ * This method is applicable when the location of the exchange structure file is
  * remote and the data from it are supplied through the <code>InputStream</code>
  * (the first parameter of the method).
- * Other functionality of the method is the same as of its main variant 
+ * Other functionality of the method is the same as of its main variant
  * {@link #importClearTextEncoding(String, Object, Object) importClearTextEncoding}.
  * @param sourceLocation the location of the exchange structure.
  * @param destinationLocation the repository where to import the data from the exchange structure.
@@ -4793,7 +4793,7 @@ System.out.println("SdaiSession   ----------- bin_inst as string: " + str);*/
  * @see #importClearTextEncoding(String, Object, Object)
  */
 	public void
-	importClearTextEncoding(InputStream sourceLocation, SdaiRepository destinationLocation) 
+	importClearTextEncoding(InputStream sourceLocation, SdaiRepository destinationLocation)
 	throws SdaiException {
 		importClearTextEncoding(null, sourceLocation, destinationLocation);
 	}
@@ -4894,7 +4894,7 @@ if (debug2) System.out.println("   schema: " + schema.getName());
 				String sch_name = model.schemaData.schema.getName(null);
 				String normalized_sch_name = sch_name.substring(0,1).toUpperCase() + sch_name.substring(1).toLowerCase();
 				String f = SCHEMA_PREFIX + normalized_sch_name + ".S" + normalized_sch_name + ".ss";
-				printWarningToLogoSdaiContext(line_separator + AdditionalMessages.DI_FUN1 + 
+				printWarningToLogoSdaiContext(line_separator + AdditionalMessages.DI_FUN1 +
 					f + AdditionalMessages.DI_FUN2);
 				continue;
 			}
@@ -4972,7 +4972,7 @@ System.out.println("SdaiSession +++++++++ super_inst is POS");
 	}*/
 	private SchemaData getSchemaData(Class schema) throws SdaiException {
 		String name = schema.getName();
-		String dict_name = 
+		String dict_name =
 			name.substring(name.lastIndexOf(".") + 2, name.length()).toUpperCase();
 		if (dict_name.equals("DICTIONARY")) {
 			dict_name = "SDAI_DICTIONARY_SCHEMA_DICTIONARY_DATA";
@@ -5003,7 +5003,7 @@ System.out.println("SdaiSession +++++++++ super_inst is POS");
 			String sch_name = new_dict.schemaData.schema.getName(null);
 			String normalized_sch_name = sch_name.substring(0,1).toUpperCase() + sch_name.substring(1).toLowerCase();
 			String f = SCHEMA_PREFIX + normalized_sch_name + ".S" + normalized_sch_name + ".ss";
-			String base = line_separator + AdditionalMessages.DI_FUN1 + 
+			String base = line_separator + AdditionalMessages.DI_FUN1 +
 				f + AdditionalMessages.DI_FUN2;
 			printWarningToLogoSdaiContext(base);
 			throw new SdaiException(SdaiException.SY_ERR, base);
@@ -5348,7 +5348,7 @@ baseDictionaryModel.mode = SdaiModel.READ_ONLY;
 			sch_data = session.getSchemaData(schema);
 			if (sch_data == null) {
 if (check_data_types) {
-System.out.println("SdaiSession   sch_data is null    name: " + name + 
+System.out.println("SdaiSession   sch_data is null    name: " + name +
 "   schema: " + schema.getName());
 }
 				return null;
@@ -5356,20 +5356,20 @@ System.out.println("SdaiSession   sch_data is null    name: " + name +
 
 if (check_data_types && name.equals("_GENERALARRAY_1PDB_2PDB_GENERIC"))
 for (int i = 0; i < sch_data.data_types.length; i++) {
-System.out.println(" SchemaData    i = " + i + 
+System.out.println(" SchemaData    i = " + i +
 "   data_type: " + sch_data.data_types[i].getName(null));
 }
 
 			EData_type dt = sch_data.find_data_type(name.toUpperCase());
 if (check_data_types && dt == null) {
-System.out.println("SdaiSession   dt is null    name: " + name + 
+System.out.println("SdaiSession   dt is null    name: " + name +
 "   schema: " + schema.getName());
 }
 			return dt;
 		} catch (SdaiException e) {
 			printStackTraceToLogWriter(e);
 if (check_data_types) {
-System.out.println("SdaiSession   SdaiException is thrown    name: " + name + 
+System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 "   schema: " + schema.getName());
 }
 			return null;
@@ -5641,11 +5641,11 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
  * method <code>linkDataBaseBridge</code>) the empty <code>Properties</code> is returned.
  * Otherwise properties include at minimum properties named
  * <code>group-&lt;name of the group&gt;</code> for each group the JSDAI-DB user which
- * was specified invoking method <code>linkDataBaseBridge</code> belongs. The values of 
+ * was specified invoking method <code>linkDataBaseBridge</code> belongs. The values of
  * above mentioned properties correspond to Group Properties entered using
  * Web Administration Tool.
  * </dd>
- * </dl> 
+ * </dl>
  * <p>This method is an extension of JSDAI, which is not a part of the standard.</p>
  * @param identification the class specifying an application.
  * @return a table containing application properties.
@@ -5840,18 +5840,18 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 
 
 /**
- * Starts recording changes made to the entity instances in the log for 
- * subsequent undo/redo operations. 
- * Modifications done on higher levels (<code>SdaiModel</code>, <code>SdaiRepository</code>, 
+ * Starts recording changes made to the entity instances in the log for
+ * subsequent undo/redo operations.
+ * Modifications done on higher levels (<code>SdaiModel</code>, <code>SdaiRepository</code>,
  * <code>SchemaInstance</code>) are not logged.
- * The flow of records is divided into segments called groups. 
+ * The flow of records is divided into segments called groups.
  * To close a group, method {@link #endUndoGroup()} shall be used.
- * The log file is automatically emptied during execution of 
+ * The log file is automatically emptied during execution of
  * {@link SdaiTransaction#commit commit} and {@link SdaiTransaction#abort abort} operations.
- * Recording is stopped by submitting value <code>false</code> to 
- * the method. In this case the data are released, and undo/redo operations become 
+ * Recording is stopped by submitting value <code>false</code> to
+ * the method. In this case the data are released, and undo/redo operations become
  * disabled.
- * @param enable <code>true</code> to start recording changes to the instances and 
+ * @param enable <code>true</code> to start recording changes to the instances and
  * <code>false</code> to stop recording.
  * @throws SdaiException SS_NOPN, session is not open.
  * @throws SdaiException SY_ERR, an underlying system error occurred.
@@ -5941,10 +5941,10 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 
 
 /**
- * Ends recording changes (made to the entity instances) in the current group. 
- * The next record automatically will be directed to a new group. 
- * The method also generates an object of SDAI logging event notifying 
- * the SDAI listeners about closing the current group of records. 
+ * Ends recording changes (made to the entity instances) in the current group.
+ * The next record automatically will be directed to a new group.
+ * The method also generates an object of SDAI logging event notifying
+ * the SDAI listeners about closing the current group of records.
  * @throws SdaiException SS_NOPN, session is not open.
  * @throws SdaiException SY_ERR, an underlying system error occurred.
  * @see #endUndoGroup(Object listenerArgument)
@@ -5956,13 +5956,13 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 
 
 /**
- * Ends recording changes (made to the entity instances) in the current group. 
- * The next record automatically will be directed to a new group. 
- * The method also generates an object of SDAI logging event notifying 
- * the SDAI listeners about closing the current group of records and 
- * supplies this event with an argument carrying user's information, 
- * which can be accessed by objects of classes implementing <code>SdaiListener</code> interface. 
- * @param listenerArgument an information provided to SDAI listeners receiving SDAI logging event. 
+ * Ends recording changes (made to the entity instances) in the current group.
+ * The next record automatically will be directed to a new group.
+ * The method also generates an object of SDAI logging event notifying
+ * the SDAI listeners about closing the current group of records and
+ * supplies this event with an argument carrying user's information,
+ * which can be accessed by objects of classes implementing <code>SdaiListener</code> interface.
+ * @param listenerArgument an information provided to SDAI listeners receiving SDAI logging event.
  * @throws SdaiException SS_NOPN, session is not open.
  * @throws SdaiException SY_ERR, an underlying system error occurred.
  * @see #endUndoGroup()
@@ -6002,7 +6002,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 
 
 /**
- * Informs whether the undo operation is available for at least one group of recorded changes. 
+ * Informs whether the undo operation is available for at least one group of recorded changes.
  * That is, the answer is affirmative when the following two conditions are met:
  * <ul><li> method {@link #enableLogging} was applied with parameter set at value <code>true</code>;
  * <li> at least one entity instance has been modified (created, deleted, substituted).
@@ -6033,12 +6033,12 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 
 
 /**
- * Performs undo operation for a specified number of groups. 
- * If this number, submitted through the method's parameter, is negative, 
+ * Performs undo operation for a specified number of groups.
+ * If this number, submitted through the method's parameter, is negative,
  * then only one (the last) group undergoes undo operation.
- * For each group, the method also generates an object of SDAI logging event notifying 
+ * For each group, the method also generates an object of SDAI logging event notifying
  * the SDAI listeners about completion of undo operation for that group of records.
- * @param groupCount the number of groups (taken from the end of the list) 
+ * @param groupCount the number of groups (taken from the end of the list)
  * for which the undo operation is asked to be performed.
  * @throws SdaiException SS_NOPN, session is not open.
  * @throws SdaiException SY_ERR, an underlying system error occurred.
@@ -6051,16 +6051,16 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 
 
 /**
- * Performs undo operation for a specified number of groups. 
- * If this number, submitted through the method's parameter, is negative, 
+ * Performs undo operation for a specified number of groups.
+ * If this number, submitted through the method's parameter, is negative,
  * then only one (the last) group undergoes undo operation.
- * For each group, the method also generates an object of SDAI logging event notifying 
- * the SDAI listeners about completion of undo operation for that group of records and 
- * supplies this event with an argument carrying user's information, 
- * which can be accessed by objects of classes implementing <code>SdaiListener</code> interface. 
- * @param groupCount the number of groups (taken from the end of the list) 
+ * For each group, the method also generates an object of SDAI logging event notifying
+ * the SDAI listeners about completion of undo operation for that group of records and
+ * supplies this event with an argument carrying user's information,
+ * which can be accessed by objects of classes implementing <code>SdaiListener</code> interface.
+ * @param groupCount the number of groups (taken from the end of the list)
  * for which the undo operation is asked to be performed.
- * @param listenerArgument an information provided to SDAI listeners receiving SDAI logging event. 
+ * @param listenerArgument an information provided to SDAI listeners receiving SDAI logging event.
  * @throws SdaiException SS_NOPN, session is not open.
  * @throws SdaiException SY_ERR, an underlying system error occurred.
  * @see #undoGroup(int groupCount)
@@ -6108,10 +6108,10 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 
 
 /**
- * Informs whether the redo operation is available for at least one group of recorded changes. 
- * That is, the answer is affirmative when undo operation was executed for 
- * at least one group and, after that, no instance modification (deletion, creation) 
- * operation was performed. 
+ * Informs whether the redo operation is available for at least one group of recorded changes.
+ * That is, the answer is affirmative when undo operation was executed for
+ * at least one group and, after that, no instance modification (deletion, creation)
+ * operation was performed.
  * @return <code>true</code> if redo operation is available; <code>false</code> otherwise.
  * @throws SdaiException SS_NOPN, session is not open.
  * @throws SdaiException SY_ERR, an underlying system error occurred.
@@ -6136,12 +6136,12 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 
 
 /**
- * Performs redo operation for a specified number of groups. 
- * If this number, submitted through the method's parameter, is negative, 
+ * Performs redo operation for a specified number of groups.
+ * If this number, submitted through the method's parameter, is negative,
  * then only one (the first) group undergoes redo operation.
- * For each group, the method also generates an object of SDAI logging event notifying 
- * the SDAI listeners about completion of redo operation for that group of records. 
- * @param groupCount the number of groups (taken from the beginning of the list) 
+ * For each group, the method also generates an object of SDAI logging event notifying
+ * the SDAI listeners about completion of redo operation for that group of records.
+ * @param groupCount the number of groups (taken from the beginning of the list)
  * for which the redo operation is asked to be performed.
  * @throws SdaiException SS_NOPN, session is not open.
  * @throws SdaiException SY_ERR, an underlying system error occurred.
@@ -6154,14 +6154,14 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 
 
 /**
- * Performs redo operation for a specified number of groups. 
- * If this number, submitted through the method's parameter, is negative, 
+ * Performs redo operation for a specified number of groups.
+ * If this number, submitted through the method's parameter, is negative,
  * then only one (the first) group undergoes redo operation.
- * For each group, the method also generates an object of SDAI logging event notifying 
- * the SDAI listeners about completion of redo operation for that group of records and 
- * supplies this event with an argument carrying user's information, 
+ * For each group, the method also generates an object of SDAI logging event notifying
+ * the SDAI listeners about completion of redo operation for that group of records and
+ * supplies this event with an argument carrying user's information,
  * which can be accessed by objects of classes implementing <code>SdaiListener</code> interface.
- * @param groupCount the number of groups (taken from the beginning of the list) 
+ * @param groupCount the number of groups (taken from the beginning of the list)
  * for which the redo operation is asked to be performed.
  * @param listenerArgument an information provided to SDAI listeners receiving SDAI logging event.
  * @throws SdaiException SS_NOPN, session is not open.
@@ -6298,10 +6298,24 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 					new_pop_index = undo_redo_file.readShort();
 					new_inst_index = undo_redo_file.readInt();
 					inst = new_ref_mod.instances_sim[new_pop_index][new_inst_index];
-					new_ref_mod.delete_substitute(undo_redo_file, new_pos, older, new_inst_id, new_pop_index, new_inst_index, 
+					new_ref_mod.delete_substitute(undo_redo_file, new_pos, older, new_inst_id, new_pop_index, new_inst_index,
 						undo_redo_file.readBoolean());
 					inst.owning_model = null;
 					ref_mod.include_substituted(undo_redo_file, older, pop_index, inst_index, modif, inst_del);
+					break;
+				case 'e': // External data created
+					inst_id = undo_redo_file.readLong();
+					SdaiRepository repository = findRepositoryByIdentity(undo_redo_file.readInt());
+					if(repository != null) {
+						repository.deleteUndoRedoExternalData(inst_id);
+					}
+					break;
+				case 'r': // External data removed
+					inst_id = undo_redo_file.readLong();
+					repository = findRepositoryByIdentity(undo_redo_file.readInt());
+					if(repository != null) {
+						repository.restoreUndoRedoExternalData(inst_id);
+					}
 					break;
 				default:
 					String base = SdaiSession.line_separator + AdditionalMessages.BF_WVAL;
@@ -6322,7 +6336,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 	}
 
 
-	private void bypass_value_for_undo(RandomAccessFile ur_f, boolean byte_needed, byte sym) 
+	private void bypass_value_for_undo(RandomAccessFile ur_f, boolean byte_needed, byte sym)
 			throws java.io.IOException, SdaiException {
 		byte token;
 
@@ -6470,8 +6484,22 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 					new_pop_index = undo_redo_file.readShort();
 					new_inst_index = undo_redo_file.readInt();
 					modif = undo_redo_file.readBoolean();
-					new_ref_mod.substitute_again(undo_redo_file, f_pointer, ref_mod, inst_id, pop_index, inst_index, 
+					new_ref_mod.substitute_again(undo_redo_file, f_pointer, ref_mod, inst_id, pop_index, inst_index,
 						new_inst_id, new_pop_index, new_inst_index, modif);
+					break;
+				case 'e': // External data created
+					inst_id = undo_redo_file.readLong();
+					SdaiRepository repository = findRepositoryByIdentity(undo_redo_file.readInt());
+					if(repository != null) {
+						repository.restoreUndoRedoExternalData(inst_id);
+					}
+					break;
+				case 'r': // External data removed
+					inst_id = undo_redo_file.readLong();
+					repository = findRepositoryByIdentity(undo_redo_file.readInt());
+					if(repository != null) {
+						repository.deleteUndoRedoExternalData(inst_id);
+					}
 					break;
 				default:
 					String base = SdaiSession.line_separator + AdditionalMessages.BF_WVAL;
@@ -6485,9 +6513,19 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 	}
 
 
+    SdaiRepository findRepositoryByIdentity(int repIdentity) {
+		for (int i = 0; i < known_servers.myLength; i++) {
+			SdaiRepository existingRepository = (SdaiRepository)known_servers.myData[i];
+			if(System.identityHashCode(existingRepository) == repIdentity) {
+				return existingRepository;
+			}
+		}
+		return null;
+    }
+
 	final void undoRedoCreatePrepare(CEntity instance, boolean mod_modified) throws SdaiException {
 		if (undo_redo_file != null) {
-			if (undoRedoInstance != null) {// 
+			if (undoRedoInstance != null) {//
 				// write out previous instance
 				writeToUndoRedoFile(undoRedoOperation, undoRedoInstance, undoRedoOldValue, modif_state);
 			}
@@ -6501,7 +6539,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 
 	final void undoRedoDeletePrepare(CEntity instance) throws SdaiException {
 		if (undo_redo_file != null) {
-			if (undoRedoInstance != null) {// 
+			if (undoRedoInstance != null) {//
 				// write out previous instance
 				writeToUndoRedoFile(undoRedoOperation, undoRedoInstance, undoRedoOldValue, modif_state);
 			}
@@ -6542,10 +6580,10 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 	}
 
 
-	final void undoRedoSubstitutePrepare(CEntity old_instance, CEntity new_instance, boolean mod_modified) 
+	final void undoRedoSubstitutePrepare(CEntity old_instance, CEntity new_instance, boolean mod_modified)
 			throws SdaiException {
 		if (undo_redo_file != null) {
-			if (undoRedoInstance != null) {// 
+			if (undoRedoInstance != null) {//
 				// write out previous instance
 				writeToUndoRedoFile(undoRedoOperation, undoRedoInstance, undoRedoOldValue, modif_state);
 			}
@@ -6566,6 +6604,12 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 				throw new SdaiException(SdaiException.SY_ERR/*, base*/);
 			}
 			substituted[2] = pop_index;
+			if ((saved_model.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY) {
+				pop_index = saved_model.find_entityRO(saved_sch_data.entities[pop_index]);
+				if (pop_index < 0) {
+					throw new SdaiException(SdaiException.SY_ERR/*, base*/);
+				}
+			}
 			int inst_index = old_instance.find_instance(pop_index);
 			if (inst_index < 0) {
 				throw new SdaiException(SdaiException.SY_ERR/*, base*/);
@@ -6576,8 +6620,31 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 		}
 	}
 
+	final void undoRedoCreateExternalData(SdaiRepository repository, ExternalData extData) throws SdaiException {
+		try {
+			if (undo_redo_file != null) {
+				undo_redo_file.writeByte('e');
+				undo_redo_file.writeLong(extData.owningEntity.instance_identifier);
+				undo_redo_file.writeInt(System.identityHashCode(repository));
+			}
+		} catch (IOException ex) {
+			throw new SdaiException(SdaiException.SY_ERR, ex);
+		}
+	}
 
-	private void writeToUndoRedoFile(int operation, CEntity inst, ComplexEntityValue undoRedoOldValue, 
+	final void undoRedoRemoveExternalData(SdaiRepository repository, ExternalData extData) throws SdaiException {
+		try {
+			if (undo_redo_file != null) {
+				undo_redo_file.writeByte('r');
+				undo_redo_file.writeLong(extData.owningEntity.instance_identifier);
+				undo_redo_file.writeInt(System.identityHashCode(repository));
+			}
+		} catch (IOException ex) {
+			throw new SdaiException(SdaiException.SY_ERR, ex);
+		}
+	}
+
+	private void writeToUndoRedoFile(int operation, CEntity inst, ComplexEntityValue undoRedoOldValue,
 			boolean modif_state) throws SdaiException {
 		CEntity_definition def = (CEntity_definition)inst.getInstanceType();
 		try {
@@ -6659,7 +6726,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 	}
 
 
-	void save_undo_values(SchemaData sch_data, ComplexEntityValue e_values, SdaiModel owners_mod) 
+	void save_undo_values(SchemaData sch_data, ComplexEntityValue e_values, SdaiModel owners_mod)
 			throws java.io.IOException, SdaiException {
 		for (int i = 0; i < e_values.def.noOfPartialEntityTypes; i++) {
 			EntityValue pval = e_values.entityValues[i];
@@ -6753,9 +6820,9 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 
 
 /**
- * Notifies all SDAI listeners, which have registered interest for notification, 
- * on logging events. If not submitted through the second parameter, 
- * the event instance is lazily created using the first parameter 
+ * Notifies all SDAI listeners, which have registered interest for notification,
+ * on logging events. If not submitted through the second parameter,
+ * the event instance is lazily created using the first parameter
  * passed into the fire method.
 */
 	private void fireSdaiLoggingEvent(int id, SdaiEvent sdaiEvent) {
@@ -6830,10 +6897,10 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 
 
   /**
-   * Links SQL Bridge and makes remote repositories available in aggregate of 
-   * <code>known_servers</code>, which is accessible through 
+   * Links SQL Bridge and makes remote repositories available in aggregate of
+   * <code>known_servers</code>, which is accessible through
    * {@link #getKnownServers getKnownServers} method.
-   * 
+   *
    * <p> This method is an extension of JSDAI, which is
    * not a part of the standard.
    * <P><B>Example:</B>
@@ -6852,7 +6919,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
    * @see #getKnownServers
    * @see <a href="package-summary.html#DBExtension">JSDAI DB Extension</a>
    */
-  
+
   public void linkDataBaseBridge(String bridgeURL, String user, char password[]) throws SdaiException {
 	  if(Implementation.remoteSupport) {
 //		  synchronized (syncObject) {
@@ -6948,7 +7015,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 						break;
 					case 1:
 						if(active_transaction != null) {
-							throw new SdaiException(SdaiException.TR_EXS, 
+							throw new SdaiException(SdaiException.TR_EXS,
 													"Transaction can not be running while unlinking");
 						}
 						break;
@@ -6961,7 +7028,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 			throw new SdaiException(SdaiException.FN_NAVL, AdditionalMessages.RC_NAVL);
 		}
 	}
-	
+
 /**
  * Returns SQL bridge connection URL
  */
@@ -6999,7 +7066,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 	 * <code>yyyy-MM-dd</code><br/>
 	 * <p>This method is an extension of JSDAI, which is
 	 * not a part of the standard.</p>
-	 * 
+	 *
 	 * @param commitRef commit reference obtained using remote SDAI query
 	 *                  or null which denotes current state
 	 * @exception SdaiException if an error occurs during the operation
@@ -7088,7 +7155,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 	/**
 	 * Removes all exclusive locks placed by this <code>SdaiSession</code> on
 	 * remote <code>SdaiRepositories</code>, <code>SchemaInstances</code>, and
-	 * <code>SdaiModels</code>. 
+	 * <code>SdaiModels</code>.
 	 * <p>This method is an extension of JSDAI, which is
 	 * not a part of the standard.</p>
 	 * @exception SdaiException if an error occurs during the operation
@@ -7163,7 +7230,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 	public AEntity getQuerySourceInstances() throws SdaiException{
 		return null;
 	}
-    
+
 	/**
      * @since 3.6.0
      */
@@ -7191,7 +7258,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
     public SdaiRepository getRepositoryByRef(SerializableRef repositoryRef) throws SdaiException{
         SdaiRepository repository;
         long repositoryId = repositoryRef.getRepositoryId();
-        
+
         for (int i = 0; i < known_servers.myLength; i++) {
 			repository = (SdaiRepository)known_servers.myData[i];
             if (repository.hasId(repositoryId)) {
@@ -7209,7 +7276,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
         } catch (Exception e) {
             throw new SdaiException(SdaiException.SY_ERR, e);
         }
-        
+
 		repository.modified = false;
 		known_servers.addUnorderedRO(repository);
 		return repository;
@@ -7217,7 +7284,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 
 	SdaiRepository findRepositoryInKnownServers(long repositoryId) throws SdaiException {
         SdaiRepository repository;
-        
+
         for (int i = 0; i < known_servers.myLength; i++) {
 			repository = (SdaiRepository)known_servers.myData[i];
             if (repository.hasId(repositoryId)) {
@@ -7259,7 +7326,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 					Set targetInstances = (Set)mappingList.get(mappingIdx);
 					mappingList.set(mappingIdx++, null);
 					mappingContext.creator.createSourceInstance(mapping, targetInstances);
-				
+
 					if(mappingIdx < mappingListSize && !(mappingList.get(mappingIdx) instanceof EEntity_mapping)) {
 						int attributeIdx = -1;
 						for(Iterator i = targetInstances.iterator(); i.hasNext(); ) {
@@ -7293,7 +7360,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 					EEntity_mapping mapping = (EEntity_mapping)mappingList.get(mappingIdx++);
 					Set targetInstances = (Set)mappingList.get(mappingIdx++);
 					mappingContext.creator.createSourceInstance(mapping, targetInstances);
-				
+
 					while(mappingIdx < mappingListSize && !(mappingList.get(mappingIdx) instanceof EEntity_mapping)) {
 						mappingIdx++;
 					}
@@ -7303,7 +7370,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 					mappingList.set(mappingIdx++, null);
 					Set targetInstances = (Set)mappingList.get(mappingIdx);
 					mappingList.set(mappingIdx++, null);
-				
+
 					if(mappingIdx < mappingListSize && !(mappingList.get(mappingIdx) instanceof EEntity_mapping)) {
 						int attributeIdx = -1;
 						for(Iterator i = targetInstances.iterator(); i.hasNext(); ) {

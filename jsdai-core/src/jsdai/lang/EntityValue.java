@@ -352,7 +352,12 @@ public class EntityValue {
 				return ref;
 			}
 		} else if (val.tag == PhFileReader.ENTITY_REFERENCE_SPECIAL) {
-			return (CLateBindingEntity)val.reference;
+			CLateBindingEntity late_ref = (CLateBindingEntity)val.reference;
+			if (late_ref != null) {
+				late_ref.inverseAdd(inst);
+			}
+			return late_ref;
+//			return (CLateBindingEntity)val.reference;
 		} else if (val.tag == PhFileReader.MISSING) {
 			return null;
 		} else if (val.tag == PhFileReader.REDEFINE) {

@@ -126,7 +126,7 @@ public class Support {
   static boolean flag_complex_off = false;
   static boolean flag_implicit_select = false;
 	static boolean flag_original_expressions = false;
-	static boolean flag_really_original_expressions = false;
+	static boolean flag_really_original_expressions = true;
   static Stack scope_stack = new Stack();
   static Vector current_scope;
   static int variable_uid = 0;
@@ -4293,6 +4293,7 @@ System.out.println("a hashmap key: " + a_key + ", value: " + hm_attributes.get(a
     		instance_name_new = null;
     	}
 //if ((parser_pass == 4) && (inst.getParent_entity(null).getName(null).equalsIgnoreCase("component_feature_to_physical_usage_view_assignment"))) {
+//if ((parser_pass == 4) && (inst.getParent_entity(null).getName(null).equalsIgnoreCase(""))) {
 //	System.out.println("<findAttribute> 8b - instance_name_new: " + instance_name_new + ", instance_name: " + instance_name + ", attribute name: " + attribute_name + "ed: " + ed + ", parent: " + inst.getParent_entity(null));
 //}
 

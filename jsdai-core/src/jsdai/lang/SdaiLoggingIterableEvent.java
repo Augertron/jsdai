@@ -39,13 +39,14 @@ abstract class SdaiLoggingIterableEvent extends SdaiLoggingEvent implements Sdai
 	protected long operationInstanceId;
 	protected EEntity_definition operationInstanceType;
 	protected SdaiModel operationModel;
+	protected SdaiRepository operationRepository;
 	protected long operationPrevInstanceId;
 	protected EEntity_definition operationPrevInstanceType;
 	protected SdaiModel operationPrevModel;
 
 /**
  * Constructs a new object of <code>SdaiLoggingIterableEvent</code>
- * with methods which allow to iterate over records in the undo/redo log file. 
+ * with methods which allow to iterate over records in the undo/redo log file.
  * @param source the object on which the <code>SdaiLoggingIterableEvent</code> occurred.
  * @param id the type of the logging event.
  * @param item an indicator describing a group of records in the undo/redo log file.
@@ -76,6 +77,10 @@ abstract class SdaiLoggingIterableEvent extends SdaiLoggingEvent implements Sdai
 		return operationModel;
 	}
 
+	public SdaiRepository getOperationRepository() throws SdaiException {
+		return operationRepository;
+	}
+
 	public String getOperationPrevInstanceLabel() throws SdaiException {
 		return operationPrevInstanceId >= 0 ? "#" + operationPrevInstanceId : null;
 	}
@@ -97,6 +102,7 @@ abstract class SdaiLoggingIterableEvent extends SdaiLoggingEvent implements Sdai
 		operationInstanceId = -1;
 		operationInstanceType = null;
 		operationModel = null;
+		operationRepository = null;
 		operationPrevInstanceId = -1;
 		operationPrevInstanceType = null;
 		operationPrevModel = null;

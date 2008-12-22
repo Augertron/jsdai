@@ -23,6 +23,7 @@
 
 package jsdai.xml;
 
+import java.io.PrintWriter;
 import java.lang.StringBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,7 +58,7 @@ import org.xml.sax.SAXNotSupportedException;
  * This class is a way to write (create) JSDAI population
  * from XML parsing events. It acts as XML contents handler and
  * can be used in any environment which generates XML parsing events
- * (eg. XML text file parsing). 
+ * (eg. XML text file parsing).
  *
  * @author <a href="mailto:vaidas.nargelas@lksoft.lt">Vaidas Nargelas</a>
  * @version $Revision$
@@ -118,7 +119,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 	 *
 	 * @param namespaceURI The namespace URI. Namespace processing has to be
 	 *                     enabled in XML reader
-	 * @param localName The local name (without prefix) 
+	 * @param localName The local name (without prefix)
 	 * @param qName The ignored qualified name (can be null)
 	 * @param attr The attributes attached to the element
 	 * @exception SAXException if SAX error occurs
@@ -158,7 +159,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 	 *
 	 * @param namespaceURI The namespace URI. Namespace processing has to be
 	 *                     enabled in XML reader
-	 * @param localName The local name (without prefix) 
+	 * @param localName The local name (without prefix)
 	 * @param qName The ignored qualified name (can be null)
 	 * @exception SAXException if SAX error occurs
 	 */
@@ -191,7 +192,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 			throw wrapper;
 		}
 	}
-	
+
 	/**
 	 * Accepts notification about document start events.
 	 *
@@ -203,7 +204,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 		ctxHandlerStack = new ContextHandler[STACK_DEPTH];
 		ctxElemStack = new String[STACK_DEPTH];
 		contextHandler = new ContextHandler();
-		
+
 		createdInstances = new HashMap();
 		definedTypes = new HashMap();
 		currentInstance = null;
@@ -306,7 +307,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 	 * @exception SAXException if an error occurs
 	 */
 	public void endPrefixMapping(String prefix) throws SAXException {
-		
+
 	}
 
 	/**
@@ -326,7 +327,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 	 * @param length The number of characters to read from the array.
 	 */
 	public void ignorableWhitespace(char[] charArray, int start, int length) throws SAXException {
-		
+
 	}
 
 	/**
@@ -335,7 +336,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 	 * @param name The name of the skipped entity.
 	 */
 	public void skippedEntity(String name) throws SAXException {
-		
+
 	}
 
 	protected String getErrorPrefix() {
@@ -366,7 +367,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 		} else if(schemaName.equalsIgnoreCase("SDAI_MAPPING_SCHEMA")) {
 			formattedSchemaName = "jsdai.mapping.SMapping";
 		} else {
-			formattedSchemaName = schemaName.substring(0, 1).toUpperCase() + 
+			formattedSchemaName = schemaName.substring(0, 1).toUpperCase() +
 				schemaName.substring(1).toLowerCase();
 			formattedSchemaName = "jsdai.S" + formattedSchemaName + ".S" + formattedSchemaName;
 		}
@@ -385,12 +386,12 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 			Map defTypesForSchema = (Map)definedTypes.get(schemaName);
 			if(defTypesForSchema == null) {
 				defTypesForSchema = new HashMap();
-				SdaiRepository dictionaryRep = 
+				SdaiRepository dictionaryRep =
 					model.getUnderlyingSchema().findEntityInstanceSdaiModel().getRepository();
-				SdaiModel schemaModel = 
-					dictionaryRep.findSdaiModel(schemaName.toUpperCase() + 
+				SdaiModel schemaModel =
+					dictionaryRep.findSdaiModel(schemaName.toUpperCase() +
 												SdaiSession.DICTIONARY_NAME_SUFIX);
-				ADefined_type definedTypeAgg = 
+				ADefined_type definedTypeAgg =
 					(ADefined_type)schemaModel.getInstances(EDefined_type.class);
 				SdaiIterator definedTypeIter = definedTypeAgg.createIterator();
 				while(definedTypeIter.next()) {
@@ -407,10 +408,10 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 	throws SAXException, SdaiException {
 		EEntity_definition entDefinition;
 		if(schemaName != null) {
-			SdaiRepository dictionaryRep = 
+			SdaiRepository dictionaryRep =
 				model.getUnderlyingSchema().findEntityInstanceSdaiModel().getRepository();
-			SdaiModel schemaModel = 
-				dictionaryRep.findSdaiModel(schemaName.toUpperCase() + 
+			SdaiModel schemaModel =
+				dictionaryRep.findSdaiModel(schemaName.toUpperCase() +
 											SdaiSession.DICTIONARY_NAME_SUFIX);
 			entDefinition = findDictionaryEntityDefinition(schemaModel, entityName);
 		} else {
@@ -431,6 +432,18 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 			}
 		}
 		return namedType;
+	}
+
+	protected void processRecoverableHandlerException(SdaiException e) throws SdaiException {
+		PrintWriter logWriter = repository != null ? repository.getSession().getLogWriterSession() : null;
+		if(logWriter == null) {
+			logWriter = SdaiSession.getLogWriter();
+		}
+		if(logWriter != null) {
+			logWriter.print("WARNING: Recoverable exception ");
+			e.printStackTrace(logWriter);
+		}
+		ctxHandlerStack[ctxTop] = contextHandler;
 	}
 
 	protected void pushCreator(Creator creator) {
@@ -517,7 +530,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 			popHandler();
 		}
 	}
-	
+
 	protected class TerminalHandler extends ContextHandler {
 
 		protected ContextHandler newHandlerForElement(String namespaceURI, String localName, String qname)
@@ -576,7 +589,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 
 		protected Aggregate addAggAggregate() throws SdaiException {
 // 			int aggMemberCount = aggregates[attrDepth].getMemberCount() + 1;
-			return aggregates[attrDepth].addAggregateByIndex(++aggIndexes[attrDepth], 
+			return aggregates[attrDepth].addAggregateByIndex(++aggIndexes[attrDepth],
 																attrSelect[attrDepth]);
 		}
 	}
@@ -592,7 +605,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 	}
 
 	protected static class SdaiContextCr extends Creator {
-		
+
 		private final SdaiContext context;
 
 		protected SdaiContextCr(SdaiContext context) {
@@ -661,8 +674,8 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 
 	protected static class AggregateAttCr extends Creator {
 		protected void processCreate(InstanceWriter instanceWriter) throws SdaiException {
-			instanceWriter.aggregates[instanceWriter.attrDepth + 1] = 
-				instanceWriter.currentInstance.createAggregate(instanceWriter.currentAttribute, 
+			instanceWriter.aggregates[instanceWriter.attrDepth + 1] =
+				instanceWriter.currentInstance.createAggregate(instanceWriter.currentAttribute,
 												instanceWriter.attrSelect[instanceWriter.attrDepth]);
 			instanceWriter.aggIndexes[instanceWriter.attrDepth + 1] = 0;
 			instanceWriter.attrDepth++;
@@ -685,7 +698,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 
 	protected static class AggregateAggCr extends Creator {
 		protected void processCreate(InstanceWriter instanceWriter) throws SdaiException {
-			instanceWriter.aggregates[instanceWriter.attrDepth + 1] = 
+			instanceWriter.aggregates[instanceWriter.attrDepth + 1] =
 				instanceWriter.aggMemberHnd.addAggAggregate();
 			instanceWriter.aggIndexes[instanceWriter.attrDepth + 1] = 0;
 			instanceWriter.attrDepth++;
@@ -716,7 +729,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 
 		protected void processCreate(InstanceWriter instanceWriter) throws SdaiException {
 			EEntity referencedInstance = (EEntity)instanceWriter.createdInstances.get(refId);
-			instanceWriter.currentInstance.set(instanceWriter.currentAttribute, referencedInstance, 
+			instanceWriter.currentInstance.set(instanceWriter.currentAttribute, referencedInstance,
 											   instanceWriter.attrSelect[instanceWriter.attrDepth]);
 // 			System.out.println(currentInstance);
 		}
@@ -790,7 +803,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 		}
 
 		protected void processCreate(InstanceWriter instanceWriter) throws SdaiException {
-			instanceWriter.currentInstance.set(instanceWriter.currentAttribute, intVal, 
+			instanceWriter.currentInstance.set(instanceWriter.currentAttribute, intVal,
 											   instanceWriter.attrSelect[instanceWriter.attrDepth]);
 // 			System.out.println(currentInstance);
 		}
@@ -827,7 +840,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 		}
 
 		protected void processCreate(InstanceWriter instanceWriter) throws SdaiException {
-			instanceWriter.currentInstance.set(instanceWriter.currentAttribute, doubleVal, 
+			instanceWriter.currentInstance.set(instanceWriter.currentAttribute, doubleVal,
 											   instanceWriter.attrSelect[instanceWriter.attrDepth]);
 // 			System.out.println(currentInstance);
 		}
@@ -864,7 +877,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 		}
 
 		protected void processCreate(InstanceWriter instanceWriter) throws SdaiException {
-			instanceWriter.currentInstance.set(instanceWriter.currentAttribute, logicalVal, 
+			instanceWriter.currentInstance.set(instanceWriter.currentAttribute, logicalVal,
 											   instanceWriter.attrSelect[instanceWriter.attrDepth]);
 // 			System.out.println(currentInstance);
 		}
@@ -901,7 +914,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 		}
 
 		protected void processCreate(InstanceWriter instanceWriter) throws SdaiException {
-			instanceWriter.currentInstance.set(instanceWriter.currentAttribute, stringVal, 
+			instanceWriter.currentInstance.set(instanceWriter.currentAttribute, stringVal,
 											   instanceWriter.attrSelect[instanceWriter.attrDepth]);
 // 			System.out.println(currentInstance);
 		}
@@ -938,7 +951,7 @@ public abstract class InstanceWriter extends JsdaiLangAccessor implements Conten
 		}
 
 		protected void processCreate(InstanceWriter instanceWriter) throws SdaiException {
-			instanceWriter.currentInstance.set(instanceWriter.currentAttribute, enumIndex, 
+			instanceWriter.currentInstance.set(instanceWriter.currentAttribute, enumIndex,
 											   instanceWriter.attrSelect[instanceWriter.attrDepth]);
 		}
 

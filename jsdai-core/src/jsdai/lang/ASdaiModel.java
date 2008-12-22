@@ -23,7 +23,6 @@
 
 package jsdai.lang;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import jsdai.client.*;
 import jsdai.dictionary.*;
@@ -39,9 +38,6 @@ import jsdai.xml.SdaiInputSource;
  description of methods whose specializations are given here.
  */
 public class ASdaiModel extends SessionAggregate {
-
-// Temporary solution
-	ASdaiModel mod_list;
 
 	ListElement to_mod;
 	int to_mod_set;
@@ -125,7 +121,7 @@ public class ASdaiModel extends SessionAggregate {
 
 
 /**
- * It is a specialization of 
+ * It is a specialization of
  * {@link Aggregate#addByIndex(int, Object, EDefined_type []) addByIndex(int, Object, EDefined_type [])}
  * method - the second parameter is of type <code>SdaiModel</code>
  * and the third parameter is dropped.
@@ -185,9 +181,9 @@ public class ASdaiModel extends SessionAggregate {
 
 
 /**
- * Returns a read-only aggregate containing all instances of all started 
+ * Returns a read-only aggregate containing all instances of all started
  * <code>SdaiModel</code>s in this <code>ASdaiModel</code>.
- * The models whose access is ended at the time of invocation 
+ * The models whose access is ended at the time of invocation
  * of this method are bypassed.
  * @return aggregate containing all instances of this <code>ASdaiModel</code>.
  * @throws SdaiException SY_ERR, underlying system error.
@@ -232,13 +228,13 @@ public class ASdaiModel extends SessionAggregate {
 
 /**
  * Returns a read-only aggregate containing all instances
- * of the specified entity data type and all instances of all its subtypes 
- * collected going through all started <code>SdaiModel</code>s in this  
+ * of the specified entity data type and all instances of all its subtypes
+ * collected going through all started <code>SdaiModel</code>s in this
  * <code>ASdaiModel</code>.
  * If this entity type is not defined or declared in the
  * EXPRESS schema whose definition is underlying for a model, then
  * such a model is ignored.
- * The models whose access is ended at the time of invocation 
+ * The models whose access is ended at the time of invocation
  * of this method are also bypassed.
  * The aggregate can be cast to the aggregate specific
  * for the given entity type.
@@ -250,7 +246,7 @@ public class ASdaiModel extends SessionAggregate {
  *    ACartesian_point aggr = (ACartesian_point)maggr.getInstances(cp_type);</pre></TT>
  * @param type definition of the entity of which instances are required.
  * @return aggregate containing all instances of the specified
- * entity data type taken from all started <code>SdaiModel</code>s 
+ * entity data type taken from all started <code>SdaiModel</code>s
  * in this <code>ASdaiModel</code>.
  * @throws SdaiException ED_NDEF, entity definition not defined.
  * @throws SdaiException SY_ERR, underlying system error.
@@ -368,44 +364,21 @@ public class ASdaiModel extends SessionAggregate {
 		return getInstancesInternal(schema_data, some_index, type, SdaiSession.setTypeForInstancesListOfModel);
 //		} // syncObject
 	}
-// Used for temporary solution
-	private void getListAggregate() throws SdaiException {
-		if (myType == null || myType.express_type == DataType.LIST) {
-			mod_list = this;
-		} else {
-//			if (mod_list == null) {
-				mod_list = new ASdaiModel();
-/*			} else {
-				mod_list.clear();
-			}*/
-			for (int i = 0; i < myLength; i++) {
-				ListElement new_element = new ListElement(myData[i]);
-				if (mod_list.myLength == 0) {
-					mod_list.myData[0] = mod_list.myData[1] = new_element;
-				} else {
-					((ListElement)mod_list.myData[1]).next = new_element;
-					mod_list.myData[1] = new_element;
-				}
-				mod_list.myLength++;
-			}
-		}
-	}
-
 
 /**
  * Returns a read-only aggregate containing all instances
- * of the specified entity data type and all instances of all its subtypes 
- * collected going through all started <code>SdaiModel</code>s in this  
+ * of the specified entity data type and all instances of all its subtypes
+ * collected going through all started <code>SdaiModel</code>s in this
  * <code>ASdaiModel</code>.
- * If this entity type (represented by the method's parameter) is not defined 
- * or declared in the EXPRESS schema whose definition is underlying for a model, 
+ * If this entity type (represented by the method's parameter) is not defined
+ * or declared in the EXPRESS schema whose definition is underlying for a model,
  * then such a model is ignored.
- * The models whose access is ended at the time of invocation 
+ * The models whose access is ended at the time of invocation
  * of this method are also bypassed.
  * The aggregate can be cast to the aggregate specific
  * for the given entity type.
  * A parameter value submitted to the method shall be in the form EXxx.class,
- * where xxx is the name of the entity. 
+ * where xxx is the name of the entity.
  * Passing null value to the method's
  * parameter results in SdaiException VA_NSET.
  * <P><B>Example:</B>
@@ -413,7 +386,7 @@ public class ASdaiModel extends SessionAggregate {
  *    ACartesian_point aggr = (ACartesian_point)maggr.getInstances(ECartesian_point.class);</pre></TT>
  * @param type Java class for the entity of which instances are required.
  * @return aggregate containing all instances of the specified
- * entity data type taken from all started <code>SdaiModel</code>s 
+ * entity data type taken from all started <code>SdaiModel</code>s
  * in this <code>ASdaiModel</code>.
  * @throws SdaiException VA_NSET, value not set.
  * @throws SdaiException SY_ERR, underlying system error.
@@ -513,7 +486,7 @@ public class ASdaiModel extends SessionAggregate {
 		if (schema_data == null) {
 			String name = type.getName();
 			int last_dot = name.lastIndexOf(".");
-			String dict_name = name.substring(SdaiSession.SCHEMA_PREFIX_LENGTH, last_dot).toUpperCase() + 
+			String dict_name = name.substring(SdaiSession.SCHEMA_PREFIX_LENGTH, last_dot).toUpperCase() +
 				SdaiSession.DICTIONARY_NAME_SUFIX;
 //			SdaiModel mod_found = SdaiSession.systemRepository.findDictionarySdaiModel(dict_name);
 			SdaiModel mod_found = SdaiSession.systemRepository.findExistingDictionarySdaiModel(dict_name);
@@ -536,7 +509,7 @@ public class ASdaiModel extends SessionAggregate {
 		return getInstancesInternal(schema_data, some_index, type, SdaiSession.setTypeForInstancesListOfModel);
 //		} // syncObject
 	}
-	private AEntity getInstancesInternal(SchemaData sch_data, int index, Object type, CSet_type set_type) 
+	private AEntity getInstancesInternal(SchemaData sch_data, int index, Object type, CSet_type set_type)
 			throws SdaiException {
 		AEntity instancesInModels;
 		if (sch_data == null) {
@@ -565,15 +538,15 @@ public class ASdaiModel extends SessionAggregate {
 
 /**
  * Returns a read-only aggregate containing all instances
- * of the specified entity data type 
- * collected going through all started <code>SdaiModel</code>s in this  
+ * of the specified entity data type
+ * collected going through all started <code>SdaiModel</code>s in this
  * <code>ASdaiModel</code>.
- * The instances of any subtype of the specified entity data type 
+ * The instances of any subtype of the specified entity data type
  * are not included into this aggregate.
  * If the given entity type is not defined or declared in the
  * EXPRESS schema whose definition is underlying for a model, then
  * such a model is ignored.
- * The models whose access is ended at the time of invocation 
+ * The models whose access is ended at the time of invocation
  * of this method are also bypassed.
  * The aggregate can be cast to the aggregate specific
  * for the given entity type.
@@ -585,7 +558,7 @@ public class ASdaiModel extends SessionAggregate {
  *    ACartesian_point aggr = (ACartesian_point)maggr.getExactInstances(cp_type);</pre></TT>
  * @param type definition of the entity of which instances are required.
  * @return aggregate containing all instances of the specified
- * entity data type taken from all started <code>SdaiModel</code>s 
+ * entity data type taken from all started <code>SdaiModel</code>s
  * in this <code>ASdaiModel</code>.
  * @throws SdaiException ED_NDEF, entity definition not defined.
  * @throws SdaiException SY_ERR, underlying system error.
@@ -688,15 +661,15 @@ public class ASdaiModel extends SessionAggregate {
 
 /**
  * Returns a read-only aggregate containing all instances
- * of the specified entity data type 
- * collected going through all started <code>SdaiModel</code>s in this  
+ * of the specified entity data type
+ * collected going through all started <code>SdaiModel</code>s in this
  * <code>ASdaiModel</code>.
- * The instances of any subtype of the specified entity data type 
+ * The instances of any subtype of the specified entity data type
  * are not included into this aggregate.
- * If the given entity type (represented by the method's parameter) is not defined 
- * or declared in the EXPRESS schema whose definition is underlying for a model, 
+ * If the given entity type (represented by the method's parameter) is not defined
+ * or declared in the EXPRESS schema whose definition is underlying for a model,
  * then such a model is ignored.
- * The models whose access is ended at the time of invocation 
+ * The models whose access is ended at the time of invocation
  * of this method are also bypassed.
  * The aggregate can be cast to the aggregate specific
  * for the given entity type.
@@ -709,7 +682,7 @@ public class ASdaiModel extends SessionAggregate {
  *    ACartesian_point aggr = (ACartesian_point)maggr.getExactInstances(CCartesian_point.class);</pre></TT>
  * @param type Java class for the entity of which instances are required.
  * @return aggregate containing all instances of the specified
- * entity data type taken from all started <code>SdaiModel</code>s 
+ * entity data type taken from all started <code>SdaiModel</code>s
  * in this <code>ASdaiModel</code>.
  * @throws SdaiException VA_NSET, value not set.
  * @throws SdaiException SY_ERR, underlying system error.
@@ -813,7 +786,7 @@ public class ASdaiModel extends SessionAggregate {
 /**
  * Returns the number of instances contained in started <code>SdaiModel</code>s of
  * this <code>ASdaiModel</code>.
- * The models whose access is ended at the time of invocation 
+ * The models whose access is ended at the time of invocation
  * of this method are ignored.
  * @return the number of instances.
  * @see SdaiModel#getInstanceCount()
@@ -858,11 +831,11 @@ public class ASdaiModel extends SessionAggregate {
 /**
  * Returns the number of instances of the specified entity data type
  * and of all its subtypes contained in started <code>SdaiModel</code>s of
- * this <code>ASdaiModel</code>. 
+ * this <code>ASdaiModel</code>.
  * If this entity type is not defined or declared in the
  * EXPRESS schema whose definition is underlying for a model, then
  * such a model is ignored.
- * The models whose access is ended at the time of invocation 
+ * The models whose access is ended at the time of invocation
  * of this method are also bypassed.
  * Passing null value to the method's
  * parameter results in SdaiException ED_NDEF.
@@ -888,7 +861,7 @@ public class ASdaiModel extends SessionAggregate {
 			while (element != null) {
 				model = (SdaiModel)element.object;
 				if (model.underlying_schema != null && (model.mode & SdaiModel.MODE_MODE_MASK) > 0) {
-					index_to_entity = 
+					index_to_entity =
 						model.underlying_schema.owning_model.schemaData.findEntityExtentIndex((CEntity_definition)type);
 					if (index_to_entity >= 0) {
 						count += model.getInstanceCountInternal(index_to_entity);
@@ -915,11 +888,11 @@ public class ASdaiModel extends SessionAggregate {
 /**
  * Returns the number of instances of the specified entity data type
  * and of all its subtypes contained in started <code>SdaiModel</code>s of
- * this <code>ASdaiModel</code>. 
- * If this entity type (represented by the method's parameter) is not defined 
- * or declared in the EXPRESS schema whose definition is underlying for a model, 
+ * this <code>ASdaiModel</code>.
+ * If this entity type (represented by the method's parameter) is not defined
+ * or declared in the EXPRESS schema whose definition is underlying for a model,
  * then such a model is ignored.
- * The models whose access is ended at the time of invocation 
+ * The models whose access is ended at the time of invocation
  * of this method are also bypassed.
  * A parameter value submitted to the method shall be in the form EXxx.class,
  * where xxx is the name of the entity.
@@ -973,10 +946,10 @@ public class ASdaiModel extends SessionAggregate {
 /**
  * Returns the number of instances of the specified entity data type
  * contained in started <code>SdaiModel</code>s of
- * this <code>ASdaiModel</code>. 
+ * this <code>ASdaiModel</code>.
  * If this entity type is not defined or declared in the
  * EXPRESS schema whose definition is underlying for a model, then
- * such a model is ignored. The models whose access is ended 
+ * such a model is ignored. The models whose access is ended
  * at the time of invocation of this method are also bypassed.
  * The instances of any subtype of the specified entity type are not counted.
  * Passing null value to the method's
@@ -1003,11 +976,11 @@ public class ASdaiModel extends SessionAggregate {
 			while (element != null) {
 				model = (SdaiModel)element.object;
 				if (model.underlying_schema != null && (model.mode & SdaiModel.MODE_MODE_MASK) > 0) {
-					if ((model.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY && 
+					if ((model.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY &&
 							model.repository != SdaiSession.systemRepository) {
 						index_to_entity = model.find_entityRO((CEntityDefinition)type);
 					} else {
-						index_to_entity = 
+						index_to_entity =
 							model.underlying_schema.owning_model.schemaData.findEntityExtentIndex((CEntity_definition)type);
 					}
 					if (index_to_entity >= 0) {
@@ -1020,11 +993,11 @@ public class ASdaiModel extends SessionAggregate {
 			for (int j = 0; j < myLength; j++) {
 				model = (SdaiModel)myData[j];
 				if (model.underlying_schema != null && (model.mode & SdaiModel.MODE_MODE_MASK) > 0) {
-					if ((model.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY && 
+					if ((model.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY &&
 							model.repository != SdaiSession.systemRepository) {
 						index_to_entity = model.find_entityRO((CEntityDefinition)type);
 					} else {
-						index_to_entity = 
+						index_to_entity =
 							model.underlying_schema.owning_model.schemaData.findEntityExtentIndex((CEntity_definition)type);
 					}
 					if (index_to_entity >= 0) {
@@ -1041,10 +1014,10 @@ public class ASdaiModel extends SessionAggregate {
 /**
  * Returns the number of instances of the specified entity data type
  * contained in started <code>SdaiModel</code>s of
- * this <code>ASdaiModel</code>. 
- * If this entity type (represented by the method's parameter) is not defined 
- * or declared in the EXPRESS schema whose definition is underlying for a model, 
- * then such a model is ignored. The models whose access is ended 
+ * this <code>ASdaiModel</code>.
+ * If this entity type (represented by the method's parameter) is not defined
+ * or declared in the EXPRESS schema whose definition is underlying for a model,
+ * then such a model is ignored. The models whose access is ended
  * at the time of invocation of this method are also bypassed.
  * The instances of any subtype of the specified entity type are not counted.
  * A parameter value submitted to the method shall be in the form CXxx.class,
@@ -1074,9 +1047,9 @@ public class ASdaiModel extends SessionAggregate {
 				model = (SdaiModel)element.object;
 				if (model.underlying_schema != null && (model.mode & SdaiModel.MODE_MODE_MASK) > 0) {
 					index_to_entity = model.underlying_schema.owning_model.schemaData.findEntityExtentIndex(type);
-					if ((model.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY && 
+					if ((model.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY &&
 							model.repository != SdaiSession.systemRepository) {
-						index_to_entity = 
+						index_to_entity =
 							model.find_entityRO(model.underlying_schema.owning_model.schemaData.entities[index_to_entity]);
 					}
 					if (index_to_entity >= 0) {
@@ -1090,9 +1063,9 @@ public class ASdaiModel extends SessionAggregate {
 				model = (SdaiModel)myData[j];
 				if (model.underlying_schema != null && (model.mode & SdaiModel.MODE_MODE_MASK) > 0) {
 					index_to_entity = model.underlying_schema.owning_model.schemaData.findEntityExtentIndex(type);
-					if ((model.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY && 
+					if ((model.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY &&
 							model.repository != SdaiSession.systemRepository) {
-						index_to_entity = 
+						index_to_entity =
 							model.find_entityRO(model.underlying_schema.owning_model.schemaData.entities[index_to_entity]);
 					}
 					if (index_to_entity >= 0) {
@@ -1221,8 +1194,8 @@ public class ASdaiModel extends SessionAggregate {
 					}
 				}
 //int rem = repo.getModCount();
-//System.out.println("   ASdaiModel   repo name: " + repo.name + 
-//"   repo: " + repo + "   del_count: " + del_count + 
+//System.out.println("   ASdaiModel   repo name: " + repo.name +
+//"   repo: " + repo + "   del_count: " + del_count +
 //"   rem: " + rem + "   repo.unresolved_mod_count: " + repo.unresolved_mod_count);
 //return rem - del_count + repo.unresolved_mod_count;
 				return repo.getModCount() - del_count + repo.unresolved_mod_count;
@@ -1299,6 +1272,22 @@ public class ASdaiModel extends SessionAggregate {
 	}
 
 
+	protected boolean try_to_addUnordered(SdaiModel value) throws SdaiException {
+		boolean found = false;
+		for (int i = 0; i < myLength; i++) {
+			if (myData[i] == value) {
+				found = true;
+			}
+		}
+		if (found) {
+			return false;
+		}
+		myData[myLength] = value;
+		myLength++;
+		return true;
+	}
+
+
 /**
  * Finds instances that are mappings of given source entity.
  * Instances that satisfies mapping constraints must be in this aggregate of models, but other instances required by mapping constraints may be in other models within given data domain.
@@ -1333,7 +1322,7 @@ public class ASdaiModel extends SessionAggregate {
 
 	/**
 	 * Finds instances that are mappings of given source entity.
-	 * This method provides the similar functionality as 
+	 * This method provides the similar functionality as
 	 * {@link #findMappingInstances(EEntity_definition, ASdaiModel, ASdaiModel, int)}
 	 * and adds extra possibility to get most specific mappings of the instances.
 	 * <p>This method is part of the mapping extensions of JSDAI.
@@ -1343,7 +1332,7 @@ public class ASdaiModel extends SessionAggregate {
 	 * @param mappingDomain the domain for mapping constraints and dictionary data.
 	 * @param instanceMappings if not null should be an empty aggregate. The most specific entity
 	 * mappings are returned in this aggregate. The member indexes are synchronized with instance
-	 * aggregate which is returned from this method. If null then the method works as 
+	 * aggregate which is returned from this method. If null then the method works as
 	 * {@link #findMappingInstances(EEntity_definition, ASdaiModel, ASdaiModel, int)}
 	 * @param mode Should always be {@link EEntity#NO_RESTRICTIONS} - no restrictions.
 	 * @return list of instances that satisfy requirements. If <code>instanceMappings</code> is
@@ -1398,7 +1387,7 @@ public class ASdaiModel extends SessionAggregate {
 
 	/**
 	 * Finds instances that are mappings of given source entity.
-	 * This method provides the similar functionality as 
+	 * This method provides the similar functionality as
 	 * {@link #findMappingInstances(EEntity_mapping, ASdaiModel, ASdaiModel, int)}
 	 * and adds extra possibility to get most specific mappings of the instances.
 	 * <p>This method is part of the mapping extensions of JSDAI.
@@ -1409,7 +1398,7 @@ public class ASdaiModel extends SessionAggregate {
 	 * @param mappingDomain the domain for mapping constraints and dictionary data.
 	 * @param instanceMappings if not null should be an empty aggregate. The most specific entity
 	 * mappings are returned in this aggregate. The member indexes are synchronized with instance
-	 * aggregate which is returned from this method. If null then the method works as 
+	 * aggregate which is returned from this method. If null then the method works as
 	 * {@link #findMappingInstances(EEntity_definition, ASdaiModel, ASdaiModel, int)}
 	 * @param mode Should always be {@link EEntity#NO_RESTRICTIONS} - no restrictions.
 	 * @return list of instances that satisfy requirements. If <code>instanceMappings</code> is
@@ -1451,6 +1440,158 @@ public class ASdaiModel extends SessionAggregate {
 			throw e;
 		} catch(Exception e) {
 			throw new SdaiException(SdaiException.SY_ERR, e);
+		}
+	}
+
+	/**
+	 * Makes the contents of member <code>SdaiModels</code> available for
+	 * read-only access. Models in read-only or read-write mode prior to
+	 * invoking this method are skipped from the operation and remain in
+	 * their corresponding modes.
+	 * @throws SdaiException TR_NEXS, transaction does not exist.
+	 * @throws SdaiException TR_NAVL, transaction currently not available.
+	 * @throws SdaiException TR_EAB, transaction ended abnormally.
+	 * @throws SdaiException RP_NOPN, repository is not open.
+	 * @throws SdaiException MO_NEXS, SDAI-model does not exist.
+	 * @throws SdaiException MX_RO, SDAI-model access read-only.
+	 * @throws SdaiException MX_RW, SDAI-model access read-write.
+	 * @throws SdaiException MX_NDEF, SDAI-model access not defined.
+	 * @throws SdaiException SY_ERR, underlying system error.
+	 * @see SdaiModel#startReadOnlyAccess()
+	 * @since 4.2.0
+	 */
+	public void startReadOnlyAccess() throws SdaiException {
+		SdaiModel[] remoteModels = new SdaiModel[getMemberCount()];
+		SessionRemote bridgeSession = null;
+		int j = 0;
+		for(SdaiIterator i = createIterator(); i.next(); ) {
+			SdaiModel model = getCurrentMember(i);
+			if(model.getMode() == SdaiModel.NO_ACCESS) {
+				if(bridgeSession == null) {
+					bridgeSession = model.repository.session.bridgeSession;
+				} else if(bridgeSession != model.repository.session.bridgeSession) {
+					throw new SdaiException(SdaiException.SS_NAVL, "Model " + model +
+							" belongs to a different bridge session");
+				}
+				if(bridgeSession != null && bridgeSession.isStartMultiModelAccessAvailable()
+						&& model.getModRemote() != null) {
+					remoteModels[j++] = model;
+				} else {
+					model.startReadOnlyAccess();
+				}
+			}
+		}
+		if(j > 0) {
+			bridgeSession.startMultiModelAccess(remoteModels, j, SdaiModel.READ_ONLY);
+		}
+	}
+
+	/**
+	 * Makes the contents of member <code>SdaiModels</code> available for
+	 * read-write access. Models in read-only mode prior to invoking this
+	 * method are promoted to read-write mode during the operation. Models
+	 * in read-write mode prior to invoking this method are skipped from
+	 * the operation and remain in read-write mode.
+	 * @throws SdaiException TR_NEXS, transaction does not exist.
+	 * @throws SdaiException TR_NAVL, transaction currently not available.
+	 * @throws SdaiException TR_EAB, transaction ended abnormally.
+	 * @throws SdaiException RP_NOPN, repository is not open.
+	 * @throws SdaiException MO_NEXS, SDAI-model does not exist.
+	 * @throws SdaiException MX_RO, SDAI-model access read-only.
+	 * @throws SdaiException MX_RW, SDAI-model access read-write.
+	 * @throws SdaiException MX_NDEF, SDAI-model access not defined.
+	 * @throws SdaiException SY_ERR, underlying system error.
+	 * @see SdaiModel#startReadWriteAccess()
+	 * @since 4.2.0
+	 */
+	public void startReadWriteAccess() throws SdaiException {
+		SdaiModel[] remoteModels = null;
+		SessionRemote bridgeSession = null;
+		int j = 0;
+		for(SdaiIterator i = createIterator(); i.next(); ) {
+			SdaiModel model = getCurrentMember(i);
+			int modelMode = model.getMode();
+			if(modelMode == SdaiModel.NO_ACCESS) {
+				if(bridgeSession == null) {
+					bridgeSession = model.repository.session.bridgeSession;
+				} else if(bridgeSession != model.repository.session.bridgeSession) {
+					throw new SdaiException(SdaiException.SS_NAVL, "Model " + model +
+							" belongs to a different bridge session");
+				}
+				if(bridgeSession != null && bridgeSession.isStartMultiModelAccessAvailable()
+						&& model.getModRemote() != null) {
+					if(j == 0) {
+						remoteModels = new SdaiModel[getMemberCount()];
+					}
+					remoteModels[j++] = model;
+				} else {
+					model.startReadWriteAccess();
+				}
+			} else if(modelMode == SdaiModel.READ_ONLY) {
+				model.promoteSdaiModelToRW();
+			}
+		}
+		if(j > 0) {
+			bridgeSession.startMultiModelAccess(remoteModels, j, SdaiModel.READ_WRITE);
+		}
+	}
+
+
+/**
+ * Terminates any access, either read-only or read-write, for each
+ * <code>SdaiModel</code> in this aggregate. As a result, the contents of all
+ * models becomes inaccessable. Each model of the aggregate is removed from
+ * the set "active_models" of <code>SdaiSession</code>.
+ * If some entity instance within an <code>SdaiModel</code>, which is being
+ * processed by the current method, has been created, deleted or modified
+ * since the most recent commit, abort or start transaction read-write access
+ * operation was performed, then SdaiException TR_RW is thrown.
+ * @throws SdaiException TR_RW, transaction read-write.
+ * @throws SdaiException RP_NOPN, repository is not open.
+ * @throws SdaiException MO_NEXS, SDAI-model does not exist.
+ * @throws SdaiException MX_NDEF, SDAI-model access not defined.
+ * @throws SdaiException SY_ERR, underlying system error.
+ * @see #startReadOnlyAccess
+ * @see #startReadWriteAccess
+ * @see SdaiModel#endReadOnlyAccess()
+ * @see SdaiModel#endReadWriteAccess()
+ * @since 4.2.0
+ */
+	public void endAccess() throws SdaiException {
+		int j;
+		SdaiModel model;
+		if (myType == null || myType.express_type == DataType.LIST) {
+			ListElement element = (ListElement)myData[0];
+			while (element != null) {
+				model = (SdaiModel)element.object;
+				model.closingAll = true;
+				element = element.next;
+			}
+			element = (ListElement)myData[0];
+			while (element != null) {
+				model = (SdaiModel)element.object;
+				model.endAccessAll();
+				element = element.next;
+			}
+			element = (ListElement)myData[0];
+			while (element != null) {
+				model = (SdaiModel)element.object;
+				model.closingAll = false;
+				element = element.next;
+			}
+		} else {
+			for (j = 0; j < myLength; j++) {
+				model = (SdaiModel)myData[j];
+				model.closingAll = true;
+			}
+			for (j = 0; j < myLength; j++) {
+				model = (SdaiModel)myData[j];
+				model.endAccessAll();
+			}
+			for (j = 0; j < myLength; j++) {
+				model = (SdaiModel)myData[j];
+				model.closingAll = false;
+			}
 		}
 	}
 

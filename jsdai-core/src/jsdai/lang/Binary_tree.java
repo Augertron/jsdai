@@ -444,16 +444,16 @@ class Binary_tree {
 	of the instance in the exchange structure, whereas the former was introduced 
 	because a reference to the instance was found earlier (before its creation).
 */
-	CLateBindingEntity replace(CEntity object) throws SdaiException {
+	CLateBindingEntity replace(CEntity objec) throws SdaiException {
 		CLateBindingEntity forward;
 		if (insertion_node.content instanceof CLateBindingEntity) {
 			forward = (CLateBindingEntity)insertion_node.content;
 		} else {
 			return null;
 		}
-		insertion_node.content = object;
-		object.inverseList = forward.inverseList;
-		forward.changeInverseReferences(forward, object, false, false, false);
+		insertion_node.content = objec;
+		objec.inverseList = forward.inverseList;
+		forward.changeInverseReferences(forward, objec, false, false, false);
 		return forward;
 	}
 

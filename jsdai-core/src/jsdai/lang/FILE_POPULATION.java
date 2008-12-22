@@ -32,6 +32,7 @@ class FILE_POPULATION {
 	A_string governed_sections;
 
 	String name;
+	String final_name;
 	String change_date;
 	String validation_date;
 	int validation_result;
@@ -44,6 +45,7 @@ class FILE_POPULATION {
 	String authorization;
 	String language;
 	A_string context_identifiers;
+	A_string included_schema_instances = null;
 
 	SdaiRepository owning_repo;
 

@@ -156,6 +156,18 @@ You should see in the log file something similar to:
 // Working model used within a SdaiContext
 	SdaiModel work_model = null;
 
+	SdaiModel cur_model;
+	EEntity_definition cur_type = null;
+	String cur_name;
+	int cur_inst_count;
+	int val_inst_count;
+	long inst_count;
+	int gl_rules_count;
+	int un_rules_count;
+	long all_steps_count;
+	long inst_counter = 0;
+
+
 	private void listAttributes(AAttribute aat, String message) throws SdaiException {
 // Preparing iterator for running through the attributes list
 		if (iterator == null) {
@@ -311,7 +323,7 @@ You should see in the log file something similar to:
 		}
 	}
 
-	boolean validateInstance(EEntity instance, ASdaiModel models_dom) throws SdaiException {
+	boolean validateInstance(EEntity instance, ASdaiModel models_dom, UtilMonitor monitor) throws SdaiException {
 // Aggregates for storing attributes not conforming to the validation are emptied
 		aat1.clear();
 		aat2.clear();
@@ -324,6 +336,20 @@ You should see in the log file something similar to:
 		w_rules_viol.clear();
 // Is 'true' if at least one violation for the current instance was reported
 		boolean inst_printed = false;
+		EEntity_definition type = instance.getInstanceType();
+		if (type != cur_type) {
+			cur_type = type;
+			cur_name = type.getName(null);
+			cur_inst_count = cur_model.getExactInstanceCount(type);
+			val_inst_count = 0;
+		}
+		val_inst_count++;
+		inst_counter++;
+		if (monitor != null) {
+			monitor.worked(1);
+			monitor.subTask("Entity: " + cur_name + " (" + val_inst_count + " out of " + cur_inst_count + ")", 
+			all_steps_count, inst_counter);
+		}
 // Invocation of the validation methods and 
 // output of attributes not conforming to the validation
 		boolean res2 = instance.validateRequiredExplicitAttributesAssigned(aat1);
@@ -398,21 +424,21 @@ You should see in the log file something similar to:
 	}
 
 // Returns count of instances with errors
-	int validateInstances(Aggregate instances, ASdaiModel models_dom) throws SdaiException {
+	int validateInstances(Aggregate instances, ASdaiModel models_dom, UtilMonitor monitor) throws SdaiException {
 		int errors = 0;
 // Running through all instances in the model
 		SdaiIterator iterator = instances.createIterator();
 		while (iterator.next()){
 			EEntity instance = (EEntity)instances.getCurrentMemberObject(iterator);
 // Validation of an instance
-			if (!validateInstance(instance, models_dom)) {
+			if (!validateInstance(instance, models_dom, monitor)) {
 				errors++;
 			}
 		}
 		return errors;
 	}
 
-	private long validationInstances(SdaiRepository repo) throws SdaiException {
+	private long validationInstances(SdaiRepository repo, UtilMonitor monitor) throws SdaiException {
 		long tot_errors = 0;
 		SdaiSession ss = repo.getSession();
 		ASdaiModel models = repo.getModels();
@@ -423,13 +449,15 @@ You should see in the log file something similar to:
 			if (model == work_model) {
 				continue;
 			}
+			cur_model = model;
+			cur_type = null;
 // Getting instances contained in the model
 			Aggregate instances = model.getInstances();
 			pw.println("count of instances in model \"" + model.getName() + "\": " + instances.getMemberCount());
 // Preparing domain for validation of instances
 			ASdaiModel models_dom = new ASdaiModel();
 			models_dom.addByIndex(1, model, null);
-// Preparing SdaiContext with an appropriate working model (only in the case when the 
+// Preparing SdaiContext with an appropriate working model (only in the case where the 
 // underlying schema for the current model is different from that for the previous one)
 			ESchema_definition schema = model.getUnderlyingSchema();
 			if (schema != old_schema) {
@@ -442,13 +470,13 @@ You should see in the log file something similar to:
 				old_schema = schema;
 			}
 // Validation of the instances; errors counter is returned
-			long errors = validateInstances(instances, models_dom);
+			long errors = validateInstances(instances, models_dom, monitor);
 			tot_errors += errors;
 		}
 		return tot_errors;
 	}
 
-	private long [] validationRules(SdaiRepository repo) throws SdaiException {
+	private long [] validationRules(SdaiRepository repo, UtilMonitor monitor) throws SdaiException {
 		long [] tot_rules = new long [2];
 		SdaiSession ss = repo.getSession();
 // Getting all schema instances of the specified repository
@@ -458,6 +486,11 @@ You should see in the log file something similar to:
 		SdaiIterator it_decls = null;
 		tot_rules[0] = 0;
 		tot_rules[1] = 0;
+
+		int gl_rules_index = 0;
+		int un_rules_index = 0;
+		long tot_counter = inst_count;
+
 // Creating a non-persistent list for storing entity instances not conforming to the uniqueness validation
 		AEntity nonConf_ent = new AEntity();
 // Running through all schema instances in the repository
@@ -489,6 +522,13 @@ You should see in the log file something similar to:
 			while (it_decls.next()) {
 				ERule_declaration decl = decls.getCurrentMember(it_decls);
 				EGlobal_rule gl_rule = (EGlobal_rule)decl.getDefinition(null);
+				gl_rules_index++;
+				tot_counter++;
+				if (monitor != null) {
+					monitor.worked(1);
+					monitor.subTask("Global rule: " + gl_rule.getName(null) + " (" + gl_rules_index + " out of " + 
+					gl_rules_count + ")", all_steps_count, tot_counter);
+				}
 // Validation of the global rule
 				w_rules_viol.clear();
 				if (schema_inst.validateGlobalRule(gl_rule, w_rules_viol) != ELogical.FALSE) {
@@ -530,6 +570,18 @@ You should see in the log file something similar to:
 				while(it_decls.next()) {
 					EUniqueness_rule u_rule = u_rules.getCurrentMember(it_decls);
 // Validation of the uniqueness rule
+					un_rules_index++;
+					tot_counter++;
+					if (monitor != null) {
+						monitor.worked(1);
+						if (u_rule.testLabel(null)) {
+							monitor.subTask("Uniqueness rule: " + u_rule.getLabel(null) + " (" + un_rules_index + " out of " + 
+							un_rules_count + ")", all_steps_count, tot_counter);
+						} else {
+							monitor.subTask("Uniqueness rule: " + "no name" + " (" + un_rules_index + " out of " + 
+							un_rules_count + ")", all_steps_count, tot_counter);
+						}
+					}
 					nonConf_ent.clear();
 					if (schema_inst.validateUniquenessRule(u_rule, nonConf_ent) != ELogical.FALSE) {
 						continue;
@@ -543,6 +595,50 @@ You should see in the log file something similar to:
 		}
 		return tot_rules;
 	}
+
+
+	long getStepsCount(SdaiRepository repo) throws SdaiException {
+		inst_count = 0;
+		gl_rules_count = 0;
+		un_rules_count = 0;
+
+		ASdaiModel models = repo.getModels();
+		SdaiIterator modIter = models.createIterator();
+// Running through all models in the repository
+		while (modIter.next()) {
+			SdaiModel model = models.getCurrentMember(modIter);
+			if (model == work_model) {
+				continue;
+			}
+			inst_count += model.getInstanceCount();
+		}
+
+		ASchemaInstance schemas = repo.getSchemas();
+		SdaiIterator schemaIter = schemas.createIterator();
+		SdaiIterator entityIter = null;
+		while (schemaIter.next()) {
+			SchemaInstance schema_inst = schemas.getCurrentMember(schemaIter);
+			ESchema_definition schema = schema_inst.getNativeSchema();
+			ARule_declaration decls = schema.getRule_declarations(null, null);
+			gl_rules_count += decls.getMemberCount();
+			AEntity_declaration e_decls = schema.getEntity_declarations(null, null);
+			if (entityIter == null) {
+				entityIter = e_decls.createIterator();
+			} else {
+				e_decls.attachIterator(entityIter);
+			}
+			while (entityIter.next()) {
+				EEntity_declaration edecl = e_decls.getCurrentMember(entityIter);
+				EEntity_definition edef = (EEntity_definition)edecl.getDefinition(null);
+				AUniqueness_rule u_rules = edef.getUniqueness_rules(null, null);
+				un_rules_count += u_rules.getMemberCount();
+			}
+		}
+
+		all_steps_count = inst_count + gl_rules_count + un_rules_count;
+		return all_steps_count;
+	}
+
 
 	private String identifyMissingSchema(SdaiException e) {
 		Object b = e.getErrorBase();
@@ -560,11 +656,13 @@ You should see in the log file something similar to:
 		return (String)base[1];
 	}
 
-	static public void main(String args[]) {
+	static public void main(String args[], UtilMonitor monitor) {
 		if (args.length < 1) { 
 			System.out.println("Part 21 file (exchange structure) must be indicated.");
 			return;
 		}
+//UtilMonitor monitor;
+//monitor = new UtilMonitorImpl();
 		Validate validation = null;
 		try {
 			for (int ihi = 0; ihi < args.length-1; ihi++) {
@@ -613,10 +711,15 @@ You should see in the log file something similar to:
 			SdaiRepository repo = session.importClearTextEncoding("", args[0], null);
 
 			long time_before_validation = System.currentTimeMillis();
+			long steps_count = validation.getStepsCount(repo);
+			if (monitor != null) {
+				monitor.worked(1);
+				monitor.subTask("", steps_count, 0);
+			}
 // Validation of instances in repository 'repo'
-			long tot_errors = validation.validationInstances(repo);
+			long tot_errors = validation.validationInstances(repo, monitor);
 // Validation of global rules and uniqueness rules in repository 'repo'
-			long [] tot_rules = validation.validationRules(repo);
+			long [] tot_rules = validation.validationRules(repo, monitor);
 // Printing validation time
 			pw.println("count of erroneous instances: " + tot_errors);
 			pw.println("count of violated global rules: " + tot_rules[0]);
@@ -653,14 +756,14 @@ You should see in the log file something similar to:
 		}
 	}
 
-  	public static Runnable initAsRunnable(final String sdaireposDirectory, final String[] args)
+  	public static Runnable initAsRunnable(final String sdaireposDirectory, final String[] args, final UtilMonitor monitor)
   	throws SdaiException {
   		Properties jsdaiProperties = new Properties();
   		jsdaiProperties.setProperty("repositories", sdaireposDirectory);
   		SdaiSession.setSessionProperties(jsdaiProperties);
   		return new Runnable() {
   			public void run() {
-  				main(args);
+  				main(args, monitor);
   			}
   		};
   	}

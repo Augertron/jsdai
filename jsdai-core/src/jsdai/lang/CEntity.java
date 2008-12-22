@@ -311,8 +311,8 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 			EInverse_attribute redeclared_attr = attribute.getRedeclaring(null);
 //if (Value.prnt)
 //System.out.println("CEntity  RRRRRRRRRRRRRRRRRR    attribute: " + attribute +
-//"   redeclared_attr: " + redeclared_attr + 
-//"   redeclared_attr_owner: " + redeclared_attr.getParent_entity(null).getName(null) + 
+//"   redeclared_attr: " + redeclared_attr +
+//"   redeclared_attr_owner: " + redeclared_attr.getParent_entity(null).getName(null) +
 //"   this edef: " + getInstanceType().getName(null));
 			return get_inverse(redeclared_attr, domain);
 		}
@@ -422,7 +422,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 			throw new SdaiException(SdaiException.AT_NDEF);
 		}
 		EAttribute saved_attr = attribute;
-		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT && 
+		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT &&
 				((CExplicit_attribute)attribute).testRedeclaring(null)) {
 			EExplicit_attribute expl_attr = (EExplicit_attribute)attribute;
 			while (expl_attr.testRedeclaring(null)) {
@@ -518,7 +518,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 			throw new SdaiException(SdaiException.AT_NDEF);
 		}
 		EAttribute saved_attr = attribute;
-		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT && 
+		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT &&
 				((CExplicit_attribute)attribute).testRedeclaring(null)) {
 			EExplicit_attribute expl_attr = (EExplicit_attribute)attribute;
 			while (expl_attr.testRedeclaring(null)) {
@@ -666,7 +666,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 			throw new SdaiException(SdaiException.AT_NDEF, attribute);
 		}
 		EAttribute saved_attr = attribute;
-		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT && 
+		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT &&
 				((CExplicit_attribute)attribute).testRedeclaring(null)) {
 			EExplicit_attribute expl_attr = (EExplicit_attribute)attribute;
 			while (expl_attr.testRedeclaring(null)) {
@@ -790,7 +790,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 			throw new SdaiException(SdaiException.AT_NDEF, attribute);
 		}
 		EAttribute saved_attr = attribute;
-		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT && 
+		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT &&
 				((CExplicit_attribute)attribute).testRedeclaring(null)) {
 			EExplicit_attribute expl_attr = (EExplicit_attribute)attribute;
 			while (expl_attr.testRedeclaring(null)) {
@@ -962,7 +962,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 			throw new SdaiException(SdaiException.AT_NDEF);
 		}
 		EAttribute saved_attr = attribute;
-		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT && 
+		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT &&
 				((CExplicit_attribute)attribute).testRedeclaring(null)) {
 			EExplicit_attribute expl_attr = (EExplicit_attribute)attribute;
 			while (expl_attr.testRedeclaring(null)) {
@@ -1807,7 +1807,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		SchemaData sch_data = owning_model.underlying_schema.modelDictionary.schemaData;
 //if (instance_identifier==31580) {
 //for (int i = 0; i < sch_data.noOfEntityDataTypes; i++)
-//System.out.println(" ind = " + i + "   NORMAL NAME: " + sch_data.sNames[i] + 
+//System.out.println(" ind = " + i + "   NORMAL NAME: " + sch_data.sNames[i] +
 //"   entity name: " + sch_data.entities[i].getNameUpperCase());
 //}
 		int index_to_entity = sch_data.findEntityExtentIndex(edef);
@@ -1833,7 +1833,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 				//	owning_model.instances_sim[index_to_entity][k] =
 				//    	owning_model.instances_sim[index_to_entity][k+1];
                 //}
-                //--array copying operation above was replaced by System.arraycopy() to reduce time consumption -- VV 
+                //--array copying operation above was replaced by System.arraycopy() to reduce time consumption -- VV
 				if (save4undo) {
 					session.undoRedoDeletePrepare(this);
 				}
@@ -1861,6 +1861,15 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	void deleteInstanceWeak() throws SdaiException {
 		SchemaData sch_data = owning_model.underlying_schema.modelDictionary.schemaData;
 		int index_to_entity = sch_data.findEntityExtentIndex((CEntity_definition)getInstanceType());
+// 7 lines right below were added to avoid problems due to substituteInstance() when substituted instance is in an R/O SdaiModel
+		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY) {
+			index_to_entity = owning_model.find_entityRO(sch_data.entities[index_to_entity]);
+		}
+		if (index_to_entity < 0) {
+			String base = SdaiSession.line_separator + AdditionalMessages.BF_EINC /*+ entity_name*/;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+
 		if (index_to_entity >= 0) {
 			int ind = -1;
 			CEntity[] type_instances_sim = owning_model.instances_sim[index_to_entity];
@@ -1923,7 +1932,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 //System.out.println("   CEntity      value type: " + value.getClass().getName());
 //System.out.println("   CEntity      edef: " + edef.getName(null));
 		EAttribute saved_attr = attribute;
-		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT && 
+		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT &&
 				((EExplicit_attribute)attribute).testRedeclaring(null)) {
 			attribute = getRedeclaredAttribute((EExplicit_attribute)attribute);
 		}
@@ -2044,7 +2053,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		}
 		CEntityDefinition edef = (CEntityDefinition)getInstanceType();
 		EAttribute saved_attr = attribute;
-		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT && 
+		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT &&
 				((EExplicit_attribute)attribute).testRedeclaring(null)) {
 			attribute = getRedeclaredAttribute((EExplicit_attribute)attribute);
 		}
@@ -2172,7 +2181,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		}
 		CEntityDefinition edef = (CEntityDefinition)getInstanceType();
 		EAttribute saved_attr = attribute;
-		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT && 
+		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT &&
 				((EExplicit_attribute)attribute).testRedeclaring(null)) {
 			attribute = getRedeclaredAttribute((EExplicit_attribute)attribute);
 		}
@@ -2260,7 +2269,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		}
 		CEntityDefinition edef = (CEntityDefinition)getInstanceType();
 		EAttribute saved_attr = attribute;
-		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT && 
+		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT &&
 				((EExplicit_attribute)attribute).testRedeclaring(null)) {
 			attribute = getRedeclaredAttribute((EExplicit_attribute)attribute);
 		}
@@ -2460,7 +2469,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		}
 		CEntityDefinition edef = (CEntityDefinition)getInstanceType();
 		EAttribute saved_attr = attribute;
-		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT && 
+		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT &&
 				((EExplicit_attribute)attribute).testRedeclaring(null)) {
 			attribute = getRedeclaredAttribute((EExplicit_attribute)attribute);
 		}
@@ -2647,14 +2656,14 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 						EWhere_rule wrule = w_rules_ord[i];
 //time1 = System.currentTimeMillis();
 //if (instance_identifier==7889) Value.prnt=true;
-						check_res = validateWhereRule(staticFields, wrule, (CEntity_definition)wrule.getParent_item(null), rule_class, 
+						check_res = validateWhereRule(staticFields, wrule, (CEntity_definition)wrule.getParent_item(null), rule_class,
 							part_def, dom, true);
 //Value.prnt=false;
 //time2 = System.currentTimeMillis();
 //time3=time2-time1;
 // The below 3 lines can be uncommented when investigating where rules in Validate tool
 //EEntity parent = wrule.getParent_item(null);
-//System.out.println("CEntity   after validateWhereRule ***** wrule: " + wrule.getLabel(null) + 
+//System.out.println("CEntity   after validateWhereRule ***** wrule: " + wrule.getLabel(null) +
 //"   check_res: " + check_res + "  parent: " + ((CEntity_definition)parent).getName(null));
 						if (check_res == ELogical.FALSE) {
 							res = check_res;
@@ -2697,7 +2706,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	}
 
 
-	private int validateWhereRule(StaticFields staticFields, EWhere_rule rule, CEntity_definition rule_owner, Class rule_class, CEntityDefinition def, 
+	private int validateWhereRule(StaticFields staticFields, EWhere_rule rule, CEntity_definition rule_owner, Class rule_class, CEntityDefinition def,
 			ASdaiModel domain, boolean all) throws SdaiException {
 		((WhereRule)rule).exc = null;
 		if (!all && !(def.isSubtypeOf(rule_owner))) {
@@ -2716,7 +2725,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 			throw new SdaiException(SdaiException.SY_ERR, "SdaiContext shall be provided");
 		}
 		Method meth;
-		String m_name = WHERE_RULE_METHOD_NAME_PREFIX + normalise(((CEntity_definition)def).getName(null)) + 
+		String m_name = WHERE_RULE_METHOD_NAME_PREFIX + normalise(((CEntity_definition)def).getName(null)) +
 			normalise(rule.getLabel(null));
 		try {
 			meth = rule_class.getMethod(m_name, staticFields.param);
@@ -2784,7 +2793,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 			staticFields.context_schema = null;
 		}
 //String strg = ((CEntity_definition)def).getName(null);
-//System.out.println("CEntity +++++   def.def_types.length = " + def.def_types.length + "   def: " + strg); 
+//System.out.println("CEntity +++++   def.def_types.length = " + def.def_types.length + "   def: " + strg);
 		if (def.def_types.length <= 0) {
 			return ELogical.TRUE;
 		}
@@ -3013,7 +3022,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 						valid_res = ELogical.FALSE;
 						continue;
 					} else if (tex instanceof StackOverflowError) {
-						collect_where_rules(staticFields, staticFields.defined_types[i], viol_rules, 
+						collect_where_rules(staticFields, staticFields.defined_types[i], viol_rules,
 							new StackOverflowError("stack overflow"));
 						valid_res = ELogical.FALSE;
 						continue;
@@ -3026,9 +3035,9 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 			}
 			res = ((Integer)v_res).intValue();
 //System.out.println("CEntity <<>>   str = " + str + "   res: " + res +
-//"   method_name: " + method_name + "   def_type: " + defined_types[i].getName(null) + 
-//"   i: " + i + "   instance: #" + instance_identifier + 
-//"   attr_values[i]: " + attr_values[i]); 
+//"   method_name: " + method_name + "   def_type: " + defined_types[i].getName(null) +
+//"   i: " + i + "   instance: #" + instance_identifier +
+//"   attr_values[i]: " + attr_values[i]);
 			if (res == ELogical.FALSE) {
 				valid_res = res;
 				if (viol_rules != null && strings.myLength > 0) {
@@ -3118,7 +3127,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	}
 
 
-	private int validateWhereRuleInDefTypes(StaticFields staticFields, EWhere_rule rule, CDefined_type rule_owner, CEntityDefinition def, 
+	private int validateWhereRuleInDefTypes(StaticFields staticFields, EWhere_rule rule, CDefined_type rule_owner, CEntityDefinition def,
 			ASdaiModel domain) throws SdaiException {
 		if (!rule.testLabel(null)) {
 			throw new SdaiException(SdaiException.FN_NAVL);
@@ -3139,7 +3148,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		} catch (ClassNotFoundException ex) {
 			throw new SdaiException(SdaiException.SY_ERR, "Special class for Express schema not found: " + str);
 		}
-		String method_name = WHERE_RULE_METHOD_NAME_PREFIX + normalise(rule_owner.getName(null)) + 
+		String method_name = WHERE_RULE_METHOD_NAME_PREFIX + normalise(rule_owner.getName(null)) +
 			normalise(rule.getLabel(null));
 		if (staticFields.paramw == null) {
 			staticFields.paramw = new Class[2];
@@ -3186,9 +3195,9 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		ss.sdai_context.domain = saved_domain;
 		return valid_res;
 	}
-	
 
-	int collect_where_rules(StaticFields staticFields, CDefined_type type, 
+
+	int collect_where_rules(StaticFields staticFields, CDefined_type type,
 			AWhere_rule viol_rules, Throwable excpt) throws SdaiException {
 		int count = 0;
 		DataType tp = (DataType)type;
@@ -3467,7 +3476,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 					continue;
 				}
 				if (validateRedeclaringAttributesAssigned(staticFields, (CExplicit_attribute)attrib, ln) != null) {
-//System.out.println("CEntity   +++++ this: " + this + "    attrib: " + attrib + 
+//System.out.println("CEntity   +++++ this: " + this + "    attrib: " + attrib +
 //"   its owner: " + ((CEntity)attrib).owning_model.name);
 					if (((AEntity)nonConf).myType == null || ((AEntity)nonConf).myType.express_type == DataType.LIST) {
 						((AEntity)nonConf).addAtTheEnd(attrib, null);
@@ -3560,7 +3569,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	}
 
 
-	private CExplicit_attribute validateRedeclaringAttributesAssigned(StaticFields staticFields, 
+	private CExplicit_attribute validateRedeclaringAttributesAssigned(StaticFields staticFields,
 			CExplicit_attribute red_attr, int ln) throws SdaiException {
 		if (red_attr.getOptional_flag(null)) {
 			return null;
@@ -3802,7 +3811,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 				if (r_attr_ind < 0) {
 					continue;
 				}
-				check_result = validate_attribute_for_references(edef, (CExplicit_attribute)attrib, 
+				check_result = validate_attribute_for_references(edef, (CExplicit_attribute)attrib,
 					((CEntityDefinition)edef).attributes[r_attr_ind], r_attr_ind, ssuper);
 				if (check_result <= 0) {
 					return_value = ELogical.FALSE;
@@ -3824,7 +3833,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	}
 
 
-	private int validate_attribute_for_references(CEntity_definition edef, CExplicit_attribute attr, 
+	private int validate_attribute_for_references(CEntity_definition edef, CExplicit_attribute attr,
 			CExplicit_attribute redecl_attr, int index, SSuper ssuper) throws SdaiException {
 		SelectType sel_type = take_select(attr);
 		DataType type = (DataType)attr.getDomain(null);
@@ -3979,7 +3988,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 				if (r_attr_ind < 0) {
 					continue;
 				}
-				check_result = validateAggregateSizeAttribute((CEntityDefinition)def, (CExplicit_attribute)attrib, 
+				check_result = validateAggregateSizeAttribute((CEntityDefinition)def, (CExplicit_attribute)attrib,
 					((CEntityDefinition)def).attributes[r_attr_ind], r_attr_ind, ssuper);
 				if (check_result == 0) {
 					return_value = ELogical.FALSE;
@@ -4000,7 +4009,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	}
 
 
-	private int validateAggregateSizeAttribute(CEntityDefinition def, CExplicit_attribute attr, 
+	private int validateAggregateSizeAttribute(CEntityDefinition def, CExplicit_attribute attr,
 			CExplicit_attribute redecl_attr, int index, SSuper ssuper) throws SdaiException {
 		int check_result;
 		AggregationType aggr_type = null;
@@ -4105,7 +4114,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		DataType type = (DataType)((CExplicit_attribute)attribute).getDomain(null);
 		if (type.express_type >= DataType.LIST && type.express_type <= DataType.AGGREGATE) {
 			return (AggregationType)type;
-		} else if (type.express_type == DataType.ENTITY || 
+		} else if (type.express_type == DataType.ENTITY ||
 				(type.express_type >= DataType.NUMBER && type.express_type <= DataType.BINARY) ) {
 			return null;
 		} else if (type.express_type != DataType.DEFINED_TYPE) {
@@ -4187,7 +4196,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 				if (r_attr_ind < 0) {
 					continue;
 				}
-				violated = validateAggregatesUniquenessAttribute((CEntityDefinition)def, (CExplicit_attribute)attrib, 
+				violated = validateAggregatesUniquenessAttribute((CEntityDefinition)def, (CExplicit_attribute)attrib,
 					((CEntityDefinition)def).attributes[r_attr_ind], r_attr_ind, ssuper);
 				if (violated) {
 					return_value = false;
@@ -4204,7 +4213,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	}
 
 
-	private boolean validateAggregatesUniquenessAttribute(CEntityDefinition def, CExplicit_attribute attr, 
+	private boolean validateAggregatesUniquenessAttribute(CEntityDefinition def, CExplicit_attribute attr,
 			CExplicit_attribute redecl_attr, int index, SSuper ssuper) throws SdaiException {
 		AggregationType aggr_type = null;
 		SelectType sel_type = take_select(attr);
@@ -4317,7 +4326,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 				if (r_attr_ind < 0) {
 					continue;
 				}
-				violated = validateArrayNotOptionalAttribute((CEntityDefinition)def, (CExplicit_attribute)attrib, 
+				violated = validateArrayNotOptionalAttribute((CEntityDefinition)def, (CExplicit_attribute)attrib,
 					((CEntityDefinition)def).attributes[r_attr_ind], r_attr_ind, ssuper);
 				if (violated) {
 					return_value = false;
@@ -4334,7 +4343,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	}
 
 
-	private boolean validateArrayNotOptionalAttribute(CEntityDefinition def, CExplicit_attribute attr, 
+	private boolean validateArrayNotOptionalAttribute(CEntityDefinition def, CExplicit_attribute attr,
 			CExplicit_attribute redecl_attr, int index, SSuper ssuper) throws SdaiException {
 		AggregationType aggr_type = null;
 		SelectType sel_type = take_select(attr);
@@ -4542,7 +4551,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	}
 
 
-	boolean check_string_in_entity(String value, CExplicit_attribute attribute, CEntityDefinition def, 
+	boolean check_string_in_entity(String value, CExplicit_attribute attribute, CEntityDefinition def,
 			int index, SSuper ssuper) throws SdaiException {
 		DataType type;
 		SelectType sel_type = take_select(attribute);
@@ -4601,9 +4610,9 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 
 
 	int validateInstance(AAttribute attrs_aggr, SdaiIterator it_rules, ASdaiModel models_dom) throws SdaiException {
-		if ( (!validateRequiredExplicitAttributesAssigned(attrs_aggr)) 
-				|| (!validateInverseAttributes(attrs_aggr)) 
-				|| (!validateAggregatesUniqueness(attrs_aggr)) 
+		if ( (!validateRequiredExplicitAttributesAssigned(attrs_aggr))
+				|| (!validateInverseAttributes(attrs_aggr))
+				|| (!validateAggregatesUniqueness(attrs_aggr))
 				|| (!validateArrayNotOptional(attrs_aggr)) ) {
 			return ELogical.FALSE;
 		}
@@ -5224,7 +5233,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 
 /**
 	Compares a value of one instance with the corresponding value of another instance.
-	The constant 0, 1 or 2 is returned depending on the result of 
+	The constant 0, 1 or 2 is returned depending on the result of
 	comparison: not equal, equal, indeterminate, respectively.
 	This method is invoked in <code>compare_instances</code>, <code>compare_instances_logical</code> and
 	<code>find_in_aggregate</code> methods.
@@ -5354,9 +5363,9 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 /**
 	Compares a value of one instance with the corresponding value of another instance
 	under the condition that both values are aggregates.
-	If any of the element comparisons evaluate to <code>false</code>, then 0 is returned. 
-	If one or more of the element comparisons evaluate to Express indeterminate and 
-	the remaining comparisons all evaluate to <code>true</code>, then the result is 2. 
+	If any of the element comparisons evaluate to <code>false</code>, then 0 is returned.
+	If one or more of the element comparisons evaluate to Express indeterminate and
+	the remaining comparisons all evaluate to <code>true</code>, then the result is 2.
 	Otherwise, the method returns the constant 1.
 	This method is invoked in <code>compare_values</code>.
 */
@@ -5612,8 +5621,8 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 
 
 /**
-	Returns the valid value for the assignment derived from the submitted value if it 
-	can be assigned to the specified attribute or null if the value is not valid 
+	Returns the valid value for the assignment derived from the submitted value if it
+	can be assigned to the specified attribute or null if the value is not valid
 	for the attribute. It is assumed that the attribute type is different than
 	select type. If this requirement is violated, then SdaiException SY_ERR is thrown.
 	This method is invoked in <code>set</code> method for values of type
@@ -5644,7 +5653,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 				if (value instanceof Integer) {
 					int int_value = ((Integer)value).intValue();
 					A_string	ee;
-					if (underlying_type.express_type == DataType.EXTENSIBLE_ENUM || 
+					if (underlying_type.express_type == DataType.EXTENSIBLE_ENUM ||
 							underlying_type.express_type == DataType.EXTENDED_EXTENSIBLE_ENUM) {
 						ee = ((EExtensible_enumeration_type)underlying_type).getElements(null, owning_model.repository.session.sdai_context);
 					} else {
@@ -5671,7 +5680,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 
 
 /**
-	Returns the valid value for the assignment derived from the submitted value if it 
+	Returns the valid value for the assignment derived from the submitted value if it
 	can be assigned to the specified attribute of the simple type or null if
 	the value is not valid for the attribute.
 	This method is invoked in <code>analyse_value</code>.
@@ -6041,7 +6050,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 if (SdaiSession.debug2) System.out.println("  domain member count = " + modelDomain.myLength);
 if (SdaiSession.debug2) System.out.println("  referent_def ident = " +
 ((CEntity_definition)referent_def).instance_identifier +
-"  referent_def: " + ((CEntity_definition)referent_def).getName(null) + 
+"  referent_def: " + ((CEntity_definition)referent_def).getName(null) +
 "   entity definition: " + ((CEntity_definition)referent_def).getCorrectName() +
 "  owning model: " + ((CEntity_definition)referent_def).owning_model.name);
 if (SdaiSession.debug2) System.out.println("  role ident = " +
@@ -6186,7 +6195,7 @@ if (SdaiSession.debug2) System.out.println(" ******* result.myLength = " + resul
 	This method is invoked in <code>findEntityInstanceUsedin</code>,
 	<code>get_inverse</code> and <code>makeUsedin</code> methods.
 */
-	private void makeUsedin2(CEntity inst, EAttribute role, AEntity result, ASdaiModel domain, boolean for_inverse) 
+	private void makeUsedin2(CEntity inst, EAttribute role, AEntity result, ASdaiModel domain, boolean for_inverse)
 			throws SdaiException {
 		int i, j;
 		CEntityDefinition entityDef = (CEntityDefinition)inst.getInstanceType();
@@ -6215,7 +6224,7 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 								if (for_inverse) {
 									return;
 								}
-// Before printing a warning, check whether inst references 'this' through 'role' or another attribute. 
+// Before printing a warning, check whether inst references 'this' through 'role' or another attribute.
 // In the latter case, return with no warning.
 // This check may have a negative impact on the performance.
 								//boolean no_warn = SdaiSession.isNoUsedinWarnings();
@@ -6223,7 +6232,7 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 									//printWarningToLogoRole(model.repository.session, inst, role);
 								//}
 								return;
-//								String base = SdaiSession.line_separator + AdditionalMessages.AT_REDD + 
+//								String base = SdaiSession.line_separator + AdditionalMessages.AT_REDD +
 //									SdaiSession.line_separator + "Role: " + role;
 //								throw new SdaiException(SdaiException.AT_NVLD, role, base);
 							}
@@ -6306,7 +6315,7 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 										//printWarningToLogoRole(owning_model.repository.session, inst, role);
 									//}
 									return;
-//									String base = SdaiSession.line_separator + AdditionalMessages.AT_REDD + 
+//									String base = SdaiSession.line_separator + AdditionalMessages.AT_REDD +
 //										SdaiSession.line_separator + "Role: " + role;
 //									throw new SdaiException(SdaiException.AT_NVLD, role, base);
 								}
@@ -8303,7 +8312,10 @@ else System.out.println("   myType is POSITIVE");
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
 		if (old_value instanceof CEntity) {
-			removeFromInverseList((CEntity)old_value);
+			CEntity to_ent = (CEntity)old_value;
+			if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+				removeFromInverseList(to_ent);
+			}
 		} else if (old_value instanceof SdaiModel.Connector) {
 //System.out.println("CEntity:  owning_instance: #" + instance_identifier);
 			((SdaiModel.Connector)old_value).disconnect();
@@ -8354,7 +8366,10 @@ else System.out.println("   myType is POSITIVE");
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
 		if (old_value instanceof CEntity) {
-			removeFromInverseList((CEntity)old_value);
+			CEntity to_ent = (CEntity)old_value;
+			if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+				removeFromInverseList(to_ent);
+			}
 		} else if (old_value instanceof SdaiModel.Connector) {
 			((SdaiModel.Connector)old_value).disconnect();
 		} else if (old_value instanceof CAggregate) {
@@ -8450,13 +8465,13 @@ else System.out.println("   myType is POSITIVE");
 
 
 /**
- * This method does the main job in getting the value of the derived attribute 
- * 'operands' of entity 'subtype_expression' and its subtypes 
- * 'andor_subtype_expression', 'and_subtype_expression', and 'oneof_subtype_expression'. 
- * It extracts from the submitted aggregate instances of 'entity_definition' and 
- * 'subtype_expression' while instances of 'view_definition' are bypassed. 
+ * This method does the main job in getting the value of the derived attribute
+ * 'operands' of entity 'subtype_expression' and its subtypes
+ * 'andor_subtype_expression', 'and_subtype_expression', and 'oneof_subtype_expression'.
+ * It extracts from the submitted aggregate instances of 'entity_definition' and
+ * 'subtype_expression' while instances of 'view_definition' are bypassed.
  * The extracted instances are stored in a set returned by the method.
- * Method is invoked in dictionary package, in classes CSubtype_expression, 
+ * Method is invoked in dictionary package, in classes CSubtype_expression,
  * CAndor_subtype_expression, CAnd_subtype_expression, and COneof_subtype_expression.
  * @since 3.6.0
 */
@@ -8728,7 +8743,7 @@ else System.out.println("   myType is POSITIVE");
 		}
 	}
 
-	public EMappedARMEntity findLinkedMappedInstance(EEntity_definition mappedInstanceType) 
+	public EMappedARMEntity findLinkedMappedInstance(EEntity_definition mappedInstanceType)
 	throws SdaiException {
 		if(Implementation.mappingSupport) {
 			return CMappedARMEntity.findLinkedMappedInstance(this, mappedInstanceType);
@@ -9061,7 +9076,7 @@ else System.out.println("   myType is POSITIVE");
 		Object obj_val;
 		int int_val;
 		EAttribute saved_attr = attribute;
-		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT && 
+		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT &&
 				((CExplicit_attribute)attribute).testRedeclaring(null)) {
 			EExplicit_attribute expl_attr = (EExplicit_attribute)attribute;
 			while (expl_attr.testRedeclaring(null)) {
@@ -9186,7 +9201,7 @@ else System.out.println("   myType is POSITIVE");
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 //System.out.println("CEntity   Before switch  ==========  attribute: " + attribute.getName(null) +
-//"   val.aux: " + val.aux + "  inst: #" + instance_identifier + 
+//"   val.aux: " + val.aux + "  inst: #" + instance_identifier +
 //"   instance: " + this);
 		try {
 			switch (val.aux) {
@@ -9307,7 +9322,7 @@ else System.out.println("   myType is POSITIVE");
 						if (aggr_double.myType != null && !aggr_double.myType.check_aggregation_double()) {
 							val.setAggrDouble(aggr_double);
 						} else {
-							if ((!owning_model.repository.session.a_double3_overflow && 
+							if ((!owning_model.repository.session.a_double3_overflow &&
 									!SdaiSession.getSession().a_double3_overflow) || aggr_double instanceof A_double3) {
 								val.setAggrDouble((A_double3)aggr_double);
 							} else {
@@ -9550,7 +9565,7 @@ else System.out.println("   myType is POSITIVE");
 			}
 		} catch (Exception ex) {
 //System.out.println("CEntity   Before switch  ==========  attribute: " + attribute.getName(null) +
-//"   val.aux: " + val.aux + "  inst: #" + instance_identifier + 
+//"   val.aux: " + val.aux + "  inst: #" + instance_identifier +
 //"   instance: " + this);
 			throw new SdaiException(SdaiException.SY_ERR, ex);
 		}
@@ -9647,11 +9662,11 @@ else System.out.println("   myType is POSITIVE");
 			try {
 				meth = cl.getDeclaredMethod(edef.attributesDerivedMethodName[index], staticFields.paramValue);
 			} catch (java.lang.NoSuchMethodException ex) {
-//System.out.println("CEntity !!!!!!! this: " + this.getClass().getName() + 
-//"   edef: " + edef.getName(null) + 
-//"   method name: " + edef.attributesDerivedMethodName[index] + 
-//"    index: " + index + 
-//"    staticFields.paramValue [0]: " + staticFields.paramValue[0].getName() + 
+//System.out.println("CEntity !!!!!!! this: " + this.getClass().getName() +
+//"   edef: " + edef.getName(null) +
+//"   method name: " + edef.attributesDerivedMethodName[index] +
+//"    index: " + index +
+//"    staticFields.paramValue [0]: " + staticFields.paramValue[0].getName() +
 //"    cl: " + cl.getName());
 				throw new SdaiException(SdaiException.SY_ERR, ex);
 			}
@@ -9855,7 +9870,7 @@ else System.out.println("   myType is POSITIVE");
 	}
 
 
-	private Object takeValueOfRedeclared(CEntity inst, CEntityDefinition entityDef, CExplicit_attribute attr, 
+	private Object takeValueOfRedeclared(CEntity inst, CEntityDefinition entityDef, CExplicit_attribute attr,
 			SdaiContext context) throws SdaiException {
 		EAttribute attribute = entityDef.getIfDerived(attr);
 		if (attribute == null) {
@@ -10264,7 +10279,7 @@ else System.out.println("   myType is POSITIVE");
 	}
 
 
-	private boolean extract_value_for_undo(Value val, RandomAccessFile ur_f, boolean byte_needed, byte sym, 
+	private boolean extract_value_for_undo(Value val, RandomAccessFile ur_f, boolean byte_needed, byte sym,
 				SchemaData sch_data) throws java.io.IOException, SdaiException, ArrayIndexOutOfBoundsException {
 		SdaiSession se = owning_model.repository.session;
 		byte token;
@@ -10367,7 +10382,14 @@ else System.out.println("   myType is POSITIVE");
 					return false;
 				} else if ((ref_mod.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.NO_ACCESS) {
 					val.tag = PhFileReader.ENTITY_REFERENCE;
-					val.reference = ref_mod.instances_sim[pop_index][inst_index];
+					int true_index;
+					if ((ref_mod.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY) {
+						true_index = ref_mod.find_entityRO(ref_mod.dictionary.schemaData.entities[pop_index]);
+					} else {
+						true_index = pop_index;
+					}
+//					val.reference = ref_mod.instances_sim[pop_index][inst_index];
+					val.reference = ref_mod.instances_sim[true_index][inst_index];
 					return false;
 				} else {
 					schd = ref_mod.dictionary.schemaData;
@@ -10418,7 +10440,7 @@ else System.out.println("   myType is POSITIVE");
 					} else {
 						val.tag = PhFileReader.ENTITY_REFERENCE;
 						SdaiModelRef modelRef = (SdaiModelRef)ref_mod.getQuerySourceInstanceRef();
-						val.reference = owning_model.newConnector(modelRef.getRepositoryId(), modelRef.getModelId(), 
+						val.reference = owning_model.newConnector(modelRef.getRepositoryId(), modelRef.getModelId(),
 							inst_id, this);
 						val.string = null;
 					}
@@ -10539,7 +10561,7 @@ else System.out.println("   myType is POSITIVE");
 		if (owning_model == null) {
 			throw new SdaiException(SdaiException.EI_NEXS);
 		}
-		owning_model.repository.removeEntityExternalData(this, false);
+		owning_model.repository.removeEntityExternalData(this, false, true);
 	}
 
 

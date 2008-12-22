@@ -72,10 +72,12 @@ public class SearchForRedundantUsefroms {
 		for (SdaiIterator i = models.createIterator(); i.next();) {
 			SdaiModel model = models.getCurrentMember(i);
 			try {
-				if (model.getMode() == SdaiModel.NO_ACCESS)
+				if (model.getMode() == SdaiModel.NO_ACCESS) {
 					model.startReadOnlyAccess();
+				}
 			}
 			catch (SdaiException e) {
+				e.printStackTrace();
 				continue;
 			}
 		}
@@ -98,7 +100,8 @@ public class SearchForRedundantUsefroms {
 		return schemas;
 	}
 	
-	private static Map findRedundantUsefroms(SdaiRepository repo, String[] roots)
+	private static Map findRedundantUsefroms(SdaiRepository repo, String[] roots,
+			boolean includeReferenceFroms, boolean includePartialInterfaceSpec)
 		throws SdaiException {
 		
 		Map redUsefroms = new HashMap();
@@ -118,7 +121,7 @@ public class SearchForRedundantUsefroms {
 			}
 
 			Map cashe = new HashMap();			
-			getUsefroms(models, schema, cashe, redUsefroms);
+			getUsefroms(models, schema, includeReferenceFroms, includePartialInterfaceSpec, cashe, redUsefroms);
 		}
 		
 		return redUsefroms;
@@ -127,6 +130,8 @@ public class SearchForRedundantUsefroms {
 	private static Set getUsefroms(
 			ASdaiModel domain,
 			EGeneric_schema_definition schema,
+			boolean includeReferenceFroms,
+			boolean includePartialInterfaceSpec,
 			Map usefromCashe,
 			Map redUsefroms)
 		throws SdaiException {
@@ -148,22 +153,34 @@ public class SearchForRedundantUsefroms {
 		// gather usefroms refenrenced directly and indirectly 
 		Set myUsefroms = new HashSet();
 		Set refUsefroms = new HashSet();
-		Map indUsefroms = new HashMap();
 
-		AUse_from_specification aUsefroms = new AUse_from_specification();
-		CUse_from_specification.usedinCurrent_schema(null, schema, domain, aUsefroms);
-		for (SdaiIterator i = aUsefroms.createIterator(); i.next();) {
-			EUse_from_specification eUsefrom = aUsefroms.getCurrentMember(i);
-			EGeneric_schema_definition foreignSchema = eUsefrom.getForeign_schema(null);
+		AInterface_specification aInterfaces = new AInterface_specification();
+		CUse_from_specification.usedinCurrent_schema(null, schema, domain, aInterfaces);
+		if (includeReferenceFroms) {
+			CReference_from_specification.usedinCurrent_schema(null, schema, domain, aInterfaces);
+		}
+		for (SdaiIterator i = aInterfaces.createIterator(); i.next();) {
+			EInterface_specification eInterface = aInterfaces.getCurrentMember(i);
+			if (!includePartialInterfaceSpec) {
+				if (eInterface instanceof EUse_from_specification) {
+					if (((EUse_from_specification) eInterface).testItems(null)) {
+						continue;
+					}
+				} else {
+					if (((EReference_from_specification) eInterface).testItems(null)) {
+						continue;
+					}
+				}
+			}
+			EGeneric_schema_definition foreignSchema = eInterface.getForeign_schema(null);
 			String foreignName = foreignSchema.getName(null);
-			if (myUsefroms.contains(foreignName))
-				continue;
+			if (!myUsefroms.contains(foreignName)) {
+				myUsefroms.add(foreignName);
 
-			myUsefroms.add(foreignName);
-			
-			Set usefroms = getUsefroms(domain, foreignSchema, usefromCashe, redUsefroms);
-			refUsefroms.addAll(usefroms);
-			indUsefroms.put(foreignName, usefroms);
+				Set usefroms = getUsefroms(domain, foreignSchema, includeReferenceFroms,
+					includePartialInterfaceSpec, usefromCashe, redUsefroms);
+				refUsefroms.addAll(usefroms);
+			}
 		}
 		
 		// mark redundant usefroms
@@ -261,29 +278,81 @@ public class SearchForRedundantUsefroms {
 		}
 	}
 	
+	/**
+	 * Returns redundant interface specifications for schemas reachable
+	 * from specified root schemas (case sensitive) in specified repository.
+	 * 
+	 * @param repo repository containing dictionary data.
+	 * @param rootSchemas root schemas' names.
+	 * @param includeReferenceFroms if set to <code>true</code>, then
+	 *   <code>reference_from_specifications</code> will be used together with
+	 *   <code>use_from_specifications</code>. Otherwise only <code>use_from_specifications</code>
+	 *   will be used.
+	 * @param includePartialInterfaceSpec if set to <code>true</code>, then
+	 *   partial interface specifications will be used, otherwise only complete
+	 *   interface specifications will be used.
+	 *   
+	 * @return <code>Map</code> containing as keys schema names (<code>String</code>),
+	 * that have redundant interface specifications and as values containing
+	 * <code>Collection</code> of redundant interface specifications (<code>String</code>).
+	 * 
+	 * @throws SdaiException
+	 */
+	public static Map getRedundantInterfaceSpecifications(SdaiRepository repo,
+		String[] rootSchemas, boolean includeReferenceFroms,
+			boolean includePartialInterfaceSpec) throws SdaiException {
+		
+		Map redUsefroms = findRedundantUsefroms(repo, rootSchemas,
+			includeReferenceFroms, includePartialInterfaceSpec);
+		List cycles = SearchForCycles.getCycles(repo, rootSchemas,
+			includeReferenceFroms, includePartialInterfaceSpec);
+		updateReds(redUsefroms, cycles);
+		return redUsefroms;
+	}
+	
 	public static void main(String[] args)
 		throws SdaiException {
 		
-		if (args.length == 0) {
-			System.out.println("Invalid usage. Should be:");
-			System.out.println("  java jsdai.tools.SearchForRedundantUsefroms schema1 [schema2 [schema3] ...]");
-			System.out.println("Note:");
-			System.out.println("  Schema names are case sensitive.");
-			System.out.println("Example:");
-			System.out.println("  java jsdai.tools.SearchForRedundantUsefroms ap210_arm ap212_arm");
+		boolean includeReferenceFrom = false;
+		boolean includePartialInterfaceSpec = true;
+		List rootSchemas = new ArrayList();
+		String repoName = "ExpressCompilerRepo";
+		
+		// non-strict arguments parsing
+		for (int i = 0, n = args.length; i < n; i++) {
+			String arg = args[i];
+			if (arg.equals("-r")) {
+				includeReferenceFrom = true;
+			} else if (arg.equals("-p")) {
+				includePartialInterfaceSpec = false;
+			} else if (arg.equals("-repo")) {
+				i++;
+				if (i < n) {
+					repoName = args[i];
+				} else {
+					printUsage();
+					return;
+				}
+			} else {
+				rootSchemas.add(arg);
+			}
+		}
+		
+		if (rootSchemas.size() == 0) {
+			printUsage();
 			return;
 		}
 
 		System.out.println("Initializing JSDAI...");
-		SdaiRepository repo = getRepository("ExpressCompilerRepo");
+		SdaiRepository repo = getRepository(repoName);
+		if (repo == null) {
+			System.out.println("Repository not found: " + repoName);
+			return;
+		}
 		
 		System.out.println("Searching for redundant usefroms...");
-		Map redUsefroms = findRedundantUsefroms(repo, args);
-		System.out.println("Searching for cycles...");
-		List cycles = SearchForCycles.getCycles(repo, args);
+		Map redUsefroms = getRedundantInterfaceSpecifications(repo, args, includeReferenceFrom, includePartialInterfaceSpec);		
 
-		updateReds(redUsefroms, cycles);
-		
 		// print output
 		if (redUsefroms.size() > 0) {
 			System.out.println("List of redundant usefroms:");
@@ -305,5 +374,17 @@ public class SearchForRedundantUsefroms {
 		SdaiSession.getSession().closeSession();
 		
 		System.out.println("Done.");
+	}
+
+	private static void printUsage() {
+		System.out.println("Invalid usage. Should be:");
+		System.out.println("  java jsdai.tools.SearchForRedundantUsefroms [-r] [-p] [-repo repoName] schema1 [schema2 [schema3] ...]");
+		System.out.println("-r use reference_from_specifications.");
+		System.out.println("-p skip partial interface specifications.");
+		System.out.println("-repo case sensitive name of repository containing dictionary data. Default ExpressCompilerRepo.");
+		System.out.println("Note:");
+		System.out.println("  Schema names are case sensitive.");
+		System.out.println("Example:");
+		System.out.println("  java jsdai.tools.SearchForRedundantUsefroms ap210_arm ap212_arm");
 	}
 }

@@ -66,6 +66,21 @@ class SchemaInstanceDictionaryImpl extends SchemaInstance {
 	}
 
 
+	public ASdaiModel getReferencedModels() throws SdaiException {
+		throw new SdaiException(SdaiException.FN_NAVL,
+			"Method is not actual for system repository SchemaInstances; please, use getAssociatedModels() instead of.");
+	}
+
+
+	public ASchemaInstance getIncludedSchemaInstances() throws SdaiException {
+		check_schemaInstance();
+		if (included_schemas == null) {
+			included_schemas = new ASchemaInstance(SdaiSession.setType0toN, this);
+		}
+		return included_schemas;
+	}
+
+
 	public void delete() throws SdaiException {
 		throw new SdaiException(SdaiException.FN_NAVL,
 			"Schema instances in the system repository cannot be deleted by the user.");
@@ -80,6 +95,11 @@ class SchemaInstanceDictionaryImpl extends SchemaInstance {
 		}
 		addSdaiModelCommon(model);
 //		} // syncObject
+	}
+
+
+	public void addSchemaInstance(SchemaInstance schemaInstance) throws SdaiException {
+		throw new SdaiException(SdaiException.FN_NAVL);
 	}
 
 

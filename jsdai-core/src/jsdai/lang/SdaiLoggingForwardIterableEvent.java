@@ -33,10 +33,10 @@ import java.io.IOException;
 abstract class SdaiLoggingForwardIterableEvent extends SdaiLoggingIterableEvent {
 
 	protected boolean finished;
-	
+
 /**
  * Constructs a new object of <code>SdaiLoggingForwardIterableEvent</code>
- * with methods which allow to iterate over records in the undo/redo log file. 
+ * with methods which allow to iterate over records in the undo/redo log file.
  * @param source the object on which the <code>SdaiLoggingForwardIterableEvent</code> occurred.
  * @param id the type of the logging event.
  * @param item an indicator describing a group of records in the undo/redo log file.
@@ -50,17 +50,17 @@ abstract class SdaiLoggingForwardIterableEvent extends SdaiLoggingIterableEvent 
 
 
 /**
- * Returns an iterator which can be used to run through entity 
- * instances for which some changes (due to their modification, creation, 
- * deletion or substitution) were recorded in the log file for 
- * subsequent application of undo/redo operations. 
- * The iterator is constrained to iterate over one group of records. 
+ * Returns an iterator which can be used to run through entity
+ * instances for which some changes (due to their modification, creation,
+ * deletion or substitution) were recorded in the log file for
+ * subsequent application of undo/redo operations.
+ * The iterator is constrained to iterate over one group of records.
  * @return the iterator over instances within one group of records in undo/redo log file.
  */
 	public abstract SdaiOperationIterator getOperationIterator() throws SdaiException;
 
 	// SdaiOperationIterator implementation
-	
+
 	/* (non-Javadoc)
 	 * @see jsdai.lang.SdaiOperationIterator#next()
 	 */
@@ -113,6 +113,24 @@ abstract class SdaiLoggingForwardIterableEvent extends SdaiLoggingIterableEvent 
 					} else {
 						token = 'Q';
 					}
+					break;
+				}
+				case 'e': {
+					operationType = CREATE_EXTERNAL_DATA_OPERATION;
+					operationInstanceId = session.undo_redo_file.readLong();
+					operationRepository =
+						session.findRepositoryByIdentity(session.undo_redo_file.readInt());
+					operationInstanceType = null;
+					operationModel = null;
+					break;
+				}
+				case 'r': {
+					operationType = REMOVE_EXTERNAL_DATA_OPERATION;
+					operationInstanceId = session.undo_redo_file.readLong();
+					operationRepository =
+						session.findRepositoryByIdentity(session.undo_redo_file.readInt());
+					operationInstanceType = null;
+					operationModel = null;
 					break;
 				}
 				}

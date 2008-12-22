@@ -2692,7 +2692,9 @@ if (flag_expressions) {
           pw.println("\t}");
           pw.println("\tpublic " + prev_name + " getByIndex(int index) throws SdaiException {");
           if ((replace_object_by_entity) && (nt instanceof EEntity_definition)) {
-            pw.println("\t\treturn (" + prev_name + ")getByIndexEntity(index);");
+// turns out, aggregates are not subtypes of Entity so cast to Entity is not possible, keep Object in this case
+//            pw.println("\t\treturn (" + prev_name + ")getByIndexEntity(index);");
+	          pw.println("\t\treturn (" + prev_name + ")getByIndexObject(index);");
 	      	} else {
 	          pw.println("\t\treturn (" + prev_name + ")getByIndexObject(index);");
         	}
@@ -3009,7 +3011,17 @@ if (flag_expressions) {
         continue;
       }
 
-      EEntity_definition referencing_entity = inva.getDomain(null);
+      EEntity_definition referencing_entity = null;
+
+	    if (inva.testDomain(null)) {
+	      referencing_entity = inva.getDomain(null);
+			} else {
+				pw.println("WARNING! Entity interface not generated - inverse attribute domain is NULL: " + inva);
+				System.out.println("WARNING! Entity interface not generated - attribute domain is NULL: " + inva);
+				return;
+			}
+
+
       String referencing_entity_name = referencing_entity.getName(null);
       EExplicit_attribute inverted_attr = inva.getInverted_attr(null);
       String inverted_attr_name = inverted_attr.getName(null);
@@ -3096,7 +3108,14 @@ if (flag_expressions) {
                                 owner_name.substring(1).toLowerCase();
     ;
 
-    EEntity bt = attr.getDomain(null);
+    EEntity bt = null;
+    if (attr.testDomain(null)) {
+	    bt = attr.getDomain(null);
+		} else {
+			pw.println("WARNING! Method declarations not generated - attribute domain is NULL: " + attr);
+			System.out.println("WARNING! Method declarations not generated - attribute domain is NULL: " + attr);
+			return;
+		}
 
 		if (bt instanceof EParameter) {
 			bt = ((EParameter)bt).getParameter_type(null);
@@ -5816,7 +5835,17 @@ printDDebug("aggregation type: " + at);
 
           String method_suffix = attr_name.substring(0, 1).toUpperCase() + 
                                  attr_name.substring(1).toLowerCase();
-          EEntity bt = attr.getDomain(null);
+          EEntity bt = null;
+
+	    if (attr.testDomain(null)) {
+          bt = attr.getDomain(null);
+			} else {
+				pw.println("WARNING! Change references were not generated - attribute domain is NULL: " + attr);
+				System.out.println("WARNING! Change references was not generated - attribute domain is NULL: " + attr);
+				return;
+			}
+
+
 // System.out.println("<CR> bt: " + bt);
 
           if (bt instanceof ESimple_type) {
@@ -12348,7 +12377,15 @@ pw.println("// USEDIN-RENAMED-10");
         EExplicit_attribute xattr = (EExplicit_attribute) attr;
         String method_suffix = attr_name.substring(0, 1).toUpperCase() + 
                                attr_name.substring(1).toLowerCase();
-        EEntity bt = xattr.getDomain(null);
+        EEntity bt = null;
+
+	    if (xattr.testDomain(null)) {
+        bt = xattr.getDomain(null);
+			} else {
+				pw.println("WARNING! Methods not generated - generate-Explicit-No-Java-Inheritance-MethodsX - attribute domain is NULL: " + xattr);
+				System.out.println("WARNING! Methods not generated - generate-Explicit-No-Java-Inheritance-MethodsX - attribute domain is NULL: " + xattr);
+				return;
+			}
 
 
 // System.out.println("goOog bt: " + bt);
@@ -12464,7 +12501,16 @@ pw.println("// USEDIN-RENAMED-10");
         EDerived_attribute dattr = (EDerived_attribute) attr;
         String method_suffix = attr_name.substring(0, 1).toUpperCase() + 
                                attr_name.substring(1).toLowerCase();
-        EEntity bt = dattr.getDomain(null);
+        EEntity bt = null;
+
+	    if (dattr.testDomain(null)) {
+        bt = dattr.getDomain(null);
+			} else {
+				pw.println("WARNING! Methods not generated - generate-Derived-No-Java-Inheritance-MethodsX - attribute domain is NULL: " + dattr);
+				System.out.println("WARNING! Methods not generated - generate-Derived-No-Java-Inheritance-MethodsX - attribute domain is NULL: " + dattr);
+				return;
+			}
+
 
 
         if (bt instanceof EParameter) {
@@ -12577,7 +12623,18 @@ pw.println("// USEDIN-RENAMED-10");
           return;
         }
 
-        EEntity_definition referencing_entity = inva.getDomain(null);
+        EEntity_definition referencing_entity = null;
+
+	    if (inva.testDomain(null)) {
+       	referencing_entity = inva.getDomain(null);
+			} else {
+				pw.println("WARNING! Methods not generated - generate-Inverse-No-Java-Inheritance-MethodsX - inverse attribute domain is NULL: " + inva);
+				System.out.println("WARNING! Methods not generated - generate-Inverse-No-Java-Inheritance-MethodsX - inverse attribute domain is NULL: " + inva);
+				return;
+			}
+      
+
+
         String referencing_entity_name = referencing_entity.getName(null);
         EExplicit_attribute inverted_attr = inva.getInverted_attr(null);
         String inverted_attr_name = inverted_attr.getName(null);
@@ -13037,6 +13094,18 @@ pw.println("// USEDIN-RENAMED-10");
 
 	void generateExplicit2DerivedSupertypeNoJavaInheritanceMethodsX(EEntity_definition ed, TheAttribute tattr, PrintWriter pw, boolean is_original) throws SdaiException {
 		if (debug_java) pw.println("\t// generateExplicit2DerivedNonJavaMethodsX: 4");
+		// this is a fix for bug 2473
+		if (ed.getComplex(null)) {
+			pw.println("\t // <><> to change the type of type parameter ####");
+
+      String current_name1 = tattr.attr.getName(null);
+      String current_name2 = tattr.consolidated_explicit_to_derived.attr.getName(null);
+      if (current_name1.equalsIgnoreCase(current_name2)) {
+				is_original = true;
+				pw.println("\t // <><> DONE - changing!");
+      }
+
+		}
 		generateExplicit2DerivedNonJavaMethodsX(ed, tattr, pw, is_original);
 	}
 
@@ -13235,7 +13304,7 @@ pw.println("// USEDIN-RENAMED-10");
                              base_entity_name.substring(0, 1).toUpperCase() + 
                              base_entity_name.substring(1).toLowerCase();
 // System.out.println("<<<>>> entity: " + ed.getName(null) + ", derived attribute: " + attr_name + ", base type: entity " + base_entity_name);
-          pw.println("\t// -15- explicit redeclared as derived attribute: " + attr_name + ", base type: entity " + 
+          pw.println("\t// -15A- explicit redeclared as derived attribute: " + attr_name + ", base type: entity " + 
                      base_entity_name);
 
 
@@ -13548,7 +13617,7 @@ System.out.println("//####### tattr.attr: " + tattr.last_redeclared_by.attr);
                              base_entity_name.substring(0, 1).toUpperCase() + 
                              base_entity_name.substring(1).toLowerCase();
 // System.out.println("<<<>>> entity: " + ed.getName(null) + ", derived attribute: " + attr_name + ", base type: entity " + base_entity_name);
-          pw.println("\t// -15- explicit redeclared as derived attribute: " + attr_name + ", base type: entity " + 
+          pw.println("\t// -15B- explicit redeclared as derived attribute: " + attr_name + ", base type: entity " + 
                      base_entity_name);
 
 
@@ -13748,6 +13817,8 @@ pw.println("\t\t//#X# 01");
                                   redeclared_owner_name.substring(1).toLowerCase();
 				}	
 				
+pw.println("\t //<><> redeclared_owning_entity_name: " + redeclared_owning_entity_name);
+				
         A_string expression_java = null;
 				
 				if (redeclared_attr instanceof EExplicit_attribute) {
@@ -13784,6 +13855,7 @@ pw.println("\t\t//#X# 01");
 
 						redeclared_owning_entity_name = owning_entity_name_x;
 					}
+pw.println("\t //<><> owning_entity_name_x: " + owning_entity_name_x);
 
 				EAttribute last_attr = attr;
 				if (tattr != null) {
@@ -13914,7 +13986,7 @@ pw.println("\t\t//#X# 01");
                              base_entity_name.substring(0, 1).toUpperCase() + 
                              base_entity_name.substring(1).toLowerCase();
 // System.out.println("<<<>>> entity: " + ed.getName(null) + ", derived attribute: " + attr_name + ", base type: entity " + base_entity_name);
-          pw.println("\t// -15- explicit redeclared as derived attribute: " + attr_name + ", base type: entity " + 
+          pw.println("\t// -15C- explicit redeclared as derived attribute: " + attr_name + ", base type: entity " + 
                      base_entity_name);
 
 
@@ -14876,7 +14948,7 @@ pw.println("//HOHO invoking expression generation, attr: " + attr + ", sd: " + s
                              base_entity_name.substring(0, 1).toUpperCase() + 
                              base_entity_name.substring(1).toLowerCase();
 // System.out.println("<<<>>> entity: " + ed.getName(null) + ", derived attribute: " + attr_name + ", base type: entity " + base_entity_name);
-          pw.println("\t// -15- explicit redeclared as derived attribute: " + attr_name + ", base type: entity " + 
+          pw.println("\t// -15D- explicit redeclared as derived attribute: " + attr_name + ", base type: entity " + 
                      base_entity_name);
 
 
@@ -17293,6 +17365,8 @@ ROCOFOCO attribute flag: 5, index: 1
     if (attr instanceof EExplicit_attribute) {
       EEntity bt = ((EExplicit_attribute) attr).getDomain(null);
 
+//System.out.println("attribute base type: " + bt);
+
       if (bt instanceof ESimple_type) {
         ESimple_type st = (ESimple_type) bt;
         return_object = getSimpleTypeAttributeString(st, attribute_field);
@@ -17309,10 +17383,21 @@ ROCOFOCO attribute flag: 5, index: 1
       } else 
       if (bt instanceof EParameter) {	 // generalized attribute type - ammendment
         return_object = "protected Object" + attribute_field + " GENERALIZED";
+//System.out.println("attribute base type is PARAMETER, returning: " + return_object);
       } else {
+					System.out.println("<ExpressCompiler> UNSUPPORTED ATTRIBUTE BASE TYPE: " + bt);
       }
     } else if (attr instanceof EDerived_attribute) {
-      EEntity bt = ((EDerived_attribute) attr).getDomain(null);
+    	// can derived be generalized - if later redeclared - here, only fox explicit support for generalized was added ??? - to check
+      EEntity bt = null;
+	    if (((EDerived_attribute)attr).testDomain(null)) {
+	      bt = ((EDerived_attribute) attr).getDomain(null);
+			} else {
+				pw.println("WARNING! Attribute object string not generated - attribute domain is NULL: " + attr);
+				System.out.println("WARNING! Attribute object string not generated - attribute domain is NULL: " + attr);
+				return "_NOT_GENERATED_ATTRIBUTE_DOMAIN_IS_NULL_";
+			}
+
 
       if (bt instanceof ESimple_type) {
         ESimple_type st = (ESimple_type) bt;
@@ -17329,10 +17414,22 @@ ROCOFOCO attribute flag: 5, index: 1
         return_object = "protected Object" + attribute_field + " ENTITY " + entity_name;
       }
     } else if (attr instanceof EInverse_attribute) {
-      EEntity_definition bet = ((EInverse_attribute) attr).getDomain(null);
+      EEntity_definition bet = null;
+      
+	    if (((EInverse_attribute)attr).testDomain(null)) {
+	      bet = ((EInverse_attribute) attr).getDomain(null);
+			} else {
+				pw.println("WARNING! Attribute object string not generated - inverse attribute domain is NULL: " + attr);
+				System.out.println("WARNING! Attribute object string not generated - inverse attribute domain is NULL: " + attr);
+				return "_ATTRIBUTE_OBJECT_STRING_NOT_GENERATED__INVERSE_ATTRIBUTE_DOMAIN_IS_NULL_";
+			}
+      
+      
       String entity_name = bet.getName(null);
       return_object = "protected Object" + attribute_field + " ENTITY " + entity_name;
     }
+
+//System.out.println("finally returning: " + return_object);
 
     return return_object;
   }
@@ -19217,13 +19314,24 @@ class	TheMethod {
                            attr_name.substring(1).toLowerCase();
 
     if (attr instanceof EExplicit_attribute) {
-      EEntity bt = ((EExplicit_attribute) attr).getDomain(null);
+      EEntity bt = null;
+	    if (((EExplicit_attribute)attr).testDomain(null)) {
+	      bt = ((EExplicit_attribute) attr).getDomain(null);
+			} else {
+//				pw.println("WARNING! Explicit attribute value field not generated - attribute domain is NULL: " + attr);
+				System.out.println("WARNING! Explicit attribute value field not generated - attribute domain is NULL: " + attr);
+				return "_VALUE_FIELD_NOT_GENERATED__ATTRIBUTE_DOMAIN_IS_NULL_";
+			}
+
+
 
       // this is to generate the type wrapped inside Parameter - for generalized attribute types
       // further down there is a generic handling of Parameter type which is insufficient
       // hopefully this new implementation will not cause problems somewhere else
       if (bt instanceof EParameter) {
       	bt = ((EParameter)bt).getParameter_type(null);
+        // it is probably wrong what is done here, but adding the next line to improve things
+        return_object = "protected Object";
       }
 
 
@@ -19246,6 +19354,19 @@ class	TheMethod {
 //        return_object = "protected Object" + attribute_field + " GENERALIZED";
         return_object = "protected Object";
       } else {
+				// System.out.println("<ExpressCompiler> UNSUPPORTED ATTRIBUTE BASE TYPE: " + bt);
+      	if (bt instanceof EData_type) {
+      		String data_type_name = ((EData_type)bt).getName(null);
+      		if (data_type_name.equals("_GENERIC")) {
+		        return_object = "protected Object";
+      		} else
+      		if (data_type_name.equals("_ENTITY")) {
+		        return_object = "protected Object";
+      		} else {
+						System.out.println("<ExpressCompiler> UNSUPPORTED ATTRIBUTE BASE TYPE: " + bt);
+		        return_object = "protected Object";
+      		}
+      	}
       }
     }
 /*    
@@ -19289,7 +19410,15 @@ class	TheMethod {
 		EAttribute attr = tattr.attr;
 		
     if (attr instanceof EExplicit_attribute) {
-      EEntity bt = ((EExplicit_attribute) attr).getDomain(null);
+      EEntity bt = null;
+
+	    if (((EExplicit_attribute)attr).testDomain(null)) {
+	      bt = ((EExplicit_attribute) attr).getDomain(null);
+			} else {
+//				pw.println("WARNING! Explicit attribute value field not generated - attribute domain is NULL: " + attr);
+				System.out.println("WARNING! Select field present-or-not for an explicit attribute - attribute domain is NULL: " + attr);
+				return false;
+			}
 
 
       if (bt instanceof EDefined_type) {

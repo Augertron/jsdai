@@ -32,7 +32,7 @@ import jsdai.dictionary.*;
 class PhFileReader {
 
 /**
-	An instance of the <code>Scanner</code> class used while reading 
+	An instance of the <code>Scanner</code> class used while reading
 	an exchange structure.
 */
 	private Scanner scan;
@@ -45,50 +45,50 @@ class PhFileReader {
 	Reader_error_table error_table;
 
 /**
-	The largest number encountered in the names of instances of an exchange 
+	The largest number encountered in the names of instances of an exchange
 	structure being read.
 */
 	private long largest_identifier = -1;
 
 /**
-	The level of SCOPE structure (see "ISO 10303-21::9.3 Scope structure") 
-	to which instances that are currently under processing belong. 
-	If <code>inside_scope = 0</code>, then instances are outside any scope. 
-	If instances currently being read from the exchange structure are found 
-	between lines <code>#1 = &SCOPE</code> (here a positive integer different 
-	than 1 may appear) and <code>ENDSCOPE</code>, then at this moment of the 
-	reading process <code>inside_scope</code> is equal to 1. Higher levels of 
+	The level of SCOPE structure (see "ISO 10303-21::9.3 Scope structure")
+	to which instances that are currently under processing belong.
+	If <code>inside_scope = 0</code>, then instances are outside any scope.
+	If instances currently being read from the exchange structure are found
+	between lines <code>#1 = &SCOPE</code> (here a positive integer different
+	than 1 may appear) and <code>ENDSCOPE</code>, then at this moment of the
+	reading process <code>inside_scope</code> is equal to 1. Higher levels of
 	nesting are defined similarly.
 */
 	private int inside_scope = 0;
 
 /**
-	Has value 'true' when to represent an instance currently being read the 
-	external mapping form was used. 
+	Has value 'true' when to represent an instance currently being read the
+	external mapping form was used.
 */
 	private boolean complex_entity;
 
 /**
-	Has value 'true' if an instance currently being read is of user defined 
+	Has value 'true' if an instance currently being read is of user defined
 	entity type.
 */
 	private boolean user_defined_entity;
 
 /**
-	Has value 'true' when data sections are processed (and 'false' when the 
+	Has value 'true' when data sections are processed (and 'false' when the
 	header is processed).
 */
 	private boolean data_section_processing;
 
 /**
-	Has value 'true' if an instance that references itself is found. 
+	Has value 'true' if an instance that references itself is found.
 */
 	private boolean autoreference_found;
 
 	CEntity zero_inst = null;
 
 /**
-	The name of an entity whose instance is expected to appear next in the exchange 
+	The name of an entity whose instance is expected to appear next in the exchange
 	structure. This field is used when reading the header of the structure.
 	An order in which instances appear in the header is defined in "ISO 10303-21".
 */
@@ -100,8 +100,8 @@ class PhFileReader {
 	private String repo_name;
 
 /**
-	The repository to which the exchange structure is imported. 
-	This repository is returned by <code>importClearTextEncoding</code> method 
+	The repository to which the exchange structure is imported.
+	This repository is returned by <code>importClearTextEncoding</code> method
 	of <code>SdaiSession</code> class.
 */
 	private SdaiRepository file_repo;
@@ -124,13 +124,13 @@ class PhFileReader {
 	private char [] chars;
 
 /**
-	The field which represents information delivered by 'file_description' 
+	The field which represents information delivered by 'file_description'
 	entity instance in the header of the exchange structure.
 */
 	private FILE_DESCRIPTION file_description;
 
 /**
-	The field which represents information delivered by a 'file_population' 
+	The field which represents information delivered by a 'file_population'
 	entity instance in the header of the exchange structure.
 */
 	private FILE_POPULATION file_pop;
@@ -1108,10 +1108,10 @@ class PhFileReader {
 	static final int COMMENT = 28;
 
 /**
-	The strings describing types of tokens. 
-	The specific string for a token is taken at the index that is equal 
-	to the constant indicating the type of that token. An exception is 
-	'LOGICAL' type which is represented by 3 strings (one for each possible 
+	The strings describing types of tokens.
+	The specific string for a token is taken at the index that is equal
+	to the constant indicating the type of that token. An exception is
+	'LOGICAL' type which is represented by 3 strings (one for each possible
 	logical value).
 */
 	private static final String[] token_image = {
@@ -1147,7 +1147,7 @@ class PhFileReader {
 	};
 
 /**
-	The constant strings used in the comments within instances of the entity 
+	The constant strings used in the comments within instances of the entity
 	'file_population' in the header of the exchange structure.
 */
 	static final String[] SCH_INST_HIDDEN_FIELDS = {
@@ -1163,12 +1163,13 @@ class PhFileReader {
 		"schema_instance.originating_system",
 		"schema_instance.authorization",
 		"schema_instance.language",
-		"schema_instance.context_identifiers"
+		"schema_instance.context_identifiers",
+		"schema_instance.included_schema_instances"
 	};
 
 /**
-	The constants representing special symbols as java byte fields. 
-	These constants are used extensively during reading/writing exchange 
+	The constants representing special symbols as java byte fields.
+	These constants are used extensively during reading/writing exchange
 	structures.
 */
 	static final byte DOT = (byte)'.';
@@ -1201,7 +1202,7 @@ class PhFileReader {
 
 
 /**
-	The byte representation of special string tokens encountered in the exchange 
+	The byte representation of special string tokens encountered in the exchange
 	structures.
 */
 	static final byte keywords[][] = {
@@ -1225,7 +1226,7 @@ class PhFileReader {
 	static final int ENTITY_REFERENCE 							= 52;
 
 /**
-	The constant indicating the type of value: reference to an entity instance 
+	The constant indicating the type of value: reference to an entity instance
 	which will be found later while reading an exchange structure (forward reference).
 */
 	static final int ENTITY_REFERENCE_SPECIAL 				= 53;
@@ -1279,7 +1280,7 @@ class PhFileReader {
 	static final int INVALID_SECTION_NAME						= 89;
 
 /**
-	The constant that controls the amount of the information printed. 
+	The constant that controls the amount of the information printed.
 */
 	private final byte PRINT_IN_PARSER 							=  0;
 
@@ -1294,8 +1295,8 @@ class PhFileReader {
 	private final int NUMBER_OF_CHARACTERS_IN_STRING      = 128;
 
 /**
-	The initial length of the internal arrays 'partial_values' and 
-	'used_ent_values' in this class and arrays 'complex_name' and 
+	The initial length of the internal arrays 'partial_values' and
+	'used_ent_values' in this class and arrays 'complex_name' and
 	'ref2partial_values' in Create_instance.
 */
 	static final int NAMES_ARRAY_SIZE                     = 16;
@@ -1304,13 +1305,13 @@ class PhFileReader {
 
 
 /**
-	An internal array to which forward references (type indicator is 
-	ENTITY_REFERENCE_SPECIAL) from the entity instance under consideration 
-	are temporary stored. Afterwards, when the latter instance is created, 
-	a pointer to this instance is added to the inverse list of each element 
+	An internal array to which forward references (type indicator is
+	ENTITY_REFERENCE_SPECIAL) from the entity instance under consideration
+	are temporary stored. Afterwards, when the latter instance is created,
+	a pointer to this instance is added to the inverse list of each element
 	in this array.
 */
-	private CLateBindingEntity array_of_inverse[] = 
+	private CLateBindingEntity array_of_inverse[] =
 		new CLateBindingEntity[SdaiSession.NUMBER_OF_VALUES];
 
 /**
@@ -1319,35 +1320,35 @@ class PhFileReader {
 	private int length_of_array_of_inverse;
 
 /**
-	An object of the class representing the values of an entity instance. 
+	An object of the class representing the values of an entity instance.
 	The values are read from an exchange structure and stored to this object.
 */
 	private ComplexEntityValue entity_values = new ComplexEntityValue();
 
 /**
-	An internal array used to store objects of the class <code>EntityValue</code> 
-	representing the subsets of values of an instance corresponding to 
-	simple entity types from which entity data type of the instance is composed. 
-	Usually, these objects are taken from the array <code>entityValues</code> 
+	An internal array used to store objects of the class <code>EntityValue</code>
+	representing the subsets of values of an instance corresponding to
+	simple entity types from which entity data type of the instance is composed.
+	Usually, these objects are taken from the array <code>entityValues</code>
 	of <code>ComplexEntityValue</code>.
 */
 	private EntityValue [] partial_values;
 
 /**
-	An internal array used to mark (by 1) those objects of the class 
-	<code>EntityValue</code> within the array <code>entityValues</code> of 
-	<code>ComplexEntityValue</code> which have values in the complex entity 
-	instance. Values of some simple entity types may be missing due to some 
-	reason (for example, a bug in coding) in the external mapping of an instance 
-	in the exchange structure. This array also helps to reoder values of 
-	simple entity types when these values appear in the external mapping 
+	An internal array used to mark (by 1) those objects of the class
+	<code>EntityValue</code> within the array <code>entityValues</code> of
+	<code>ComplexEntityValue</code> which have values in the complex entity
+	instance. Values of some simple entity types may be missing due to some
+	reason (for example, a bug in coding) in the external mapping of an instance
+	in the exchange structure. This array also helps to reoder values of
+	simple entity types when these values appear in the external mapping
 	in a wrong order (are ordered by mistake not alphabetically).
 */
 	private int [] used_ent_values;
 
 /**
-	An internal array used to store the names of simple entity types within 
-	an entity data type for which an encoding of an instance in the external 
+	An internal array used to store the names of simple entity types within
+	an entity data type for which an encoding of an instance in the external
 	mapping mode in the exchange structure was found.
 */
 	private PartialEntityName complex_name[] =
@@ -1358,8 +1359,8 @@ class PhFileReader {
 	private static final int PARTIAL_ENTITIES_COUNT = 16;
 
 /**
-	The name of an entity instance in the form of the byte array. If the instance 
-	is complex, then to concatenate the names of simple entity types the 
+	The name of an entity instance in the form of the byte array. If the instance
+	is complex, then to concatenate the names of simple entity types the
 	symbol '$" is used.
 */
 	private byte instance_name[] = new byte[COMPLEX_ENTITY_NAME_LENGTH];
@@ -1371,29 +1372,29 @@ class PhFileReader {
 	int enl_instance_name_length;
 
 /**
-	An object of the class <code>Create_instance</code> used to create 
+	An object of the class <code>Create_instance</code> used to create
 	entity instances whose coding is read from the exchange structure.
 */
 //	private Create_instance create = new Create_instance(this);
 	private Create_instance create;
 
 /**
-	An object of the class <code>Binary_tree</code> used to process references 
-	between entity instances whose coding is read from the exchange structure. 
+	An object of the class <code>Binary_tree</code> used to process references
+	between entity instances whose coding is read from the exchange structure.
 	It helps to compile all the data contained in the exchange structure in one pass.
 */
 	private Binary_tree tree;
 
 
 /**
-	A data dictionary model for Express schema which is underlying for a model 
-	to which all instances read from a data section of the exchange structure are 
+	A data dictionary model for Express schema which is underlying for a model
+	to which all instances read from a data section of the exchange structure are
 	stored.
 */
 	private SdaiModel model_dic;
 
 /**
-	A model to which all instances read from a data section of the exchange 
+	A model to which all instances read from a data section of the exchange
 	structure are stored.
 */
 	private SdaiModel model_app;
@@ -1423,14 +1424,14 @@ class PhFileReader {
 
 
 /**
-	Reads an exchange structure. The file is submitted through the parameter 
-	<code>source_location</code>, and the data from it are stored into a repository 
-	whose name is given by the second parameter. The last parameter represents 
-	the schema instance for data dictionary (this is a field of the class 
-	<code>SdaiSession</code>). This method does the main job of the 
-	<code>SdaiSession</code> method <code>importClearTextEncoding</code>. 
+	Reads an exchange structure. The file is submitted through the parameter
+	<code>source_location</code>, and the data from it are stored into a repository
+	whose name is given by the second parameter. The last parameter represents
+	the schema instance for data dictionary (this is a field of the class
+	<code>SdaiSession</code>). This method does the main job of the
+	<code>SdaiSession</code> method <code>importClearTextEncoding</code>.
 */
-	final SdaiRepository exchange_file(SdaiSession session, String name, Object source_location, 
+	final SdaiRepository exchange_file(SdaiSession session, String name, Object source_location,
 			Object destination_location, SchemaInstance schema_instance)
 			throws SdaiException, java.io.IOException {
 //long time1, time2, time3 = 0, time4 = 0;
@@ -1586,6 +1587,7 @@ class PhFileReader {
 		}
 		file_repo.modified = false;
 		create_schema_instances();
+		include_schema_instances(session);
 		} finally {
 			tree = null;
 			staticFields.importing = false;
@@ -1636,7 +1638,7 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 
 
 /**
-	Creates a schema instance for each instance of the entity 'file_population' 
+	Creates a schema instance for each instance of the entity 'file_population'
 	encountered in the exchange structure.
 */
 	final private void create_schema_instances() throws SdaiException {
@@ -1654,10 +1656,11 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 				int sch_count = file_repo.schema_count + 1;
 				sch_inst_name = "schema" + sch_count;
 			}
-//System.out.println("  PhFileReader   file_repo: " + file_repo.name + 
-//"  sch_inst_name: " + sch_inst_name + 
+			file_pop.final_name = sch_inst_name;
+//System.out.println("  PhFileReader   file_repo: " + file_repo.name +
+//"  sch_inst_name: " + sch_inst_name +
 //"   dict_model: " + dict_model.name);
-			SchemaInstance sch_inst = file_repo.createSchemaInstance(sch_inst_name, 
+			SchemaInstance sch_inst = file_repo.createSchemaInstance(sch_inst_name,
 				dict_model.described_schema);
 			sch_inst.created = true;
 			if (file_pop.governed_sections == null) {
@@ -1724,15 +1727,42 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 	}
 
 
+	final private void include_schema_instances(SdaiSession session) throws SdaiException {
+		SchemaInstance own_sch_inst;
+		for (int i = 0; i < populations_count; i++) {
+			FILE_POPULATION file_pop = populations[i];
+			if (file_pop.included_schema_instances == null) {
+				continue;
+			}
+			String sch_inst_name;
+			own_sch_inst = null;
+			A_string aggr = file_pop.included_schema_instances;
+			for (int j = 1; j <= aggr.myLength; j++) {
+				sch_inst_name = aggr.getByIndex(j);
+				SchemaInstance sch_inst = file_repo.findSchemaInstance(sch_inst_name);
+				if (sch_inst == null) {
+					printWarningToLogoSchiInst(session, AdditionalMessages.RD_UNSI, file_pop.final_name, sch_inst_name);
+					continue;
+				}
+				if (own_sch_inst == null) {
+					own_sch_inst = file_repo.findSchemaInstance(file_pop.final_name);
+					own_sch_inst.included_schemas = new ASchemaInstance(SdaiSession.setType0toN, own_sch_inst);
+				}
+				own_sch_inst.included_schemas.addUnorderedRO(sch_inst);
+			}
+		}
+	}
+
+
 /**
-	Reads the header of the exchange structure. According to ISO 10303-21, 
-	first of all, instances of the entities <code>file_description</code>, 
-	<code>file_name</code> and <code>file_schema</code> are processed. 
-	Then, instances of the entities <code>section_language</code>, 
-	<code>section_context</code> and <code>file_population</code> in any order 
+	Reads the header of the exchange structure. According to ISO 10303-21,
+	first of all, instances of the entities <code>file_description</code>,
+	<code>file_name</code> and <code>file_schema</code> are processed.
+	Then, instances of the entities <code>section_language</code>,
+	<code>section_context</code> and <code>file_population</code> in any order
 	are read. Finally, user defined header instances (if any) are considered.
 */
-	final private void header_section(SdaiSession session, String source_location, 
+	final private void header_section(SdaiSession session, String source_location,
 			Object destination_location) throws SdaiException, java.io.IOException {
 		String entity_in_header;
 		boolean [] defaults = {false, false};
@@ -1767,8 +1797,8 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 		populations_count = 0;
 		if (token.type != ENDSEC) {
 			entity_in_header = new String(token.string, 0, token.length);
-			while (entity_in_header.equals("SECTION_LANGUAGE") || 
-						entity_in_header.equals("SECTION_CONTEXT") || 
+			while (entity_in_header.equals("SECTION_LANGUAGE") ||
+						entity_in_header.equals("SECTION_CONTEXT") ||
 						entity_in_header.equals("FILE_POPULATION")) {
 				expect_entity = entity_in_header;
 				header_entity(entity_in_header, defaults, session, source_location, destination_location);
@@ -1796,9 +1826,9 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 
 
 /**
-	Reads an encoding of a user defined header instance from the exchange 
-	structure. The instance created is put into the array 
-	<code>user_defined_instances</code> of the repository to which the 
+	Reads an encoding of a user defined header instance from the exchange
+	structure. The instance created is put into the array
+	<code>user_defined_instances</code> of the repository to which the
 	exchange structure is imported.
 */
 	final private void opt_header_entity(SdaiRepository repo)
@@ -1821,7 +1851,7 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 			parsing_exception(token, res, null, null);
 		}
 		if (repo.user_defined_instances == null) {
-			repo.user_defined_instances = 
+			repo.user_defined_instances =
 				new $HEADER_USER_DEFINED_ENTITY[repo.USER_DEFINED_INSTANCES_ARRAY_SIZE];
 		} else if (repo.user_defined_instances_count >= repo.user_defined_instances.length) {
 			int new_length = repo.user_defined_instances.length * 2;
@@ -1834,11 +1864,11 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 
 
 /**
-	Reads an encoding of a header instance different than user defined from 
-	the exchange structure. The extracted data are written into the 
+	Reads an encoding of a header instance different than user defined from
+	the exchange structure. The extracted data are written into the
 	repository to which the exchange structure is imported.
 */
-	final private void header_entity(String ent, boolean [] defaults, SdaiSession session, 
+	final private void header_entity(String ent, boolean [] defaults, SdaiSession session,
 			String source_location, Object destination_location)
 			throws SdaiException, java.io.IOException {
 		String entity_in_header;
@@ -1901,7 +1931,7 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 			if (destination_location instanceof String) {
 				loc = (String)destination_location;
 			}
-			
+
 			int current = -1;
 			if ((loc == null && newRepositoryFormat.equalsIgnoreCase("SDAI")) || (loc != null && (!loc.endsWith(SdaiSession.DIRECTORY_SUFFIX) && !loc.endsWith(File.separator)))) {
 				// Deriving repository name from location
@@ -1914,7 +1944,7 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 						else {
 							repo_name = loc;
 						}
-						
+
 						lastIndex = repo_name.lastIndexOf('.');
 						if (lastIndex > 0) {
 							repo_name = repo_name.substring(0, lastIndex);
@@ -1934,7 +1964,7 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 				String current_name;
 				while (!bFreeNameFound) {
 					current++;
-					
+
 					if (current > 0) {
 						current_name = repo_name + "_" +String.valueOf(current);
 					}
@@ -2047,11 +2077,11 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 
 
 /**
-	Returns a repository for a given name to which the exchange structure will 
-	be imported. The repository is that already existing (of course, in the virtual 
+	Returns a repository for a given name to which the exchange structure will
+	be imported. The repository is that already existing (of course, in the virtual
 	mode) or a new one created within this method.
 */
-	final private SdaiRepository get_repository(SdaiSession session, String name, 
+	final private SdaiRepository get_repository(SdaiSession session, String name,
 			String source_location, Object destination_location) throws SdaiException {
 		if(destination_location instanceof SdaiRepository) {
 			return (SdaiRepository)destination_location;
@@ -2093,7 +2123,7 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 	 - header user-defined entity instance (within <code>opt_header_entity</code> method);
 	 - user-defined entity instance (within <code>entity_instance_RHS</code> method);
 	 - entity instance in external mapping mode (within <code>entity_instance_RHS</code> method).
-	This method is also used to read data section parameters (such parameters exist  
+	This method is also used to read data section parameters (such parameters exist
 	if the exchange structure contains more than one data section).
 */
 	private final void parameters(EntityValue pval)
@@ -2170,7 +2200,7 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 					scan.get_token(token);
 					if (token.type == ERROR) {
 						staticFields = StaticFields.get();
-						parsing_exception(token, AdditionalMessages.RD_CORP, AdditionalMessages.RD_INST, 
+						parsing_exception(token, AdditionalMessages.RD_CORP, AdditionalMessages.RD_INST,
 							Long.toString(staticFields.current_instance_identifier));
 					} else if (token.type == COMMENT) {
 						go_through_comments(token);
@@ -2188,13 +2218,13 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 				}
 			}
 
-		} 
+		}
 		pval.count = index+1;
 	}
 
 
 /**
-	Reads the comments within an encoding of <code>file_population</code> 
+	Reads the comments within an encoding of <code>file_population</code>
 	instances. In this specific case these comments bear some useful information.
 */
 	private final void go_through_comments(Token token)
@@ -2211,8 +2241,8 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 
 
 /**
-	Processes a comment encountered within an encoding of a <code>file_population</code> 
-	instance. 
+	Processes a comment encountered within an encoding of a <code>file_population</code>
+	instance.
 */
 	private final void process_comment_file_population(Token token) throws SdaiException {
 		int i;
@@ -2273,13 +2303,16 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 		} else if (key.equals(SCH_INST_HIDDEN_FIELDS[12])) {		//		"context_identifiers"
 			file_pop.context_identifiers = new A_string(SdaiSession.listTypeSpecial, file_repo);
 			process_aggregate(token, com, last_comma, file_pop.context_identifiers);
+		} else if (key.equals(SCH_INST_HIDDEN_FIELDS[13])) {		//		"included_schema_instances"
+			file_pop.included_schema_instances = new A_string(SdaiSession.listTypeSpecial, file_repo);
+			process_aggregate(token, com, last_comma, file_pop.included_schema_instances);
 		}
 	}
 
 
 /**
-	Prints a warning message related to processing of comments within 
-	<code>file_population</code> instances to log file. 
+	Prints a warning message related to processing of comments within
+	<code>file_population</code> instances to log file.
 */
 	private final void printCommentError(String message, String com) throws SdaiException {
 		String str;
@@ -2293,8 +2326,8 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 
 
 /**
-	Extracts the string from the comment encountered within an encoding of a 
-	<code>file_population</code> instance. 
+	Extracts the string from the comment encountered within an encoding of a
+	<code>file_population</code> instance.
 */
 	private final String process_string(Token token, String com, int st_ind, int c_ind) throws SdaiException {
 		int i;
@@ -2326,8 +2359,8 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 
 
 /**
-	Extracts the logical value from the comment encountered within an encoding of a 
-	<code>file_population</code> instance. 
+	Extracts the logical value from the comment encountered within an encoding of a
+	<code>file_population</code> instance.
 */
 	private final int process_logical(Token token, String com, int c_ind) throws SdaiException {
 		int ind = -1;
@@ -2355,8 +2388,8 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 
 
 /**
-	Extracts the digit from the comment encountered within an encoding of a 
-	<code>file_population</code> instance. 
+	Extracts the digit from the comment encountered within an encoding of a
+	<code>file_population</code> instance.
 */
 	private final int process_digit(Token token, String com, int c_ind) throws SdaiException {
 		int ind = -1;
@@ -2383,8 +2416,8 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 
 
 /**
-	Processes the aggregate in the comment encountered within an encoding of a 
-	<code>file_population</code> instance. 
+	Processes the aggregate in the comment encountered within an encoding of a
+	<code>file_population</code> instance.
 */
 	private final void process_aggregate(Token token, String com, int c_ind, A_string aggr)
 			throws SdaiException {
@@ -2406,7 +2439,9 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 		start_ind++;
 		ind = start_ind;
 		while (token.string[ind] != RIGHT_PARENTHESIS) {
-			while (token.string[ind] != COMMA_b && token.string[ind] != RIGHT_PARENTHESIS) {
+			int ap_count = 0;
+			while ((token.string[ind] != COMMA_b || ap_count < 2) && token.string[ind] != RIGHT_PARENTHESIS) {
+				if (token.string[ind] == APOSTROPHE) ap_count++;
 				ind++;
 				if (ind >= c_ind) {
 					printCommentError(AdditionalMessages.RD_WAFP, com);
@@ -2439,7 +2474,7 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 
 
 /**
-	Reads parameters of the encoding of an instance in internal mapping mode 
+	Reads parameters of the encoding of an instance in internal mapping mode
 	(within <code>entity_instance_RHS</code> method).
 */
 	private final void parameters(CEntity_definition def, long instance_identifier)
@@ -2582,7 +2617,7 @@ if (SdaiSession.debug2) System.out.println("  entity_values.entityValues[1].coun
 					scan.get_token(token);
 					if (token.type == ERROR) {
 						staticFields = StaticFields.get();
-						parsing_exception(token, AdditionalMessages.RD_CORP, AdditionalMessages.RD_INST, 
+						parsing_exception(token, AdditionalMessages.RD_CORP, AdditionalMessages.RD_INST,
 							Long.toString(staticFields.current_instance_identifier));
 					}
 					if (token.type != COMMA && token.type != RPAREN) {
@@ -2597,7 +2632,6 @@ if (SdaiSession.debug2) System.out.println("  entity_values.entityValues[1].coun
 					break;
 				}
 			}
-
 			boolean too_less = false;
 			if (count_of_partial_values < partial_entity_values.count - 1) {
 				for (int j = count_of_partial_values + 1; j < partial_entity_values.count; j++) {
@@ -2641,15 +2675,15 @@ if (SdaiSession.debug2) System.out.println(" index4 = " + index + "   name = " +
 			if (too_many) {
 				EntityValue.printWarningToLogo(active_session, AdditionalMessages.RD_VEXA, instance_identifier);
 			}
-		} 
+		}
 	}
 
 
 /**
-	Reads parameters of the encoding of an instance in internal mapping mode 
-	(within <code>entity_instance_RHS</code> method) in the case when by some 
-	reasons JSDAI failed to create an instance for the entity name found in 
-	the encoding (instances are created by <code>object</code> method in 
+	Reads parameters of the encoding of an instance in internal mapping mode
+	(within <code>entity_instance_RHS</code> method) in the case when by some
+	reasons JSDAI failed to create an instance for the entity name found in
+	the encoding (instances are created by <code>object</code> method in
 	<code>Create_instance</code> class).
 */
 	private final void parameters() throws SdaiException, java.io.IOException {
@@ -2699,15 +2733,15 @@ if (SdaiSession.debug2) System.out.println(" index4 = " + index + "   name = " +
 					scanning_exception(token, staticFields.current_instance_identifier, new String(token.string));
 				}
 			}
-		} 
+		}
 	}
 
 
 /**
-	Reads parameters representing elements of an aggregate in the encoding 
-	of an instance. Speaking differently, processes the text of the exchange 
-	structure enclosed between left parenthesis and right parenthesis on the 
-	right-hand side of the instance description. In the case of nested 
+	Reads parameters representing elements of an aggregate in the encoding
+	of an instance. Speaking differently, processes the text of the exchange
+	structure enclosed between left parenthesis and right parenthesis on the
+	right-hand side of the instance description. In the case of nested
 	aggregates the method can be invoked recursively.
 */
 	private final void embedded_list(Value value) throws SdaiException, java.io.IOException {
@@ -2780,7 +2814,7 @@ if (SdaiSession.debug2) System.out.println(" index4 = " + index + "   name = " +
 					scan.get_token(token);
 					if (token.type == ERROR) {
 						staticFields = StaticFields.get();
-						parsing_exception(token, AdditionalMessages.RD_CORP, AdditionalMessages.RD_INST, 
+						parsing_exception(token, AdditionalMessages.RD_CORP, AdditionalMessages.RD_INST,
 							Long.toString(staticFields.current_instance_identifier));
 					}
 				}
@@ -2793,7 +2827,7 @@ if (SdaiSession.debug2) System.out.println(" index4 = " + index + "   name = " +
 					scan.get_token(token);
 					if (token.type == ERROR) {
 						staticFields = StaticFields.get();
-						parsing_exception(token, AdditionalMessages.RD_CORP, AdditionalMessages.RD_INST, 
+						parsing_exception(token, AdditionalMessages.RD_CORP, AdditionalMessages.RD_INST,
 							Long.toString(staticFields.current_instance_identifier));
 					}
 					if (token.type != COMMA && token.type != RPAREN) {
@@ -2818,9 +2852,9 @@ if (SdaiSession.debug2) System.out.println(" index4 = " + index + "   name = " +
 
 
 /**
-	Writes the parameter taken from the encoding of an instance (as variable 
-	<code>token</code>) to the object of class <code>Value</code> submitted 
-	as an argument to this method. The method is applied to reading instances 
+	Writes the parameter taken from the encoding of an instance (as variable
+	<code>token</code>) to the object of class <code>Value</code> submitted
+	as an argument to this method. The method is applied to reading instances
 	in data sections (but not in the header).
 */
 	private final void parameter(Value value) throws SdaiException, java.io.IOException {
@@ -2921,9 +2955,9 @@ if (SdaiSession.debug2) System.out.println(" index4 = " + index + "   name = " +
 
 
 /**
-	Writes the parameter taken from the encoding of an instance (as variable 
-	<code>token</code>) to the object of class <code>Value</code> submitted 
-	as an argument to this method. The method is applied to reading instances 
+	Writes the parameter taken from the encoding of an instance (as variable
+	<code>token</code>) to the object of class <code>Value</code> submitted
+	as an argument to this method. The method is applied to reading instances
 	in header only (not in data sections).
 */
 	private final void parameter_in_header(Value value) throws SdaiException, java.io.IOException {
@@ -2985,9 +3019,9 @@ if (SdaiSession.debug2) System.out.println(" index4 = " + index + "   name = " +
 
 
 /**
-	Reads parameters of the data section (that is, those given in parenthesis 
-	after keyword <code>DATA</code>, see ammendment to "ISO 10303-21"). This 
-	method is activated only for an exchange structure containing more than one 
+	Reads parameters of the data section (that is, those given in parenthesis
+	after keyword <code>DATA</code>, see ammendment to "ISO 10303-21"). This
+	method is activated only for an exchange structure containing more than one
 	data section.
 */
 	private final String [] data_section_parameters(SdaiRepository repository)
@@ -3030,6 +3064,9 @@ if (SdaiSession.debug2) System.out.println(" index4 = " + index + "   name = " +
 				if (id.equals(str)) {
 					found = true;
 					break;
+				} else if (repository.verify_schema_name(id, str) != null) {
+					found = true;
+					break;
 				}
 			}
 			if (found) {
@@ -3052,20 +3089,20 @@ if (SdaiSession.debug2) System.out.println(" index4 = " + index + "   name = " +
 
 /**
 	Reads a data section. More specifically:
-	 - takes parameters of the data section in the case when the exchange 
+	 - takes parameters of the data section in the case when the exchange
 		structure contains more than one data section;
-	 - extracts the data dictionary model representing Express schema that is 
+	 - extracts the data dictionary model representing Express schema that is
 		underlying for the data section being considered;
-	 - prepares a model for application data (either promotes an existing 
-		virtual one to the state of an ordinary model or creates a new one); 
+	 - prepares a model for application data (either promotes an existing
+		virtual one to the state of an ordinary model or creates a new one);
 		the read-write access of the model is started;
-	 - finds or creates a schema instance with which the application data 
+	 - finds or creates a schema instance with which the application data
 		model is associated;
-	 - reads encoding of instances from the data section in the exchange 
-		structure and creates entity instances which are put into application 
+	 - reads encoding of instances from the data section in the exchange
+		structure and creates entity instances which are put into application
 		data model.
 */
-	private final void data_section(SchemaInstance schema_instance, 
+	private final void data_section(SchemaInstance schema_instance,
 			SdaiRepository repository) throws SdaiException, java.io.IOException {
 		long time_dictionary_creation = 0;
 		long time_before_invocation, time_after_invocation;
@@ -3103,6 +3140,12 @@ if (SdaiSession.debug2) System.out.println(" index4 = " + index + "   name = " +
 			s_ids_orig = repository.file_schema.schema_identifiers;
 			if (s_ids_orig.myLength == 1) {
 				or_name = (String)s_ids_orig.myData;
+			} else if(s_ids_orig.myLength > 1) {
+				// Workaround for bug #2526
+				// The right way would be to have method
+				// String[] getOriginalSchemaNames()
+//				or_name = (String)((Object[])s_ids_orig.myData)[0];
+				or_name = (String)s_ids_orig.getByIndex(1);
 			}
 			model_dic = repository.get_schema_model();
 			if (model_dic != null) {
@@ -3175,7 +3218,7 @@ if (SdaiSession.debug2) System.out.println(" index4 = " + index + "   name = " +
 if (SdaiSession.debug2) System.out.println("   repository name = " + repository.name);
 if (SdaiSession.debug2) System.out.println("  schema name in Reader = " + model_dic.described_schema.getName(null));
 				model_app = repository.createSdaiModel(model_name, model_dic.described_schema);
-//System.out.println("PhFileReader  model_app: " + model_app.name + "    its repo name: " + model_app.repository.name + 
+//System.out.println("PhFileReader  model_app: " + model_app.name + "    its repo name: " + model_app.repository.name +
 //"    its repo: " + model_app.repository + "  session: " + model_app.repository.getSession());
 				model_app.created = true;
 			}
@@ -3253,8 +3296,8 @@ if (SdaiSession.debug2) System.out.println("  schema name in Reader = " + model_
 				}
 				if (appl_schema_instance == null) {
 					int sch_count = repository.schema_count + 1;
-					appl_schema_instance = 
-						(SchemaInstance)repository.createSchemaInstance("schema" + sch_count, 
+					appl_schema_instance =
+						(SchemaInstance)repository.createSchemaInstance("schema" + sch_count,
 							model_dic.described_schema);
 					appl_schema_instance.created = true;
 					appl_schema_instance.modified_by_import = appl_schema_instance.modified;
@@ -3311,21 +3354,21 @@ if (SdaiSession.debug2) System.out.println("  schema name in Reader = " + model_
 
 
 /**
-	Creates an instance from its encoding in the exchange structure. More 
-	specifically: 
+	Creates an instance from its encoding in the exchange structure. More
+	specifically:
 	 - creates an instance of the needed entity data type;
-	 - collects values into the object of class <code>ComplexEntityValue</code> 
-		(field <code>entity_values</code> in the current class); 
-	 - inserts the created instance into a binary tree which is a data structure 
+	 - collects values into the object of class <code>ComplexEntityValue</code>
+		(field <code>entity_values</code> in the current class);
+	 - inserts the created instance into a binary tree which is a data structure
 		used for storing the objects of the following two types:
 		 1) entity instances;
-		 2) references to not existing at the current moment entity instances 
-			(so-called forward references); the type of these objects is 
-			<code>CLateBindingEntity</code>. In the case when the entity instance 
-			is just created and for it an object of <code>CLateBindingEntity</code> 
-			in the binary tree already exists, the latter is replaced by the former. 
+		 2) references to not existing at the current moment entity instances
+			(so-called forward references); the type of these objects is
+			<code>CLateBindingEntity</code>. In the case when the entity instance
+			is just created and for it an object of <code>CLateBindingEntity</code>
+			in the binary tree already exists, the latter is replaced by the former.
 			This mechanism allows to read an exchange structure in one pass;
-	 - assigns the values (taken from <code>entity_values</code>) to the attributes 
+	 - assigns the values (taken from <code>entity_values</code>) to the attributes
 		of the created entity instance.
 */
 	private final void data_entity() throws SdaiException, java.io.IOException {
@@ -3381,11 +3424,11 @@ if (SdaiSession.debug2) System.out.println("  schema name in Reader = " + model_
 			}
 			inside_scope--;
 			instance_identifier = saved_instance_identifier;
-		} 
+		}
 
 		length_of_array_of_inverse = 0;
 		instance_name_length = 0;
-       CEntity created_instance = entity_instance_RHS(staticFields, instance_identifier);
+		CEntity created_instance = entity_instance_RHS(staticFields, instance_identifier);
 		if (created_instance == null) {
 			return;
 		}
@@ -3400,11 +3443,11 @@ if (SdaiSession.debug2) System.out.println("  schema name in Reader = " + model_
 		if (largest_identifier < instance_identifier) {
 			largest_identifier = instance_identifier;
 		}
-		CLateBindingEntity forward = null;
-		for (i = 0; i < length_of_array_of_inverse; i++) {
-			forward = array_of_inverse[i];
-			forward.inverseAdd((CEntity)created_instance);
-		}
+		CLateBindingEntity forward;
+//		for (i = 0; i < length_of_array_of_inverse; i++) {
+//			forward = array_of_inverse[i];
+//			forward.inverseAdd((CEntity)created_instance);
+//		}
 		created_instance.instance_identifier = instance_identifier;
 		boolean found = tree.insert(created_instance, instance_identifier);
 //time2 = System.currentTimeMillis();time_insert_second += (time2 - time1);
@@ -3413,7 +3456,7 @@ if (SdaiSession.debug2) System.out.println("  schema name in Reader = " + model_
 //time2 = System.currentTimeMillis();time_replace += (time2 - time1);
 			if (forward == null) {
 				String entity_name_for_exception = take_entity_name_for_exception();
-				action_exception(token, DUPLICATE_INSTANCE, instance_identifier, 
+				action_exception(token, DUPLICATE_INSTANCE, instance_identifier,
 					entity_name_for_exception);
 			}
 		}
@@ -3421,9 +3464,9 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 		if (autoreference_found) {
 			resolve_autoreference(created_instance);
 		}
-//if (instance_identifier==500) print_entity_values(instance_identifier);
+//if (instance_identifier == 891) print_entity_values(instance_identifier);
 		created_instance.setAll(entity_values);
-//if (instance_identifier==211) 
+//if (instance_identifier==211)
 //System.out.println("PhFileReader &&&&& created_instance: " + created_instance);
         created_instance.instance_position = CEntity.INS_MASK | created_instance.instance_position; //--VV-- Instance state tracking --
 //		}
@@ -3432,10 +3475,10 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Processes the right-hand side (entity name and parameters) in the encoding 
-	of a (data section) entity instance. More specifically, creates an instance 
-	of the required entity data type and puts the parameters into 
-	<code>entity_values</code>. 
+	Processes the right-hand side (entity name and parameters) in the encoding
+	of a (data section) entity instance. More specifically, creates an instance
+	of the required entity data type and puts the parameters into
+	<code>entity_values</code>.
 */
 	private final CEntity entity_instance_RHS(StaticFields staticFields, long instance_identifier)
     		throws SdaiException, java.io.IOException {
@@ -3446,7 +3489,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 			complex_entity = false;
 			if (token.type == ENTITY_NAME) {
 				try {
-					created_instance = create.object(token.string, token.length, model_dic, 
+					created_instance = create.object(token.string, token.length, model_dic,
 						model_app, instance_identifier, 1, 1);
 					staticFields.c_instance = created_instance;
 				} catch (java.lang.IllegalAccessException ex) {
@@ -3551,8 +3594,8 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 			instance_name_length--;
 			take_name(number_of_items_in_complex_instance);
 			try {
-				created_instance = create.object(instance_name, instance_name_length, 
-					model_dic, model_app, instance_identifier, 
+				created_instance = create.object(instance_name, instance_name_length,
+					model_dic, model_app, instance_identifier,
 					number_of_items_in_complex_instance, number_of_items_in_complex_instance);
 				staticFields.c_instance = created_instance;
 			} catch (java.lang.IllegalAccessException ex) {
@@ -3577,16 +3620,16 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 			}
 		} else {
 			parsing_exception(token, ENTITY_EXPECTED, null, null);
-		}		
+		}
 		consume_token(SEMICOLON);
 		return created_instance;
 	}
 
 
 /**
-	Reads the data contained in the export list attached to a scope structure 
+	Reads the data contained in the export list attached to a scope structure
 	(see "ISO 10303-21::9.3 Scope structure").
-*/ 
+*/
 	private final void entity_export() throws SdaiException, java.io.IOException {
 		consume_token(INSTANCE_NAME);
 		scan.get_token(token);
@@ -3601,8 +3644,8 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Checks if the current token read from the exchange structure is of the 
-	specified type. If not, then <code>SdaiException</code> is thrown. 
+	Checks if the current token read from the exchange structure is of the
+	specified type. If not, then <code>SdaiException</code> is thrown.
 */
 	final private void consume_token(int type) throws SdaiException, java.io.IOException {
 		scan.get_token(token);
@@ -3620,8 +3663,8 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Constructs the so-called java name of the complex entity. 
-	Having this name, a complex entity instance is created. 
+	Constructs the so-called java name of the complex entity.
+	Having this name, a complex entity instance is created.
 */
 	final private void take_name(int number_of_items_in_complex_instance) throws SdaiException {
 		int i, j, k;
@@ -3647,12 +3690,12 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Puts simple entity data types in the alphabetical order within the complex entity 
-	being considered. Violations of the order may (by mistake) happen 
-	when external mapping mode for an instance is used. In addition, objects 
-	of <code>EntityValue</code> within <code>entity_values</code> are reordered 
-	accordingly, and the so-called java name of the complex entity is constructed. 
-	This method is invoked in <code>Create_instance</code> class. 
+	Puts simple entity data types in the alphabetical order within the complex entity
+	being considered. Violations of the order may (by mistake) happen
+	when external mapping mode for an instance is used. In addition, objects
+	of <code>EntityValue</code> within <code>entity_values</code> are reordered
+	accordingly, and the so-called java name of the complex entity is constructed.
+	This method is invoked in <code>Create_instance</code> class.
 */
 	byte [] remedy_complex_name(int number_of_items_in_complex_instance) throws SdaiException {
 		int i, j, k;
@@ -3667,6 +3710,13 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 				entity_values.entityValues[j] = evalue;
 				order_changed = true;
 			}
+		}
+		if (enl_instance_name_length > instance_name.length) {
+			int new_length = instance_name.length * 2;
+			if (new_length < enl_instance_name_length) {
+				new_length = enl_instance_name_length;
+			}
+			instance_name = new byte[new_length];
 		}
 		for (i = 0, k = -1; i < number_of_items_in_complex_instance; i++) {
 			for (j = 0; j < complex_name[i].length_of_entity_name; j++) {
@@ -3686,7 +3736,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 	}
 
 
-	byte [] extendComplexName(SdaiModel mod, int items_count, CEntityDefinition [] sep_defs, int [] sep_def_inds, 
+	byte [] extendComplexName(SdaiModel mod, int items_count, CEntityDefinition [] sep_defs, int [] sep_def_inds,
          int sep_count, long instance_identifier) throws SdaiException {
 		save_entity_values(items_count);
 		if (saved_ent_name == null) {
@@ -3766,7 +3816,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 	}
 
 
-	int separateDefValues(CEntityDefinition def, int items_count, int ln, int def_index, long instance_identifier) 
+	int separateDefValues(CEntityDefinition def, int items_count, int ln, int def_index, long instance_identifier)
 			throws SdaiException {
 		int i,j;
 		int val_count = entity_values.entityValues[def_index].count;
@@ -3816,8 +3866,6 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 				continue;
 			}
 			partial_def = def.partialEntityTypes[index];
-//System.out.println("PhFileReader +++++  def: " + def.getName(null) + 
-//"   partial_def: " + partial_def.getName(null) + "   index: " + index);
 			int count = partial_def.noOfPartialAttributes;
 			int index_mod = index - used_ent_values[index];
 			EntityValue partial_entity_values = entity_values.entityValues[ln + index_mod];
@@ -3840,7 +3888,12 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 					}
 					partial_entity_values.values[j].tag = MISSING;
 				} else {
-					partial_entity_values.values[j] = entity_values.entityValues[def_index].values[accum_count++];
+					if (partial_entity_values.values[j] == null) {
+						partial_entity_values.values[j] = new Value();
+					}
+//					partial_entity_values.values[j] = entity_values.entityValues[def_index].values[accum_count++];
+					partial_entity_values.values[j].copyValueStepFile(entity_values.entityValues[def_index].values[accum_count]);
+					accum_count++;
 				}
 			}
 		}
@@ -3886,7 +3939,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 	}
 
 
-	int separateDefValues(int items_count, CEntityDefinition [] sep_defs, int [] sep_def_inds, 
+	int separateDefValues(int items_count, CEntityDefinition [] sep_defs, int [] sep_def_inds,
 			int sep_count, long instance_identifier) throws SdaiException {
 		int ev_count = items_count;
 		for (int i = 0; i < sep_count; i++) {
@@ -3900,20 +3953,20 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Updates <code>entity_values</code> to represent the values of the entity 
-	whose definition is given by the first parameter. This method is invoked 
-	in the cases when JSDAI library does not contain entity whose instance 
-	is found in the exchange structure. If this happens, JSDAI tries to select 
-	another entity which is most similar to the missing one. The latter is 
-	replaced by the selected entity. The current method transfers the values 
-	of the attributes of the missing entity to the attributes of the 
-	substitute. The new attributes of the substitute (that does not appear in 
-	the missing entity) remain unset, whereas the values of those in the 
-	missing entity but not in its substitute are ignored. All these operations 
+	Updates <code>entity_values</code> to represent the values of the entity
+	whose definition is given by the first parameter. This method is invoked
+	in the cases when JSDAI library does not contain entity whose instance
+	is found in the exchange structure. If this happens, JSDAI tries to select
+	another entity which is most similar to the missing one. The latter is
+	replaced by the selected entity. The current method transfers the values
+	of the attributes of the missing entity to the attributes of the
+	substitute. The new attributes of the substitute (that does not appear in
+	the missing entity) remain unset, whereas the values of those in the
+	missing entity but not in its substitute are ignored. All these operations
 	result in a new <code>entity_values</code>.
-	This method is invoked in <code>Create_instance</code> class. 
+	This method is invoked in <code>Create_instance</code> class.
 */
-	void update_complex_entity_values(CEntityDefinition def, int [] ref2partial_values) 
+	void update_complex_entity_values(CEntityDefinition def, int [] ref2partial_values)
 			throws SdaiException {
 		int i, j;
 //print_entity_values(240);
@@ -4002,8 +4055,8 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Establishes references of an entity instance to itself. This method is 
-	invoked in the cases when the variable <code>autoreference_found</code> 
+	Establishes references of an entity instance to itself. This method is
+	invoked in the cases when the variable <code>autoreference_found</code>
 	is set to <code>true</code>.
 */
 	final private void resolve_autoreference(CEntity instance) {
@@ -4018,8 +4071,8 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Checks if the entity instance should reference itself. If so, then this 
-	reference is settled. 
+	Checks if the entity instance should reference itself. If so, then this
+	reference is settled.
 */
 	final private void check_value(Value val, CEntity instance) {
 		Value value_next;
@@ -4048,9 +4101,9 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Returns an internal array used to store the names of simple entity types 
+	Returns an internal array used to store the names of simple entity types
 	within a complex entity data type.
-	This method is invoked in <code>Create_instance</code> class. 
+	This method is invoked in <code>Create_instance</code> class.
 */
 	PartialEntityName [] get_complex_name() {
 		return complex_name;
@@ -4058,8 +4111,8 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Compares two simple entity names within a complex entity type. Returns 
-	value 1 if the first name is alphabetically larger, -1 if the first is 
+	Compares two simple entity names within a complex entity type. Returns
+	value 1 if the first name is alphabetically larger, -1 if the first is
 	smaller, and 0 if the names coincide.
 */
 	final private int compare_names(int first, int second) {
@@ -4087,7 +4140,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Returns the string described by the current token assuming 
+	Returns the string described by the current token assuming
 	that all symbols are from the basic Latin alphabet.
 */
 	final private String getStringBasicLatin() {
@@ -4100,7 +4153,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Returns the string described by the current token assuming that 
+	Returns the string described by the current token assuming that
 	to encode it the character sets of ISO 8859 and/or ISO 10646 might be used.
 */
 	final private String getString() throws SdaiException  {
@@ -4112,7 +4165,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 	}
 
 /**
-	Returns the string described by the current token assuming that 
+	Returns the string described by the current token assuming that
 	to encode it the character sets of ISO 8859 and/or ISO 10646 might be used.
 */
 	final private String analyse_string() throws SdaiException  {
@@ -4207,7 +4260,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 										numb = (int)bt - (int)'A' + 10;
 									} else {
 //										string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k + 2 - i));
-										string_warning(active_session, AdditionalMessages.RD_WRIS, 
+										string_warning(active_session, AdditionalMessages.RD_WRIS,
 											new String(token.string, 0, k + 3 - i), token, k + 3 - i);
 										numb = 0;
 									}
@@ -4222,7 +4275,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 								k++;
 								if (token.string[k] != BACKSLASH) {
 //									string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k));
-									string_warning(active_session, AdditionalMessages.RD_WRIS, 
+									string_warning(active_session, AdditionalMessages.RD_WRIS,
 										new String(token.string, 0, k + 1), token, k + 1);
 								} else {
 									k++;
@@ -4231,7 +4284,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 									iso10646 = false;
 								} else {
 //									string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k));
-									string_warning(active_session, AdditionalMessages.RD_WRIS, 
+									string_warning(active_session, AdditionalMessages.RD_WRIS,
 										new String(token.string, 0, k), token, k);
 								}
 								break;
@@ -4239,7 +4292,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 								k++;
 								if (token.string[k] != BACKSLASH) {
 //									string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k));
-									string_warning(active_session, AdditionalMessages.RD_WRIS, 
+									string_warning(active_session, AdditionalMessages.RD_WRIS,
 										new String(token.string, 0, k + 1), token, k + 1);
 								} else {
 									k++;
@@ -4263,7 +4316,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 											numb = (int)bt - (int)'A' + 10;
 										} else {
 //											string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k + 3 - i));
-											string_warning(active_session, AdditionalMessages.RD_WRIS, 
+											string_warning(active_session, AdditionalMessages.RD_WRIS,
 												new String(token.string, 0, k + 4 - i), token, k + 4 - i);
 											numb = 0;
 										}
@@ -4284,7 +4337,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 								k++;
 								if (token.string[k] != BACKSLASH) {
 //									string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k));
-									string_warning(active_session, AdditionalMessages.RD_WRIS, 
+									string_warning(active_session, AdditionalMessages.RD_WRIS,
 										new String(token.string, 0, k + 1), token, k + 1);
 								} else {
 									k++;
@@ -4308,7 +4361,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 											numb = (int)bt - (int)'A' + 10;
 										} else {
 //											string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k + 7 - i));
-											string_warning(active_session, AdditionalMessages.RD_WRIS, 
+											string_warning(active_session, AdditionalMessages.RD_WRIS,
 												new String(token.string, 0, k + 8 - i), token, k + 8 - i);
 											numb = 0;
 										}
@@ -4327,7 +4380,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 								break;
 							default:
 //								string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k));
-								string_warning(active_session, AdditionalMessages.RD_WRIS, 
+								string_warning(active_session, AdditionalMessages.RD_WRIS,
 									new String(token.string, 0, k + 1), token, k + 1);
 								code = 0;
 								mult = 1;
@@ -4338,7 +4391,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 									} else if (bt >= 'A' && bt <= 'F') {
 										numb = (int)bt - (int)'A' + 10;
 									} else {
-										string_warning(active_session, AdditionalMessages.RD_WRIS, 
+										string_warning(active_session, AdditionalMessages.RD_WRIS,
 											new String(token.string, 0, k + 2 - i), token, k + 2 - i);
 										numb = 0;
 									}
@@ -4372,7 +4425,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Increases the size of the auxiliary array 'complex_name' twice. 
+	Increases the size of the auxiliary array 'complex_name' twice.
 */
 	final void enlarge_complex_name() {
 		int new_length = complex_name.length*2;
@@ -4387,7 +4440,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Increases the size of the auxiliary array 'array_of_inverse' twice. 
+	Increases the size of the auxiliary array 'array_of_inverse' twice.
 */
 	final private void enlarge_array_of_inverse() {
 		int new_length = array_of_inverse.length*2;
@@ -4399,8 +4452,8 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Increases the size of the auxiliary array 'partial_values' either twice 
-	or to satisfy the required demand, whichever of these two values is larger. 
+	Increases the size of the auxiliary array 'partial_values' either twice
+	or to satisfy the required demand, whichever of these two values is larger.
 */
 	final private void enlarge_partial_values(int demand) {
 		int new_length = partial_values.length * 2;
@@ -4412,8 +4465,8 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Increases the size of the auxiliary array 'used_ent_values' either twice 
-	or to satisfy the required demand, whichever of these two values is larger. 
+	Increases the size of the auxiliary array 'used_ent_values' either twice
+	or to satisfy the required demand, whichever of these two values is larger.
 */
 	final private void enlarge_used_ent_values(int demand) {
 		int new_length = used_ent_values.length * 2;
@@ -4425,8 +4478,8 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Returns the name of the instance currently being read from the exchange 
-	structure. 
+	Returns the name of the instance currently being read from the exchange
+	structure.
 */
 	final private String take_entity_name_for_exception() throws SdaiException {
 		if (complex_entity) {
@@ -4440,18 +4493,18 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Throws an <code>SdaiException</code> in the case when an error while scanning 
+	Throws an <code>SdaiException</code> in the case when an error while scanning
 	of the exchange structure was encountered.
 */
 	final private void scanning_exception(Token token, long inst_ident, String str) throws SdaiException {
 		int line = token.line + 1;
-		String base = SdaiSession.line_separator + AdditionalMessages.RD_SCAN + 
-			(String)error_table.messages.get(new Integer(token.integer)) /*+ 
+		String base = SdaiSession.line_separator + AdditionalMessages.RD_SCAN +
+			(String)error_table.messages.get(new Integer(token.integer)) /*+
 			SdaiSession.line_separator + AdditionalMessages.RD_PHFI + phys_file*/;
 		if (inst_ident > 0) {
 			base = base + SdaiSession.line_separator + AdditionalMessages.RD_INST + inst_ident;
 		}
-		base = base + SdaiSession.line_separator + "   Line: " + line + 
+		base = base + SdaiSession.line_separator + "   Line: " + line +
 			SdaiSession.line_separator + "   Column: " + token.column;
 		if (str != null) {
 			base = base + SdaiSession.line_separator + AdditionalMessages.RD_WTOK + str;
@@ -4461,16 +4514,16 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Throws an <code>SdaiException</code> in the case when an error while parsing 
+	Throws an <code>SdaiException</code> in the case when an error while parsing
 	of the exchange structure was encountered.
 */
-	final private void parsing_exception(Token token, int error_index, 
+	final private void parsing_exception(Token token, int error_index,
 			String str1, String str2) throws SdaiException {
 		int line = token.line + 1;
-		String base = SdaiSession.line_separator + AdditionalMessages.RD_PARS + 
-			(String)error_table.messages.get(new Integer(error_index)) + 
-//			SdaiSession.line_separator + AdditionalMessages.RD_PHFI + phys_file + 
-			SdaiSession.line_separator + "   Line: " + line + 
+		String base = SdaiSession.line_separator + AdditionalMessages.RD_PARS +
+			(String)error_table.messages.get(new Integer(error_index)) +
+//			SdaiSession.line_separator + AdditionalMessages.RD_PHFI + phys_file +
+			SdaiSession.line_separator + "   Line: " + line +
 			SdaiSession.line_separator + "   Column: " + token.column;
 			StaticFields staticFields = StaticFields.get();
 			long id = staticFields.current_instance_identifier;
@@ -4485,12 +4538,12 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 	}
 
 
-	final private void parsing_warning(Token token, int error_index, 
+	final private void parsing_warning(Token token, int error_index,
 			String str1, String str2, SdaiSession session) throws SdaiException {
 		int line = token.line + 1;
-		String base = AdditionalMessages.RD_PARS + 
-			(String)error_table.messages.get(new Integer(error_index)) + 
-			SdaiSession.line_separator + "   Line: " + line + 
+		String base = AdditionalMessages.RD_PARS +
+			(String)error_table.messages.get(new Integer(error_index)) +
+			SdaiSession.line_separator + "   Line: " + line +
 			SdaiSession.line_separator + "   Column: " + token.column;
 		if (str2 != null) {
 			base = base + SdaiSession.line_separator + str1 + str2;
@@ -4504,15 +4557,15 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Throws an <code>SdaiException</code> in the case when an error while parsing 
+	Throws an <code>SdaiException</code> in the case when an error while parsing
 	of the exchange structure was encountered.
 */
-	final private void parsing_exception(Token token, String error_text, 
+	final private void parsing_exception(Token token, String error_text,
 			String str1, String str2) throws SdaiException {
 		int line = token.line + 1;
-		String base = SdaiSession.line_separator + AdditionalMessages.RD_PARS + error_text + 
-//			SdaiSession.line_separator + AdditionalMessages.RD_PHFI + phys_file + 
-			SdaiSession.line_separator + "   Line: " + line + 
+		String base = SdaiSession.line_separator + AdditionalMessages.RD_PARS + error_text +
+//			SdaiSession.line_separator + AdditionalMessages.RD_PHFI + phys_file +
+			SdaiSession.line_separator + "   Line: " + line +
 			SdaiSession.line_separator + "   Column: " + token.column;
 		if (str2 != null) {
 			base = base + SdaiSession.line_separator + str1 + str2;
@@ -4522,14 +4575,14 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Throws an <code>SdaiException</code> in the case when an error while processing  
-	some information read from the exchange structure was encountered. 
-	The information processed is not related with the instances in a data section 
+	Throws an <code>SdaiException</code> in the case when an error while processing
+	some information read from the exchange structure was encountered.
+	The information processed is not related with the instances in a data section
 	of the exchange structure.
 */
 	final private void action_exception(int error_index, String str1, String str2) throws SdaiException {
-		String base = SdaiSession.line_separator + AdditionalMessages.RD_ERR + 
-			(String)error_table.messages.get(new Integer(error_index)) /*+ 
+		String base = SdaiSession.line_separator + AdditionalMessages.RD_ERR +
+			(String)error_table.messages.get(new Integer(error_index)) /*+
 			SdaiSession.line_separator + AdditionalMessages.RD_PHFI + phys_file*/;
 		if (str2 != null) {
 			base = base + SdaiSession.line_separator + str1 + str2;
@@ -4539,31 +4592,31 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	Throws an <code>SdaiException</code> in the case when an error while processing  
-	some information read from the exchange structure was encountered. 
-	The information processed is related with instances in a data section of the 
+	Throws an <code>SdaiException</code> in the case when an error while processing
+	some information read from the exchange structure was encountered.
+	The information processed is related with instances in a data section of the
 	exchange structure.
 */
-	final private void action_exception(Token token, int error_index, 
+	final private void action_exception(Token token, int error_index,
 			long instance, String entity_name) throws SdaiException {
 		int line = token.line + 1;
-		String base = SdaiSession.line_separator + AdditionalMessages.RD_ERR + 
-			(String)error_table.messages.get(new Integer(error_index)) + 
-//			SdaiSession.line_separator + AdditionalMessages.RD_PHFI + phys_file + 
-			SdaiSession.line_separator + "   Line: " + line + 
-			SdaiSession.line_separator + "   Column: " + token.column + 
-			SdaiSession.line_separator + AdditionalMessages.RD_INST + instance + 
+		String base = SdaiSession.line_separator + AdditionalMessages.RD_ERR +
+			(String)error_table.messages.get(new Integer(error_index)) +
+//			SdaiSession.line_separator + AdditionalMessages.RD_PHFI + phys_file +
+			SdaiSession.line_separator + "   Line: " + line +
+			SdaiSession.line_separator + "   Column: " + token.column +
+			SdaiSession.line_separator + AdditionalMessages.RD_INST + instance +
 			SdaiSession.line_separator + AdditionalMessages.RD_ENT + entity_name;
 		throw new SdaiException(SdaiException.SY_ERR, base);
 	}
 
 
 /**
-	Throws an <code>SdaiException</code> in the case when an error while 
+	Throws an <code>SdaiException</code> in the case when an error while
 	analysing the string was encountered.
 */
 	final private void string_exception(String error_message, String str) throws SdaiException {
-		String base = SdaiSession.line_separator + error_message + 
+		String base = SdaiSession.line_separator + error_message +
 			SdaiSession.line_separator + AdditionalMessages.RD_WSTR + str;
 		throw new SdaiException(SdaiException.SY_ERR, base);
 	}
@@ -4571,21 +4624,21 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 	final private void string_exception(String error_message, String str, Token token) throws SdaiException {
 		int line = token.line + 1;
-		String base = SdaiSession.line_separator + error_message + 
-			SdaiSession.line_separator + AdditionalMessages.RD_WSTR + str + 
-			SdaiSession.line_separator + "   Line: " + line + 
+		String base = SdaiSession.line_separator + error_message +
+			SdaiSession.line_separator + AdditionalMessages.RD_WSTR + str +
+			SdaiSession.line_separator + "   Line: " + line +
 			SdaiSession.line_separator + "   Column: " + token.column;
 		throw new SdaiException(SdaiException.SY_ERR, base);
 	}
 
 
-	final private void string_warning(SdaiSession session, String warning_message, String str, Token token, int shift) 
+	final private void string_warning(SdaiSession session, String warning_message, String str, Token token, int shift)
 			throws SdaiException {
 		int line = token.line + 1;
 		int column = token.column + shift;
-		String text = warning_message + 
-			SdaiSession.line_separator + AdditionalMessages.RD_WSTR + str + 
-			SdaiSession.line_separator + "   Line: " + line + 
+		String text = warning_message +
+			SdaiSession.line_separator + AdditionalMessages.RD_WSTR + str +
+			SdaiSession.line_separator + "   Line: " + line +
 			SdaiSession.line_separator + "   Column: " + column;
 		if (session != null && session.logWriterSession != null) {
 			session.printlnSession(text);
@@ -4595,7 +4648,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 	}
 
 
-	final private void parsing_warning(SdaiSession session, Token token, int error_index, 
+	final private void parsing_warning(SdaiSession session, Token token, int error_index,
 			String str1, String str2) throws SdaiException {
 		int line = token.line + 1;
 		String str = null;
@@ -4625,9 +4678,9 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 				str = "(";
 				break;
 		}
-		String text = AdditionalMessages.RD_PARS + 
-			(String)error_table.messages.get(new Integer(error_index)) + 
-			SdaiSession.line_separator + "   Line: " + line + 
+		String text = AdditionalMessages.RD_PARS +
+			(String)error_table.messages.get(new Integer(error_index)) +
+			SdaiSession.line_separator + "   Line: " + line +
 			SdaiSession.line_separator + "   Column: " + token.column;
 		if (str != null) {
 			text = text + SdaiSession.line_separator + AdditionalMessages.RD_WTOK + str;
@@ -4662,7 +4715,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 /**
 	Prints a warning message to logo file.
 */
-	private static void printWarningToLogo(SdaiSession session, String text, String file_pop, String wrong_token) 
+	private static void printWarningToLogo(SdaiSession session, String text, String file_pop, String wrong_token)
 			throws SdaiException {
 		if (session != null && session.logWriterSession != null) {
 			session.printlnSession(text + SdaiSession.line_separator +
@@ -4674,6 +4727,20 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 //				AdditionalMessages.RD_PHFI + phys_file + SdaiSession.line_separator +
 				AdditionalMessages.RD_FPOP + file_pop + SdaiSession.line_separator +
 				AdditionalMessages.RD_WTOK + wrong_token);
+		}
+	}
+
+
+	static void printWarningToLogoSchiInst(SdaiSession session, String text, 
+			String schema, String included_schema) throws SdaiException {
+		if (session != null && session.logWriterSession != null) {
+			session.printlnSession(text + SdaiSession.line_separator +
+				AdditionalMessages.BF_SCH + schema + SdaiSession.line_separator +
+				AdditionalMessages.BF_ISCH + included_schema);
+		} else {
+			SdaiSession.println(text + SdaiSession.line_separator +
+				AdditionalMessages.BF_SCH + schema + SdaiSession.line_separator +
+				AdditionalMessages.BF_ISCH + included_schema);
 		}
 	}
 
@@ -4692,7 +4759,7 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 /**
-	A method for debugging purposes. Used to print the contents of 
+	A method for debugging purposes. Used to print the contents of
 	ComplexEntityValue.
 */
 	private void print_entity_values(long instance_identifier) throws SdaiException {

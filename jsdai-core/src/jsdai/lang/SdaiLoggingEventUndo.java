@@ -28,12 +28,12 @@ import java.io.IOException;
 import jsdai.dictionary.EEntity_definition;
 
 /**
- * This class supports iterating over entity instances for which some changes 
- * (due to their modification, creation, deletion or substitution) were recorded 
- * in the log file for subsequent undo/redo operations. The records are divided 
- * into segments called groups. The class allows iteration over records of 
- * one group in the direction from the last record to the first one, that is, 
- * it allows to get information on all the changes to the entity instances the 
+ * This class supports iterating over entity instances for which some changes
+ * (due to their modification, creation, deletion or substitution) were recorded
+ * in the log file for subsequent undo/redo operations. The records are divided
+ * into segments called groups. The class allows iteration over records of
+ * one group in the direction from the last record to the first one, that is,
+ * it allows to get information on all the changes to the entity instances the
  * undo operation for one group will perform.
  * @author vaidas
  * @version $Revision$
@@ -46,8 +46,8 @@ class SdaiLoggingEventUndo extends SdaiLoggingIterableEvent {
 
 /**
  * Constructs a new object of <code>SdaiLoggingEventUndo</code>
- * with methods which allow to iterate over records (in the backward direction) 
- * in the undo/redo log file. 
+ * with methods which allow to iterate over records (in the backward direction)
+ * in the undo/redo log file.
  * @param source the object on which the <code>SdaiLoggingEventUndo</code> occurred.
  * @param argument an information provided to SDAI listeners receiving logging event.
  * @param startPos the offset in the undo/redo log file before performing undo operation.
@@ -60,13 +60,13 @@ class SdaiLoggingEventUndo extends SdaiLoggingIterableEvent {
 
 
 /**
- * Returns an iterator (an object of this class) which can be used to run 
- * through entity instances for which some changes (due to their modification, 
- * creation, deletion or substitution) were recorded in the log file for 
- * subsequent application of undo/redo operations. 
- * The iterator is constrained to iterate over one group of records in 
- * the backward direction, that is, it allows to examine undo 
- * operations for reverting entity instance changes whose description is 
+ * Returns an iterator (an object of this class) which can be used to run
+ * through entity instances for which some changes (due to their modification,
+ * creation, deletion or substitution) were recorded in the log file for
+ * subsequent application of undo/redo operations.
+ * The iterator is constrained to iterate over one group of records in
+ * the backward direction, that is, it allows to examine undo
+ * operations for reverting entity instance changes whose description is
  * combined to form one group of records.
  * @return the iterator over instances within one group of records in undo/redo log file.
  * @throws SdaiException SY_ERR, an underlying system error occurred.
@@ -154,6 +154,24 @@ class SdaiLoggingEventUndo extends SdaiLoggingIterableEvent {
 						more = false;
 						nextPos = 0;
 					}
+					break;
+				}
+				case 'e': {
+					operationType = CREATE_EXTERNAL_DATA_OPERATION;
+					operationInstanceId = session.undo_redo_file.readLong();
+					operationRepository =
+						session.findRepositoryByIdentity(session.undo_redo_file.readInt());
+					operationInstanceType = null;
+					operationModel = null;
+					break;
+				}
+				case 'r': {
+					operationType = REMOVE_EXTERNAL_DATA_OPERATION;
+					operationInstanceId = session.undo_redo_file.readLong();
+					operationRepository =
+						session.findRepositoryByIdentity(session.undo_redo_file.readInt());
+					operationInstanceType = null;
+					operationModel = null;
 					break;
 				}
 				}

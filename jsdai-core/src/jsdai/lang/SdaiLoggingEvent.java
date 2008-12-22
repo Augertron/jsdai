@@ -27,12 +27,12 @@ import jsdai.dictionary.EEntity_definition;
 
 /**
  * This class informs SDAI listeners about changes done in the undo/redo log file.
- * The subclasses of this class support iterating over entity instances for which some 
- * changes (due to their modification, creation, deletion or substitution) were recorded 
- * in the log file for subsequent undo/redo operations. The records are divided 
- * into segments called groups. The subclasses allow iteration over records of 
- * one group in one of the two directions: from the first record to the last one, 
- * or vice versa. 
+ * The subclasses of this class support iterating over entity instances for which some
+ * changes (due to their modification, creation, deletion or substitution) were recorded
+ * in the log file for subsequent undo/redo operations. The records are divided
+ * into segments called groups. The subclasses allow iteration over records of
+ * one group in one of the two directions: from the first record to the last one,
+ * or vice versa.
  * @author vaidas
  * @version $Revision$
  * @since 4.1.0
@@ -88,6 +88,10 @@ public class SdaiLoggingEvent extends SdaiEvent {
 			return null;
 		}
 
+		public SdaiRepository getOperationRepository() throws SdaiException {
+			return null;
+		}
+
 		public EEntity_definition getOperationInstanceType() {
 			return null;
 		}
@@ -120,7 +124,7 @@ public class SdaiLoggingEvent extends SdaiEvent {
 
 /**
  * Constructs a new object of <code>SdaiLoggingEvent</code>
- * with methods which allow to iterate over records in the undo/redo log file. 
+ * with methods which allow to iterate over records in the undo/redo log file.
  * @param source the object on which the <code>SdaiLoggingEvent</code> occurred.
  * @param id the type of the logging event.
  * @param item an indicator describing a group of records in the undo/redo log file.
@@ -131,8 +135,8 @@ public class SdaiLoggingEvent extends SdaiEvent {
 	}
 
 /**
- * Returns an object of <code>SdaiOperationIterator</code> with fields 
- * assigned to default values. 
+ * Returns an object of <code>SdaiOperationIterator</code> with fields
+ * assigned to default values.
  * @return the iterator over instances within one group of records in undo/redo log file.
  */
 	public SdaiOperationIterator getOperationIterator() throws SdaiException {

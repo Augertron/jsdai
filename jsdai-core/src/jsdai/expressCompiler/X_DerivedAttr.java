@@ -51,8 +51,21 @@ public class X_DerivedAttr extends SimpleNode {
                    throws SdaiException {
 
 		JavaClass jc = (JavaClass) data;
-    printDDebug("## DerivedAttr - ENTITY: " + owner_entity.getName(null) + 
+		if (attribute != null) {
+  	  if (owner_entity != null) {
+  	  	printDDebug("## DerivedAttr - ENTITY: " + owner_entity.getName(null) + 
                        ", attribute: " + attribute.getName(null), jc);
+			} else {
+  	  	printDDebug("## DerivedAttr - ENTITY: NULL, attribute: " + attribute.getName(null), jc);
+			}
+		} else {
+  	  if (owner_entity != null) {
+		    printDDebug("## DerivedAttr - ENTITY: " + owner_entity.getName(null) + 
+                       ", attribute: NULL", jc);
+			} else {
+  	  	printDDebug("## DerivedAttr - ENTITY: NULL, attribute: NULL", jc);
+			}
+		}
 
     /*
     // RR extension: this prints the whole derived attribute directly from tokens

@@ -184,7 +184,7 @@ public class EarlyBindingV2Writer extends Iso1030328Writer {
 			if(inherited) {
 				attrAggType[attrDepth] = ATTR_INHERITED;
 				if(refId != null) {
-					return processAttributeStartNested(ATTR_ATTR_AGG, 
+					return processAttributeStartNested(ATTR_ATTR_AGG,
 													   ((EAggregation_type)domain).getElement_type(null),
 													   refId, inherited);
 				}
@@ -195,7 +195,7 @@ public class EarlyBindingV2Writer extends Iso1030328Writer {
 				attrAggType[attrDepth] = ATTR_ATTR_AGG;
 				pushCreator(new AggregateAttCr());
 				if(refId != null) {
-					return processAttributeStartNested(ATTR_ATTR_AGG, 
+					return processAttributeStartNested(ATTR_ATTR_AGG,
 													   ((EAggregation_type)domain).getElement_type(null),
 													   refId, inherited);
 				}
@@ -312,7 +312,7 @@ public class EarlyBindingV2Writer extends Iso1030328Writer {
 		}
 	}
 
-	private void fillSelectPath(String path, EDefined_type extraDefType, 
+	private void fillSelectPath(String path, EDefined_type extraDefType,
 								boolean top) throws SAXException, SdaiException {
 		attrSelectTop[attrDepth] = 0;
 		if(attrSelect[attrDepth] == null) {
@@ -386,7 +386,7 @@ public class EarlyBindingV2Writer extends Iso1030328Writer {
 					return super.newHandlerForElement(namespaceURI, localName, qname);
 				}
 			} else {
-				throw new SAXNotSupportedException("Expected iso_10303_28_header/" + 
+				throw new SAXNotSupportedException("Expected iso_10303_28_header/" +
 												   "schema_population/express/uos");
 			}
 		}
@@ -450,8 +450,14 @@ public class EarlyBindingV2Writer extends Iso1030328Writer {
 
 		protected void handleElement(Attributes attr)
 		throws SAXException, SdaiException {
-			String entName = formatEntityName(ctxElemStack[ctxTop]);
-			EEntity newInstance = model.createEntityInstance(findEntityDefintion(entName, null));
+			EEntity newInstance;
+			try {
+				String entName = formatEntityName(ctxElemStack[ctxTop]);
+				newInstance = model.createEntityInstance(findEntityDefintion(entName, null));
+			} catch (SdaiException e) {
+				processRecoverableHandlerException(e);
+				return;
+			}
 			String idString = attr.getValue("", "id");
 			entityDef = newInstance.getInstanceType();
 			if(idString != null) {
@@ -478,26 +484,40 @@ public class EarlyBindingV2Writer extends Iso1030328Writer {
 
 		protected void handleElement(Attributes attr)
 		throws SAXException, SdaiException {
-			super.handleElement(attr);
 			boolean reference = "true".equals(attr.getValue(XSI_NAMESPACE, "nil"));
-			String refId = reference ? attr.getValue("", "ref") : null;
-			String attributeName = ctxElemStack[ctxTop];
-			int attrNameSeparatorPos = attributeName.indexOf('.');
-			EEntity_definition attributeEntityDef;
-			if(attrNameSeparatorPos >= 0) {
-				String entityName = formatEntityName(attributeName.substring(0, attrNameSeparatorPos));
-				attributeEntityDef = findEntityDefintion(entityName, null);
-				attributeName = attributeName.substring(attrNameSeparatorPos + 1);
-			} else {
-				attributeEntityDef = entityDef;
+			EAttribute attribute;
+			try {
+				String attributeName = ctxElemStack[ctxTop];
+				int attrNameSeparatorPos = attributeName.indexOf('.');
+				EEntity_definition attributeEntityDef;
+				if(attrNameSeparatorPos >= 0) {
+					String entityName = formatEntityName(attributeName.substring(0, attrNameSeparatorPos));
+					attributeEntityDef = findEntityDefintion(entityName, null);
+					attributeName = attributeName.substring(attrNameSeparatorPos + 1);
+				} else {
+					attributeEntityDef = entityDef;
+				}
+				attribute = findAttribute(attributeEntityDef, formatAttributeName(attributeName));
+			} catch (SdaiException e) {
+				processRecoverableHandlerException(e);
+				return;
 			}
-			EAttribute attribute = findAttribute(attributeEntityDef, formatAttributeName(attributeName));
+
+			try {
+				attrDepth++;
+				attrCharData[attrDepth] = !reference;
+				fillSelectPath(attr.getValue("", "path"), null, true);
+			} catch (SdaiException e) {
+				attrDepth--;
+				processRecoverableHandlerException(e);
+				return;
+			}
+
+			super.handleElement(attr);
+			String refId = reference ? attr.getValue("", "ref") : null;
 			attributes[++attributeTop] = attribute;
 			attrDomains[++attrDomainTop] = ((EExplicit_attribute)attribute).getDomain(null);
 			pushCreator(new AttributeInstCr(attribute));
-			attrDepth++;
-			attrCharData[attrDepth] = !reference;
-			fillSelectPath(attr.getValue("", "path"), null, true);
 			processAttributeStart(ATTR_NONAGG, refId, false);
 		}
 
@@ -539,16 +559,25 @@ public class EarlyBindingV2Writer extends Iso1030328Writer {
 
 		protected void handleElement(Attributes attr)
 		throws SAXException, SdaiException {
-			super.handleElement(attr);
 			boolean reference = "true".equals(attr.getValue(XSI_NAMESPACE, "nil"));
-			String refId = reference ? attr.getValue("", "ref") : null;
-			String name = formatEntityName(ctxElemStack[ctxTop]);
-			ENamed_type namedType = findNamedType(name);
-			EDefined_type definedType = namedType instanceof EDefined_type ?
-				(EDefined_type)namedType : null;
+			EDefined_type definedType;
+			try {
+				String name = formatEntityName(ctxElemStack[ctxTop]);
+				ENamed_type namedType = findNamedType(name);
+
+				definedType = namedType instanceof EDefined_type ?
+						(EDefined_type)namedType : null;
+			} catch (SdaiException e) {
+				processRecoverableHandlerException(e);
+				return;
+			}
+
 			attrDepth++;
 			attrCharData[attrDepth] = definedType != null;
 			fillSelectPath(attr.getValue("", "path"), definedType, false);
+
+			super.handleElement(attr);
+			String refId = reference ? attr.getValue("", "ref") : null;
 			processAttributeStart(attrAggType[attrDepth - 1], refId, definedType == null);
 			attrDomainTop++;
 			attrDomains[attrDomainTop] = definedType != null ?
@@ -566,5 +595,5 @@ public class EarlyBindingV2Writer extends Iso1030328Writer {
 		}
 
 	}
-	
+
 } // EarlyBindingV2Writer

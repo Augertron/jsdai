@@ -139,7 +139,7 @@ model_file :=
 	{ LONG }   // (sorted in increasing order) identifiers of instances of this model, ONLY FOR LOCAL, not REMOTE (Not true at least since beginning of 2003 V.N.)
 
 	'S'
-	SHORT      // no of defined_types which do not have an immediate 
+	SHORT      // no of defined_types which do not have an immediate
               // underlying select_data_type.
 	{ STRING } // names of the defined_data_types
 
@@ -160,7 +160,7 @@ model_file :=
 
 single_entity_type_definition := // used to allocate memory for instances_sim arrays (in SdaiModel)
 	STRING   // from dictionary: entity_definition.name, e.g. "a", "b" or "c"
-	SHORT    // no of all non-redeclaring explicit attributes 
+	SHORT    // no of all non-redeclaring explicit attributes
 				// of this entity_data_type, but not of it's supertypes
  	         // the order is as defined in express. It can be used as index 0, 1, 2...
 	{ STRING }; // attribute names, see see explicit_attribute.name
@@ -169,7 +169,7 @@ single_entity_type_definition := // used to allocate memory for instances_sim ar
 
 complex_entity_instances := // used to allocate memory for instances_sim arrays (in SdaiModel)
 	SHORT       // count of leave entity_data_types
-	{ SHORT }   // indexes/ref to all leave entity_data_types, 
+	{ SHORT }   // indexes/ref to all leave entity_data_types,
             	// sorted alphabetically (upper case)
 	LONG 			// no_of_instances, > 0  , was INTEGER till version xxxx
 	{ LONG } ;    // instance ids, ordered
@@ -194,8 +194,8 @@ value :=  // value of a single attribute
 	| 's' STRING       // String value
 	| 'b' STRING       // Binary value
 	| 'e' STRING       // Enumeration value definition
-	| 'p' SHORT value // index to typed parameters needed for vales of 
-                     // select_data_types, recursive definition 
+	| 'p' SHORT value // index to typed parameters needed for vales of
+                     // select_data_types, recursive definition
 	| ( '1' // instance-ref inside this model
 		 SHORT   // index of populated_entity_type
 		 INTEGER    // instance index
@@ -229,16 +229,16 @@ value :=  // value of a single attribute
 		 LONG        // instance identifier
 	  )
    | '(' { value } ')' // for all aggregates, starting with first member or valid index position
--------- Proposal for ARM type information storing in AIM model 
-   | ( 'a' 
+-------- Proposal for ARM type information storing in AIM model
+   | ( 'a'
        STRING // ARM schema name
 	   STRING // ARM complex entity type name
-       // This info is converted into link (specific temp value) to dictionary data 
+       // This info is converted into link (specific temp value) to dictionary data
        // (entity_defintion) when the model is read
-       // It can be handled by database too by having additional table on the DB which links 
+       // It can be handled by database too by having additional table on the DB which links
        // instance table with complex entity table (two columns)
      )
-   | ( 'b' 
+   | ( 'b'
        SHORT  // ARM schema index (flat)
 	   STRING // ARM complex entity type name
      )
@@ -247,7 +247,7 @@ value :=  // value of a single attribute
 	) ;
 
 entity_type :=
-	( 
+	(
 	  ( '1' // types from the current data dictionary are used
        SHORT // index to populated_entity_types
 	  )
@@ -261,12 +261,12 @@ entity_type :=
 
 -------- AIM2ARM link information
 aim_2_arm_link :=
-   ( 'l' 
+   ( 'l'
        STRING // ARM repository name (if "" then current repository)
        STRING // ARM model name
 	   LONG   // ARM instance identifier
      )
-   | ( 'k' 
+   | ( 'k'
        SHORT  // ARM model index (flat)
 	   LONG   // ARM instance identifier
    )
@@ -281,7 +281,7 @@ arm_2_aim_link :=
 	    LONG    //AIM instance PL
 	  }
 	}
--------- 
+--------
 */
 
 
@@ -307,42 +307,42 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	public static final int READ_WRITE = 2;
 
 	static final boolean CHECK_ID = false;
-    
-    
+
+
     protected static final int MODE_MODE_MASK = 0x000F;
     protected static final int MODE_SUBMODE_MASK = 0x00F0;
-    
+
 	protected static final int MODE_SUBMODE_PARTIAL = 0x0010;
 
 /**
-	The initial length of an array to store instances of one entity data type, 
-	or more specifically, the initial length of the row in the matrix 'instances_sim' 
+	The initial length of an array to store instances of one entity data type,
+	or more specifically, the initial length of the row in the matrix 'instances_sim'
 	used to store all the instances of this SdaiModel.
 */
 	static final int INSTANCE_ARRAY_INITIAL_SIZE = 8;
 
 /**
-	The number by which the length of the row in the matrix 'instances_sim' 
+	The number by which the length of the row in the matrix 'instances_sim'
 	is increased (when space in the row is insufficient to accomodate a new
 	instance of the specified entity data type).
 */
 	static final int INSTANCE_ARRAY_SIZE_STEP = 128;
 
 /**
-	The initial length of the internal arrays 'for_instances_sorting' and 'sorted_instances' 
-	used for sorting of the instances (for each row of 'instances_sim', 
+	The initial length of the internal arrays 'for_instances_sorting' and 'sorted_instances'
+	used for sorting of the instances (for each row of 'instances_sim',
 	and also inside public method 'copyInstances').
 */
 	static final int ARRAY_FOR_INSTANCES_SORTING_SIZE = 1024;
 
 /**
-	The initial length of the internal array 'type_names' used to store the 
+	The initial length of the internal array 'type_names' used to store the
 	names of the defined types.
 */
 	private static final int TYPES_ARRAY_SIZE = 128;
 
 /**
-	The initial length of the internal array 'simple_entity_names' used to store the 
+	The initial length of the internal array 'simple_entity_names' used to store the
 	names of simple entity data types.
 */
 	private static final int ENTITIES_ARRAY_SIZE = 1024;
@@ -410,7 +410,7 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	AEntityExtent populated_folders;
 
 /**
-	If this SdaiModel is a data dictionary one, then definition of the 
+	If this SdaiModel is a data dictionary one, then definition of the
 	EXPRESS schema described by it.
 	Otherwise the value of the field is null.
 */
@@ -422,13 +422,13 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	String language;
 
 /**
-	An aggregate containing information describing the contexts 
+	An aggregate containing information describing the contexts
 	within which the instances of this SdaiModel are applicable.
 */
 	A_string context_identifiers;
 
 /**
-	An array being assigned to lines of 'instances_sim' which 
+	An array being assigned to lines of 'instances_sim' which
 	correspond to entity data types with no instantiation in this SdaiModel.
 */
 //	private static Object [] emptyArray = new Object[0];
@@ -436,51 +436,51 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 
 
 /**
-	An array consisting of identifiers of all instances contained in this 
-	model. The array is prepared by reading the beginning of the model's 
-   binary file. This can happen in the following methods: 
+	An array consisting of identifiers of all instances contained in this
+	model. The array is prepared by reading the beginning of the model's
+   binary file. This can happen in the following methods:
    openRepository, endReadOnlyAccess, endReadWriteAccess.
    The identifiers in the array are sorted in increasing order.
 */
 	long [] inst_idents;
 
-    
+
 	private static final int INST_PORTION_SIZE = 32768;
 	SimIdx[] instances_sim_start;
 	SimIdxEnd[] instances_sim_end;
 	int instances_sim_start_len;
-    
+
 // Array to store deleted instances identifiers
 	private static final long[] EMPTY_DEL_INST_IDS = new long[0];
 	long [] del_inst_ids;
 	int n_del_inst_ids;
-    
+
 // Threshold to use recreation of all instances in DB
     long del_inst_threshold;
 
 /**
-	The internal array used to store the names of the defined types 
-	encountered in the definitions of populated entity data types within 
+	The internal array used to store the names of the defined types
+	encountered in the definitions of populated entity data types within
 	the schema which is underlying for this SdaiModel.
-	Only the names of those defined types are included into this array which 
-	do not have an immediate underlying select data type. 
-	These names are saved to and loaded from the binary file containing 
+	Only the names of those defined types are included into this array which
+	do not have an immediate underlying select data type.
+	These names are saved to and loaded from the binary file containing
 	the data of the model.
 */
     private String [] type_names;
 
 /**
-	The internal array used to store the names of simple entity data types 
-	encountered in the definitions of populated entity data types within 
+	The internal array used to store the names of simple entity data types
+	encountered in the definitions of populated entity data types within
 	the schema which is underlying for this SdaiModel.
-	These names are saved to and loaded from the binary file containing 
+	These names are saved to and loaded from the binary file containing
 	the data of the model.
 */
     private String [] simple_entity_names;
 
 /**
 	Indices(references) to all leaf entity data types sorted alphabetically (upper case).
-	The elements of this array after its construction are stored to 
+	The elements of this array after its construction are stored to
 	binary file containing the data of the model.
 */
     private int [] to_leaves;
@@ -512,24 +512,24 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	private int [] not_existing_part_defs_from_file;
 
 /**
-	Array(matrix) of instances of entities encountered in the schema 
+	Array(matrix) of instances of entities encountered in the schema
 	which is underlying for this SdaiModel.
 	Each row of this array contains instances of some specific entity data type.
-	If the population represented by the model does not include instances 
-	of this type, then the corresponding row is empty (that is, 'emptyArray' 
+	If the population represented by the model does not include instances
+	of this type, then the corresponding row is empty (that is, 'emptyArray'
 	defined above is assigned to it).
-	The rows are ordered alphabetically according to the names of the entities 
+	The rows are ordered alphabetically according to the names of the entities
 	these rows represent. Furthermore, instances inside each row usually are
-	stored in the increasing order of their identifiers. 
-	The order is not kept during reading a Part-21 file in which 
+	stored in the increasing order of their identifiers.
+	The order is not kept during reading a Part-21 file in which
 	instances are not sorted.
 */
 //	Object [] instances_sim [];
 	CEntity [] instances_sim [];
 
 /**
-	An array each element of which gives the count of instances of some 
-	specific entity data type. Entities for which these counts are provided 
+	An array each element of which gives the count of instances of some
+	specific entity data type. Entities for which these counts are provided
 	appear in the same (alphabetical) order as in 'instances_sim'.
 */
 	int lengths [];
@@ -537,10 +537,10 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	CEntityDefinition entities [];
 
 /**
-	An array each element of which is a flag showing whether instances 
-	in the corresponding row of 'instances_sim' are sorted (value 'true') 
+	An array each element of which is a flag showing whether instances
+	in the corresponding row of 'instances_sim' are sorted (value 'true')
 	or not (value 'false').
-	I suspect that it is possible to remove this array but it is 
+	I suspect that it is possible to remove this array but it is
 	not easy to verify and be absolutely sure that it is indeed a case.
 */
 	//boolean sorted [];
@@ -552,31 +552,31 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
     protected static final short SIM_PROCESS_MASK = 24;
     protected static final short SIM_DELETE = 8;
     protected static final short SIM_KEEP = 16;
-    
+
     protected short sim_status [];
 
 /**
 	Indices(references) either:
-	1) from all entity data types encountered in the underlying schema 
-	   to populated entity data types (in this case the array is used to prepare 
+	1) from all entity data types encountered in the underlying schema
+	   to populated entity data types (in this case the array is used to prepare
 	   information for writing down to the binary file for this SdaiModel);
-	2) from populated entity data types to all entity data types encountered 
-	   in the underlying schema (the array is used to prepare information 
+	2) from populated entity data types to all entity data types encountered
+	   in the underlying schema (the array is used to prepare information
 	   when reading the binary file for this SdaiModel);
 */
 	int to_entities [];
 
 /**
-	An array each element of which gives the current (increasing) count of 
-	instances of some specific entity data type during reading entity instances 
-   from the binary file. The order of entity types for which these counts are 
+	An array each element of which gives the current (increasing) count of
+	instances of some specific entity data type during reading entity instances
+   from the binary file. The order of entity types for which these counts are
 	managed is the same as for array 'lengths', that is, the order is 'standard'.
 */
     private int [] current_lengths;
 
 /**
-	An auxiliary array used to detect all defined types 
-	encountered in the definitions of populated entity data types within 
+	An auxiliary array used to detect all defined types
+	encountered in the definitions of populated entity data types within
 	the schema which is underlying for this SdaiModel.
 */
 	private CDefined_type [] def_type_chain;
@@ -587,13 +587,13 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	private int def_type_count;
 
 /**
-	Data dictionary model describing EXPRESS schema that is underlying 
+	Data dictionary model describing EXPRESS schema that is underlying
 	for this SdaiModel.
 */
 	SdaiModel dictionary;
 
 /**
-	The name of the schema this SdaiModel is based on. This name is used 
+	The name of the schema this SdaiModel is based on. This name is used
 	when reading-writing part-21 and binary files.
 */
 	String schema_name;
@@ -601,7 +601,7 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	String original_name = null;
 
 /**
-	A positive number (identifier) representing this SdaiModel. All models within a 
+	A positive number (identifier) representing this SdaiModel. All models within a
 	repository have unique identifiers. The numbering starts from 1.
 */
 	int identifier;
@@ -609,8 +609,8 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	int mode_before_deletion;
 
 /**
-	The number of instances contained in this model. It serves as a count of 
-   elements in the array inst_idents. 
+	The number of instances contained in this model. It serves as a count of
+   elements in the array inst_idents.
 */
 	long all_inst_count;
 
@@ -621,14 +621,14 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	int pop_ent_count;
 
 /**
-	The identifying number of the build using which the binary file containing 
-	the data of this SdaiModel was created. This number is settled after starting 
+	The identifying number of the build using which the binary file containing
+	the data of this SdaiModel was created. This number is settled after starting
 	(read-only or read-write) access of the model.
 */
 	private int underlying_build;
 
 /**
-	Has value 'true' if and only if something in the contents of the model 
+	Has value 'true' if and only if something in the contents of the model
 	is modified (created, deleted, value assigned or added, value unset, and so on).
 	The value is switched to 'false' during a commit operation.
 */
@@ -643,74 +643,75 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	boolean modified_by_import;
 
 /**
-	Has value 'true' if and only if something outside of the contents of the model 
-	is modified (for example, model renamed or added to/removed from the 
+	Has value 'true' if and only if something outside of the contents of the model
+	is modified (for example, model renamed or added to/removed from the
 	schema instance).
 	The value is switched to 'false' during the commit operation.
 */
 	boolean modified_outside_contents;
 
 /**
-	Has value 'true' if modifications outside of the contents of the model are 
+	Has value 'true' if modifications outside of the contents of the model are
 	because this SdaiModel was imported from the exchange structure (part 21 file).
 	The value is switched to 'false' during first commit operation.
 */
 	boolean modified_outside_contents_by_import;
 
 /**
-	Has value 'true' if the data of this SdaiModel were written to binary file 
+	Has value 'true' if the data of this SdaiModel were written to binary file
 	(using commit operation in SdaiTransaction).
 */
 	boolean committed;
 
 /**
-	Has value 'true' if either some instance of this model was deleted or some 
-   instance was lost by substituting it with another instance which goes to 
-   another repository. The value is set to 'false' in commit, abort, 
-   endReadOnlyAccess and endReadWriteAccess methods. 
+	Has value 'true' if either some instance of this model was deleted or some
+   instance was lost by substituting it with another instance which goes to
+   another repository. The value is set to 'false' in commit, abort,
+   endReadOnlyAccess and endReadWriteAccess methods.
 */
 	boolean inst_deleted;
 
 /**
-	Has value 'true' if either some instance of this model was deleted or some 
-   instance was lost by substituting it with another instance which goes to 
-   another repository and, in addition, this change was made persistent by 
-   executing commit operation. The value is set to 'false' in endReadOnlyAccess 
-   and endReadWriteAccess methods. 
+	Has value 'true' if either some instance of this model was deleted or some
+   instance was lost by substituting it with another instance which goes to
+   another repository and, in addition, this change was made persistent by
+   executing commit operation. The value is set to 'false' in endReadOnlyAccess
+   and endReadWriteAccess methods.
 */
 	boolean inst_deleted_permanently;
 
 /**
 	Some auxiliary variable used in two contexts:
-	1) before methods deleteContents and deleteSdaiModelWork to know the 
+	1) before methods deleteContents and deleteSdaiModelWork to know the
 	   status of the model (whether its access is ended or it is deleted completely);
 	2) during loading a repository binary file.
 */
 	boolean exists;
 
 /**
-	An auxiliary variable used in exportClearTextEncoding to register models 
+	An auxiliary variable used in exportClearTextEncoding to register models
 	whose access should be temporary started (and then immediately ended again).
 */
 	boolean export;
 
-	boolean	bypass;
-	boolean	bypass_setAll;
+	boolean bypass;
+	boolean bypass_setAll;
+	boolean closingAll;
 
 /**
-	Has value 'true' if and only if this SdaiModel already is included into 
+	Has value 'true' if and only if this SdaiModel already is included into
 	array 'aInterfacedModel'.
 */
 	boolean initialized;
 
 /**
-	Has value 'true' if and only if for this SdaiModel method linkEarlyBinding 
+	Has value 'true' if and only if for this SdaiModel method linkEarlyBinding
 	(from the class SchemaData) was already applied.
 */
 	boolean early_binding_linked;
 
 /**
-	Has value 'true' if and only if for this SdaiModel method linkEarlyBindingInit 
+	Has value 'true' if and only if for this SdaiModel method linkEarlyBindingInit
 	(from the class SchemaData) was already applied.
 */
 	boolean early_binding_linked_init;
@@ -727,20 +728,20 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 
 /**
 	Has value 'true' if and only if the binary file for this SdaiModel does exist.
-	The value is assigned in loadResource method and used in SdaiRepository method 
+	The value is assigned in loadResource method and used in SdaiRepository method
 	getSessionIdentifier.
 */
 	boolean bin_file_missing;
 
 /**
-	The argument of getInstances and getExactInstances methods in the class 
-	ASdaiModel. It is used in aggregate methods isMember, getByIndexObject, 
+	The argument of getInstances and getExactInstances methods in the class
+	ASdaiModel. It is used in aggregate methods isMember, getByIndexObject,
 	getCurrentMemberObject.
 */
 	Object extent_type;
 
 /**
-	The index/reference to the alphabetically ordered list of entity data types 
+	The index/reference to the alphabetically ordered list of entity data types
 	for the entity assigned to 'extent_type' declared above.
 */
 	int extent_index;
@@ -754,58 +755,58 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	int undo_delete = 0;
 
 /**
-	The maximal number of instances of the same entity data type, that is, 
+	The maximal number of instances of the same entity data type, that is,
 	the largest element in array 'lengths'.
 */
 	private int max_inst_count;
 
 /**
-	The array containing the names of models entity 
-	instances of which are referenced by entity instances within 
-	this SdaiModel. This information is prepared and used during 
+	The array containing the names of models entity
+	instances of which are referenced by entity instances within
+	this SdaiModel. This information is prepared and used during
 	saving the data to/loading from the binary file.
-	This array cannot be eliminated and array 'ex_models' used instead it 
-	because frequently the names of models are encountered but models 
-	themselves are unknown (in such cases model names are provided by 
+	This array cannot be eliminated and array 'ex_models' used instead it
+	because frequently the names of models are encountered but models
+	themselves are unknown (in such cases model names are provided by
 	instances of the class Connector).
 */
 	String [] ex_model_names;
 
 /**
-	The array containing the models entity instances of which are 
-	referenced by entity instances within this SdaiModel. 
-	This information is prepared and used during loading the data 
+	The array containing the models entity instances of which are
+	referenced by entity instances within this SdaiModel.
+	This information is prepared and used during loading the data
 	from the binary file.
 */
 	SdaiModel [] ex_models;
 
 /**
-	The array consisting of the names of repositories containing models 
-	entity instances of which are referenced by entity instances within 
-	this SdaiModel. This information is prepared and used during 
+	The array consisting of the names of repositories containing models
+	entity instances of which are referenced by entity instances within
+	this SdaiModel. This information is prepared and used during
 	saving the data to/loading from the binary file.
 */
 	String [] ex_repositories;
 
 /**
-	The array containing definitions of the entities whose instances are 
-	referenced by entity instances within this SdaiModel. 
-	This information is prepared and used during saving the data to/loading from 
+	The array containing definitions of the entities whose instances are
+	referenced by entity instances within this SdaiModel.
+	This information is prepared and used during saving the data to/loading from
 	the binary file.
 */
 	String [] ex_edefs;
 
 /**
-	The count of elements in arrays 'ex_models', 'ex_repositories' and 
+	The count of elements in arrays 'ex_models', 'ex_repositories' and
 	'ex_edefs', respectively.
 */
 	int n_ex_models, n_ex_repositories, n_ex_edefs;
 
 /**
-	The internal array used to store definitions of the simple entity data types 
-	encountered in the definitions of populated entity data types within 
+	The internal array used to store definitions of the simple entity data types
+	encountered in the definitions of populated entity data types within
 	the schema which is underlying for this SdaiModel.
-	These data are prepared and used (in loading of the binary file) only for the 
+	These data are prepared and used (in loading of the binary file) only for the
 	baseDictionaryModel.
 */
 	private CEntity_definition [] single_defs;
@@ -813,7 +814,7 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 /**
 	Used to store values of an entity instance.
 	This field is applied in the following two contexts:
-	  1) To save/load an instance when saving the data to/loading from the 
+	  1) To save/load an instance when saving the data to/loading from the
 	     binary file;
 	  2) To process instances in substituteInstance methods.
 */
@@ -842,8 +843,8 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	protected CAggregate listenrList;
 
 /**
-	Has value "true" only when this model was created after the 
-	last invocation of commit or abort operation, whichever of them 
+	Has value "true" only when this model was created after the
+	last invocation of commit or abort operation, whichever of them
 	appeared more recently.
 */
 	boolean created;
@@ -900,7 +901,7 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 
 
 /**
-	Used to create application (through the method createSdaiModel) and dictionary 
+	Used to create application (through the method createSdaiModel) and dictionary
 	SdaiModels.
 	Also using this constructor some special SdaiModel called sessionModel is created.
 */
@@ -934,8 +935,8 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	}
 
 /**
-	Used to create an SdaiModel when in the binary file being loaded the name of 
-	a model and its repository (or only its name) are found but this repository 
+	Used to create an SdaiModel when in the binary file being loaded the name of
+	a model and its repository (or only its name) are found but this repository
 	misses a model with this given name.
 	Also, used to create virtual models.
 */
@@ -996,7 +997,7 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	}
 
 /**
-	Initializes the contents of this SdaiModel: entity extents, 
+	Initializes the contents of this SdaiModel: entity extents,
 	array 'instances_sim' containing instances and other information.
 */
 	protected abstract void initializeContents() throws SdaiException;
@@ -1040,7 +1041,9 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 		if(mode == READ_ONLY) {
 			entities = new CEntityDefinition[0];
 			if (instances_sim == null || instances_sim.length != 0) {
-				prepareInstancesSim(0, false);
+				prepareInstancesSim(1, false);
+				instances_sim[0] = emptyArray;
+				lengths[0] = 0;
 			}
 		} else if(mode == READ_WRITE) {
 			entities = null;
@@ -1173,10 +1176,10 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 
 
 /**
- * Returns the name of the EXPRESS schema which was assigned to this 
- * model in Part 21 file the repository containing this model was imported from. 
- * If the model belongs to a repository that entered the session by applying 
- * an operation different than import from a Part 21 file, then the method 
+ * Returns the name of the EXPRESS schema which was assigned to this
+ * model in Part 21 file the repository containing this model was imported from.
+ * If the model belongs to a repository that entered the session by applying
+ * an operation different than import from a Part 21 file, then the method
  * returns the name of the schema on which the contents
  * of this SdaiModel is based on. This method is valid only for
  * models containing application data. When applied to models from
@@ -1204,12 +1207,12 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 
 
 /**
- * Provides the name of an EXPRESS schema which will be used to relate this 
- * model with that schema when exporting the repository containing this model 
- * to a Part 21 file. This supplied name will appear in the Part 21 header 
- * entity FILE_SCHEMA and, if repository contains more than one model, 
+ * Provides the name of an EXPRESS schema which will be used to relate this
+ * model with that schema when exporting the repository containing this model
+ * to a Part 21 file. This supplied name will appear in the Part 21 header
+ * entity FILE_SCHEMA and, if repository contains more than one model,
  * additionally in DATA entity opening the data section for the model of interest.
- * This method is valid only for models containing application data. 
+ * This method is valid only for models containing application data.
  * When applied to models from "System Repository", SdaiException VA_NSET will be thrown.
  * @param name the name of an EXPRESS schema.
  * @throws SdaiException MO_NEXS, SdaiModel does not exist.
@@ -1324,8 +1327,8 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 		}
 		return (mode & MODE_MODE_MASK);
 	}
-    
-    
+
+
     final protected int getSubMode() throws SdaiException {
 		return (mode & MODE_SUBMODE_MASK);
 	}
@@ -1390,7 +1393,7 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	}
 
 	/**
-	 * This method should be always overridden by remote repository 
+	 * This method should be always overridden by remote repository
 	 */
 	protected String doGetLockingUser() throws SdaiException {
 		return null;
@@ -1454,7 +1457,7 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 
 /**
 	Gives a count of instances of an entity data type, specified by the index
-	pointing to the (ordered) list of all entity types known in the 
+	pointing to the (ordered) list of all entity types known in the
 	underlying schema, and of its subtypes.
 */
 	int countEntityInstances(int index) throws SdaiException {
@@ -1658,9 +1661,9 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	 * Returns this model effective permission which determines
 	 * the model's access rights.
 	 * @return the effective permission
-	 * @throws SdaiException if an error occurs performing underlying JSDAI operations  
+	 * @throws SdaiException if an error occurs performing underlying JSDAI operations
 	 * @see #checkRead
-	 * @see #checkWrite 
+	 * @see #checkWrite
 	 * @see SdaiPermission
 	 * @since 4.0.1
 	 */
@@ -1672,9 +1675,9 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	 * with no action.
 	 * @throws SdaiException <code>SY_SEC</code> if the owning session is
 	 *         not granted the read access
-	 * @throws SdaiException if an error occurs performing underlying JSDAI operations  
+	 * @throws SdaiException if an error occurs performing underlying JSDAI operations
 	 * @see #checkPermission
-	 * @see #checkWrite 
+	 * @see #checkWrite
 	 * @see SdaiPermission
 	 * @since 4.0.1
 	 */
@@ -1686,7 +1689,7 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	 * with no action.
 	 * @throws SdaiException <code>SY_SEC</code> if the owning session is
 	 *         not granted the write access
-	 * @throws SdaiException if an error occurs performing underlying JSDAI operations  
+	 * @throws SdaiException if an error occurs performing underlying JSDAI operations
 	 * @see #checkPermission
 	 * @see #checkRead
 	 * @see SdaiPermission
@@ -1801,7 +1804,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 		}
 		populated_folders = null;
 		repository.session.active_models.removeUnorderedRO(this);
-//System.out.println("  SdaiModel !!!!!!  model: " + name + 
+//System.out.println("  SdaiModel !!!!!!  model: " + name +
 //"   its repo: " + repository.name);
 		if (!make_virtual && remove) {
 			repository.models.removeUnorderedKeepSorted(this);
@@ -1970,7 +1973,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 
 /**
 	Creates a new entity instance within this <code>SdaiModel</code>.
-	The method is invoked in 'createEntityInstance' and 'substituteInstance' 
+	The method is invoked in 'createEntityInstance' and 'substituteInstance'
 	(two variations) methods.
 */
 	private CEntity createEntityInstanceInternal(CEntity_definition edef, long id)
@@ -1992,8 +1995,8 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 			throw new SdaiException(SdaiException.MX_NRW, this);
 		}
 		if (!edef.getInstantiable(null)) {
-			String base = SdaiSession.line_separator + AdditionalMessages.EI_EDAB + 
-				SdaiSession.line_separator + AdditionalMessages.RD_ENT + edef.getName(null) + 
+			String base = SdaiSession.line_separator + AdditionalMessages.EI_EDAB +
+				SdaiSession.line_separator + AdditionalMessages.RD_ENT + edef.getName(null) +
 				SdaiSession.line_separator + AdditionalMessages.RD_SCHE + underlying_schema.getName(null);
 			throw new SdaiException(SdaiException.ED_NVLD, edef, base);
 		}
@@ -2004,8 +2007,8 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 //			edef.getNameUpperCase());
 			(CEntityDefinition)edef);
 		if (index_to_entity < 0) {
-			String base = SdaiSession.line_separator + AdditionalMessages.EI_EDNV + 
-				SdaiSession.line_separator + AdditionalMessages.RD_ENT + edef.getName(null) + 
+			String base = SdaiSession.line_separator + AdditionalMessages.EI_EDNV +
+				SdaiSession.line_separator + AdditionalMessages.RD_ENT + edef.getName(null) +
 				SdaiSession.line_separator + AdditionalMessages.RD_SCHE + underlying_schema.getName(null);
 			throw new SdaiException(SdaiException.ED_NVLD, edef, base);
 		}
@@ -2015,7 +2018,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 			index_to_entity = -1;
 		}
 		CEntity instance =
-			m.schemaData.super_inst.makeInstance(((CEntityDefinition)edef).getEntityClass(), 
+			m.schemaData.super_inst.makeInstance(((CEntityDefinition)edef).getEntityClass(),
 												 this, index_to_entity, id);
 		if (id >= 0 && getSubMode() == MODE_SUBMODE_PARTIAL
 			&& (sim_status[index_to_entity] & SIM_LOADED_MASK) == SIM_LOADED_NONE) {
@@ -2052,7 +2055,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 /**
  * Creates a new entity instance within this <code>SdaiModel</code>.
  * This method is applicable to only instantiable entities
- * (represented by the corresponding class EXxx.class where "xxx" is 
+ * (represented by the corresponding class EXxx.class where "xxx" is
  * entity name), which are encountered in the
  * EXPRESS schema whose definition is underlying for this model.
  * Otherwise, that is, if the parameter passed to this method does not
@@ -2101,8 +2104,8 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 		if (edef == null) {
 			String f_name = provided_class.getName();
 			String entity_name = f_name.substring(f_name.lastIndexOf(".") + 2, f_name.length());
-			String base = SdaiSession.line_separator + AdditionalMessages.EI_EDNV + 
-				SdaiSession.line_separator + AdditionalMessages.RD_ENT + entity_name + 
+			String base = SdaiSession.line_separator + AdditionalMessages.EI_EDNV +
+				SdaiSession.line_separator + AdditionalMessages.RD_ENT + entity_name +
 				SdaiSession.line_separator + AdditionalMessages.RD_SCHE + underlying_schema.getName(null);
 			throw new SdaiException(SdaiException.ED_NDEF, base);
 		}
@@ -2117,7 +2120,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 */
 	CEntity makeEntityInstance(CEntity_definition edef, int index_to_entity) throws  SdaiException {
 		SdaiModel m = ((CSchema_definition)edef.owning_model.described_schema).modelDictionary;
-		CEntity instance = m.schemaData.super_inst.makeInstance(((CEntityDefinition)edef).getEntityClass(), 
+		CEntity instance = m.schemaData.super_inst.makeInstance(((CEntityDefinition)edef).getEntityClass(),
 			this, index_to_entity, 0);
 		//<--VV--030310--
         /*if (repository.largest_identifier < Long.MAX_VALUE) {
@@ -2234,7 +2237,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 		return false;
 	}
 
-    
+
 /**
  * Makes the contents of this <code>SdaiModel</code> available for read-write access.
  * For models in "SystemRepository" this method is forbidden
@@ -2377,6 +2380,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 		instances_sim_end = new_end;
 		sim_status = new_status;
 		entities = null;
+		invalidate_quick_find();
 	}
 
 
@@ -2433,11 +2437,12 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 			}
 		}
 		entities = new CEntityDefinition[pop_count];
-		CEntity [] new_array [] = new CEntity[pop_count][];
-		int new_lengths [] = new int[pop_count];
-		SimIdx new_start [] = new SimIdx[pop_count];
-		SimIdxEnd new_end [] = new SimIdxEnd[pop_count];
-		short new_status [] = new short[pop_count];
+		CEntity [] new_array [] = new CEntity[pop_count + 1][];
+		new_array[pop_count] = emptyArray;
+		int new_lengths [] = new int[pop_count + 1];
+		SimIdx new_start [] = new SimIdx[pop_count + 1];
+		SimIdxEnd new_end [] = new SimIdxEnd[pop_count + 1];
+		short new_status [] = new short[pop_count + 1];
 		for (i = 0; i < instances_sim.length; i++) {
 			if (instances_sim[i] == null || lengths[i] == 0) {
 				continue;
@@ -2458,6 +2463,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 		instances_sim_start = new_start;
 		instances_sim_end = new_end;
 		sim_status = new_status;
+		invalidate_quick_find();
 	}
 
 
@@ -2554,6 +2560,37 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 		}
 		exists = true;
 		boolean saved_modified = modified;
+//closingAll=true;
+		deleteContents(true);
+//closingAll=false;
+		modified = saved_modified;
+		repository.session.active_models.removeUnorderedRO(this);
+		if (Implementation.build >= 249 && inst_deleted_permanently) {
+			inst_deleted = false;
+			inst_deleted_permanently = false;
+		}
+		if (entity_values != null) {
+			entity_values.unset_ComplexEntityValue();
+		}
+	}
+
+
+	protected void endAccessAll() throws SdaiException {
+		if (repository == null) {
+			throw new SdaiException(SdaiException.MO_NEXS);
+		}
+		if (!repository.active) {
+			throw new SdaiException(SdaiException.RP_NOPN, repository);
+		}
+		if ((mode & MODE_MODE_MASK) == NO_ACCESS) {
+//			throw new SdaiException(SdaiException.MX_NDEF, this);
+			return;
+		}
+		if (modified || modified_by_import) {
+			throw new SdaiException(SdaiException.TR_RW, repository.session.active_transaction);
+		}
+		exists = true;
+		boolean saved_modified = modified;
 		deleteContents(true);
 		modified = saved_modified;
 		repository.session.active_models.removeUnorderedRO(this);
@@ -2565,6 +2602,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 			entity_values.unset_ComplexEntityValue();
 		}
 	}
+
 
 	protected void restartReopenedAccess(boolean partial) throws SdaiException { }
 
@@ -2678,10 +2716,10 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
  * Returns entity definition for the entity with the specified name.
  * This method searches the set of entities that are encountered in the
  * EXPRESS schema whose definition is underlying for this model.
- * Method's parameter is some string giving the name of an entity. 
- * If this entity is complex, then its constituents (simple entity data 
+ * Method's parameter is some string giving the name of an entity.
+ * If this entity is complex, then its constituents (simple entity data
  * types) within this string are separated by '+' character.
- * For example, "length_unit+si_unit". Both lower case letters and 
+ * For example, "length_unit+si_unit". Both lower case letters and
  * upper case letters are acceptable. If this parameter does not
  * allow to identify an entity that is known for this schema,
  * then SdaiException ED_NDEF is thrown. Passing null value to the method's
@@ -2709,11 +2747,11 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 
 
 /**
-	Finds the index of the entity specified by its name given as parameter 'key' 
-	in the (ordered) list of entities specified by the parameter 'set'. 
+	Finds the index of the entity specified by its name given as parameter 'key'
+	in the (ordered) list of entities specified by the parameter 'set'.
 	This operation is based on the binary search.
 */
-	private int find_entity(int left, int right, String key, AEntity_definition set) 
+	private int find_entity(int left, int right, String key, AEntity_definition set)
 			throws SdaiException {
 		Object [] myDataA = (Object [])((AEntity)set).myData;
 		while (left <= right) {
@@ -2772,7 +2810,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 			dictionary.startReadOnlyAccess();
 			underlying_schema = dictionary.described_schema;
 		}
-		initializeSdaiModel(); 
+		initializeSdaiModel();
 		fromSdaiModelHeader(modelHeader);
 		committed = true;
 	}
@@ -2904,7 +2942,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 
 
 /**
-	Checks whether the string submitted as a parameter is the name 
+	Checks whether the string submitted as a parameter is the name
 	of some entity data type known in the schema underlying for this SdaiModel.
 	If so, definition of such an entity is returned.
 	Method is used in createEntityInstance and substituteInstance methods.
@@ -3003,6 +3041,9 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 		}
 
 		SdaiModel older_owner = older.owning_model;
+		if ((older_owner.mode & MODE_MODE_MASK) != READ_WRITE) {
+			throw new SdaiException(SdaiException.MX_NRW, older_owner);
+		}
 		boolean xim = false;
 		String u_sch_name = older_owner.underlying_schema.getName(null);
 		int u_sch_ind = u_sch_name.length() - 4;
@@ -3059,13 +3100,13 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 //System.out.println("SdaiModel ?????   val_message.reference = " + val_message.reference);
 			CExplicit_attribute users_attr = (CExplicit_attribute)val_message.reference;
 			CEntity user = (CEntity)val_message.agg_owner;
-			throw new SdaiException(SdaiException.ED_NVLD, new_def, 
-"Entity definition of the substitute is not a subtype of the entity the instance of which is being replaced " + 
-"and there exists a reference to this instance by an attribute whose type is such that the type of the substitute " + 
-"is not compatible with it." + 
-SdaiSession.line_separator + "   Old instance: " + older + 
-SdaiSession.line_separator + "   Its user: " + user + 
-SdaiSession.line_separator + "   User's attribute: " + users_attr + 
+			throw new SdaiException(SdaiException.ED_NVLD, new_def,
+"Entity definition of the substitute is not a subtype of the entity the instance of which is being replaced " +
+"and there exists a reference to this instance by an attribute whose type is such that the type of the substitute " +
+"is not compatible with it." +
+SdaiSession.line_separator + "   Old instance: " + older +
+SdaiSession.line_separator + "   Its user: " + user +
+SdaiSession.line_separator + "   User's attribute: " + users_attr +
 SdaiSession.line_separator + "   New instance definition: " + new_def);
 		}
 		long ident;
@@ -3111,7 +3152,7 @@ SdaiSession.line_separator + "   New instance definition: " + new_def);
 			CEntity_definition new_partial_def = new_def.partialEntityTypes[i];
 //			int res_index = ((CEntityDefinition)old_def).find_partial_entity(start_index, old_def.noOfPartialEntityTypes - 1,
 //				new_partial_def.getCorrectName());
-			int res_index = ((CEntityDefinition)old_def).find_partial_entity_upper_case(start_index, 
+			int res_index = ((CEntityDefinition)old_def).find_partial_entity_upper_case(start_index,
 				old_def.noOfPartialEntityTypes - 1, new_partial_def.getNameUpperCase());
 			int count = new_partial_def.noOfPartialAttributes;
 			EntityValue partial_entity_values = entity_values.entityValues[i];
@@ -3208,7 +3249,7 @@ SdaiSession.line_separator + "   New instance definition: " + new_def);
  * The given entity instance can belong to other model and even
  * to other repository. Moreover, the entity type of the given instance
  * and that of the new one may be different.
- * This new entity (represented by the corresponding java class EXxx.class 
+ * This new entity (represented by the corresponding java class EXxx.class
  * where "xxx" is entity name) must be
  * instantiable and  must be defined or declared in the
  * EXPRESS schema whose definition is underlying for this model.
@@ -3340,6 +3381,9 @@ SdaiSession.line_separator + "   New instance definition: " + new_def);
 		if ((mode & MODE_MODE_MASK) != READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, this);
 		}
+		if ((older_owner.mode & MODE_MODE_MASK) != READ_WRITE) {
+			throw new SdaiException(SdaiException.MX_NRW, older_owner);
+		}
 		if (older_owner != this) {
 			SchemaData sch_data = underlying_schema.modelDictionary.schemaData;
 			int index_to_entity = sch_data.find_entity(0, sch_data.noOfEntityDataTypes - 1, (CEntityDefinition)def);
@@ -3374,7 +3418,7 @@ SdaiSession.line_separator + "   New instance definition: " + new_def);
 	}
 
 
-	private void moveConnectors(ComplexEntityValue entity_values, CEntity_definition def, 
+	private void moveConnectors(ComplexEntityValue entity_values, CEntity_definition def,
 			CEntity inst, SdaiModel old_model) throws SdaiException {
 		prepareAll(entity_values, def);
 		inst.getAll(entity_values);
@@ -3396,7 +3440,7 @@ SdaiSession.line_separator + "   New instance definition: " + new_def);
 //This method is not used
 ///**
 //*/
-//	private void copyConnectors(ComplexEntityValue entity_values, CEntity_definition def, 
+//	private void copyConnectors(ComplexEntityValue entity_values, CEntity_definition def,
 //			CEntity inst) throws SdaiException {
 //		for (int i = 0; i < def.noOfPartialEntityTypes; i++) {
 //			EntityValue pval = entity_values.entityValues[i];
@@ -3459,11 +3503,11 @@ SdaiSession.line_separator + "   New instance definition: " + new_def);
 
 //int inst_count = sortAllInstances();
 //for (i = 0; i < inst_count; i++) {
-//System.out.println("    *****instance: #" + instances_all[i].instance_identifier + 
+//System.out.println("    *****instance: #" + instances_all[i].instance_identifier +
 //"   its type: " + instances_all[i].getInstanceType().getName(null));
 //if (i == 0) continue;
 //if (instances_all[i].instance_identifier <= instances_all[i - 1].instance_identifier)
-//System.out.println("  SdaiModel  !!!!!!!  Error in instance ordering.  Instance: #" + 
+//System.out.println("  SdaiModel  !!!!!!!  Error in instance ordering.  Instance: #" +
 //instances_all[i].instance_identifier + "   its index: " + i);
 //}System.out.println();
 		if (to_entities == null) {
@@ -3588,13 +3632,13 @@ if (SdaiSession.debug2) System.out.println(" Simple case   index: " + i + "  lea
 			n_ex_models = 0;
 			n_ex_repositories = 0;
 			n_ex_edefs = 0;
-            
+
             //<--VV--030616-- Writing aim_2_arm link data to stream
             String[] sModelNames = new String[NUMBER_OF_EXTERNAL_MODS];
             String[] sRepoNames = new String[NUMBER_OF_EXTERNAL_MODS];
 			int iModelNamesCnt = 0;
             //--VV--030616--> Writing aim_2_arm link data to stream
-            
+
 			for (i = 0; i < inst_count; i++) {
 				instance = staticFields.instances_all[i];
 				def = (CEntityDefinition)instance.getInstanceType();
@@ -3610,18 +3654,18 @@ if (SdaiSession.debug2) System.out.println(" Simple case   index: " + i + "  lea
 				prepareAll(entity_values, (CEntity_definition)def);
 				instance.getAll(entity_values);
 				save_instance(instance, entity_values, stream, def_types_count, to_entities[to_type]);
-                
+
                 //<--VV--030613-- Writing aim_2_arm link data to stream
                 if (!repository.temporary) {
                     CMappedARMEntity armInstance = CMappedARMEntity.getFirstArmInstance((EEntity)instance);
                     while (armInstance != null) {
-                        
+
                         SdaiModel model = (SdaiModel)armInstance.getOwner();
                         if (model != null) {
                             String sModelName = model.getName();
                             SdaiRepository repo = model.getRepository();
                             String sRepoName = repo.getName();
-                            
+
                             int iModelNamesIdx = -1;
                             for (int k = 0; k < iModelNamesCnt; k++) {
                                 if (sModelNames[k].equals(sModelName) && sRepoNames[k].equals(sRepoName)) {
@@ -3633,7 +3677,7 @@ if (SdaiSession.debug2) System.out.println(" Simple case   index: " + i + "  lea
                                 if (sRepoName.equalsIgnoreCase(repository.getName())) {
                                     sRepoName = "";
                                 }
-                                
+
                                 if (iModelNamesCnt >= sModelNames.length) {
                                     sModelNames = repository.session.ensureStringsCapacity(sModelNames);
                                     sRepoNames = repository.session.ensureStringsCapacity(sRepoNames);
@@ -3642,7 +3686,7 @@ if (SdaiSession.debug2) System.out.println(" Simple case   index: " + i + "  lea
                                 sRepoNames[iModelNamesCnt] = sRepoName;
                                 iModelNamesCnt++;
                             }
-                            
+
                             if (iModelNamesIdx == -1) {
                                 stream.writeByte('l');
                                 stream.writeUTF( sRepoName);
@@ -3673,22 +3717,22 @@ if (SdaiSession.debug2) System.out.println(" Simple case   index: " + i + "  lea
 
 /**
 	Writes the data contained in this SdaiModel to the binary stream.
-*/    
+*/
     protected void saveStreamRemote(DataOutput stream, int version) throws SdaiException {
 		CEntity instance;
 
 
         try {
-            
+
             //System.out.println("del_inst_threshold="+del_inst_threshold);
             //System.out.println("n_del_inst_ids="+n_del_inst_ids);
-            
+
             CEntity_definition def;
             SdaiModel dict_mod = underlying_schema.modelDictionary;
             initializeInfoFromDict(dict_mod);
 			prepareInfoFromDict(dict_mod);
             //int def_types_count = takeDefTypes(dict_mod);
-            
+
             // DELETE part of stream
             if (del_inst_threshold != 0) {
                 if (del_inst_threshold > 0) {
@@ -3713,38 +3757,38 @@ if (SdaiSession.debug2) System.out.println(" Simple case   index: " + i + "  lea
                 stream.writeLong(-2);
                 //System.out.println("-2");
             }
-            
+
             // INSERT part of stream
 			for (int type_id = 0; type_id < lengths.length; type_id++) {
                 for (int j = 0; j < lengths[type_id]; j++) {
                     instance = instances_sim[type_id][j];
                     if ((instance.instance_position & CEntity.INS_MASK) != 0) {
                         def = (CEntity_definition)instance.getInstanceType();
-                        
+
                         stream.writeLong(instance.instance_identifier);
                         stream.writeInt(type_id);
-                        
+
                         prepareAll(entity_values, (CEntity_definition)def);
                         instance.getAll(entity_values);
                         save_instance_remote(instance, entity_values, stream, version);
-                        
+
                         //System.out.println(instance);
                     }
                 }
             }
             stream.writeLong(-1);
             //System.out.println("-1");
-            
+
             // UPDATE part of stream
             for (int type_id = 0; type_id < lengths.length; type_id++) {
                 for (int j = 0; j < lengths[type_id]; j++) {
                     instance = instances_sim[type_id][j];
                     if ((instance.instance_position & CEntity.FLG_MASK) == CEntity.UPD_MASK) {
                         def = (CEntity_definition)instance.getInstanceType();
-                        
+
                         stream.writeLong(instance.instance_identifier);
                         stream.writeInt(type_id);
-                        
+
                         prepareAll(entity_values, (CEntity_definition)def);
                         instance.getAll(entity_values);
                         save_instance_remote(instance, entity_values, stream, version);
@@ -3752,20 +3796,20 @@ if (SdaiSession.debug2) System.out.println(" Simple case   index: " + i + "  lea
                     }
                 }
             }
-            
+
             stream.writeLong(-1);
             //System.out.println("-1");
-            
+
 		} catch (IOException ex) {
 			throw new SdaiException(SdaiException.SY_ERR, ex);
 		}
-        
+
         //System.out.println("sSR t="+(float)(lCT-lST)/1000);
 	}
 
 /**
-	Initializes some fields for entities and defined types to know which 
-	of these objects are used to construct population contained in 
+	Initializes some fields for entities and defined types to know which
+	of these objects are used to construct population contained in
 	this SdaiModel.
 */
 	private void initializeInfoFromDict(SdaiModel dict_mod) throws SdaiException {
@@ -3781,7 +3825,7 @@ if (SdaiSession.debug2) System.out.println(" Simple case   index: " + i + "  lea
 
 
 /**
-	Prepares an information on entity data types and defined types to be 
+	Prepares an information on entity data types and defined types to be
 	written into binary file.
 */
 	private void prepareInfoFromDict(SdaiModel dict_mod) throws SdaiException {
@@ -3819,8 +3863,8 @@ if (SdaiSession.debug2) System.out.println(" In prepareInfoFromDict  attr: " + a
 					count = new_count;
 				}
 			} else {
-if (SdaiSession.debug2) System.out.println(" In prepareInfoFromDict  ^^^^^^^ entity: " + 
-def.name + "   def.noOfPartialEntityTypes: " + def.noOfPartialEntityTypes + 
+if (SdaiSession.debug2) System.out.println(" In prepareInfoFromDict  ^^^^^^^ entity: " +
+def.name + "   def.noOfPartialEntityTypes: " + def.noOfPartialEntityTypes +
 "   def: " + def +
 "  owning_model: " + def.owning_model.name);
 				for (j = 0; j < def.noOfPartialEntityTypes; j++) {
@@ -3849,7 +3893,7 @@ if (SdaiSession.debug2) System.out.println(" In prepareInfoFromDict  ********** 
 
 
 /**
-	Prepares a list of defined types encountered in the definitions 
+	Prepares a list of defined types encountered in the definitions
 	of entity data types which are populated in this SdaiModel.
 */
 	private int takeDefTypes(SdaiModel dict_mod) throws SdaiException {
@@ -3888,8 +3932,8 @@ if (SdaiSession.debug2) System.out.println(" In prepareInfoFromDict  ********** 
 
 
 /**
-	Prepares a list of single entity data types encountered in entities 
-	populated in this SdaiModel. For each member in this list its definition 
+	Prepares a list of single entity data types encountered in entities
+	populated in this SdaiModel. For each member in this list its definition
 	information (attributes, supertypes) is written to the binary file.
 */
 	private int takeSingleEntityTypes(SdaiModel dict_mod, DataOutput stream) throws SdaiException {
@@ -3989,7 +4033,7 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 
 
 /**
-	Analyses the base type of attributes of populated entity data types 
+	Analyses the base type of attributes of populated entity data types
 	in order to find involved defined types.
 */
 	private void exploreBaseType(DataType base) throws SdaiException {
@@ -4007,7 +4051,7 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 
 
 /**
-	Checks whether the submitted defined type is already included 
+	Checks whether the submitted defined type is already included
 	into an array of defined types.
 */
 	private boolean checkDefinedType(CDefined_type def_type) throws SdaiException {
@@ -4032,13 +4076,13 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 
 
 /**
-	Analyses the specified defined type having a purpose to register it as used 
+	Analyses the specified defined type having a purpose to register it as used
 	in the definitions of entity data types which are populated in this SdaiModel.
 */
 	private void exploreDefinedType(CDefined_type head, CDefined_type tail) throws SdaiException {
 		DataType domain = (DataType)tail.getDomain(null);
 		CDefined_type def_type;
-		if ( (domain.express_type >= DataType.NUMBER && domain.express_type <= DataType.BINARY) || 
+		if ( (domain.express_type >= DataType.NUMBER && domain.express_type <= DataType.BINARY) ||
 				(domain.express_type >= DataType.ENUMERATION && domain.express_type <= DataType.EXTENDED_EXTENSIBLE_ENUM)) {
 			if (head != null) {
 				head.used = true;
@@ -4103,18 +4147,23 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 		return;
 	}
 
-
-/**
-*/
 	protected long loadRemoteModel(DataInput stream, int mode_to_start, boolean add_to_active) throws SdaiException {
+		CEntity[][] inst_ces = loadRemoteInstanceHeader(stream, mode_to_start, add_to_active);
+		long max_ident = loadRemoteInstanceBody(stream, inst_ces);
+		inst_ces = null;
+		return max_ident;
+	}
+
+    /**
+    */
+	protected CEntity[][] loadRemoteInstanceHeader(DataInput stream, int mode_to_start, boolean add_to_active) throws SdaiException {
 		if (stream == null) {
 			prepareInitialContens(mode_to_start);
 			setMode(mode_to_start);
 			repository.session.active_models.addUnorderedRO(this);
 			modified = false;
-			return 0;
+			return null;
 		}
-		setMode(READ_WRITE);
         if (ex_models == null) {
 			ex_model_names = new String[NUMBER_OF_EXTERNAL_MODS];
 			ex_models = new SdaiModel[NUMBER_OF_EXTERNAL_MODS];
@@ -4124,106 +4173,50 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 			ex_edefs = new String[NUMBER_OF_EXTERNAL_EDEFS];
 			n_ex_edefs = 0;
 		}
-//		long max_ident = loadStream(stream);
-		long max_ident = -1;
+
+        CEntity [][] inst_ces = null;
 		try {
-			max_ident = loadStreamRemote(stream, mode_to_start);
-		} finally {
-            setMode(mode_to_start);
-		}
-		//<--VV--030310--
-        /*if (repository.largest_identifier < max_ident) {
-			repository.largest_identifier = max_ident;
-		}*/
-        //--VV--030310-->
-//		mode = mode_to_start;
-		resolveInConnectors(false);
-		if (add_to_active) {
-			repository.session.active_models.addUnorderedRO(this);
-		}
-		modified = false;
-		return max_ident;
-	}
+			setMode(READ_WRITE);
 
+			int complex_entity_count;
+			long inst_count;
 
-    protected long loadStreamCommon(DataInput stream, int mode_to_start) throws SdaiException {
-		long res;
-		try {
-			byte begin = stream.readByte();
-			if (begin != 'D') {
-				String base = SdaiSession.line_separator + AdditionalMessages.BF_DAM;
-				throw new SdaiException(SdaiException.SY_ERR, base);
-			}
-			underlying_build = stream.readInt();
-		} catch (IOException ex) {
-			throw new SdaiException(SdaiException.SY_ERR, ex);
-		}
-		if (underlying_build >= 270) {
-			res = loadStream3(stream, mode_to_start);
-		} else if (underlying_build >= 220) {
-			res = loadStream2(stream);
-		} else {
-			res = loadStream1(stream);
-		}
-		return res;
-	}
+		    AEntity_definition set;
 
-/**
-	Loads the data contained in the binary stream to this SdaiModel.
-*/
-    private long loadStreamRemote(DataInput stream, int mode_to_start) throws SdaiException {
-		long largest_identifier = -1;
-        int complex_entity_count;
-		long inst_count;
-		StreamUTF streamUtf = new StreamUTF();
-        
-        //System.out.println("lSR model="+getName());
-        //long lST, lCT;
-        //lST = System.currentTimeMillis();
-        try {
-            
-            //lST = System.currentTimeMillis();
-            AEntity_definition set;
-        
-            if (underlying_schema == null) {
-                underlying_schema = dictionary.described_schema;
-            }
-            set = underlying_schema.getEntities();
+		    if (underlying_schema == null) {
+		        underlying_schema = dictionary.described_schema;
+		    }
+		    set = underlying_schema.getEntities();
 			complex_entity_count = ((AEntity)set).myLength;
-            
-            //lCT = System.currentTimeMillis();
-            //System.out.println("lSR - getEntities - t="+(float)(lCT-lST)/1000);
-            //lST = lCT;
-            
-            inst_count = stream.readLong();
-            //ps.println("complex_entity_count="+complex_entity_count+"\tinst_count="+inst_count);
-            if (inst_count > 0) {
-                del_inst_threshold = (long)(0.5 * inst_count+1);
-            }
-            else {
-                del_inst_threshold = -1;
-            }
-            del_inst_ids = EMPTY_DEL_INST_IDS; //new long[INSTANCE_ARRAY_INITIAL_SIZE];
-            n_del_inst_ids = 0;
 
-            if(mode_to_start != READ_ONLY) {
-            	entities = null;
+		    inst_count = stream.readLong();
+		    if (inst_count > 0) {
+		        del_inst_threshold = (long)(0.5 * inst_count+1);
+		    }
+		    else {
+		        del_inst_threshold = -1;
+		    }
+		    del_inst_ids = EMPTY_DEL_INST_IDS; //new long[INSTANCE_ARRAY_INITIAL_SIZE];
+		    n_del_inst_ids = 0;
+
+		    if(mode_to_start != READ_ONLY) {
+		    	entities = null;
 				if (instances_sim == null) {
 					prepareInstancesSim(complex_entity_count + 1, true);
 				}
-            }
+		    }
 
-            // Auxiliary arrays to have references to instances using instance identifiers
-			CEntity [][] inst_ces =
+		    // Auxiliary arrays to have references to instances using instance identifiers
+			inst_ces =
 				new CEntity[((int)inst_count + INST_PORTION_SIZE - 1) / INST_PORTION_SIZE][];
-            int [] inst_tps = new int[(int)inst_count];
-            int [] type_len = new int[complex_entity_count];
-            int populated_types = 0;
-            
-            long inst_id = -1;
-            int cnt = 0;
-            
-            // Reads instance identifier and type identifier for instances from stream
+		    int [] inst_tps = new int[(int)inst_count];
+		    int [] type_len = new int[complex_entity_count];
+		    int populated_types = 0;
+
+		    long inst_id = -1;
+		    int cnt = 0;
+
+		    // Reads instance identifier and type identifier for instances from stream
 			Object [] myDataA = null;
 			if (((AEntity)set).myLength > 1) {
 				myDataA = (Object [])((AEntity)set).myData;
@@ -4236,7 +4229,7 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 					inst_id = stream.readLong();
 					int type_id = stream.readInt();
 					//ps.println("#"+inst_id+"\t"+type_id);
-                    CEntity instance;
+		            CEntity instance;
 					int index;
 					int typeIndex;
 					if(tryToFindInstance) {
@@ -4267,10 +4260,10 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 
 						// Creates instance using complex entity type identifier and instance identifier
 						instance = sup.makeInstance(entityClass, this, -1, 0);
-                        
+
 						instance.instance_identifier = inst_id;
 					}
-                
+
 					// Saves instance reference for access using instance identifier
 					inst_tps[cnt] = type_id;
 					inst_ces[i][j] = instance;
@@ -4285,114 +4278,140 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 				}
 			}
 
-            if(mode_to_start == READ_ONLY && entities == null) {
-            	entities = new CEntity_definition[populated_types];
+		    if(mode_to_start == READ_ONLY && entities == null) {
+		    	entities = new CEntity_definition[populated_types];
 				prepareInstancesSim(populated_types + 1, false);
 				instances_sim[populated_types] = emptyArray;
 				lengths[populated_types] = 0;
-            }
-			
-			deleteInstances(true);
-            largest_identifier = inst_id;
-            //ps.println("largest_identifier="+largest_identifier);
+		    }
 
-            if(mode_to_start == READ_ONLY) {
-                cnt = 0;
-            	for (int i = 0; i < complex_entity_count; i++) {
-            		if(type_len[i] > 0) {
-            			CEntityDefinition edef;
+			deleteInstances(true);
+
+		    if(mode_to_start == READ_ONLY) {
+		        cnt = 0;
+		    	for (int i = 0; i < complex_entity_count; i++) {
+		    		if(type_len[i] > 0) {
+		    			CEntityDefinition edef;
 						if (myDataA == null) {
 							edef = (CEntityDefinition)((AEntity)set).myData;
 						} else {
 							edef = (CEntityDefinition)myDataA[i];
 						}
 						entities[cnt] = edef;
-            			instances_sim[cnt] = new CEntity[type_len[i]];
-            			sim_status[cnt] |= SIM_SORTED;
-            			type_len[i] = cnt;
-            			cnt++;
-            		}
-            	}
-                cnt = 0;
-    			for(int i = 0; i < inst_ces.length; i++) {
-    				for (int j = 0; j < INST_PORTION_SIZE; j++) {
-    					int idx = type_len[inst_tps[cnt]];
-    					instances_sim[idx][lengths[idx]] = inst_ces[i][j];
-    					lengths[idx]++;
-    					if(++cnt == inst_count) {
-    						break;
-    					}
-    				}
-    			}
-            } else {
-            	for (int i = 0; i < complex_entity_count; i++) {
-            		if(type_len[i] > 0) {
-            			instances_sim[i] = new CEntity[type_len[i]];
-            			//sorted[i] = true;
-            			sim_status[i] |= SIM_SORTED;
-            		}
-            	}
-                cnt = 0;
-    			for(int i = 0; i < inst_ces.length; i++) {
-    				for (int j = 0; j < INST_PORTION_SIZE; j++) {
-    					instances_sim[inst_tps[cnt]][lengths[inst_tps[cnt]]] = inst_ces[i][j];
-    					lengths[inst_tps[cnt]]++;
-    					if(++cnt == inst_count) {
-    						break;
-    					}
-    				}
-    			}
-    			type_len = null;
-            }
-			inst_tps = null;
-			invalidate_quick_find();
-            
-            //lCT = System.currentTimeMillis();
-            //System.out.println("lSR - create instances - t="+(float)(lCT-lST)/1000);
-            //lST = lCT;
-            
-            n_ex_models = 0;
-			n_ex_repositories = 0;
-			n_ex_edefs = 0;
-            
-            // Reads attribute values for instances from stream
-            cnt = 0;
-            for(int i = 0; i < inst_ces.length; i++) {
-				for (int j = 0; j < INST_PORTION_SIZE; j++) {
-					stream.readInt();
-
-					CEntity instance = inst_ces[i][j];
-					instance.owning_model = this;
-					load_instance_remote(entity_values, stream, instance,
-										 (CEntity_definition)instance.getInstanceType(), streamUtf, false);
-					instance.setAll(entity_values);
-					//ps.println("\t"+instance.toString());
-                    if(++cnt == inst_count) {
-						break;
+		    			instances_sim[cnt] = new CEntity[type_len[i]];
+		    			sim_status[cnt] |= SIM_SORTED;
+		    			type_len[i] = cnt;
+		    			cnt++;
+		    		}
+		    	}
+		        cnt = 0;
+				for(int i = 0; i < inst_ces.length; i++) {
+					for (int j = 0; j < INST_PORTION_SIZE; j++) {
+						int idx = type_len[inst_tps[cnt]];
+						instances_sim[idx][lengths[idx]] = inst_ces[i][j];
+						lengths[idx]++;
+						if(++cnt == inst_count) {
+							break;
+						}
 					}
 				}
-				inst_ces[i] = null;
+		    } else {
+		    	for (int i = 0; i < complex_entity_count; i++) {
+		    		if(type_len[i] > 0) {
+		    			instances_sim[i] = new CEntity[type_len[i]];
+		    			//sorted[i] = true;
+		    			sim_status[i] |= SIM_SORTED;
+		    		}
+		    	}
+		        cnt = 0;
+				for(int i = 0; i < inst_ces.length; i++) {
+					for (int j = 0; j < INST_PORTION_SIZE; j++) {
+						instances_sim[inst_tps[cnt]][lengths[inst_tps[cnt]]] = inst_ces[i][j];
+						lengths[inst_tps[cnt]]++;
+						if(++cnt == inst_count) {
+							break;
+						}
+					}
+				}
+				type_len = null;
+		    }
+			inst_tps = null;
+			invalidate_quick_find();
+
+		    n_ex_models = 0;
+			n_ex_repositories = 0;
+			n_ex_edefs = 0;
+
+		} catch (IOException ex) {
+			throw (SdaiException)(new SdaiException(SdaiException.SY_ERR, ex)).initCause(ex);
+		} finally {
+            setMode(mode_to_start);
+		}
+
+		resolveInConnectors(false);
+		if (add_to_active) {
+			repository.session.active_models.addUnorderedRO(this);
+		}
+		return inst_ces;
+	}
+
+	protected long loadRemoteInstanceBody(DataInput stream, CEntity [][] inst_ces) throws SdaiException {
+		try {
+			long largest_identifier = -1;
+			if(inst_ces != null) {
+			    // Reads attribute values for instances from stream
+				StreamUTF streamUtf = new StreamUTF();
+			    for(int i = 0; i < inst_ces.length; i++) {
+					for (int j = 0; j < inst_ces[i].length; j++) {
+						stream.readInt();
+
+						CEntity instance = inst_ces[i][j];
+						instance.owning_model = this;
+						load_instance_remote(entity_values, stream, instance,
+											 (CEntity_definition)instance.getInstanceType(), streamUtf, inst_ces, false);
+						instance.setAll(entity_values);
+						if(instance.instance_identifier > largest_identifier) {
+							largest_identifier = instance.instance_identifier;
+						}
+					}
+//					inst_ces[i] = null;
+				}
 			}
-            
-            //lCT = System.currentTimeMillis();
-            //System.out.println("lSR - set attr values - t="+(float)(lCT-lST)/1000);
-            
+			modified = false;
+			return largest_identifier;
 		} catch (IOException ex) {
 			throw (SdaiException)(new SdaiException(SdaiException.SY_ERR, ex)).initCause(ex);
 		}
-		modified = false;
-        //lCT = System.currentTimeMillis();
-        //System.out.println("lSR t="+(float)(lCT-lST)/1000);
-		return largest_identifier;
 	}
-    
-    
+
+    protected long loadStreamCommon(DataInput stream, int mode_to_start) throws SdaiException {
+		long res;
+		try {
+			byte begin = stream.readByte();
+			if (begin != 'D') {
+				String base = SdaiSession.line_separator + AdditionalMessages.BF_DAM;
+				throw new SdaiException(SdaiException.SY_ERR, base);
+			}
+			underlying_build = stream.readInt();
+		} catch (IOException ex) {
+			throw new SdaiException(SdaiException.SY_ERR, ex);
+		}
+		if (underlying_build >= 270) {
+			res = loadStream3(stream, mode_to_start);
+		} else if (underlying_build >= 220) {
+			res = loadStream2(stream);
+		} else {
+			res = loadStream1(stream);
+		}
+		return res;
+	}
+
     protected void provideInstancesForTypes(int[] ceTypes, boolean delete) throws SdaiException {
     }
 
     protected void provideInstancesForType(long instPl) throws SdaiException {
 	}
-    
+
     final protected int getComplexEntitiesCount() throws SdaiException {
         return ((AEntity)underlying_schema.getEntities()).myLength;
     }
@@ -4621,29 +4640,29 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 		long inst_count;
 		boolean oldModified = modified;
 		StreamUTF streamUtf = new StreamUTF();
-        
+
         try {
-            
+
             if (underlying_schema == null) {
                 underlying_schema = dictionary.described_schema;
             }
             AEntity_definition set = underlying_schema.getEntities();
 			complex_entity_count = ((AEntity)set).myLength;
-            
-            
+
+
             inst_count = stream.readLong();
             if (inst_count > 0) {
                 if (del_inst_threshold < 0) del_inst_threshold = 0;
                 del_inst_threshold += inst_count;
 // 				del_inst_ids = new long[INSTANCE_ARRAY_INITIAL_SIZE];???
 // 				n_del_inst_ids = 0;???
-            
+
 				// Auxiliary arrays to have references to instances using instance identifiers
 				CEntity [][] inst_ces =
 					new CEntity[((int)inst_count + INST_PORTION_SIZE - 1) / INST_PORTION_SIZE][];
 				int [] inst_tps = new int[(int)inst_count];
 				int [] type_len = new int[complex_entity_count];
-            
+
 				long inst_id = -1;
 				int cnt = 0;
 				// Reads instance identifier and type identifier for instances from stream
@@ -4664,12 +4683,12 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 							if(type_idx >= 0) {
 								if(i == 0 && j == 0
 								   && (sim_status[type_idx] & SIM_PROCESS_MASK) == 0) {
-	
+
 									completeCeTypeIdx = type_idx;
 									sim_status[type_idx] |= SIM_KEEP;
 								}
 								if((sim_status[type_idx] & SIM_LOADED_MASK) != SIM_LOADED_COMPLETE) {
-	
+
 									//ps.println("#"+inst_id+"\t"+type_id);
 									int index = find_instance(0, lengths[type_idx] - 1, type_idx, inst_id);
 									if (index >= 0) {
@@ -4691,7 +4710,7 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 										}
 										SSuper sup = m.schemaData.super_inst;
 										Class entityClass = edef.getEntityClass();
-	
+
 										// Creates instance using complex entity type identifier
 										// and instance identifier
 										instance = sup.makeInstance(entityClass, this, -1, 0);
@@ -4712,7 +4731,7 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 					}
 					//deleteInstances(true);
 					prepareSimsForTypes(type_len);
-            
+
 					cnt = 0;
 					for(int i = 0; i < inst_ces.length; i++) {
 						for (int j = 0; j < INST_PORTION_SIZE; j++) {
@@ -4738,15 +4757,15 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 					type_len = null;
 					resolveInConnectorsPartial(false);
 					//invalidate_quick_find();
-            
+
 					//lCT = System.currentTimeMillis();
 					//System.out.println("lSR - create instances - t="+(float)(lCT-lST)/1000);
 					//lST = lCT;
-            
+
 					n_ex_models = 0;
 					n_ex_repositories = 0;
 					n_ex_edefs = 0;
-            
+
 					// Reads attribute values for instances from stream
 					cnt = 0;
 					for(int i = 0; i < inst_ces.length; i++) {
@@ -4763,7 +4782,7 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 								instance.owning_model = this;
 								load_instance_remote(entity_values, stream, instance,
 													 (CEntity_definition)instance.getInstanceType(),
-													 streamUtf, true);
+													 streamUtf, inst_ces, true);
 								instance.setAll(entity_values);
 							}
 							//ps.println("\t"+instance.toString());
@@ -4771,7 +4790,7 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 								break;
 							}
 						}
-						inst_ces[i] = null;
+//						inst_ces[i] = null;
 					}
 					if(completeCeTypeIdx >= 0) {
 						sim_status[completeCeTypeIdx] = (short)
@@ -4786,10 +4805,10 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
             } else {
             	prepareSimsForTypes(null);
             }
-            
+
             //lCT = System.currentTimeMillis();
             //System.out.println("lSR - set attr values - t="+(float)(lCT-lST)/1000);
-            
+
 		} catch (IOException ex) {
 			throw (SdaiException)(new SdaiException(SdaiException.SY_ERR, ex)).initCause(ex);
 		}
@@ -4803,9 +4822,9 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 		int instTypeIndex = typeIdToIndex(instTypeId);
 		if((sim_status[instTypeIndex] & SIM_LOADED_MASK) != SIM_LOADED_COMPLETE) {
 			StreamUTF streamUtf = new StreamUTF();
-        
+
 			try {
-            
+
 				if (underlying_schema == null) {
 					underlying_schema = dictionary.described_schema;
 				}
@@ -4817,7 +4836,7 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 				del_inst_threshold++;
 // 				del_inst_ids = new long[INSTANCE_ARRAY_INITIAL_SIZE];???
 // 				n_del_inst_ids = 0;???
-				
+
 				sim_status[instTypeIndex] |= SIM_SORTED;
 				sim_status[instTypeIndex] = (short)
 					((sim_status[instTypeIndex] & ~SIM_LOADED_MASK) | SIM_LOADED_PARTIAL);
@@ -4841,7 +4860,7 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 
 				instance.owning_model = this;
 				load_instance_remote(entity_values, instData, instance,
-									 (CEntity_definition)instance.getInstanceType(), streamUtf, true);
+									 (CEntity_definition)instance.getInstanceType(), streamUtf, null, true);
 				instance.setAll(entity_values);
 				return instance;
 			} catch (IOException ex) {
@@ -4969,10 +4988,10 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 
 
 /**
-	Loads the data contained in the binary file to this SdaiModel (new version, 
+	Loads the data contained in the binary file to this SdaiModel (new version,
 	valid from the build 220).
-	Starting from the build 240 all instances within the binary file are sorted 
-	in one sequence (not separate sortings for each entity type are used as it 
+	Starting from the build 240 all instances within the binary file are sorted
+	in one sequence (not separate sortings for each entity type are used as it
 	was before).
 */
 	private long loadStream2(DataInput stream) throws SdaiException {
@@ -5233,10 +5252,10 @@ if (SdaiSession.debug2) System.out.println(" In: SdaiModel ******* edef: " + ede
 					(current_lengths[index])++;
 					load_instance(entity_values, stream, app_inst, edef, n_entities_from_file, def_types_count, 1, -1, false, streamUtf);
 					app_inst.setAll(entity_values);
-//System.out.println("SdaiModel ++++++   instance: " + edef.getName(null) + 
-//"   ident = " + app_inst.instance_identifier + 
-//"   index: " + index + 
-//"   current_lengths[index]: " + current_lengths[index] + 
+//System.out.println("SdaiModel ++++++   instance: " + edef.getName(null) +
+//"   ident = " + app_inst.instance_identifier +
+//"   index: " + index +
+//"   current_lengths[index]: " + current_lengths[index] +
 //"    model: " + name);
 					if (app_inst.instance_identifier > largest_identifier) {
 						largest_identifier = app_inst.instance_identifier;
@@ -5298,8 +5317,8 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 
 
 	final private void bin_file_exception(String error_message) throws SdaiException {
-		String base = SdaiSession.line_separator + error_message + 
-			SdaiSession.line_separator + "   Repository: " + repository.name + 
+		String base = SdaiSession.line_separator + error_message +
+			SdaiSession.line_separator + "   Repository: " + repository.name +
 			SdaiSession.line_separator + "   SdaiModel: " + name;
 		throw new SdaiException(SdaiException.SY_ERR, base);
 	}
@@ -5373,7 +5392,7 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 	}
 
 
-	private void check_compatibility(int ent_index, String simple_ent_name, int attr_count, 
+	private void check_compatibility(int ent_index, String simple_ent_name, int attr_count,
 			String [] attr_names, SchemaData sch_data) throws SdaiException {
 		int j;
 
@@ -5430,7 +5449,7 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 //System.out.println("SdaiModel ***** inc_count = " + inc_count);
 //for (j = 0; j < attr_count; j++) System.out.print("  " + attr_names[j]);System.out.println("");
 //System.out.println("SdaiModel ========== from data dictionary  count: " + ent_def.noOfPartialAttributes);
-//for (j = attr_ln - ent_def.noOfPartialAttributes; j < attr_ln; j++) 
+//for (j = attr_ln - ent_def.noOfPartialAttributes; j < attr_ln; j++)
 //System.out.print("  " + ent_def.attributes[j].getName(null));System.out.println("");
 //for (j = 0; j < attr_count; j++) System.out.print("  " + value2attr[inc_count-1][j]);
 //System.out.println("");System.out.println("");
@@ -5498,7 +5517,7 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 	}
 
 
-	private void verify_complex_compatibility(CEntityDefinition edef, int defs_count_file, int single_entity_count, 
+	private void verify_complex_compatibility(CEntityDefinition edef, int defs_count_file, int single_entity_count,
 			int compl_ent_tp_index) throws SdaiException {
 		int i;
 		boolean compatible = true;
@@ -5584,7 +5603,7 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 	}
 
 
-	void printWarningToLogo(CEntityDefinition edef, int complex_inc_count, int defs_count_file, 
+	void printWarningToLogo(CEntityDefinition edef, int complex_inc_count, int defs_count_file,
 				int [] part_defs_from_file, int [] not_existing_part_defs_from_file) throws SdaiException {
 		SdaiSession session = repository.session;
 		String ent_name = ((CEntity_definition)edef).getName(null);
@@ -5757,7 +5776,7 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 					attr_names[j] = attr_name;
 				}
 				if (repository != SdaiSession.systemRepository) {
-//System.out.println("SdaiModel ***** i: " + i + "   simple entity: " + simple_entity_names[i] + 
+//System.out.println("SdaiModel ***** i: " + i + "   simple entity: " + simple_entity_names[i] +
 //"   attr_count = " + attr_count);
 //for (j = 0; j < attr_count; j++) System.out.print("  " + attr_names[j]);
 //System.out.println("");System.out.println("");
@@ -5915,7 +5934,7 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 						edef_.leaves = leaves;
 					}
 //if (repository != SdaiSession.systemRepository)
-//System.out.println("SdaiModel :::::: edef_: " + ((CEntity_definition)edef_).getName(null) + 
+//System.out.println("SdaiModel :::::: edef_: " + ((CEntity_definition)edef_).getName(null) +
 //"   single_entity_count: " + single_entity_count + "   inc_count: " + inc_count);
 					if (repository != SdaiSession.systemRepository) {
 						verify_complex_compatibility(edef_, defs_count_file, single_entity_count, i);
@@ -5935,7 +5954,7 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 						entities[i] = underlying_schema.modelDictionary.schemaData.entities[index];
 						lengths[i] = (int)n_instances;
 						sim_status[i] |= SIM_SORTED;
-						CEntity [] new_array = new CEntity[(int)n_instances];					
+						CEntity [] new_array = new CEntity[(int)n_instances];
 						if (n_instances > 0) {
 							for (j = 0; j < n_instances; j++) {
 								instance = sup.makeInstance(entityClass, this, -1, 0);
@@ -6101,15 +6120,15 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 			for (i = 0; i < ext_count; i++) {
 				current_lengths[i] = 0;
 			}
-            
+
             //<--VV--030616-- Reading aim_2_arm link data from stream
             String[] sRepoNames = new String[NUMBER_OF_EXTERNAL_MODS];
             String[] sModelNames = new String[NUMBER_OF_EXTERNAL_MODS];
 			int iModelNamesCnt = 0;
             //--VV--030616--> Reading aim_2_arm link data from stream
-            
+
 			for (i = 0; i < inst_count; i++) {
-                if (bt != 'c') {        //--VV--030613--Added for AIM to ARM link implementation 
+                if (bt != 'c') {        //--VV--030613--Added for AIM to ARM link implementation
 				    bt = stream.readByte();
                 }
                 //if (name.equals("test_aim")) System.out.print("["+(char)bt+"]");
@@ -6142,14 +6161,14 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 //if (repository != SdaiSession.systemRepository)
 //System.out.println("SdaiModel *** i: " + i + "  entity: " + edef.getName(null));
 				staticFields.current_instance_identifier = app_inst.instance_identifier;
-				load_instance(entity_values, stream, app_inst, edef, n_entities_from_file, def_types_count, 2, 
+				load_instance(entity_values, stream, app_inst, edef, n_entities_from_file, def_types_count, 2,
 					spec_type_index, mod_small, streamUtf);
 				app_inst.setAll(entity_values);
 				staticFields.current_instance_identifier = -1;
-//System.out.println("SdaiModel ++++++   instance: " + edef.getName(null) + 
-//"   ident = " + app_inst.instance_identifier + 
-//"   index: " + index + 
-//"   current_lengths[index]: " + current_lengths[index] + 
+//System.out.println("SdaiModel ++++++   instance: " + edef.getName(null) +
+//"   ident = " + app_inst.instance_identifier +
+//"   index: " + index +
+//"   current_lengths[index]: " + current_lengths[index] +
 //"    model: " + name);
 				if (app_inst.instance_identifier > largest_identifier) {
 					largest_identifier = app_inst.instance_identifier;
@@ -6189,17 +6208,17 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
                             //System.out.println("repo="+sArmRepoName+" model="+sArmModelName+" lArmPL="+lArmPL);
                             break;
                     }
-                    
+
                     SdaiRepository repo = null;
                     SdaiModel model = null;
-                    
+
                     if (sArmRepoName.equalsIgnoreCase("") || sArmRepoName.equalsIgnoreCase(repository.getName())) {
                         repo = repository;
                     }
                     else {
                         repo = repository.session.linkRepositoryFast( sArmRepoName, null);
                     }
-                    
+
                     if (repo != null) {
                         if (!repo.isActive()) {
                             repo.openRepository();
@@ -6258,7 +6277,7 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 			    bt = stream.readByte();
             }
             //if (name.equals("test_aim")) System.out.print("["+(char)bt+"]");
-            
+
 			if (bt != 'E') {
 				bin_file_exception(AdditionalMessages.BF_DAM);
 			}
@@ -6299,7 +6318,7 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 	}
 
 
-	private void process_not_found(int ind, DataInput stream, long n_instances, boolean small) 
+	private void process_not_found(int ind, DataInput stream, long n_instances, boolean small)
 			throws java.io.IOException, SdaiException {
 		to_entities[ind] = -1;
 		if (small) {
@@ -6340,7 +6359,7 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 
 
 	private void load_unrecognized_instance(DataInput stream, SdaiModel mod,
-				int version, StreamUTF streamUtf) 
+				int version, StreamUTF streamUtf)
 			throws java.io.IOException, SdaiException {
 		if (version <= 1) {
 			long ident = stream.readLong();
@@ -6352,7 +6371,7 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 	}
 
 
-	private byte bypass_value_for_binary(DataInput stream, SdaiModel mod, 
+	private byte bypass_value_for_binary(DataInput stream, SdaiModel mod,
 				boolean byte_needed, byte sym, StreamUTF streamUtf)
 				throws java.io.IOException, SdaiException, ArrayIndexOutOfBoundsException {
 		byte bt;
@@ -6472,7 +6491,7 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 					throw new SdaiException(SdaiException.SY_ERR, base);
 				}
 				ident = stream.readLong();
-				if (!file_saved && rep_name.length() > SdaiSession.DEF_REP_NAME_LENGTH && 
+				if (!file_saved && rep_name.length() > SdaiSession.DEF_REP_NAME_LENGTH &&
 						rep_name.substring(0, SdaiSession.DEF_REP_NAME_LENGTH).equals(SdaiSession.DEF_REP_NAME)) {
 					mod.ex_repositories[mod.n_ex_repositories - 1] = SdaiSession.DEF_REP_NAME;
 				} else {
@@ -6540,7 +6559,7 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 
 
 /**
-	Loads the data contained in the binary file to this SdaiModel (old version, 
+	Loads the data contained in the binary file to this SdaiModel (old version,
 	valid up to the build 119 inclusively).
 */
 	private long loadStream1(DataInput stream) throws SdaiException {
@@ -6693,12 +6712,12 @@ if (SdaiSession.debug) System.out.println(" ^^^^^ last byte = " + (char)bt);
 
 
 /**
-	Prepares the array inst_idents consisting of identifiers of all instances 
-   contained in this model. The array is created by reading the beginning of 
-   the model's binary file. In the case of exceptions a warning message is 
-   printed and the array is made empty. This method is nontrivially executed 
-   only for binary files formed with build 249 or later. Otherwise, again the 
-   array is left empty.	The method is invoked in the following methods: 
+	Prepares the array inst_idents consisting of identifiers of all instances
+   contained in this model. The array is created by reading the beginning of
+   the model's binary file. In the case of exceptions a warning message is
+   printed and the array is made empty. This method is nontrivially executed
+   only for binary files formed with build 249 or later. Otherwise, again the
+   array is left empty.	The method is invoked in the following methods:
    openRepository, endReadOnlyAccess, endReadWriteAccess.
 */
 	void loadInstanceIdentifiers() throws SdaiException {
@@ -6727,10 +6746,10 @@ if (SdaiSession.debug) System.out.println(" ^^^^^ last byte = " + (char)bt);
 			}
 		} catch (IOException ex) {
 			if (repository.session.logWriterSession != null) {
-				repository.session.printlnSession(AdditionalMessages.BF_MNF1 + handle.getAbsolutePath() + 
+				repository.session.printlnSession(AdditionalMessages.BF_MNF1 + handle.getAbsolutePath() +
 					AdditionalMessages.BF_MNF2);
 			} else {
-				SdaiSession.println(AdditionalMessages.BF_MNF1 + handle.getAbsolutePath() + 
+				SdaiSession.println(AdditionalMessages.BF_MNF1 + handle.getAbsolutePath() +
 					AdditionalMessages.BF_MNF2);
 			}
 			all_inst_count = 0;
@@ -6781,9 +6800,9 @@ if (SdaiSession.debug) System.out.println(" ^^^^^ last byte = " + (char)bt);
 
 
 /**
-	Prepares the array inst_idents consisting of identifiers of all instances 
-   contained in this model. The array is created by reading the beginning of 
-   the model's binary file. The method is invoked in loadInstanceIdentifiers() 
+	Prepares the array inst_idents consisting of identifiers of all instances
+   contained in this model. The array is created by reading the beginning of
+   the model's binary file. The method is invoked in loadInstanceIdentifiers()
    and loadInstanceIdentifiersSystemRepo.
 */
 	void loadInstanceIdentifiers(DataInput stream) throws SdaiException, IOException {
@@ -6813,7 +6832,7 @@ if (SdaiSession.debug) System.out.println(" ^^^^^ last byte = " + (char)bt);
 
 
 /**
-	Prepares an instance of the class ComplexEntityValue to store 
+	Prepares an instance of the class ComplexEntityValue to store
 	the values of an entity instance.
 	Used in methods substituteInstance and saveStream.
 */
@@ -6920,14 +6939,14 @@ if (SdaiSession.debug) System.out.println(" ^^^^^ last byte = " + (char)bt);
 /*if (repository != SdaiSession.systemRepository)
 System.out.println(" SdaiModel  changeReferences invoked for: #" + owner.instance_identifier);
 if (repository != SdaiSession.systemRepository)
-System.out.println(" SdaiModel  ~~~~~~ model: " + owner.owning_model.name + 
+System.out.println(" SdaiModel  ~~~~~~ model: " + owner.owning_model.name +
 "     modified: " + owner.owning_model.modified);*/
 		owner.changeReferences(con, reference);
 //		if (repository != SdaiSession.systemRepository) {
 //			owner.owning_model.modified = true;
 //		}
 /*if (repository != SdaiSession.systemRepository)
-System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name + 
+System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name +
 "     modified: " + owner.owning_model.modified);*/
 	}
 
@@ -6966,7 +6985,7 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 
 
 /**
-	Sorts instances (separately of each entity data type) in increasing order 
+	Sorts instances (separately of each entity data type) in increasing order
 	of their identifiers.
 */
 	void sort_inside_extents() {
@@ -6983,7 +7002,7 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 
 
 /**
-	Enlarges an array (a row of 'instances_sim') allocated for 
+	Enlarges an array (a row of 'instances_sim') allocated for
 	storing instances of the specified (by parameter 'index') entity data type.
 	This method is invoked in makeInstance method in class SSuper.
 */
@@ -7036,10 +7055,10 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 */
     private void save_instance_remote(CEntity owning_instance, ComplexEntityValue entity_values, DataOutput stream, int version) throws java.io.IOException, SdaiException {
 		CEntity_definition def = entity_values.def;
-        
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
-        
+
 		for (int i = 0; i < def.noOfPartialEntityTypes; i++) {
 			EntityValue pval = entity_values.entityValues[i];
 			if (pval == null) {
@@ -7053,7 +7072,7 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 					String base = SdaiSession.line_separator + AdditionalMessages.BF_FVAL;
 					throw new SdaiException(SdaiException.SY_ERR, base);
 				}
-                
+
 			}
 		}
         stream.writeInt(baos.size());
@@ -7065,11 +7084,11 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 
 
 /**
-	Loads identifier and attribute values of an entity instance from the 
+	Loads identifier and attribute values of an entity instance from the
 	binary file (new version of the method).
 */
 	private void load_instance(ComplexEntityValue inst, DataInput stream, CEntity owning_instance,
-							   CEntity_definition def, int n_entities_from_file, int def_types_count, 
+							   CEntity_definition def, int n_entities_from_file, int def_types_count,
 							   int version, int spec_type_index, boolean mod_small, StreamUTF streamUtf)
 			throws java.io.IOException, SdaiException {
 		int i, j;
@@ -7106,16 +7125,16 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 			inst.entityValues[i].def = (CEntity_definition)partial_def;
 			int count_of_values = partial_def.noOfPartialAttributes;
 			if (spec_type_index >= 0 && dummy_attrs[spec_type_index][i] > 0) {
-				read_dummies(dummy_attrs[spec_type_index][i], stream, owning_instance, 
+				read_dummies(dummy_attrs[spec_type_index][i], stream, owning_instance,
 					n_entities_from_file, def_types_count, mod_small, streamUtf);
 			}
-//if (repository != SdaiSession.systemRepository) 
-//System.out.println(" SdaiModel ??? def.noOfPartialEntityTypes: " + def.noOfPartialEntityTypes + 
-//"  prt_def: " + ((CEntity_definition)partial_def).getName(null) + "   count_of_values: " + count_of_values + 
+//if (repository != SdaiSession.systemRepository)
+//System.out.println(" SdaiModel ??? def.noOfPartialEntityTypes: " + def.noOfPartialEntityTypes +
+//"  prt_def: " + ((CEntity_definition)partial_def).getName(null) + "   count_of_values: " + count_of_values +
 //"  dummy_attrs[spec_type_index][i]: " + dummy_attrs[spec_type_index][i]);
 			if (count_of_values <= 0) {
 				if (spec_type_index >= 0 && type2type[spec_type_index][i] >= 0) {
-					load_dummy_values(type2type[spec_type_index][i], stream, owning_instance, 
+					load_dummy_values(type2type[spec_type_index][i], stream, owning_instance,
 						n_entities_from_file, def_types_count, mod_small, streamUtf);
 				}
 				inst.entityValues[i].count = 0;
@@ -7132,7 +7151,7 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 				pval.enlarge(count_of_values);
 			}
 //if (spec_type_index >= 0 && repository != SdaiSession.systemRepository) {
-//System.out.println(" SdaiModel +++++   partial_def: " + ((CEntity_definition)partial_def).getName(null) + 
+//System.out.println(" SdaiModel +++++   partial_def: " + ((CEntity_definition)partial_def).getName(null) +
 //"  i=" + i + "   type2type[i]: " + type2type[spec_type_index][i]);}
 			if (spec_type_index < 0 || type2type[spec_type_index][i] == -1) {
 				int k = 0;
@@ -7160,18 +7179,18 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 				}
 				pval.count = count_of_values;
 			} else {
-				load_incomp_partial(pval, count_of_values, type2type[spec_type_index][i], stream, 
+				load_incomp_partial(pval, count_of_values, type2type[spec_type_index][i], stream,
 					owning_instance, n_entities_from_file, def_types_count, mod_small, streamUtf);
 			}
 		}
 		if (spec_type_index >= 0 && dummy_attrs[spec_type_index][def.noOfPartialEntityTypes] > 0) {
-			read_dummies(dummy_attrs[spec_type_index][def.noOfPartialEntityTypes], stream, 
+			read_dummies(dummy_attrs[spec_type_index][def.noOfPartialEntityTypes], stream,
 				owning_instance, n_entities_from_file, def_types_count, mod_small, streamUtf);
 		}
 	}
 
 
-	private void read_dummies(int dummy_count, DataInput stream, CEntity owning_instance, 
+	private void read_dummies(int dummy_count, DataInput stream, CEntity owning_instance,
 			int n_entities_from_file, int def_types_count, boolean mod_small, StreamUTF streamUtf)
 			throws java.io.IOException, SdaiException {
 		if (dummy_val == null) {
@@ -7189,7 +7208,7 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 	}
 
 
-	private void load_incomp_partial(EntityValue pval, int count_of_values, int simple_ind, DataInput stream, 
+	private void load_incomp_partial(EntityValue pval, int count_of_values, int simple_ind, DataInput stream,
 					CEntity owning_instance, int n_entities_from_file,
 					int def_types_count, boolean mod_small, StreamUTF streamUtf)
 			throws java.io.IOException, SdaiException {
@@ -7222,7 +7241,7 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 	}
 
 
-	private void load_dummy_values(int simple_ind, DataInput stream, CEntity owning_instance, 
+	private void load_dummy_values(int simple_ind, DataInput stream, CEntity owning_instance,
 					int n_entities_from_file, int def_types_count, boolean mod_small, StreamUTF streamUtf)
 				throws java.io.IOException, SdaiException {
 		if (dummy_val == null) {
@@ -7241,7 +7260,7 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 
 
 /**
-	Loads identifier and attribute values of an entity instance from the 
+	Loads identifier and attribute values of an entity instance from the
 	binary file (old version of the method).
 */
 	private void load_instance(StaticFields staticFields, ComplexEntityValue inst, DataInput stream,
@@ -7308,14 +7327,15 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 /**
 	Loads identifier and attribute values of an entity instance from the binary stream.
 */
-    private void load_instance_remote(ComplexEntityValue inst, DataInput stream, CEntity owning_instance, CEntity_definition def, StreamUTF streamUtf, boolean connectMissingRef)
+    private void load_instance_remote(ComplexEntityValue inst, DataInput stream, CEntity owning_instance,
+    		CEntity_definition def, StreamUTF streamUtf, CEntity[][] inst_ces, boolean connectMissingRef)
 			throws java.io.IOException, SdaiException {
 //		CEntity_definition def = (CEntity_definition)owning_instance.getInstanceType();
 		CEntityDefinition def_ = def;
 		inst.def = def;
-		
+
         //ps.println("#"+owning_instance.instance_identifier+"=");
-        
+
 		if (this == SdaiSession.baseDictionaryModel) {
 			def_.preparePartialTypes();
 		}
@@ -7351,7 +7371,7 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 					Value val = pval.values[k];
 					try {
 						extract_value_for_binary_remote(val, stream, owning_instance,
-														true, (byte)' ', streamUtf, connectMissingRef);
+														true, (byte)' ', streamUtf, inst_ces, connectMissingRef);
                         //ps.println();
 					} catch (ArrayIndexOutOfBoundsException ex) {
 						String base = SdaiSession.line_separator + AdditionalMessages.BF_ERR;
@@ -7568,7 +7588,7 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 //for (int d = 0; d < sch_data.entities.length; d++) {
 //CEntity_definition enttt = (CEntity_definition)sch_data.entities[d];
 //String nnn = enttt.getNameUpperCase();
-//System.out.println("  index = " + d + "    NAME: " + nnn + 
+//System.out.println("  index = " + d + "    NAME: " + nnn +
 //"  inst: " + enttt + "   to_entities: " + to_entities[d]);}
 //}
 				if (model == inst.owning_model) {
@@ -7853,10 +7873,10 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 			}
 		return false;
 	}
-    
+
 
 /**
-	Loads the value of an attribute of the specified entity instance from the 
+	Loads the value of an attribute of the specified entity instance from the
 	binary file (new version of the method).
 */
 	private boolean extract_value_for_binary(Value val, DataInput stream,
@@ -7960,7 +7980,14 @@ System.out.println(" SdaiModel  ~~~~~~ after model: " + owner.owning_model.name 
 				val.tag = PhFileReader.ENTITY_REFERENCE;
 				int first_index = stream.readShort();
 				if (mod_small) {
-					val.reference = instances_sim[first_index][stream.readInt()];
+					int i_index = stream.readInt();
+					if (instances_sim[first_index] == null) {
+						val.tag = PhFileReader.MISSING;
+						val.reference = null;
+					} else {
+						val.reference = instances_sim[first_index][i_index];
+					}
+					//val.reference = instances_sim[first_index][stream.readInt()];
 				} else {
 					val.reference = instances_sim[mod.to_entities[first_index]][stream.readInt()];
 				}
@@ -8160,7 +8187,7 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
 					throw new SdaiException(SdaiException.SY_ERR, base);
 				}
 				ident = stream.readLong();
-				if (!file_saved && rep_name.length() > SdaiSession.DEF_REP_NAME_LENGTH && 
+				if (!file_saved && rep_name.length() > SdaiSession.DEF_REP_NAME_LENGTH &&
 						rep_name.substring(0, SdaiSession.DEF_REP_NAME_LENGTH).equals(SdaiSession.DEF_REP_NAME)) {
 					val.tag = PhFileReader.MISSING;
 					mod.ex_repositories[mod.n_ex_repositories - 1] = SdaiSession.DEF_REP_NAME;
@@ -8193,7 +8220,7 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
 					}
 					return false;
 				} else {
-					if (ref_mod.inst_idents != null && underlying_build >= 249 && ref_mod.repository.active  
+					if (ref_mod.inst_idents != null && underlying_build >= 249 && ref_mod.repository.active
 							&& ref_mod.repository != SdaiSession.systemRepository) {
 						id_index = ref_mod.find_instance_id(ident);
 						if (id_index < 0) {
@@ -8277,7 +8304,7 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
 //int tt5 = stream.readInt();
 //System.out.println(" Case 5 referenced model: " + ref_mod.name + "   entity: " + ent_name +
 //"   instance: #" + tt5 + "   owning instance: #" + owning_instance.instance_identifier);
-					if (ref_mod.inst_idents != null && underlying_build >= 249 && ref_mod.repository.active 
+					if (ref_mod.inst_idents != null && underlying_build >= 249 && ref_mod.repository.active
 							&& ref_mod.repository != SdaiSession.systemRepository) {
 						id_index = ref_mod.find_instance_id(ident);
 						if (id_index < 0) {
@@ -8354,7 +8381,7 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
 //int tt6 = stream.readInt();
 //System.out.println(" Case 6 referenced model: " + ref_mod.name + "   entity: " + ent_name +
 //"   instance: #" + tt6 + "   owning instance: #" + owning_instance.instance_identifier);
-					if (ref_mod.inst_idents != null && underlying_build >= 249 && ref_mod.repository.active 
+					if (ref_mod.inst_idents != null && underlying_build >= 249 && ref_mod.repository.active
 							&& ref_mod.repository != SdaiSession.systemRepository) {
 						id_index = ref_mod.find_instance_id(ident);
 						if (id_index < 0) {
@@ -8409,7 +8436,7 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
 
 
 /**
-	Loads the value of an attribute of the specified entity instance from the 
+	Loads the value of an attribute of the specified entity instance from the
 	binary file (old version of the method).
 */
 	private boolean extract_value_for_binary(StaticFields staticFields, Value val, DataInput stream,
@@ -8961,8 +8988,9 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
 /**
 	Loads the value of an attribute of the specified entity instance from the binary stream.
 */
-    private boolean extract_value_for_binary_remote(Value val, DataInput stream, CEntity owning_instance, boolean byte_needed, byte sym, StreamUTF streamUtf, boolean connectMissingRef)
-				throws java.io.IOException, SdaiException, ArrayIndexOutOfBoundsException {
+    private boolean extract_value_for_binary_remote(Value val, DataInput stream, CEntity owning_instance,
+    		boolean byte_needed, byte sym, StreamUTF streamUtf, CEntity[][] inst_ces,
+    		boolean connectMissingRef) throws IOException, SdaiException, ArrayIndexOutOfBoundsException {
 		byte bt;
 		long inst_id;
 		Connector con;
@@ -8975,8 +9003,8 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
         long modId;
         SdaiRepository repository;
 
-        
-        
+
+
 		if (byte_needed) {
 			token = stream.readByte();
 		} else {
@@ -9045,13 +9073,34 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
 					val.nested_values[0] = new Value();
 				}
 				extract_value_for_binary_remote(val.nested_values[0], stream, owning_instance,
-												false, bt, streamUtf, connectMissingRef);
+												false, bt, streamUtf, inst_ces, connectMissingRef);
 				return false;
 			case '1':
                 inst_id = stream.readLong();
                 //ps.print("#"+inst_id);
                 val.tag = PhFileReader.ENTITY_REFERENCE;
-				val.reference = quick_find_instance(inst_id);
+            	val.reference = null;
+                if(inst_ces != null) {
+                	int inst_ces_left = 0;
+                	int inst_ces_right =
+                		(inst_ces.length - 1) * INST_PORTION_SIZE + inst_ces[inst_ces.length - 1].length - 1;
+            		while (inst_ces_left <= inst_ces_right) {
+            			int inst_ces_middle = (inst_ces_left + inst_ces_right) >> 1;
+            			CEntity found_inst =
+            				inst_ces[inst_ces_middle / INST_PORTION_SIZE][inst_ces_middle % INST_PORTION_SIZE];
+            			if (found_inst.instance_identifier < inst_id) {
+            				inst_ces_left = inst_ces_middle + 1;
+            			} else if (found_inst.instance_identifier > inst_id) {
+            				inst_ces_right = inst_ces_middle - 1;
+            			} else {
+            				val.reference = found_inst;
+            				break;
+            			}
+            		}
+                }
+                if(val.reference == null) {
+                	val.reference = quick_find_instance(inst_id);
+                }
 				if(val.reference == null) {
 					if(connectMissingRef) {
 						con = newConnector(this, null, inst_id, owning_instance);
@@ -9078,7 +9127,7 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
 						val.tag = PhFileReader.MISSING;
 						return false;
 					}
-                
+
 					val.tag = PhFileReader.ENTITY_REFERENCE;
 					if ((ref_mod.mode & MODE_MODE_MASK) == READ_ONLY || (ref_mod.mode & MODE_MODE_MASK) == READ_WRITE) {
 						val.reference = resolveReference2(ref_mod, inst_id, owning_instance);
@@ -9095,7 +9144,7 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
 					}
 					if (val.reference==null) {
 						SdaiTransaction trans = ref_mod.repository.session.active_transaction;
-						boolean mod_aborting = 
+						boolean mod_aborting =
 							trans != null && trans.transactionStatus == SdaiTransaction.TRANSACTION_STATUS_ABORTING;
 						if (ref_mod.committed && ref_mod.modified && mod_aborting) {
 							con = newConnector(ref_mod, null, inst_id, owning_instance);
@@ -9109,7 +9158,6 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
                 repId = stream.readLong();
                 modId = stream.readLong();
                 inst_id = stream.readLong();
-                
                 ref_mod = null;
 //                 repository = ses.getRepositoryByRef( new SdaiRepositoryRef(repId));
 				repository = ses.findRepositoryInKnownServers(repId);
@@ -9126,12 +9174,12 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
 					val.reference = newConnector(repId, modId, inst_id, owning_instance);
 					return true;
 				}
-				
+
 				if (ref_mod == null || (ref_mod.mode & MODE_MODE_MASK) < 0) {
 					val.tag = PhFileReader.MISSING;
 					return false;
 				}
-                
+
 				val.tag = PhFileReader.ENTITY_REFERENCE;
 				if ((ref_mod.mode & MODE_MODE_MASK) == READ_ONLY || (ref_mod.mode & MODE_MODE_MASK) == READ_WRITE) {
 					val.reference = resolveReference2(ref_mod, inst_id, owning_instance);
@@ -9146,10 +9194,10 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
 					val.reference = con;
 					return true;
 				}
-                
+
 				if (val.reference==null) {
 					SdaiTransaction trans = ref_mod.repository.session.active_transaction;
-					boolean mod_aborting = 
+					boolean mod_aborting =
 						trans != null && trans.transactionStatus == SdaiTransaction.TRANSACTION_STATUS_ABORTING;
 					if (ref_mod.committed && ref_mod.modified && mod_aborting) {
 						con = newConnector(ref_mod, null, inst_id, owning_instance);
@@ -9175,7 +9223,7 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
 					}
 					boolean res = extract_value_for_binary_remote(val.nested_values[index_in_list],
 																  stream, owning_instance, false, bt,
-																  streamUtf, connectMissingRef);
+																  streamUtf, inst_ces, connectMissingRef);
 					if (res) {
 						con_created = true;
 					}
@@ -9200,10 +9248,10 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
 
 
 /**
-	Tries to find a model in the repository with names given 
-	through the method's parameters. If a repository with the specified name 
+	Tries to find a model in the repository with names given
+	through the method's parameters. If a repository with the specified name
 	does not exist, then virtual repository is created.
-	If the required model is not found, then either a new ordinary model 
+	If the required model is not found, then either a new ordinary model
 	is created (if the repository is open) or a new virtual model
 	is produced (if the repository is closed).
 */
@@ -9245,8 +9293,8 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
 
 /**
 	Tries to find a model with the specified name in the repository submitted
-	through the first method's parameter. 
-	If the required model is not found, then either a new ordinary model 
+	through the first method's parameter.
+	If the required model is not found, then either a new ordinary model
 	is created (if the repository is open) or a new virtual model
 	is produced (if the repository is closed).
 */
@@ -9260,7 +9308,7 @@ if (SdaiSession.debug3)  System.out.println(" BINFILE mod_name: " + mod_name + "
 			return mod;
 		}
 		if (rep == SdaiSession.systemRepository) {
-if (SdaiSession.debug2) System.out.println("  SdaiModel   dict model created   name: " + 
+if (SdaiSession.debug2) System.out.println("  SdaiModel   dict model created   name: " +
 model_name + "  rep: " + rep.name);
 			return rep.findDictionarySdaiModel(model_name);
 		} else if (rep.active) {
@@ -9284,7 +9332,7 @@ model_name + "  rep: " + rep.name);
 
 
 /**
-	Given instance identifier, finds entity instance itself within this SdaiModel. 
+	Given instance identifier, finds entity instance itself within this SdaiModel.
 	This method is used when reading binary files.
 */
 	private CEntity resolveReference(SdaiModel mod, String entity_name,
@@ -9359,7 +9407,7 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Finds an instance of the specified (by index/reference to the ordered list of entities) 
+	Finds an instance of the specified (by index/reference to the ordered list of entities)
 	entity data type having the identifier provided through the parameter 'key'.
 */
 	int find_instance(int left, int right, int index, long key) throws SdaiException {
@@ -9499,7 +9547,7 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 	/**
 	 * Finds instances that are mappings of given source entity.
-	 * This method provides the similar functionality as 
+	 * This method provides the similar functionality as
 	 * {@link #findMappingInstances(EEntity_definition, ASdaiModel, ASdaiModel, int)}
 	 * and adds extra possibility to get most specific mappings of the instances.
 	 * <p>This method is part of the mapping extensions of JSDAI.
@@ -9509,7 +9557,7 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 	 * @param mappingDomain the domain for mapping constraints and dictionary data.
 	 * @param instanceMappings if not null should be an empty aggregate. The most specific entity
 	 * mappings are returned in this aggregate. The member indexes are synchronized with instance
-	 * aggregate which is returned from this method. If null then the method works as 
+	 * aggregate which is returned from this method. If null then the method works as
 	 * {@link #findMappingInstances(EEntity_definition, ASdaiModel, ASdaiModel, int)}
 	 * @param mode Should always be {@link EEntity#NO_RESTRICTIONS} - no restrictions.
 	 * @return list of instances that satisfy requirements. If <code>instanceMappings</code> is
@@ -9571,7 +9619,7 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 	/**
 	 * Finds instances that are mappings of given source entity.
-	 * This method provides the similar functionality as 
+	 * This method provides the similar functionality as
 	 * {@link #findMappingInstances(EEntity_mapping, ASdaiModel, ASdaiModel, int)}
 	 * and adds extra possibility to get most specific mappings of the instances.
 	 * <p>This method is part of the mapping extensions of JSDAI.
@@ -9582,7 +9630,7 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 	 * @param mappingDomain the domain for mapping constraints and dictionary data.
 	 * @param instanceMappings if not null should be an empty aggregate. The most specific entity
 	 * mappings are returned in this aggregate. The member indexes are synchronized with instance
-	 * aggregate which is returned from this method. If null then the method works as 
+	 * aggregate which is returned from this method. If null then the method works as
 	 * {@link #findMappingInstances(EEntity_definition, ASdaiModel, ASdaiModel, int)}
 	 * @param mode Should always be {@link EEntity#NO_RESTRICTIONS} - no restrictions.
 	 * @return list of instances that satisfy requirements. If <code>instanceMappings</code> is
@@ -9732,16 +9780,16 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Creates an aggregate representing all instances of the specified entity data type. 
-	The aggregate really is empty (contains only some auxiliary information), 
-	access operations on it are, in fact, simulated by taking instances from 
+	Creates an aggregate representing all instances of the specified entity data type.
+	The aggregate really is empty (contains only some auxiliary information),
+	access operations on it are, in fact, simulated by taking instances from
 	the array 'instances_sim'.
-	The method is invoked within getInstances(EEntity_definition type) and 
+	The method is invoked within getInstances(EEntity_definition type) and
 	getInstances(Class type).
 */
 	private AEntity getInstancesInternal(SchemaData sch_data, int index) throws SdaiException {
 		provideInstancesForTypeIfNeeded(index);
-        
+
 		AEntity instancesInExtent;
 		try {
 			instancesInExtent = (AEntity)sch_data.getAggregateClassByIndex(index).newInstance();
@@ -9910,7 +9958,7 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 	Creates an aggregate consisting of all instances
 	of those entities which contain specified simple entity data types.
 	The latter are collected into array 'defs'.
-	The method is invoked within getInstances(EEntity_definition types[]) and 
+	The method is invoked within getInstances(EEntity_definition types[]) and
 	getInstances(Class types[]).
 */
 	private AEntity getInstancesInternal2(StaticFields staticFields, int n_defs) throws SdaiException {
@@ -10025,7 +10073,7 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 /**
 	Sorts the array 'defs' consisting of the specified simple entity data types.
-	Invoked in methods: getInstancesInternal2, getInstanceCountInternal2, 
+	Invoked in methods: getInstancesInternal2, getInstanceCountInternal2,
 	getExactInstanceCount(EEntity_definition types[]).
 */
 	private void sortDefs(StaticFields staticFields, int n_defs) {
@@ -10190,17 +10238,17 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Creates an aggregate representing all instances of the specified entity data type. 
+	Creates an aggregate representing all instances of the specified entity data type.
 	The instances of any of its subtypes are not assumed to be represented by this aggregate.
-	The aggregate really is empty (contains only some auxiliary information), 
-	access operations on it are, in fact, simulated by taking instances from 
+	The aggregate really is empty (contains only some auxiliary information),
+	access operations on it are, in fact, simulated by taking instances from
 	the array 'instances_sim'.
-	The method is invoked within getExactInstances(EEntity_definition type) and 
+	The method is invoked within getExactInstances(EEntity_definition type) and
 	getExactInstances(Class type).
 */
 	private AEntity getExactInstancesInternal(SchemaData sch_data, int index) throws SdaiException {
 		provideInstancesForExactTypeIfNeeded(index);
-        
+
         AEntity instancesInExtent;
 		try {
 			instancesInExtent = (AEntity)sch_data.getAggregateClassByIndex(index).newInstance();
@@ -10351,7 +10399,7 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 /**
 	Computes the number of instances of the specified entity data type
 	and of all its subtypes.
-	The method is invoked within getInstanceCount(EEntity_definition type) and 
+	The method is invoked within getInstanceCount(EEntity_definition type) and
 	getInstanceCount(Class type).
 */
 	int getInstanceCountInternal(int index) throws SdaiException {
@@ -10568,9 +10616,9 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 /**
 	Computes the total number of instances of those entities which
-	contain specified simple entity data types. 
-	The latter are collected into array 'defs'. 
-	The method is invoked within getInstanceCount(EEntity_definition types[]) and 
+	contain specified simple entity data types.
+	The latter are collected into array 'defs'.
+	The method is invoked within getInstanceCount(EEntity_definition types[]) and
 	getInstanceCount(Class types[]).
 */
 	private int getInstanceCountInternal2(StaticFields staticFields, int n_defs) throws SdaiException {
@@ -10893,10 +10941,10 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
  * Otherwise, SdaiException ED_NVLD is thrown.
  * Passing null value to the method's
  * parameter results in SdaiException VA_NSET.
- * The method is not applicable to models from "System Repository". 
- * Moreover, no instance from the models of "System Repository" can be copied to 
- * any model from any repository. 
- * In both these cases SdaiException FN_NAVL is thrown. 
+ * The method is not applicable to models from "System Repository".
+ * Moreover, no instance from the models of "System Repository" can be copied to
+ * any model from any repository.
+ * In both these cases SdaiException FN_NAVL is thrown.
  * <p> This method is an extension of JSDAI, which is
  * not a part of the standard.
  * @param source the given entity instance.
@@ -10945,10 +10993,10 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
  * Otherwise, SdaiException ED_NVLD is thrown.
  * Passing null value to the method's
  * parameter results in SdaiException VA_NSET.
- * The method is not applicable to models from "System Repository". 
- * Moreover, no instance from the models of "System Repository" can be copied to 
- * any model from any repository. 
- * In both these cases SdaiException FN_NAVL is thrown. 
+ * The method is not applicable to models from "System Repository".
+ * Moreover, no instance from the models of "System Repository" can be copied to
+ * any model from any repository.
+ * In both these cases SdaiException FN_NAVL is thrown.
  * <p> This method is an extension of JSDAI, which is
  * not a part of the standard.
  * <P><B>Example:</B>
@@ -11051,7 +11099,7 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 		i = 0;
 		while (it_source.next()) {
 			source_inst = (CEntity)source.getCurrentMemberEntity(it_source);
-			staticFields.for_instances_sorting[i].copy_values(staticFields, source_inst, 
+			staticFields.for_instances_sorting[i].copy_values(staticFields, source_inst,
 				(CEntity_definition)source_inst.getInstanceType(), aggr, this);
 			if (repository.session.undo_redo_file != null && !bypass) {
 				repository.session.undoRedoCreatePrepare(staticFields.for_instances_sorting[i], mod_state);
@@ -11120,9 +11168,9 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Given an instance identifier, finds the entity instance in an 
+	Given an instance identifier, finds the entity instance in an
 	auxiliary array 'sorted_instances' with this identifier.
-	This method was introduced for the needs of copyInstance and 
+	This method was introduced for the needs of copyInstance and
 	copyInstances methods.
 	It is invoked in only one place in class Value.
 */
@@ -11146,8 +11194,8 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 /**
 	Given an instance identifier, finds its position in the sorted
-   array inst_idents. If instance with this identifier is not found, 
-   then value -1 is returned. This method was introduced to fast check 
+   array inst_idents. If instance with this identifier is not found,
+   then value -1 is returned. This method was introduced to fast check
    if instance belongs to a specified model.
 */
 	int find_instance_id(long key) throws SdaiException {
@@ -11156,8 +11204,8 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Given an instance identifier, finds its position in the sorted array 
-	inst_idents. If instance with this identifier is not found, then value -1 
+	Given an instance identifier, finds its position in the sorted array
+	inst_idents. If instance with this identifier is not found, then value -1
 	is returned. This method is invoked in find_instance_id(long key).
 */
 	private int find_instance_id(int left, int right, long key) throws SdaiException {
@@ -11263,10 +11311,10 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Checks if the specified entity instance belongs to this SdaiModel. 
-	This method is invoked in isMemberListOfModels in CAggregate, which 
+	Checks if the specified entity instance belongs to this SdaiModel.
+	This method is invoked in isMemberListOfModels in CAggregate, which
 	in turn is invoked within isMember method there.
-	It works when isMember is applied to an aggregate returned by 
+	It works when isMember is applied to an aggregate returned by
 	getInstances method in ASdaiModel class.
 */
 	boolean isMemberListOfModels(CEntity value, Object type) throws SdaiException {
@@ -11277,14 +11325,14 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 		if (type == extent_type) {
 			true_extent_index = extent_index;
 		} else if (type instanceof CEntity_definition) {
-			true_extent_index = 
+			true_extent_index =
 				underlying_schema.owning_model.schemaData.findEntityExtentIndex((CEntity_definition)type);
 			if (true_extent_index < 0) {
 				return false;
 //				throw new SdaiException(SdaiException.ED_NVLD, (CEntity_definition)type);
 			}
 		} else {
-			true_extent_index = 
+			true_extent_index =
 				underlying_schema.owning_model.schemaData.findEntityExtentIndex((Class)type);
 			if (true_extent_index < 0) {
 				return false;
@@ -11302,7 +11350,7 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 			}
 			if (index >= 0) {
 				if ((sim_status[index] & SIM_SORTED) != 0) {
-					int ind = find_instance(0, lengths[index] - 1, index, 
+					int ind = find_instance(0, lengths[index] - 1, index,
 						value.instance_identifier);
 					if (ind >= 0 && instances_sim[index][ind] == value) {
 						return true;
@@ -11334,10 +11382,10 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Checks if the specified entity instance belongs to this SdaiModel. 
-	This method is invoked in isMemberListOfModelsExact in CAggregate, which 
+	Checks if the specified entity instance belongs to this SdaiModel.
+	This method is invoked in isMemberListOfModelsExact in CAggregate, which
 	in turn is invoked within isMember method there.
-	It works when isMember is applied to an aggregate returned by 
+	It works when isMember is applied to an aggregate returned by
 	getExactInstances method in ASdaiModel class.
 */
 	boolean isMemberListOfModelsExact(CEntity value, Object type) throws SdaiException {
@@ -11348,14 +11396,14 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 		if (type == extent_type) {
 			index = extent_index;
 		} else if (type instanceof CEntity_definition) {
-			index = 
+			index =
 				underlying_schema.owning_model.schemaData.findEntityExtentIndex((CEntity_definition)type);
 			if (index < 0) {
 				return false;
 //				throw new SdaiException(SdaiException.ED_NVLD, (CEntity_definition)type);
 			}
 		} else {
-			index = 
+			index =
 				underlying_schema.owning_model.schemaData.findEntityExtentIndex((Class)type);
 			if (index < 0) {
 				return false;
@@ -11386,11 +11434,11 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Given an index, finds the entity instance in this SdaiModel at the position 
-	specified by this index. 
-	This method is invoked in getByIndexListOfModels in CAggregate, which 
+	Given an index, finds the entity instance in this SdaiModel at the position
+	specified by this index.
+	This method is invoked in getByIndexListOfModels in CAggregate, which
 	in turn is invoked within getByIndexObject method there.
-	It works when getByIndexObject is applied to an aggregate returned by 
+	It works when getByIndexObject is applied to an aggregate returned by
 	getInstances method in ASdaiModel class.
 */
 	Object getByIndexListOfModels(int index, Object type) throws SdaiException {
@@ -11401,13 +11449,13 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 		if (type == extent_type) {
 			true_extent_index = extent_index;
 		} else if (type instanceof CEntity_definition) {
-			true_extent_index = 
+			true_extent_index =
 				underlying_schema.owning_model.schemaData.findEntityExtentIndex((CEntity_definition)type);
 			if (true_extent_index < 0) {
 				throw new SdaiException(SdaiException.ED_NVLD, (CEntity_definition)type);
 			}
 		} else {
-			true_extent_index = 
+			true_extent_index =
 				underlying_schema.owning_model.schemaData.findEntityExtentIndex((Class)type);
 			if (true_extent_index == -1) {
 				throw new SdaiException(SdaiException.ED_NDEF);
@@ -11463,11 +11511,11 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Given an index within a row of 'instances_sim', finds the entity instance in 
-	this SdaiModel at the position specified by this index. 
-	This method is invoked in getByIndexListOfModelsExact in CAggregate, which 
+	Given an index within a row of 'instances_sim', finds the entity instance in
+	this SdaiModel at the position specified by this index.
+	This method is invoked in getByIndexListOfModelsExact in CAggregate, which
 	in turn is invoked within getByIndexObject method there.
-	It works when getByIndexObject is applied to an aggregate returned by 
+	It works when getByIndexObject is applied to an aggregate returned by
 	getExactInstances method in ASdaiModel class.
 */
 	Object getByIndexListOfModelsExact(int index, Object type) throws SdaiException {
@@ -11476,13 +11524,13 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 		if (type == extent_type) {
 			true_extent_index = extent_index;
 		} else if (type instanceof CEntity_definition) {
-			true_extent_index = 
+			true_extent_index =
 				underlying_schema.owning_model.schemaData.findEntityExtentIndex((CEntity_definition)type);
 			if (true_extent_index < 0) {
 				throw new SdaiException(SdaiException.ED_NVLD, (CEntity_definition)type);
 			}
 		} else {
-			true_extent_index = 
+			true_extent_index =
 				underlying_schema.owning_model.schemaData.findEntityExtentIndex((Class)type);
 			if (true_extent_index == -1) {
 				throw new SdaiException(SdaiException.ED_NDEF);
@@ -11522,10 +11570,10 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 /**
 	Writes entity instances of the specified entity data type and its subtypes
-	to a string. 
-	This method is invoked in toStringListOfModels in CAggregate, which 
+	to a string.
+	This method is invoked in toStringListOfModels in CAggregate, which
 	in turn is invoked within toString method there.
-	It works when toString is applied to an aggregate returned by 
+	It works when toString is applied to an aggregate returned by
 	getInstances method in ASdaiModel class.
 */
 	int toStringListOfModels(StaticFields staticFields, int str_index, CAggregate aggr, boolean first, Object type) throws SdaiException {
@@ -11536,14 +11584,14 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 		if (type == extent_type) {
 			true_extent_index = extent_index;
 		} else if (type instanceof CEntity_definition) {
-			true_extent_index = 
+			true_extent_index =
 				underlying_schema.owning_model.schemaData.findEntityExtentIndex((CEntity_definition)type);
 			if (true_extent_index < 0) {
 				return str_index;
 //				throw new SdaiException(SdaiException.ED_NVLD, (CEntity_definition)type);
 			}
 		} else {
-			true_extent_index = 
+			true_extent_index =
 				underlying_schema.owning_model.schemaData.findEntityExtentIndex((Class)type);
 			if (true_extent_index < 0) {
 				return str_index;
@@ -11592,10 +11640,10 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 /**
 	Writes entity instances of the specified entity data type (but not its subtypes)
-	to a string. 
-	This method is invoked in toStringListOfModelsExact in CAggregate, which 
+	to a string.
+	This method is invoked in toStringListOfModelsExact in CAggregate, which
 	in turn is invoked within toString method there.
-	It works when toString is applied to an aggregate returned by 
+	It works when toString is applied to an aggregate returned by
 	getExactInstances method in ASdaiModel class.
 */
 	int toStringListOfModelsExact(StaticFields staticFields, int str_index, CAggregate aggr, boolean first, Object type) throws SdaiException {
@@ -11606,14 +11654,14 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 		if (type == extent_type) {
 			index = extent_index;
 		} else if (type instanceof CEntity_definition) {
-			index = 
+			index =
 				underlying_schema.owning_model.schemaData.findEntityExtentIndex((CEntity_definition)type);
 			if (index < 0) {
 				return str_index;
 //				throw new SdaiException(SdaiException.ED_NVLD, (CEntity_definition)type);
 			}
 		} else {
-			index = 
+			index =
 				underlying_schema.owning_model.schemaData.findEntityExtentIndex((Class)type);
 			if (index < 0) {
 				return str_index;
@@ -11665,8 +11713,8 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Preparing auxiliary array 'for_instances_sorting' to sort instances 
-	(separately of each entity data type) in increasing order 
+	Preparing auxiliary array 'for_instances_sorting' to sort instances
+	(separately of each entity data type) in increasing order
 	of their identifiers.
 */
 	void prepareForSorting() {
@@ -11693,8 +11741,8 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Sorting instances of an entity data type (specified by an index/reference 
-	to an ordered list of entity types) in increasing order 
+	Sorting instances of an entity data type (specified by an index/reference
+	to an ordered list of entity types) in increasing order
 	of their identifiers.
 */
 	void sortInstances(int entity_index) {
@@ -11708,7 +11756,7 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Sorting submitted array of entity instances in increasing order 
+	Sorting submitted array of entity instances in increasing order
 	of their identifiers.
 	It is a recursive procedure invoked outside in sortInstances(int entity_index).
 */
@@ -11758,8 +11806,8 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Sorting all instances of this model in increasing order 
-	of their identifiers. The count of instances is returned, 
+	Sorting all instances of this model in increasing order
+	of their identifiers. The count of instances is returned,
 	while the instances themselves appear in java array 'instances_all'.
 */
 	int sortAllInstances() {
@@ -11856,12 +11904,12 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 //System.out.println("  SdaiModel !!!!!!  start_index: " + start_index +
 //"   middle: " + middle +
 //"   start_type: " + start_type + "    middle_type: " + middle_type);
-			sortAllInstances(instances_all, instances_all_aux, start_type, middle_type, 
+			sortAllInstances(instances_all, instances_all_aux, start_type, middle_type,
 				start_index, middle);
 //System.out.println("  SdaiModel &&&&&  middle: " + middle +
 //"   end_index: " + end_index +
 //"   middle_type: " + middle_type + "    end_type: " + end_type);
-			sortAllInstances(instances_all, instances_all_aux, middle_type + 1, end_type, 
+			sortAllInstances(instances_all, instances_all_aux, middle_type + 1, end_type,
 				middle, end_index);
 		}
 		if (instances_all_aux[middle-1].instance_identifier <=
@@ -11929,7 +11977,7 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Loads the data contained in the header of the specified remote model to this SdaiModel. 
+	Loads the data contained in the header of the specified remote model to this SdaiModel.
 */
 	protected void fromSdaiModelHeader(SdaiModelHeader modelHeader) throws SdaiException {
 //		name = modelHeader.name;
@@ -11955,7 +12003,7 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Increases the size of the auxiliary array 'ex_models' twice. 
+	Increases the size of the auxiliary array 'ex_models' twice.
 */
 	void ensureModsCapacity() {
 		int new_length = ex_models.length * 2;
@@ -11966,8 +12014,8 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Increases the size of the auxiliary array 'defs' used to store and 
-	afterwards process given entity definitions in getInstances methods 
+	Increases the size of the auxiliary array 'defs' used to store and
+	afterwards process given entity definitions in getInstances methods
 	having parameter an array of some type (either EEntity_definition or Class).
 */
 	private void ensureDefsCapacity() {
@@ -11980,7 +12028,7 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Increases the size of byte array used to store strings (as values of 
+	Increases the size of byte array used to store strings (as values of
 	attributes) when reading binary files.
 */
 	private static void enlarge_string(StaticFields staticFields, int demand) {
@@ -12002,8 +12050,8 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 
 
 /**
-	Increases the size of an auxiliary array used to detect all defined types 
-	encountered in the definitions of populated entity data types within 
+	Increases the size of an auxiliary array used to detect all defined types
+	encountered in the definitions of populated entity data types within
 	the schema which is underlying for this SdaiModel.
 */
 	private void enlargeChain() {
@@ -12114,19 +12162,19 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 			}
 	}
 
-	/** This is a callback method. 
+	/** This is a callback method.
 	 * It is called during commit from SdaiTransaction.commit
 	 * when model header needs to be committed.
 	 * Normally should be overridden in remote models.
 	 */
 	boolean committingHeader(boolean commit_bridge) throws SdaiException {
 		boolean modif_remote =
-			modified_outside_contents 
+			modified_outside_contents
 			|| ((modified || modified_by_import) && (mode & MODE_MODE_MASK) != NO_ACCESS);
 		return committingHeaderInternal(commit_bridge, modif_remote);
 	}
 
-	/** This is a callback method. 
+	/** This is a callback method.
 	 * It is called during commit from SdaiTransaction.commit
 	 * when model state needs to be committed.
 	 */
@@ -12187,7 +12235,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 	}
 
 
-	/** This is a callback method. 
+	/** This is a callback method.
 	 * It is called during commit from SdaiTransaction.commit
 	 * when model is to be deleted.
 	 */
@@ -12201,14 +12249,14 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 	void entityDeleted(CEntity instance) throws SdaiException {
 		entityDeletedInternal(instance);
 	}
-	
-	/** This is a callback method. 
+
+	/** This is a callback method.
 	 * It is called when model is deleted before it's internal state is
 	 * removed and before possible commit is performed (if transaction is aborted
 	 * this never happens)
 	 */
 	protected void scheduledForDeletion() throws SdaiException { }
-	
+
 	protected static long getInstanceIdentifier(CEntity instance) {
 		return instance.instance_identifier;
 	}
@@ -12219,23 +12267,23 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 
 	abstract protected boolean committingHeaderInternal(boolean commit_bridge,
 														boolean modif_remote) throws SdaiException;
-	/** This is a callback method. 
+	/** This is a callback method.
 	 * It is internally called during commit from SdaiTransaction.commit
 	 * when model state needs to be committed.
 	 */
 	abstract protected boolean committingInternal(boolean commit_bridge, boolean modif_remote, boolean modif_all) throws SdaiException;
 
-	/** This is a callback method. 
+	/** This is a callback method.
 	 * It is internally called during commit from SdaiTransaction.commit
 	 * when model is to be deleted.
 	 */
 	abstract protected boolean deletingInternal(boolean commit_bridge, SdaiRepository repo) throws SdaiException;
-	
+
 	/**
 	 * Callback method which is internally called when the entity is deleted
 	 */
 	protected void entityDeletedInternal(CEntity instance) throws SdaiException {
-		repository.removeEntityExternalData(instance, true);
+		repository.removeEntityExternalData(instance, true, false);
 	}
 
 	boolean aborting(SdaiTransaction trans, boolean endTransaction) throws SdaiException {
@@ -12245,7 +12293,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		return result;
 	}
 
-	protected abstract boolean abortingInternal(SdaiTransaction trans, boolean modif, 
+	protected abstract boolean abortingInternal(SdaiTransaction trans, boolean modif,
 		boolean modif_outside_contents, boolean endTransaction) throws SdaiException;
 
 	protected void abortingCreated() throws SdaiException {
@@ -12333,7 +12381,9 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		if (instances_sim[pop_index][inst_index].instance_identifier != inst_id) {
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
-		System.arraycopy(instances_sim[pop_index], inst_index+1, instances_sim[pop_index], 
+		repository.removeEntityExternalData(instances_sim[pop_index][inst_index], true, false);
+		instances_sim[pop_index][inst_index].deletedObject();
+		System.arraycopy(instances_sim[pop_index], inst_index+1, instances_sim[pop_index],
 			inst_index, instances_sim[pop_index].length-inst_index-1);
 		lengths[pop_index]--;
 		modified = modif;
@@ -12341,15 +12391,16 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 	}
 
 
-	CEntity create_deleted(RandomAccessFile ur_f, long inst_id, int pop_index, int inst_index, boolean modif, boolean inst_del) 
+	CEntity create_deleted(RandomAccessFile ur_f, long inst_id, int pop_index, int inst_index, boolean modif, boolean inst_del)
 			throws  java.io.IOException, SdaiException {
 		SchemaData sch_data = underlying_schema.modelDictionary.schemaData;
 		CEntityDefinition edef = sch_data.entities[pop_index];
 		SdaiModel m = ((CSchema_definition)edef.owning_model.described_schema).modelDictionary;
-		CEntity instance = m.schemaData.super_inst.makeInstance(((CEntityDefinition)edef).getEntityClass(), 
+		CEntity instance = m.schemaData.super_inst.makeInstance(((CEntityDefinition)edef).getEntityClass(),
 			this, -1, 0);
 		instance.instance_identifier = inst_id;
 		instance.load_values(ur_f, (CEntity_definition)edef);
+		instance.modified();
 
 		CEntity[] pop_instances_sim = instances_sim[pop_index];
 		System.arraycopy(pop_instances_sim, inst_index, pop_instances_sim, inst_index + 1, lengths[pop_index] - inst_index);
@@ -12358,11 +12409,12 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		modified = modif;
  		inst_deleted = inst_del;
 		invalidate_quick_find();
+		repository.restoreExternalDataForInstance(instance);
 		return instance;
 	}
 
 
-	CEntity_definition restore_modified(RandomAccessFile ur_f, long inst_id, int pop_index, int inst_index, boolean modif) 
+	CEntity_definition restore_modified(RandomAccessFile ur_f, long inst_id, int pop_index, int inst_index, boolean modif)
 			throws  java.io.IOException, SdaiException {
 		SchemaData sch_data = underlying_schema.modelDictionary.schemaData;
 		CEntity_definition edef = (CEntity_definition)sch_data.entities[pop_index];
@@ -12382,20 +12434,21 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 	}
 
 
-	CEntity create_substituted(RandomAccessFile ur_f, long inst_id, int pop_index) 
+	CEntity create_substituted(RandomAccessFile ur_f, long inst_id, int pop_index)
 			throws  java.io.IOException, SdaiException {
 		SchemaData sch_data = underlying_schema.modelDictionary.schemaData;
 		CEntityDefinition edef = sch_data.entities[pop_index];
 		SdaiModel m = ((CSchema_definition)edef.owning_model.described_schema).modelDictionary;
-		CEntity instance = m.schemaData.super_inst.makeInstance(((CEntityDefinition)edef).getEntityClass(), 
+		CEntity instance = m.schemaData.super_inst.makeInstance(((CEntityDefinition)edef).getEntityClass(),
 			this, -1, 0);
 		instance.load_values(ur_f, (CEntity_definition)edef);
 		instance.instance_identifier = inst_id;
+		instance.modified();
 		return instance;
 	}
 
 
-	void delete_substitute(RandomAccessFile ur_f, long f_pointer, CEntity older, 
+	void delete_substitute(RandomAccessFile ur_f, long f_pointer, CEntity older,
 			long inst_id, int pop_index, int inst_index, boolean modif) throws  java.io.IOException, SdaiException {
 		verify_model_RW(ur_f, f_pointer, false);
 		CEntity substitute = instances_sim[pop_index][inst_index];
@@ -12409,7 +12462,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		}
 		substitute.changeInverseReferences(substitute, older, false, false, false);
 		older.inverseList = substitute.inverseList;
-		System.arraycopy(instances_sim[pop_index], inst_index+1, instances_sim[pop_index], 
+		System.arraycopy(instances_sim[pop_index], inst_index+1, instances_sim[pop_index],
 			inst_index, instances_sim[pop_index].length-inst_index-1);
 		lengths[pop_index]--;
 		bypass_setAll = true;
@@ -12425,39 +12478,51 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 	}
 
 
-	void include_substituted(RandomAccessFile ur_f, CEntity instance, int pop_index, int inst_index, boolean modif, boolean inst_del) 
+	void include_substituted(RandomAccessFile ur_f, CEntity instance, int pop_index, int inst_index, boolean modif, boolean inst_del)
 			throws  java.io.IOException, SdaiException {
-		CEntity[] pop_instances_sim = instances_sim[pop_index];
-		System.arraycopy(pop_instances_sim, inst_index, pop_instances_sim, inst_index + 1, lengths[pop_index] - inst_index);
+		int true_index;
+		SdaiModel m = instance.owning_model;
+		if ((m.mode & MODE_MODE_MASK) == READ_ONLY) {
+			true_index = m.find_entityRO(m.dictionary.schemaData.entities[pop_index]);
+		} else {
+			true_index = pop_index;
+		}
+//		CEntity[] pop_instances_sim = instances_sim[pop_index];
+		CEntity[] pop_instances_sim = instances_sim[true_index];
+//		System.arraycopy(pop_instances_sim, inst_index, pop_instances_sim, inst_index + 1, lengths[pop_index] - inst_index);
+		System.arraycopy(pop_instances_sim, inst_index, pop_instances_sim, inst_index + 1, lengths[true_index] - inst_index);
 		pop_instances_sim[inst_index] = instance;
-		lengths[pop_index]++;
+//		lengths[pop_index]++;
+		lengths[true_index]++;
 		modified = modif;
  		inst_deleted = inst_del;
 		invalidate_quick_find();
 	}
 
 
-	CEntity create_again(RandomAccessFile ur_f, long f_pointer, long inst_id, int pop_index, int inst_index) 
+	CEntity create_again(RandomAccessFile ur_f, long f_pointer, long inst_id, int pop_index, int inst_index)
 			throws  java.io.IOException, SdaiException {
 		verify_model_RW(ur_f, f_pointer, true);
 		SchemaData sch_data = underlying_schema.modelDictionary.schemaData;
 		CEntityDefinition edef = sch_data.entities[pop_index];
 		SdaiModel m = ((CSchema_definition)edef.owning_model.described_schema).modelDictionary;
-		CEntity instance = m.schemaData.super_inst.makeInstance(((CEntityDefinition)edef).getEntityClass(), 
+		CEntity instance = m.schemaData.super_inst.makeInstance(((CEntityDefinition)edef).getEntityClass(),
 			this, -1, 0);
 		instance.load_values(ur_f, (CEntity_definition)instance.getInstanceType());
 		instance.instance_identifier = inst_id;
+		instance.modified();
 		CEntity[] pop_instances_sim = instances_sim[pop_index];
 		System.arraycopy(pop_instances_sim, inst_index, pop_instances_sim, inst_index + 1, lengths[pop_index] - inst_index);
 		pop_instances_sim[inst_index] = instance;
 		lengths[pop_index]++;
 		modified = true;
 		invalidate_quick_find();
+		repository.restoreExternalDataForInstance(instance);
 		return instance;
 	}
 
 
-	CEntity_definition delete_again(RandomAccessFile ur_f, long f_pointer, long inst_id, int pop_index, int inst_index) 
+	CEntity_definition delete_again(RandomAccessFile ur_f, long f_pointer, long inst_id, int pop_index, int inst_index)
 			throws  java.io.IOException, SdaiException {
 		verify_model_RW(ur_f, f_pointer, true);
 		CEntity inst = instances_sim[pop_index][inst_index];
@@ -12470,8 +12535,9 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 			ur_f.seek(f_pointer);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
+		repository.removeEntityExternalData(inst, true, false);
 		inst.changeInverseReferences(inst, null, false, false, false);
-		System.arraycopy(instances_sim[pop_index], inst_index+1, instances_sim[pop_index], 
+		System.arraycopy(instances_sim[pop_index], inst_index+1, instances_sim[pop_index],
 			inst_index, instances_sim[pop_index].length-inst_index-1);
 		lengths[pop_index]--;
 		bypass_setAll = true;
@@ -12488,7 +12554,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 	}
 
 
-	void modified_again(RandomAccessFile ur_f, long f_pointer, long inst_id, int pop_index, int inst_index) 
+	void modified_again(RandomAccessFile ur_f, long f_pointer, long inst_id, int pop_index, int inst_index)
 			throws  java.io.IOException, SdaiException {
 		verify_model_RW(ur_f, f_pointer, true);
 		SchemaData sch_data = underlying_schema.modelDictionary.schemaData;
@@ -12513,8 +12579,8 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 	}
 
 
-	CEntity substitute_again(RandomAccessFile ur_f, long f_pointer, SdaiModel old_mod, long inst_id, 
-			int pop_index, int inst_index, long new_inst_id, int new_pop_index, int new_inst_index, 
+	CEntity substitute_again(RandomAccessFile ur_f, long f_pointer, SdaiModel old_mod, long inst_id,
+			int pop_index, int inst_index, long new_inst_id, int new_pop_index, int new_inst_index,
 			boolean modif) throws java.io.IOException, SdaiException {
 		if (old_mod == null) {
 			ur_f.seek(f_pointer);
@@ -12548,18 +12614,20 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 					insertEntityInstance_undo(older, new_pop_index, new_inst_index);
 					old_mod.inst_deleted = true;
 				}
-//				modified = true;
+				modified = true;
+			} else {
+				modified = modif;
 			}
-			modified = modif;
 //			repository.session.bypass_values(ur_f, new_def);
 			older.load_values(ur_f, new_def);
 			return older;
 		}
 
 		SdaiModel m = ((CSchema_definition)new_def.owning_model.described_schema).modelDictionary;
-		CEntity substitute = m.schemaData.super_inst.makeInstance(((CEntityDefinition)new_def).getEntityClass(), 
+		CEntity substitute = m.schemaData.super_inst.makeInstance(((CEntityDefinition)new_def).getEntityClass(),
 			this, -1, 0);
 		substitute.instance_identifier = new_inst_id;
+		substitute.modified();
 //		substitute.load_values(ur_f, new_def);
 		if (repository != old_mod.repository) {
 			old_mod.inst_deleted = true;
@@ -12603,6 +12671,11 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 			ur_f.seek(f_pointer);
 			se.restore_group_back();
 			throw new SdaiException(SdaiException.MX_NDEF, this);
+		}
+		if ((mode & MODE_MODE_MASK) != READ_WRITE) {
+			ur_f.seek(f_pointer);
+			se.restore_group_back();
+			throw new SdaiException(SdaiException.MX_NRW, this);
 		}
 	}
 
@@ -12652,15 +12725,15 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
         }
         else return false;
     }
-    
+
     protected final String getNameFast() {
         return name;
     }
-    
+
     protected boolean checkModelByName(SdaiModelRemote modelRemote) throws SdaiException {
 		return false;
 	}
-    
+
 /**
  * Returns model location as a <code>URL</code>.
  * <p> The models can be stored in repository directory or in SDAI file.
@@ -12709,7 +12782,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		if (underlying_schema == null) {
 			getUnderlyingSchema();
 		}
-		EEntity_definition definition = 
+		EEntity_definition definition =
 			((SchemaDefinition)underlying_schema).getEntityDefinition(entityRef.getTypeIndex());
 		if(definition != null) {
 			return definition;
@@ -12875,7 +12948,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		System.arraycopy(instances_sim, insFromStartIdx, newInstances_sim, insToStartIdx, insFromEndIdx - insFromStartIdx);
 		System.arraycopy(sim_status, insFromStartIdx, newSim_status, insToStartIdx, insFromEndIdx - insFromStartIdx);
 	}
-	
+
 	private static void fillInstancesSim(CEntity[][] newInstances_sim, short[] newSim_status, int idx) {
 		newInstances_sim[idx] =  emptyArray;
 		newSim_status[idx] = (short)(SIM_SORTED | SIM_LOADED_NONE);
@@ -12930,6 +13003,11 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		return ind >= 0 ? instances_sim[typeIndex][ind] : null;
 	}
 
+	protected final void forwardRepositoryRemoveLoadedEntityExternalData(CEntity instance,
+			boolean deletedExternalData) throws SdaiException {
+		repository.removeLoadedEntityExternalData(instance, deletedExternalData);
+	}
+	
 	// SdaiModelConnector implementation
 
 	/**
@@ -12963,7 +13041,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 			if(connector == inConnectors) {
 				inConnectors = connector.nextIn;
 			}
-			connector.prevIn.nextIn = connector.nextIn;	
+			connector.prevIn.nextIn = connector.nextIn;
 			connector.nextIn.prevIn = connector.prevIn;
 			connector.nextIn = null;
 			connector.prevIn = null;
@@ -13019,7 +13097,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		private int minIndex;
 		private SimIdxEnd() { }
 	}
-    
+
     protected static abstract class Connector extends InverseEntity  {
 		private static final SdaiModelConnector MISSING_CONNECTOR = new SdaiModelConnector() {
 				public void connectInConnector(Connector connector) { }
@@ -13046,12 +13124,12 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
         protected Connector prevOut;
         protected Connector nextIn;
         protected Connector prevIn;
-    
+
         SdaiCommon getOwner() {
             // dummy, skip
             return null;
         }
-    
+
         void modified() throws SdaiException {
             // dummy, skip
         }
@@ -13076,11 +13154,11 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
                 h.nextOut = this;
                 nextOut = modelOut.outConnectors;
             }
-			
+
             this.modelInConnector = modelInConnector;
 			modelInConnector.connectInConnector(this);
 		}
-    
+
         protected final void disconnect() throws SdaiException {
             if (owning_instance == null) {
                 return;
@@ -13101,8 +13179,8 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
             }
 
 			modelInConnector.disconnectInConnector(this);
-    
-            owning_instance = null;		
+
+            owning_instance = null;
             modelInConnector = null;
         /* now this connector is ready for garbage collection */
         }
@@ -13135,13 +13213,13 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
             System.out.println("   Referenced model: " + modelInConnector);
             System.out.println("   Referenced instance identifier: #" + instance_identifier);
         }
-    
+
         protected final void changeReferences(InverseEntity old, InverseEntity newer) throws SdaiException {
             // nothing to do!
-            // Connector stands for a usage of an entity instance and this 
+            // Connector stands for a usage of an entity instance and this
             // has no populated "entity attribute" in this state.
         }
-        
+
         /**
             Returns entity instance obtained as a result of resolving a reference
             represented by a connector. If the first parameter is <code>true</code>,
@@ -13155,19 +13233,19 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
         */
         protected abstract CEntity resolveConnector(boolean remove_con, boolean providePartial,
 													boolean aborting) throws SdaiException;
-        
+
         protected abstract Connector copyConnector(CEntity owning_instance) throws SdaiException;
 
 		protected abstract String getEntityNameUpperCase();
-        
+
         protected static CEntity quickFindInstance(SdaiModel model, long instance_identifier) throws SdaiException {
             return model.quick_find_instance(instance_identifier);
         }
-        
+
         protected static void inverseAdd(CEntity instance, InverseEntity owning_instance) throws SdaiException {
             instance.inverseAdd(owning_instance);
         }
-        
+
         protected static String additionalMessageWithSeparator(String message) {
             String text = SdaiSession.line_separator;
             if (message.equalsIgnoreCase("BF_IINC")) {
@@ -13175,7 +13253,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
             }
             return text;
         }
-        
+
     }
 
 }

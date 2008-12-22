@@ -44,7 +44,7 @@ public class SearchForCycles {
 			if (marked.contains(adj))
 				continue;
 			
-			List r = enumCycles(graph, adj, m, new HashSet(marked));
+			List r = enumCycles(graph, adj, m, marked);
 			if (r != null) {
 				for (Iterator j = r.iterator(); j.hasNext();) {
 					List cycle = (List) j.next();
@@ -66,15 +66,30 @@ public class SearchForCycles {
 		return res.size() > 0 ? res : null;
 	}
 
-	static Set enumAllUsefroms(ASdaiModel domain, ESchema_definition schema)
-		throws SdaiException {
+	static Set enumAllUsefroms(ASdaiModel domain, ESchema_definition schema,
+		boolean includeReferenceFroms, boolean includePartialInterfaceSpec) throws SdaiException {
 		
 		Set result = new HashSet();
-		
-		AUse_from_specification aUsefroms = new AUse_from_specification();
-		CUse_from_specification.usedinCurrent_schema(null, schema, domain, aUsefroms);
-		for (SdaiIterator i = aUsefroms.createIterator(); i.next();) {
-			EUse_from_specification eUsefrom = aUsefroms.getCurrentMember(i);
+
+		AInterface_specification aInterfaces = new AInterface_specification();
+		CUse_from_specification.usedinCurrent_schema(null, schema, domain, aInterfaces);
+		if (includeReferenceFroms) {
+			CReference_from_specification.usedinCurrent_schema(null, schema, domain, aInterfaces);
+		}
+		for (SdaiIterator i = aInterfaces.createIterator(); i.next();) {
+			EInterface_specification eInterface = aInterfaces.getCurrentMember(i);
+			if (!includePartialInterfaceSpec) {
+				if (eInterface instanceof EUse_from_specification) {
+					if (((EUse_from_specification) eInterface).testItems(null)) {
+						continue;
+					}
+				} else {
+					if (((EReference_from_specification) eInterface).testItems(null)) {
+						continue;
+					}
+				}
+			}
+			EInterface_specification eUsefrom = aInterfaces.getCurrentMember(i);
 			EGeneric_schema_definition foreignSchema = eUsefrom.getForeign_schema(null);
 			String foreignName = foreignSchema.getName(null);
 			result.add(foreignName);
@@ -83,8 +98,8 @@ public class SearchForCycles {
 		return result;
 	}
 	
-	private static Map enumUsefroms(SdaiRepository repo, String[] roots)
-		throws SdaiException {
+	private static Map enumUsefroms(SdaiRepository repo, String[] roots,
+		boolean includeReferenceFroms, boolean includePartialInterfaceSpec) throws SdaiException {
 		
 		// activate all models
 		ASdaiModel models = SearchForRedundantUsefroms.activateModels(repo);
@@ -95,13 +110,13 @@ public class SearchForCycles {
 		// enum usefroms
 		Map usefroms = new HashMap();
 		for (int i = 0; i < roots.length; i++)
-			enumUsefroms(models, schemas, usefroms, roots[i]);
+			enumUsefroms(models, schemas, usefroms, roots[i], includeReferenceFroms, includePartialInterfaceSpec);
 		
 		return usefroms;
 	}
 	
-	private static void enumUsefroms(ASdaiModel domain, Map schemas, Map usefroms, String schemaName)
-		throws SdaiException {
+	private static void enumUsefroms(ASdaiModel domain, Map schemas, Map usefroms,
+		String schemaName, boolean includeReferenceFroms, boolean includePartialInterfaceSpec) throws SdaiException {
 
 		if (usefroms.containsKey(schemaName))
 			return;
@@ -112,20 +127,20 @@ public class SearchForCycles {
 			return;
 		}
 
-		Set myUsefroms = enumAllUsefroms(domain, schema);
+		Set myUsefroms = enumAllUsefroms(domain, schema, includeReferenceFroms, includePartialInterfaceSpec);
 		usefroms.put(schemaName, myUsefroms);
 		
 		for (Iterator i = myUsefroms.iterator(); i.hasNext();) {
 			String s = (String) i.next();
-			enumUsefroms(domain, schemas, usefroms, s);
+			enumUsefroms(domain, schemas, usefroms, s, includeReferenceFroms, includePartialInterfaceSpec);
 		}
 	}
 
-	public static List getCycles(SdaiRepository repo, String[] roots)
-		throws SdaiException {
+	public static List getCycles(SdaiRepository repo, String[] roots, boolean includeReferenceFroms,
+			boolean includePartialInterfaceSpec) throws SdaiException {
 		
 		List allCycles = new LinkedList();
-		Map graph = enumUsefroms(repo, roots);
+		Map graph = enumUsefroms(repo, roots, includeReferenceFroms, includePartialInterfaceSpec);
 		
 		// look for cycles
 		Set marked = new HashSet();
@@ -160,7 +175,7 @@ public class SearchForCycles {
 		System.out.println("Initializing JSDAI...");
 		SdaiRepository repo = SearchForRedundantUsefroms.getRepository("ExpressCompilerRepo");
 
-		List cycles = getCycles(repo, args);
+		List cycles = getCycles(repo, args, false, true);
 		
 		int cycleNr = 1;
 		for (Iterator j = cycles.iterator(); j.hasNext();) {

@@ -151,13 +151,13 @@ public class LateBindingWriter extends Iso1030328Writer {
 		partEntityInstHnd = new PartEntityInstHnd();
 		attributeInstTwoHnd = new AttributeInstTwoHnd();
 		terminalHandler = new TerminalHandler();
-		attrAttHandlers = new ContextHandler[] 
-			{ new IntegerLitAttHnd(), new RealLitAttHnd(), new StringLitAttHnd(), 
+		attrAttHandlers = new ContextHandler[]
+			{ new IntegerLitAttHnd(), new RealLitAttHnd(), new StringLitAttHnd(),
 			  new LogicalLitAttHnd(), new EntityRefAttHnd(), null, null,
 			  new AggregateAttHnd(), new EnumRefAttHnd(), terminalHandler };
 		attrAttHandlers[ATTR_HND_TYPE] = new TypeLitHnd(attrAttHandlers);
 		attrAttHandlers[ATTR_HND_SELECT] = new SelectLitHnd(attrAttHandlers);
-		attrAggHandlers = new ContextHandler[] 
+		attrAggHandlers = new ContextHandler[]
 			{ new IntegerLitAggHnd(), new RealLitAggHnd(), new StringLitAggHnd(),
 			  new LogicalLitAggHnd(), new EntityRefAggHnd(), null, null,
 			  new AggregateAggHnd(), new EnumRefAggHnd(), terminalHandler };
@@ -179,7 +179,7 @@ public class LateBindingWriter extends Iso1030328Writer {
 			throw wrapper;
 		}
 	}
-	
+
 	/**
 	 * Accepts notification about document end events.
 	 *
@@ -228,7 +228,7 @@ public class LateBindingWriter extends Iso1030328Writer {
 					return super.newHandlerForElement(namespaceURI, localName, qname);
 				}
 			} else {
-				throw new SAXNotSupportedException("Expected iso_10303_28_header/" + 
+				throw new SAXNotSupportedException("Expected iso_10303_28_header/" +
 												   "schema_population/express_data");
 			}
 		}
@@ -263,13 +263,13 @@ public class LateBindingWriter extends Iso1030328Writer {
 			if(name == null) {
 				name = "schema" + Integer.toString(schemaInstanceNum);
 			}
-			SchemaInstance schInstance = 
+			SchemaInstance schInstance =
 				repository.createSchemaInstance(name, findSchemaClass(governingSchema));
 			schInstances.put(schInstance, governedSections);
 		}
 
 	}
-	
+
 	private class SchemaInstHandler extends ContextHandler {
 
 		protected void handleElement(Attributes attr)
@@ -287,7 +287,7 @@ public class LateBindingWriter extends Iso1030328Writer {
 				model.startReadWriteAccess();
 				modelIds.put(expressDataId, model);
 			} else {
-				throw new 
+				throw new
 					SAXNotSupportedException("Element schema_instance has to be child of express_data");
 			}
 		}
@@ -308,9 +308,15 @@ public class LateBindingWriter extends Iso1030328Writer {
 		protected void handleElement(Attributes attr)
 		throws SAXException, SdaiException {
 			if(ctxTop > 0 && ctxElemStack[ctxTop - 1] == SCHEMA_INSTANCE) {
-				String entName = attr.getValue("", "express_entity_name");
-				String schemaName = attr.getValue("", "schema_name");
-				EEntity newInstance = model.createEntityInstance(findEntityDefintion(entName, schemaName));
+				EEntity newInstance;
+				try {
+					String entName = attr.getValue("", "express_entity_name");
+					String schemaName = attr.getValue("", "schema_name");
+					newInstance = model.createEntityInstance(findEntityDefintion(entName, schemaName));
+				} catch (SdaiException e) {
+					processRecoverableHandlerException(e);
+					return;
+				}
 				String idString = attr.getValue("", "id");
 				entityDefTop = 0;
 				entityDef[0] = newInstance.getInstanceType();
@@ -347,14 +353,19 @@ public class LateBindingWriter extends Iso1030328Writer {
 		}
 
 	}
-	
+
 	private class PartEntityInstHnd extends EntityInstHandler {
 
 		protected void handleElement(Attributes attr)
 		throws SAXException, SdaiException {
-			String entName = attr.getValue("", "express_entity_name");
-			String schemaName = attr.getValue("", "schema_name");
-			entityDef[++entityDefTop] = findEntityDefintion(entName, schemaName);
+			try {
+				String entName = attr.getValue("", "express_entity_name");
+				String schemaName = attr.getValue("", "schema_name");
+				entityDef[++entityDefTop] = findEntityDefintion(entName, schemaName);
+			} catch (SdaiException e) {
+				processRecoverableHandlerException(e);
+				return;
+			}
 		}
 
 		protected void endElement()
@@ -404,8 +415,14 @@ public class LateBindingWriter extends Iso1030328Writer {
 
 		protected void handleElement(Attributes attr)
 		throws SAXException, SdaiException {
-			EAttribute attribute = findAttribute(entityDef[entityDefTop], 
-												 attr.getValue("", "express_attribute_name"));
+			EAttribute attribute;
+			try {
+				attribute = findAttribute(entityDef[entityDefTop],
+						attr.getValue("", "express_attribute_name"));
+			} catch (SdaiException e) {
+				processRecoverableHandlerException(e);
+				return;
+			}
 			pushCreator(new AttributeInstCr(attribute));
 		}
 
@@ -527,7 +544,7 @@ public class LateBindingWriter extends Iso1030328Writer {
 	private class TypeLitHnd extends TypeBaseHnd {
 
 		private ContextHandler[] handlers;
-		
+
 		private TypeLitHnd(ContextHandler[] handlers) {
 			this.handlers = handlers;
 		}
@@ -552,16 +569,21 @@ public class LateBindingWriter extends Iso1030328Writer {
 	private class SelectLitHnd extends TypeBaseHnd {
 
 		private ContextHandler[] handlers;
-		
+
 		private SelectLitHnd(ContextHandler[] handlers) {
 			this.handlers = handlers;
 		}
 
 		protected void handleElement(Attributes attr)
 		throws SAXException, SdaiException {
-			String selectName = attr.getValue("", "express_type_name");
-			String schemaName = attr.getValue("", "schema_name");
-			selectDefinedType = findDefinedType(selectName, schemaName);
+			try {
+				String selectName = attr.getValue("", "express_type_name");
+				String schemaName = attr.getValue("", "schema_name");
+				selectDefinedType = findDefinedType(selectName, schemaName);
+			} catch (SdaiException e) {
+				processRecoverableHandlerException(e);
+				return;
+			}
 			pushCreator(new SelectLitCr(selectDefinedType));
 		}
 
@@ -711,9 +733,14 @@ public class LateBindingWriter extends Iso1030328Writer {
 		protected void endElement()
 		throws SAXException, SdaiException {
 			String enumValue = charDataBuf.toString();
-			EDefined_type definedType = 
-				selectDefinedType != null ? selectDefinedType : findDefinedType(typeName, typeSchemaName);
-			EEnumeration_type enumType = 
+			EDefined_type definedType;
+			try {
+				definedType = selectDefinedType != null ? selectDefinedType : findDefinedType(typeName, typeSchemaName);
+			} catch (SdaiException e) {
+				processRecoverableHandlerException(e);
+				return;
+			}
+			EEnumeration_type enumType =
 				(EEnumeration_type)definedType.getDomain(null);
 			A_string elements = enumType.getElements(null);
 			SdaiIterator elementIter = elements.createIterator();

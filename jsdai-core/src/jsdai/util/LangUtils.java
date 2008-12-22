@@ -1124,17 +1124,19 @@ public class LangUtils {
          return false;
       }
       jsdai.dictionary.EDefined_type types[] = new jsdai.dictionary.EDefined_type[20];
+      List attributes = new ArrayList();
       jsdai.dictionary.EEntity_definition ed = source.getInstanceType();
-      jsdai.dictionary.AExplicit_attribute attributes = ed.getExplicit_attributes(null);
-      jsdai.lang.SdaiIterator i = attributes.createIterator();
+      LangUtils.findAllExplicitAttributesForOneEntity(ed, attributes);
+      // jsdai.dictionary.AExplicit_attribute attributes = ed.getExplicit_attributes(null);
+      //jsdai.lang.SdaiIterator i = attributes.createIterator();
       jsdai.dictionary.EExplicit_attribute attribute = null;
-      while (i.next()) {
-         attribute = attributes.getCurrentMember(i);
-         if (attribute.getDomain(null)instanceof EEntity_definition) {
+      for(int index=0,count=attributes.size(); index < count; index++){
+         attribute = (jsdai.dictionary.EExplicit_attribute)attributes.get(index);
+//         if (attribute.getDomain(null)instanceof EEntity_definition) {
             if (source.testAttribute(attribute, types) != 0) {
                target.set(attribute, source.get_object(attribute), types);
             }
-         }
+//         }
       }
       return true;
    }

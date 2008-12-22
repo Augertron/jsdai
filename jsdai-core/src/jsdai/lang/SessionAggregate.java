@@ -1081,6 +1081,15 @@ abstract class SessionAggregate extends A_basis implements Aggregate {
 		System.arraycopy(myData, 0, new_array, 0, myLength);
 		myData = new_array;
 	}
+	void ensureCapacity(int req) {
+		int new_length = myData.length * 2;
+		if (req > new_length) {
+			new_length = req;
+		}
+		Object[] new_array = new Object[new_length];
+		System.arraycopy(myData, 0, new_array, 0, myLength);
+		myData = new_array;
+	}
 
 
 /**

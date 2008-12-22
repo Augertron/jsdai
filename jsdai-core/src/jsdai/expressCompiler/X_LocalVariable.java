@@ -383,12 +383,17 @@ public class X_LocalVariable extends SimpleNode {
 			// see if we already have this label
 			if (jc.in_function) {
 
+
+      // null pointer protection
+			if ((jc != null) && (jc.keynode != null) && (((X_FunctionDecl)jc.keynode).hm_labels != null)) { 
+	      
+	      
 				if (((X_FunctionDecl)jc.keynode).hm_labels.containsKey(label)) {
 					String first_name = (String)((X_FunctionDecl)jc.keynode).hm_labels.get(label);
 					type_name = first_name + ".getActualType()";
 					return type_name;
 				}
-	
+			} // null pointer protection
 		 } else
 			if (jc.in_procedure) {
 

@@ -40,18 +40,18 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 
 	File fileSource;
 	File fileDestination;
-	
+
 	private ZipOutputStream zipOutputStream;
 	private DataOutput dataOutputStream;
-	
+
 	HashMap hmUntouchedEntries;
-	
+
 	boolean modifiedExtData;
-	
+
 	boolean nameWithRecurrenceNumber;
-	
+
 	boolean emptyDataOutputStream;
-	
+
 
 	SdaiRepositoryZipImpl(SdaiSession session, String name, Object location,
 	boolean fCheckNameLocation) throws SdaiException {
@@ -59,22 +59,22 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 		modifiedExtData = false;
 		nameWithRecurrenceNumber = false;
 	}
-	
+
 	SdaiRepositoryZipImpl(SdaiSession session, String name) throws SdaiException {
 		super(session, name);
 		modifiedExtData = false;
 		nameWithRecurrenceNumber = false;
 	}
-	
-	
+
+
 	protected SdaiModel createModel(String model_name, CSchema_definition schema) throws SdaiException {
 		return new SdaiModelZipImpl(model_name, schema, this);
 	}
-	
+
 	protected SdaiModel createModel(String model_name) {
 		return new SdaiModelZipImpl(model_name, this);
 	}
-	
+
 	protected SdaiModel createModel(String model_name, SdaiModel dict) throws SdaiException {
 		return new SdaiModelZipImpl(model_name, this, dict);
 	}
@@ -89,7 +89,7 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 				ZipEntry zipEntry = zipFile.getEntry("repository");
 				InputStream inputStream = zipFile.getInputStream( zipEntry);
 				if (inputStream != null) {
-					DataInputStream dataInputStream = 
+					DataInputStream dataInputStream =
 						new DataInputStream(new BufferedInputStream(inputStream));
 					try {
 						loadRepositoryStream(dataInputStream);
@@ -130,14 +130,14 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 			saveRepositoryStream(dataOutputStream);
 			((OutputStream)dataOutputStream).flush();
 			zipOutputStream.closeEntry();
-			
+
 			emptyDataOutputStream = false;
 			hmUntouchedEntries.remove(zeName);
 		} catch (IOException ex) {
 			throw new SdaiException(SdaiException.SY_ERR, ex);
 		}
 	}
-	
+
 	protected void deleteRepositoryInternal() throws SdaiException {
 		deleteRepositoryCommon(false);
 		File fileSource = new File((String)location);
@@ -153,11 +153,11 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 		}
 		session = null;
 	}
-	
-	
+
+
 	protected ExternalData createNewEntityExternalData(CEntity entity, boolean existing) throws SdaiException {
 		ExternalDataZipImpl newEntityExternalData = null;
-		
+
 		Long instanceIdentifier = new Long(entity.instance_identifier);
 		//System.out.println("---createNewEntityExternalData--");//--VV--030704--
 		if (existing) {
@@ -189,24 +189,24 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 		}
 		return newEntityExternalData;
 	}
-	
-	
+
+
 	protected boolean testNewEntityExternalData(CEntity entity) throws SdaiException {
 		return getExtDataProps().containsKey(String.valueOf(entity.instance_identifier));
 	}
-	
-	void removeEntityExternalData(CEntity instance, boolean deletingInstance) throws SdaiException {
+
+	void removeEntityExternalData(CEntity instance, boolean deletingInstance, boolean deletedExternalData) throws SdaiException {
 		//System.out.println("removeEntityExternalData");   //--VV--030708--
 		Long instanceIdentifier = new Long(instance.instance_identifier);
 		Object externalDataObject = (entityExternalData != null) ? entityExternalData.remove(instanceIdentifier) : null;
-		if (externalDataObject != null || !deletingInstance) {
+		if (externalDataObject != null || !deletingInstance || testNewEntityExternalData(instance)) {
 			if (entityRemovedExternalData == null) {
 				entityRemovedExternalData = new HashMap();
 			}
-			entityRemovedExternalData.put(instanceIdentifier, instance);
+			entityRemovedExternalData.put(instanceIdentifier, externalDataObject != null ? externalDataObject : instance);
+			modifiedExtData = true;
 			if(externalDataObject != null) {
-				modifiedExtData = true;
-				((ExternalData)externalDataObject).removed();
+				((ExternalData)externalDataObject).setDeleted(deletedExternalData);
 			}
 		}
 	}
@@ -226,16 +226,16 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 		hmUntouchedEntries.remove("e"+str_inst_id);
 		extDataProps.remove(str_inst_id);
 	}
-	
-	
+
+
 	protected void removeEntityExternalDataLocalImpl(ExternalDataLocalImpl externalDataObject) throws SdaiException {
 		removeEntityExternalDataLocalImpl(externalDataObject.owningEntity.instance_identifier);
 	}
-	
-	
+
+
 	protected Properties takeExtDataProperties() throws SdaiException {
 		extDataProps = new Properties();
-		
+
 		File fileSource = new FileForZipFile((String)location);
 		//System.out.println("file = " + fileSource.getName());
 		//System.out.println("\texists = " + fileSource.exists());
@@ -259,20 +259,20 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 		}
 		return extDataProps;
 	}
-	
-	
+
+
 	protected void updateExtDataProperties() throws SdaiException {
 		DataOutput dataOutputStream = getZipDataOutputStream();
 		String zeName = "extdata.properties";
 		ZipEntry zeExtData = new ZipEntry( zeName);
-		
+
 		try {
 			ZipOutputStream zipOutputStream = getZipOutputStreanm();
 			zipOutputStream.putNextEntry(zeExtData);
 			extDataProps.store((DataOutputStream)dataOutputStream, "External data properties");
 			((OutputStream)dataOutputStream).flush();
 			zipOutputStream.closeEntry();
-			
+
 			emptyDataOutputStream = false;
 			hmUntouchedEntries.remove(zeName);
 		} catch (IOException e) {
@@ -280,8 +280,8 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 			throw new SdaiException(SdaiException.SY_ERR, base, e);
 		}
 	}
-	
-	
+
+
 	protected void commitExternalData() throws SdaiException {
 		Iterator externalDataIter;
 
@@ -294,7 +294,10 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 				} else if(externalDataObject instanceof CEntity) {
 					removeEntityExternalDataLocalImpl(((CEntity)externalDataObject).instance_identifier);
 				} else {
-					removeEntityExternalDataLocalImpl((ExternalDataLocalImpl)externalDataObject);
+					ExternalDataLocalImpl externalData =
+						(ExternalDataLocalImpl)externalDataObject;
+					externalData.removed();
+					removeEntityExternalDataLocalImpl(externalData);
 				}
 			}
 			entityRemovedExternalData.clear();
@@ -309,11 +312,11 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 		}
 		updateExtDataProperties();
 	}
-	
-	
+
+
 	protected void preCommitting() throws SdaiException {
 		//System.out.println("--- SdaiRepositoryZipImpl > preCommitting");
-		
+
 		if (modifiedExtData) {
 			getExtDataProps();
 		}
@@ -325,14 +328,14 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 			fileDestination = new File(destinationLocation);
 		}
 		hmUntouchedEntries = new HashMap();
-		
+
 		// Removing old temporary file
 		if (fileDestination.exists()) {
 			fileDestination.delete();
 		}
-		
+
 		if (fileSource.exists()) {
-			
+
 			// Retrieving entries form source file
 			try {
 				ZipFile zipFile = new ZipFile(fileSource);
@@ -348,28 +351,28 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 		}
 		zipOutputStream = null;
 		dataOutputStream = null;
-		
+
 		emptyDataOutputStream = true;
 	}
-	
+
 	void postCommitting() throws SdaiException {
 		//System.out.println("--- SdaiRepositoryZipImpl > postCommitting");
-		
+
 		if (modifiedExtData) {
 			String zeName = "extdata.properties";
 			commitExternalData();
 			hmUntouchedEntries.remove(zeName);
 			modifiedExtData = false;
 		}
-		
+
 		/*
 		try {
 			if (fileSource.exists()) {
 				FileInputStream fileInputStream = new FileInputStream(fileSource);
 				ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(fileInputStream));
-				
+
 				ZipEntry ze;
-				
+
 				while ((ze = zipInputStream.getNextEntry()) != null) {
 					if (hmUntouchedEntries.containsKey(ze.getName())) {
 						byte[] buffer = new byte[8*1024];
@@ -399,12 +402,12 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 			if (!emptyDataOutputStream) {
 				if (dataOutputStream != null) {
 					((OutputStream)dataOutputStream).close();
-					
+
 					int countUE = hmUntouchedEntries.size();
 					if (countUE > 0 && fileSource.exists()) {
 						RandomAccessFile rafSource = new RandomAccessFile(fileSource,"r");
 						RandomAccessFile rafDestination = new RandomAccessFile(fileDestination,"rw");
-						
+
 						//--- DEST --- Reading "End of central directory record" information
 						int offsetECDRDest = (int)rafDestination.length() - 22;
 						rafDestination.seek(offsetECDRDest);
@@ -418,7 +421,7 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 						// Buffering part of destination file
 						rafDestination.read(bytesCDDest);
 						rafDestination.seek(offsetCDDest);
-						
+
 						//--- SOURCE --- Reading "End of central directory record" information
 						int offsetECDR = (int)rafSource.length() - 22;
 						rafSource.seek(offsetECDR);
@@ -431,15 +434,15 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 						rafSource.readUnsignedByte();
 						rafSource.readUnsignedByte();
 						int offsetCD = (rafSource.readUnsignedByte()+(rafSource.readUnsignedByte()<<8)+(rafSource.readUnsignedByte()<<16)+(rafSource.readUnsignedByte()<<24));
-						
+
 						rafSource.seek(offsetCD);
-						
+
 						String nameUE[] = new String[countUE];
 						int offsetUEDest[] = new int[countUE];
 						int offsetUE[] = new int[countUE];
 						int sizeUE[] = new int[countUE];
 						int currentUE = 0;
-						
+
 						//--- SOURCE --- Analysing information of entries
 						for (int i = 0; i < countEntities; i++) {
 							rafSource.skipBytes(20);
@@ -461,30 +464,30 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 							rafSource.skipBytes(extraFieldLength);
 							rafSource.skipBytes(fileCommentLength);
 							int offsetNextEntry = (int)rafSource.getFilePointer();
-							
+
 							//--- DEST --- Copying untouched entries data from source to destination file
 							if (hmUntouchedEntries.containsKey(entryName)) {
 								rafSource.seek(offsetLocalHeader);
-								
+
 								int entryLength = 30 + fileNameLength + extraFieldLength + compressedSize + 16;
 								byte entryBytes[] = new byte[entryLength];
 								rafSource.read(entryBytes);
-								
+
 								nameUE[currentUE] = entryName;
 								offsetUEDest[currentUE] = (int)rafDestination.getFilePointer();
 								sizeUE[currentUE] = fileNameLength + extraFieldLength + fileCommentLength;
 								offsetUE[currentUE] = offsetNextEntry - sizeUE[currentUE] - 46;
 								currentUE++;
-								
+
 								//Writing untouched entry data
 								rafDestination.write(entryBytes);
 								hmUntouchedEntries.remove(entryName);
 							}
-							
+
 							rafSource.seek(offsetNextEntry);
 						}
 						countUE = currentUE;
-						
+
 						if (countUE > 0) {
 							// Finding offset "End of central dir record" in buffered part of destination file
 							offsetECDRDest = -1;
@@ -494,7 +497,7 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 									break;
 								}
 							}
-							
+
 							sizeCDDest = 0;
 							offsetCDDest = (int)rafDestination.getFilePointer();
 							if (offsetECDRDest > 0) {
@@ -502,16 +505,16 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 								// Copying file headers from buffered part of destination file
 								rafDestination.write(bytesCDDest, 0, offsetECDRDest);
 								sizeCDDest += offsetECDRDest;
-								
+
 								// Copying file headers of untouched entries from source file
 								for (int i = 0; i < countUE ; i++) {
 									rafSource.seek(offsetUE[i]);
-									
+
 									byte bytesFH1[] = new byte[42];
 									rafSource.read(bytesFH1);
 									rafDestination.write(bytesFH1);
 									sizeCDDest += 42;
-									
+
 									rafSource.skipBytes(4);
 									// Writing new offset of untouched entry
 									rafDestination.writeByte(offsetUEDest[i]);
@@ -519,13 +522,13 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 									rafDestination.writeByte(offsetUEDest[i]>>16);
 									rafDestination.writeByte(offsetUEDest[i]>>24);
 									sizeCDDest += 4;
-									
+
 									byte bytesFH2[] = new byte[sizeUE[i]];
 									rafSource.read(bytesFH2);
 									rafDestination.write(bytesFH2);
 									sizeCDDest += sizeUE[i];
 								}
-								
+
 								//--- DEST --- Writing "End of central dir record" information
 								rafDestination.write(bytesCDDest, offsetECDRDest, 8);
 								// Writing total count of entries on this disk
@@ -594,8 +597,8 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 			}
 			destinationLocation = null;
 		}
-		
-		
+
+
 	}
 
 	ZipOutputStream getZipOutputStreanm() throws SdaiException {
@@ -647,14 +650,14 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 		}
 		return name;
 	}
-	
-	
+
+
 	protected boolean committingInternal(boolean commit_bridge, boolean modified) throws SdaiException {
 		saveRepositoryLocal();
 		return commit_bridge;
 	}
-	
-	
+
+
 	public void setLocation(String location) throws SdaiException {
 		if (session == null) {
 			throw new SdaiException(SdaiException.RP_NEXS);
@@ -670,7 +673,7 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 			destinationLocation = null;
 		}
 	}
-	
+
 	protected void abortingInternal(boolean modif, boolean contents_modified) throws SdaiException {
 		super.abortingInternal(modif, contents_modified);
 		destinationLocation = null;
@@ -683,12 +686,12 @@ class SdaiRepositoryZipImpl extends SdaiRepositoryLocalImpl {
 	 * This works because ZipFiles are cached by modification time.
 	 */
 	static class FileForZipFile extends File {
-		private static int fileForZipFileTimeOffset = 1;
+		static int fileForZipFileTimeOffset = 1;
 
 		FileForZipFile(String pathname) {
 			super(new File(pathname).getAbsolutePath());
 		}
-		
+
 		FileForZipFile(String parent, String child) {
 			super(parent, child);
 		}

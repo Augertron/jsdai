@@ -19,7 +19,7 @@
  * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
  * This software is also available under commercial licenses.
  * See also http://www.jsdai.net/
- */
+*/
 
 options
 {
@@ -78,14 +78,14 @@ public class Compiler2 extends Support
 	static String progress;
 	static boolean in_progress = true;
 
-	static final String xc_build     = "461";
-	static final String xc_date      = "2008-05-23";
+	static final String xc_build     = "467";
+	static final String xc_date      = "2008-11-04";
 	static final String xc_version   = "4.0.0";
 	static final String xc_title     = "JSDAI(TM) Express Compiler";
 	static final String xc_copyright = "Copyright (C) 1998-2006 LKSoftWare GmbH";
 
 	// old, perhaps updated during builds? If not, remove
-	static String build = "461";
+	static String build = "467";
 	
     final static int WA_UNKNOWN             =  0;
 		final static int WA_ATTRIBUTE_REF       =  1;
@@ -519,7 +519,7 @@ System.out.println("------------------------------");
 	flag_more_errors = false;
 	flag_complex_off = false;
   flag_implicit_select = false;
-	flag_original_expressions = false;
+	flag_original_expressions = true;
 	flag_really_original_expressions = false;
   scope_stack = new Stack();
   current_scope = new Vector();
@@ -742,8 +742,10 @@ System.out.println("------------------------------");
 			if (args[ihi].equalsIgnoreCase("-annex_a_instance")) annex_a_flag = true;
 			if (args[ihi].equalsIgnoreCase("-implicit_select")) flag_implicit_select = true;
 			if (args[ihi].equalsIgnoreCase("-is")) flag_implicit_select = true;
-			if (args[ihi].equalsIgnoreCase("-original_expressions")) flag_original_expressions = true;
-			if (args[ihi].equalsIgnoreCase("-oe")) flag_original_expressions = true;
+			if (args[ihi].equalsIgnoreCase("-original_expressions")) flag_original_expressions = true; // changed to default, no longer needed
+			if (args[ihi].equalsIgnoreCase("-oe")) flag_original_expressions = true;                   // changed to default, no longer needed
+			if (args[ihi].equalsIgnoreCase("-parsed_expressions")) flag_original_expressions = false;
+			if (args[ihi].equalsIgnoreCase("-pe")) flag_original_expressions = false;
 			if (args[ihi].equalsIgnoreCase("-really_original_expressions")) flag_really_original_expressions = true;
 			if (args[ihi].equalsIgnoreCase("-roe")) flag_really_original_expressions = true;
 			if (args[ihi].equalsIgnoreCase("-instantiate_expressions")) expression_instances = true;
@@ -1695,6 +1697,10 @@ System.out.println("------------------------------");
 
 //repository.exportClearTextEncoding("after_pass3.pf");
 
+    // ok, let's try to put resolving RENAMED here
+    ECtRenamed.resolve(repository); 
+
+
     // new pass 4
     if (monitor != null) {
 			monitor.worked(1);
@@ -2592,6 +2598,8 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef(jsdai.SExtended_dictio
 	String attribute_name;
 	Token attribute_token;
 	String attr_key = null;
+	Object temp_object = null;
+	ECtRenamed renamed = null;
 }
 {
 {
@@ -2604,6 +2612,20 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef(jsdai.SExtended_dictio
 		} else {
 			attribute_name = attribute_token.image.toLowerCase();
 		}
+
+		if (ed != null) {
+			temp_object = ed.getTemp();
+			if (temp_object != null) {
+				if (temp_object instanceof ECtRenamed) {
+					renamed = (ECtRenamed)temp_object;
+					if (renamed.isActive()) {
+						renamed.addOld(ed2, attribute_name);
+						ed.setTemp(renamed);
+					}
+				}
+			}
+		}
+
 //System.out.println("In AttributeRef, starting, ed: " + ed + ", ed2: " + ed2 + ", attr. type: " + attr_type + ", reference: " + reference + ", pass: " + parser_pass);
 //System.out.println("attribute name: " + attribute_name);
 		global_attribute_name = attribute_name;
@@ -2761,9 +2783,9 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef(jsdai.SExtended_dictio
 				}
 			if (attr_type >= 0) {
 				if (attr_type == 3) {
-// System.out.println("@X 1 name: " + attribute_name + ", ed: " + ed2 + ", attr_key: " + attr_key);
+// System.out.println("<D2008> BEFORE @X 1 (attr type = 3) name: " + attribute_name + ", ed: " + ed2 + ", attr_key: " + attr_key);
 					attr = findAttribute(attribute_name, ed2, 0, ed, attr_key);
-// System.out.println("@X attribute: " + attr);
+// System.out.println("<D2008> AFTER @X 1 (attr type = 3) attribute: " + attr);
 				}
 				else {
 // System.out.println("@X 2 name: " + attribute_name + ", ed: " + ed + ", key: " + attr_key);
@@ -2771,10 +2793,10 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef(jsdai.SExtended_dictio
 //					attr = findAttribute(attribute_name, ed, attr_type);
 					// why it was changed to ed??? with ed, redeclared attributes are redeclaring themselves.
 //if (attribute_name.equalsIgnoreCase("associated_definition")) {
-//System.out.println("DBG-AttributeRef-02, attribute_name: " + attribute_name + ", ed2: " + ed2 + ", ed: " + ed + ", key: " + attr_key);
+//System.out.println("<D2008> DBG-AttributeRef-02, attribute_name: " + attribute_name + ", ed2: " + ed2 + ", ed: " + ed + ", key: " + attr_key);
 //}
 					attr = findAttribute(attribute_name, ed2, attr_type, ed, attr_key);
-// System.out.println("@X2 attribute: " + attr);
+//System.out.println("<D2008> @X2 attribute: " + attr);
 //if (attribute_name.equalsIgnoreCase("associated_definition")) {
 //System.out.println("DBG-AttributeRef-03, attr: " + attr);
 //}
@@ -2815,7 +2837,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef(jsdai.SExtended_dictio
 //              } else {
 //                      printDDebug("##_________## Inside Attribute Ref: " + attr.getName(null));
 //              }
-//System.out.println("AttrRef returning: " + attr);		
+//System.out.println("<D2008> AttrRef returning: " + attr);		
 		return attr;
 	}
 }
@@ -3846,6 +3868,8 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier(jsdai.SExtended_
 	Object mark_obj = null;
 	String x_operand = "";
 	String attr_key = null;
+	Object temp_object = null;
+	ECtRenamed renamed = null;
 }
 {
 	{
@@ -3870,6 +3894,21 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier(jsdai.SExtended_
 
 	"." attr2 = AttributeRef(ed, ed2, attr_type, reference)
 	{
+
+
+		if (ed != null) {
+			temp_object = ed.getTemp();
+			if (temp_object != null) {
+				if (temp_object instanceof ECtRenamed) {
+					renamed = (ECtRenamed)temp_object;
+					if (renamed.isActive()) {
+						renamed.addOldAttribute(attr2);
+						ed.setTemp(renamed);
+					}
+				}
+			} // ! null
+    }
+
 
 //if (parser_pass == 4) {
 //	System.out.println("in AttributeQualifier after AttirbuteRef, ed: " + ed + ", GroupQualifier ed2: " + ed2 + ", reference: " + reference + ", active_scope: " + active_scope + ", AttributeRef result: " + attr2);
@@ -4097,6 +4136,13 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier(jsdai.SExtended_
 // System.out.println("@X 10-100 original: " + attr2 + ", found: " + attr);
 		}
 		printDebug("In AttributeQualifier, ending, attr: " + attr);
+
+ 	  if (renamed != null) {
+ 	  	if (renamed.isActive()) {
+				renamed.addNewAttribute(attr);
+  			ed.setTemp(renamed);
+			}		
+		}
 		return attr;
 	}
 }
@@ -4241,6 +4287,8 @@ jsdai.SExtended_dictionary_schema.EBag_type BagType(jsdai.lang.EEntity whose) th
 	}  
 	<OF> bt = BaseType(at)
 	{
+
+//System.out.println("<RR>bag element type: " + bt + ", pass: " + parser_pass);
 		if (parser_pass > 3) {
 //			if (bt instanceof jsdai.SExtended_dictionary_schema.ESimple_type) 
 //				at.setElement_type(null, (jsdai.SExtended_dictionary_schema.ESimple_type)bt);
@@ -6561,6 +6609,8 @@ Object FunctionCall() throws jsdai.lang.SdaiException  :
 		printDebug("Starting FunctionCall");
 	}
 	// choice conflict, "(" in optional parameter list, but I don't think the other case can happen in correct schemas.
+	// removing this lookahead in pass 5 fixes an error in e certain long form schema
+	// here, removing of this lookahead is not needed
 	((built_in_id = BuiltInFunction() | fd = FunctionRef()) [ LOOKAHEAD(ActualParameterList(arguments, expressions)) arg_count = ActualParameterList(arguments, expressions)])
 //	((built_in_id = BuiltInFunction() | fd = FunctionRef()) [ arg_count = ActualParameterList(arguments, expressions)])
 
@@ -7232,6 +7282,7 @@ jsdai.SExtended_dictionary_schema.EParameter GeneralBagType() throws jsdai.lang.
 	}
 	<BAG> [bounds = BoundSpec()] <OF> par = ParameterType()
 	{
+//System.out.println("<RR>generalbag element type: " + par + ", pass: " + parser_pass);
 		if (parser_pass == 5) {
 
 			boolean must_create = false;
@@ -9146,7 +9197,23 @@ jsdai.SExtended_dictionary_schema.EDeclaration NamedTypeOrRename(jsdai.lang.Sdai
 						if (!(hm_current_entity_declarations.containsKey(named_type_name.toLowerCase()))) {
 							hm_current_entity_declarations.put(named_type_name.toLowerCase(), dc);
 						}
-						ed.setTemp(FLAG_USED);
+						Object t_object = ed.getTemp();
+						if (t_object == null) {
+							ed.setTemp(FLAG_USED);
+						} else {
+							if (t_object instanceof ECtRenamed) {
+							  if (((ECtRenamed)t_object).interfaced_flag == null) {
+									((ECtRenamed)t_object).interfaced_flag = FLAG_USED;
+								} else {
+									// already set
+								}
+							} else
+							if (t_object instanceof Integer) {
+								// already set
+							} else {
+								System.out.println("<ExpressCompiler> INTERNAL ERROR - NamedTypeOrRename - temp_object: " + t_object + ", entity: " + ed);
+							}
+						}
 					}
 			}
 		} else
@@ -10552,6 +10619,12 @@ jsdai.SExtended_dictionary_schema.EAttribute QualifiedAttribute(jsdai.SExtended_
 {
 	a_token = <SELF> ed2 = GroupQualifier() attr2 = AttributeQualifier(ed, ed2, attr_type, null)
 	{
+	   if (attr2 == null) {
+//     	 System.out.println("<D2008> in QualifiedAttribute attr2 is null in pass: " + parser_pass);	   	
+//     	 System.out.println("<D2008> GroupQualifier ed2: " + ed2);	   	
+//     	 System.out.println("<D2008> ed: " + ed + ", attr_type: " + attr_type);	   	
+	   }
+	
 		 if (parser_pass == 1) {
 		 }
 		 else { // pass 2
@@ -11368,7 +11441,24 @@ printDDebug("#@# ResourceRef: ed: " + ed);
 							jsdai.SExtended_dictionary_schema.EEntity_declaration edc11 = (jsdai.SExtended_dictionary_schema.EEntity_declaration)hm_current_entity_declarations.get(referenced_type_name.toLowerCase());
 // System.out.println("X__X in ResourceRef, entity definition - HashMap key already exists, retrieved declaration: " + edc11);
 						}
-						ed.setTemp(FLAG_REFERENCED);
+						Object t_object = ed.getTemp();
+						if (t_object == null) {
+							ed.setTemp(FLAG_REFERENCED);
+						} else {
+							if (t_object instanceof ECtRenamed) {
+								if (((ECtRenamed)t_object).interfaced_flag == null) {
+									((ECtRenamed)t_object).interfaced_flag = FLAG_REFERENCED;
+								} else {
+									// already set
+								}
+							} else
+							if (t_object instanceof Integer) {
+								// already set
+							} else {
+								System.out.println("<ExpressCompiler> INTERNAL ERROR - ResourceRef - temp_object: " + t_object + ", entity: " + ed);
+							}
+						}
+
 					} else {
 // System.out.println("X__X in ResourceRef, entity definition - NOT creating declaration, not needed ");
 					}
@@ -11593,19 +11683,84 @@ jsdai.SExtended_dictionary_schema.EAttribute RedeclaredAttribute(jsdai.SExtended
 	jsdai.SExtended_dictionary_schema.EAttribute attr = null;
 	jsdai.SExtended_dictionary_schema.EAttribute attr_current = null;
 	Object temp_object = null;
+	ECtRenamed renamed = null;
 }
 {
 	// to finish implementing, also in AttributeDecl()
 	{
 		flag_in_redeclaring = true;
+
+		if (parser_pass == 3) {
+			if (ed != null) {
+				temp_object = ed.getTemp();
+				if (temp_object != null) { // probably already exists, we were in attribute redeclaring already for this entity
+					if (temp_object instanceof ECtRenamed) {
+						renamed = (ECtRenamed)temp_object;
+						// renamed.activate();
+						renamed.newAttribute(ed);
+// System.out.println("<><>ACTIVATED<><> already present - ed: " + ed);
+						ed.setTemp(renamed);
+					} else {
+						// hm, what could be there?
+						if (temp_object instanceof Integer) {
+							renamed = new ECtRenamed(ed, (Integer)temp_object);
+							ed.setTemp(renamed);
+// System.out.println("<><>ACTIVATED<><> new, prev - Integer - ed: " + ed);
+						} else {
+							System.out.println("<ExpressCompiler> INTERNAL ERROR - RedeclaredAttribute - temp object: " + temp_object + ", entity: " + ed);
+						}
+					}
+		 		} else { // create a new one
+					renamed = new ECtRenamed(ed);
+					ed.setTemp(renamed);
+// System.out.println("<><>ACTIVATED<><> new, clean - ed: " + ed);
+				}
+			}
+		} // parser_pass
+
 	}
 	attr = QualifiedAttribute(ed, attr_type)  [<RENAMED> new_name = AttributeId() ]	
 	{
+
+
+
+		if (parser_pass == 3) {
+			if (ed != null) {
+				temp_object = ed.getTemp();
+				if (temp_object != null) {
+	  			if (temp_object instanceof ECtRenamed) {
+						renamed = (ECtRenamed)temp_object;
+						if (new_name != null) {
+							// add this attribute 
+							renamed.add(new_name.image);
+// System.out.println("<><>DE-ACTIVATED<><> ed: " + ed + ", new name: " + new_name.image);
+						} else {
+							// discard this attribute, it is not renamed
+							renamed.discard();
+// System.out.println("<><>DE-ACTIVATED<><> ed: " + ed + ",attr: " + attr);
+						}
+						ed.setTemp(renamed);
+					} else {
+						// hm, what could be there? an internal error?
+						// at this stage, interfacing flags should already be replaced by ECtRenamed, so what is it, really?
+						System.out.println("<ExpressCompiler> INTERNAL ERROR - RedeclaredAttribute - temp: " + temp_object + ", entity: " + ed);
+					}
+				} else { 
+					// INTERNAL ERROR: it should have been not null already, just look above
+						System.out.println("<ExpressCompiler> INTERNAL ERROR - RedeclaredAttribute - temp is NULL, entity: " + ed);
+				}
+			}
+  	}
+
+
 		
 	
 		if (new_name != null) {
 //System.out.println("<KUKU>: " + new_name.image + ", ed: " + ed.getName(null));
 		 already_ed = moreThanOneAttributeWithTheSameNameRenamed(new_name.image, ed);
+		 // RR2008 - this check temporarily removed, it seems we already made the changes in between passes 3 and 4
+		 // this check perhaps can be added into the resolving method between passes 3 and 4
+		 already_ed = null;
 		 if (already_ed != null) {
 		 		error_count++;
 		 		if (already_ed == ed) {
@@ -11615,11 +11770,6 @@ jsdai.SExtended_dictionary_schema.EAttribute RedeclaredAttribute(jsdai.SExtended
 		 		}
 		 }
 
-			
-
-
-
-
 			if (attr != null ) {
 			  temp_object = attr.getTemp();
 			  if (temp_object != null) {
@@ -11628,21 +11778,23 @@ jsdai.SExtended_dictionary_schema.EAttribute RedeclaredAttribute(jsdai.SExtended
 							// ok, already named in the previous pass
 				  		attr.setTemp(new_name.image); // this is not really needed
 						} else {
-			  			System.out.println("RENAMED - already renamed - original name: " + attr.getName(null) + ", renamed to: " + temp_object + ", attempting to rename to: " + new_name.image + ", parser pass: " + parser_pass);
+              // INVESTIGATING the RENAMING ISSUE
+			  			// System.out.println("RENAMED - already renamed - original name: " + attr.getName(null) + ", renamed to: " + temp_object + ", attempting to rename to: " + new_name.image + ", parser pass: " + parser_pass);
 				  		// attr.setTemp(new_name.image);
 			  		}
 			  	} else {
 			  		System.out.println("RENAMED - hm, what is it? : " + temp_object);
 				  	attr.setTemp(new_name.image);
-		  	}
+		  	  }
 			  } else {
+//				  System.out.println("<D2008>SETTING RENAMED - setting Temp object< in pass: " + parser_pass + ",  new name: " + new_name + ", attribute: " + attr);
 			  	attr.setTemp(new_name.image);
 				}
 // System.out.println("in RedeclaredAttribute @@@ new name: " + new_name.image + ", attr: " + attr + ", pass: " + parser_pass);
 
 			} else {
 			  if (parser_pass == 4) {
-// 					System.out.println("in RedeclaredAttribute - @@@ new name: " + new_name.image + ", NULL - QualifiedAttribute returned NULL, ed: " + ed);
+// 					System.out.println("<D2008>ERROR IS IT< in pass 4  in RedeclaredAttribute - @@@ new name: " + new_name.image + ", NULL - QualifiedAttribute returned NULL, ed: " + ed);
 				}
 			}
 
@@ -15867,19 +16019,31 @@ while (keyset_iterator.hasNext()) {
 System.out.println("a hashmap key: " + a_key + ", value: " + hm_attributes.get(a_key));
 }
 */
+                // replacing WARNING by ERROR
+								error_count++;
+//								printErrorMsgW("" + attribute_name +  " -  explicit attribute not found in entity " + ed2.getName(null) + " while attempting to redeclare it as explicit", null, true);
+								printErrorMsg("" + attribute_name +  " -  explicit attribute not found in entity " + ed2.getName(null) + " while attempting to redeclare it as explicit", null, true);
 
-								printErrorMsgW("" + attribute_name +  " -  explicit attribute not found in entity " + ed2.getName(null) + " while attempting to redeclare it as explicit", null, true);
 							} else
 							if (attr_type == 1) {
 								// redeclaring attribute is derived
-								printErrorMsgW("" + attribute_name +  " - explicit or derived attribute not found in entity " + ed2.getName(null) + " while attempting to redeclare it as derived", null, true);
+								// replacing WARNING by ERROR
+								error_count++;
+								// printErrorMsgW("" + attribute_name +  " - explicit or derived attribute not found in entity " + ed2.getName(null) + " while attempting to redeclare it as derived", null, true);
+								printErrorMsg("" + attribute_name +  " - explicit or derived attribute not found in entity " + ed2.getName(null) + " while attempting to redeclare it as derived", null, true);
 							} else
 							if (attr_type == 2) {
 								// redeclaring attribute is inverse
-								printErrorMsgW("" + attribute_name +  " - inverse attribute not found in entity " + ed2.getName(null) + " while attempting to redeclare it as inverse", null, true);
+								// replacing WARNING by ERROR
+								error_count++;
+								// printErrorMsgW("" + attribute_name +  " - inverse attribute not found in entity " + ed2.getName(null) + " while attempting to redeclare it as inverse", null, true);
+								printErrorMsg("" + attribute_name +  " - inverse attribute not found in entity " + ed2.getName(null) + " while attempting to redeclare it as inverse", null, true);
 							} else {
 								// may be an internal error
-								printErrorMsgW("" + attribute_name +  " - attribute not found in entity " + ed2.getName(null) + " while attempting to redeclare it", null, true);
+								// replacing WARNING by ERROR
+								error_count++;
+								// printErrorMsgW("" + attribute_name +  " - attribute not found in entity " + ed2.getName(null) + " while attempting to redeclare it", null, true);
+								printErrorMsg("" + attribute_name +  " - attribute not found in entity " + ed2.getName(null) + " while attempting to redeclare it", null, true);
 							}
 						}
 					} else {
@@ -16678,6 +16842,8 @@ jsdai.SExtended_dictionary_schema.EParameter AggregateType5() throws jsdai.lang.
 			  } else {
 		  		printDDebug("Oo> parameter_type unset in aggregate_type: AGGREGATE OF " + par);
 		  	}
+	
+	  /*
 		  	if (par.testType_labels(null)) {
 					labels = par.getType_labels(null);
 				}
@@ -16691,6 +16857,8 @@ jsdai.SExtended_dictionary_schema.EParameter AggregateType5() throws jsdai.lang.
 						labels.addByIndex(1, Label5);
 					}
 		  	}
+		*/
+		
 			}
 			// for some reason I replaced the Parameter5 type, probably a bug, if not, don't remember why.
 			// par.setParameter_type(null, at);
@@ -16704,6 +16872,35 @@ jsdai.SExtended_dictionary_schema.EParameter AggregateType5() throws jsdai.lang.
 			result.setParameter_type(null, at);
 			result.setName(null, "_PARAMETER_AGGREGATE");
 			_data_type_name = "_PARAMETER_AGGREGATE";
+			
+			if (par.testType_labels(null)) {
+				// need to add those labels to this one
+				jsdai.lang.A_string new_labels = result.createType_labels(null);
+        jsdai.lang.A_string labels2 = par.getType_labels(null);
+        jsdai.lang.SdaiIterator iter_labels = labels2.createIterator();
+        String label = Label5;
+				if (label == null) label = "";
+        int label_index = 1;
+				new_labels.addByIndex(label_index++, label);
+        while (iter_labels.next()) {
+	        label  = labels2.getCurrentMember(iter_labels);
+					new_labels.addByIndex(label_index++, label);
+        }
+
+				
+			} else {
+				// even though element label(s) is/are not present, AGGREGATE itself still may have a label
+				if (Label5 != null) {
+					if (!Label5.equals("")) {
+						jsdai.lang.A_string new_labels = result.createType_labels(null);
+						new_labels.addByIndex(1, Label5);
+												
+					}
+				}
+			}
+			
+
+
 
 		}
 		printDebug("In AggregateType5, ending");
@@ -17530,6 +17727,7 @@ jsdai.SExtended_dictionary_schema.EBag_type BagType5(jsdai.lang.EEntity whose) t
 	}  
 	<OF> bt = BaseType5(at)
 	{
+//System.out.println("<RR><PASS 5> bag element type: " + bt + ", pass: " + parser_pass);
 		if (parser_pass > 3) {
 //			if (bt instanceof jsdai.SExtended_dictionary_schema.ESimple_type) 
 //				at.setElement_type(null, (jsdai.SExtended_dictionary_schema.ESimple_type)bt);
@@ -20348,8 +20546,24 @@ Object FunctionCall5() throws jsdai.lang.SdaiException #FunctionCall :
 	}
 	// choice conflict, "(" in optional Parameter5 list, but I don't think 	the other case can happen in correct schemas.
   // LOOKAHEAD eliminates a choice conflict, but when the whole ActualParameterList used, incorrect result
-	((built_in_id = BuiltInFunction5() | fd = FunctionRef5()) [ LOOKAHEAD(ActualParameterList5(arguments, expressions)) arg_count = ActualParameterList5(arguments, expressions)])
-//	((built_in_id = BuiltInFunction5() | fd = FunctionRef5()) [ arg_count = ActualParameterList5(arguments, expressions)])
+  // it causes a problem with a certain long form schema - wrong 	number of Sizeof() arguments returned:
+  // mim_lf.exp - contains 
+  // Ap203_configuration_controlled_3d_design_of_mechanical_parts_and_assemblies_mim_LF
+  // (* E2: '{ 1 0 10303 403 2 1 2}'*)
+  // the problem caused by 
+  // Entity datum  WR1
+  // 
+  // ERROR:  line: 10001, column: 14. function call has wrong number of arguments for built-in function SIZEOF: -1
+	// ERROR:  line: 10001, column: 14. Encountered "( QUERY ( x <* SELF \\ datum . established_by_relationships | SIZEOF ( TYPEOF ( x \\" at line 10001, column 21.
+	// Was expecting one of: a long long list here
+	// the same entity and the same WR1 is ok in short forms, though
+  // removing the lookahead fixes this error, but the real underlying problem remains
+  
+  
+// causes the problem:  
+//	((built_in_id = BuiltInFunction5() | fd = FunctionRef5()) [ LOOKAHEAD(ActualParameterList5(arguments, expressions)) arg_count = ActualParameterList5(arguments, expressions)])
+// risks eliminating the lookahead, but fixes the problem:
+	((built_in_id = BuiltInFunction5() | fd = FunctionRef5()) [ arg_count = ActualParameterList5(arguments, expressions)])
 
 	{
 		if (parser_pass == 5) {
@@ -20718,6 +20932,7 @@ jsdai.SExtended_dictionary_schema.EFunction_definition FunctionHead5() throws js
 	jsdai.SExtended_dictionary_schema.EData_type rt = null;
 	jsdai.SExtended_dictionary_schema.AParameter parameters = null;
 	String return_type_label = null;
+	jsdai.lang.A_string return_type_labels = null;
 	Token start_token = null;
 	Token end_token = null;
 	boolean first_token = true;
@@ -20837,7 +21052,7 @@ jsdai.SExtended_dictionary_schema.EFunction_definition FunctionHead5() throws js
 		if (parser_pass == 5) {
 //                      jjtThis.name = name;
 			if (rpt != null) {
-// System.out.println("YHAA-02: " + rpt); 
+//  System.out.println("YHAA-02: " + rpt); 
 			 jjtThis.return_type_parameter = rpt;
 
 //				rtp = rpt;
@@ -20846,7 +21061,19 @@ jsdai.SExtended_dictionary_schema.EFunction_definition FunctionHead5() throws js
 					if (rpt.testType_labels(null)) {
 						jsdai.lang.A_string type_labels = rpt.getType_labels(null);
 			 			if (type_labels.getMemberCount() > 0) {
-			 				return_type_label = type_labels.getByIndex(1);
+            	jsdai.lang.A_string return_labels = fd.createReturn_type_labels(null);
+            	jsdai.lang.SdaiIterator iter_labels = type_labels.createIterator();
+              int label_count = 1;
+              boolean already_done = false; // deprecated
+              while (iter_labels.next()) {
+              String label = type_labels.getCurrentMember(iter_labels);
+              	return_labels.addByIndex(label_count++, label);
+              	// the whole "if" stuff is depricated, attribute return_type_label is depricated
+              	if (!label.equals("") && !already_done) {
+              		return_type_label = label;
+              		already_done = true;
+              	}
+              } // while
 			 			}
 			 		}
 			 } else {
@@ -21033,6 +21260,23 @@ jsdai.SExtended_dictionary_schema.EParameter GeneralArrayType5() throws jsdai.la
 			result = (jsdai.SExtended_dictionary_schema.EParameter)model.createEntityInstance(jsdai.SExtended_dictionary_schema.CParameter.class);
 			result.setParameter_type(null, at);
 			result.setName(null, "_general_array_type_");
+			if (par.testType_labels(null)) {
+				// need to add those labels to this one
+				jsdai.lang.A_string new_labels = result.createType_labels(null);
+        jsdai.lang.A_string labels = par.getType_labels(null);
+        jsdai.lang.SdaiIterator iter_labels = labels.createIterator();
+        String label = "";
+        int label_index = 1;
+				new_labels.addByIndex(label_index++, label);
+        while (iter_labels.next()) {
+	        label  = labels.getCurrentMember(iter_labels);
+					new_labels.addByIndex(label_index++, label);
+        }
+
+				
+			}
+
+
 
 		}
 		printDebug("In GeneralArrayType5, ending");
@@ -21069,6 +21313,7 @@ jsdai.SExtended_dictionary_schema.EParameter GeneralBagType5() throws jsdai.lang
 	}
 	<BAG> [bounds = BoundSpec5()] <OF> par = ParameterType5()
 	{
+//System.out.println("<RR><PASS 5> generalbag element type: " + par + ", pass: " + parser_pass);
 		if (parser_pass == 5) {
 
 			boolean must_create = false;
@@ -21097,6 +21342,10 @@ jsdai.SExtended_dictionary_schema.EParameter GeneralBagType5() throws jsdai.lang
 				if (par.testParameter_type(null)) {			
 					if (par.getParameter_type(null) != _st_generic) {
 						must_create = true;
+					} else {
+						if (par.testType_labels(null)) {
+							must_create = true;
+						}
 					}
 		  	} else {
 		  		// why unset?
@@ -21128,6 +21377,7 @@ jsdai.SExtended_dictionary_schema.EParameter GeneralBagType5() throws jsdai.lang
 			// set element_type
 			if (par.testParameter_type(null)) {
 				at.setElement_type(null, par.getParameter_type(null));
+				// at.setElement_type(null, par); // impossible
 			} else {
 		  		printDDebug("Oo> parameter_type unset in general_bag_type: BAG OF " + par);
 		  	}
@@ -21138,6 +21388,7 @@ jsdai.SExtended_dictionary_schema.EParameter GeneralBagType5() throws jsdai.lang
 				_data_type_name = "_GENERALBAG_0_GENERIC";
 		  }
 
+// System.out.println("<RR><PASS 5> generalbag type: " + at + ", pass: " + parser_pass);
 
 //      bt = par.getParameter_type(null);
 //	    if (bt instanceof jsdai.SExtended_dictionary_schema.ESimple_type)
@@ -21150,6 +21401,21 @@ jsdai.SExtended_dictionary_schema.EParameter GeneralBagType5() throws jsdai.lang
 			result = (jsdai.SExtended_dictionary_schema.EParameter)model.createEntityInstance(jsdai.SExtended_dictionary_schema.CParameter.class);
 			result.setParameter_type(null, at);
 			result.setName(null, "_general_bag_type_");
+			if (par.testType_labels(null)) {
+				// need to add those labels to this one
+				jsdai.lang.A_string new_labels = result.createType_labels(null);
+        jsdai.lang.A_string labels = par.getType_labels(null);
+        jsdai.lang.SdaiIterator iter_labels = labels.createIterator();
+        String label = "";
+        int label_index = 1;
+				new_labels.addByIndex(label_index++, label);
+        while (iter_labels.next()) {
+	        label  = labels.getCurrentMember(iter_labels);
+					new_labels.addByIndex(label_index++, label);
+        }
+
+				
+			}
 		}
 
 
@@ -21263,6 +21529,23 @@ printDDebug(".oO0Oo. LIST TYPE CREATED - GeneralListType5 pass 4");
 			result = (jsdai.SExtended_dictionary_schema.EParameter)model.createEntityInstance(jsdai.SExtended_dictionary_schema.CParameter.class);
 			result.setParameter_type(null, at);
 			result.setName(null, "_general_list_type_");
+			if (par.testType_labels(null)) {
+				// need to add those labels to this one
+				jsdai.lang.A_string new_labels = result.createType_labels(null);
+        jsdai.lang.A_string labels = par.getType_labels(null);
+        jsdai.lang.SdaiIterator iter_labels = labels.createIterator();
+        String label = "";
+        int label_index = 1;
+				new_labels.addByIndex(label_index++, label);
+        while (iter_labels.next()) {
+	        label  = labels.getCurrentMember(iter_labels);
+					new_labels.addByIndex(label_index++, label);
+        }
+
+				
+			}
+
+
 		}
 
 
@@ -21390,6 +21673,10 @@ jsdai.SExtended_dictionary_schema.EParameter GeneralSetType5() throws jsdai.lang
 						if (par.getParameter_type(null) == _st_generic) {
 							is_generic = true;
 						} 
+						if (par.testType_labels(null)) {
+							must_create = true;
+						}
+						
 					}
 		  	} else {
 		  		// why unset?
@@ -21448,6 +21735,21 @@ jsdai.SExtended_dictionary_schema.EParameter GeneralSetType5() throws jsdai.lang
 			result = (jsdai.SExtended_dictionary_schema.EParameter)model.createEntityInstance(jsdai.SExtended_dictionary_schema.CParameter.class);
 			result.setParameter_type(null, at);
 			result.setName(null, "_general_set_type_");
+			if (par.testType_labels(null)) {
+				// need to add those labels to this one
+				jsdai.lang.A_string new_labels = result.createType_labels(null);
+        jsdai.lang.A_string labels = par.getType_labels(null);
+        jsdai.lang.SdaiIterator iter_labels = labels.createIterator();
+        String label = "";
+        int label_index = 1;
+				new_labels.addByIndex(label_index++, label);
+        while (iter_labels.next()) {
+	        label  = labels.getCurrentMember(iter_labels);
+					new_labels.addByIndex(label_index++, label);
+        }
+
+				
+			}
 
 
 		}
@@ -23310,7 +23612,19 @@ jsdai.SExtended_dictionary_schema.EDeclaration NamedTypeOrRename5(jsdai.lang.Sda
 						// }
 						dc.setDefinition(null, (jsdai.SExtended_dictionary_schema.ENamed_type)ed);
 						hm_current_entity_declarations.put(named_type_name.toLowerCase(), dc);
-						ed.setTemp(FLAG_USED);
+						// at this stage, perhaps ECtRenamed object could be already removed and converted back to Integer where needed
+						// it could be done at the end of the resolve() stage of ECtRenamed between the parser passes
+						// still, just in case, we may have this protection here at least for now
+						Object t_object = ed.getTemp();
+						if (t_object == null) {
+							ed.setTemp(FLAG_USED);
+						} else {
+							if (t_object instanceof ECtRenamed) {
+								((ECtRenamed)t_object).interfaced_flag = FLAG_USED;
+							} else {
+								System.out.println("<ExpressCompiler> INTERNAL ERROR - NamedTypeOrRename 5 - temp_object: " + t_object + ", entity: " + ed);
+							}
+						}
 					}
 			}
 		} else
@@ -25592,6 +25906,19 @@ printDDebug("#@# ResourceRef5: ed: " + ed);
 						dc.setDefinition(null, (jsdai.SExtended_dictionary_schema.ENamed_type)ed);
 						hm_current_entity_declarations.put(referenced_type_name.toLowerCase(), dc);
 						ed.setTemp(FLAG_REFERENCED);
+						// at this stage, perhaps ECtRenamed object could be already removed and converted back to Integer where needed
+						// it could be done at the end of the resolve() stage of ECtRenamed between the parser passes
+						// still, just in case, we may have this protection here at least for now
+						Object t_object = ed.getTemp();
+						if (t_object == null) {
+							ed.setTemp(FLAG_REFERENCED);
+						} else {
+							if (t_object instanceof ECtRenamed) {
+								((ECtRenamed)t_object).interfaced_flag = FLAG_REFERENCED;
+							} else {
+								System.out.println("<ExpressCompiler> INTERNAL ERROR - ResourceRef 5 - temp_object: " + t_object + ", entity: " + ed);
+							}
+						}
 					}
 			}
 		} else
@@ -25838,6 +26165,8 @@ jsdai.SExtended_dictionary_schema.EAttribute RedeclaredAttribute5(jsdai.SExtende
 					printErrorMsg5("" + attr.getName(null) +  " - redeclaring the same attribute in entity " + ed.getName(null) + " more than once", null, true);
 				}
 //System.out.println("<3> hs: " + hs_redeclared_attribute_originals);
+			} else {
+//				 System.out.println("<D2008>ORIGINAL attribute NULL in pass 5< current attribute: " + attr + ", new name if RENAMED: " + new_name);
 			}
 
 		}
@@ -25866,6 +26195,8 @@ jsdai.SExtended_dictionary_schema.EAttribute RedeclaredAttribute5(jsdai.SExtende
 // System.out.println("@X14 attr: " + attr);
 					attr.setName(null, new_name.image);
 // System.out.println("@X15 attr: " + attr);
+				} else { // attr is NULL
+//				 System.out.println("<D2008>CURRENT REDECLARED attribute NULL in pass 5< new name if RENAMED: " + new_name);
 				}
 //			}
 		}
@@ -30539,7 +30870,24 @@ JAVACODE
 					if (!(hm_current_entity_declarations.containsKey(ed_inst.getName(null).toLowerCase()))) {
 						hm_current_entity_declarations.put(ed_inst.getName(null).toLowerCase(), dc);
 					}
-					ed_inst.setTemp(FLAG_USED);
+					Object t_object = ed_inst.getTemp();
+					if (t_object == null) {
+						ed_inst.setTemp(FLAG_USED);
+					} else {
+						if (t_object instanceof ECtRenamed) {
+							if (((ECtRenamed)t_object).interfaced_flag == null) {
+								((ECtRenamed)t_object).interfaced_flag = FLAG_USED;
+							} else {
+								// already set
+							}
+						} else 
+						if (t_object instanceof Integer) {
+							// already set
+						} else {
+							System.out.println("<ExpressCompiler> INTERNAL ERROR - createAllUsedDeclarations - temp_object: " + t_object + ", entity: " + ed_inst);
+						}
+					}
+
 				}
 		}
 		ia = interfaced_model.getEntityExtentInstances(jsdai.SExtended_dictionary_schema.EDefined_type.class);
@@ -30591,7 +30939,23 @@ JAVACODE
 				if (!(hm_current_entity_declarations.containsKey(ed_inst.getName(null).toLowerCase()))) {
 					hm_current_entity_declarations.put(ed_inst.getName(null).toLowerCase(), dc);
 				}
-				ed_inst.setTemp(FLAG_REFERENCED);
+				Object t_object = ed_inst.getTemp();
+				if (t_object == null) {
+					ed_inst.setTemp(FLAG_REFERENCED);
+				} else {
+					if (t_object instanceof ECtRenamed) {
+						if (((ECtRenamed)t_object).interfaced_flag == null) {
+							((ECtRenamed)t_object).interfaced_flag = FLAG_REFERENCED;
+						} else {
+							// already set
+						}
+					} else
+					if (t_object instanceof Integer) {
+						// already set					
+					} else {
+						System.out.println("<ExpressCompiler> INTERNAL ERROR - createAllReferencedDeclarations - temp_object: " + t_object + ", entity: " + ed_inst);
+					}
+				}
 			}
 		}
 		ia = interfaced_model.getEntityExtentInstances(jsdai.SExtended_dictionary_schema.EDefined_type.class);

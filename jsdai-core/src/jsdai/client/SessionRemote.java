@@ -29,6 +29,7 @@ import jsdai.lang.ASchemaInstance;
 import jsdai.lang.ASdaiModel;
 import jsdai.lang.ASdaiRepository;
 import jsdai.lang.SdaiException;
+import jsdai.lang.SdaiModel;
 import jsdai.lang.SdaiQuery;
 import jsdai.lang.SdaiRepository;
 import jsdai.lang.SdaiSession;
@@ -66,6 +67,18 @@ public interface SessionRemote {
 		boolean fCheckNameLocation) throws SdaiException;
 
 	public void registerCreatedRepository(SdaiRepository createdRepository) throws SdaiException;
+
+	public boolean isStartMultiModelAccessAvailable() throws SdaiException;
+
+	/**
+	 * 
+	 * @param models for any <code>model</code> in <code>models</code> condition
+	 *               <code>model.getModRemote() != null &amp;&amp; model.getMode() == {@link SdaiModel#NO_ACCESS}</code>
+	 *               should be <code>true</code>
+	 * @param modelsLength condition <code>modelsLength &lt;= models.length</code> should be <code>true</code>
+	 * @param mode
+	 */
+	public void startMultiModelAccess(SdaiModel[] models, int modelsLength, int mode) throws SdaiException;
 
 	public void abort() throws SdaiException;
 

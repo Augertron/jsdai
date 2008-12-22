@@ -1769,7 +1769,8 @@ public class SelectPaths {
 //      pw.println("\t\t\tSdaiContext _context = SdaiSession.getSdaiContext();");          
 				pw.println("\t\tSdaiContext _context = this.findEntityInstanceSdaiModel().getRepository().getSession().getSdaiContext();");
 //        pw.println("\t\treturn (EEntity) get" +method_suffix +"(null, _context).getActualType();" );
-        pw.println("\t\treturn (EEntity) get" +method_suffix +"(null, _context).getInstance();" );
+//        pw.println("\t\treturn (EEntity) get" +method_suffix +"(null, _context).getInstance();" );
+        pw.println("\t\treturn (EEntity) get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getInstance();" );
       } else {
         pw.println("\t\t\tthrow new SdaiException(SdaiException.FN_NAVL);");
       }
@@ -1866,39 +1867,48 @@ public class SelectPaths {
 
 //_____________________________________start
 
+
         switch (express_type) {
           case XT_ENTITY:
-						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getInstance();" );
+//						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getInstance();" );
+						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getInstance();" );
             break;
 
           case XT_INTEGER:
-						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getInteger();" );
+//						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getInteger();" );
+						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getInteger();" );
             break;
 
           case XT_ENUMERATION:
-						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getInteger();" );
+//						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getInteger();" );
+						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getInteger();" );
             break;
 
           case XT_LOGICAL:
-						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getLogical();" );
+//						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getLogical();" );
+						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getLogical();" );
             break;
 
           case XT_BOOLEAN:
 //						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getBoolean();" );
-						pw.println("\t\treturn (int) get" +method_suffix +"(null, _context).getBoolean();" );
+//						pw.println("\t\treturn (int) get" +method_suffix +"(null, _context).getBoolean();" );
+						pw.println("\t\treturn (int) get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getBoolean();" );
             break;
 
           case XT_NUMBER:
           case XT_REAL:
-						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getDouble();" );
+//						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getDouble();" );
+						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getDouble();" );
             break;
 
           case XT_STRING:
-						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getString();" );
+//						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getString();" );
+						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getString();" );
             break;
 
           case XT_BINARY:
-						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getBinary();" );
+//						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getBinary();" );
+						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getBinary();" );
             break;
 
           case XT_AGGREGATE:
@@ -1910,24 +1920,28 @@ public class SelectPaths {
 
             switch (aggr_base) {
               case AB_INSTANCE:
-								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getInstanceAggregate(this);" );
+//								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getInstanceAggregate(this);" );
+								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getInstanceAggregate(this);" );
                 break;
 
               case AB_INTEGER:
 								// should count aggregate depth, may be needed for example, getInteger2Aggregate(this)
-								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getIntegerAggregate(this);" );
+//								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getIntegerAggregate(this);" );
+								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getIntegerAggregate(this);" );
                 break;
 
               case AB_ENUMERATION:
 								// guessing here, the corresponding non-select method is just generateJavaExpression() - very different
 								// may be wrong there, better to test.
 								// also the usual possible implementation extension for nested aggregates
-								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getIntegerAggregate(this);" );
+//								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getIntegerAggregate(this);" );
+								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getIntegerAggregate(this);" );
                 break;
 
               case AB_BOOLEAN:
 								// may be also needed getBoolean2Aggregate(this) etc - calculate depth
-								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getBooleanAggregate(this);" );
+//								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getBooleanAggregate(this);" );
+								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getBooleanAggregate(this);" );
                 break;
 
               // AB_LOGICAL does not exist - why not?
@@ -1941,17 +1955,20 @@ public class SelectPaths {
 							
               case AB_DOUBLE:
 								// may be needed getDouble2Aggregate(this) etc. - calculate depth
-								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getDoubleAggregate(this);" );
+//								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getDoubleAggregate(this);" );
+								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getDoubleAggregate(this);" );
 		            break;
 
               case AB_STRING:
 								// may be needed also getString2Aggregate(this) etc - calculated depth
-								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getStringAggregate(this);" );
+//								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getStringAggregate(this);" );
+								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getStringAggregate(this);" );
 		            break;
 
               case AB_BINARY:
 								// may be needed also getBinary2Aggregate(this) - calculated depth
-								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getBinaryAggregate(this);" );
+//								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getBinaryAggregate(this);" );
+								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getBinaryAggregate(this);" );
 		            break;
 
               //              case AB_NOT_AGGREGATE:
@@ -1960,14 +1977,16 @@ public class SelectPaths {
               //              case AB_DT_SELECT:
               //              case AB_SELECT_ERROR: // in fact, it is an internal error.
               default:
-								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getInstanceAggregate(this);" );
+//								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getInstanceAggregate(this);" );
+								pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getInstanceAggregate(this);" );
                 break;
             } // switch - aggregate type
 
             break;
 
           default:
-						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getInstance();" );
+//						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(null, _context).getInstance();" );
+						pw.println("\t\treturn (" +return_type +") get" +method_suffix +"(((" + owning_entity_name + ")null), _context).getInstance();" );
             break;
         } // switch attribute type
 

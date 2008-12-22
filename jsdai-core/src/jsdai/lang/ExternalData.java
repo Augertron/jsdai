@@ -26,15 +26,15 @@ package jsdai.lang;
 import java.io.*;
 
 /**
- * An ExternalData object encapsulates data for an entity instance which is 
+ * An ExternalData object encapsulates data for an entity instance which is
  * not covered by the attribute values of the entity instance. Because of this
  * the external data is not covered by the underlying Express schema. It is up to
  * JSDAI application to take advantage of this and define the meaning of this data.<br>
- * 
+ *
  * The data is loaded and stored using InputStream and OutputStream thus allowing
  * to handle big chunks of data available in a file.<br>
  *
- * An ExternalData object is always combined with an entity instance ant thus only 
+ * An ExternalData object is always combined with an entity instance ant thus only
  * available when corresponding entity instance is available. An ExternalData object
  * belongs to the SdaiModel to which the entity instance belongs to. If access to
  * the SdaiModel is ended the ExternalData object becomes invalid.<br>
@@ -54,6 +54,7 @@ public abstract class ExternalData {
 	protected boolean newName;
 	protected boolean unset;
 	protected boolean removed;
+	private boolean deleted;
 
 	/** Creates a new instance of ExternalData */
     protected ExternalData(CEntity owningEntity) {
@@ -75,8 +76,8 @@ public abstract class ExternalData {
 
 	/**
 	 * Loads data in this object to specified stream.
-	 * The valid transaction has to be running 
-	 * for this method to succeed. The stream is 
+	 * The valid transaction has to be running
+	 * for this method to succeed. The stream is
 	 * never closed. This is responsibility of the application.
 	 * @param stream the stream to load data to.
 	 * @exception SdaiException if an error occurs during the operation
@@ -111,7 +112,7 @@ public abstract class ExternalData {
 		} else {
 			loadToStreamInternal(stream);
 			if(unset) {
-				throw new SdaiException(SdaiException.VA_NSET, 
+				throw new SdaiException(SdaiException.VA_NSET,
 					"External data does not exist for this instance: " + owningEntity);
 			}
 		}
@@ -119,11 +120,11 @@ public abstract class ExternalData {
 
 	/**
 	 * Stores data from specified stream to this object.
-	 * The valid transaction has to be running 
+	 * The valid transaction has to be running
 	 * for this method to succeed.
 	 * This methods doesn't perform actual operation
 	 * but keeps the stream for later use. Actual storing
-	 * occurs during transaction committing. The stream is 
+	 * occurs during transaction committing. The stream is
 	 * closed after transaction commit or abort within calls
 	 * <code>SdaiTransaction#abort()</code>,
 	 * <code>SdaiTransaction#endTransactionAccessAbort()</code>,
@@ -168,7 +169,7 @@ public abstract class ExternalData {
 
 	/**
 	 * Gets the name of this external data.
-	 * The valid transaction has to be running 
+	 * The valid transaction has to be running
 	 * for this method to succeed.
 	 * @return The name of this external data
 	 * @exception SdaiException if an error occurs during the operation
@@ -179,11 +180,11 @@ public abstract class ExternalData {
 			throw new SdaiException(SdaiException.EI_NEXS);
 		}
 		if(unset) {
-			throw new SdaiException(SdaiException.VA_NSET, 
+			throw new SdaiException(SdaiException.VA_NSET,
 				"External data does not exist for this instance: " + owningEntity);
 		}
 		if(name == null) {
-			throw new SdaiException(SdaiException.VA_NSET, 
+			throw new SdaiException(SdaiException.VA_NSET,
 				"Name not set: " + owningEntity);
 		}
 		return name;
@@ -193,7 +194,7 @@ public abstract class ExternalData {
 	 * Sets the name of this external data.
 	 * ExternalData object name can be used as a file name
 	 * when data is exported from JSDAI.
-	 * The valid transaction has to be running 
+	 * The valid transaction has to be running
 	 * for this method to succeed.
 	 * @param name The new name of this external data
 	 * @exception SdaiException if an error occurs during the operation
@@ -230,15 +231,23 @@ public abstract class ExternalData {
 			if(storeStream != null) {
 				storeStream.close();
 				storeStream = null;
-			}		
+			}
 		} catch(IOException e) {
 			throw new SdaiException(SdaiException.SY_ERR, e);
 		}
 	}
 
-	void removed() throws SdaiException {
+	protected void removed() throws SdaiException {
 		unset = true;
 		abort();
+	}
+
+	protected void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+
+	protected boolean isDeleted() {
+		return this.deleted;
 	}
 
 	protected SdaiRepository getOwningRepository() {

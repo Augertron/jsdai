@@ -30,7 +30,7 @@ field in the <code><b>end of central directory record</b></code> is equal to 0.<
 in the special SdaiRepository directory. The list of files that could be stored in SDAI file:</p>
 <ul>
 <li><code>repository</code> &nbsp; file is used to store an information about the SdaiRepository, SdaiModels, SchemaInstances
- and associated SdaiModels. Only the <code>repository</code> file is mandatory in SDAI file.
+ and associated SdaiModels as well as included SchemaInstances, if any. Only the <code>repository</code> file is mandatory in SDAI file.
 <a href="#repository">SdaiRepository binary file format</a></li>
 <li><code>mX</code> &nbsp; files are used to store a data of the SdaiModel. There the <code>X</code> in the
 file name means the <a href="#model_id">SdaiModel's identifier</a> which can be obtained using the
@@ -133,11 +133,23 @@ file name means the persistent label of the entity instance.</li>
     { CONTEXT }: string                     <i>// contexts</i>
     ASSOCIATED_SDAI_MODEL_COUNT: short      <i>// count of associated SdaiModels</i>
     { ASSCOCIATED_SDAI_MODEL: <a href="#associated_model_definition">associated_sdai_model_definition</a> }  <i>// associated SdaiModels</i>
+    [ INCLUDED_SCHEMA_INSTANCES: <a href="#schema_instances_list">incl_schema_instances_list</a> ]           <i>// included SchemaInstances list</i>
 
 
 <a name="associated_model_definition">associated_sdai_model_definition</a> :=
     ( 'L' INDEX: integer            <i>// index of SdaiModel</i>
-    | NAME: string                  <i>// name of SdaiModel</i>
+    | 'E' NAME: string              <i>// name of SdaiModel</i>
+      SDAI_REPOSITORY_NAME: string  <i>// name of SdaiRepository</i>
+    }
+
+<a name="schema_instances_list">incl_schema_instances_list</a> :=
+    'I' 
+    INCLUDED_SCHEMA_INSTANCES_COUNT: short  <i>// count of included SchemaInstances</i>
+    { INCLUDED_SCHEMA_INSTANCE: <a href="#incl_schema_definition">included_schema_instance_definition</a> }  <i>// included SchemaInstances</i>
+
+<a name="incl_schema_definition">included_schema_instance_definition</a> :=
+    ( 'L' INDEX: integer            <i>// index of SchemaInstance</i>
+    | 'E' NAME: string              <i>// name of SchemaInstance</i>
       SDAI_REPOSITORY_NAME: string  <i>// name of SdaiRepository</i>
     }
 

@@ -430,6 +430,57 @@ public class Value {
 	}
 
 
+	void copyValueStepFile(Value val) throws SdaiException {
+		tag = val.tag;
+		switch (tag) {
+			case PhFileReader.INTEGER:
+			case PhFileReader.BOOLEAN:
+			case PhFileReader.LOGICAL:
+				integer = val.integer;
+				break;
+			case PhFileReader.REAL:
+				real = val.real;
+				break;
+			case PhFileReader.ENUM:
+			case PhFileReader.STRING:
+				string = val.string;
+			case PhFileReader.BINARY:
+				reference = val.reference;
+				break;
+			case PhFileReader.TYPED_PARAMETER:
+				string = val.string;
+				integer = val.integer;
+				length = 1;
+				if (nested_values == null) {
+					nested_values = new Value[SdaiSession.NUMBER_OF_VALUES];
+				}
+				if (nested_values[0] == null) {
+					nested_values[0] = new Value();
+				}
+				nested_values[0].copyValueStepFile(val.nested_values[0]);
+				break;
+			case PhFileReader.ENTITY_REFERENCE:
+				integer = val.integer;
+				reference = val.reference;
+				break;
+			case PhFileReader.EMBEDDED_LIST:
+				if (nested_values == null || val.length > nested_values.length) {
+					enlarge_nested_values(val.length);
+				}
+				length = val.length;
+				reference = val.reference;
+				for (int i = 0; i < val.length; i++) {
+					if (nested_values[i] == null) {
+						nested_values[i] = new Value();
+					}
+					nested_values[i].copyValueStepFile(val.nested_values[i]);
+				}
+				break;
+			default:
+		}
+	}
+
+
 	boolean look4connectors(CEntity owning_instance) throws SdaiException {
 		boolean con_created = false;
 		switch (tag) {
@@ -537,25 +588,6 @@ public class Value {
 	}
 
 
-	void unset_wrong_references(CEntity owning_instance) throws SdaiException {
-		switch (tag) {
-			case PhFileReader.TYPED_PARAMETER:
-				nested_values[0].unset_wrong_references(owning_instance);
-				break;
-			case PhFileReader.ENTITY_REFERENCE_SPECIAL:
-				InverseEntity inst = (InverseEntity)reference;
-//				inst.inverseRemove(owning_instance);
-				inst.inverseRemoveSpecial(owning_instance);
-				break;
-			case PhFileReader.EMBEDDED_LIST:
-				for (int i = 0; i < length; i++) {
-					nested_values[i].unset_wrong_references(owning_instance);
-				}
-				break;
-			default:
-		}
-	}
-
 
 
 //--------------------------------  get methods  ------------------------------
@@ -595,7 +627,7 @@ public class Value {
 			if (staticFields.importing) {
 				EntityValue.printWarningToLogo(session, AdditionalMessages.RD_BINT, 
 											   staticFields.current_instance_identifier);
-				unset_wrong_references(staticFields.c_instance);
+//				unset_wrong_references(staticFields.c_instance);
 			} else {
 //			Print warning message
 			}
@@ -637,7 +669,7 @@ public class Value {
 			if (staticFields.importing) {
 				EntityValue.printWarningToLogo(session, AdditionalMessages.RD_BREA, 
 					staticFields.current_instance_identifier);
-				unset_wrong_references(staticFields.c_instance);
+//				unset_wrong_references(staticFields.c_instance);
 			} else {
 //			Print warning message
 			}
@@ -670,7 +702,7 @@ public class Value {
 			if (staticFields.importing) {
 				EntityValue.printWarningToLogo(session, AdditionalMessages.RD_BSTR, 
 					staticFields.current_instance_identifier);
-				unset_wrong_references(staticFields.c_instance);
+//				unset_wrong_references(staticFields.c_instance);
 			} else {
 //			Print warning message
 			}
@@ -715,7 +747,7 @@ public class Value {
 			if (staticFields.importing) {
 				EntityValue.printWarningToLogo(session, AdditionalMessages.RD_BLOG, 
 					staticFields.current_instance_identifier);
-				unset_wrong_references(staticFields.c_instance);
+//				unset_wrong_references(staticFields.c_instance);
 			} else {
 //			Print warning message
 			}
@@ -757,7 +789,7 @@ public class Value {
 			if (staticFields.importing) {
 				EntityValue.printWarningToLogo(session, AdditionalMessages.RD_BBOO, 
 					staticFields.current_instance_identifier);
-				unset_wrong_references(staticFields.c_instance);
+//				unset_wrong_references(staticFields.c_instance);
 			} else {
 //			Print warning message
 			}
@@ -802,7 +834,7 @@ public class Value {
 			if (staticFields.importing) {
 				EntityValue.printWarningToLogo(session, AdditionalMessages.RD_BEN1, 
 					staticFields.current_instance_identifier, attrib);
-				unset_wrong_references(staticFields.c_instance);
+//				unset_wrong_references(staticFields.c_instance);
 			} else {
 //		Print warning message
 			}
@@ -819,7 +851,7 @@ public class Value {
 			if (staticFields.importing) {
 				EntityValue.printWarningToLogo(session, AdditionalMessages.RD_BEN2, 
 					staticFields.current_instance_identifier, attrib);
-				unset_wrong_references(staticFields.c_instance);
+//				unset_wrong_references(staticFields.c_instance);
 			} else {
 //			Print warning message
 			}
@@ -852,7 +884,7 @@ public class Value {
 			if (staticFields.importing) {
 				EntityValue.printWarningToLogo(session, AdditionalMessages.RD_BBIN, 
 					staticFields.current_instance_identifier);
-				unset_wrong_references(staticFields.c_instance);
+//				unset_wrong_references(staticFields.c_instance);
 			} else {
 //			Print warning message
 			}
@@ -872,7 +904,12 @@ public class Value {
 				return (SdaiModel.Connector)reference;
 			}
 		} else if (tag == PhFileReader.ENTITY_REFERENCE_SPECIAL) {
-			return (CLateBindingEntity)reference;
+			CLateBindingEntity late_ref = (CLateBindingEntity)reference;
+			if (late_ref != null) {
+				late_ref.inverseAdd(inst);
+			}
+			return late_ref;
+//			return (CLateBindingEntity)reference;
 		} else if (tag == INDETERMINATE) {
 			return null;
 		} else if (tag == PhFileReader.REDEFINE) {
@@ -891,10 +928,10 @@ public class Value {
 		if (aux != PhFileReader.ENTITY_REFERENCE) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BREF, 
 				inst.instance_identifier);
-			staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 		}
 		return null;
 	}
@@ -946,7 +983,12 @@ if (SdaiSession.debug2) System.out.println("   DEFINED TYPE: " + def.getName(nul
 					return reference;
 			case PhFileReader.ENTITY_REFERENCE_SPECIAL:
 					sel_number = 1;
-					return reference;
+					CLateBindingEntity late_ref = (CLateBindingEntity)reference;
+					if (late_ref != null) {
+						late_ref.inverseAdd(inst);
+					}
+					return late_ref;
+//					return reference;
 			case INDETERMINATE:
 					sel_number = 0;
 					return null;
@@ -1005,9 +1047,9 @@ if (SdaiSession.debug2) System.out.println("   DEFINED TYPE: " + def.getName(nul
 							EntityValue.printWarningToLogo(inst.owning_model.repository.session, message, 
 								inst.instance_identifier, staticFields.current_attribute);
 						}
-						if (staticFields.importing) {
-							unset_wrong_references(staticFields.c_instance);
-						}
+//						if (staticFields.importing) {
+//							unset_wrong_references(staticFields.c_instance);
+//						}
 						sel_number = 0;
 						return null;
 					}
@@ -1054,9 +1096,9 @@ System.out.println();}
 						EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BTYP, 
 							inst.instance_identifier, staticFields.current_attribute);
 					}
-					if (staticFields.importing) {
-						unset_wrong_references(staticFields.c_instance);
-					}
+//					if (staticFields.importing) {
+//						unset_wrong_references(staticFields.c_instance);
+//					}
 					sel_number = 0;
 					return null;
 				}
@@ -1297,9 +1339,9 @@ if (SdaiSession.debug2) System.out.println("  Value  domain type: " + domain.get
 					EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BVAT, 
 						inst.instance_identifier, staticFields.current_attribute);
 				}
-				if (staticFields.importing) {
-					unset_wrong_references(staticFields.c_instance);
-				}
+//				if (staticFields.importing) {
+//					unset_wrong_references(staticFields.c_instance);
+//				}
 				return null;
 			} else {
 				root.sel_number = sel.giveSelectNumber(staticFields.route, staticFields.def_count);
@@ -1416,7 +1458,12 @@ if (SdaiSession.debug2) System.out.println("  Value  domain type: " + domain.get
 					}
 					return reference;
 			case PhFileReader.ENTITY_REFERENCE_SPECIAL:
-					return reference;
+					CLateBindingEntity late_ref = (CLateBindingEntity)reference;
+					if (late_ref != null) {
+						late_ref.inverseAdd(inst);
+					}
+					return late_ref;
+//					return reference;
 			case INDETERMINATE:
 					return null;
 			case PhFileReader.REDEFINE:
@@ -1467,10 +1514,10 @@ if (SdaiSession.debug2) System.out.println("  Value  domain type: " + domain.get
 		if (tag != PhFileReader.EMBEDDED_LIST) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BAGG, 
 				inst.instance_identifier, attr);
-			StaticFields staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			StaticFields staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		DataType domain = (DataType)attr.getDomain(null);
@@ -1582,10 +1629,10 @@ if (SdaiSession.debug2) System.out.println("  Value  domain type: " + domain.get
 		if (tag != PhFileReader.EMBEDDED_LIST) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BAGG, 
 				inst.instance_identifier, attr);
-			StaticFields staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			StaticFields staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		DataType domain = (DataType)attr.getDomain(null);
@@ -1729,10 +1776,10 @@ if (SdaiSession.debug2) System.out.println("  Value  domain type: " + domain.get
 		if (tag != PhFileReader.EMBEDDED_LIST) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BAGG, 
 				inst.instance_identifier, attr);
-			StaticFields staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			StaticFields staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_identifier);
@@ -1848,10 +1895,10 @@ if (SdaiSession.debug2) System.out.println("  domain inst ident = " +
 		if (tag != PhFileReader.EMBEDDED_LIST) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BAGG, 
 				inst.instance_identifier, attr);
-			StaticFields staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			StaticFields staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		DataType domain = (DataType)attr.getDomain(null);
@@ -1963,10 +2010,10 @@ if (SdaiSession.debug2) System.out.println("  domain inst ident = " +
 		if (tag != PhFileReader.EMBEDDED_LIST) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BAGG, 
 				inst.instance_identifier, attr);
-			StaticFields staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			StaticFields staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		DataType domain = (DataType)attr.getDomain(null);
@@ -2078,10 +2125,10 @@ if (SdaiSession.debug2) System.out.println("  domain inst ident = " +
 		if (tag != PhFileReader.EMBEDDED_LIST) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BAGG, 
 				inst.instance_identifier, attr);
-			StaticFields staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			StaticFields staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		DataType domain = (DataType)attr.getDomain(null);
@@ -2222,10 +2269,10 @@ if (SdaiSession.debug2) System.out.println("  domain inst ident = " +
 		if (tag != PhFileReader.EMBEDDED_LIST) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BAGG, 
 				inst.instance_identifier, attr);
-			StaticFields staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			StaticFields staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		DataType domain = (DataType)attr.getDomain(null);
@@ -2364,10 +2411,10 @@ if (SdaiSession.debug2) System.out.println("  domain inst ident = " +
 		if (tag != PhFileReader.EMBEDDED_LIST) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BAGG, 
 				inst.instance_identifier, attr);
-			StaticFields staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			StaticFields staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		if (inst.owning_model == SdaiSession.baseDictionaryModel && attr == null) {
@@ -2575,10 +2622,10 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		if (tag != PhFileReader.EMBEDDED_LIST) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BAGG, 
 				inst.instance_identifier, attr);
-			staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		DataType domain = (DataType)attr.getDomain(null);
@@ -2715,10 +2762,10 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		if (tag != PhFileReader.EMBEDDED_LIST) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BAGG, 
 				inst.instance_identifier, attr);
-			staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		DataType domain = (DataType)attr.getDomain(null);
@@ -2787,10 +2834,10 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		if (tag != PhFileReader.EMBEDDED_LIST) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BAGG, 
 				inst.instance_identifier, attr);
-			staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		DataType domain = (DataType)attr.getDomain(null);
@@ -2927,10 +2974,10 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		if (tag != PhFileReader.EMBEDDED_LIST) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BAGG, 
 				inst.instance_identifier, attr);
-			staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		DataType domain = (DataType)attr.getDomain(null);
@@ -3067,10 +3114,10 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		if (tag != PhFileReader.EMBEDDED_LIST) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BAGG, 
 				inst.instance_identifier, attr);
-			staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		DataType domain = (DataType)attr.getDomain(null);
@@ -3207,10 +3254,10 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		if (tag != PhFileReader.EMBEDDED_LIST) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BAGG, 
 				inst.instance_identifier, attr);
-			staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		DataType domain = (DataType)attr.getDomain(null);
@@ -3351,9 +3398,9 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 				EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BNAG, 
 					inst.instance_identifier, staticFields.current_attribute);
 			}
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		A_integer aggr = new A_integer(aggr_type, inst);
@@ -3398,9 +3445,9 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 				EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BNAG, 
 					inst.instance_identifier, staticFields.current_attribute);
 			}
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		A_double aggr = new A_double(aggr_type, inst);
@@ -3445,9 +3492,9 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 				EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BNAG, 
 					inst.instance_identifier, staticFields.current_attribute);
 			}
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		A_string aggr = new A_string(aggr_type, inst);
@@ -3492,9 +3539,9 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 				EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BNAG, 
 					inst.instance_identifier, staticFields.current_attribute);
 			}
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		A_integer aggr = new A_integer(aggr_type, inst);
@@ -3539,9 +3586,9 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 				EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BNAG, 
 					inst.instance_identifier, staticFields.current_attribute);
 			}
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		A_boolean aggr = new A_boolean(aggr_type, inst);
@@ -3586,9 +3633,9 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 				EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BNAG, 
 					inst.instance_identifier, staticFields.current_attribute);
 			}
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		A_enumeration aggr = new A_enumeration(aggr_type, inst);
@@ -3668,10 +3715,10 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		if (tag != PhFileReader.EMBEDDED_LIST) {
 			EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BAGG, 
 				inst.instance_identifier, attr);
-			staticFields = StaticFields.get();
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			staticFields = StaticFields.get();
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		DataType domain = (DataType)attr.getDomain(null);
@@ -3811,9 +3858,9 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 				EntityValue.printWarningToLogo(inst.owning_model.repository.session, AdditionalMessages.RD_BNAG, 
 					inst.instance_identifier, staticFields.current_attribute);
 			}
-			if (staticFields.importing) {
-				unset_wrong_references(staticFields.c_instance);
-			}
+//			if (staticFields.importing) {
+//				unset_wrong_references(staticFields.c_instance);
+//			}
 			return null;
 		}
 		return prepareDouble2Aggregate(aggr_type, inst);
@@ -18732,6 +18779,12 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 							throw new SdaiException(SdaiException.SY_ERR/*, base*/);
 						}
 						ur_f.writeShort(index);
+						if ((inst.owning_model.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY) {
+							index = inst.owning_model.find_entityRO(schd.entities[index]);
+							if (index < 0) {
+								throw new SdaiException(SdaiException.SY_ERR);
+							}
+						}
 						index = inst.find_instance(index);
 //						index = inst.owning_model.find_instance_id(inst.instance_identifier);
 						if (index < 0) {
