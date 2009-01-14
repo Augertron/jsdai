@@ -31,12 +31,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.List;
 
+import jsdai.util.UtilMonitor;
+import jsdai.common.utils.CommonUtils;
+import jsdai.common.utils.UtilMonitorImpl;
 import jsdai.express_compiler.ExpressCompilerPlugin;
 import jsdai.express_compiler.p21_editor.ValidationMessageParser;
 import jsdai.express_compiler.preferences.ExpressPreferences;
 import jsdai.express_compiler.properties.ExpressProjectTempPropertyPage;
 import jsdai.express_compiler.utils.ExpressCompilerUtils;
 import jsdai.express_compiler.utils.IsolatedRunnableThread;
+//import jsdai.common.utils.IsolatedRunnableThread;
 import jsdai.runtime.RuntimePlugin;
 
 import org.eclipse.core.resources.IFile;
@@ -90,6 +94,7 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 
 	String fProject_comments;
 	String fWorking_directory;
+	String fOutput;
 	private static boolean fUseIsolatedThread = true;
 
 	String fValidateOutput;
@@ -321,7 +326,8 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 			return;
 		}
 
-		ExpressCompilerUtils.printResultInConsole(fValidateOutput, fPage);
+		CommonUtils.printResultToConsole(fValidateOutput, fPage, fOutput);
+//		ExpressCompilerUtils.printResultInConsole(fValidateOutput, fPage);
 
     
   }
@@ -354,6 +360,7 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 
 
 	
+		String monitor_exec_string = "Reading the step file";
 		
 		
 		String jar_path = fDestination;
@@ -368,6 +375,7 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 					output_file_path  += File.separator + "log_output";
 					error_file_path   += File.separator + "log_errors";
 		}
+    fOutput = output_file_path;
 
 //System.out.println("output: " + output_file_path);
 //System.out.println("errors: " + error_file_path);
@@ -422,8 +430,11 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 		Runtime r = Runtime.getRuntime();
 
 	try {
-    	IsolatedRunnableThread validationThread = null;
+   	IsolatedRunnableThread validationThread = null;
+	  monitor.beginTask(monitor_exec_string + ": 0s", IProgressMonitor.UNKNOWN);
+	  boolean monitor_task_started = true;
 		Process p = null;
+		UtilMonitorImpl validationMonitor = new UtilMonitorImpl(Thread.currentThread());
 		try {
 			
 	    	if(fUseIsolatedThread) {
@@ -438,9 +449,13 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 	    	 	String sdaireposDirectory = new File(current_directory, "ExpressCompilerRepo").getCanonicalPath();
 	    	 	validationThread =
 	    	 		IsolatedRunnableThread.newInstance("jsdai.util.Validate", "initAsRunnable",
-	    	 				new Class[] { String.class, String[].class },
-	    	 				new Object[] { sdaireposDirectory, args },
-	    	 				validationJars, null);
+//	    	 				new Class[] { String.class, String[].class },
+      	 				new Class[] { String.class, String[].class, UtilMonitor.class },
+//	    	 				new Object[] { sdaireposDirectory, args },
+      	 				new Object[] { sdaireposDirectory, args, validationMonitor },
+	    	 				validationJars, 
+	 				      new String[] { "jsdai/util/UtilMonitor.class", "com/lksoft/util/licensing/" });
+//	    	 				null);
 	    		validationThread.start();
 	    	} else {
 	    		p = r.exec(args, env, new File(current_directory));
@@ -453,6 +468,8 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 
 //					p.waitFor();
 
+			int monitor_count = 0;
+      boolean monitor_reinitialized = false;
 			boolean is_cancel = false;
 //			int exit_code = -555;
 			start_time = System.currentTimeMillis();
@@ -464,6 +481,9 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 						} catch (InterruptedException e) {
 						}
 						if(!validationThread.isAlive()) {
+							if(validationThread != null) {
+							validationThread.close();
+						}
 							break;
 						}
 					} else {
@@ -479,9 +499,49 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 						}
 					}
 				}
+				String subtaskMessage;
+				int subtaskCount;
+				int subtaskCounter;
+				synchronized (validationMonitor) {
+					subtaskMessage = validationMonitor.getMessage();
+					subtaskCount = validationMonitor.getCount();
+					subtaskCounter = validationMonitor.getCounter();
+					if (subtaskCounter > 0) {
+					 subtaskCount -= subtaskCounter;
+			    }
+			    // ValidationPlugin.log("UtilMonitor - message: " + subtaskMessage + ", count: " + subtaskCount + ", counter: " + subtaskCounter, 1);
+				}
 				current_time = System.currentTimeMillis();
 				elapsed_time = (current_time - start_time) / 1000;
-				monitor.setTaskName(("Validating a step file: " + elapsed_time + " s"));
+
+	    if (monitor_task_started) {
+					if (subtaskCount > 0) {
+						if (monitor_reinitialized) {
+						} else {
+							monitor.beginTask("starting actual validation", subtaskCount);
+							monitor_reinitialized = true;
+						}
+					}
+					if (subtaskMessage != null) {
+						monitor.setTaskName("Validating " + subtaskMessage);
+						monitor.worked(subtaskCounter - monitor_count);
+  					monitor_count = subtaskCounter;
+					} else {
+						// should not happen
+ 					  monitor.setTaskName("Reading the step file: " + elapsed_time + "s");
+						monitor.worked(1);
+					}
+
+				} else {
+					monitor.beginTask("Reading the step file: 0s", IProgressMonitor.UNKNOWN);
+					monitor_task_started = true;
+					System.out.println("starting task - delayed");
+					monitor_count = 1;
+				}
+
+
+//				monitor.setTaskName((subtaskMessage != null ? subtaskMessage : monitor_exec_string) + ": " + elapsed_time + "s");
+//				monitor.setTaskName(("Validating a step file: " + elapsed_time + " s"));
 				is_cancel = monitor.isCanceled();
 				if (is_cancel) {
 					fValidateOutput += "Validation canceled";
@@ -494,44 +554,34 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 				}
 			}		
 		} // if true (OS)
+		monitor.beginTask("Please wait, processing validation results", IProgressMonitor.UNKNOWN);
 
-				error_stream_file = new File(error_file_path);
-				output_stream_file = new File(output_file_path);
-   	    InputStream error_stream = new FileInputStream(error_stream_file);
-				InputStream stream = new FileInputStream(output_stream_file);
-
-
-//   	    InputStream error_stream = p.getErrorStream();
-//				InputStream stream = p.getInputStream();
-
-
-
-//System.out.println("Getting output string");
+		error_stream_file = new File(error_file_path);
+		output_stream_file = new File(output_file_path);
+    InputStream error_stream = new FileInputStream(error_stream_file);
+		InputStream stream = new FileInputStream(output_stream_file);
 		String validateOutput = ExpressCompilerUtils.getStringFromStreamAvailable(stream);
-//		String validateOutput = ExpressCompilerUtils.getStringFromStream(stream);
-//		System.out.println("Getting error string");
-	    String validateProcessErrors = ExpressCompilerUtils.getStringFromStreamAvailable(error_stream);
-//	    String validateProcessErrors = ExpressCompilerUtils.getStringFromStream(error_stream);
-//	    System.out.println("Errors: " + validateProcessErrors);
-//		System.out.println("Output: " + validateOutput);			
+
+    String validateProcessErrors = ExpressCompilerUtils.getStringFromStreamAvailable(error_stream);
+
 		stream.close();
+
 		error_stream.close();
 
-	monitor.worked(1);
+		
+		monitor.worked(1);
 
 			fValidateOutput += "--- Validation process errors, if present ---\n\n";
 			fValidateOutput += validateProcessErrors;
 			fValidateOutput += "--- Validation Results ---\n\n";
 			fValidateOutput += validateOutput;
 			fValidateOutput += "\n--- End of Validation Results ---\n";
-			createMarkers(validateOutput, fStepFile);
 
-//		} catch (Exception e1) {
-//			ExpressCompilerPlugin.log(e1);
-//			e1.printStackTrace();
+			createMarkers(validateOutput, fStepFile, monitor);
+
 		} finally {
 			Thread.interrupted();
-			if(validationThread != null) {
+		if(validationThread != null) {
 				validationThread.close();
 			}
 		}
@@ -540,7 +590,7 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 		e.printStackTrace();
 	}
 
-	monitor.worked(1);
+	//monitor.worked(1);
 
 
 
@@ -554,7 +604,6 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 
 	
 	boolean isExternalExpressFileOpen() {
-//		ITextEditor editor = getTextEditor();
 
 		
 		
@@ -609,7 +658,13 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 	}
 	
 	
-	protected void createMarkers(String output, String step_file_str) throws CoreException {
+//	protected void createMarkers(String output, String step_file_str) throws CoreException {
+	protected void createMarkers(String output, String step_file_str, IProgressMonitor monitor) throws CoreException {
+
+//		monitor.setTaskName(("Creating Markers - 01"));
+//		System.out.println("<<Creating Markers>>");
+		
+		
 		IWorkspace workspace = fProject.getWorkspace();
 		IWorkspaceRoot root = workspace.getRoot();
 		IPath step_file_path = new Path(step_file_str);
@@ -655,9 +710,16 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 		
 */
 
+//		monitor.setTaskName(("Creating Markers - 02"));
+		
 			IMarker[] p21problems = root.findMarkers("net.jsdai.express_compiler.p21problem", true, IResource.DEPTH_INFINITE);
+
+//			monitor.setTaskName(("Creating Markers - 03"));
 			
+			monitor.beginTask("Deleting old error markers", p21problems.length);
 			for (int i = 0; i < p21problems.length; i++) {
+				monitor.worked(1);
+//				  monitor.setTaskName("Deleting old error markers: " + i);
 					IMarker marker = p21problems[i];
 //System.out.println("<<!!!>> found a marker");
 					if (marker.exists()) { // this check may not be needed
@@ -674,10 +736,15 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 					}
 			} // for
 
+//			monitor.setTaskName(("Creating Markers - 04"));
+			
+			
 			if (flagDeleteAllJSDAIMarkers) {
 				// delete also all p21 problem markers
 				IMarker[] xproblems = root.findMarkers("net.jsdai.express_compiler.expressproblem", true, IResource.DEPTH_INFINITE);
+				monitor.beginTask("Deleting other jsdai error markers", xproblems.length);
 				for (int i = 0; i < xproblems.length; i++) {
+					monitor.worked(1);
 					IMarker marker = xproblems[i];
 					if (marker.exists()) { // this check may not be needed
 						marker.delete();
@@ -687,6 +754,7 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 
 
 
+//			monitor.setTaskName(("Creating Markers - 05"));
 
 
 /*
@@ -713,8 +781,12 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 
 		for (int i = 0; i < step_files.length; i++) {
 			// step_files[i].deleteMarkers(IMarker.PROBLEM, false, 0);
-			(new ValidationMessageParser()).parseValidationMessages(fProject, step_files[i], output, null);
+//			(new ValidationMessageParser()).parseValidationMessages(fProject, step_files[i], output, null);
+			(new ValidationMessageParser()).parseValidationMessages(fProject, step_files[i], output, null, monitor);
 		}
+//		monitor.setTaskName(("Creating Markers - 06"));
+
+	
 	}
 		
 	private boolean checkEnabledForSelectedProject() throws CoreException {
@@ -786,6 +858,36 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 			return enabled;
 		}
 	}
+
+/*
+
+		static final class UtilMonitorImpl implements UtilMonitor {
+			String message;
+			long count;
+			long counter;
+			private Thread parentThread;
+			
+			public UtilMonitorImpl(Thread parentThread) {
+				this.message = null;
+				this.count = -1;
+				this.counter = -1;
+				this.parentThread = parentThread;
+			}
+
+			public void subTask(String message, long count, long counter) {
+				synchronized (this) {
+					this.message = message;
+					this.count = count;
+					this.counter = counter;
+				}
+				parentThread.interrupt();
+			}
+
+			public void worked(int value) {
+			}
+		}
+
+*/
 
 }
 

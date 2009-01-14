@@ -178,7 +178,7 @@ public class JSDAIProjectNature implements IProjectNature {
 							repo_folder.create(true, true, null);
 						}
 						IFile jsdai_properties = aProject.getFile("jsdai.properties");	
-						if (!jsdai_properties.exists()) {
+						if (!jsdai_properties.getLocation().toFile().exists()) {
 							String jsdai_properties_contents = 	"repositories = .repositories.tmp";
 
 							ByteArrayInputStream is = new ByteArrayInputStream(jsdai_properties_contents.getBytes());

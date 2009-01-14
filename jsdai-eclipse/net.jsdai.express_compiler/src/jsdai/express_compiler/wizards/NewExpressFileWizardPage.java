@@ -266,7 +266,12 @@ public class NewExpressFileWizardPage extends WizardPage {
 			if (containerPath.segmentCount() > 1) {
 				IFolder container = ResourcesPlugin.getWorkspace().getRoot().getFolder(containerPath);
 				if (container != null && container.exists()) {
-					IResource file = container.getFile(fFileText.getText().trim());
+					String file_name = fFileText.getText().trim();
+					int dotLoc = file_name.lastIndexOf('.');
+					if (dotLoc == -1) {
+						file_name += ".exp";
+					}
+					IResource file = container.getFile(file_name);
 					if (file != null && file.exists()) {
 						this.setErrorMessage(ExpressCompilerPlugin.getResourceString("WizardPage.fileAlreadyExists"));
 						result = true;
@@ -291,7 +296,12 @@ System.out.println(">>><<<< container text: " + fContainerText.getText());
 	*/			
 				
 				if (project != null && project.exists()) {
-					IResource file = project.getFile(fFileText.getText().trim());
+					String file_name = fFileText.getText().trim();
+					int dotLoc = file_name.lastIndexOf('.');
+					if (dotLoc == -1) {
+						file_name += ".exp";
+					}
+					IResource file = project.getFile(file_name);
 					if (file != null && file.exists()) {
 						this.setErrorMessage(ExpressCompilerPlugin.getResourceString("WizardPage.fileAlreadyExists"));
 						result = true;

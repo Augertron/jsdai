@@ -49,6 +49,8 @@ public class EGEntity extends AbstractEGBox {
 
 	protected boolean instantiable = true;
 
+	protected boolean fAbstract = false;
+	
 	private boolean showABS = true;
 
 	public EGEntity(PropertySharing prop) {
@@ -61,23 +63,25 @@ public class EGEntity extends AbstractEGBox {
 	}
 
 	public EGEntity(PropertySharing prop, String name, Rectangle bounds,
-			boolean complex, boolean independent, boolean instantiable) {
+			boolean complex, boolean independent, boolean instantiable, boolean fAbstract) {
 		this(prop);
 		setBounds(bounds);
 		setName(name);
 		setComplex(complex);
 		setIndependent(independent);
 		setInstantiable(instantiable);
+		setAbstract(fAbstract);
 	}
 
 	public EGEntity(PropertySharing prop, String name, Point location,
-			boolean complex, boolean independent, boolean instantiable) {
+			boolean complex, boolean independent, boolean instantiable, boolean fAbstract) {
 		this(prop);
 		setLocation(location);
 		setName(name);
 		setComplex(complex);
 		setIndependent(independent);
 		setInstantiable(instantiable);
+		setAbstract(fAbstract);
 	}
 
 	public void updateModel(SdaiModel modelDict, SdaiModel modelEG)	throws SdaiException {
@@ -139,6 +143,17 @@ public class EGEntity extends AbstractEGBox {
 		fireLabelChanged();
 	}
 
+	public boolean isAbstract() {
+		return fAbstract;
+	}
+
+	public void setAbstract(boolean fAbstract) {
+		this.fAbstract = fAbstract;
+		validDict = false;
+		wrapper.setText(getText());
+		fireLabelChanged();
+	}
+
 	public Selectable selectAsFirst(int type) {
 		return this;
 	}
@@ -168,9 +183,12 @@ public class EGEntity extends AbstractEGBox {
 
 	public String getText() {
 		String text = super.getText();
-		if (!isInstantiable())
-			text = showABS ? "(Abs) " + text : text;
+		if (isAbstract())
+			text = showABS ? "(AE) " + text : text; // abstract entity 
+		else if (!isInstantiable())
+			text = showABS ? "(ABS) " + text : text; // abstract supertype
 		return text;
+		
 	}
 
 }

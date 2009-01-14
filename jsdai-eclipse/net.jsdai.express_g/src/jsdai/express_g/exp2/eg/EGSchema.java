@@ -100,6 +100,21 @@ public class EGSchema extends AbstractEGBox {
 		String href = "";
 		if ("".equals(ext)) {
 			href = " href=\"../../resources/" + name.toLowerCase() + "/" + name.toLowerCase() + ".xml\""; 
+		} else if (name.equals(ext)) { // RR - for extended names in resources - could have changed the above if perhaps
+// first version - references to resources are old style - not to expg
+			href = " href=\"../../resources/" + name.toLowerCase() + "/" + name.toLowerCase() + ".xml\""; 
+
+// 2nd version - trying references to resources to expg instead
+//			href = " href=\"../../resources/" + name.toLowerCase() + "/" + name.toLowerCase(); 
+//			if (schema_name.equalsIgnoreCase(name)) {
+//				if (prop().handler().getMaxPage() > 1) href += "expg2.xml" + "\"";
+//				else
+//				  href += ".xml\""; // let's keep the old style here for now
+//					// return null; // no xml for schema with single page
+//			} else {
+//				href += "expg1.xml" + "\"";
+//			}
+
 		} else {
 			href = " href=\"../" + name.toLowerCase() + "/"	+ ext.toLowerCase(); 
 			if (schema_name.equalsIgnoreCase(name)) {

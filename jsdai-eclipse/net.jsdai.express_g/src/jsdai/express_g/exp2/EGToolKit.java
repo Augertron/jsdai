@@ -436,7 +436,10 @@ public class EGToolKit {
 				output[2] = "5_mim.xml";
 			} else {
 				output[0] = schemaName;
-				output[1] = "";
+// file names in resources do not contain schema names - as done originally - very logical solution, names are not needed
+//				output[1] = "";
+// making file names in resources also to contain the schema name (because of the naming convention)
+				output[1] = schemaName;  // experimenting - RR
 				output[2] = ".xml";
 			}
 		}

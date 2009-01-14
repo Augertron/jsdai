@@ -580,7 +580,11 @@ realException.printStackTrace();
 
 		exec_strings[ii++] = "-jsdaiproperties";
 		exec_strings[ii++] = jsdai_properties_path;
-		exec_strings[ii++] = "-original_case";
+//		if (fOriginalCase) {
+			exec_strings[ii++] = "-original_case";
+//		} else {
+			exec_strings[ii++] = "-nothing";
+//		}
 
 		exec_strings[ii++]= "-stdout";
 		exec_strings[ii++]= new File(current_directory, "log_output").getAbsolutePath();

@@ -739,14 +739,18 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 			if (!complex) {
 				boolean independent = false;
 				boolean instantiable = false;
+				boolean fAbstract = false;
 				if (entity.testIndependent(null))
 					independent = entity.getIndependent(null);
 				if (entity.testInstantiable(null))
 					instantiable = entity.getInstantiable(null);
+				if (entity.testAbstract_entity(null))
+					fAbstract = entity.getAbstract_entity(null);
+
 				Point location = new Point(0, 0);
 
 				object = new EGEntity(prop, entity.getName(null), location,
-						complex, independent, instantiable);
+						complex, independent, instantiable, fAbstract);
 				((SDAIdicSchema) object).setDefinition(entity);
 				setTemp(entity, object);
 

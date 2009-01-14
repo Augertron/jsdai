@@ -362,7 +362,8 @@ public class ExpressCompilerUtils {
 
 		MessageConsoleStream stream = ExpressCompilerPlugin.getDefault().getConsole();
 		if (stream != null) {
-			stream.println(message);
+//			stream.println(message);
+				stream.println("validation or compilation results are here");
 //			ConsolePlugin.getDefault().getConsoleManager().showConsoleView(stream.getConsole());
 		}
 

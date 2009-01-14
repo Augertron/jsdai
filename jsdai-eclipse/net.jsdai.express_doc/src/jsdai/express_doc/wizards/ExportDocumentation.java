@@ -24,14 +24,20 @@
 package jsdai.express_doc.wizards;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import jsdai.common.CommonPlugin;
+import jsdai.common.utils.IsolatedRunnableThread;
 import jsdai.express_doc.ExpressDocPlugin;
 import jsdai.lang.SdaiException;
 import jsdai.lang.SdaiSession;
+import jsdai.runtime.RuntimePlugin;
 import jsdai.tools.ExpressDoc;
 
 import org.eclipse.core.resources.IFile;
@@ -41,6 +47,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -50,6 +57,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.ide.IDE;
+import org.osgi.framework.Bundle;
+
+import jsdai.common.utils.*;
 
 /**
  * @author Mantas Balnys
@@ -61,6 +71,8 @@ public class ExportDocumentation extends Wizard implements IExportWizard {
 	
 	private ExpressDocSettingPage expressDocSettingPage = null;
 
+ 	static IProject fProject = null;
+	
 	/**
 	 * 
 	 */
@@ -105,17 +117,26 @@ public class ExportDocumentation extends Wizard implements IExportWizard {
 			try {
 				IPath path = new Path(expressDocSettingPage.getDestinationDirectory());
 				IResource file = ResourcesPlugin.getWorkspace().getRoot().getContainerForLocation(path);
-				file.refreshLocal(IResource.DEPTH_INFINITE, null);
+				if (file != null) {
+					file.refreshLocal(IResource.DEPTH_INFINITE, null);
+				} // else - destination location is not in eclipse workspace, therefore no refreshing can be done
 			} catch (Throwable t) {
-				t.printStackTrace();
+//				t.printStackTrace();
+					System.out.println("problems with ExpressDoc 1, see log: " + t);
+					ExpressDocPlugin.log("problems with ExpressDoc export 1: " + t,1);				
+					ExpressDocPlugin.log(t);				
 			}
 		} catch (InterruptedException e) {
 //System.err.println("Export to html CANCELED: " + e);
 			MessageDialog.openError(getShell(), "Export Documentation Error", "Interupted by user");
+					System.out.println("problems with ExpressDoc export 2, see log: " + e);
+					// e2.printStackTrace();
+					ExpressDocPlugin.log("ExpressDoc interrupted by user 2",1);				
+					//ExpressDocPlugin.log(e);				
 		} catch (InvocationTargetException e) {
 			Throwable realException = e.getTargetException();
-//System.err.println("ExportToHtmlAction excption: " + e);
-//System.err.println("ExportToHtmlAction real excption: " + realException);
+System.err.println("ExportToHtmlAction excption: " + e);
+System.err.println("ExportToHtmlAction real excption: " + realException);
 			String message = "Exporting failed, " + e.getLocalizedMessage();
 			if (realException != null) {
 				message = "Exporting failed, " + realException.getLocalizedMessage();
@@ -125,6 +146,10 @@ public class ExportDocumentation extends Wizard implements IExportWizard {
 				}
 			}
 			MessageDialog.openError(getShell(), "Export Documentation Error", message);
+			System.out.println("problems with ExpressDoc 4, see log: " + e);
+					// e2.printStackTrace();
+			ExpressDocPlugin.log("problems with ExpressDoc export 4: " + e,1);				
+			ExpressDocPlugin.log(e);				
 		}
 		expressDocSettingPage.saveWidgetValues();
 		return ok;
@@ -156,13 +181,21 @@ public class ExportDocumentation extends Wizard implements IExportWizard {
 		super.createPageControls(pageContainer);
 
 		String dictionaryFileName = null;
+		System.out.println("createPageControls - selection: " + selection);
 		if(selection != null) {
 			IProject project = null;
 			List selResources = IDE.computeSelectedResources(selection);
 			for(Iterator i = selResources.iterator(); i.hasNext();) {
 				IResource resource = (IResource) i.next();
+				System.out.println("createPageControls - resource: " + resource);
+				if (fProject == null) {
+					// not sure why setting project is after continue - not reached
+					System.out.println("<I> attemptingto set fProject: " + resource);
+					fProject = resource.getProject();
+				}
 				if (resource instanceof IFile) {
 					IFile file = (IFile) resource;
+					System.out.println("createPageControls - file: " + file);
 					String fext = file.getFileExtension();
 					if (fext.equalsIgnoreCase("exd") || fext.equalsIgnoreCase("exg") || 
 							fext.equalsIgnoreCase("sdai")) {
@@ -175,6 +208,7 @@ public class ExportDocumentation extends Wizard implements IExportWizard {
 				if(project == null) {
 					project = resource.getProject();
 				}
+				System.out.println("<O> attemptingto set fProject: " + resource + ", project: " + resource.getProject());
 			}
 			if(dictionaryFileName == null && project != null) {
 				dictionaryFileName = project.getLocation().toOSString();
@@ -210,6 +244,7 @@ public class ExportDocumentation extends Wizard implements IExportWizard {
 		 * @see org.eclipse.jface.operation.IRunnableWithProgress#run(org.eclipse.core.runtime.IProgressMonitor)
 		 */
 		public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+ExpressDocPlugin.log("in run - 01",1);				
 			monitor.beginTask("Generating html documentation", IProgressMonitor.UNKNOWN);
 
 			String [] args;
@@ -261,14 +296,25 @@ public class ExportDocumentation extends Wizard implements IExportWizard {
 
 //			System.setProperty("jsdai.properties", ExpressDocPlugin.class.getResource("jsdai.properties").getFile());
 
+ExpressDocPlugin.log("in run - 02 - after args before try",1);				
+
+
 			try {
 				try {
 				Properties prop = new Properties();
 				File repoDir = ExpressDocPlugin.getDefault().getStateLocation().append("sdairepos").toFile();
 				if (!repoDir.exists()) repoDir.mkdirs();
+System.out.println("<>JSDAI-PROPERTIES: " + repoDir.getAbsolutePath());
 				prop.setProperty("repositories", repoDir.getAbsolutePath());
 				SdaiSession.setSessionProperties(prop);
-				} catch (SdaiException sex) {};
+ExpressDocPlugin.log("in run - 03 - after repodir",1);				
+				} catch (SdaiException sex) {
+//					ExpressDocPlugin.log(,1);
+					System.out.println("problems with ExpressDoc 5, see log: " + sex);
+					// e2.printStackTrace();
+					ExpressDocPlugin.log("problems with ExpressDoc export 5: " + sex,1);				
+					ExpressDocPlugin.log(sex);				
+				};
 				
 /*
 				File repoDir = ExpressDocPlugin.getDefault().getStateLocation().append("sdairepos").toFile();
@@ -284,12 +330,162 @@ public class ExportDocumentation extends Wizard implements IExportWizard {
 //
 //				System.out.println("-----------------------------------end-");
 
-				ExpressDoc.main(args);
+
+// let's try using JarFileClassLoader --------------------
+
+
+
+//	public static IsolatedRunnableThread newInstance(final String className, final String methodName,
+//			final Class[] parameterTypes, final Object[] parameters, final File[] classPathJars, String[] exceptions)
+
+
+       	 String [] exceptions = null;
+       	 
+
+       	 
+//       final File[] classPathJars;
+
+// it is null, unfortunately       	 
+System.out.println("<KUKU> fProject: " + fProject);       	 
+
+/*       	 
+	    	 	String jar_path =  fProject.getProject().getLocation().toOSString();
+    			if (jar_path.endsWith("\\") || jar_path.endsWith("/")) {
+    				jar_path += fProject.getName() + ".jar";
+    			} else {
+    				jar_path += File.separator + fProject.getName() + ".jar";
+		    	}
+*/
+
+ExpressDocPlugin.log("in run - 05 - before classpaths",1);				
+
+	    	 	File[] classPathJars = {
+	    				new File(getClassPath(
+	    						ExpressDocPlugin.getDefault().getBundle(), "jsdai_doc.jar")),
+	    				new File(getClassPath(
+	    						RuntimePlugin.getDefault().getBundle(), "jsdai_runtime.jar")),
+	    				new File(getClassPath(
+	    						Platform.getBundle("net.jsdai.ext_dict_lib"), "SExtended_dictionary_schema.zip"))
+						// new File(jar_path),
+	    			};
+
+ExpressDocPlugin.log("in run - 06 - after classpaths",1);				
+
+//				ClassLoader loader = new JarFileClassLoader(...);
+
+//	    	 ClassLoader loader =
+
+				try {
+
+					System.out.println("classPathJars: " + classPathJars);					
+                    for (int ihi = 0; ihi < classPathJars.length; ihi++) {
+                    	
+    					System.out.println("classPathJars - i: " + ihi + " - " + classPathJars[ihi]);					
+                    }
+
+
+    	IsolatedRunnableThread expressdocThread = null;
+
+//		File repoDir = ExpressDocPlugin.getDefault().getStateLocation().append("sdairepos").toFile();
+		String repoDirStr = ExpressDocPlugin.getDefault().getStateLocation().append("sdairepos").toOSString();
+		// if (!repoDir.exists()) repoDir.mkdirs();
+    	
+	    	 	expressdocThread =
+	    	 		IsolatedRunnableThread.newInstance("jsdai.tools.ExpressDoc", "initAsRunnable",
+	    	 				new Class[] { String.class, String[].class },
+	    	 				new Object[] { repoDirStr, args },
+	    	 				classPathJars, null);
+ExpressDocPlugin.log("in run - 07 - before thread start",1);				
+
+	    		expressdocThread.start();
+ExpressDocPlugin.log("in run - 08 - after thread start",1);				
+
+		if (true) {
+
+//					p.waitFor();
+
+			boolean is_cancel = false;
+//			int exit_code = -555;
+			for (;;) {
+				if(!Thread.interrupted()) {
+						try {
+							expressdocThread.join(1000);
+						} catch (InterruptedException e) {
+							//System.out.println("problems with ExpressDoc 2, see log: " + e2);
+							// e2.printStackTrace();
+							ExpressDocPlugin.log("ExpressDoc interrupted by user 1", 1);				
+						}
+						if(!expressdocThread.isAlive()) {
+							break;
+						}
+				}	
+//				is_cancel = monitor.isCanceled();
+				if (is_cancel) {
+//					fValidateOutput += "Validation canceled";
+						expressdocThread.interrupt();
+					throw (new InterruptedException());
+				}
+			}	// for	
+		} // if true (OS)
+
+
+
+/*
+
+					JarFileClassLoader loader =
+						new JarFileClassLoader(classPathJars, ExportDocumentation.class.getClassLoader(), exceptions);
+
+//		    	 	Class express_doc_class = loader.loadClass("ExpressDoc", true);
+System.out.println("<> before class - loader: "  + loader);
+		    	 	Class express_doc_class = loader.loadClass("jsdai.tools.ExpressDoc", false);
+//		    	 	Class express_doc_class = Class.forName("jsdai.tools.ExpressDoc", true, loader);
+System.out.println("<> after class");
+
+System.out.println("loader: " + express_doc_class.getClassLoader());
+//		    	 	Method main = express_doc_class.getMethod("main", new Class[] {String[].class});
+                    Class[] m_pars = new Class [2];
+                    m_pars[0] = String.class;
+                    m_pars[1] = String[].class;
+                    
+//		    	 	Method init_runnable = express_doc_class.getMethod("initAsRunnable", new Class[] {String.class, String[].class});
+		    	 	Method init_runnable = express_doc_class.getMethod("initAsRunnable", m_pars);
+System.out.println("after getMethod, before invoke");
+//					int modifiers = main.getModifiers();
+//					if (Modifier.isPublic
+
+//						main.invoke(null, new Object[] {new String[] {} }};
+//						main.invoke(null, new Object[] {args  });
+                        String repo_str = "G:\\REPO";
+///                        Object arg1_obj = new Object(repo_str);
+                        Object [] arguments = new Object[2];
+                        arguments[0] = repo_str;
+                        arguments[1] = args;
+//						init_runnable.invoke(null, new Object[] {args  });
+						java.lang.Runnable the_runnable = (java.lang.Runnable)init_runnable.invoke(null, arguments);
+System.out.println("after invoke - DONE");
+			            the_runnable.run();
+System.out.println("after run - DONE");
+
+*/
+
+				} catch (Exception e2) {
+					System.out.println("problems with ExpressDoc 6, see log: " + e2);
+					// e2.printStackTrace();
+					ExpressDocPlugin.log("problems with ExpressDoc export 6: " + e2,1);				
+					ExpressDocPlugin.log(e2);				
+				}
+
+// -------- end of using JarFileClassLoader ---------------------------
+
+//				ExpressDoc.main(args);
+
 				ok = true;
-			} catch (SdaiException e) {
-//				System.out.println("problems with ExpressDoc: " + e);
+//			} catch (SdaiException e) {
+			} catch (Exception e) {
+				System.out.println("problems with ExpressDoc 3, see log: " + e);
 //				e.printStackTrace();
-				
+				ExpressDocPlugin.log("problems with ExpressDoc export 3: " + e,1);				
+				ExpressDocPlugin.log(e);				
 				throw new InvocationTargetException(e);
 			}
 			
@@ -301,4 +497,27 @@ public class ExportDocumentation extends Wizard implements IExportWizard {
 		
 		
 	}
+	
+	static String getClassPath(Bundle bundle, String jarFile) {
+		try {
+			URL classpath = Platform.asLocalURL(bundle.getEntry(jarFile));
+			String classpath_string = classpath.getFile().toString();
+
+		if (Platform.getOS().equals("win32")) {
+			classpath_string = classpath_string.substring(1);
+		}
+			return classpath_string;
+		} catch (IOException e) {
+				// ExpressCompilerPlugin.log(e);
+				// e.printStackTrace();
+				System.out.println("problems with ExpressDoc 7, see log: " + e);
+				// e2.printStackTrace();
+				ExpressDocPlugin.log("problems with ExpressDoc export 7: " + e,1);				
+				ExpressDocPlugin.log(e);				
+				// ExpressDocPlugin.log(e.toString(),1);				
+				return null;
+		}
+	}
+	
+	
 }

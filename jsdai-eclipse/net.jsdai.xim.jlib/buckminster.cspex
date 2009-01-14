@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cs:cspecExtension
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:com="http://www.eclipse.org/buckminster/Common-1.0"
+    xmlns:cs="http://www.eclipse.org/buckminster/CSpec-1.0">
+    <cs:dependencies>
+		<cs:dependency name="jsdai_xim_full.jar.pack.gz#I2008-12-18_18-20-31"/>
+		<cs:dependency name="Pack200Task.jar#I2008-02-20_16-50-39"/>
+    </cs:dependencies>
+
+    <cs:actions>
+        <cs:public name="buckminster.prebind" actor="ant">
+        	<cs:actorProperties>
+				<cs:property key="buildFile" value="make/buckminster.xml"/>
+        	</cs:actorProperties>
+
+			<cs:prerequisites>
+				<cs:attribute component="Pack200Task.jar#I2008-02-20_16-50-39" name="java.binaries"
+					alias="pack200-ant-tasks"/>
+				<cs:attribute component="jsdai_xim_full.jar.pack.gz#I2008-12-18_18-20-31" name="java.binaries"
+					alias="jsdai-xim-full-jar-pack200"/>
+			</cs:prerequisites>
+
+			<cs:products alias="jsdai-xim-full-jar" base="${buckminster.home}">
+				<cs:path path="jsdai_xim_full.jar"/>
+			</cs:products>
+        </cs:public>
+        <cs:public name="buckminster.refresh" actor="ant">
+        	<cs:actorProperties>
+				<cs:property key="buildFile" value="make/buckminster.xml"/>
+        	</cs:actorProperties>
+
+			<cs:prerequisites alias="input">
+				<cs:attribute component="jsdai_xim_full.jar.pack.gz#I2008-12-18_18-20-31" name="java.binaries"/>
+				<cs:attribute component="Pack200Task.jar#I2008-02-20_16-50-39" name="java.binaries"/>
+			</cs:prerequisites>
+        </cs:public>
+    </cs:actions>
+</cs:cspecExtension>

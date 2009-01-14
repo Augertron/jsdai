@@ -213,12 +213,24 @@ public class EGConstraint extends AbstractEGBox {
 		int y1 = bounds.y;
 		int y2 = bounds.y + bounds.height / 2;
 		int y3 = bounds.y + bounds.height;
-		String text = "<img.area shape=\"poly\" coords=\"" 
+		String text = null;
+	  if (schema_name.equals(schema_ext)) { // RR
+			text = "<img.area shape=\"poly\" coords=\"" 
+			+ x1 + "," + y2 + "," + x2 + "," + y3 + "," + x3 + "," + y3 + "," + x4 + "," + y2 + "," 
+			+ x3 + "," + y1 + "," + x2 + "," + y1 + "," + x1 + "," + y2  
+			+ "\" href=\"./" + schema_name.toLowerCase() + ".xml" + "#"
+			+ schema_name  + "." + getName()
+			+ "\" />";
+		} else {	
+
+			text = "<img.area shape=\"poly\" coords=\"" 
 			+ x1 + "," + y2 + "," + x2 + "," + y3 + "," + x3 + "," + y3 + "," + x4 + "," + y2 + "," 
 			+ x3 + "," + y1 + "," + x2 + "," + y1 + "," + x1 + "," + y2  
 			+ "\" href=\"../" + schema_name.toLowerCase() + "/sys/" + doc_file + "#"
 			+ schema_name + "_" + schema_ext + "." + getName()
 			+ "\" />";
+		}
 		return text;
 	}
 }
+

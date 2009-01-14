@@ -24,10 +24,12 @@
 package jsdai.express_compiler.actions;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -37,6 +39,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 
+import jsdai.common.utils.CommonUtils;
 import jsdai.expressCompiler.ECMonitor;
 import jsdai.express_compiler.ExpressCompilerPlugin;
 import jsdai.express_compiler.editor.ExpressCompilerMessageParser;
@@ -99,6 +102,7 @@ public class ExpressCompilerProjectAction implements IWorkbenchWindowActionDeleg
 	IWorkbenchWindow fWindow;
 	IWorkbenchPage fPage;
 	String fCompilerOutput;
+	String fOutput;
 	
 	boolean fJavacOutOfMemoryFlag;	
 	
@@ -112,6 +116,7 @@ public class ExpressCompilerProjectAction implements IWorkbenchWindowActionDeleg
 	boolean fCreateJar;
 	boolean fNoJava;
 	boolean fUseExclude;
+	boolean fOriginalCase;
 	boolean fSwitchStepmod;
 	boolean fSwitchArm;
 	boolean fSwitchMim;
@@ -258,6 +263,7 @@ System.out.println("active editor input: " + e_name);
 		fInitialMemorySize = ExpressCompilerPlugin.getDefault().getPreferenceStore().getInt(ExpressCompilerPreferences.INITIAL_MEMORY_SIZE);
 		fMaximumMemorySize = ExpressCompilerPlugin.getDefault().getPreferenceStore().getInt(ExpressCompilerPreferences.MAXIMUM_MEMORY_SIZE);
 		fEnableExpressions = ExpressCompilerPlugin.getDefault().getPreferenceStore().getBoolean(ExpressCompilerPreferences.ENABLE_EXPRESSIONS);
+		fOriginalCase = ExpressCompilerPlugin.getDefault().getPreferenceStore().getBoolean(ExpressCompilerPreferences.ORIGINAL_CASE);
 		fSeparateProcess = ExpressCompilerPlugin.getDefault().getPreferenceStore().getBoolean(ExpressCompilerPreferences.SEPARATE_PROCESS);
 		flagDeleteAllJSDAIMarkers = ExpressCompilerPlugin.getDefault().getPreferenceStore().getBoolean(ExpressPreferences.DELETE_ALL_JSDAI_MARKERS);
 		flagDeleteAllExpressMarkers = ExpressCompilerPlugin.getDefault().getPreferenceStore().getBoolean(ExpressPreferences.DELETE_ALL_EXPRESS_MARKERS);
@@ -342,7 +348,7 @@ System.out.println("active editor input: " + e_name);
 				try {
 					doRun(monitor);
 				} catch (CoreException e) {
-//					ExpressCompilerPlugin.log(e);
+					 ExpressCompilerPlugin.log(e);
 					throw new InvocationTargetException(e);
 				} finally {
 					monitor.done();
@@ -386,7 +392,8 @@ System.out.println("active editor input: " + e_name);
 			memoryBox.open();
 		}
 		
-		ExpressCompilerUtils.printResultInConsole(fCompilerOutput, fPage);
+		CommonUtils.printResultToConsole(fCompilerOutput, fPage, fOutput);
+//		ExpressCompilerUtils.printResultInConsole(fCompilerOutput, fPage);
 	
 	    if (fCompilerProcessErrors != null) {
 	    	if (fCompilerProcessErrors.length() > 0) {
@@ -522,6 +529,7 @@ System.out.println("active editor input: " + e_name);
 						String s_memory_max = null;
 
 						String s_enable_expressions = null;
+						String s_original_case = null;
 						String s_separate_process = null;
 
 						
@@ -586,6 +594,7 @@ System.out.println("active editor input: " + e_name);
 
 
 							s_enable_expressions = prefs.get("fEnableExpressions", "default");
+							s_original_case = prefs.get("fOriginalCase", "default");
 							s_separate_process = prefs.get("fSeparateProcess", "default");
 
 							s_switch_stepmod = prefs.get("fSwitchStepmod", "default");
@@ -666,6 +675,15 @@ System.out.println("active editor input: " + e_name);
 								} else 
 								if (s_enable_expressions.equalsIgnoreCase("no")) {
 									fEnableExpressions = false;
+								}
+							}
+
+							if (s_original_case != null) {
+								if (s_original_case.equalsIgnoreCase("yes")) {
+									fOriginalCase = true;
+								} else 
+								if (s_original_case.equalsIgnoreCase("no")) {
+									fOriginalCase = false;
 								}
 							}
 
@@ -926,6 +944,13 @@ System.out.println("active editor input: " + e_name);
 				}
 
 
+         String exl_list_abs = current_directory;
+				 if (current_directory.endsWith("\\") || current_directory.endsWith("/")) {
+			 		exl_list_abs += "list.exl";
+	 			} else {
+	  			exl_list_abs  +=  File.separator + "list.exl";
+	 			}
+
 
 				// runs the command
 //				Process p = r.exec(command.toString(), new String[] {}, new File(fileFolderPath));
@@ -1023,7 +1048,7 @@ System.out.println("active editor input: " + e_name);
 			if (fUseInclude) {
 				String include_file_path = fProject.getLocation().toString() + File.separator + fProject.getName() + ".exl";		
 
-				getExpressFilesFromList(include_file_path, express_files);
+				getExpressFilesFromList(include_file_path, express_files, exl_list_abs);
 			} else {	
 
 				if (express_file_folder == null) {
@@ -1187,7 +1212,8 @@ String express_list_file = fProject.getLocation().toString() + File.separator + 
 		if (fUseInclude) {
 			fUseExclude = false;
 			exec_strings[ii++] = "-files";
-			exec_strings[ii++] = express_list_file;
+//			exec_strings[ii++] = express_list_file;
+			exec_strings[ii++] = exl_list_abs;
 			monitor_exec_string += "Compiling express from the list input";
 		} else {
 			if (fRecursiveFlagGlobal) {
@@ -1219,7 +1245,11 @@ String express_list_file = fProject.getLocation().toString() + File.separator + 
 
 		exec_strings[ii++] = "-jsdaiproperties";
 		exec_strings[ii++] = jsdai_properties_path;
-		exec_strings[ii++] = "-original_case";
+		if (fOriginalCase) {
+			exec_strings[ii++] = "-original_case";
+		} else {
+			exec_strings[ii++] = "-nothing";
+		}
 		if (fUseExclude) {
 			monitor_exec_string += ", with exclusion list";
 			exec_strings[ii++] = "-exclude";
@@ -1297,6 +1327,8 @@ String express_list_file = fProject.getLocation().toString() + File.separator + 
 					error_file_path   += File.separator + "log_errors";
 					temp_result_path  += File.separator + "temp_rezult";
 				}
+
+    fOutput = output_file_path;
 		
 
 //   	    InputStream error_stream = new FileInputStream(error_file_path);
@@ -1332,6 +1364,11 @@ String express_list_file = fProject.getLocation().toString() + File.separator + 
 //  fCompilerOutput += "Running the express compiler\n";
 //	monitor.beginTask(monitor_exec_string, 10);
 
+
+	boolean monitor_task_started = false;
+	
+	// an experiment to see if it is possible to move this inside the loop
+	// yes, it is possible
 	monitor.beginTask(monitor_exec_string + ": 0s", IProgressMonitor.UNKNOWN);
 
 	IsolatedRunnableThread expressCompilerThread = null;
@@ -1452,7 +1489,18 @@ fCompilerOutput += "Express compilation canceled";
 			}
 			current_time = System.currentTimeMillis();
 			elapsed_time = (current_time - start_time) / 1000;
-			monitor.setTaskName((subtaskMessage != null ? subtaskMessage : monitor_exec_string) + ": " + elapsed_time + "s");
+
+	
+	// an experiment to see if it is possible to move this inside the loop
+  // yes, success
+//	    if (monitor_task_started) {
+			if (true) {
+				monitor.setTaskName((subtaskMessage != null ? subtaskMessage : monitor_exec_string) + ": " + elapsed_time + "s");
+			} else {
+				monitor.beginTask(monitor_exec_string + ": 0s", IProgressMonitor.UNKNOWN);
+				monitor_task_started = true;
+				System.out.println("starting task - delayed");
+			}
 			is_cancel = monitor.isCanceled();
 			if (is_cancel) {
 				fCompilerOutput += "Express compilation canceled";
@@ -2109,8 +2157,63 @@ fCompilerOutput += "Express compilation canceled";
 			
 		}
 	
+	void getExpressFilesFromList(String list_file, HashMap express_files, String list_file2) throws CoreException {
+
+		IWorkspace workspace = fProject.getWorkspace();
+		IWorkspaceRoot root = workspace.getRoot();
+    
+//    IPath root_path = root.getFullPath();
+    IPath absolute_path_prefix_p = root.getLocation();
+	String absolute_path_prefix = absolute_path_prefix_p.toOSString() + File.separatorChar;
+//System.out.println("<>ROOT PREFIX: " + absolute_path_prefix);
+//System.out.println("<>ROOT 2nd file: " + list_file2);
+
+    try {
+      FileWriter fw = new FileWriter(list_file2);
+      FileReader fr = new FileReader(list_file);
+			BufferedWriter bw = new BufferedWriter(fw);
+			BufferedReader br =  new BufferedReader(fr);
+			for (;;) {
+				String current_line = br.readLine();
+				if (current_line == null) break;
+				current_line = current_line.trim();
+				if (current_line.equalsIgnoreCase("")) continue;
+				if (current_line.startsWith("#")) continue;
+        if (!current_line.endsWith(".exp")) continue;			
+				current_line.replace('/', File.separatorChar).replace('\\', File.separatorChar);			
+				current_line = absolute_path_prefix + current_line;
+				bw.write(current_line+"\n");
+			
+				IPath current_line_path = new Path(current_line);
+//				IContainer an_express_file_container = root.getContainerForLocation(current_line_path);
+//        IFile current_line_file = (IFile)an_express_file_container;
+					IFile current_line_file = root.getFileForLocation(current_line_path);
+//				IFile current_line_file = root.getFile(current_line_path);
+//System.out.println("IFile: " + current_line_file + " for IPath: " + current_line_path + " for path: " + current_line);
+//				IPath key01 = current_line_file.getLocation();
+//System.out.println("IPath: " + key01);
+				
+				String key = current_line_file.getLocation().toOSString().toLowerCase().replace('\\','$').replace('/','$');
+//				String key = current_line.toLowerCase().replace('\\','$').replace('/','$');
+				express_files.put(key, current_line_file);
+			}
+			bw.write("\n");
+			bw.close();
+			fw.close();			
+		} catch (FileNotFoundException e) {
+//      System.out.println("file " + list_file + " not found.");
+			ExpressCompilerPlugin.log(e);
+			
+    } catch (IOException e) {
+//      System.out.println("file " + list_file + " caused exception:");
+			ExpressCompilerPlugin.log(e);
+    }
+
+
+		
+	}
 	
-	void getExpressFilesFromList(String list_file, HashMap express_files) throws CoreException {
+	void getExpressFilesFromListOLD(String list_file, HashMap express_files) throws CoreException {
 
 		IWorkspace workspace = fProject.getWorkspace();
 		IWorkspaceRoot root = workspace.getRoot();

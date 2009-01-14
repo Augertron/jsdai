@@ -487,6 +487,11 @@ public class ExpressCompilerPlugin extends AbstractUIPlugin implements IStartup,
 		log.log(status);
 	}
 
+	public static void log(String message, int severity) {
+		IStatus status = new Status(severity, EXPRESS_COMPILER_PLUGIN_ID, IStatus.OK, message, null);
+		log(status);
+	}
+
 
 	public static void logErrorMessage(String message) {
 		log(new Status(IStatus.ERROR, getUniqueIdentifier(), IStatus.ERROR, message, null));

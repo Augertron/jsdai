@@ -83,6 +83,7 @@ public class NewExpressProjectWizardOptionPage extends WizardPage {
 		int fUseArmSwitch = 0;
 		int fUseMimSwitch = 0;
 		int fEnableExpressions = 0;
+		int fOriginalCase = 0;
 		int fSeparateProcess;
 		boolean fEnableAdvanced;
 
@@ -123,6 +124,7 @@ public class NewExpressProjectWizardOptionPage extends WizardPage {
 		fUseArmSwitch = 0;
 		fUseMimSwitch = 0;
 		fEnableExpressions = 0;
+		fOriginalCase = 0;
 
 	}
 
@@ -199,6 +201,7 @@ public class NewExpressProjectWizardOptionPage extends WizardPage {
 //					createExlGenerationGroup(composite); // includes  both include and exclude lists
 //					createComplexGroup(composite); // not sure if we need to switch it off at all
 					createExpressionsGroup(composite);
+					createIdCaseGroup(composite);
 //					createMemoryGroup(composite);
 
 
@@ -776,6 +779,79 @@ public class NewExpressProjectWizardOptionPage extends WizardPage {
 
 
 
+    private final void createIdCaseGroup(Composite listGroup) {
+
+			Font font = listGroup.getFont();
+
+			Group idCaseGroup = new Group(listGroup, SWT.NONE);
+			GridLayout layout2 = new GridLayout();
+			layout2.numColumns = 1;
+			idCaseGroup.setLayout(layout2);
+			idCaseGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			idCaseGroup.setFont(font);
+			idCaseGroup.setText("Use original case of identifiers");
+
+
+			final Button idCaseDefaultButton = new Button(idCaseGroup, SWT.RADIO | SWT.LEFT);
+
+      String default_case_value = "default";
+			boolean global_original_case = ExpressCompilerPlugin.getDefault().getPreferenceStore().getBoolean(ExpressCompilerPreferences.ORIGINAL_CASE);
+      if (global_original_case) {
+        	default_case_value += " (yes)";
+        } else {
+	       	default_case_value += " (no)";
+        }
+  
+      idCaseDefaultButton.setText(default_case_value);
+			idCaseDefaultButton.setSelection(true);
+			fOriginalCase = 0;
+			idCaseDefaultButton.setFont(font);
+
+			final Button idCaseYesButton = new Button(idCaseGroup, SWT.RADIO | SWT.LEFT);
+			idCaseYesButton.setText("yes");
+			idCaseYesButton.setSelection(false);
+			idCaseYesButton.setFont(font);
+
+			final Button idCaseNoButton = new Button(idCaseGroup, SWT.RADIO | SWT.LEFT);
+			idCaseNoButton.setText("no");
+			idCaseNoButton.setSelection(false);
+			idCaseNoButton.setFont(font);
+
+
+			GridData buttonData = new GridData();
+			buttonData.horizontalSpan = 1;
+			idCaseDefaultButton.setLayoutData(buttonData);
+			buttonData = new GridData();
+			buttonData.horizontalSpan = 1;
+			idCaseYesButton.setLayoutData(buttonData);
+			buttonData = new GridData();
+			buttonData.horizontalSpan = 1;
+			idCaseNoButton.setLayoutData(buttonData);
+
+  
+			SelectionListener listener = new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					if (idCaseDefaultButton.getSelection()) {
+						fOriginalCase = 0;
+					} else
+					if (idCaseYesButton.getSelection()) {
+						fOriginalCase = 1;
+					} else
+					if (idCaseNoButton.getSelection()) {
+						fOriginalCase = 2;
+					}
+				}
+			};
+			
+			idCaseDefaultButton.addSelectionListener(listener);
+			idCaseYesButton.addSelectionListener(listener);
+			idCaseNoButton.addSelectionListener(listener);
+
+		}
+
+
+
+
     private final void createStepmodGroup(Composite parent) {
 
 			/*
@@ -1135,6 +1211,10 @@ public class NewExpressProjectWizardOptionPage extends WizardPage {
 	
 	public int getIfExpressionsEnabled() {
 		return fEnableExpressions;
+	}
+
+	public int getIfOriginalCase() {
+		return fOriginalCase;
 	}
 	
 	public int getIfSeparateProcess() {

@@ -177,6 +177,8 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+//import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
 public class ValidationMessageParser {
@@ -217,7 +219,10 @@ public class ValidationMessageParser {
 
 
 		
-	public void parseValidationMessages(IProject project, IFile validated_file, String validation_output, IPath validated_path) throws CoreException {
+//	public void parseValidationMessages(IProject project, IFile validated_file, String validation_output, IPath validated_path) throws CoreException {
+	public void parseValidationMessages(IProject project, IFile validated_file, String validation_output, IPath validated_path, IProgressMonitor monitor) throws CoreException {
+
+		monitor.beginTask("Parsing validation messages", IProgressMonitor.UNKNOWN);
 	
 		fProject = project;
 //		StringTokenizer tokenizer = new StringTokenizer(validation_output, "\n"); //$NON-NLS-1$
@@ -228,11 +233,13 @@ public class ValidationMessageParser {
 			current_line = (String) tokenizer.nextElement();
 			if (current_line != null) {
 //				System.out.println("parsing line: "  + current_line);
+	monitor.setTaskName(("Parsing validation messages: " + current_line));
 				processLine(validated_file, current_line, validated_path);
 			} else {
 //				System.out.println("parsing line NULL");
 			}
   		}
+  		monitor.setTaskName(("Parsing validation messages - done: " + current_line));
 	}
 
 	

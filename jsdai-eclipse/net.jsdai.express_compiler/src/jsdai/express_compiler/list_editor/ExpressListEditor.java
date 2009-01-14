@@ -25,6 +25,8 @@ package jsdai.express_compiler.list_editor;
 
 import java.util.Iterator;
 
+import jsdai.express_compiler.ExpressCompilerPlugin;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -166,7 +168,11 @@ System.out.println("site: " + site);
 //      DropTarget drop = new DropTarget(fSourceViewer.getControl(), DND.DROP_COPY);
 
 
-		DropTarget drop = new DropTarget(parent, DND.DROP_NONE);
+		// DropTarget drop = new DropTarget(parent, DND.DROP_NONE);
+//		DropTarget drop = new DropTarget(parent, DND.DROP_LINK); - no
+		DropTarget drop = new DropTarget(parent, DND.DROP_COPY);
+//		DropTarget drop = new DropTarget(parent, DND.DROP_TARGET_MOVE); - no
+	
 
 		drop.setTransfer(new Transfer[] {FileTransfer.getInstance()});
 //		drop.setTransfer(new Transfer[] {Transfer});
@@ -226,24 +232,32 @@ System.out.println("site: " + site);
 	 */
 	public void dragEnter(DropTargetEvent event) {
 //		System.out.println("DRAG ENTERS: " + event);
+//		ExpressCompilerPlugin.log("DRAG ENTERS", 1);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.swt.dnd.DropTargetListener#dragLeave(org.eclipse.swt.dnd.DropTargetEvent)
 	 */
 	public void dragLeave(DropTargetEvent event) {
+//		System.out.println("DRAG LEAVES: " + event);
+//		ExpressCompilerPlugin.log("DRAG LEAVES", 1);
+	  drop(event);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.swt.dnd.DropTargetListener#dragOperationChanged(org.eclipse.swt.dnd.DropTargetEvent)
 	 */
 	public void dragOperationChanged(DropTargetEvent event) {
+//		System.out.println("DRAG OPERATION CHANGES: " + event);
+//		ExpressCompilerPlugin.log("DRAG OPERATION CHANGES", 1);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.swt.dnd.DropTargetListener#dragOver(org.eclipse.swt.dnd.DropTargetEvent)
 	 */
 	public void dragOver(DropTargetEvent event) {
+//		System.out.println("DRAG OVER: " + event);
+//		ExpressCompilerPlugin.log("DRAG OVER", 1);
 	}
 
 	/* (non-Javadoc)
@@ -413,6 +427,7 @@ System.out.println("site: " + site);
 	public void drop(DropTargetEvent event) {
 
 //		System.out.println("Drop event: " + event); 
+//		ExpressCompilerPlugin.log("DROP EVENT", 1);
 
 		ISelection selection = LocalSelectionTransfer.getInstance().getSelection();
 		if (selection instanceof IStructuredSelection) {
@@ -426,9 +441,13 @@ System.out.println("site: " + site);
 //						String file_name = the_selected_file.getName();
 
 						if (the_selected_file.getFileExtension().equalsIgnoreCase("exp")) {
-							String filePath = the_selected_file.getLocation().toOSString();
-//							System.out.println("dropped file: " + file_name); 
-//							System.out.println("dropped file path: " + filePath); 
+//							String filePath = the_selected_file.getLocation().toOSString();
+							String filePath = the_selected_file.getFullPath().toOSString();
+							if (filePath.startsWith("\\") || filePath.startsWith("/")) {
+								filePath = filePath.substring(1);
+							}
+							// System.out.println("dropped file: " + file_name); 
+							// System.out.println("dropped file path: " + filePath); 
 							dropLine(filePath);
             
 						} // if exp 
@@ -452,8 +471,12 @@ System.out.println("site: " + site);
 //							String file_name = the_selected_file.getName();
 
 							if (the_selected_file.getFileExtension().equalsIgnoreCase("exp")) {
-								String filePath = the_selected_file.getLocation().toOSString();
-								dropLine(filePath);
+//								String filePath = the_selected_file.getLocation().toOSString();
+									String filePath = the_selected_file.getFullPath().toOSString();
+									if (filePath.startsWith("\\") || filePath.startsWith("/")) {
+										filePath = filePath.substring(1);
+									}
+									dropLine(filePath);
 
 							} // exp
 						} else { // not IFile (directories and projects are of interest to us
@@ -470,7 +493,8 @@ System.out.println("site: " + site);
 
 	public void dropAccept(DropTargetEvent event) {
 		// TODO Auto-generated method stub
-		
+//System.out.println("dropAccept");		
+//ExpressCompilerPlugin.log("DROP ACCEPT", 1);
 	}
 
   void dropLine(String filePath) {

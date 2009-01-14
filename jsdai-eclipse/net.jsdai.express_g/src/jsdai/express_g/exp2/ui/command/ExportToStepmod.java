@@ -111,9 +111,33 @@ public class ExportToStepmod extends AbstractCommand {
 		// XML  init:
 		PrintStream ps = new PrintStream(new FileOutputStream(schemaFile.getAbsolutePath() + File.separator + fileName + ".xml"));
 		ps.println("<?xml version=\"1.0\"?>");
+/*
+    it is clear that for resources some header information has to be changed,
+    not sure what about mim and arm
+    How to recognize?
+    fileName:
+    mimexpg1
+    mimexpg2 
+    etc
+    armexpg1
+    armexpg2
+		etc
+*/
+
+    boolean flag_arm_mim = false;
+    if ((fileName.startsWith("mimexpg") || fileName.startsWith("armexpg")) && (fileName.length() < 10)) {
+    	flag_arm_mim = true;
+    }
+
+   if (flag_arm_mim)
 		ps.println("<?xml-stylesheet type=\"text/xsl\" href=\"../../../xsl/imgfile.xsl\"?>");
+   else
+		ps.println("<?xml-stylesheet type=\"text/xsl\" href=\"../../../xsl/res_doc/imgfile.xsl\"?>");
 		ps.println("<!DOCTYPE imgfile.content SYSTEM \"../../../dtd/text.ent\">");
+   if (flag_arm_mim)
 		ps.println("<imgfile.content module=\"" + schema_name + "\" file=\"" + fileName + ".xml\">");
+	else	
+		ps.println("<imgfile.content module=\"visual_presentation\" file=\"" + fileName + ".xml\">");
 		ps.println("<img src=\"" + fileName + ".gif\">");
 		// create single page GIF and XML:
 		createPage(startat, gcTmp, ps, i);
@@ -195,7 +219,16 @@ public class ExportToStepmod extends AbstractCommand {
 			schema_name = names[0];
 			schema_ext = names[1];
 			doc_file = names[2];
-			schemaFile = new File(file.getAbsolutePath() + File.separator + schema_name.toLowerCase());
+			String modules_resources = null;
+			if (schema_ext.equalsIgnoreCase("ARM") || schema_ext.equalsIgnoreCase("MIM")) {
+				modules_resources = "modules";
+			} else {
+				modules_resources = "resources";
+			}
+// flat - arms mims and resources all together - original as found - suitable for exporting only one-by-one
+//			schemaFile = new File(file.getAbsolutePath() + File.separator + schema_name.toLowerCase());
+// non-flat modules/... resources/...
+			schemaFile = new File(file.getAbsolutePath() + File.separator + modules_resources + File.separator + schema_name.toLowerCase());
 			schemaFile.mkdirs();
 			
 			for (int i = 1; i <= prop.handler().getMaxPage(); i++) {

@@ -88,6 +88,7 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
 	public static final String  MAXIMUM_MEMORY_SIZE = "express.maximumMemorySize";
 
 	public static final String ENABLE_EXPRESSIONS = "express.enableExpressions";
+	public static final String ORIGINAL_CASE = "express.originalCase";
 	public static final String SEPARATE_PROCESS = "express.separateProcess";
 	public static final String ENABLE_ADVANCED = "express.enableAdvanced";
 
@@ -103,10 +104,12 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
     boolean fUseArmSwitch;
     boolean fUseMimSwitch;
     boolean fEnableExpressions;
+    boolean fOriginalCase;
 		boolean fSeparateProcess;
 		boolean fEnableAdvanced;
 
     boolean currentEnableExpressions;
+    boolean currentOriginalCase;
     boolean currentSeparateProcess;
     boolean currentEnableAdvanced;
     boolean currentSpecifyMemory;
@@ -119,6 +122,7 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
     boolean currentUseMimSwitch;
 
     Button enableExpressionsButton;
+    Button originalCaseButton;
     Button separateProcessButton;
 		Button enableAdvancedButton;
 
@@ -181,6 +185,7 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
     fUseMimSwitch = fStore.getBoolean(SWITCH_MIM); 
 
     fEnableExpressions = fStore.getBoolean(ENABLE_EXPRESSIONS);
+    fOriginalCase = fStore.getBoolean(ORIGINAL_CASE);
 		fSeparateProcess = fStore.getBoolean(SEPARATE_PROCESS);
 		fEnableAdvanced = fStore.getBoolean(ENABLE_ADVANCED);
 
@@ -194,6 +199,7 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
 		currentUseArmSwitch = fUseArmSwitch;
 		currentUseMimSwitch = fUseMimSwitch;
 		currentEnableExpressions = fEnableExpressions;
+		currentOriginalCase = fOriginalCase;
 		currentSeparateProcess = fSeparateProcess;
 		currentEnableAdvanced = fEnableAdvanced;
 
@@ -208,6 +214,7 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
 		store.setDefault(SWITCH_ARM, false);
 		store.setDefault(SWITCH_MIM, false);
 		store.setDefault(ENABLE_EXPRESSIONS, true);
+		store.setDefault(ORIGINAL_CASE, true);
 		store.setDefault(SEPARATE_PROCESS, false);
 		store.setDefault(ENABLE_ADVANCED, false);
 		
@@ -256,6 +263,7 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
           createExpressionsGroup(composite);
+          createIdCaseGroup(composite);
           createStepmodGroup(composite); // includes the 3 switches
 //					createEnableAdvancedGroup(composite);
 
@@ -595,6 +603,38 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
         
     }
 
+    private final void createIdCaseGroup(Composite parent) {
+        Font font = parent.getFont();
+        Group listGroup = new Group(parent, SWT.NONE);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 1;
+        listGroup.setLayout(layout);
+        listGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        listGroup.setFont(font);
+        listGroup.setText("Settings for handling case of identifiers");
+
+        originalCaseButton = new Button(listGroup, SWT.CHECK | SWT.LEFT);
+        originalCaseButton.setText("use original case");
+        originalCaseButton.setSelection(fOriginalCase);
+        originalCaseButton.setFont(font);
+
+        GridData buttonData = new GridData();
+        buttonData.horizontalSpan = 1;
+        originalCaseButton.setLayoutData(buttonData);
+
+        SelectionListener listener = new SelectionAdapter() {
+          public void widgetSelected(SelectionEvent e) {
+          	fOriginalCase = originalCaseButton.getSelection();
+          }
+        };
+
+
+        originalCaseButton.addSelectionListener(listener);
+
+        
+    }
+
+
     private final void createEnableAdvancedGroup(Composite parent) {
         Font font = parent.getFont();
         Group listGroup = new Group(parent, SWT.NONE);
@@ -820,6 +860,7 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
     fStore.setValue(SWITCH_MIM,fUseMimSwitch);
 
     fStore.setValue(ENABLE_EXPRESSIONS, fEnableExpressions);
+    fStore.setValue(ORIGINAL_CASE, fOriginalCase);
     fStore.setValue(SEPARATE_PROCESS, fSeparateProcess);
     fStore.setValue(ENABLE_ADVANCED, fEnableAdvanced);
 
@@ -841,6 +882,7 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
     	fStore.setToDefault(SWITCH_MIM);
 
     	fStore.setToDefault(ENABLE_EXPRESSIONS);
+    	fStore.setToDefault(ORIGINAL_CASE);
     	fStore.setToDefault(SEPARATE_PROCESS);
   //  	fStore.setToDefault(ENABLE_ADVANCED);
     	
@@ -855,6 +897,7 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
     	fUseMimSwitch = fStore.getBoolean(SWITCH_MIM); 
 
     	fEnableExpressions = fStore.getBoolean(ENABLE_EXPRESSIONS); 
+    	fOriginalCase = fStore.getBoolean(ORIGINAL_CASE); 
     	fSeparateProcess = fStore.getBoolean(SEPARATE_PROCESS); 
 //    	fEnableAdvanced = fStore.getBoolean(ENABLE_ADVANCED); 
 
@@ -863,6 +906,7 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
 			mimDefaultButton.setSelection(fUseMimSwitch);
 
 			enableExpressionsButton.setSelection(fEnableExpressions);
+			originalCaseButton.setSelection(fOriginalCase);
 			separateProcessButton.setSelection(fSeparateProcess);
 //			enableAdvancedButton.setSelection(fEnableAdvanced);
 		
@@ -891,6 +935,7 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
     		fStore.setValue(SWITCH_MIM,currentUseMimSwitch);
 
     		fStore.setValue(ENABLE_EXPRESSIONS,currentEnableExpressions);
+    		fStore.setValue(ORIGINAL_CASE,currentOriginalCase);
     		fStore.setValue(SEPARATE_PROCESS,currentSeparateProcess);
     		fStore.setValue(ENABLE_ADVANCED,currentEnableAdvanced);
 
@@ -916,6 +961,7 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
 		currentUseMimSwitch = fUseMimSwitch;
 	        
 		currentEnableExpressions = fEnableExpressions;
+		currentOriginalCase = fOriginalCase;
 		currentSeparateProcess = fSeparateProcess;
 		currentEnableAdvanced = fEnableAdvanced;
 	

@@ -520,6 +520,10 @@ System.err.println("THIS: " + this + " <" + this.getClass().getName() + ">");
 			href = " href=\"../../resources/" + schema_name.toLowerCase() + "/" + 
 				schema_name.toLowerCase() + doc_file + "#" + schema_name.toLowerCase() +
 				"." + getName().toLowerCase(); 
+		} else if (schema_name.equals(schema_ext)) { // RR
+			href = " href=\"../../resources/" + schema_name.toLowerCase() + "/" + 
+				schema_name.toLowerCase() + doc_file + "#" + schema_name.toLowerCase() +
+				"." + getName().toLowerCase(); 
 		} else {
 			href = " href=\"../" + schema_name.toLowerCase() + "/sys/" + doc_file + "#"
 			+ schema_name + "_" + schema_ext + "." + getName().toLowerCase(); 

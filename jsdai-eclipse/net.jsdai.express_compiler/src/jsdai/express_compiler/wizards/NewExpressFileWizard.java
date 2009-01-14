@@ -264,7 +264,14 @@ public class NewExpressFileWizard extends Wizard implements INewWizard {
 	public boolean performFinish() {
 
 		final String containerName = fPage.getContainerName();
-		final String fileName = fPage.getFileName();
+		String fileName2 = fPage.getFileName();
+		int dotLoc = fileName2.lastIndexOf('.');
+		if (dotLoc == -1) {
+			fileName2 += ".exp";
+		}
+//		final String fileName = fPage.getFileName();
+		final String fileName = fileName2;
+		
 		IRunnableWithProgress op = new IRunnableWithProgress() {
 			public void run(IProgressMonitor monitor) throws InvocationTargetException {
 				try {
@@ -337,7 +344,12 @@ public class NewExpressFileWizard extends Wizard implements INewWizard {
 	 */
 
 	private InputStream openContentStream() {
-		String schema_name = fFileName.substring(0, fFileName.length()-4);
+		String file_name = fFileName;
+		int dotLoc = file_name.lastIndexOf('.');
+		if (dotLoc == -1) {
+			file_name += ".exp";
+		}
+		String schema_name = file_name.substring(0, file_name.length()-4);
 		StringBuffer contents = new StringBuffer("\n");
 		contents.append("SCHEMA ");
 		contents.append(schema_name);

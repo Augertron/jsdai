@@ -90,6 +90,7 @@ public class ExpressProjectCompilerPropertyPage extends PropertyPage {
 	int fUseArmSwitch;
 	int fUseMimSwitch;
 	int fEnableExpressions;
+	int fOriginalCase;
 	int fSeparateProcess;
 	boolean fEnableAdvanced;
 
@@ -193,6 +194,22 @@ public class ExpressProjectCompilerPropertyPage extends PropertyPage {
     } else {
       fEnableExpressions = 0;
     }     
+
+    String s_original_case = prefs.get("fOriginalCase", "default");
+    if (s_original_case != null) {
+      if (s_original_case.equalsIgnoreCase("default")) {
+        fOriginalCase = 0;
+      } else 
+      if (s_original_case.equalsIgnoreCase("yes")) {
+        fOriginalCase = 1;
+      } else 
+      if (s_original_case.equalsIgnoreCase("no")) {
+        fOriginalCase = 2;
+      }
+    } else {
+      fOriginalCase = 0;
+    }     
+
 
     String s_switch_stepmod = prefs.get("fSwitchStepmod", "default");
     if (s_switch_stepmod != null) {
@@ -411,6 +428,22 @@ public class ExpressProjectCompilerPropertyPage extends PropertyPage {
       fEnableExpressions = 0;
     }     
 
+    String s_original_case = prefs.get("fOriginalCase", "default");
+    if (s_original_case != null) {
+      if (s_original_case.equalsIgnoreCase("default")) {
+        fOriginalCase = 0;
+      } else 
+      if (s_original_case.equalsIgnoreCase("yes")) {
+        fOriginalCase = 1;
+      } else 
+      if (s_original_case.equalsIgnoreCase("no")) {
+        fOriginalCase = 2;
+      }
+    } else {
+      fOriginalCase = 0;
+    }     
+
+
 
     String s_switch_stepmod = prefs.get("fSwitchStepmod", "default");
     if (s_switch_stepmod != null) {
@@ -557,9 +590,11 @@ public class ExpressProjectCompilerPropertyPage extends PropertyPage {
 
         composite.setLayout(new GridLayout());
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-
+//        composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+	      //composite.numColumns = 2;
 
 					createExpressionsGroup(composite);
+					createIdCaseGroup(composite);
 //          createStepmodGroup(composite); // includes the 3 switches
 
 // advanced settings stuff --------------------------------------------------------
@@ -1190,6 +1225,80 @@ public class ExpressProjectCompilerPropertyPage extends PropertyPage {
     }
 
 
+
+    private final void createIdCaseGroup(Composite listGroup) {
+      Font font = listGroup.getFont();
+      Group idCaseGroup = new Group(listGroup, SWT.NONE);
+      GridLayout layout2 = new GridLayout();
+      layout2.numColumns = 1;
+      idCaseGroup.setLayout(layout2);
+      idCaseGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+      idCaseGroup.setFont(font);
+      idCaseGroup.setText("Use original case of identifiers");
+
+      final Button idCaseDefaultButton = new Button(idCaseGroup, SWT.RADIO | SWT.LEFT);
+      String default_case_value = "default";
+			boolean global_original_case = ExpressCompilerPlugin.getDefault().getPreferenceStore().getBoolean(ExpressCompilerPreferences.ORIGINAL_CASE);
+      if (global_original_case) {
+        	default_case_value += " (yes)";
+        } else {
+	       	default_case_value += " (no)";
+        }
+  
+      idCaseDefaultButton.setText(default_case_value);
+      if (fOriginalCase == 0)
+        idCaseDefaultButton.setSelection(true);
+      else
+        idCaseDefaultButton.setSelection(false);
+      idCaseDefaultButton.setFont(font);
+
+      final Button idCaseYesButton = new Button(idCaseGroup, SWT.RADIO | SWT.LEFT);
+      idCaseYesButton.setText("yes");
+      if (fOriginalCase == 1)
+        idCaseYesButton.setSelection(true);
+      else
+        idCaseYesButton.setSelection(false);
+      idCaseYesButton.setFont(font);
+
+      final Button idCaseNoButton = new Button(idCaseGroup, SWT.RADIO | SWT.LEFT);
+      idCaseNoButton.setText("no");
+      if (fOriginalCase == 2)
+        idCaseNoButton.setSelection(true);
+      else
+        idCaseNoButton.setSelection(false);
+      idCaseNoButton.setFont(font);
+
+      GridData buttonData = new GridData();
+      buttonData.horizontalSpan = 1;
+      idCaseDefaultButton.setLayoutData(buttonData);
+      buttonData = new GridData();
+      buttonData.horizontalSpan = 1;
+      idCaseYesButton.setLayoutData(buttonData);
+      buttonData = new GridData();
+      buttonData.horizontalSpan = 1;
+      idCaseNoButton.setLayoutData(buttonData);
+
+      SelectionListener listener = new SelectionAdapter() {
+        public void widgetSelected(SelectionEvent e) {
+          if (idCaseDefaultButton.getSelection()) {
+            fOriginalCase = 0;
+          } else
+          if (idCaseYesButton.getSelection()) {
+            fOriginalCase = 1;
+          } else
+          if (idCaseNoButton.getSelection()) {
+            fOriginalCase = 2;
+          }
+        }
+      };
+
+
+      idCaseDefaultButton.addSelectionListener(listener);
+      idCaseYesButton.addSelectionListener(listener);
+      idCaseNoButton.addSelectionListener(listener);
+    }
+
+
     private final void createStepmodStepmodGroup(Composite listGroup) {
       Font font = listGroup.getFont();
       Group stepmodGroup = new Group(listGroup, SWT.NONE);
@@ -1544,6 +1653,20 @@ public class ExpressProjectCompilerPropertyPage extends PropertyPage {
         break;
       case 2: // no
     	  prefs.put("fEnableExpressions", "no");
+        break;
+      default: // error
+        break;      
+    }
+
+    switch (fOriginalCase) {
+      case 0: // default
+    	  prefs.put("fOriginalCase", "default");
+        break;
+      case 1: // yes
+    	  prefs.put("fOriginalCase", "yes");
+        break;
+      case 2: // no
+    	  prefs.put("fOriginalCase", "no");
         break;
       default: // error
         break;      

@@ -39,8 +39,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.wizards.JavaProjectWizard;
-import org.eclipse.jdt.internal.ui.wizards.JavaProjectWizardFirstPage;
-import org.eclipse.jdt.internal.ui.wizards.JavaProjectWizardSecondPage;
+import org.eclipse.jdt.ui.wizards.JavaCapabilityConfigurationPage;
 import org.eclipse.jface.wizard.IWizardPage;
 
 /**
@@ -63,9 +62,9 @@ public class JSDAIJavaProjectWizard extends JavaProjectWizard {
 		boolean ok = super.performFinish();
 		if (ok) {
 			IWizardPage[] pages = getPages();
-			if (pages != null && pages.length >= 2 && pages[0] instanceof JavaProjectWizardFirstPage && pages[1] instanceof JavaProjectWizardSecondPage) {
-				JavaProjectWizardFirstPage fPage = (JavaProjectWizardFirstPage)pages[0];
-				IPath path = fPage.getLocationPath().append(fPage.getProjectName());
+			if (pages != null && pages.length >= 2 && pages[1] instanceof JavaCapabilityConfigurationPage) {
+				IJavaProject java_project = ((JavaCapabilityConfigurationPage)pages[1]).getJavaProject();
+				IPath path = java_project.getProject().getLocation();
 //				final IPath runtime_cp = path.append("jsdai_runtime.jar");
 				FileOutputStream fout = null;
 				try {
@@ -133,8 +132,6 @@ System.err.println("repo temp=" + repoTemp);
 				}
 				
 				
-				IJavaProject java_project = ((JavaProjectWizardSecondPage)pages[1]).getJavaProject();
-
 				try {
 					IClasspathEntry cpe = JavaCore.newVariableEntry(new Path(CommonPlugin.JSDAI_PUBLIC_PATHS + "/jsdai_runtime.jar"), null, null);
 					IClasspathEntry[] cp = java_project.getRawClasspath();
