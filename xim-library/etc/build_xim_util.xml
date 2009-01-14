@@ -1,0 +1,149 @@
+<?xml version="1.0"?>
+<!--
+/*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2009, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ */
+-->
+
+<project name="xim_util" default="build.all" basedir="../">
+
+	<!-- properties provided from the master and local properties files -->
+	<property environment="env"/>
+	<property file="local.properties"/>
+	<property file="properties"/>
+	<property file="${user.home}/.ant-global.properties"/>
+	
+	<property name="update.options" value="-d"/>
+
+	<target name="-time.stamp" unless="build.time"
+		description="Obtains current system time and set's build.time property.">
+		<tstamp>
+			<format property="build.time" pattern="yyyy-MM-dd'T'HH:mm:ss"/>
+			<format property="env.BUILD_ID" pattern="yyyyMMdd-hhmm"/>
+		</tstamp>
+	</target>
+
+	<target name="-environment" depends="-time.stamp"
+		description="Sets all properties required for build.">
+		<condition property="xim_util.cvsupdate">
+			<and>
+				<isset property="cvsupdate.default"/>
+				<istrue value="${cvsupdate.default}"/>
+			</and>
+		</condition>
+		<property name="etc.dir" value="etc"/>
+		<property name="root.lib.dir" value="../../lib"/>
+		<property name="core.lib.dir" location="${root.lib.dir}/core"/>
+		<property name="sysrep.lib.dir" location="${root.lib.dir}/library"/>
+		<property name="jsdaix.lib.dir" location="${root.lib.dir}/jsdaix"/>
+		<!-- in future this property shall be separated -->
+		<property name="third-party-jars.dir" location="../../jars"/>
+		
+		<!-- Directories in which source files are placed -->
+		<property name="source.dir" location="src"/>
+		<property name="build.dir" location="build"/>
+		
+		<!-- Directory in which the created jars are placed -->
+		<property name="jars.dir" location="${root.lib.dir}/jsdaix"/>
+		<property name="dist.dir" location="${jars.dir}"/>
+		
+		<!-- project local properties -->
+		<property name="xim_util.source.dir" location="${source.dir}"/>
+		<property name="xim_util.build.dir" location="${build.dir}/xim_util"/>
+		<property name="xim_util.dist.dir" location="${dist.dir}"/>
+		<property name="xim_util.jar.name" value="jsdaix_xim_util.jar"/>
+		
+		<!-- compiler options -->
+		<property name="javac.optimize.flag" value="yes"/>
+		<property name="javac.debug.flag" value="yes"/>
+	</target>
+
+	<target name="-set.classpath" depends="-environment"
+		description="Sets classpath for compilation.">
+		<!-- Set classpath for the project -->
+		<path id="classpath">
+			<fileset dir="${core.lib.dir}">
+				<include name="jsdai_runtime.jar"/>
+			</fileset>
+			<fileset dir="${sysrep.lib.dir}">
+				<include name="jsdai_lib*.jar"/>
+				<include name="jsdai_xim*.jar"/>
+			</fileset>
+			<pathelement location="${jars-private}"/>
+		</path>
+		<property name="classpath" refid="classpath"/>
+	</target>
+
+	<target name="clean" depends="-environment" 
+		description="Clean compiled class files from prevois build">
+		<delete dir="${xim_util.build.dir}"/>
+	</target>
+
+	<target name="clean.all" depends="-environment, clean" 
+		description="Clean all the data from previous builds">
+		<delete file="${xim_util.dist.dir}/${xim_util.jar.name}"/>
+	</target>
+	
+	<target name="update.source" if="xim_util.cvsupdate" depends="-environment" 
+		description="Get the latest source files from CVS">
+		<cvs command="update ${update.options} jsdaix/processor/xim_aim"
+			 dest="${xim_util.source.dir}"/>
+	</target>
+
+	<target name="compile" depends="-set.classpath"
+			description="Compiles main parts of the jsdaix module">
+		<mkdir dir="${xim_util.build.dir}"/>
+		<javac classpathref="classpath" fork="true"
+				source="1.4" target="1.4"
+				deprecation="yes" debug="${javac.debug.flag}"
+				optimize="${javac.optimize.flag}" memoryinitialsize="384m" memorymaximumsize="500m"
+				srcdir="${xim_util.source.dir}" destdir="${xim_util.build.dir}" sourcepath="">
+			<include name="jsdaix/processor/xim_aim/**"/>
+		</javac>
+	</target>
+
+	<target name="jar" depends="compile"
+			description="Creates jar file">
+		<mkdir dir="${xim_util.dist.dir}"/>
+		<jar jarfile="${xim_util.dist.dir}/${xim_util.jar.name}"
+			update="true"
+			basedir="${xim_util.build.dir}"
+			includes="**">
+			<manifest>
+				<attribute name="Specification-Title" value="JSDAI Jsdaix"/>
+				<attribute name="Specification-Version"
+						   value="${xim.util.version.major}.${xim.util.version.middle}.${xim.util.version.minor}"/>
+				<attribute name="Specification-Vendor" value="${jsdai.vendor}"/>
+				<attribute name="Implementation-Title" value="${xim.util.implementation}"/>
+				<attribute name="Implementation-Version" value="${env.BUILD_ID}"/>
+				<attribute name="Implementation-Vendor" value="${jsdai.vendor}"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="build.all" depends="clean.all, update.source, build"
+			description="Makes clean build from the updated sources (equivalent to clean.all+update.source+build)"/>
+
+	<target name="build" depends="compile, jar"
+			description="Generates, compiles and builds all the module programs">
+	</target>
+</project>
