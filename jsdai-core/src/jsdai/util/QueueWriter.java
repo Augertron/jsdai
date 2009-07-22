@@ -21,15 +21,44 @@
  * See also http://www.jsdai.net/
  */
 
+
 package jsdai.util;
 
+import java.io.*;
 import java.util.*;
 
-public interface UtilMonitor {
+public class QueueWriter extends java.io.PrintWriter {
 
-	public void worked(int value);
+	List queue;
+  private boolean inPrintln;
 
-	public void subTask(String message, long count, long counter);
-	public List getQueue();
+  public QueueWriter(OutputStream out, boolean autoFlush, UtilMonitor monitor) {
+  	super(out, autoFlush);
+  	queue = monitor.getQueue();
+  }
+
+  public QueueWriter(OutputStreamWriter out, boolean autoFlush, UtilMonitor monitor) {
+  	super(out, autoFlush);
+  	queue = monitor.getQueue();
+  }
+
+  public void println(String str) {
+    queue.add(str);
+		try {
+			inPrintln = true;
+			super.println(str);
+		} finally {
+			inPrintln = false;
+		}
+  }
+
+  public void print(String str) {
+		if(!inPrintln) {
+			queue.add(str);
+		}
+    super.print(str);
+  }
 
 }
+
+

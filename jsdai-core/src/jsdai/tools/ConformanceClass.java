@@ -21,15 +21,20 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.util;
+package jsdai.tools;
 
-import java.util.*;
+public class ConformanceClass {
+	private String id;
 
-public interface UtilMonitor {
+	public ConformanceClass(String ccId) {
+		this.id = ccId;
+	}
 
-	public void worked(int value);
+	public void setId(String id) {
+		this.id = id;
+	}
 
-	public void subTask(String message, long count, long counter);
-	public List getQueue();
-
+	public String getId() {
+		return id;
+	}
 }

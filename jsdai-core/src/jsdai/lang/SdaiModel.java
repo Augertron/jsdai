@@ -733,6 +733,8 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 */
 	boolean bin_file_missing;
 
+	boolean substitute_operation;
+
 /**
 	The argument of getInstances and getExactInstances methods in the class
 	ASdaiModel. It is used in aggregate methods isMember, getByIndexObject,
@@ -3150,8 +3152,6 @@ SdaiSession.line_separator + "   New instance definition: " + new_def);
 // The values of the attributes of the instance being replaced are wrapped into an object of Value class.
 		for (i = 0; i < new_def.noOfPartialEntityTypes; i++) {
 			CEntity_definition new_partial_def = new_def.partialEntityTypes[i];
-//			int res_index = ((CEntityDefinition)old_def).find_partial_entity(start_index, old_def.noOfPartialEntityTypes - 1,
-//				new_partial_def.getCorrectName());
 			int res_index = ((CEntityDefinition)old_def).find_partial_entity_upper_case(start_index,
 				old_def.noOfPartialEntityTypes - 1, new_partial_def.getNameUpperCase());
 			int count = new_partial_def.noOfPartialAttributes;
@@ -3192,6 +3192,18 @@ SdaiSession.line_separator + "   New instance definition: " + new_def);
 		if (xim) {
 			entity_values.xim_special_substitute_instance = true;
 		}
+//if (older.instance_identifier == 349)
+//print_entity_values(entity_values, 349);
+//if (older.instance_identifier == 349) {
+//System.out.println("SdaiModel *********** BEFORE older inverse: #" + older.instance_identifier + 
+//"  its type: " + older.getInstanceType().getName(null));
+//older.printInverses();
+//CEntity inst314 = (CEntity)repository.getSessionIdentifier("#314");
+//System.out.println("SdaiModel *********** BEFORE  #314");inst314.printInverses();
+//CEntity inst346 = (CEntity)repository.getSessionIdentifier("#346");
+//System.out.println("SdaiModel *********** BEFORE  #346");inst346.printInverses();
+//System.out.println("");System.out.println("");
+//}
 		substitute.setAll(entity_values);
 		if (xim) {
 			entity_values.xim_special_substitute_instance = false;
@@ -3201,17 +3213,40 @@ SdaiSession.line_separator + "   New instance definition: " + new_def);
 		}
 		substitute.instance_identifier = ident;
 		substitute.instance_position = CEntity.INS_MASK | substitute.instance_position; //--VV-- Instance state tracking --
+//if (older.instance_identifier == 349) {
+//System.out.println("SdaiModel *********** AAAAA older inverse: #" + older.instance_identifier + 
+//"  its type: " + older.getInstanceType().getName(null));
+//older.printInverses();
+//CEntity inst314a = (CEntity)repository.getSessionIdentifier("#314");
+//System.out.println("SdaiModel *********** AAAAA  #314");inst314a.printInverses();}
+		older_owner.substitute_operation = true;
 		older.changeInverseReferences(older, substitute, false, false, false);
-//		substitute.inverseList = older.inverseList;
-
+//if (older.instance_identifier == 349) {
+//System.out.println("SdaiModel *********** BBBBB older inverse: #" + older.instance_identifier + 
+//"  its type: " + older.getInstanceType().getName(null));
+//older.printInverses();
+//CEntity inst314b = (CEntity)repository.getSessionIdentifier("#314");
+//System.out.println("SdaiModel *********** CCCCC  #314");inst314b.printInverses();}
 		boolean saved_value = older_owner.inst_deleted;
 		older_owner.undo_delete = -1;
 		older.deleteApplicationInstance();
+		older_owner.substitute_operation = false;
+//if (older.instance_identifier == 349) {
+//System.out.println("SdaiModel *********** CCCCC older inverse: #" + older.instance_identifier + 
+//"  its type: " + older.getInstanceType().getName(null));older.printInverses();
+//CEntity inst314c = (CEntity)repository.getSessionIdentifier("#314");
+//System.out.println("SdaiModel *********** CCCCC  #314");inst314c.printInverses();
+//System.out.println("SdaiModel *********** CCCCC substitute inverse: #" + substitute.instance_identifier + 
+//"  its type: " + substitute.getInstanceType().getName(null));substitute.printInverses();}
 		older_owner.undo_delete = 0;
 		older_owner.inst_deleted = saved_value;
 		modified = true;
 		substitute.inverseList = older.inverseList;
-
+//if (older.instance_identifier == 349) {
+//System.out.println("SdaiModel *********** substitute inverse 349");substitute.printInverses();}
+//if (older.instance_identifier == 349 || ident == 349)
+//System.out.println("SdaiModel !!! Place 2   older: #" + older.instance_identifier + "  substitute: " + substitute);
+//System.out.println("");System.out.println("");
 		return substitute;
 //		} // syncObject
 	}
@@ -11102,7 +11137,8 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 			staticFields.for_instances_sorting[i].copy_values(staticFields, source_inst,
 				(CEntity_definition)source_inst.getInstanceType(), aggr, this);
 			if (repository.session.undo_redo_file != null && !bypass) {
-				repository.session.undoRedoCreatePrepare(staticFields.for_instances_sorting[i], mod_state);
+//				repository.session.undoRedoCreatePrepare(staticFields.for_instances_sorting[i], mod_state);
+				repository.session.undoRedoCopyPrepare(staticFields.for_instances_sorting[i], mod_state);
 			}
 			i++;
 		}
@@ -11276,6 +11312,43 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 				right = middle;
 			} else {
 				return -1;
+			}
+		}
+		return -1;
+	}
+
+
+	int findInstancePositionRedo(int left, int right, int index, long key) throws SdaiException {
+		if (right < left) {
+			return 0;
+		}
+		CEntity inst = instances_sim[index][left];
+		if (inst.instance_identifier > key) {
+			return 0;
+		} else if (inst.instance_identifier == key) {
+			if (left == 0) {
+				return -right-1;
+			}
+			return -left;
+		}
+		inst = instances_sim[index][right];
+		if (inst.instance_identifier < key) {
+			return right + 1;
+		} else if (inst.instance_identifier == key) {
+			return -right;
+		}
+		while (left <= right) {
+			if (right-left <= 1) {
+				return right;
+			}
+			int middle = (left + right)/2;
+			inst = instances_sim[index][middle];
+			if (inst.instance_identifier < key) {
+				left = middle;
+			} else if (inst.instance_identifier > key) {
+				right = middle;
+			} else {
+				return -middle;
 			}
 		}
 		return -1;
@@ -12089,6 +12162,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 			String def_name = entity_vals.def.partialEntityTypes[i].name;
 			System.out.println("****** partial entity no. " + i + "   entity: " + def_name);
 			for (int j = 0; j < partval.count; j++) {
+//System.out.println("?????   partval.values[j]: " + partval.values[j]);
 				print_value(partval.values[j]);
 				System.out.println("");
 			}
@@ -12142,8 +12216,14 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 			case PhFileReader.ENTITY_REFERENCE:
 				Object ref = val.reference;
 				if (ref != null) {
-					String ref_class = ref.getClass().getName();
-					System.out.print(ref_class + "  ");
+					if (ref instanceof CEntity) {
+						CEntity instanc = (CEntity)ref;
+						long id = instanc.instance_identifier;
+						System.out.print("#" + id + "  ");
+					} else {
+						String ref_class = ref.getClass().getName();
+						System.out.print(ref_class + "  ");
+					}
 				} else {
 					System.out.print("REF  is NULL");
 				}
@@ -12399,7 +12479,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		CEntity instance = m.schemaData.super_inst.makeInstance(((CEntityDefinition)edef).getEntityClass(),
 			this, -1, 0);
 		instance.instance_identifier = inst_id;
-		instance.load_values(ur_f, (CEntity_definition)edef);
+		instance.load_values(ur_f, (CEntity_definition)edef, false);
 		instance.modified();
 
 		CEntity[] pop_instances_sim = instances_sim[pop_index];
@@ -12428,7 +12508,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		} finally {
 			bypass_setAll = false;
 		}
-		instance.load_values(ur_f, edef);
+		instance.load_values(ur_f, edef, false);
 		modified = modif;
 		return edef;
 	}
@@ -12441,7 +12521,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		SdaiModel m = ((CSchema_definition)edef.owning_model.described_schema).modelDictionary;
 		CEntity instance = m.schemaData.super_inst.makeInstance(((CEntityDefinition)edef).getEntityClass(),
 			this, -1, 0);
-		instance.load_values(ur_f, (CEntity_definition)edef);
+		instance.load_values(ur_f, (CEntity_definition)edef, false);
 		instance.instance_identifier = inst_id;
 		instance.modified();
 		return instance;
@@ -12508,13 +12588,41 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		SdaiModel m = ((CSchema_definition)edef.owning_model.described_schema).modelDictionary;
 		CEntity instance = m.schemaData.super_inst.makeInstance(((CEntityDefinition)edef).getEntityClass(),
 			this, -1, 0);
-		instance.load_values(ur_f, (CEntity_definition)instance.getInstanceType());
+		instance.load_values(ur_f, (CEntity_definition)instance.getInstanceType(), false);
 		instance.instance_identifier = inst_id;
 		instance.modified();
 		CEntity[] pop_instances_sim = instances_sim[pop_index];
 		System.arraycopy(pop_instances_sim, inst_index, pop_instances_sim, inst_index + 1, lengths[pop_index] - inst_index);
 		pop_instances_sim[inst_index] = instance;
 		lengths[pop_index]++;
+		modified = true;
+		invalidate_quick_find();
+		repository.restoreExternalDataForInstance(instance);
+		return instance;
+	}
+
+
+	CEntity copy_again(RandomAccessFile ur_f, long f_pointer, long inst_id, int pop_index, int inst_index)
+			throws  java.io.IOException, SdaiException {
+		verify_model_RW(ur_f, f_pointer, true);
+		CEntity instance;
+		CEntity[] pop_instances_sim = instances_sim[pop_index];
+		if (inst_index < lengths[pop_index] && pop_instances_sim[inst_index] != null && 
+				pop_instances_sim[inst_index].instance_identifier == inst_id) {
+			instance = pop_instances_sim[inst_index];
+		} else {
+			SchemaData sch_data = underlying_schema.modelDictionary.schemaData;
+			CEntityDefinition edef = sch_data.entities[pop_index];
+			SdaiModel m = ((CSchema_definition)edef.owning_model.described_schema).modelDictionary;
+			instance = m.schemaData.super_inst.makeInstance(((CEntityDefinition)edef).getEntityClass(),
+				this, -1, 0);
+			instance.instance_identifier = inst_id;
+			System.arraycopy(pop_instances_sim, inst_index, pop_instances_sim, inst_index + 1, lengths[pop_index] - inst_index);
+			pop_instances_sim[inst_index] = instance;
+			lengths[pop_index]++;
+		}
+		instance.load_values(ur_f, (CEntity_definition)instance.getInstanceType(), true);
+		instance.modified();
 		modified = true;
 		invalidate_quick_find();
 		repository.restoreExternalDataForInstance(instance);
@@ -12574,7 +12682,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		} finally {
 			bypass_setAll = false;
 		}
-		instance.load_values(ur_f, edef);
+		instance.load_values(ur_f, edef, false);
 		instance.modified();
 	}
 
@@ -12619,7 +12727,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 				modified = modif;
 			}
 //			repository.session.bypass_values(ur_f, new_def);
-			older.load_values(ur_f, new_def);
+			older.load_values(ur_f, new_def, false);
 			return older;
 		}
 
@@ -12639,7 +12747,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		boolean saved_value = old_mod.inst_deleted;
 		old_mod.delete_again(ur_f, f_pointer, inst_id, pop_index, inst_index);
 		old_mod.inst_deleted = saved_value;
-		substitute.load_values(ur_f, new_def);
+		substitute.load_values(ur_f, new_def, false);
 		modified = true;
 		return substitute;
 	}
@@ -12953,6 +13061,29 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		newInstances_sim[idx] =  emptyArray;
 		newSim_status[idx] = (short)(SIM_SORTED | SIM_LOADED_NONE);
 	}
+
+
+	void checkContents(String text) throws SdaiException {
+		if (instances_sim == null) {
+			return;
+		}
+		for (int i = 0; i < instances_sim.length; i++) {
+			if (instances_sim[i] == null || lengths[i] == 0) {
+				continue;
+			}
+			CEntity [] row_of_instances = instances_sim[i];
+			for (int j = 0; j < lengths[i]; j++) {
+				if (row_of_instances[j].owning_model == null) {
+					String base = SdaiSession.line_separator + "Invalid entity instance was found!" + 
+					SdaiSession.line_separator + "   Model: " + name + 
+					SdaiSession.line_separator + "   Instance id: #" + row_of_instances[j].instance_identifier + 
+					SdaiSession.line_separator + text;
+					throw new SdaiException(SdaiException.SY_ERR, base);
+				}
+			}
+		}
+	}
+
 
 //	public int getFoldersCount() {
 //		return dictionary.schemaData.noOfEntityDataTypes;

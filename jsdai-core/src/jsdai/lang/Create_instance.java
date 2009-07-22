@@ -543,6 +543,10 @@ if (SdaiSession.debug2) System.out.println("  CLASS FOUND: " + class_found.getNa
 				staticFields.complex_name[i] = null;
 			} else {
 				staticFields.complex_name[i] = schemaData.sNames[res_index];
+				CEntityDefinition req_def = schemaData.entities[res_index];
+				if (req_def.noOfPartialAttributes < 0) {
+					req_def.setAttributeInformation(staticFields, model);
+				}
 				init_value -= schemaData.entities[res_index].noOfPartialAttributes;
 			}
 		}
@@ -552,7 +556,8 @@ if (SdaiSession.debug2) System.out.println("  CLASS FOUND: " + class_found.getNa
 		for (i = 0; i < schemaData.noOfEntityDataTypes; i++) {
 			def = schemaData.entities[i];
 			int value = init_value;
-			if (def.noOfPartialEntityTypes <= 0) {
+//			if (def.noOfPartialEntityTypes <= 0) {
+			if (def.noOfPartialAttributes < 0) {
 				def.setAttributeInformation(staticFields, model);
 			}
 			for (j = 0; j < def.noOfPartialEntityTypes; j++) {
@@ -571,6 +576,10 @@ if (SdaiSession.debug2) System.out.println("  CLASS FOUND: " + class_found.getNa
 			if (value > best_value) {
 				best_value = value;
 				best_type = i;
+			} else if (value == best_value) {
+				if (def.noOfPartialEntityTypes < schemaData.entities[best_type].noOfPartialEntityTypes) {
+					best_type = i;
+				}
 			}
 		}
 		if (best_type < 0) {

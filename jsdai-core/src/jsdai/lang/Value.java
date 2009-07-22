@@ -93,6 +93,7 @@ import jsdai.dictionary.*;
 
 public class Value {
 //public static boolean prnt = false;
+//public static CEntity eee;
 
 /** The type of a value wrapped in an object of this class. */
 	public int tag;
@@ -6265,8 +6266,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		} else if (tag == INDETERMINATE) {
 			return null;
 		}
-//		Print warning message
-//		printWarningToLogo(AdditionalMessages.RD_BREF, inst.instance_identifier);
+		printWarningToLogoValidate(AdditionalMessages.EE_NINS);
 		return null;
 	}
 
@@ -6321,6 +6321,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value initAggregateMember(int index, EAggregation_type type) throws SdaiException {
 		if (tag != PhFileReader.EMBEDDED_LIST) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAGG);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		if (nested_values == null || index > nested_values.length) {
@@ -6351,9 +6352,11 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 					type = get_aggregation_type(d_type);
 //					type = get_aggregation_type(v_type);
 					if (type == null) {
+						printWarningToLogoValidate(AdditionalMessages.EE_NATY);
 						throw new SdaiException(SdaiException.VT_NVLD);
 					}
 				} else {
+					printWarningToLogoValidate(AdditionalMessages.EE_NATY);
 					throw new SdaiException(SdaiException.VT_NVLD);
 				}
 			} else {
@@ -6392,9 +6395,11 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		if (v_type != null) {
 			int tp = ((DataType)v_type).express_type;
 			if (tp < DataType.LIST || tp > DataType.AGGREGATE) {
+				printWarningToLogoValidateGiveType(AdditionalMessages.EE_NAGG, v_type);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 		} else {
+			printWarningToLogoValidate(AdditionalMessages.EE_NVAL);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		return length;
@@ -6403,7 +6408,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 
 /**
  * Returns the value (of type <code>Value</code>) of the member at the specified index
- * position in an aggregate wrapped in an object of this class. Indexing starts from 1.
+ * position in an aggregate wrapped in an object of this class. Indexing starts with 1.
  * @param index the index or position from which the value is asked.
  * @return the value at the specified position in the aggregate.
  * @throws SdaiException SY_ERR, underlying system error.
@@ -6412,12 +6417,15 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		if (v_type != null) {
 			int tp = ((DataType)v_type).express_type;
 			if (tp < DataType.LIST || tp > DataType.AGGREGATE) {
+				printWarningToLogoValidateGiveType(AdditionalMessages.EE_NAGG, v_type);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 		} else {
+			printWarningToLogoValidate(AdditionalMessages.EE_NVAL);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		if (index <= 0 || index > length) {
+			printWarningToLogoValidate(AdditionalMessages.EE_AIOB);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return nested_values[index - 1];
@@ -6450,6 +6458,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value getAttribute(EAttribute attr, SdaiContext context) throws SdaiException {
 		if (attr == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NOAT);
 			throw new SdaiException(SdaiException.AT_NDEF);
 		}
 		CEntity inst;
@@ -6535,6 +6544,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 				return val_attr;
 			}
 		}
+		printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_NOAD, tag);
 		throw new SdaiException(SdaiException.VT_NVLD);
 	}
 
@@ -6564,6 +6574,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value getAttribute(String attrName, SdaiContext context) throws SdaiException {
 		if (attrName == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NOAT);
 			throw new SdaiException(SdaiException.AT_NDEF);
 		}
 //if (attrName.equals("a1")) 
@@ -6679,6 +6690,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 				return val_attr;
 			}
 		}
+		printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_NOAD, tag);
 		throw new SdaiException(SdaiException.VT_NVLD);
 	}
 
@@ -6696,9 +6708,11 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value setAttribute(EExplicit_attribute attr, Value val) throws SdaiException {
 		if (attr == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NOAT);
 			throw new SdaiException(SdaiException.AT_NDEF);
 		}
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NOVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (tag == PhFileReader.ENTITY_REFERENCE) {
@@ -6712,6 +6726,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 			failure = eval.setAttribute(attr, val);
 //System.out.println("Value    val = " + val.getInteger() + "   failure = " + failure);
 			if (failure) {
+				printWarningToLogoValidateGiveAttribute(AdditionalMessages.EE_ATNE, attr);
 				throw new SdaiException(SdaiException.AT_NDEF);
 			}
 			if (eval.owner != null) {
@@ -6729,8 +6744,10 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 					return this;
 				}
 			}
+			printWarningToLogoValidateGiveAttribute(AdditionalMessages.EE_ATNE, attr);
 			throw new SdaiException(SdaiException.AT_NDEF);
 		}
+		printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_NOAD, tag);
 		throw new SdaiException(SdaiException.VT_NVLD);
 	}
 
@@ -6790,6 +6807,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 //			}
 //System.out.println(" Value ~~~  Types: " + type + "    v_type: " + v_type + "   tag: " + tag + "   sel_type: " + sel_type);
 			String base = AdditionalMessages.EC_INET;
+			printWarningToLogoValidateGiveTypes(base, type, v_type);
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 		if (analyse_Value(type, context)) {
@@ -6797,6 +6815,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		}
 //System.out.println(" Value ~~~~~~  Types: " + type + "    v_type: " + v_type + "   d_type: " + d_type + "   tag: " + tag);
 		String base = AdditionalMessages.EC_INET;
+		printWarningToLogoValidateGiveTypes(base, type, v_type);
 		throw new SdaiException(SdaiException.SY_ERR, base);
 	}
 
@@ -6846,8 +6865,10 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 //					return restore_def_types((SelectType)sel_type);
 //				}
 //			}
-//System.out.println(" Value ~~~  Types: " + type + "    v_type: " + v_type + "   tag: " + tag + "   sel_type: " + sel_type);
+//System.out.println(" Value ~~~  Types: " + type + "    v_type: " + v_type + "   d_type: " + d_type + 
+//"   tag: " + tag + "   sel_type: " + sel_type);
 			String base = AdditionalMessages.EC_INET;
+			printWarningToLogoValidateGiveTypes(base, type, v_type);
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 		if (analyse_Value(type, context)) {
@@ -6860,6 +6881,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 //System.out.println(" Value ~~~~~~     nested_values[0].v_type: " + nested_values[0].v_type + 
 //"   nested_values[0].d_type: " + nested_values[0].d_type + "   nested_values[0].tag: " + nested_values[0].tag);
 		String base = AdditionalMessages.EC_INET;
+		printWarningToLogoValidateGiveTypes(base, type, v_type);
 		throw new SdaiException(SdaiException.SY_ERR, base);
 	}
 
@@ -7197,6 +7219,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 //System.out.println(" Value   aggr_type: " + aggr_type + 
 //"   v_type: " + v_type);
 			if (v_type == null) {
+				printWarningToLogoValidate(AdditionalMessages.EE_NTVA);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 			int v_tp = ((DataType)v_type).express_type;
@@ -7727,6 +7750,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value set(SdaiContext context, int val) throws SdaiException {
 		if (d_type == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_UNVA);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		DataType type = (DataType)d_type;
@@ -7736,6 +7760,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		boolean int_val = true;
 		if (type.express_type >= DataType.SELECT && type.express_type <= DataType.ENT_EXT_EXT_SELECT) {
 			if (!check_integer_in_select((ESelect_type)type)) {
+				printWarningToLogoValidate(AdditionalMessages.EE_INNF);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 		} else if (type.express_type == DataType.DATA_TYPE && 
@@ -7749,6 +7774,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 			real = val;
 			int_val = false;
 		} else {
+			printWarningToLogoValidate(AdditionalMessages.EE_INNF);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		if (int_val) {
@@ -7827,6 +7853,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value set(SdaiContext context, double val) throws SdaiException {
 		if (d_type == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_UNVA);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		DataType type = (DataType)d_type;
@@ -7835,12 +7862,14 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		}
 		if (type.express_type >= DataType.SELECT && type.express_type <= DataType.ENT_EXT_EXT_SELECT) {
 			if (!check_real_in_select((ESelect_type)type)) {
+				printWarningToLogoValidate(AdditionalMessages.EE_DONF);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 		} else if (type.express_type == DataType.DATA_TYPE && 
 				((EData_type)type).getName(null).equals("_GENERIC")) {
 			v_type = ExpressTypes.REAL_TYPE;
 		} else if (type.express_type != DataType.REAL && type.express_type != DataType.NUMBER) {
+			printWarningToLogoValidate(AdditionalMessages.EE_DONF);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		} else {
 			v_type = type;
@@ -7919,6 +7948,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value set(SdaiContext context, String val) throws SdaiException {
 		if (d_type == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_UNVA);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		DataType type = (DataType)d_type;
@@ -7927,15 +7957,18 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		}
 		if (type.express_type >= DataType.SELECT && type.express_type <= DataType.ENT_EXT_EXT_SELECT) {
 			if (!check_string_in_select((ESelect_type)type, val)) {
+				printWarningToLogoValidate(AdditionalMessages.EE_STNF);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 		} else if (type.express_type == DataType.DATA_TYPE && 
 				((EData_type)type).getName(null).equals("_GENERIC")) {
 			v_type = ExpressTypes.STRING_TYPE;
 		} else if (type.express_type != DataType.STRING) {
+			printWarningToLogoValidate(AdditionalMessages.EE_STNF);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		} else {
 			if (val != null && !checkStringValue((EString_type)type, val)) {
+				printWarningToLogoValidate(AdditionalMessages.EE_STNF);
 				throw new SdaiException(SdaiException.VA_NVLD);
 			}
 			v_type = type;
@@ -7966,6 +7999,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value set(SdaiContext context, String val, String schema_name) throws SdaiException {
 		if (d_type == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_UNVA);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		DataType type = (DataType)d_type;
@@ -7974,6 +8008,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 				((EData_type)type).getName(null).equals("_GENERIC")) {
 			v_type = ExpressTypes.STRING_TYPE;
 		} else if (type.express_type != DataType.STRING) {
+			printWarningToLogoValidate(AdditionalMessages.EE_STNF);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		} else {
 			v_type = type;
@@ -8088,6 +8123,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value setLB(SdaiContext context, int val) throws SdaiException {
 		if (d_type == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_UNVA);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		DataType type = (DataType)d_type;
@@ -8096,12 +8132,14 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		}
 		if (type.express_type >= DataType.SELECT && type.express_type <= DataType.ENT_EXT_EXT_SELECT) {
 			if (!check_LB_in_select((ESelect_type)type)) {
+				printWarningToLogoValidate(AdditionalMessages.EE_LONF);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 		} else if (type.express_type == DataType.DATA_TYPE && 
 				((EData_type)type).getName(null).equals("_GENERIC")) {
 			v_type = ExpressTypes.LOGICAL_TYPE;
 		} else if (type.express_type != DataType.LOGICAL && type.express_type != DataType.BOOLEAN) {
+			printWarningToLogoValidate(AdditionalMessages.EE_LONF);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		} else {
 			v_type = type;
@@ -8194,10 +8232,12 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 			return setLB(context, 0);
 		} else if (val.tag == PhFileReader.LOGICAL || val.tag == PhFileReader.BOOLEAN || val.tag == PhFileReader.INTEGER) {
 			if (val.integer < 0 || val.integer >2) {
+				printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_VNLO, val.tag);
 				throw new SdaiException(SdaiException.VA_NVLD);
 			}
 			return setLB(context, val.integer + 1);
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_VNLO, val.tag);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 	}
@@ -8215,6 +8255,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value setEnum(SdaiContext context, String val) throws SdaiException {
 		if (d_type == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_UNVA);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		DataType type = (DataType)d_type;
@@ -8223,12 +8264,15 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		}
 		if (type.express_type >= DataType.SELECT && type.express_type <= DataType.ENT_EXT_EXT_SELECT) {
 			if (!check_enum_in_select((ESelect_type)type, val, context)) {
+				printWarningToLogoValidate(AdditionalMessages.EE_ENNF);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 		} else if (type.express_type < DataType.ENUMERATION || type.express_type > DataType.EXTENDED_EXTENSIBLE_ENUM) {
+			printWarningToLogoValidate(AdditionalMessages.EE_ENNF);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		} else {
 			if (val != null && !check_enumeration((EEnumeration_type)type, val, context)) {
+				printWarningToLogoValidate(AdditionalMessages.EE_ENNF);
 				throw new SdaiException(SdaiException.VA_NVLD);
 			}
 			v_type = type;
@@ -8323,6 +8367,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value set(SdaiContext context, Binary val) throws SdaiException {
 		if (d_type == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_UNVA);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		DataType type = (DataType)d_type;
@@ -8331,15 +8376,18 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		}
 		if (type.express_type >= DataType.SELECT && type.express_type <= DataType.ENT_EXT_EXT_SELECT) {
 			if (!check_binary_in_select((ESelect_type)type, val)) {
+				printWarningToLogoValidate(AdditionalMessages.EE_BINF);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 		} else if (type.express_type == DataType.DATA_TYPE && 
 				((EData_type)type).getName(null).equals("_GENERIC")) {
 			v_type = ExpressTypes.BINARY_TYPE;
 		} else if (type.express_type != DataType.BINARY) {
+			printWarningToLogoValidate(AdditionalMessages.EE_BINF);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		} else {
 			if (val != null && !val.checkBinaryValue((EBinary_type)type)) {
+				printWarningToLogoValidate(AdditionalMessages.EE_BINF);
 				throw new SdaiException(SdaiException.VA_NVLD);
 			}
 			v_type = type;
@@ -8424,6 +8472,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value set(SdaiContext context, EEntity val) throws SdaiException {
 		if (d_type == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_UNVA);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		DataType type = (DataType)d_type;
@@ -8432,15 +8481,18 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		}
 		if (type.express_type >= DataType.SELECT && type.express_type <= DataType.ENT_EXT_EXT_SELECT) {
 			if (!check_entity_in_select((ESelect_type)type, val, context)) {
+				printWarningToLogoValidate(AdditionalMessages.EE_EINF);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 		} else if (type.express_type == DataType.DATA_TYPE) {
 			v_type = val.getInstanceType();
 //			v_type = ExpressTypes.GENERIC_ENTITY_TYPE;
 		} else if (type.express_type != DataType.ENTITY) {
+			printWarningToLogoValidate(AdditionalMessages.EE_EINF);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		} else {
 			if (val != null && !val.getInstanceType().isSubtypeOf((EEntity_definition)type)) {
+				printWarningToLogoValidate(AdditionalMessages.EE_EINF);
 				throw new SdaiException(SdaiException.VA_NVLD);
 			}
 			v_type = val.getInstanceType();
@@ -8525,6 +8577,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value set(SdaiContext context, Aggregate aggr) throws SdaiException {
 		if (d_type == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_UNVA);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		AggregationType tp = null;
@@ -8537,6 +8590,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		}
 		if (type.express_type >= DataType.SELECT && type.express_type <= DataType.ENT_EXT_EXT_SELECT) {
 			if (!check_aggregate_in_select((ESelect_type)type, tp)) {
+				printWarningToLogoValidate(AdditionalMessages.EE_AGNF);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 		} else if (!(type.express_type >= DataType.LIST && type.express_type <= DataType.AGGREGATE && 
@@ -8547,6 +8601,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 					(type == ExpressTypes.AGGREGATE_GENERIC_TYPE) ))) {
 //System.out.println("Value    d_type: " + d_type + "    type: " + type +
 //"   tp: " + tp);
+			printWarningToLogoValidate(AdditionalMessages.EE_AGNF);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		v_type = tp;
@@ -8601,6 +8656,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		} else if (aggr instanceof A_double) {
 			((A_double)aggr).getValue(this, tp, context);
 		} else {
+			printWarningToLogoValidate(AdditionalMessages.EE_AGNF);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		return this;
@@ -8673,14 +8729,17 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 			return this;
 		}
 		if (d_type == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_UNVA);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		int d_tp = ((DataType)d_type).express_type;
 		if (d_tp < DataType.LIST || d_tp > DataType.AGGREGATE) {
+			printWarningToLogoValidate(AdditionalMessages.EE_IANF);
 			throw new SdaiException(SdaiException.SY_ERR/*, base*/);
 		}
 		DataType el_type = (DataType)((EAggregation_type)d_type).getElement_type(null);
 		if (el_type.express_type != DataType.ENTITY && el_type != ExpressTypes.GENERIC_TYPE) {
+			printWarningToLogoValidate(AdditionalMessages.EE_IANF);
 			throw new SdaiException(SdaiException.SY_ERR/*, base*/);
 		}
 		v_type = d_type;
@@ -8743,6 +8802,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value indexing(Value index1, Value index2) throws SdaiException {
 		if (index1 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_INNP);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		int ind;
@@ -8816,10 +8876,12 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 				return val;
 			}
 			if (v_type == null) {
+				printWarningToLogoValidate(AdditionalMessages.EE_INNA);
 				throw new SdaiException(SdaiException.SY_ERR);
 			}
 			int v_tp = ((DataType)v_type).express_type;
 			if (v_tp < DataType.LIST || v_tp > DataType.AGGREGATE) {
+				printWarningToLogoValidateGiveType(AdditionalMessages.EE_INNA, v_type);
 				throw new SdaiException(SdaiException.SY_ERR);
 			}
 			int ind;
@@ -8911,6 +8973,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 			return nested_values[0].replaceRange(index1, index2, repl);
 		}
 		if (index1 == null || index2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_INNP);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (index1.tag != PhFileReader.INTEGER || index2.tag != PhFileReader.INTEGER) {
@@ -9010,6 +9073,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 			reference =  new Binary(staticFields.result, count);
 			return this;
 		} else {
+			printWarningToLogoValidate(AdditionalMessages.EE_DTNA);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 	}
@@ -9031,6 +9095,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 			return this;
 		}
 		if (delta == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_INZE);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (tag == PhFileReader.INTEGER) {
@@ -9039,6 +9104,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 			} else if (delta.tag == PhFileReader.REAL) {
 				integer += delta.real;
 			} else {
+				printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_INTI, delta.tag);
 				String base = "Method inc is allowed only for values of numeric type.";
 				throw new SdaiException(SdaiException.VT_NVLD, base);
 			}
@@ -9048,10 +9114,12 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 			} else if (delta.tag == PhFileReader.REAL) {
 				real += delta.real;
 			} else {
+				printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_INTI, delta.tag);
 				String base = "Method inc is allowed only for values of numeric type.";
 				throw new SdaiException(SdaiException.VT_NVLD, base);
 			}
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_IVTI, tag);
 			String base = "Method inc is allowed only for values of numeric type.";
 			throw new SdaiException(SdaiException.VT_NVLD, base);
 		}
@@ -9068,6 +9136,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value inc() throws SdaiException {
 		if (tag != PhFileReader.INTEGER) {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_IVTI, tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		integer++;
@@ -9087,9 +9156,15 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value dec(Value delta) throws SdaiException {
 		if (delta == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_DEZE);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (tag != PhFileReader.INTEGER || delta.tag != PhFileReader.INTEGER) {
+			if (tag != PhFileReader.INTEGER) {
+				printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_DVTI, tag);
+			} else {
+				printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_DETI, delta.tag);
+			}
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		integer -= delta.integer;
@@ -9104,6 +9179,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public Value dec() throws SdaiException {
 		if (tag != PhFileReader.INTEGER) {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_DVTI, tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		integer--;
@@ -9124,6 +9200,7 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public boolean getAsBoolean() throws SdaiException {
 		if (tag != PhFileReader.LOGICAL && tag != PhFileReader.BOOLEAN) {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_VNLO, tag);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		if (integer == 1) {
@@ -9159,9 +9236,11 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
  */
 	public void setMember(SdaiContext context, Value val, int index) throws SdaiException {
 		if (tag != PhFileReader.EMBEDDED_LIST) {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_VNAG, tag);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == COMPLEX_ENTITY_VALUE || val.tag == ENTITY_VALUE) {
@@ -9169,11 +9248,13 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 		}
 		if (v_type != null) {
 			if (!check_if_fits((EAggregation_type)v_type, val, context)) {
+				printWarningToLogoValidateGiveType(AdditionalMessages.EE_VANF, v_type);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 		} else {
 			v_type = find_best_fit_for_value(d_type, val, context);
 			if (v_type == null) {
+				printWarningToLogoValidateGiveType(AdditionalMessages.EE_VANF, d_type);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 		}
@@ -9212,9 +9293,11 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 		if (sel_type != null) {
 			int tp = ((DataType)type).express_type;
 			if (tp != DataType.DEFINED_TYPE && (tp < DataType.SELECT || tp > DataType.ENT_EXT_EXT_SELECT) ) {
+				printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_VANF, tp);
 				throw new SdaiException(SdaiException.SY_ERR);
 			}
 			if (d_type == null) {
+				printWarningToLogoValidate(AdditionalMessages.EE_VANF);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 			int d_tp = ((DataType)d_type).express_type;
@@ -9593,6 +9676,7 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
  */
 	public Value addOrUnionOrConcatenate(SdaiContext context, Value val1, Value val2) throws SdaiException {
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAAG);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.tag == PhFileReader.EMBEDDED_LIST || val2.tag == PhFileReader.EMBEDDED_LIST) {
@@ -9698,6 +9782,7 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 			unionFirstBag(val1, val2, context);
 // bag type
 		} else {
+			printWarningToLogoValidate(AdditionalMessages.EE_ITVA);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 	}
@@ -9705,6 +9790,7 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 
 	private void set_simple(SdaiContext context, Value val) throws SdaiException {
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		tag = val.tag;
@@ -9788,10 +9874,11 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 		}
 		if (bag.v_type == null || ((DataType)bag.v_type).express_type != DataType.BAG) {
 			if (((DataType)bag.v_type).express_type == DataType.SET) {
-				printWarningToLogoBagToSet(bag.v_type);
+				String text = AdditionalMessages.EE_NBAG + SdaiSession.line_separator + "   Argument type: " + bag.v_type;
+				printWarningToLogoValidate(text);
 			} else {
-				String base = "The argument of Express function bag_to_set shall be of BAG OF GENERIC type.";
-				throw new SdaiException(SdaiException.VT_NVLD, base);
+				printWarningToLogoValidate(AdditionalMessages.EE_NBAG);
+				throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_NBAG);
 			}
 		}
 		v_type = d_type;
@@ -9928,6 +10015,12 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 			}
 		}
 		if (!comp) {
+			if (fits) {
+				v_type = d_type;
+				comp = true;
+			}
+		}
+		if (!comp) {
 //System.out.println("Value ~~~~~~~~~~~~~~~   val1.v_type: " + val1.v_type + 
 //"   val1.d_type: " + val1.d_type  + "   val1.tag: " + val1.tag);
 //Aggregate set = (Aggregate)val1.reference;
@@ -9936,8 +10029,8 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 //"   val2.d_type: " + val2.d_type  + "   val2.tag: " + val2.tag);
 //CEntity adjoined = (CEntity)val2.reference;
 //System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);
-			String base = "Incompatible types of operands of union operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_OPUO);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_OPUO);
 		}
 
 		tag = PhFileReader.EMBEDDED_LIST;
@@ -9946,6 +10039,7 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 			enlarge_nested_values(length);
 		}
 		if (((DataType)d_type).express_type < DataType.LIST || ((DataType)d_type).express_type > DataType.AGGREGATE) {
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_NATY, d_type);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		EData_type dtp = ((EAggregation_type)d_type).getElement_type(null);
@@ -9984,6 +10078,7 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 				}
 			}
 		} else {
+			printWarningToLogoValidate(AdditionalMessages.EE_ITVA);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 	}
@@ -10063,13 +10158,14 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 			}
 		}
 		if (!comp) {
-			String base = "Incompatible types of operands of union operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_OPUO);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_OPUO);
 		}
 
 		tag = PhFileReader.EMBEDDED_LIST;
 		if (val2.tag == PhFileReader.EMBEDDED_LIST) {
 			if (!cs) {
+				printWarningToLogoValidate(AdditionalMessages.EE_ITVA);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 			length = val1.length + val2.length;
@@ -10080,6 +10176,7 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 			enlarge_nested_values(length);
 		}
 		if (((DataType)d_type).express_type < DataType.LIST || ((DataType)d_type).express_type > DataType.AGGREGATE) {
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_NATY, d_type);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		EData_type dtp = ((EAggregation_type)d_type).getElement_type(null);
@@ -10180,13 +10277,14 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 //"   val1.d_type: " + val1.d_type  + "   val1.tag: " + val1.tag);
 //System.out.println(" Value $$$$$   val2.v_type: " + val2.v_type + 
 //"   val2.d_type: " + val2.d_type  + "   val2.tag: " + val2.tag);
-			String base = "Incompatible types of operands of union operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_OPUO);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_OPUO);
 		}
 
 		tag = PhFileReader.EMBEDDED_LIST;
 		if (val2.tag == PhFileReader.EMBEDDED_LIST) {
 			if (val2.v_type == null || ((DataType)val2.v_type).express_type == DataType.ARRAY) {
+				printWarningToLogoValidateGiveType(AdditionalMessages.EE_NATY, v_type);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 			length = val1.length + val2.length;
@@ -10197,6 +10295,7 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 			enlarge_nested_values(length);
 		}
 		if (((DataType)d_type).express_type < DataType.LIST || ((DataType)d_type).express_type > DataType.AGGREGATE) {
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_NATY, d_type);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		EData_type dtp = ((EAggregation_type)d_type).getElement_type(null);
@@ -10223,6 +10322,7 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 		int i;
 		boolean fits = false;
 		if (val2.tag != PhFileReader.EMBEDDED_LIST || ((DataType)val2.v_type).express_type == DataType.ARRAY) {
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_VNAG, val2.v_type);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		if (val2.v_type == null || ((DataType)val2.v_type).express_type == DataType.SET || 
@@ -10268,8 +10368,8 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 				}
 			}
 			if (!comp) {
-				String base = "Incompatible types of operands of union operator.";
-				throw new SdaiException(SdaiException.VT_NVLD, base);
+				printWarningToLogoValidate(AdditionalMessages.EE_OPUO);
+				throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_OPUO);
 			}
 
 			tag = PhFileReader.EMBEDDED_LIST;
@@ -10278,6 +10378,7 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 				enlarge_nested_values(length);
 			}
 			if (((DataType)d_type).express_type < DataType.LIST || ((DataType)d_type).express_type > DataType.AGGREGATE) {
+				printWarningToLogoValidateGiveType(AdditionalMessages.EE_NATY, d_type);
 				throw new SdaiException(SdaiException.SY_ERR);
 			}
 			EData_type dtp = ((EAggregation_type)d_type).getElement_type(null);
@@ -10314,6 +10415,7 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
  */
 	public Value unionEnlarge(Value val, SdaiContext context) throws SdaiException {
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (tag == INDETERMINATE || val.tag == INDETERMINATE) {
@@ -10321,9 +10423,11 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 			return this;
 		}
 		if (tag != PhFileReader.EMBEDDED_LIST) {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_NATY, tag);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		if (d_type == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NTVA);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		if (((DataType)v_type).express_type == DataType.SET || v_type == ExpressTypes.AGGREGATE_GENERIC_TYPE) {
@@ -10336,6 +10440,7 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 			unionEnlargeBag(val, context);
 // bag type
 		} else {
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_NATY, d_type);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		return this;
@@ -10344,6 +10449,7 @@ System.out.println("  Value    aggregate: " + aggr_type.getName(null));*/
 
 	private void unionEnlargeSet(Value val, SdaiContext context) throws SdaiException {
 		if (((DataType)d_type).express_type < DataType.LIST || ((DataType)d_type).express_type > DataType.AGGREGATE) {
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_NATY, d_type);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		boolean comp = baseTypeCompatibleToAggr(v_type, val.v_type, context);
@@ -10356,8 +10462,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   val.v_type: " + val.v_type +
 "   val.d_type: " + val.d_type  + "   val.tag: " + val.tag);
 CEntity adjoined = (CEntity)val.reference;
 System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
-			String base = "Incompatible types of operands of union operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_OPUO);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_OPUO);
 		}
 		if (checkIfInAggregate(val, context) == -1) {
 			if (nested_values == null) {
@@ -10426,6 +10532,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
  */
 	public Value negation(Value val) throws SdaiException {
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
@@ -10451,6 +10558,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 				d_type = val.d_type;
 			}
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		return this;
@@ -10496,6 +10604,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 		switch (altern) {
 			case -1:
 				String base = AdditionalMessages.EE_ILOP;
+				printWarningToLogoValidate(base);
 				throw new SdaiException(SdaiException.VT_NVLD, base);
 			case 0:
 				tag = PhFileReader.INTEGER;
@@ -10551,6 +10660,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 		}
 		if (val1.tag != PhFileReader.STRING || val2.tag != PhFileReader.STRING) {
 			String base = AdditionalMessages.EE_ILOP;
+			printWarningToLogoValidate(base);
 			throw new SdaiException(SdaiException.VT_NVLD, base);
 		}
 		tag = PhFileReader.STRING;
@@ -10583,6 +10693,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 		}
 		if (val1.tag != PhFileReader.BINARY || val2.tag != PhFileReader.BINARY) {
 			String base = AdditionalMessages.EE_ILOP;
+			printWarningToLogoValidate(base);
 			throw new SdaiException(SdaiException.VT_NVLD, base);
 		}
 		tag = PhFileReader.BINARY;
@@ -10616,6 +10727,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 	public Value substractOrDifference(SdaiContext context, Value val1, Value val2) throws SdaiException {
 //		if (val1.tag == PhFileReader.EMBEDDED_LIST || val2.tag == PhFileReader.EMBEDDED_LIST) {
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.d_type == null) {
@@ -10703,6 +10815,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 // bag type
 		} else {
 			String base = AdditionalMessages.EE_ILOP;
+			printWarningToLogoValidate(base);
 			throw new SdaiException(SdaiException.VT_NVLD, base);
 		}
 	}
@@ -10716,8 +10829,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 		boolean cs = false;
 		if (val2.tag == PhFileReader.EMBEDDED_LIST && 
 				(((DataType)val2.v_type).express_type == DataType.LIST || ((DataType)val2.v_type).express_type == DataType.ARRAY)) {
-			String base = "The second operand of difference operator is illegal.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_SODO, val2.v_type);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_SODO);
 		}
 		if (val2.v_type == null || ((DataType)val2.v_type).express_type == DataType.SET || 
 				val2.v_type == ExpressTypes.AGGREGATE_GENERIC_TYPE || ((DataType)val2.v_type).express_type == DataType.AGGREGATE) {
@@ -10788,8 +10901,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 			}
 		}
 		if (!comp) {
-			String base = "Incompatible types of operands of difference operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ITDO);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ITDO);
 		}
 
 		tag = PhFileReader.EMBEDDED_LIST;
@@ -10797,6 +10910,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 			enlarge_nested_values(val1.length);
 		}
 		if (((DataType)d_type).express_type < DataType.LIST || ((DataType)d_type).express_type > DataType.AGGREGATE) {
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_NATY, d_type);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		EData_type dtp = ((EAggregation_type)d_type).getElement_type(null);
@@ -10850,8 +10964,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 		boolean cs = false;
 		if (val2.tag == PhFileReader.EMBEDDED_LIST && 
 				(((DataType)val2.v_type).express_type == DataType.LIST || ((DataType)val2.v_type).express_type == DataType.ARRAY)) {
-			String base = "The second operand of difference operator is illegal.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_SODO, val2.v_type);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_SODO);
 		}
 		if (val2.v_type == null || ((DataType)val2.v_type).express_type == DataType.BAG || 
 				val2.v_type == ExpressTypes.AGGREGATE_GENERIC_TYPE || ((DataType)val2.v_type).express_type == DataType.AGGREGATE) {
@@ -10922,8 +11036,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 			}
 		}
 		if (!comp) {
-			String base = "Incompatible types of operands of difference operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ITDO);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ITDO);
 		}
 
 		tag = PhFileReader.EMBEDDED_LIST;
@@ -10931,6 +11045,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 			enlarge_nested_values(val1.length);
 		}
 		if (((DataType)d_type).express_type < DataType.LIST || ((DataType)d_type).express_type > DataType.AGGREGATE) {
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_NATY, d_type);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		EData_type dtp = ((EAggregation_type)d_type).getElement_type(null);
@@ -11017,6 +11132,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 		switch (altern) {
 			case -1:
 				String base = AdditionalMessages.EE_ILOP;
+				printWarningToLogoValidate(base);
 				throw new SdaiException(SdaiException.VT_NVLD, base);
 			case 0:
 				tag = PhFileReader.INTEGER;
@@ -11075,6 +11191,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
  */
 	public Value mulOrIntersect(SdaiContext context, Value val1, Value val2) throws SdaiException {
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.tag == PhFileReader.EMBEDDED_LIST || val2.tag == PhFileReader.EMBEDDED_LIST) {
@@ -11149,6 +11266,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 // bag type
 		} else {
 			String base = AdditionalMessages.EE_ILOP;
+			printWarningToLogoValidate(base);
 			throw new SdaiException(SdaiException.VT_NVLD, base);
 		}
 	}
@@ -11166,8 +11284,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 		}
 		if (val2.tag != PhFileReader.EMBEDDED_LIST || 
 				((DataType)val2.v_type).express_type == DataType.LIST || ((DataType)val2.v_type).express_type == DataType.ARRAY) {
-			String base = "The second operand of intersection operator is illegal.";
-			throw new SdaiException(SdaiException.SY_ERR, base);
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_SOIO, val2.v_type);
+			throw new SdaiException(SdaiException.SY_ERR, AdditionalMessages.EE_SOIO);
 		}
 		if (d_type != null) {
 			boolean comp1 = oneCompatibleToAnother(d_type, val1.v_type, context, false);
@@ -11234,8 +11352,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 			}
 		}
 		if (!comp) {
-			String base = "Incompatible types of operands of intersection operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidateGiveValueTypes(AdditionalMessages.EE_ITIO, val1.v_type, val2.v_type);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ITIO);
 		}
 
 		tag = PhFileReader.EMBEDDED_LIST;
@@ -11243,6 +11361,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 			enlarge_nested_values(val1.length);
 		}
 		if (((DataType)d_type).express_type < DataType.LIST || ((DataType)d_type).express_type > DataType.AGGREGATE) {
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_NATY, d_type);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		EData_type dtp = ((EAggregation_type)d_type).getElement_type(null);
@@ -11277,8 +11396,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 		boolean fits = false;
 		if (val2.tag != PhFileReader.EMBEDDED_LIST || 
 				((DataType)val2.v_type).express_type == DataType.LIST || ((DataType)val2.v_type).express_type == DataType.ARRAY) {
-			String base = "The second operand of intersection operator is illegal.";
-			throw new SdaiException(SdaiException.SY_ERR, base);
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_SOIO, val2.v_type);
+			throw new SdaiException(SdaiException.SY_ERR, AdditionalMessages.EE_SOIO);
 		}
 		if (val2.v_type == null || ((DataType)val2.v_type).express_type == DataType.SET || 
 				val2.v_type == ExpressTypes.AGGREGATE_GENERIC_TYPE || ((DataType)val2.v_type).express_type == DataType.AGGREGATE) {
@@ -11350,8 +11469,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 			}
 		}
 		if (!comp) {
-			String base = "Incompatible types of operands of intersection operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidateGiveValueTypes(AdditionalMessages.EE_ITIO, val1.v_type, val2.v_type);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ITIO);
 		}
 
 		tag = PhFileReader.EMBEDDED_LIST;
@@ -11359,6 +11478,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 			enlarge_nested_values(val1.length);
 		}
 		if (((DataType)d_type).express_type < DataType.LIST || ((DataType)d_type).express_type > DataType.AGGREGATE) {
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_NATY, d_type);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		EData_type dtp = ((EAggregation_type)d_type).getElement_type(null);
@@ -11433,8 +11553,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 		}
 		switch (altern) {
 			case -1:
-				String base = AdditionalMessages.EE_ILOP;
-				throw new SdaiException(SdaiException.VT_NVLD, base);
+				printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+				throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 			case 0:
 				tag = PhFileReader.INTEGER;
 				if (d_type == null) {
@@ -11489,6 +11609,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
  */
 	public Value divide(SdaiContext context, Value numerator, Value denominator) throws SdaiException {
 		if (numerator == null || denominator == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (numerator.tag == PhFileReader.TYPED_PARAMETER) {
@@ -11529,33 +11650,33 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 		}
 		switch (altern) {
 			case -1:
-				String base = AdditionalMessages.EE_ILOP;
-				throw new SdaiException(SdaiException.VT_NVLD, base);
+				printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+				throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 			case 0:
 				if (denominator.integer == 0) {
-					base = AdditionalMessages.EE_DIVZ;
-					throw new SdaiException(SdaiException.VA_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_DIVZ);
+					throw new SdaiException(SdaiException.VA_NVLD, AdditionalMessages.EE_DIVZ);
 				}
 				real = ((double)numerator.integer) / denominator.integer;
 				break;
 			case 1:
 				if (denominator.real == 0) {
-					base = AdditionalMessages.EE_DIVZ;
-					throw new SdaiException(SdaiException.VA_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_DIVZ);
+					throw new SdaiException(SdaiException.VA_NVLD, AdditionalMessages.EE_DIVZ);
 				}
 				real = numerator.integer / denominator.real;
 				break;
 			case 2:
 				if (denominator.integer == 0) {
-					base = AdditionalMessages.EE_DIVZ;
-					throw new SdaiException(SdaiException.VA_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_DIVZ);
+					throw new SdaiException(SdaiException.VA_NVLD, AdditionalMessages.EE_DIVZ);
 				}
 				real = numerator.real / denominator.integer;
 				break;
 			case 3:
 				if (denominator.real == 0) {
-					base = AdditionalMessages.EE_DIVZ;
-					throw new SdaiException(SdaiException.VA_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_DIVZ);
+					throw new SdaiException(SdaiException.VA_NVLD, AdditionalMessages.EE_DIVZ);
 				}
 				real = numerator.real / denominator.real;
 				break;
@@ -11583,6 +11704,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
  */
 	public Value exponent(SdaiContext context, Value base, Value power) throws SdaiException {
 		if (base == null || power == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (base.tag == PhFileReader.TYPED_PARAMETER) {
@@ -11617,16 +11739,16 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 			integer_value = -5;
 		}
 		if (integer_value < 0) {
-			String message_base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, message_base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		if (base_ == 0 && power_ <= 0) {
-			String message_base = AdditionalMessages.EE_BNUL;
-			throw new SdaiException(SdaiException.VA_NVLD, message_base);
+			printWarningToLogoValidate(AdditionalMessages.EE_BNUL);
+			throw new SdaiException(SdaiException.VA_NVLD, AdditionalMessages.EE_BNUL);
 		}
 		if (base_ <= 0 && power.tag != PhFileReader.INTEGER) {
-			String message_base = AdditionalMessages.EE_BNPO;
-			throw new SdaiException(SdaiException.VA_NVLD, message_base);
+			printWarningToLogoValidate(AdditionalMessages.EE_BNPO);
+			throw new SdaiException(SdaiException.VA_NVLD, AdditionalMessages.EE_BNPO);
 		}
 		if (integer_value >= 2) {
 			tag = PhFileReader.INTEGER;
@@ -11673,6 +11795,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
  */
 	public Value DIV(SdaiContext context, Value numerator, Value denominator) throws SdaiException {
 		if (numerator == null || denominator == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (numerator.tag == PhFileReader.TYPED_PARAMETER) {
@@ -11705,12 +11828,12 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 			bad_type = true;
 		}
 		if (bad_type) {
-			String base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		if (den == 0) {
-			String base = AdditionalMessages.EE_DIVZ;
-			throw new SdaiException(SdaiException.VA_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_DIVZ);
+			throw new SdaiException(SdaiException.VA_NVLD, AdditionalMessages.EE_DIVZ);
 		}
 		tag = PhFileReader.INTEGER;
 		integer = num / den;
@@ -11737,6 +11860,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
  */
 	public Value MOD(SdaiContext context, Value val1, Value val2) throws SdaiException {
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.tag == PhFileReader.TYPED_PARAMETER) {
@@ -11769,8 +11893,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 			bad_type = true;
 		}
 		if (bad_type) {
-			String base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		tag = PhFileReader.INTEGER;
 		integer = arg1 % arg2;
@@ -11862,6 +11986,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
  */
 	public Value equal(SdaiContext context, Value val1, Value val2) throws SdaiException {		// operator =
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.tag == COMPLEX_ENTITY_VALUE || val1.tag == ENTITY_VALUE) {
@@ -11975,6 +12100,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
  */
 	public Value nequal(SdaiContext context, Value val1, Value val2) throws SdaiException {	// operator <>
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.tag == COMPLEX_ENTITY_VALUE || val1.tag == ENTITY_VALUE) {
@@ -12073,6 +12199,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
  */
 	public Value greater(SdaiContext context, Value val1, Value val2) throws SdaiException {	// operator >
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.tag == PhFileReader.STRING) {
@@ -12165,6 +12292,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
  */
 	public Value less(SdaiContext context, Value val1, Value val2) throws SdaiException {		// operator <
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.tag == PhFileReader.STRING) {
@@ -12263,6 +12391,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 	public Value gequalOrSuperset(SdaiContext context, Value val1, Value val2) 
 			throws SdaiException {	// operator >= in the contexts: 1) greater than or equal 2) superset
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.tag == PhFileReader.EMBEDDED_LIST || val2.tag == PhFileReader.EMBEDDED_LIST) {
@@ -12379,6 +12508,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 	public Value lequalOrSubset(SdaiContext context, Value val1, Value val2) 
 			throws SdaiException {	// operator <= in the contexts: 1) less than or equal 2) subset
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.tag == PhFileReader.EMBEDDED_LIST || val2.tag == PhFileReader.EMBEDDED_LIST) {
@@ -12495,6 +12625,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
  */
 	public Value instanceEqual(SdaiContext context, Value val1, Value val2) throws SdaiException {		// operator :=:
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.tag == COMPLEX_ENTITY_VALUE || val1.tag == ENTITY_VALUE) {
@@ -12599,6 +12730,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
  */
 	public Value instanceNotEqual(SdaiContext context, Value val1, Value val2) throws SdaiException {	// operator :<>:
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.tag == COMPLEX_ENTITY_VALUE || val1.tag == ENTITY_VALUE) {
@@ -12656,8 +12788,7 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val2.tag != PhFileReader.EMBEDDED_LIST && val2.tag != INDETERMINATE) {
-			String base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		if (val1.tag == INDETERMINATE || val2.tag == INDETERMINATE) {
 			return 3;
@@ -12711,11 +12842,12 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
  */
 	public Value IN(SdaiContext context, Value val1, Value val2) throws SdaiException {
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val2.tag != PhFileReader.EMBEDDED_LIST && val2.tag != INDETERMINATE) {
-			String base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		v_type = d_type = ExpressTypes.LOGICAL_TYPE;
 		tag = PhFileReader.LOGICAL;
@@ -12770,12 +12902,13 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
  */
 	public Value LIKE(SdaiContext context, Value val1, Value val2) throws SdaiException {
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if ((val1.tag != PhFileReader.STRING && val1.tag != INDETERMINATE) || 
 				(val2.tag != PhFileReader.STRING && val2.tag != INDETERMINATE)) {
-			String base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		v_type = d_type = ExpressTypes.LOGICAL_TYPE;
 		tag = PhFileReader.LOGICAL;
@@ -13007,8 +13140,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 					}
 //System.out.println("Value IIIIIIIII tag: " + tag + "    val.tag: " + val.tag + 
 //"   d_type: " + d_type + "   v_type: " + v_type + "   val.d_type: " + val.d_type + "   val.v_type: " + val.v_type);
-					String base = AdditionalMessages.EE_INTY;
-					throw new SdaiException(SdaiException.VT_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_INTY);
+					throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_INTY);
 				}
 			case PhFileReader.BOOLEAN:
 			case PhFileReader.LOGICAL:
@@ -13016,8 +13149,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 					if (ignore) {
 						return -1;
 					}
-					String base = AdditionalMessages.EE_INTY;
-					throw new SdaiException(SdaiException.VT_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_INTY);
+					throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_INTY);
 				}
 				arg1 = integer;
 				if (arg1 == 1) {
@@ -13055,8 +13188,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 					if (ignore) {
 						return -1;
 					}
-					String base = AdditionalMessages.EE_INTY;
-					throw new SdaiException(SdaiException.VT_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_INTY);
+					throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_INTY);
 				}
 			case PhFileReader.ENUM:
 				EEnumeration_type enum_tp;
@@ -13069,8 +13202,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 					if (ignore) {
 						return -1;
 					}
-					String base = AdditionalMessages.EE_INTY;
-					throw new SdaiException(SdaiException.VT_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_INTY);
+					throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_INTY);
 				}
 				EEnumeration_type val_enum_tp;
 				if (((DataType)val.v_type).express_type == DataType.DEFINED_TYPE) {
@@ -13084,8 +13217,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 					if (ignore) {
 						return -1;
 					}
-					String base = AdditionalMessages.EE_INTY;
-					throw new SdaiException(SdaiException.VT_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_INTY);
+					throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_INTY);
 				}
 				String item;
 				arg1 = -1;
@@ -13107,8 +13240,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 					}
 				}
 				if (arg1 < 0 || arg2 < 0) {
-					String base = AdditionalMessages.EE_WRST;
-					throw new SdaiException(SdaiException.VA_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_WRST);
+					throw new SdaiException(SdaiException.VA_NVLD, AdditionalMessages.EE_WRST);
 
 				}
 				if (arg1 == arg2) {
@@ -13123,8 +13256,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 					if (ignore) {
 						return -1;
 					}
-					String base = AdditionalMessages.EE_INTY;
-					throw new SdaiException(SdaiException.VT_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_INTY);
+					throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_INTY);
 				}
 				int comp_res = string.compareTo(val.string);
 				if (comp_res == 0) {
@@ -13139,8 +13272,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 					if (ignore) {
 						return -1;
 					}
-					String base = AdditionalMessages.EE_INTY;
-					throw new SdaiException(SdaiException.VT_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_INTY);
+					throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_INTY);
 				}
 				Binary bin = (Binary)reference;
 				return bin.compare((Binary)val.reference);
@@ -13148,8 +13281,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 				return nested_values[0].compareValues(val, advanced, inst_comparison, ignore, context);
 			case PhFileReader.ENTITY_REFERENCE:
 				if (!advanced) {
-					String base = AdditionalMessages.EE_ILOP;
-					throw new SdaiException(SdaiException.VT_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+					throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 				}
 				if (inst_comparison) {
 					if (val.tag == PhFileReader.ENTITY_REFERENCE) {
@@ -13162,8 +13295,8 @@ System.out.println("Value ~~~~~~~~~~~~~~~   adjoined: " + adjoined);*/
 						if (ignore) {
 							return -1;
 						}
-						String base = AdditionalMessages.EE_ILOP;
-						throw new SdaiException(SdaiException.VT_NVLD, base);
+						printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+						throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 					}
 				} else {
 /*int comp_ent = compareEntityValues(val);
@@ -13179,29 +13312,29 @@ return comp_ent;*/
 				}
 			case ENTITY_VALUE:
 				if (!advanced) {
-					String base = AdditionalMessages.EE_ILOP;
-					throw new SdaiException(SdaiException.VT_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+					throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 				}
 				if (inst_comparison) {
 					if (ignore) {
 						return -1;
 					}
-					String base = AdditionalMessages.EE_ILOP;
-					throw new SdaiException(SdaiException.VT_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+					throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 				} else {
 					return compareEntityValues(val, context);
 				}
 			case PhFileReader.EMBEDDED_LIST:
 				if (!advanced) {
-					String base = AdditionalMessages.EE_ILOP;
-					throw new SdaiException(SdaiException.VT_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+					throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 				}
 				if (val.tag != PhFileReader.EMBEDDED_LIST) {
 					if (ignore) {
 						return -1;
 					}
-					String base = AdditionalMessages.EE_ILOP;
-					throw new SdaiException(SdaiException.VT_NVLD, base);
+					printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+					throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 				}
 //int ret_res = compareAggregates(val, inst_comparison, ignore, context);
 //if (v_type != null && ((CEntity)v_type).instance_identifier == 28510)
@@ -13245,8 +13378,8 @@ return comp_ent;*/
 			if (ignore) {
 				return -1;
 			}
-			String base = AdditionalMessages.EE_INTY;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_INTY);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_INTY);
 		}
 //		if (((DataType)v_type).express_type == DataType.LIST && ((DataType)val.v_type).express_type != DataType.LIST) {
 		if (tp1 == DataType.LIST || tp2 == DataType.LIST) {
@@ -13266,8 +13399,8 @@ return comp_ent;*/
 			if (ignore) {
 				return -1;
 			}
-			String base = AdditionalMessages.EE_INTY;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_INTY);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_INTY);
 		}
 		for (i = 0; i < length; i++) {
 			nested_values[i].aux = nested_values[i].tag;
@@ -13661,6 +13794,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			index2 = index1;
 		}
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		return subbinary(staticFields, val, index1, index2);
@@ -13671,8 +13805,8 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			return subbinary(staticFields, val.nested_values[0], index1, index2);
 		}
 		if (val.tag != PhFileReader.BINARY) {
-			String base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		Binary bin = (Binary)val.reference;
 		int count = bin.subbinary(staticFields, index1, index2);
@@ -13711,6 +13845,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value AND(SdaiContext context, Value val1, Value val2) throws SdaiException {
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.tag == PhFileReader.TYPED_PARAMETER) {
@@ -13722,17 +13857,18 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		if (d_type == null) {
 			d_type = ExpressTypes.LOGICAL_TYPE;
 		} else if (d_type != ExpressTypes.LOGICAL_TYPE && d_type != ExpressTypes.GENERIC_TYPE) {
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_ITVR, d_type);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		if (val1.tag != PhFileReader.LOGICAL && val1.tag != PhFileReader.BOOLEAN && 
 				val1.tag != INDETERMINATE) {
-			String base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		if (val2.tag != PhFileReader.LOGICAL && val2.tag != PhFileReader.BOOLEAN && 
 				val2.tag != INDETERMINATE) {
-			String base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		if (val1.tag == INDETERMINATE) {
 			val1.integer = 2;
@@ -13780,6 +13916,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value OR(SdaiContext context, Value val1, Value val2) throws SdaiException {
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.tag == PhFileReader.TYPED_PARAMETER) {
@@ -13791,17 +13928,18 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		if (d_type == null) {
 			d_type = ExpressTypes.LOGICAL_TYPE;
 		} else if (d_type != ExpressTypes.LOGICAL_TYPE && d_type != ExpressTypes.GENERIC_TYPE) {
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_ITVR, d_type);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		if (val1.tag != PhFileReader.LOGICAL && val1.tag != PhFileReader.BOOLEAN && 
 				val1.tag != INDETERMINATE) {
-			String base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		if (val2.tag != PhFileReader.LOGICAL && val2.tag != PhFileReader.BOOLEAN && 
 				val2.tag != INDETERMINATE) {
-			String base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		if (val1.tag == INDETERMINATE) {
 			val1.integer = 2;
@@ -13849,6 +13987,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value XOR(SdaiContext context, Value val1, Value val2) throws SdaiException {
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.tag == PhFileReader.TYPED_PARAMETER) {
@@ -13860,17 +13999,18 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		if (d_type == null) {
 			d_type = ExpressTypes.LOGICAL_TYPE;
 		} else if (d_type != ExpressTypes.LOGICAL_TYPE && d_type != ExpressTypes.GENERIC_TYPE) {
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_ITVR, d_type);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		if (val1.tag != PhFileReader.LOGICAL && val1.tag != PhFileReader.BOOLEAN && 
 				val1.tag != INDETERMINATE) {
-			String base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		if (val2.tag != PhFileReader.LOGICAL && val2.tag != PhFileReader.BOOLEAN && 
 				val2.tag != INDETERMINATE) {
-			String base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		if (val1.tag == INDETERMINATE) {
 			val1.integer = 2;
@@ -13918,6 +14058,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value NOT(Value val) throws SdaiException {
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
@@ -13926,12 +14067,13 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		if (d_type == null) {
 			d_type = ExpressTypes.LOGICAL_TYPE;
 		} else if (d_type != ExpressTypes.LOGICAL_TYPE && d_type != ExpressTypes.GENERIC_TYPE) {
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_ITVR, d_type);
 			throw new SdaiException(SdaiException.VT_NVLD);
 		}
 		if (val.tag != PhFileReader.LOGICAL && val.tag != PhFileReader.BOOLEAN && 
 				val.tag != INDETERMINATE) {
-			String base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		if (val.tag == INDETERMINATE) {
 			val.integer = 2;
@@ -13972,14 +14114,15 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value substring(Value val, int index1, int index2) throws SdaiException {
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
 			return substring(val.nested_values[0], index1, index2);
 		}
 		if (val.tag != PhFileReader.STRING) {
-			String base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		if (val.string==SdaiSession.asterisk && val.reference instanceof String) {
 			val.string = (String)val.reference;
@@ -14021,14 +14164,15 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value substring(Value val, int index) throws SdaiException {
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
 			return substring(val.nested_values[0], index);
 		}
 		if (val.tag != PhFileReader.STRING) {
-			String base = AdditionalMessages.EE_ILOP;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_ILOP);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_ILOP);
 		}
 		if (val.string==SdaiSession.asterisk && val.reference instanceof String) {
 			val.string = (String)val.reference;
@@ -14068,12 +14212,12 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	Value subset(SdaiContext context, Value val1, Value val2) throws SdaiException {
 		if (val1.tag != PhFileReader.EMBEDDED_LIST && val1.tag != INDETERMINATE) {
-			String base = "Wrong type of an operand of subset operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_WOSO, val1.tag);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_WOSO);
 		}
 		if (val2.tag != PhFileReader.EMBEDDED_LIST && val2.tag != INDETERMINATE) {
-			String base = "Wrong type of an operand of subset operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_WOSO, val2.tag);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_WOSO);
 		}
 		if (val1.tag == INDETERMINATE || val2.tag == INDETERMINATE) {
 			tag = PhFileReader.LOGICAL;
@@ -14088,8 +14232,8 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			subsetFirstBag(val1, val2, context);
 // bag type
 		} else {
-			String base = "Wrong type of an operand of subset operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_WOSO, val1.v_type);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_WOSO);
 		}
 		return this;
 	}
@@ -14102,8 +14246,8 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			d_type = ExpressTypes.LOGICAL_TYPE;
 		}
 		if (((DataType)val2.v_type).express_type == DataType.LIST || ((DataType)val2.v_type).express_type == DataType.ARRAY) {
-			String base = "Wrong type of an operand of subset operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_WOSO, val2.v_type);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_WOSO);
 		}
 //		boolean comp1 = baseTypeCompatibleToAggr(val1.v_type, val2.v_type, context);
 		boolean comp = baseTypeCompatibleToAggr(val2.v_type, val1.v_type, context);
@@ -14111,8 +14255,8 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			comp = val1.elementsCompatibleToAggr((EAggregation_type)val2.v_type, context, false);
 		}
 		if (!comp) {
-			String base = AdditionalMessages.EE_INTY;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_INTY);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_INTY);
 		}
 
 		tag = PhFileReader.LOGICAL;
@@ -14135,8 +14279,8 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			d_type = ExpressTypes.LOGICAL_TYPE;
 		}
 		if (((DataType)val2.v_type).express_type == DataType.LIST || ((DataType)val2.v_type).express_type == DataType.ARRAY) {
-			String base = "Wrong type of an operand of subset operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_WOSO, val2.v_type);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_WOSO);
 		}
 //		boolean comp1 = baseTypeCompatibleToAggr(val1.v_type, val2.v_type, context);
 		boolean comp = baseTypeCompatibleToAggr(val2.v_type, val1.v_type, context);
@@ -14144,8 +14288,8 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			comp = val1.elementsCompatibleToAggr((EAggregation_type)val2.v_type, context, false);
 		}
 		if (!comp) {
-			String base = AdditionalMessages.EE_INTY;
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidate(AdditionalMessages.EE_INTY);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_INTY);
 		}
 		tag = PhFileReader.LOGICAL;
 		v_type = ExpressTypes.LOGICAL_TYPE;
@@ -14187,12 +14331,12 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	Value superset(SdaiContext context, Value val1, Value val2) throws SdaiException {
 		if (val1.tag != PhFileReader.EMBEDDED_LIST && val1.tag != INDETERMINATE) {
-			String base = "Wrong type of an operand of subset operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_WOSO, val1.tag);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_WOSO);
 		}
 		if (val2.tag != PhFileReader.EMBEDDED_LIST && val2.tag != INDETERMINATE) {
-			String base = "Wrong type of an operand of subset operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_WOSO, val2.tag);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_WOSO);
 		}
 		if (val1.tag == INDETERMINATE || val2.tag == INDETERMINATE) {
 			tag = PhFileReader.LOGICAL;
@@ -14207,8 +14351,8 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			subsetFirstBag(val2, val1, context);
 // bag type
 		} else {
-			String base = "Wrong type of an operand of subset operator.";
-			throw new SdaiException(SdaiException.VT_NVLD, base);
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_WOSO, val2.v_type);
+			throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_WOSO);
 		}
 		return this;
 	}
@@ -14248,11 +14392,13 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value addComplex(Value val) throws SdaiException {
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.ENTITY_REFERENCE) {
 			return addComplexInstance(val);
 		} else if (val.tag != ENTITY_VALUE) {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		EntityValue new_ent_val = (EntityValue)val.reference;
@@ -14307,6 +14453,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			Value val_converted = convertToComplexEntityValue((CEntity)reference);
 			return val_converted.addComplex(val);
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVR, tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -14330,8 +14477,6 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 	public Value groupReference(SdaiContext context, EEntity_definition edef) throws SdaiException {
 		int i;
 		Value res;
-//if (prnt) System.out.println("Value --------  edef: " + edef.getName(null) +
-//"   tag: " + tag);
 		if (tag == ENTITY_VALUE) {
 			if (((EntityValue)reference).def == edef) {
 				return this;
@@ -14356,7 +14501,6 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			ComplexEntityValue compl = inst.toValue();
 			EntityValue ev = compl.getEntityValue(edef);
 			if (ev == null) {
-//if (prnt) System.out.println("Value --------  ev NULL case  inst: " + inst);
 	 			res = new Value();
 				res.tag = INDETERMINATE;
 			} else {
@@ -14543,14 +14687,17 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value makeInstance(SdaiContext context) throws SdaiException {
 		if (tag != ENTITY_VALUE && tag != COMPLEX_ENTITY_VALUE) {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVR, tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		if (context == null) {
+			printWarningToLogoValidate(AdditionalMessages.EC_CONR);
 			String base = SdaiSession.line_separator + AdditionalMessages.EC_CONR;
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 		SdaiModel model_app = context.working_model;
 		if (model_app == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_WMOD);
 			String base2 = SdaiSession.line_separator + AdditionalMessages.EE_WMOD;
 			throw new SdaiException(SdaiException.SY_ERR, base2);
 		}
@@ -14616,14 +14763,20 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			throw new SdaiException(SdaiException.SY_ERR, ex);
 		}
 		if (created_instance==null) {
-			throw new SdaiException(SdaiException.SY_ERR, AdditionalMessages.RD_CONF + 
+			String base = AdditionalMessages.RD_CONF + 
 				SdaiSession.line_separator + AdditionalMessages.RD_ENT + 
-				new String(staticFields.constr_entity_name, 0, byte_count_entity_name));
+				new String(staticFields.constr_entity_name, 0, byte_count_entity_name);
+			printWarningToLogoValidate(base);
+			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 		val.d_type = created_instance.getInstanceType();
 		created_instance.instance_identifier = inst_ident;
 		//expr_repo.largest_identifier = inst_ident;  //--VV--030310--
 		compl_ent_values.def = (CEntity_definition)val.d_type;
+		if (check_instance_construction(compl_ent_values)) {
+			printWarningToLogoValidateGiveType(AdditionalMessages.EE_IDIN, val.d_type);
+			throw new SdaiException(SdaiException.SY_ERR);
+		}
 		created_instance.setAll(compl_ent_values);
 		for (i = 0; i < number_of_items_in_entity_name; i++) {
 			compl_ent_values.entityValues[i].expr = false;
@@ -14632,6 +14785,29 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		val.tag = PhFileReader.ENTITY_REFERENCE;
 		val.reference = created_instance;
 		return val;
+	}
+
+
+	boolean check_instance_construction(ComplexEntityValue entity_vals) throws SdaiException {
+		int count = entity_vals.def.noOfPartialEntityTypes;
+		if (entity_vals.entityValues.length < count) {
+			return true;
+		}
+		for (int i = 0; i < count; i++) {
+			EntityValue partval = entity_vals.entityValues[i];
+			if (partval == null) {
+				return true;
+			}
+			if (partval.values.length < partval.count) {
+				return true;
+			}
+			for (int j = 0; j < partval.count; j++) {
+				if (partval.values[j] == null) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 
@@ -14718,6 +14894,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		}
 		if (sel_number == 1) {
 			if (!(value instanceof CEntity)) {
+				printWarningToLogoValidate(AdditionalMessages.EE_ITVA);
 				throw new SdaiException(SdaiException.SY_ERR);
 			}
 			tag = PhFileReader.ENTITY_REFERENCE;
@@ -14727,6 +14904,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		}
 		sel_number -= 2;
 		if (sel_number < 0) {
+			printWarningToLogoValidate(AdditionalMessages.EE_ITVA);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		v_type = sel;
@@ -14752,6 +14930,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			return true;
 		} else if (tp.express_type != DataType.DEFINED_TYPE) {
 //			String base = SdaiSession.line_separator + AdditionalMessages.SE_ERDD;
+			printWarningToLogoValidate(AdditionalMessages.EE_ITVA);
 			throw new SdaiException(SdaiException.SY_ERR/*, base*/);
 		}
 		while (((DataType)type).express_type == DataType.DEFINED_TYPE) {
@@ -14759,6 +14938,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			DataType und_tp = (DataType)underlying_type;
 			if (und_tp.express_type >= DataType.SELECT && und_tp.express_type <= DataType.ENT_EXT_EXT_SELECT) {
 //				String base = SdaiSession.line_separator + AdditionalMessages.SE_ERDD;
+				printWarningToLogoValidate(AdditionalMessages.EE_ITVA);
 				throw new SdaiException(SdaiException.SY_ERR/*, base*/);
 			} else if (und_tp.express_type >= DataType.ENUMERATION && und_tp.express_type <= DataType.EXTENDED_EXTENSIBLE_ENUM) {
 				v_type = underlying_type;
@@ -14772,6 +14952,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 				type = underlying_type;
 			} else {
 //				String base = SdaiSession.line_separator + AdditionalMessages.SE_ERDD;
+				printWarningToLogoValidate(AdditionalMessages.EE_ITVA);
 				throw new SdaiException(SdaiException.SY_ERR/*, base*/);
 			}
 		}
@@ -14840,6 +15021,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			aux =AMIXED;
 			return true;
 		} else {
+			printWarningToLogoValidate(AdditionalMessages.EE_ITVA);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		el_type = (EData_type)next_type.getElement_type(null);
@@ -14862,6 +15044,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			aux =AMIXED;
 			return true;
 		} else {
+			printWarningToLogoValidate(AdditionalMessages.EE_ITVA);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		el_type = (EData_type)next_type.getElement_type(null);
@@ -14884,6 +15067,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			aux =AMIXED;
 			return true;
 		} else {
+			printWarningToLogoValidate(AdditionalMessages.EE_ITVA);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		while (next_type != null) {
@@ -14908,6 +15092,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 				aux =AMIXED;
 				return true;
 			} else {
+				printWarningToLogoValidate(AdditionalMessages.EE_ITVA);
 				throw new SdaiException(SdaiException.SY_ERR);
 			}
 		}
@@ -14934,8 +15119,8 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			} else if (nesting == 3) {
 				aux =AAA_DOUBLE;
 			} else {
-				String base = AdditionalMessages.EE_NASA;
-				throw new SdaiException(SdaiException.VT_NVLD, base);
+				printWarningToLogoValidate(AdditionalMessages.EE_NASA);
+				throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_NASA);
 			}
 		} else if (simple.express_type == DataType.INTEGER) {
 			if (nesting == 1) {
@@ -14943,8 +15128,8 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			} else if (nesting == 2) {
 				aux =AA_INTEGER;
 			} else {
-				String base = AdditionalMessages.EE_NASA;
-				throw new SdaiException(SdaiException.VT_NVLD, base);
+				printWarningToLogoValidate(AdditionalMessages.EE_NASA);
+				throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_NASA);
 			}
 		} else if (simple.express_type == DataType.REAL) {
 			if (nesting == 1) {
@@ -14954,8 +15139,8 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			} else if (nesting == 3) {
 				aux =AAA_DOUBLE;
 			} else {
-				String base = AdditionalMessages.EE_NASA;
-				throw new SdaiException(SdaiException.VT_NVLD, base);
+				printWarningToLogoValidate(AdditionalMessages.EE_NASA);
+				throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_NASA);
 			}
 		} else if (simple.express_type == DataType.BOOLEAN) {
 			if (nesting == 1) {
@@ -14963,8 +15148,8 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			} else if (nesting == 2) {
 				aux =AA_BOOLEAN;
 			} else {
-				String base = AdditionalMessages.EE_NASA;
-				throw new SdaiException(SdaiException.VT_NVLD, base);
+				printWarningToLogoValidate(AdditionalMessages.EE_NASA);
+				throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_NASA);
 			}
 		} else if (simple.express_type == DataType.LOGICAL) {
 			if (nesting == 1) {
@@ -14972,15 +15157,15 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			} else if (nesting == 2) {
 				aux =AA_LOGICAL;
 			} else {
-				String base = AdditionalMessages.EE_NASA;
-				throw new SdaiException(SdaiException.VT_NVLD, base);
+				printWarningToLogoValidate(AdditionalMessages.EE_NASA);
+				throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_NASA);
 			}
 		} else if (simple.express_type == DataType.BINARY) {
 			if (nesting == 1) {
 				aux =A_BINARY;
 			} else {
-				String base = AdditionalMessages.EE_NASA;
-				throw new SdaiException(SdaiException.VT_NVLD, base);
+				printWarningToLogoValidate(AdditionalMessages.EE_NASA);
+				throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_NASA);
 			}
 		} else if (simple.express_type == DataType.STRING) {
 			if (nesting == 1) {
@@ -14988,8 +15173,8 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			} else if (nesting == 2) {
 				aux =AA_STRING;
 			} else {
-				String base = AdditionalMessages.EE_NASA;
-				throw new SdaiException(SdaiException.VT_NVLD, base);
+				printWarningToLogoValidate(AdditionalMessages.EE_NASA);
+				throw new SdaiException(SdaiException.VT_NVLD, AdditionalMessages.EE_NASA);
 			}
 		}
 	}
@@ -15010,6 +15195,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value abs(Value val) throws SdaiException { // 15.1
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
@@ -15027,6 +15213,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -15046,6 +15233,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value aCos(Value val) throws SdaiException { // 15.2
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
@@ -15060,6 +15248,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 				numb = val.integer;
 			}
 			if (numb < -1.0 || numb > 1.0) {
+				printWarningToLogoValidate(AdditionalMessages.EE_EFNE);
 				throw new SdaiException(SdaiException.SY_ERR);
 			}
 			real = Math.acos(numb);
@@ -15068,6 +15257,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -15087,6 +15277,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value aSin(Value val) throws SdaiException { // 15.3
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
@@ -15101,6 +15292,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 				numb = val.integer;
 			}
 			if (numb < -1.0 || numb > 1.0) {
+				printWarningToLogoValidate(AdditionalMessages.EE_EFNE);
 				throw new SdaiException(SdaiException.SY_ERR);
 			}
 			real = Math.asin(numb);
@@ -15109,6 +15301,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -15129,6 +15322,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value aTan(Value val1, Value val2) throws SdaiException { // 15.4
 		if (val1 == null || val2 == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val1.tag == PhFileReader.TYPED_PARAMETER) {
@@ -15153,6 +15347,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			}
 			if (numb2 == 0) {
 				if (numb1 == 0) {
+					printWarningToLogoValidate(AdditionalMessages.EE_EFNE);
 					throw new SdaiException(SdaiException.SY_ERR);
 				}
 				if (numb1 > 0) {
@@ -15168,6 +15363,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val1.tag == INDETERMINATE || val2.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val1.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -15187,6 +15383,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value bLength(Value val) throws SdaiException { // 15.5
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
@@ -15200,6 +15397,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -15219,6 +15417,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value cos(Value val) throws SdaiException { // 15.6
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
@@ -15238,6 +15437,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -15272,6 +15472,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value exists(Value val) throws SdaiException { // 15.7
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		d_type = v_type = ExpressTypes.BOOLEAN_TYPE;
@@ -15298,6 +15499,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value exp(Value val) throws SdaiException { // 15.8
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
@@ -15317,6 +15519,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -15339,6 +15542,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value format(Value number, Value form_str) throws SdaiException { // 15.9
 		if (number == null || form_str == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (number.tag == PhFileReader.TYPED_PARAMETER) {
@@ -15350,9 +15554,11 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			return this;
 		}
 		if (number.tag != PhFileReader.REAL && number.tag != PhFileReader.INTEGER) {
+			printWarningToLogoValidate(AdditionalMessages.EE_EFNE);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		if (form_str.tag != PhFileReader.STRING) {
+			printWarningToLogoValidate(AdditionalMessages.EE_EFNE);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		String pattern = form_str.string;
@@ -15420,6 +15626,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (ch == CAPITAL_E) {
 			type = 3;
 		} else {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		ch = str_width.charAt(0);
@@ -15929,6 +16136,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value hiBound(Value val) throws SdaiException { // 15.10
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		d_type = ExpressTypes.INTEGER_TYPE;
@@ -15951,6 +16159,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -15971,6 +16180,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value hiIndex(Value val) throws SdaiException { // 15.11
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		d_type = ExpressTypes.INTEGER_TYPE;
@@ -15986,6 +16196,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -16005,6 +16216,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value length(Value val) throws SdaiException { // 15.12
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
@@ -16021,6 +16233,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -16041,6 +16254,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value loBound(Value val) throws SdaiException { // 15.13
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		d_type = ExpressTypes.INTEGER_TYPE;
@@ -16057,6 +16271,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -16076,6 +16291,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value log(Value val) throws SdaiException { // 15.14
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
@@ -16090,6 +16306,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 				numb = val.integer;
 			}
 			if (numb <= 0) {
+				printWarningToLogoValidate(AdditionalMessages.EE_EFNE);
 				throw new SdaiException(SdaiException.SY_ERR);
 			}
 			real = Math.log(numb);
@@ -16098,6 +16315,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -16117,6 +16335,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value log2(Value val) throws SdaiException { // 15.15
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
@@ -16131,6 +16350,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 				numb = val.integer;
 			}
 			if (numb <= 0) {
+				printWarningToLogoValidate(AdditionalMessages.EE_EFNE);
 				throw new SdaiException(SdaiException.SY_ERR);
 			}
 			real = Math.log(numb) / Math.log(2.0);
@@ -16139,6 +16359,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -16158,6 +16379,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value log10(Value val) throws SdaiException { // 15.16
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
@@ -16172,6 +16394,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 				numb = val.integer;
 			}
 			if (numb <= 0) {
+				printWarningToLogoValidate(AdditionalMessages.EE_EFNE);
 				throw new SdaiException(SdaiException.SY_ERR);
 			}
 			real = Math.log(numb) / Math.log(10.0);
@@ -16180,6 +16403,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -16199,6 +16423,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value loIndex(Value val) throws SdaiException { // 15.17
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		d_type = ExpressTypes.INTEGER_TYPE;
@@ -16214,6 +16439,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -16235,6 +16461,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value NVL(SdaiContext context, Value val, Value substitute) throws SdaiException { // 15.18
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag != INDETERMINATE) {
@@ -16244,6 +16471,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			v_type = val.v_type;
 		} else {
 			if (substitute == null) {
+				printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 				throw new SdaiException(SdaiException.VA_NEXS);
 			}
 			if (substitute.tag == INDETERMINATE) {
@@ -16286,12 +16514,14 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value odd(Value val) throws SdaiException { // 15.19
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
 			return odd(val.nested_values[0]);
 		}
 		if (val.tag != PhFileReader.INTEGER && val.tag != INDETERMINATE) {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		d_type = ExpressTypes.LOGICAL_TYPE;
@@ -16323,6 +16553,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value rolesOf(Value val) throws SdaiException { // 15.20
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		d_type = ExpressTypes.SET_STRING_TYPE;
@@ -16336,6 +16567,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			v_type = ExpressTypes.SET_STRING_TYPE;
 			length = 0;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -16369,6 +16601,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value sin(Value val) throws SdaiException { // 15.21
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
@@ -16388,6 +16621,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -16409,6 +16643,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value sizeOf(Value val) throws SdaiException { // 15.22
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		d_type = ExpressTypes.INTEGER_TYPE;
@@ -16419,6 +16654,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		DataType dt = (DataType)val.v_type;
 		if (dt.express_type < DataType.LIST || dt.express_type > DataType.AGGREGATE) {
 //			String base = SdaiSession.line_separator + AdditionalMessages.SE_ERDD;
+			printWarningToLogoValidate(AdditionalMessages.EE_EFNE);
 			throw new SdaiException(SdaiException.SY_ERR/*, base*/);
 		}
 		if (((DataType)val.v_type).express_type == DataType.ARRAY) {
@@ -16487,6 +16723,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 
 	private Value sizeOfExtCommon(SdaiContext context, Value val) throws SdaiException {
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		d_type = ExpressTypes.INTEGER_TYPE;
@@ -16497,6 +16734,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		DataType dt = (DataType)val.v_type;
 		if (dt.express_type < DataType.LIST || dt.express_type > DataType.AGGREGATE) {
 //			String base = SdaiSession.line_separator + AdditionalMessages.SE_ERDD;
+			printWarningToLogoValidate(AdditionalMessages.EE_EFNE);
 			throw new SdaiException(SdaiException.SY_ERR/*, base*/);
 		}
 		if (((DataType)val.v_type).express_type == DataType.ARRAY) {
@@ -16576,6 +16814,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value sqrt(Value val) throws SdaiException { // 15.23
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
@@ -16590,6 +16829,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 				numb = val.integer;
 			}
 			if (numb < 0) {
+				printWarningToLogoValidate(AdditionalMessages.EE_EFNE);
 				throw new SdaiException(SdaiException.SY_ERR);
 			}
 			real = Math.sqrt(numb);
@@ -16598,6 +16838,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -16617,6 +16858,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value tan(Value val) throws SdaiException { // 15.24
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == PhFileReader.TYPED_PARAMETER) {
@@ -16643,6 +16885,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -16665,8 +16908,8 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 //long time1=0, time2=0, time3, time4, time5, time6, time7, time8, time9, time10, time11;
 //time1 = System.currentTimeMillis();
 		if (context == null) {
-			String base = AdditionalMessages.EC_CONR;
-			throw new SdaiException(SdaiException.SY_ERR, base);
+			printWarningToLogoValidate(AdditionalMessages.EC_CONR);
+			throw new SdaiException(SdaiException.SY_ERR, AdditionalMessages.EC_CONR);
 		}
 		if (tag == COMPLEX_ENTITY_VALUE || tag == ENTITY_VALUE) {
 			Value v = makeInstance(context);
@@ -17329,6 +17572,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value usedIn(Value instance, Value role) throws SdaiException { // 15.26
 		if (instance == null || role == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		return usedIn(null, instance, role);
@@ -17341,6 +17585,11 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			return this;
 		}
 		if (instance.tag != PhFileReader.ENTITY_REFERENCE || role.tag != PhFileReader.STRING) {
+			if (instance.tag != PhFileReader.ENTITY_REFERENCE) {
+				printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, instance.tag);
+			} else {
+				printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, role.tag);
+			}
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		CEntity inst = (CEntity)instance.reference;
@@ -17370,11 +17619,13 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 	private EAttribute extract_attribute(String qual_name, String sch_name) throws SdaiException {
 		int index2 = qual_name.lastIndexOf('.');
 		if (index2 < 0) {
+			printWarningToLogoValidate(AdditionalMessages.EE_INQN);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		String attr_name = qual_name.substring(index2 + 1).toLowerCase();
 		int index1 = qual_name.indexOf('.');
 		if (index1 < 0) {
+			printWarningToLogoValidate(AdditionalMessages.EE_INQN);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		if (index1 >= index2) {
@@ -17419,6 +17670,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value value(Value val) throws SdaiException { // 15.27
 		if (val == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		d_type = ExpressTypes.NUMBER_TYPE;
@@ -17464,6 +17716,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		} else if (val.tag == INDETERMINATE) {
 			tag = INDETERMINATE;
 		} else {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, val.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		return this;
@@ -17488,9 +17741,11 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value value_in(SdaiContext context, Value aggr, Value el) throws SdaiException { // 15.28
 		if (aggr == null || el == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (aggr.tag != PhFileReader.EMBEDDED_LIST && aggr.tag != INDETERMINATE) {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, aggr.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		v_type = d_type = ExpressTypes.LOGICAL_TYPE;
@@ -17534,9 +17789,11 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public Value value_unique(SdaiContext context, Value aggr) throws SdaiException { // 15.29
 		if (aggr == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (aggr.tag != PhFileReader.EMBEDDED_LIST && aggr.tag != INDETERMINATE) {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, aggr.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		v_type = d_type = ExpressTypes.LOGICAL_TYPE;
@@ -17590,6 +17847,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public void insert(SdaiContext context, Value val, Value index) throws SdaiException { // 16.1
 		if (val == null || index == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (val.tag == COMPLEX_ENTITY_VALUE || val.tag == ENTITY_VALUE) {
@@ -17599,20 +17857,25 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 			return;
 		}
 		if (d_type == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAAG);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		if (tag != PhFileReader.EMBEDDED_LIST || ((DataType)d_type).express_type != DataType.LIST) {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVR, tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		if (index.tag != PhFileReader.INTEGER) {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, index.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		int ind = index.integer;
 		if (ind > length || ind < 0) {
+			printWarningToLogoValidate(AdditionalMessages.EE_ITVA);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		if (v_type != null) {
 			if (!check_if_fits((EAggregation_type)v_type, val, context)) {
+				printWarningToLogoValidateGiveType(AdditionalMessages.EE_ITVR, v_type);
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
 		} else {
@@ -17652,6 +17915,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public void insert(SdaiContext context, Value list, Value new_member, Value index) throws SdaiException { // 16.1
 		if (list == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		list.insert(context, new_member, index);
@@ -17673,22 +17937,27 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public void remove(Value index) throws SdaiException { // 16.2
 		if (index == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		if (tag == INDETERMINATE || index.tag == INDETERMINATE) {
 			return;
 		}
 		if (d_type == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAAG);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		if (tag != PhFileReader.EMBEDDED_LIST || ((DataType)d_type).express_type != DataType.LIST) {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVR, tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		if (index.tag != PhFileReader.INTEGER) {
+			printWarningToLogoValidateGiveJavaType(AdditionalMessages.EE_ITVA, index.tag);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		int ind = index.integer;
 		if (ind > length || ind < 1) {
+			printWarningToLogoValidate(AdditionalMessages.EE_ITVA);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		ind--;
@@ -17715,6 +17984,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
  */
 	public void remove(Value list, Value index) throws SdaiException { // 16.2
 		if (list == null) {
+			printWarningToLogoValidate(AdditionalMessages.EE_NAVA);
 			throw new SdaiException(SdaiException.VA_NEXS);
 		}
 		list.remove(index);
@@ -18080,6 +18350,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 		try {
 			return getAsString();
 		} catch (SdaiException e) {
+//e.printStackTrace();
 			SdaiSession.printStackTraceToLogWriter(e);
 			return super.toString();
 		}
@@ -18757,6 +19028,7 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 					entity_name = ((CEntityDefinition)def).getNameUpperCase();
 					if (owners_mod == inst.owning_model) {
 						ur_f.writeByte('1');
+						ur_f.writeLong(inst.instance_identifier);
 						index = sch_data.find_entity(0, sch_data.sNames.length - 1, entity_name);
 						if (index < 0) {
 							throw new SdaiException(SdaiException.SY_ERR/*, base*/);
@@ -18809,10 +19081,131 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 	}
 
 
-	private void printWarningToLogoBagToSet(EData_type argm) throws SdaiException {
-		String text = "The argument of Express function bag_to_set shall be of BAG OF GENERIC type." +
-			SdaiSession.line_separator + "   Argument type: " + argm;
-		SdaiSession.println(text);
+	private void printWarningToLogoValidate(String message) throws SdaiException {
+		String text = message;
+		StaticFields staticFields = StaticFields.get();
+		if (staticFields.inst_under_valid != null) {
+			text = text + SdaiSession.line_separator + AdditionalMessages.RD_VENT + 
+			staticFields.inst_under_valid.getInstanceType().getName(null) +
+			SdaiSession.line_separator + AdditionalMessages.RD_VINS + 
+			staticFields.inst_under_valid.instance_identifier;
+			SdaiSession ss = staticFields.inst_under_valid.owning_model.repository.session;
+			if (ss != null && ss.logWriterSession != null) {
+				ss.printlnSession(text);
+			} else {
+				SdaiSession.println(text);
+			}
+		} else {
+			SdaiSession.println(text);
+		}
+	}
+
+
+	private void printWarningToLogoValidateGiveType(String message, EData_type v_type) throws SdaiException {
+		String text = message + 
+		SdaiSession.line_separator + AdditionalMessages.EE_VATP + v_type.getName(null);
+		StaticFields staticFields = StaticFields.get();
+		if (staticFields.inst_under_valid != null) {
+			text = text + SdaiSession.line_separator + AdditionalMessages.RD_VENT + 
+			staticFields.inst_under_valid.getInstanceType().getName(null) +
+			SdaiSession.line_separator + AdditionalMessages.RD_VINS + 
+			staticFields.inst_under_valid.instance_identifier;
+			SdaiSession ss = staticFields.inst_under_valid.owning_model.repository.session;
+			if (ss != null && ss.logWriterSession != null) {
+				ss.printlnSession(text);
+			} else {
+				SdaiSession.println(text);
+			}
+		} else {
+			SdaiSession.println(text);
+		}
+	}
+
+
+	private void printWarningToLogoValidateGiveValueTypes(String message, EData_type v_type1, EData_type v_type2) throws SdaiException {
+		String text = message + 
+		SdaiSession.line_separator + AdditionalMessages.EE_VATP + v_type1.getName(null) + 
+		SdaiSession.line_separator + AdditionalMessages.EE_VATP + v_type2.getName(null);
+		StaticFields staticFields = StaticFields.get();
+		if (staticFields.inst_under_valid != null) {
+			text = text + SdaiSession.line_separator + AdditionalMessages.RD_VENT + 
+			staticFields.inst_under_valid.getInstanceType().getName(null) +
+			SdaiSession.line_separator + AdditionalMessages.RD_VINS + 
+			staticFields.inst_under_valid.instance_identifier;
+			SdaiSession ss = staticFields.inst_under_valid.owning_model.repository.session;
+			if (ss != null && ss.logWriterSession != null) {
+				ss.printlnSession(text);
+			} else {
+				SdaiSession.println(text);
+			}
+		} else {
+			SdaiSession.println(text);
+		}
+	}
+
+
+	private void printWarningToLogoValidateGiveJavaType(String message, int java_type) throws SdaiException {
+		String text = message + 
+		SdaiSession.line_separator + AdditionalMessages.EE_VAJT + java_type;
+		StaticFields staticFields = StaticFields.get();
+		if (staticFields.inst_under_valid != null) {
+			text = text + SdaiSession.line_separator + AdditionalMessages.RD_VENT + 
+			staticFields.inst_under_valid.getInstanceType().getName(null) +
+			SdaiSession.line_separator + AdditionalMessages.RD_VINS + 
+			staticFields.inst_under_valid.instance_identifier;
+			SdaiSession ss = staticFields.inst_under_valid.owning_model.repository.session;
+			if (ss != null && ss.logWriterSession != null) {
+				ss.printlnSession(text);
+			} else {
+				SdaiSession.println(text);
+			}
+		} else {
+			SdaiSession.println(text);
+		}
+	}
+
+
+	private void printWarningToLogoValidateGiveAttribute(String message, EAttribute attr) throws SdaiException {
+		String text = message + 
+		SdaiSession.line_separator + AdditionalMessages.RD_ATTR + attr.getName(null);
+		StaticFields staticFields = StaticFields.get();
+		if (staticFields.inst_under_valid != null) {
+			text = text + SdaiSession.line_separator + AdditionalMessages.RD_VENT + 
+			staticFields.inst_under_valid.getInstanceType().getName(null) +
+			SdaiSession.line_separator + AdditionalMessages.RD_VINS + 
+			staticFields.inst_under_valid.instance_identifier;
+			SdaiSession ss = staticFields.inst_under_valid.owning_model.repository.session;
+			if (ss != null && ss.logWriterSession != null) {
+				ss.printlnSession(text);
+			} else {
+				SdaiSession.println(text);
+			}
+		} else {
+			SdaiSession.println(text);
+		}
+	}
+
+
+	private void printWarningToLogoValidateGiveTypes(String message, EData_type variable_type, 
+			EData_type val_type) throws SdaiException {
+		String text = message + 
+		SdaiSession.line_separator + AdditionalMessages.EE_VADT + variable_type.getName(null) + 
+		SdaiSession.line_separator + AdditionalMessages.EE_VAAT + val_type.getName(null);
+		StaticFields staticFields = StaticFields.get();
+		if (staticFields.inst_under_valid != null) {
+			text = text + SdaiSession.line_separator + AdditionalMessages.RD_VENT + 
+			staticFields.inst_under_valid.getInstanceType().getName(null) +
+			SdaiSession.line_separator + AdditionalMessages.RD_VINS + 
+			staticFields.inst_under_valid.instance_identifier;
+			SdaiSession ss = staticFields.inst_under_valid.owning_model.repository.session;
+			if (ss != null && ss.logWriterSession != null) {
+				ss.printlnSession(text);
+			} else {
+				SdaiSession.println(text);
+			}
+		} else {
+			SdaiSession.println(text);
+		}
 	}
 
 

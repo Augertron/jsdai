@@ -7251,8 +7251,8 @@ if (jc.entity != null ) {
     // also, it would be good to add entity and/or package information when needed.
     String result = null;
     String static_attribute_name = null;
-//    String attribute_name = attribute.getName(null);
-    String attribute_name = getOriginalAttributeName(attribute);
+    String attribute_name = attribute.getName(null);
+//    String attribute_name = getOriginalAttributeName(attribute);
 
 
     //    ESchema_definition the_sd = jc.sd;
@@ -7269,6 +7269,10 @@ if (jc.entity != null ) {
     // if parent_model != the_model, then schema prefix is needed.
     String schema_prefix = "";
     String entity_prefix = "";
+
+//System.out.println("<getStaticAttrName> attribute: " + attribute +
+//									 "\the ed: " + the_ed +
+//									 "\tparent_entity: " + parent_entity);
 
     if (parent_entity != the_ed) {
       String the_entity_name = parent_entity.getName(null).replace('+', '$');

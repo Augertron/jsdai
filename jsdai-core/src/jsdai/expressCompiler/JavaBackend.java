@@ -13752,7 +13752,7 @@ pw.println("//HOHO invoking expression generation, attr: " + attr + ", sd: " + s
 //		System.out.println("the attribute: " + tattr);
 
 
-pw.println("\t\t//#X# 01");
+pw.println("\t\t//#X# 01 - is_original: " + is_original);
 
 
 
@@ -13854,9 +13854,23 @@ pw.println("\t //<><> redeclared_owning_entity_name: " + redeclared_owning_entit
 					if (is_original) {
 
 						redeclared_owning_entity_name = owning_entity_name_x;
-					}
+					} else { // the whole else is to fix bug #2741
+						// narrowing down, it is a temporary (?) crude fix, may not withstand some future cases in express
+						if (!ed.getComplex(null)) {
+							if (tattr.consolidated_inheritance == 2) {
+								if (tattr.flag == 3) {
+									if (tattr.consolidated_derived_count > 1) {  // == 2 in our case, not sure what happens if more than 2
+										redeclared_owning_entity_name = owning_entity_name_x; 
+//										pw.println("\t//<><O><OOO>not always ok - tattr: \n/*" + tattr + "\n*/\n");
+										pw.println("\t//<> bug #2741 fix used here");
+									}
+								}
+							}
+						}
+					} // end of else - bug #2741 fix
 pw.println("\t //<><> owning_entity_name_x: " + owning_entity_name_x);
-
+				// RR this fix should solve all the issues with the test schema, but what about the whole lib - to test
+				// bt = owner_entity_x; - not working, bt is too much
 				EAttribute last_attr = attr;
 				if (tattr != null) {
 					if (tattr.last_redeclared_by != null) {

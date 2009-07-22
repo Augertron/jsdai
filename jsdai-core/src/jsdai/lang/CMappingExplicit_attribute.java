@@ -66,7 +66,7 @@ public abstract class CMappingExplicit_attribute extends AttributeDefinition
 	implements MappingConstraintPath, MappingConstraintMatcher {
 
 	protected CMappingExplicit_attribute() { }
-	
+
 	public void mapUsersForward(ObjectMapping mappingContext, Set instances) throws SdaiException {
 		EAttribute selfInterface = (EAttribute)this;
 		mappingContext.attributeMapUsersForward(selfInterface, instances);
@@ -147,8 +147,8 @@ public abstract class CMappingExplicit_attribute extends AttributeDefinition
 	static MatcherInstances generalFindForward(EAttribute attribute, MappingContext mappingContext,
 			MatcherInstances instances, boolean inPath, boolean decCacheUseCnt) throws SdaiException {
 		MatcherInstances outInstances;
-		boolean dontTestPath = 
-			instances.attributePathTop < 0 
+		boolean dontTestPath =
+			instances.attributePathTop < 0
 			|| (instances.attributePathTop == 0
 				&& instances.isAttributeMemberAt(0)
 				&& instances.getAttributeMemberAt(0) < 0);
@@ -318,7 +318,7 @@ public abstract class CMappingExplicit_attribute extends AttributeDefinition
 			} else if(constraintUser instanceof EAggregate_member_constraint) {
 				EAggregate_member_constraint constraint = (EAggregate_member_constraint)constraintUser;
 				MatcherInstances amcInstances = constraintInstances.dup();
-				amcInstances.attributePathReversePush(constraint.testMember(null) ? 
+				amcInstances.attributePathReversePush(constraint.testMember(null) ?
 													  constraint.getMember(null) : -1);
 				findConstraintUsers(mappingContext, instances, attribute, amcInstances,
 									constraint, valueMap);
@@ -386,7 +386,7 @@ public abstract class CMappingExplicit_attribute extends AttributeDefinition
 
 	private static void addMatcherInstances(MappingContext mappingContext, EEntity instance, Object value,
 											MatcherInstances constraintInstances) throws SdaiException {
-		if(constraintInstances.attributePathTop >= 0 
+		if(constraintInstances.attributePathTop >= 0
 		   && (constraintInstances.attributePathTop != 0
 			   || !constraintInstances.isAttributeMemberAt(0)
 			   || constraintInstances.getAttributeMemberAt(0) > 0)) {
@@ -406,7 +406,7 @@ public abstract class CMappingExplicit_attribute extends AttributeDefinition
 		Object oldValue = instancesMap.get(key);
 		if(oldValue != null && oldValue != NON_PATH_VALUE) {
 			if(value != NON_PATH_VALUE) {
-				if(oldValue instanceof Set) {
+				if(oldValue instanceof HashSet) {
 					Set oldValueSet = (Set)oldValue;
 					if(value instanceof Collection) {
 						oldValueSet.addAll((Collection)value);
@@ -681,7 +681,7 @@ public abstract class CMappingExplicit_attribute extends AttributeDefinition
 			if(((CEntity)instance).testAttributeFast(attribute, selectPath) > 0) {
 				Object pathValue = instance.get_object(attribute);
 				if(matcherInstances != null) {
-					if(matcherInstances.followAttributePath(pathValue, 
+					if(matcherInstances.followAttributePath(pathValue,
 							matcherInstances.attributePathTop, selectPath) != null) {
 						return pathValue;
 					}

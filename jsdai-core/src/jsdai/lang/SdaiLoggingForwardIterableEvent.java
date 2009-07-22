@@ -72,7 +72,8 @@ abstract class SdaiLoggingForwardIterableEvent extends SdaiLoggingIterableEvent 
 				SdaiSession session = (SdaiSession) getSource();
 				byte token = session.undo_redo_file.readByte();
 				switch (token) {
-				case 'c': {
+				case 'c':
+				case 'o': {
 					operationType = CREATE_OPERATION;
 					if(!readInstanceLog(session, false, false)) {
 						token = 'Q';

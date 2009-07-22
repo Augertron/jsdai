@@ -25,6 +25,8 @@ package jsdai.util;
 
 import java.io.*;
 import java.util.Properties;
+//import java.util.concurrent.*;
+import java.util.*;
 
 import jsdai.lang.*;
 import jsdai.dictionary.*;
@@ -34,6 +36,8 @@ public class Validate {
 	static PrintStream pout, perr;
 	static BufferedOutputStream bout, berr;
 	static FileOutputStream fout, ferr;
+
+  static OutputStreamWriter osw;
 
 
 /**
@@ -166,9 +170,10 @@ You should see in the log file something similar to:
 	int un_rules_count;
 	long all_steps_count;
 	long inst_counter = 0;
+//	List queue;
 
 
-	private void listAttributes(AAttribute aat, String message) throws SdaiException {
+	private void listAttributes(AAttribute aat, String message) throws SdaiException, java.lang.InterruptedException {
 // Preparing iterator for running through the attributes list
 		if (iterator == null) {
 			iterator = aat.createIterator();
@@ -179,10 +184,11 @@ You should see in the log file something similar to:
 // Directing the name of the attribute to the output stream
 			EAttribute attr = aat.getCurrentMember(iterator);
 			pw.println(" \t   Violation for attribute \"" + attr.getName(null) + "\": " + message);
+			// queue.add(" \t   Violation for attribute \"" + attr.getName(null) + "\": " + message);
 		}
 	}
 
-	private void listWhereRules(AWhere_rule wr) throws SdaiException {
+	private void listWhereRules(AWhere_rule wr) throws SdaiException, java.lang.InterruptedException  {
 // Preparing iterator for running through the list of where rules
 		if (iterator == null) {
 			iterator = wr.createIterator();
@@ -279,12 +285,15 @@ You should see in the log file something similar to:
 			}
 // Directing the constructed string to the output stream
 			pw.println(str);
+			// queue.add(str);
 			if (sizeof_case == 1) {
 				str = " \t      Instances set making SIZEOF value nonzero:";
 				pw.println(str);
+				// queue.add(str);
 			} else if (sizeof_case == 2) {
 				str = " \t      Instances set violating SIZEOF equation:";
 				pw.println(str);
+				// queue.add(str);
 			}
 			if (sizeof_case > 0) {
 				if (inst_iterator == null) {
@@ -295,19 +304,22 @@ You should see in the log file something similar to:
 				while (inst_iterator.next()){
 					EEntity inst = viol_inst_aggr.getCurrentMemberEntity(inst_iterator);
 					pw.println(" \t      " + inst);
+					// queue.add(" \t      " + inst);
 				}
 			}
 		}
 	}
 
-	private void listEntityInstances(AEntity insts, EEntity_definition edef, EUniqueness_rule rule) throws SdaiException {
+	private void listEntityInstances(AEntity insts, EEntity_definition edef, EUniqueness_rule rule) throws SdaiException, java.lang.InterruptedException  {
 // Directing the name of the violated uniqueness rule and its parent to the output stream
 		if (rule.testLabel(null)) {
 			pw.println("For the uniqueness rule \"" + rule.getLabel(null) + "\" defined in entity data type \"" + 
 				edef.getName(null) + "\" validation gives FALSE");
+			// queue.add("For the uniqueness rule \"" + rule.getLabel(null) + "\" defined in entity data type \"" + edef.getName(null) + "\" validation gives FALSE");
 		} else {
 			pw.println("For the uniqueness rule without name defined in entity data type \"" + 
 				edef.getName(null) + "\" validation gives FALSE");
+			// queue.add("For the uniqueness rule without name defined in entity data type \"" + edef.getName(null) + "\" validation gives FALSE");
 		}
 // Preparing iterator for running through the list of entity instances
 		if (iterator == null) {
@@ -317,13 +329,15 @@ You should see in the log file something similar to:
 		}
 // Directing the entity instances to the output stream
 		pw.println(" \t   instances not conforming to the validation:");
+		// queue.add(" \t   instances not conforming to the validation:");
 		while (iterator.next()){
 			EEntity inst = insts.getCurrentMemberEntity(iterator);
 			pw.println(" \t   " + inst);
+			// queue.add(" \t   " + inst);
 		}
 	}
 
-	boolean validateInstance(EEntity instance, ASdaiModel models_dom, UtilMonitor monitor) throws SdaiException {
+	boolean validateInstance(EEntity instance, ASdaiModel models_dom, UtilMonitor monitor) throws SdaiException, java.lang.InterruptedException  {
 // Aggregates for storing attributes not conforming to the validation are emptied
 		aat1.clear();
 		aat2.clear();
@@ -347,14 +361,15 @@ You should see in the log file something similar to:
 		inst_counter++;
 		if (monitor != null) {
 			monitor.worked(1);
-			monitor.subTask("Entity: " + cur_name + " (" + val_inst_count + " out of " + cur_inst_count + ")", 
-			all_steps_count, inst_counter);
+			monitor.subTask("Entity instance " + inst_counter + " out of " + inst_count + 
+				", type " + cur_name, all_steps_count, inst_counter);
 		}
 // Invocation of the validation methods and 
 // output of attributes not conforming to the validation
 		boolean res2 = instance.validateRequiredExplicitAttributesAssigned(aat1);
 		if (!res2) {
 			pw.println(instance.toString());
+			// queue.add(instance.toString());
 			inst_printed = true;
 			listAttributes(aat1, "value not set");
 		}
@@ -362,6 +377,7 @@ You should see in the log file something similar to:
 		if (!res3) {
 			if (!inst_printed) {
 				pw.println(instance.toString());
+				// queue.add(instance.toString());
 				inst_printed = true;
 			}
 			listAttributes(aat2, "inverse constraint is not met");
@@ -370,6 +386,7 @@ You should see in the log file something similar to:
 		if (res4 == ELogical.FALSE) {
 			if (!inst_printed) {
 				pw.println(instance.toString());
+				// queue.add(instance.toString());
 				inst_printed = true;
 			}
 			listAttributes(aat3, "reference to instance of an incorrect entity type");
@@ -378,6 +395,7 @@ You should see in the log file something similar to:
 		if (res5 == ELogical.FALSE) {
 			if (!inst_printed) {
 				pw.println(instance.toString());
+				// queue.add(instance.toString());
 				inst_printed = true;
 			}
 			listAttributes(aat4, "aggregate size constraint is not met");
@@ -386,6 +404,7 @@ You should see in the log file something similar to:
 		if (!res6) {
 			if (!inst_printed) {
 				pw.println(instance.toString());
+				// queue.add(instance.toString());
 				inst_printed = true;
 			}
 			listAttributes(aat5, "aggregate uniqueness is not satisfied");
@@ -394,6 +413,7 @@ You should see in the log file something similar to:
 		if (!res7) {
 			if (!inst_printed) {
 				pw.println(instance.toString());
+				// queue.add(instance.toString());
 				inst_printed = true;
 			}
 			listAttributes(aat6, "at least one element of array is missing");
@@ -411,6 +431,7 @@ You should see in the log file something similar to:
 // Output of violated where rules
 			if (!inst_printed) {
 				pw.println(instance.toString());
+				// queue.add(instance.toString());
 			}
 			if (res1 == ELogical.FALSE) {
 				listWhereRules(w_rules_viol);
@@ -424,7 +445,7 @@ You should see in the log file something similar to:
 	}
 
 // Returns count of instances with errors
-	int validateInstances(Aggregate instances, ASdaiModel models_dom, UtilMonitor monitor) throws SdaiException {
+	int validateInstances(Aggregate instances, ASdaiModel models_dom, UtilMonitor monitor) throws SdaiException, java.lang.InterruptedException  {
 		int errors = 0;
 // Running through all instances in the model
 		SdaiIterator iterator = instances.createIterator();
@@ -438,7 +459,7 @@ You should see in the log file something similar to:
 		return errors;
 	}
 
-	private long validationInstances(SdaiRepository repo, UtilMonitor monitor) throws SdaiException {
+	private long validationInstances(SdaiRepository repo, UtilMonitor monitor) throws SdaiException, java.lang.InterruptedException  {
 		long tot_errors = 0;
 		SdaiSession ss = repo.getSession();
 		ASdaiModel models = repo.getModels();
@@ -476,7 +497,7 @@ You should see in the log file something similar to:
 		return tot_errors;
 	}
 
-	private long [] validationRules(SdaiRepository repo, UtilMonitor monitor) throws SdaiException {
+	private long [] validationRules(SdaiRepository repo, UtilMonitor monitor) throws SdaiException, java.lang.InterruptedException  {
 		long [] tot_rules = new long [2];
 		SdaiSession ss = repo.getSession();
 // Getting all schema instances of the specified repository
@@ -537,6 +558,7 @@ You should see in the log file something similar to:
 // Output of violated where rules for the validated global rule
 				false_count++;
 				pw.println("For the global rule \"" + gl_rule.getName(null) + "\" validation gives FALSE");
+				// queue.add("For the global rule \"" + gl_rule.getName(null) + "\" validation gives FALSE");
 				listWhereRules(w_rules_viol);
 			}
 			tot_rules[0] += false_count;
@@ -656,13 +678,15 @@ You should see in the log file something similar to:
 		return (String)base[1];
 	}
 
+	static public void main(String args[]) {
+		main(args, null);
+	}
+
 	static public void main(String args[], UtilMonitor monitor) {
 		if (args.length < 1) { 
 			System.out.println("Part 21 file (exchange structure) must be indicated.");
 			return;
 		}
-//UtilMonitor monitor;
-//monitor = new UtilMonitorImpl();
 		Validate validation = null;
 		try {
 			for (int ihi = 0; ihi < args.length-1; ihi++) {
@@ -677,10 +701,13 @@ You should see in the log file something similar to:
 						System.out.println("A file name must follow " + args[ihi-1] + " switch");
 						return;
 					}
-					fout = new FileOutputStream(args[ihi]);
-					bout = new BufferedOutputStream(fout);
-					pout = new PrintStream(bout);
-					System.setOut(pout);
+ 					 fout = new FileOutputStream(args[ihi]);
+					 bout = new BufferedOutputStream(fout);
+					 pout = new PrintStream(bout);
+					 System.setOut(pout);
+    			// RR - unsuccessful experiment
+    			//osw = new OutputStreamWriter(fout);
+    		  //pw = new QueueWriter(osw, true, monitor);
 				}
 				if (args[ihi].equalsIgnoreCase("-stderr")) {
 					ihi++;
@@ -701,7 +728,10 @@ You should see in the log file something similar to:
 			}	
 
 // Output stream is initialized
-			pw = new PrintWriter(System.out, true);
+			if (monitor == null)
+				pw = new PrintWriter(System.out, true);
+			else
+				pw = new QueueWriter(System.out, true, monitor);
 			SdaiSession.setLogWriter(pw);
 			pw.println("'Validate' program. Copyright 1999-2005, LKSoftWare GmbH");
 // Opening session, starting a transaction, importing an exchange structure
@@ -709,6 +739,10 @@ You should see in the log file something similar to:
 			SdaiTransaction trans = session.startTransactionReadWriteAccess();
 			validation = new Validate();
 			SdaiRepository repo = session.importClearTextEncoding("", args[0], null);
+// did not work, Vaidas says - to set to null first, to try
+//			pw.close();
+//			pw = new PrintWriter(System.out, true);
+//			SdaiSession.setLogWriter(pw);
 
 			long time_before_validation = System.currentTimeMillis();
 			long steps_count = validation.getStepsCount(repo);
@@ -760,6 +794,24 @@ You should see in the log file something similar to:
   	throws SdaiException {
   		Properties jsdaiProperties = new Properties();
   		jsdaiProperties.setProperty("repositories", sdaireposDirectory);
+			
+			//      when always set, the following property causes non-xim validation not to work properly when run not with the xim library but with any library with any schemas
+			//  		jsdaiProperties.setProperty("jsdai.SIda_step_schema_xim","AC*;AI*;AP*;ASS*;AU*;B*;C*;D*;E*;F*;G*;H*;IDA_STEP_AIM*;ISO*;IN*;J*;K*;L*;M*;N*;O*;P*;Q*;R*;S*;T*;U*;V*;W*;X*;Y*;Z*;");
+			
+			// here is one way to recognize if this is an ordinary validation with any library, or mim-xim validation with a xim library.
+			for (int ihi = 0; ihi < args.length-1; ihi++) {
+				/*
+					if this property is needed only for xim or only for mim, or for everything except xim, 
+					the following check may be narrowed to include only -XIM, only -MIM or -MIM and -dummy, but no -XIM
+					NOTICE: it is quite possible, that -dummy is never used, for mim-xim validation perhaps -MIM or -XIM is always present
+					for regular validation with an arbitrary library neither of these three switches is used
+				*/
+				if ((args[ihi].equals("-XIM")) || (args[ihi].equals("-MIM")) || (args[ihi].equals("-dummy"))) {
+		  		jsdaiProperties.setProperty("jsdai.SIda_step_schema_xim","AC*;AI*;AP*;ASS*;AU*;B*;C*;D*;E*;F*;G*;H*;IDA_STEP_AIM*;ISO*;IN*;J*;K*;L*;M*;N*;O*;P*;Q*;R*;S*;T*;U*;V*;W*;X*;Y*;Z*;");
+					break;
+				}
+			} // end for
+
   		SdaiSession.setSessionProperties(jsdaiProperties);
   		return new Runnable() {
   			public void run() {
@@ -767,4 +819,5 @@ You should see in the log file something similar to:
   			}
   		};
   	}
+
 }

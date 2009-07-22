@@ -195,7 +195,7 @@ public class ExpressGenerator {
 			String location = "ExpressCompilerRepo";
 
 			System.out.println("");
-			System.out.println("JSDAI(TM) Express Generator,   Copyright (C) 2007 LKSoftWare GmbH");
+			System.out.println("JSDAI(TM) Express Generator,   Copyright (C) 2009 LKSoftWare GmbH");
 			System.out.println("---------------------------------------------------------------------------");
 		
 			for (int i = 0; i < args.length; i++) {
@@ -214,6 +214,13 @@ public class ExpressGenerator {
 				if (args[i].equalsIgnoreCase("-exclude_arm")) flag_exclude_arm = true;
 				if (args[i].equalsIgnoreCase("-skip_conflicts")) flag_skip_conflicts = true;
 				if (args[i].equalsIgnoreCase("-skip")) flag_skip_conflicts = true;
+				if (args[i].equalsIgnoreCase("-exclude_internal")) {
+					excludeInternalDictionaryModels();
+			  }
+				if (args[i].equalsIgnoreCase("-iso_db_path")) {
+					i++;
+					iso_file = args[i];
+				}
 				if ((args[i].equalsIgnoreCase("-repository_location")) || (args[i].equalsIgnoreCase("-location"))){
 					i++;
 					if (i < args.length) {
@@ -330,13 +337,31 @@ public class ExpressGenerator {
 			SdaiTransaction trans = session.startTransactionReadOnlyAccess();
       if (flag_schema_specific_long) {
       	xg.runLong(SimpleOperations.linkRepositoryOrName("ExpressCompilerRepo", location));
-      } else {
+      } else {	
       	xg.run(SimpleOperations.linkRepositoryOrName("ExpressCompilerRepo", location));
       }
       session.closeSession();
 			
 	
 	}
+	
+  	public static Runnable initAsRunnable(final String sdaireposDirectory, final String[] args) throws SdaiException {
+  		Properties jsdaiProperties = new Properties();
+  		jsdaiProperties.setProperty("repositories", sdaireposDirectory);
+  		SdaiSession.setSessionProperties(jsdaiProperties);
+  		return new Runnable() {
+  			public void run() {
+  				try {
+  	  				main(args);
+  				} catch (SdaiException e1) {
+  					e1.printStackTrace();
+  				} catch (java.io.IOException e2) { 
+  					e2.printStackTrace();
+  				}
+  			}
+  		};
+  	}
+
 	
 	void runLong(SdaiRepository repo) throws SdaiException, java.io.IOException {
 
@@ -854,6 +879,26 @@ public class ExpressGenerator {
 
 	void printFileHeader(PrintWriter pw, ESchema_definition sd, SdaiModel model) throws SdaiException {
 		String line = null;
+		String second_header_line = "";
+		String iso_number = null;
+		if (hm_iso_numbers != null) {
+			iso_number = (String)hm_iso_numbers.get(sd.getName(null).toLowerCase());
+			if (iso_number == null) {
+				// iso_number = "ISO 10303-xxxx (not in the database)";
+			}
+		} else {
+			//iso_number = "ISO 10303-xxxx (iso database is missing)";
+		}
+		if (iso_number != null) {
+			second_header_line = "\t" + iso_number;
+		}
+		pw.println("(*");
+		pw.println(second_header_line);
+		pw.println("*)\n");
+	}
+
+	void printFileHeader_old(PrintWriter pw, ESchema_definition sd, SdaiModel model) throws SdaiException {
+		String line = null;
 		String first_header_line = null;
 		String second_header_line = null;
 		String ident = "$" + "Id: this is CVS ID tag, it will be replaced when commiting to CVS " + "$";
@@ -873,6 +918,7 @@ public class ExpressGenerator {
 		pw.println(second_header_line);
 		pw.println("*)\n");
 	}
+
 
 	void printLanguageVersion(PrintWriter pw, ESchema_definition sd, SdaiModel model) {
 		// not supported, because not stored anywhere
@@ -4818,6 +4864,16 @@ try {
 			
       return;
     }
+	}
+	
+	
+	private static void excludeInternalDictionaryModels() {
+	
+	 exclude_models.add("EXTENDED_DICTIONARY_SCHEMA_DICTIONARY_DATA");
+	 exclude_models.add("MAPPING_SCHEMA_DICTIONARY_DATA");
+	 exclude_models.add("SDAI_DICTIONARY_SCHEMA_DICTIONARY_DATA");
+	 exclude_models.add("SDAI_MAPPING_SCHEMA_DICTIONARY_DATA");
+	
 	}
 	
 	private static void excludeModelsFromListInFile(String file_name) {

@@ -47,7 +47,8 @@ public abstract class CEntityDefinition extends DataType implements EEntity_defi
 	protected int complex; // equals  "a4"
 
 	protected int noOfAllAttributes;    // do not understand for what this field
-	protected int noOfPartialAttributes; // number of attributes in exchange structure
+//	protected int noOfPartialAttributes; // number of attributes in exchange structure
+	protected int noOfPartialAttributes = -1; // number of attributes in exchange structure
 	protected int noOfPartialEntityTypes; // number of partial entity types
 	protected int [] internalMappingIndexing; // external to internal
 	protected int [] externalMappingIndexing; // internal to external
@@ -641,6 +642,7 @@ System.out.println();*/
 //"  owning_model: " + ((CEntity)this).owning_model.name);
 
 // Allocating arrays for attributes
+
 		attributes = new CExplicit_attribute[position];
 		attributeFields = new Field[position];
 		attributeFieldSelects = new Field[position];
@@ -693,13 +695,13 @@ System.out.println(" CEntityDefinition eee: " + eee.getName(null) + "  j = " + j
 				}
 			}
 			partial_attrs = ((CEntityDefinition)entity).takeExplicit_attributes();
+			SdaiModel error_mod;
 			if (partial_attrs.length <= 0) {
 				entity.noOfPartialAttributes = 0;
 				if (!((CEntityDefinition)entity).der_attr_exist && !((CEntityDefinition)entity).inv_attr_exist) {
 					continue;
 				}
 			}
-			SdaiModel error_mod;
 			if (((CEntityDefinition)entity).der_attr_exist) {
 				if (complex == 2 /*true*/) {
 					SchemaData sch_data_compl = entity.owning_model.schemaData;
@@ -1277,6 +1279,87 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 			}
 		}
 		return null;
+	}
+
+
+	EAttribute findLastDerived(CExplicit_attribute attr, StaticFields staticFields) throws SdaiException {
+		CDerived_attribute ret_der_attr = null;
+		for (int j = 0; j < noOfPartialEntityTypes; j++) {
+			CEntityDefinition entity = partialEntityTypes[j];
+			if (entity.not_expl_attribs == null) {
+				continue;
+			}
+			AAttribute partial_not_expl_attrs = entity.not_expl_attribs;
+			if (staticFields.it3 == null) {
+				staticFields.it3 = partial_not_expl_attrs.createIterator();
+			} else {
+				partial_not_expl_attrs.attachIterator(staticFields.it3);
+			}
+			while (staticFields.it3.next()) {
+				EAttribute attrib;
+				if (((AEntity)partial_not_expl_attrs).myLength <= 2) {
+					attrib = (EAttribute)staticFields.it3.myElement;
+				} else {
+					attrib = (EAttribute)((ListElement)staticFields.it3.myElement).object;
+				}
+				if (((AttributeDefinition)attrib).attr_tp != AttributeDefinition.DERIVED) {
+					continue;
+				}
+				CDerived_attribute der_attr = (CDerived_attribute)attrib;
+				if (!der_attr.testRedeclaring(null)) {
+					continue;
+				}
+				EAttribute r_attr = (EAttribute)der_attr.getRedeclaring(null);
+				while (r_attr != null) {
+					if (attr == r_attr) {
+						if (ret_der_attr == null) {
+							ret_der_attr = der_attr;
+						} else {
+							if (checkIfDeriving(ret_der_attr, der_attr)) {
+								ret_der_attr = der_attr;
+							}
+						}
+						break;
+					}
+					if (((AttributeDefinition)r_attr).attr_tp == AttributeDefinition.EXPLICIT) {
+						EExplicit_attribute e_attr = (EExplicit_attribute)r_attr;
+						if (e_attr.testRedeclaring(null)) {
+							r_attr = e_attr.getRedeclaring(null);
+						} else {
+							break;
+						}
+					} else {
+						CDerived_attribute d_attr = (CDerived_attribute)r_attr;
+						if (d_attr.testRedeclaring(null)) {
+							r_attr = (EAttribute)d_attr.getRedeclaring(null);
+						} else {
+							break;
+						}
+					}
+				}
+			}
+		}
+		return ret_der_attr;
+	}
+
+
+	boolean checkIfDeriving(CDerived_attribute current_attr, CDerived_attribute cand_attr) throws SdaiException {
+		EAttribute r_attr = (EAttribute)cand_attr.getRedeclaring(null);
+		while (r_attr != null) {
+			if (current_attr == r_attr) {
+				return true;
+			}
+			if (((AttributeDefinition)r_attr).attr_tp == AttributeDefinition.EXPLICIT) {
+				return false;
+			}
+			CDerived_attribute d_attr = (CDerived_attribute)r_attr;
+			if (d_attr.testRedeclaring(null)) {
+				r_attr = (EAttribute)d_attr.getRedeclaring(null);
+			} else {
+				return false;
+			}
+		}
+		return false;
 	}
 
 
@@ -2162,6 +2245,27 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 		int i;
 		EAttribute at_found = null;
 		EAttribute at;
+		if (attributes == null) {
+			SdaiSession session = owning_model.repository.session;
+			String ent_name = ((CEntity_definition)this).getName(null);
+			if (session != null && session.logWriterSession != null) {
+				session.printlnSession(AdditionalMessages.DI_ATNF + SdaiSession.line_separator +
+					AdditionalMessages.RD_ENT + ent_name + SdaiSession.line_separator + 
+					AdditionalMessages.RD_ATTR + attributeName);
+			} else {
+				SdaiSession.println(AdditionalMessages.DI_ATNF + SdaiSession.line_separator +
+					AdditionalMessages.RD_ENT + ent_name + SdaiSession.line_separator + 
+					AdditionalMessages.RD_ATTR + attributeName);
+			}
+			SchemaData sch_data = owning_model.schemaData;
+			int indx = sch_data.findEntityExtentIndex(this);
+			if (indx < 0) {
+				SdaiModel error_mod = sch_data.model;
+				throw new SdaiException(SdaiException.SY_ERR, "Entity not found in the table: " + 
+					ent_name + " (used in model: " + error_mod.name + ")");
+			}
+			Class cl_x = sch_data.getEntityClassByIndex(indx);
+		}
 		for (i = 0; i < attributes.length; i++) {
 			at = attributes[i];
 			if (at.getName(null).equals(attributeName)) {

@@ -4470,11 +4470,49 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			}
 		} else {
 			boolean mark;
+			int numb;
 			myDataA = (Object [])myData;
 			for (i = 0; i < myLength; i++) {
 				int first_index = i * 2;
-				if (myDataA[first_index] == value) {
-					int numb = ((Integer)myDataA[first_index + 1]).intValue();
+//System.out.println("CAggregate ???  myDataA[first_index] = " + myDataA[first_index] + 
+//"   value: " + value + "  its class: " + value_class + "   member_class: " + member_class);
+				boolean coincide = false;
+				if (value instanceof Integer) {
+					if (myDataA[first_index] instanceof Integer) {
+						int integ = ((Integer)value).intValue();
+						numb = ((Integer)myDataA[first_index + 1]).intValue();
+						int tag = myType.select.tags[numb - 2];
+						if (tag == PhFileReader.INTEGER) {
+							if (integ == Integer.MIN_VALUE) {
+								throw new SdaiException(SdaiException.VA_NSET);
+							}
+						} else {
+							if (integ == 0) {
+								throw new SdaiException(SdaiException.VA_NSET);
+							}
+						}
+						int int_memb = ((Integer)myDataA[first_index]).intValue();
+						if (int_memb == integ) {
+							coincide = true;
+						}
+					}
+				} else if (value instanceof Double) {
+					if (myDataA[first_index] instanceof Double) {
+						double doub = ((Double)value).doubleValue();
+						if (Double.isNaN(doub)) {
+							throw new SdaiException(SdaiException.VA_NSET);
+						}
+						double doub_memb = ((Double)myDataA[first_index]).doubleValue();
+						if (doub_memb == doub) {
+							coincide = true;
+						}
+					}
+				} else if (myDataA[first_index] == value) {
+					coincide = true;
+				}
+//				if (myDataA[first_index] == value) {
+				if (coincide) {
+					numb = ((Integer)myDataA[first_index + 1]).intValue();
 					if (numb == sel_number) {
 						mark = true;
 					} else {

@@ -106,7 +106,8 @@ class SdaiLoggingEventUndo extends SdaiLoggingIterableEvent {
 				nextPos = session.undo_redo_file.readLong();
 				byte token = session.undo_redo_file.readByte();
 				switch (token) {
-				case 'c': {
+				case 'c':
+				case 'o': {
 					operationType = DELETE_OPERATION;
 					if(!readInstanceLog(session, false, false)) {
 						more = false;

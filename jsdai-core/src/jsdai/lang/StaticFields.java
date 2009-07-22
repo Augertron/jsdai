@@ -165,6 +165,7 @@ class StaticFields {
 	SdaiIterator it_refs;
 	ASdaiModel _domain;
 	CSchema_definition context_schema;
+	CEntity inst_under_valid;
 
 
 // InverseEntity

@@ -148,6 +148,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 */
 	void modified() throws SdaiException {
 		fireSdaiEvent(SdaiEvent.MODIFIED, -1, null);
+		if (owning_model == null) {
+			String base = SdaiSession.line_separator + AdditionalMessages.RD_INST + instance_identifier;
+			throw new SdaiException(SdaiException.EI_NEXS, base);
+		}
 		MethodCallsCacheManager.clear(owning_model.repository.session);
 		SdaiTransaction activeTransaction = owning_model.getRepository().getSession().active_transaction;
         if (activeTransaction != null &&
@@ -299,6 +303,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 						o = null;
 					}
 				}
+            //result = examineModelsUsers((CEntityDefinition)referencing_type, role, result, domain);
 				boolean duplicates = attribute.getDuplicates(null);
 				if (!duplicates && result.myLength > 1) {
 					result.contract();
@@ -319,9 +324,159 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 
 //System.out.println("CEntity  !!!!!    saved_attr: " + saved_attr +
 //"   attr_owner: " + saved_attr.getParent_entity(null).getName(null) + "   this edef: " + edef.getName(null));
+
+		printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_INEX);
 		throw new SdaiException(SdaiException.AT_NVLD, saved_attr,
 			"The supplied attribute is not inverse one for this entity type");
 //		} // syncObject
+	}
+
+
+	private AEntity examineModelsUsers(CEntityDefinition referencing_type, CExplicit_attribute role, 
+			AEntity result, ASdaiModel domain) throws SdaiException {
+		StaticFields staticFields = StaticFields.get();
+		if (domain == null || domain.myLength == 0) {
+			return processPotentialUsers(owning_model, referencing_type, role, result, staticFields);
+		}
+		if (staticFields.it == null) {
+			staticFields.it = domain.createIterator();
+		} else {
+			domain.attachIterator(staticFields.it);
+		}
+		while (staticFields.it.next()) {
+			SdaiModel mod = (SdaiModel)domain.getCurrentMemberObject(staticFields.it);
+			result = processPotentialUsers(mod, referencing_type, role, result, staticFields);
+		}
+		return result;
+	}
+
+
+	private AEntity processPotentialUsers(SdaiModel mod, CEntityDefinition referencing_type, CExplicit_attribute role, 
+			AEntity result, StaticFields staticFields) throws SdaiException {
+		SchemaData sch_data = mod.underlying_schema.owning_model.schemaData;
+		int ref_index = sch_data.find_entity(0, sch_data.sNames.length - 1, referencing_type);
+		if (ref_index < 0) {
+			return result;
+		}
+		result = processInstances(mod, ref_index, role, result, staticFields);
+		int subtypes [] = sch_data.schema.getSubtypes(ref_index);
+		for (int i = 0; i < subtypes.length; i++) {
+			result = processInstances(mod, subtypes[i], role, result, staticFields);
+		}
+		return result;
+	}
+
+
+	private AEntity processInstances(SdaiModel mod, int ref_index, CExplicit_attribute role, 
+			AEntity result, StaticFields staticFields) throws SdaiException {
+		int index_to_type_local;
+		CEntityDefinition exact_type = mod.dictionary.schemaData.entities[ref_index];
+		if ((mod.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.READ_ONLY) {
+			index_to_type_local = mod.find_entityRO(exact_type);
+			if (index_to_type_local < 0) {
+				throw new SdaiException(SdaiException.IX_NVLD, this);
+			}
+		} else {
+			index_to_type_local = ref_index;
+		}
+		if (mod.lengths[index_to_type_local] <= 0) {
+			return result;
+		}
+		EAttribute d_attr = exact_type.findLastDerived(role, staticFields);
+		if (d_attr == null) {
+			return result;
+		}
+		CDerived_attribute der_attr = (CDerived_attribute)d_attr;
+		DataType type = analyse_attr_type((DataType)der_attr.getDomain(null));
+		if (type == null) {
+			return result;
+		}
+		CEntity_definition inv_owner_type = (CEntity_definition)getInstanceType();
+		if (!check_type_compatibility(type, inv_owner_type, staticFields)) {
+			return result;
+		}
+		int der_attr_index = -1;
+		if (exact_type.attributesDerived != null) {
+			for (int i = 0; i < exact_type.attributesDerived.length; i++) {
+				if (exact_type.attributesDerived[i] == der_attr) {
+					der_attr_index = i;
+					break;
+				}
+			}
+		}
+		CEntity [] row_of_instances = mod.instances_sim[index_to_type_local];
+		Object value;
+		for (int j = 0; j < mod.lengths[index_to_type_local]; j++) {
+			CEntity instance = row_of_instances[j];
+			if (der_attr_index >= 0) {
+				value = instance.get_derived(exact_type, der_attr_index);
+			} else {
+				value = instance.get_derived_redecl(exact_type, der_attr);
+			}
+			if (value == null) {
+				continue;
+			}
+			if (value == this) {
+				if (result.myType == null || result.myType.express_type == DataType.LIST) {
+					result.addAtTheEnd(instance, null);
+				} else {
+					result.setForNonList(instance, result.myLength, null, null);
+				}
+			} else if (value instanceof CAggregate) {
+				((CAggregate)value).usedin(this, instance, result);
+			}
+		}
+		return result;
+	}
+
+
+	private DataType analyse_attr_type(DataType attr_type) throws SdaiException {
+		if (attr_type.express_type >= DataType.LIST && attr_type.express_type <= DataType.AGGREGATE) {
+			return attr_type;
+		} else if (attr_type.express_type == DataType.ENTITY) {
+			return attr_type;
+		} else if (attr_type.express_type != DataType.DEFINED_TYPE) {
+			return null;
+		}
+		DataType type = attr_type;
+		while (type.express_type == DataType.DEFINED_TYPE) {
+			type = (DataType)((CDefined_type)type).getDomain(null);
+			if (type.express_type >= DataType.LIST && type.express_type <= DataType.AGGREGATE) {
+				return type;
+			}
+			if (type.express_type >= DataType.SELECT && type.express_type <= DataType.ENT_EXT_EXT_SELECT) {
+				return type;
+			} else if (type.express_type == DataType.DEFINED_TYPE) {
+				continue;
+			} else {
+				return null;
+			}
+		}
+		return null;
+	}
+
+
+	private boolean check_type_compatibility(DataType type, CEntity_definition inv_owner_type, 
+				StaticFields staticFields) throws SdaiException {
+		if (type.express_type == DataType.ENTITY) {
+			return inv_owner_type.isSubtypeOf((CEntity_definition)type);
+		} else if (type.express_type >= DataType.LIST && type.express_type <= DataType.AGGREGATE) {
+			DataType next_type = analyse_attr_type((DataType)((EAggregation_type)type).getElement_type(null));
+			if (next_type == null) {
+				return false;
+			}
+			return check_type_compatibility(next_type, inv_owner_type, staticFields);
+		} else {
+			SdaiSession ss = owning_model.repository.session;
+			if (type.express_type >= DataType.EXTENSIBLE_SELECT && ss.sdai_context == null) {
+				staticFields.context_schema = owning_model.underlying_schema;
+				if (!ss.sdai_context_missing) {
+					ss.sdai_context_missing = true;
+					ss.printWarningToLogoSdaiContext(AdditionalMessages.SS_SCMI);
+				}
+			}
+			return ((SelectType)type).analyse_entity_in_select(inv_owner_type, ss.sdai_context);
+		}
 	}
 
 
@@ -2616,6 +2771,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		}
 //long time1=0, time2=0, time3, time4, time5, time6, time7;
 		ASdaiModel dom;
+		staticFields.inst_under_valid = this;
+//String e_nm = getInstanceType().getName(null);
+//boolean bl = false;
+//if (e_nm.equals("stratum_technology_occurrence_link_armx")) bl = true;
 		if (domain == null) {
 			if (staticFields._domain == null) {
 				staticFields._domain = new ASdaiModel();
@@ -2654,17 +2813,21 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 					for (int i = 0; i < ln; i++) {
 //					while(iter.next()) {
 						EWhere_rule wrule = w_rules_ord[i];
+//if (bl) {
 //time1 = System.currentTimeMillis();
-//if (instance_identifier==7889) Value.prnt=true;
+//if (instance_identifier==1004) Value.prnt=true;
+//}
 						check_res = validateWhereRule(staticFields, wrule, (CEntity_definition)wrule.getParent_item(null), rule_class,
 							part_def, dom, true);
 //Value.prnt=false;
+//if (bl) {
 //time2 = System.currentTimeMillis();
-//time3=time2-time1;
+//time3=time2-time1;double tim = ((double)time3)/1000;
 // The below 3 lines can be uncommented when investigating where rules in Validate tool
 //EEntity parent = wrule.getParent_item(null);
 //System.out.println("CEntity   after validateWhereRule ***** wrule: " + wrule.getLabel(null) +
-//"   check_res: " + check_res + "  parent: " + ((CEntity_definition)parent).getName(null));
+//"   check_res: " + check_res + "  parent: " + ((CEntity_definition)parent).getName(null) + "  time: " + tim + " sec");
+//}
 						if (check_res == ELogical.FALSE) {
 							res = check_res;
 							if (viol_rules != null) {
@@ -2702,6 +2865,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 			staticFields._domain.clear();
 		}
 //System.out.println("CEntity  FINAL>>> res: " + res);
+		staticFields.inst_under_valid = null;
 		return res;
 	}
 
@@ -2715,6 +2879,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		if (!rule.testLabel(null)) {
 			throw new SdaiException(SdaiException.FN_NAVL);
 		}
+//if (instance_identifier==7873) Value.prnt=true;
 		if (staticFields.param == null) {
 			staticFields.param = new Class[1];
 			staticFields.param[0] = SdaiContext.class;
@@ -2745,7 +2910,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		try {
 			res = meth.invoke(this, staticFields.arg);
 		} catch (Exception ex) {
-//if (instance_identifier==303 /*&& rule.getLabel(null).equals("wr1")*/) {CATCH_EXCEPTIONS=false;/*Value.prnt=true;*/}
+//if (instance_identifier==8034 && rule.getLabel(null).equals("wr3")) {CATCH_EXCEPTIONS=false;/*Value.prnt=true;*/}
 			if (CATCH_EXCEPTIONS && ex instanceof java.lang.reflect.InvocationTargetException) {
 //				Exception tex = (Exception)((java.lang.reflect.InvocationTargetException)ex).getTargetException();
 				Object tex = ((java.lang.reflect.InvocationTargetException)ex).getTargetException();
@@ -4714,6 +4879,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		SchemaData schemaData;
 //staticFields.entity_values.xim_special_substitute_instance = true;
 		getAll(staticFields.entity_values);
+//staticFields.entity_values.xim_special_substitute_instance = false;
 		EntityValue pval;
 		Value val;
 		byte [] name;
@@ -6415,6 +6581,20 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 	}
 
 
+	private void printWarningToLogoAttribute(SdaiSession session, EAttribute attr, String message) throws SdaiException {
+		String text =
+			message + 
+			SdaiSession.line_separator + AdditionalMessages.RD_ENT + this.getInstanceType().getName(null) +
+			SdaiSession.line_separator + AdditionalMessages.RD_INST + this.instance_identifier +
+			SdaiSession.line_separator + AdditionalMessages.RD_ATTR + attr.getName(null);
+		if (session != null && session.logWriterSession != null) {
+			session.printlnSession(text);
+		} else {
+			SdaiSession.println(text);
+		}
+	}
+
+
 /**
 	Returns <code>true</code> if entity definition specified by the first
 	parameter coincides with entity definition specified by the second
@@ -7312,7 +7492,6 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 */
 	final protected EEntity set_instance(Object old_value, EEntity value)
 			throws SdaiException {
-//		synchronized (syncObject) {
 		if (owning_model == null) {
 			throw new SdaiException(SdaiException.EI_NEXS);
 		}
@@ -7328,14 +7507,59 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 		if (old_value instanceof CEntity) {
 			removeFromInverseList((CEntity)old_value);
 		}
-//System.out.println("  CEntity **** EARLY BINDING inst set: #" + instance_identifier +
-//"   with value: #" + ((CEntity)value).instance_identifier +
-//"   owning_model: " + owning_model.name);
+/*try {
+if (instance_identifier == 8693) {
+System.out.println("  CEntity **** EARLY BINDING inst set: #" + instance_identifier +
+"   with value: #" + ((CEntity)value).instance_identifier +
+"   owning_model: " + owning_model.name);
+System.out.println("CEntity ^^^^^^^^^ this: " + this);
+CEntity inst7636 = (CEntity)owning_model.repository.getSessionIdentifier("#7636");
+System.out.println("CEntity ^^^^^^^^^ inverse list of: #" + inst7636.instance_identifier);
+inst7636.printInverses();
+System.out.println("CEntity ^^^^^^^^^ inverse list of: #" + this.instance_identifier);
+this.printInverses();
+CEntity inst4 = (CEntity)owning_model.repository.getSessionIdentifier("#4");
+System.out.println("CEntity ^^^^^^^^^ inverse list of: #" + inst4.instance_identifier);
+inst4.printInverses();
+CEntity inst7972 = (CEntity)owning_model.repository.getSessionIdentifier("#7972");
+System.out.println("CEntity ^^^^^^^^^ inverse list of: #" + inst7972.instance_identifier);
+inst7972.printInverses();
+System.out.println("");System.out.println("");
+if (((CEntity)value).instance_identifier == 8693) throw new SdaiException(SdaiException.SY_ERR);
+}
+} catch (SdaiException ex) {
+ex.printStackTrace();
+}*/
 		addToInverseList((CEntity)value);
 		owning_model.repository.session.undoRedoModifyPrepare(this);
 		modified();
 		return value;
-//		} // syncObject
+	}
+
+
+/**
+	Performs operations related with assigning value of type entity
+	instance to an attribute that is redeclared as derived.
+	The method is invoked in compiler generated early binding methods.
+*/
+	final protected EEntity set_instanceX(Object old_value, EEntity value)
+			throws SdaiException {
+/*		if (value == null) {
+			throw new SdaiException(SdaiException.VA_NSET);
+		}
+		if (((CEntity)value).owning_model == null) {
+			throw new SdaiException(SdaiException.EI_NVLD, (CEntity)value);
+		}
+if (instance_identifier == 49)
+System.out.println("CEntity  XXXXXXX  this: #" + instance_identifier + 
+"   old_value: " + old_value + "   value: " + value);
+		if (old_value instanceof CEntity) {
+			removeFromInverseList((CEntity)old_value);
+		}
+		modified();
+if (instance_identifier == 49) System.out.println("CEntity  XXXXXXX  this: " + this);
+		return value;*/
+		return set_instance(old_value, value);
 	}
 
 
@@ -8314,6 +8538,8 @@ else System.out.println("   myType is POSITIVE");
 		if (old_value instanceof CEntity) {
 			CEntity to_ent = (CEntity)old_value;
 			if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+/*System.out.println("CEntity:  old_value: #" + to_ent.instance_identifier);
+System.out.println("CEntity:  this instance being unset: #" + instance_identifier);*/
 				removeFromInverseList(to_ent);
 			}
 		} else if (old_value instanceof SdaiModel.Connector) {
@@ -8784,6 +9010,7 @@ else System.out.println("   myType is POSITIVE");
 */
 	static protected CEntity_definition initEntityDefinition(Class cl, SSuper ss) {
 		CEntity_definition def;
+
 		try {
 			if (ss.model.schemaData.noOfEntityDataTypes < 0) {
 				ss.model.startReadOnlyAccess();
@@ -9117,6 +9344,7 @@ else System.out.println("   myType is POSITIVE");
 "   attr_owner: " + attribute.getParent_entity(null).getName(null) + "   edef: " + edef.getName(null));*/
 						v = get_derivedValue(edef, i, context);
 						if (v == null/* || v.tag == PhFileReader.MISSING*/) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VANX);
 							throw new SdaiException(SdaiException.VA_NSET);
 						}
 						v.aux = 2;
@@ -9127,6 +9355,7 @@ else System.out.println("   myType is POSITIVE");
 			if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.DERIVED) {
 				v = get_derivedValue_redecl(edef, (CDerived_attribute)attribute, context);
 				if (v == null) {
+					printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VANX);
 					throw new SdaiException(SdaiException.VA_NSET);
 				}
 				v.aux = 2;
@@ -9280,6 +9509,7 @@ else System.out.println("   myType is POSITIVE");
 						boolean bool = (obj_val instanceof CEntity);
 //						if (!(obj_val instanceof CEntity || obj_val instanceof Connector)) {
 						if (!(bool || obj_val instanceof SdaiModel.Connector)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						val.tag = PhFileReader.ENTITY_REFERENCE;
@@ -9295,6 +9525,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof A_integer)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						val.tag = PhFileReader.EMBEDDED_LIST;
@@ -9311,6 +9542,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof A_double)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						A_double aggr_double = (A_double)obj_val;
@@ -9338,6 +9570,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof A_string)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						val.tag = PhFileReader.EMBEDDED_LIST;
@@ -9354,6 +9587,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof A_enumeration)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						val.tag = PhFileReader.EMBEDDED_LIST;
@@ -9370,6 +9604,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof A_boolean)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						val.tag = PhFileReader.EMBEDDED_LIST;
@@ -9386,6 +9621,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof A_enumeration)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						A_string elements = (A_string)val.reference;
@@ -9403,6 +9639,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof A_binary)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						val.tag = PhFileReader.EMBEDDED_LIST;
@@ -9419,6 +9656,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof CAggregate)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						val.tag = PhFileReader.EMBEDDED_LIST;
@@ -9435,6 +9673,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof CAggregate)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						val.tag = PhFileReader.EMBEDDED_LIST;
@@ -9451,6 +9690,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof Aa_integer)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						val.tag = PhFileReader.EMBEDDED_LIST;
@@ -9467,6 +9707,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof Aa_double)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						val.tag = PhFileReader.EMBEDDED_LIST;
@@ -9483,6 +9724,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof Aa_string)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						val.tag = PhFileReader.EMBEDDED_LIST;
@@ -9499,6 +9741,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof Aa_enumeration)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						val.tag = PhFileReader.EMBEDDED_LIST;
@@ -9515,6 +9758,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof Aa_boolean)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						val.tag = PhFileReader.EMBEDDED_LIST;
@@ -9531,6 +9775,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof Aa_enumeration)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						val.tag = PhFileReader.EMBEDDED_LIST;
@@ -9547,6 +9792,7 @@ else System.out.println("   myType is POSITIVE");
 					obj_val = ssuper.getObject(this, field);
 					if (obj_val != null) {
 						if (!(obj_val instanceof Aaa_double)) {
+							printWarningToLogoAttribute(owning_model.repository.session, saved_attr, AdditionalMessages.AT_VAWR);
 							throw new SdaiException(SdaiException.SY_ERR);
 						}
 						val.tag = PhFileReader.EMBEDDED_LIST;
@@ -9567,6 +9813,7 @@ else System.out.println("   myType is POSITIVE");
 //System.out.println("CEntity   Before switch  ==========  attribute: " + attribute.getName(null) +
 //"   val.aux: " + val.aux + "  inst: #" + instance_identifier +
 //"   instance: " + this);
+			printWarningToLogoAttribute(owning_model.repository.session, attribute, AdditionalMessages.AT_NEXS);
 			throw new SdaiException(SdaiException.SY_ERR, ex);
 		}
 		val.aux = 1;
@@ -10224,7 +10471,7 @@ else System.out.println("   myType is POSITIVE");
 	}
 
 
-	void load_values(RandomAccessFile ur_f, CEntity_definition def) throws java.io.IOException, SdaiException {
+	void load_values(RandomAccessFile ur_f, CEntity_definition def, boolean copied) throws java.io.IOException, SdaiException {
 		int i;
 		StaticFields staticFields = StaticFields.get();
 		if (staticFields.entity_values2 == null) {
@@ -10263,7 +10510,7 @@ else System.out.println("   myType is POSITIVE");
 					}
 					Value val = pval.values[k];
 					try {
-						extract_value_for_undo(val, ur_f, true, (byte)' ', sch_data);
+						extract_value_for_undo(val, ur_f, true, (byte)' ', sch_data, copied);
 					} catch (ArrayIndexOutOfBoundsException ex) {
 						String base = SdaiSession.line_separator + AdditionalMessages.BF_ERR;
 						throw new SdaiException(SdaiException.SY_ERR, base);
@@ -10280,7 +10527,7 @@ else System.out.println("   myType is POSITIVE");
 
 
 	private boolean extract_value_for_undo(Value val, RandomAccessFile ur_f, boolean byte_needed, byte sym,
-				SchemaData sch_data) throws java.io.IOException, SdaiException, ArrayIndexOutOfBoundsException {
+				SchemaData sch_data, boolean copied) throws java.io.IOException, SdaiException, ArrayIndexOutOfBoundsException {
 		SdaiSession se = owning_model.repository.session;
 		byte token;
 
@@ -10361,12 +10608,40 @@ else System.out.println("   myType is POSITIVE");
 				if (val.nested_values[0] == null) {
 					val.nested_values[0] = new Value();
 				}
-				extract_value_for_undo(val.nested_values[0], ur_f, true, (byte)' ', sch_data);
+				extract_value_for_undo(val.nested_values[0], ur_f, true, (byte)' ', sch_data, copied);
 				return false;
 			case '1':
 				val.tag = PhFileReader.ENTITY_REFERENCE;
+				inst_id = ur_f.readLong();
 				pop_index = ur_f.readShort();
-				val.reference = owning_model.instances_sim[pop_index][ur_f.readInt()];
+				if (!copied) {
+					val.reference = owning_model.instances_sim[pop_index][ur_f.readInt()];
+					return false;
+				}
+				int instance_index = ur_f.readInt();
+				if (inst_id <= instance_identifier) {
+					val.reference = owning_model.instances_sim[pop_index][instance_index];
+					return false;
+				}
+				int pos = owning_model.findInstancePositionRedo(0, owning_model.lengths[pop_index] - 1, pop_index, inst_id);
+				if (pos < 0) {
+					pos = -pos;
+					if (pos >= owning_model.lengths[pop_index]) {
+						pos = 0;
+					}
+					val.reference = owning_model.instances_sim[pop_index][pos];
+					return false;
+				}
+				schd = owning_model.underlying_schema.modelDictionary.schemaData;
+				CEntityDefinition edef = schd.entities[pop_index];
+				SdaiModel dict_m = ((CSchema_definition)edef.owning_model.described_schema).modelDictionary;
+				CEntity new_inst = dict_m.schemaData.super_inst.makeInstance(edef.getEntityClass(), owning_model, -1, 0);
+				new_inst.instance_identifier = inst_id;
+				CEntity[] pop_instances_sim = owning_model.instances_sim[pop_index];
+				System.arraycopy(pop_instances_sim, pos, pop_instances_sim, pos + 1, owning_model.lengths[pop_index] - pos);
+				pop_instances_sim[pos] = new_inst;
+				owning_model.lengths[pop_index]++;
+				val.reference = new_inst;
 				return false;
 			case '2':
 				inst_id = ur_f.readLong();
@@ -10497,7 +10772,7 @@ else System.out.println("   myType is POSITIVE");
 					if (val.nested_values[index_in_list] == null) {
 						val.nested_values[index_in_list] = new Value();
 					}
-					boolean res = extract_value_for_undo(val.nested_values[index_in_list], ur_f, false, bt, sch_data);
+					boolean res = extract_value_for_undo(val.nested_values[index_in_list], ur_f, false, bt, sch_data, copied);
 					if (res) {
 						con_created = true;
 					}

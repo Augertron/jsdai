@@ -21,6 +21,51 @@
  * See also http://www.jsdai.net/
  */
 
+/*
+
+generate index , perhaps with such elements:
+
+<element name="ABC" type="entity" ref="xxxx" />
+
+
+
+//prints all schemas known for session
+	private void printSchemas(SdaiRepository repo, String schemas_title, SdaiTransaction trans) throws SdaiException, IOException {
+
+  == invokes creating of these html pages:
+
+		File fros = new File(baseDir+File.separator+"overview-summary.html");
+		if (!fros.exists()) {
+			createOverviewSummary(baseDir+File.separator+"overview-summary.html", repo);
+		}
+		File fraf = new File(baseDir+File.separator+"allclasses-frame.html");
+		if (!fraf.exists()) {
+			createAllClasses(baseDir+File.separator+"allclasses-frame.html");
+		}
+		File frp = new File(baseDir+File.separator+"packages.html");
+		if (!frp.exists()) {
+			createPackages(baseDir+File.separator+"packages.html");
+		}
+
+    f = new File(baseDir+File.separator+"index.html");
+    if (!f.exists()) {
+     .....
+     creates (fixed) index.html but also invokes in a loop printSchema (see next)
+
+    }
+
+
+
+
+
+//prints one schema with package list and files for every entity and defined type
+	private void printSchema(SdaiRepository repo, ESchema_definition schema) throws SdaiException, IOException {
+
+
+
+
+*/
+
 package jsdai.tools;
 
 import java.io.*;
@@ -34,15 +79,13 @@ import java.util.regex.Pattern;
 
 import jsdai.util.*;
 
-public class ExpressDoc {
+public class ExpressXmlIndex {
 
 	public static interface StrOp {
 		public void op(StringBuffer result) throws SdaiException;
 	}
 
-
   HashSet select_loops;
-	HashSet used_types;
 
 	static boolean flag_debug = false;
 
@@ -53,7 +96,12 @@ public class ExpressDoc {
 	PrintWriter pw;
 	FileWriter fw;
 	File f;
+	PrintWriter pwrr;
+	FileWriter fwrr;
+	File frr;
+
 	static String baseDir = "";
+	static String xmlFile = "express_index.xml";
 	String schemaName = "";
 	ESchema_definition schema = null;
 	ASdaiModel schemas = new ASdaiModel();
@@ -114,7 +162,7 @@ public class ExpressDoc {
 
     	start_time = System.currentTimeMillis();
 
-			ExpressDoc ge = new ExpressDoc();
+			ExpressXmlIndex ge = new ExpressXmlIndex();
 			SdaiSession session = SdaiSession.openSession();
 			// SdaiTransaction trans = session.startTransactionReadOnlyAccess();
 			SdaiTransaction trans = session.startTransactionReadWriteAccess();
@@ -142,6 +190,9 @@ public class ExpressDoc {
 				} else if (args[i].equalsIgnoreCase("-output")) {
 					i++;
 					ge.baseDir = args[i];
+				} else if (args[i].equalsIgnoreCase("-file")) {
+					i++;
+					ge.xmlFile = args[i];
 				} else if (args[i].equalsIgnoreCase("-title")) {
 					i++;
 					title = args[i];
@@ -211,7 +262,7 @@ public class ExpressDoc {
 			}
 			if (location.equals("") || baseDir.equals("")) {
 				System.out.println("Wrong parameters specified!");
-				System.out.println("Program usage: java ExpressDoc options");
+				System.out.println("Program usage: java ExpressXmlIndex options");
 				System.out.println("Options:");
 				System.out.println("-location xxx (Specifies path to sdai repository, which contains data for documentation generation)");
 				System.out.println("-output xxx (Specifies output path where created documentation will be placed)");
@@ -227,12 +278,12 @@ public class ExpressDoc {
 			}
             if (flag_generate_summary) {
 //			System.out.println("<XD-01>: generating summary");
-            	generateSummaryFile();
+//<XML>            	generateSummaryFile();
 //			System.out.println("<XD-02>: generating summary ended");
             }
 //			System.out.println("<XD-03>: generating schemas");
 						globalSession = session;
-            ge.printSchemas(SimpleOperations.linkRepositoryOrName("ExpressDoc", location), title, trans);
+            ge.printSchemas(SimpleOperations.linkRepositoryOrName("ExpressXmlIndex", location), title, trans);
 //			System.out.println("<XD-04>: generating schemas ended");
             //String sTmp="abc_de";
             //System.out.println(sTmp.replaceAll("c_d","C_D"));
@@ -740,7 +791,7 @@ REMOVE
 				System.out.println("iso_db file path - file does not exist: " + fiso.getAbsolutePath());
 			}
 		}
-
+/*  // <XML>
 		File fros = new File(baseDir+File.separator+"overview-summary.html");
 		if (!fros.exists()) {
 			createOverviewSummary(baseDir+File.separator+"overview-summary.html", repo);
@@ -779,16 +830,18 @@ REMOVE
 		f = new File(baseDir+File.separator+"jsdai");
 		if (!f.exists()) {
 			f.mkdir();
-   		}
+   	}
+*/   	
 //		repo.openRepository();
 		// RR - temp for debugging:
-//		repo.exportClearTextEncoding("_express_doc.pf");
+		//repo.exportClearTextEncoding("_express_doc.pf");
 
 //         schemas = repo.getSchemas().getAssociatedModels();
 		schemas = new ASdaiModel();
 		ASdaiModel models = repo.getModels();
 
-		String justIndex = printH3(schemas_title);
+//<XML>		String justIndex = printH3(schemas_title);
+		String justIndex = "";
 		SdaiIterator iter = models.createIterator();
 // 		Vector model_v = new Vector();
 		TreeSet modelSet = new TreeSet(new SorterForModels());
@@ -828,8 +881,48 @@ REMOVE
 			}
 			schemas.addByIndex(1, model);
 		}
-		/*Iterator */modelIter = modelSet.iterator();
+
+
+		// if it has be the project name, it is not possible yet, for now - a fixed name
+		frr = new File(baseDir+File.separator + xmlFile);
+		frr.createNewFile();
+		fwrr = new FileWriter(frr);
+		pw = new PrintWriter(new BufferedWriter(fwrr));
+
+		pw.println(printXmlHead("KUKU"));
+		pw.println(printExpress_indexHead());									
+    pw.println("\t<!-- Schemas -->");
+
+    //<XML>RR - adding this loop so that all schemas can be printed first in the same file as entities, etc for schemas
+    // otherwise they can be mixed schema - all its stuff, another schema - all its stuff, etc.
+		modelIter = modelSet.iterator();
 		int modelNum = 0;
+		while (modelIter.hasNext()) {
+			SdaiModel model = (SdaiModel)modelIter.next();
+			if (model.getName().charAt(0) != '_') {
+				if (model.getMode() == 0) {
+					model.startReadOnlyAccess();
+				}
+				ESchema_definition schema = findSchema(model); 
+        String schema_name = schema.getName(null);
+        String lower_schema_name = schema_name.toLowerCase();
+        String schema_type = null;
+        String directory_name = null;
+        if (lower_schema_name.endsWith("_mim") || lower_schema_name.endsWith("_arm")) {
+        	schema_type = "module";
+        	directory_name = lower_schema_name.substring(0,lower_schema_name.length()-4);
+        } else {
+        	schema_type = "resource";
+        	directory_name = lower_schema_name;
+        }
+        pw.println("\t<schema name=\"" + schema_name + "\" directory=\"" + directory_name + "\" type=\"" + schema_type + "\" />");
+        
+ 			}
+    } // while
+
+		/*Iterator */
+		modelIter = modelSet.iterator();
+		modelNum = 0;
 		while (modelIter.hasNext()) {
 		    SdaiModel model = (SdaiModel)modelIter.next();
 			if (model.getName().charAt(0) != '_') {
@@ -867,8 +960,11 @@ REMOVE
                                 printSchema(repo, schema);
 //                                justIndex += "<FONT ID=\"FrameItemFont\"><A HREF=\"jsdai/"+correctSchemaName("S"+getUpper(schema.getName(null)))+"/package-frame.html\" TARGET=\"packageFrame\">"+correctSchemaName(schema.getName(null))+"</A></FONT>\n";
 //                                justIndex += "<FONT ID=\"FrameItemFont\"><A HREF=\"jsdai/"+correctSchemaName("S"+getUpper(schema.getName(null)))+"/package-frame.html\" TARGET=\"packageFrame\">"+correctSchemaName(schema.getName(null))+"</A></FONT>  " + printIsoNumber(schema.getName(null)) + " \n";
-                                justIndex += "<NOBR><FONT ID=\"FrameItemFont\"><A HREF=\"jsdai/"+correctSchemaName("S"+getUpper(schema.getName(null)))+"/package-frame.html\" TARGET=\"packageFrame\">"+correctSchemaName(schema.getName(null))+"</A></FONT>  " + printIsoNumber(schema.getName(null)) + "</NOBR>";
-                                justIndex += "<BR>\n";
+//<XML>                                justIndex += "<NOBR><FONT ID=\"FrameItemFont\"><A HREF=\"jsdai/"+correctSchemaName("S"+getUpper(schema.getName(null)))+"/package-frame.html\" TARGET=\"packageFrame\">"+correctSchemaName(schema.getName(null))+"</A></FONT>  " + printIsoNumber(schema.getName(null)) + "</NOBR>";
+//                                justIndex += "Name(null))+"</A></FONT>  " + printIsoNumber(schema.getName(null)) + "</NOBR>";
+                                  // may not be needed
+		//															justIndex += "\t<schema name=\"" + schema.getName(null) + "\" iso=\"" + printIsoNumber(schema.getName(null)) + "\" ref=\"" + schema.getName(null) + ".xml\" />\n";
+//<XML>                                justIndex += "<BR>\n";
                             }
                         }
                     } else {
@@ -876,8 +972,9 @@ REMOVE
                         printSchema(repo, schema);
 //                        justIndex += "<FONT ID=\"FrameItemFont\"><A HREF=\"jsdai/"+correctSchemaName("S"+getUpper(schema.getName(null)))+"/package-frame.html\" TARGET=\"packageFrame\">"+correctSchemaName(schema.getName(null))+"</A></FONT>\n";
 //                        justIndex += "<FONT ID=\"FrameItemFont\"><A HREF=\"jsdai/"+correctSchemaName("S"+getUpper(schema.getName(null)))+"/package-frame.html\" TARGET=\"packageFrame\">"+correctSchemaName(schema.getName(null))+"</A></FONT>  " + printIsoNumber(schema.getName(null))+ " \n";
-                        justIndex += "<NOBR><FONT ID=\"FrameItemFont\"><A HREF=\"jsdai/"+correctSchemaName("S"+getUpper(schema.getName(null)))+"/package-frame.html\" TARGET=\"packageFrame\">"+correctSchemaName(schema.getName(null))+"</A></FONT>  " + printIsoNumber(schema.getName(null))+ "</NOBR>";
-                        justIndex += "<BR>\n";
+//<XML>                        justIndex += "<NOBR><FONT ID=\"FrameItemFont\"><A HREF=\"jsdai/"+correctSchemaName("S"+getUpper(schema.getName(null)))+"/package-frame.html\" TARGET=\"packageFrame\">"+correctSchemaName(schema.getName(null))+"</A></FONT>  " + printIsoNumber(schema.getName(null))+ "</NOBR>";
+//<XML>                        justIndex += "<BR>\n";
+	//													justIndex += "\t<schema name=\"" + schema.getName(null) + "\" iso=\"" + printIsoNumber(schema.getName(null)) + "\" ref=\"" + schema.getName(null) + ".xml\" />\n";
                     }
                 //}
 			}
@@ -994,17 +1091,20 @@ System.out.println("<3>: " + nt);
 		}
 //adding new packages in the list
 		if (complexIndex) {
-			global_letters = printComplexIndex(index, complex_title);
+//<XML>			global_letters = printComplexIndex(index, complex_title);
 		} else {
 //			printIndex(index, schemas_title);
 		}
 //		justIndex += "<BR>\n";
 //		justIndex += "<FONT ID=\"FrameItemFont\"><A HREF=\""+indexName+"\" TARGET=\"classFrame\">Index</A></FONT>\n";
 //		justIndex += "<BR>\n";
-		File fr = new File(baseDir+File.separator+"overview-frame.html");
+//<XML>		File fr = new File(baseDir+File.separator+"overview-frame.html");
+		File fr = new File(baseDir+File.separator+"_index_of_schemas.xml");
 		if (!fr.exists()) {
-			createOverviewFrame(baseDir+File.separator+"overview-frame.html");
+//<XML>			createOverviewFrame(baseDir+File.separator+"overview-frame.html");
+//			createOverviewFrame(baseDir+File.separator+"_index_of_schemas.xml");
 		}
+/*  // trying to suppress the schema index file
 		int size = (int)fr.length();
 		FileReader reader = new FileReader(fr);
 		char[] all = new char[size];
@@ -1012,6 +1112,7 @@ System.out.println("<3>: " + nt);
 		reader.close();
 
 		FileWriter writer = new FileWriter(fr);
+		justIndex += "\n</schema_index>\n";  //<XML>
 		int k = 0;
 		int find = 0;
 		while ((find != 2) && (k < size)) {
@@ -1035,7 +1136,11 @@ System.out.println("<3>: " + nt);
 			k++;
 		}
 		writer.close();
-        
+*/
+   
+    pw.println(printExpress_indexTail());									
+	  pw.close();
+     
 	  trans.endTransactionAccessAbort();
 		repo.closeRepository();
 		repo.unlinkRepository();
@@ -1076,13 +1181,15 @@ System.out.println("<3>: " + nt);
 
 	static private void insertLinkToFile(String link, String name) throws IOException {
 		String stuff = "";
-		stuff += "<TR>\n";
-		stuff += "<TD NOWRAP><FONT CLASS=\"FrameItemFont\"><A HREF=\""+link+"\" TARGET=\"classFrame\">"+name+"</A></FONT>\n";
+//<XML>		stuff += "<TR>\n";
+//<XML>		stuff += "<TD NOWRAP><FONT CLASS=\"FrameItemFont\"><A HREF=\""+link+"\" TARGET=\"classFrame\">"+name+"</A></FONT>\n";
 
-		File fr = new File(baseDir+File.separator+"overview-frame.html");
+//<XML>		File fr = new File(baseDir+File.separator+"overview-frame.html");
+		File fr = new File(baseDir+File.separator+"_index_of_schemas.xml");
 
 		if (!fr.exists()) {
-			fr = createOverviewFrame(baseDir+File.separator+"overview-frame.html");
+//<XML>			fr = createOverviewFrame(baseDir+File.separator+"overview-frame.html");
+//			fr = createOverviewFrame(baseDir+File.separator+"_index_of_schemas.xml");
 		}
 
 		int size = (int)fr.length();
@@ -1121,18 +1228,18 @@ System.out.println("<3>: " + nt);
 	private void printSchema(SdaiRepository repo, ESchema_definition schema) throws SdaiException, IOException {
 		schemaName = schema.getName(null);
         SdaiModel model = schema.findEntityInstanceSdaiModel();
-		f = new File(baseDir+File.separator+"jsdai"+File.separator+correctSchemaName("S"+getUpper(schemaName)));
-		f.mkdir();
+//<XML>		f = new File(baseDir+File.separator+"jsdai"+File.separator+correctSchemaName("S"+getUpper(schemaName)));
+//<XML>		f.mkdir();
 		PrintWriter partIndex = null;
 		try {
 		if (!complex_schema) {
-			f = new File(baseDir+File.separator+"jsdai"+File.separator+correctSchemaName("S"+getUpper(schemaName))+File.separator+"package-frame.html");
-			f.createNewFile();
-			fw = new FileWriter(f);
-			partIndex = new PrintWriter(new BufferedWriter(fw));
-			partIndex.print(printHtmlHead(schema.getName(null)));
-			partIndex.print(println(printHRefandTarget("<I>"+correctSchemaName(schemaName)+"</I>", "package-summary.html", "classFrame")));
-			partIndex.print(printTableHeader());
+//<XML>				f = new File(baseDir+File.separator+"jsdai"+File.separator+correctSchemaName("S"+getUpper(schemaName))+File.separator+"package-frame.html");
+//<XML>				f.createNewFile();
+//<XML>				fw = new FileWriter(f);
+//<XML>				partIndex = new PrintWriter(new BufferedWriter(fw));
+//<XML>				partIndex.print(printHtmlHead(schema.getName(null)));
+//<XML>				partIndex.print(println(printHRefandTarget("<I>"+correctSchemaName(schemaName)+"</I>", "package-summary.html", "classFrame")));
+//<XML>				partIndex.print(printTableHeader());
 		}
 
         //-- Algorithms declarations --
@@ -1183,15 +1290,15 @@ System.out.println("<3>: " + nt);
 		}
         if (types.getMemberCount() > 0) {
 			if(!complex_schema) {
-				partIndex.print(printH3("Defined types"));
+//<XML>					partIndex.print(printH3("Defined types"));
 			}
 			Iterator atypesIter = atypes.iterator();
 			while (atypesIter.hasNext()) {
 				EDefined_type type = (EDefined_type)atypesIter.next();
-				printDefinedType(type, false);
+//<XML>				printDefinedType(type, false);
 				if(!complex_schema) {
-					partIndex.print(printHRefandTarget(type.getName(null), getUpper(type.getName(null))+".html", "classFrame"));
-					partIndex.print(println());
+//<XML>						partIndex.print(printHRefandTarget(type.getName(null), getUpper(type.getName(null))+".html", "classFrame"));
+//<XML>						partIndex.print(println());
 				}
 			}
 		}
@@ -1223,29 +1330,29 @@ System.out.println("<3>: " + nt);
 // 	    System.out.println("Schema start D: " + schemaName);
 		if (aentity.size() > 0) {
 			if(!complex_schema) {
-				partIndex.print(printH3("Entities"));
+//<XML>					partIndex.print(printH3("Entities"));
 			}
 			for (Iterator i = aentity.iterator(); i.hasNext(); ) {
 				EEntity_definition entity = (EEntity_definition)i.next();
-				printEntity(entity, schema);
+//<XML>				printEntity(entity, schema);
 				if(!complex_schema) {
-					partIndex.print(printHRefandTarget(entity.getName(null), getUpper(entity.getName(null))+".html", "classFrame"));
-					partIndex.print(println());
+//<XML>						partIndex.print(printHRefandTarget(entity.getName(null), getUpper(entity.getName(null))+".html", "classFrame"));
+//<XML>						partIndex.print(println());
 				}
 			}
 		}
 // 	    System.out.println("Schema start E: " + schemaName);
 		if (acomplex.size() > 0) {
 			if(!complex_schema) {
-				partIndex.print(printH3("Complex entities"));
+//<XML>					partIndex.print(printH3("Complex entities"));
 			}
 			for (Iterator i = acomplex.iterator(); i.hasNext(); ) {
 				EEntity_definition entity = (EEntity_definition)i.next();
-				printEntity(entity, schema);
+//<XML>				printEntity(entity, schema);
                 //System.out.println(entity);
 				if(!complex_schema) {
-					partIndex.print(printHRefandTarget(getComplexName(entity.getName(null)), getUpper(getComplexName(entity.getName(null)))+".html", "classFrame"));
-					partIndex.print(println());
+//<XML>						partIndex.print(printHRefandTarget(getComplexName(entity.getName(null)), getUpper(getComplexName(entity.getName(null)))+".html", "classFrame"));
+//<XML>						partIndex.print(println());
 				}
 			}
 		}
@@ -1265,15 +1372,15 @@ System.out.println("<3>: " + nt);
 		}
     if (arules.size() > 0) {
 		if(!complex_schema) {
-			partIndex.print(printH3("Global rules"));
+//<XML>				partIndex.print(printH3("Global rules"));
 		}
 			Iterator arulesIter = arules.iterator();
 			while (arulesIter.hasNext()) {
 				EGlobal_rule rule = (EGlobal_rule)arulesIter.next();
-                printGlobalRule(rule, schema);
+//<XML>                printGlobalRule(rule, schema);
 				if(!complex_schema) {
-					partIndex.print(printHRefandTarget(rule.getName(null), getUpper(rule.getName(null))+".html", "classFrame"));
-					partIndex.print(println());
+//<XML>						partIndex.print(printHRefandTarget(rule.getName(null), getUpper(rule.getName(null))+".html", "classFrame"));
+//<XML>						partIndex.print(println());
 				}
 			}
 		}
@@ -1298,16 +1405,16 @@ System.out.println("<3>: " + nt);
 //System.out.println("<> in subtype constraints - size: " + aconstraints.size());
     		if (aconstraints.size() > 0) {
 				if(!complex_schema) {
-					partIndex.print(printH3("Subtype Constraints"));
+//<XML>						partIndex.print(printH3("Subtype Constraints"));
 				}
 					Iterator aconstraintsIter = aconstraints.iterator();
 					while (aconstraintsIter.hasNext()) {
 						ESub_supertype_constraint constraint = (ESub_supertype_constraint)aconstraintsIter.next();
-          	printSubtypeConstraint(constraint, schema);
+//<XML>          	printSubtypeConstraint(constraint, schema);
           				if(!complex_schema) {
-          					partIndex.print(printHRefandTarget(constraint.getName(null), getUpper(constraint.getName(null))+".html", "classFrame"));
-          					partIndex.print(println());
-          				}
+//<XML>	          					partIndex.print(printHRefandTarget(constraint.getName(null), getUpper(constraint.getName(null))+".html", "classFrame"));
+//<XML>	          					partIndex.print(println());
+          	}
 					}
 				}
 
@@ -1315,29 +1422,29 @@ System.out.println("<3>: " + nt);
         // --- Algorithms ---
     if (afunctions.size() > 0) {
 		if(!complex_schema) {
-			partIndex.print(printH3("Functions"));
+//<XML>				partIndex.print(printH3("Functions"));
 		}
 			Iterator afunctionsIter = afunctions.iterator();
 			while (afunctionsIter.hasNext()) {
 				EFunction_definition function = (EFunction_definition)afunctionsIter.next();
-                printAlgorithm(function, schema);
+//<XML>                printAlgorithm(function, schema);
 				if(!complex_schema) {
-					partIndex.print(printHRefandTarget(function.getName(null), getUpper(function.getName(null))+".html", "classFrame"));
-					partIndex.print(println());
+//<XML>						partIndex.print(printHRefandTarget(function.getName(null), getUpper(function.getName(null))+".html", "classFrame"));
+//<XML>						partIndex.print(println());
 				}
 			}
 		}
     if (aprocedures.size() > 0) {
 		if(!complex_schema) {
-			partIndex.print(printH3("Procedures"));
+//<XML>				partIndex.print(printH3("Procedures"));
 		}
 			Iterator aproceduresIter = aprocedures.iterator();
 			while (aproceduresIter.hasNext()) {
 				EProcedure_definition procedure = (EProcedure_definition)aproceduresIter.next();
-                printAlgorithm(procedure, schema);
+//<XML>                printAlgorithm(procedure, schema);
 				if(!complex_schema) {
-					partIndex.print(printHRefandTarget(procedure.getName(null), getUpper(procedure.getName(null))+".html", "classFrame"));
-					partIndex.print(println());
+//<XML>						partIndex.print(printHRefandTarget(procedure.getName(null), getUpper(procedure.getName(null))+".html", "classFrame"));
+//<XML>						partIndex.print(println());
 				}
 			}
 		}
@@ -1356,15 +1463,15 @@ System.out.println("<3>: " + nt);
 		}
         if (aconstants.size() > 0) {
 			if(!complex_schema) {
-				partIndex.print(printH3("Constants"));
+//<XML>					partIndex.print(printH3("Constants"));
 			}
 			Iterator aconstantsIter = aconstants.iterator();
 			while (aconstantsIter.hasNext()) {
 				EConstant_definition constant = (EConstant_definition)aconstantsIter.next();
-                printConstant(constant, schema);
+//<XML>                printConstant(constant, schema);
 				if(!complex_schema) {
-					partIndex.print(printHRefandTarget(constant.getName(null), getUpper(constant.getName(null))+".html", "classFrame"));
-					partIndex.print(println());
+//<XML>						partIndex.print(printHRefandTarget(constant.getName(null), getUpper(constant.getName(null))+".html", "classFrame"));
+//<XML>						partIndex.print(println());
 				}
 			}
 		}
@@ -1382,10 +1489,10 @@ System.out.println("<3>: " + nt);
 //			partIndex += "</TD>";
 //			partIndex += "</TR>";
 //			partIndex += "</TABLE>";
-		   partIndex.print(printTableTail());
-			partIndex.print(printHtmlTail());
-			partIndex.close();
-			partIndex = null;
+//<XML>			   partIndex.print(printTableTail());
+//<XML>				partIndex.print(printHtmlTail());
+//<XML>				partIndex.close();
+//<XML>				partIndex = null;
 		} else {
 // 		    System.out.println("Schema start E1: " + schemaName);
 			TreeSet complex_types = new TreeSet(new SorterForEntities());
@@ -1400,49 +1507,51 @@ System.out.println("<3>: " + nt);
             complex_types.addAll(afunctions);
             complex_types.addAll(aprocedures);
 			complex_types.addAll(aconstraints);
-			f = new File(baseDir+File.separator+"jsdai"+File.separator+correctSchemaName("S"+getUpper(schemaName))+File.separator+"package-frame.html");
-			f.createNewFile();
-			fw = new FileWriter(f);
-			partIndex = new PrintWriter(new BufferedWriter(fw));
-			partIndex.print(printHtmlHead(schema.getName(null)));
-			partIndex.print(println(printHRefandTarget("<I>"+correctSchemaName(schemaName)+"</I>", "package-summary.html", "classFrame")));
-			if ((ref_aconstants.size() > 0) || (ref_atypes.size() > 0) || (ref_aentity.size() > 0) || (ref_arules.size() > 0) || (ref_afunctions.size() > 0) || (ref_aprocedures.size() > 0)) {
-				partIndex.print(print("short  "));
-				partIndex.print(printHRefandTarget("long", "package-frame-long.html", "packageFrame"));
-				partIndex.print(println());
-			} else {
-				partIndex.print(println());
-			}
-			printLeftLowerIndex(partIndex, complex_types, model);
-			partIndex.print(printHtmlTail());
+
+//<XML>			f = new File(baseDir+File.separator+"jsdai"+File.separator+correctSchemaName("S"+getUpper(schemaName))+File.separator+"package-frame.html");
+//<XML>				f.createNewFile();
+//<XML>				fw = new FileWriter(f);
+//<XML>				partIndex = new PrintWriter(new BufferedWriter(fw));
+//<XML>	partIndex.println("<<<<<KUKU COMPLEX KUKU>>>>>");
+//<XML>				partIndex.print(printHtmlHead(schema.getName(null)));
+//<XML>				partIndex.print(println(printHRefandTarget("<I>"+correctSchemaName(schemaName)+"</I>", "package-summary.html", "classFrame")));
+				if ((ref_aconstants.size() > 0) || (ref_atypes.size() > 0) || (ref_aentity.size() > 0) || (ref_arules.size() > 0) || (ref_afunctions.size() > 0) || (ref_aprocedures.size() > 0)) {
+//<XML>					partIndex.print(print("short  "));
+//<XML>					partIndex.print(printHRefandTarget("long", "package-frame-long.html", "packageFrame"));
+//<XML>					partIndex.print(println());
+				} else {
+//					partIndex.print(println());
+				}
+//<XML>				printLeftLowerIndex(partIndex, complex_types, model);
+//<XML>				partIndex.print(printHtmlTail());
 // 			System.out.println("Schema start E2: " + schemaName);
-			partIndex.close();
-			partIndex = null;
+//<XML>				partIndex.close();
+				partIndex = null;
 // 			System.out.println("Schema start E3: " + schemaName);
-			if ((ref_aconstants.size() > 0) || (ref_atypes.size() > 0) || (ref_aentity.size() > 0) || (ref_arules.size() > 0) || (ref_afunctions.size() > 0) || (ref_aprocedures.size() > 0)) {
-				f = new File(baseDir+File.separator+"jsdai"+File.separator+correctSchemaName("S"+getUpper(schemaName))+File.separator+"package-frame-long.html");
-				f.createNewFile();
-				fw = new FileWriter(f);
-				partIndex = new PrintWriter(new BufferedWriter(fw));
-				partIndex.print(printHtmlHead(schema.getName(null)));
-				partIndex.print(println(printHRefandTarget("<I>"+correctSchemaName(schemaName)+"</I>", "package-summary.html", "classFrame")));
-				partIndex.print(printHRefandTarget("short", "package-frame.html", "packageFrame")+"  ");
-				partIndex.print(print("long"));
-				partIndex.print(println());
+				if ((ref_aconstants.size() > 0) || (ref_atypes.size() > 0) || (ref_aentity.size() > 0) || (ref_arules.size() > 0) || (ref_afunctions.size() > 0) || (ref_aprocedures.size() > 0)) {
+//<XML>					f = new File(baseDir+File.separator+"jsdai"+File.separator+correctSchemaName("S"+getUpper(schemaName))+File.separator+"package-frame-long.html");
+//<XML>					f.createNewFile();
+//<XML>					fw = new FileWriter(f);
+//<XML>					partIndex = new PrintWriter(new BufferedWriter(fw));
+//<XML>					partIndex.print(printHtmlHead(schema.getName(null)));
+//<XML>					partIndex.print(println(printHRefandTarget("<I>"+correctSchemaName(schemaName)+"</I>", "package-summary.html", "classFrame")));
+//<XML>					partIndex.print(printHRefandTarget("short", "package-frame.html", "packageFrame")+"  ");
+//<XML>					partIndex.print(print("long"));
+//<XML>					partIndex.print(println());
 // 				System.out.println("Schema start E4: " + schemaName);
 // 				addSorted(complex_types, ref_atypes);
 // 				addSorted(complex_types, ref_aentity);
                 complex_types.addAll(ref_aconstants);
                 complex_types.addAll(ref_atypes);
-				complex_types.addAll(ref_aentity);
+								complex_types.addAll(ref_aentity);
                 complex_types.addAll(ref_arules);
                 complex_types.addAll(ref_afunctions);
                 complex_types.addAll(ref_aprocedures);
                 complex_types.addAll(ref_aconstraints);
-				printLeftLowerIndex(partIndex, complex_types, model);
-				partIndex.print(printHtmlTail());
-				partIndex.close();
-				partIndex = null;
+//<XML>					printLeftLowerIndex(partIndex, complex_types, model);
+//<XML>					partIndex.print(printHtmlTail());
+//<XML>					partIndex.close();
+//<XML>					partIndex = null;
 			}
 		}
 
@@ -1451,17 +1560,17 @@ System.out.println("<3>: " + nt);
 // 		addSorted(index, atypes);
 // 		addSorted(index, aentity);
 // 		addSorted(index, acomplex);
-        index.addAll(aconstants);
-		index.addAll(atypes);
-		index.addAll(aentity);
+      index.addAll(aconstants);
+			index.addAll(atypes);
+			index.addAll(aentity);
 		//index.addAll(acomplex);
-        index.addAll(arules);
-        index.addAll(afunctions);
-        index.addAll(aprocedures);
-				index.addAll(aconstraints);
+       index.addAll(arules);
+       index.addAll(afunctions);
+       index.addAll(aprocedures);
+			 index.addAll(aconstraints);
         
 // 		System.out.println("Schema start G: " + schemaName);
-		printSchemaSummary(repo, schema);
+			printSchemaSummary(repo, schema);
 // 		System.out.println("Schema start H: " + schemaName);
         vAlgorithmDefinition.clear();
 		} finally {
@@ -1533,32 +1642,45 @@ System.out.println("<3>: " + nt);
 
 //prints package summary for schema
 	private void printSchemaSummary(SdaiRepository repo, final ESchema_definition schema) throws SdaiException, IOException {
-		f = new File(baseDir+File.separator+"jsdai"+File.separator+correctSchemaName("S"+getUpper(schemaName))+File.separator+"package-summary.html");
+//<XML>		f = new File(baseDir+File.separator+"jsdai"+File.separator+correctSchemaName("S"+getUpper(schemaName))+File.separator+"package-summary.xml");
+
+// will print all the schemas in the same single file
+/*
+		f = new File(baseDir+File.separator + schema.getName(null) + ".xml");
 		f.createNewFile();
 		fw = new FileWriter(f);
 		PrintWriter pw = new PrintWriter(new BufferedWriter(fw));
+*/
 		try {
 		StringBuffer partSummary = new StringBuffer();
-		printHtmlHead(partSummary, schema.getName(null));
+//<XML>		printHtmlHead(partSummary, schema.getName(null));
+
+//		printXmlHead(partSummary, schema.getName(null));
+//		printExpress_indexHead(partSummary);									
 		SdaiIterator it;
-		printNavBar(partSummary);
+//<XML>		printNavBar(partSummary);
 //    partSummary += printH3(schema.getName(null) + printTab(printIsoNumber(schema.getName(null))));
-        printH3ISO(partSummary, schema.getName(null));
+//<XML>        printH3ISO(partSummary, schema.getName(null));
 //		partSummary += printIsoNumber(schema.getName(null));
+
+/* <XML>
 		printTab(partSummary, new StrOp() {
 				public void op(StringBuffer result) throws SdaiException {
 					result.append("identification:")
 						.append(schema.testIdentification(null)?schema.getIdentification(null):" - ");
 				}
 		});
-    partSummary.append(printBreak());
+*/
+//<XML>    partSummary.append(printBreak());
+/* <XML>
     String doc = findDocFor(schema);
 		if (!doc.equals("")) {
 			partSummary.append(doc).append(printBreak());
 		}
+*/
 		writeToAndClean(partSummary, pw);
-		printInterfacedDeclarations(partSummary, schema);
-		writeToAndClean(partSummary, pw);
+//<XML>		printInterfacedDeclarations(partSummary, schema);
+//<XML>		writeToAndClean(partSummary, pw);
 //		ALocal_declaration local_result = new ALocal_declaration();
 //		CLocal_declaration.usedinParent(null, schema, null, local_result);
 		SdaiModel model = schema.findEntityInstanceSdaiModel();
@@ -1584,17 +1706,40 @@ System.out.println("<3>: " + nt);
 //System.out.println("<local declaration definition>: " + type);
 			entities.add(type);
 		}
+		
+    String schema_name = schema.getName(null);
+    String lower_schema_name = schema_name.toLowerCase();
+    String schema_type = null;
+    String directory_name = null;
+    if (lower_schema_name.endsWith("_mim") || lower_schema_name.endsWith("_arm")) {
+    	schema_type = "module";
+      directory_name = lower_schema_name.substring(0,lower_schema_name.length()-4);
+    } else {
+    	schema_type = "resource";
+      directory_name = lower_schema_name;
+    }
+		
+		
+		
 		for (Iterator i = entities.iterator(); i.hasNext(); ) {
 			EEntity type = (EEntity)i.next();
+
+			declarationTabOp.type = schema_type;
+ 		  declarationTabOp.directory = directory_name;
+			
 			if (type instanceof EAlgorithm_definition) {
                 if (type instanceof EFunction_definition) {
                     EFunction_definition fd = (EFunction_definition)type;
                     declarationTabOp.name = fd.getName(null);
+//										declarationTabOp.element = "function";
+										declarationTabOp.element = "algorithm";
                     printTab(function, declarationTabOp);
                 }
                 if (type instanceof EProcedure_definition) {
                     EProcedure_definition pd = (EProcedure_definition)type;
                     declarationTabOp.name = pd.getName(null);
+//											declarationTabOp.element = "procedure";
+											declarationTabOp.element = "algorithm";
                     printTab(procedure, declarationTabOp);
                 }
 			}
@@ -1603,20 +1748,24 @@ System.out.println("<3>: " + nt);
 					EEntity_definition en = (EEntity_definition)type;
 					if (en.getComplex(null)) {
 	                    declarationTabOp.name = en.getName(null);
+											declarationTabOp.element = "entity";
 	                    printTab(complex, declarationTabOp);
 					}
 					else {
 	                    declarationTabOp.name = en.getName(null);
+											declarationTabOp.element = "entity";
 	                    printTab(entity, declarationTabOp);
 					}
 				}
 				else {
                     declarationTabOp.name = ((EDefined_type)type).getName(null);
+										declarationTabOp.element = "type";
                     printTab(defined, declarationTabOp);
 				}
 			}
 			else if (type instanceof EConstant_definition) {
                 declarationTabOp.name = ((EConstant_definition)type).getName(null);
+								declarationTabOp.element = "constant";
                 printTab(constant, declarationTabOp);
 			}
 			else if (type instanceof EGlobal_rule) {
@@ -1624,22 +1773,24 @@ System.out.println("<3>: " + nt);
 				AEntity_definition global_entities = gr.getEntities(null);
 				SdaiIterator global_entities_it = global_entities.createIterator();
                 //String temp = gr.getName(null)+"(";
-				global.append(printUnclosedTab());
+//<XML>				global.append(printUnclosedTab());
                 declarationTabOp.name = gr.getName(null);
-                declarationTabOp.op(global);
-                global.append('(');
+								declarationTabOp.element = "rule";
+                //<XML> declarationTabOp.op(global);
+                  printTab(global, declarationTabOp);
+//<XML>                global.append('(');
 				boolean first = true;
 				while (global_entities_it.next()) {
 					if (first) {
 						first = false;
 					} else {
-						global.append(", ");
+//<XML>						global.append(", ");
 					}
 					EEntity gentity = global_entities.getCurrentMember(global_entities_it);
-					printHRef(global, getDictionaryEntityNameOp(gentity), getSchemaRefDicOp(gentity, schema));
+//<XML>					printHRef(global, getDictionaryEntityNameOp(gentity), getSchemaRefDicOp(gentity, schema));
 				}
-                global.append(')');
-				global.append(println());
+//<XML>                global.append(')');
+//<XML>				global.append(println());
 			}
 			else if (type instanceof ESub_supertype_constraint) {
 //System.out.println("<local declaration subtype_constraint>: " + type);
@@ -1648,82 +1799,109 @@ System.out.println("<3>: " + nt);
 //System.out.println("<local declaration subtype_constraint - has name>: " + ssc);
 					EEntity_or_view_definition subtype_constraint_parent_entity = ssc.getGeneric_supertype(null);
 //          subconstraint = printHRef(printCapitalCase(getComplexName(ssc.getName(null))), getUpper(getComplexName(ssc.getName(null)))+".html")+"(";
-					subconstraint.append(printUnclosedTab());
+//<XML>					subconstraint.append(printUnclosedTab());
 	                declarationTabOp.name = ssc.getName(null);
-	                declarationTabOp.op(subconstraint);
-	                subconstraint.append('(');
-					printHRef(subconstraint, getDictionaryEntityNameOp(subtype_constraint_parent_entity), getSchemaRefDicOp(subtype_constraint_parent_entity, schema));
+									declarationTabOp.element = "subtype_constraint";
+//<XML>	                declarationTabOp.op(subconstraint);
+                  printTab(subconstraint, declarationTabOp);
+//<XML>	                subconstraint.append('(');
+//<XML>					printHRef(subconstraint, getDictionaryEntityNameOp(subtype_constraint_parent_entity), getSchemaRefDicOp(subtype_constraint_parent_entity, schema));
 								
 //					subconstraint += printTab(")");
 //					subconstraint += ")";
-					subconstraint.append(')');
-	                subconstraint.append(println());
+//<XML>					subconstraint.append(')');
+//<XML>	                subconstraint.append(println());
 				}
 			}
 		}
+
+
+    pw.println("\n");
+    printXmlComment(partSummary, "Schema: " + schema.getName(null));
+ 		writeToAndClean(partSummary, pw);
+		pw.println("");
+
 		if (constant.length() > 0) {
-            printH4(partSummary, "Constants");
+//<XML>            printH4(partSummary, "Constants");
+        printXmlComment(partSummary, "Constants");
     		writeToAndClean(partSummary, pw);
     		writeToAndClean(constant, pw);
-			pw.print(printBreak());
+//<XML>			pw.print(printBreak());
+						pw.println("");
 		}
 		if (defined.length() > 0) {
-			printH4(partSummary, "Defined types");
+//<XML>			printH4(partSummary, "Defined types");
+            printXmlComment(partSummary, "Defined types");
     		writeToAndClean(partSummary, pw);
     		writeToAndClean(defined, pw);
-			pw.print(printBreak());
+//<XML>			pw.print(printBreak());
+						pw.println("");
 		}
 		if (entity.length() > 0) {
-			printH4(partSummary, "Entities");
+//<XML>			printH4(partSummary, "Entities");
+      printXmlComment(partSummary, "Entities");
     		writeToAndClean(partSummary, pw);
     		writeToAndClean(entity, pw);
-			pw.print(printBreak());
+//<XML>			pw.print(printBreak());
+						pw.println("");
 		}
 		if (complex.length() > 0) {
-			printH4(partSummary, "Complex entities");
+//<XML>			printH4(partSummary, "Complex entities");
+        printXmlComment(partSummary, "Complex entities");
     		writeToAndClean(partSummary, pw);
     		writeToAndClean(complex, pw);
-			pw.print(printBreak());
+//<XML>			pw.print(printBreak());
+						pw.println("");
 		}
 		if (function.length() > 0) {
-			printH4(partSummary, "Functions");
+//<XML>			printH4(partSummary, "Functions");
+        printXmlComment(partSummary, "Functions");
     		writeToAndClean(partSummary, pw);
     		writeToAndClean(function, pw);
-			pw.print(printBreak());
+//<XML>			pw.print(printBreak());
+						pw.println("");
 		}
     if (procedure.length() > 0) {
-    		printH4(partSummary, "Procedures");
+//<XML>    		printH4(partSummary, "Procedures");
+        printXmlComment(partSummary, "Procedures");
     		writeToAndClean(partSummary, pw);
     		writeToAndClean(procedure, pw);
-			pw.print(printBreak());
+//<XML>			pw.print(printBreak());
+						pw.println("");
 		}
 		if (global.length() > 0) {
-			printH4(partSummary, "Global rules");
+//<XML>			printH4(partSummary, "Global rules");
+        printXmlComment(partSummary, "Global rules");
     		writeToAndClean(partSummary, pw);
     		writeToAndClean(global, pw);
-			pw.print(printBreak());
+//<XML>			pw.print(printBreak());
+						pw.println("");
 		}
 		if (subconstraint.length() > 0) {
-			printH4(partSummary, "Subtype Constraints");
+//<XML>			printH4(partSummary, "Subtype Constraints");
+        printXmlComment(partSummary, "Subtype Constraints");
     		writeToAndClean(partSummary, pw);
     		writeToAndClean(subconstraint, pw);
-			pw.print(printBreak());
+//<XML>			pw.print(printBreak());
 		}
-		if(printInterfacingSchemas(pw, printH4("Interfacing Schemas"), repo, schema)) {
-			pw.print(printBreak());
-		}
+//<XML>		if(printInterfacingSchemas(pw, printH4("Interfacing Schemas"), repo, schema)) {
+//<XML>			pw.print(printBreak());
+//<XML>		}
 
-		if (schemaHasExtensibleTypes(schema)) {
-			pw.print(printBold(printHRefandTarget("Extensible types", "../" +correctSchemaNameRR("S" +getUpper(schema.getName(null))) + "/package-extensible-types.html", "classFrame")));
-			pw.print(printBreak());
-			createExtensibleTypePage(schema);	
-		}
+//<XML>		if (schemaHasExtensibleTypes(schema)) {
+//<XML>			pw.print(printBold(printHRefandTarget("Extensible types", "../" +correctSchemaNameRR("S" +getUpper(schema.getName(null))) + "/package-extensible-types.html", "classFrame")));
+//<XML>			pw.print(printBreak());
+//<XML>			createExtensibleTypePage(schema);	
+//<XML>		}
 	
-		pw.println(printHtmlTail());
+//<XML>		pw.println(printHtmlTail());
 		} finally {
-		pw.close();
+//		pw.println(printExpress_indexTail());									
+//		pw.close();
 		}
 	}
+
+
 
 	private static void writeToAndClean(StringBuffer buffer, Writer writer) throws IOException {
 		char chars[] = new char[4096];
@@ -1742,22 +1920,46 @@ System.out.println("<3>: " + nt);
 
 	private static class DeclarationTabOp implements StrOp {
 		private String name;
+	  private String type;
+	  private String element;
+	  private String directory;
+	  
 		private final DecNameOp decNameOp = new DecNameOp();
 		private final DecRefOp decRefOp = new DecRefOp();
+		private final DecTypeOp decTypeOp = new DecTypeOp();
+		private final DecElementOp decElementOp = new DecElementOp();
+		private final DecDirOp decDirOp = new DecDirOp();
 		
 		public void op(StringBuffer result) throws SdaiException {
-			printHRef(result, decNameOp, decRefOp);
+//<XML>			printHRef(result, decNameOp, decRefOp);
+			printHRefXml(result, decElementOp, decNameOp, decDirOp, decTypeOp);
 		}
 
+		private class DecElementOp implements StrOp {
+			public void op(StringBuffer result) throws SdaiException {
+				printNonCapitalCase(result, getComplexNameOp(element));
+			}
+		}
 		private class DecNameOp implements StrOp {
 			public void op(StringBuffer result) throws SdaiException {
-				printCapitalCase(result, getComplexNameOp(name));
+				printNonCapitalCase(result, getComplexNameOp(name));
+			}
+		}
+		private class DecDirOp implements StrOp {
+			public void op(StringBuffer result) throws SdaiException {
+				printNonCapitalCase(result, getComplexNameOp(directory));
+			}
+		}
+		private class DecTypeOp implements StrOp {
+			public void op(StringBuffer result) throws SdaiException {
+				printNonCapitalCase(result, getComplexNameOp(type));
 			}
 		}
 
+
 		private class DecRefOp implements StrOp {
 			public void op(StringBuffer result) throws SdaiException {
-				getUpper(result, getComplexNameOp(name));
+				getNonUpper(result, getComplexNameOp(name));
 				result.append(".html");
 			}
 		}
@@ -1990,7 +2192,8 @@ System.out.println("<3>: " + nt);
 			}
 		}
 		if (!iso_number.equals("")) {
-			return "<I>"+iso_number+"</I>";
+//<XML>			return "<I>"+iso_number+"</I>";
+			return iso_number;
 		}
 		return "";
 	}
@@ -2808,17 +3011,17 @@ System.out.println("<3>: " + nt);
 		partIndex += printTableTail();
 		partIndex += printHtmlTail();
 		int i = 0;
-		f = new File(baseDir+File.separator+"Express-frame0.html");
-		while (f.exists()) {
-			i++;
-			f = new File(baseDir+File.separator+"Express-frame"+String.valueOf(i)+".html");
-		}
+//<XML>		f = new File(baseDir+File.separator+"Express-frame0.html");
+//<XML>			while (f.exists()) {
+//<XML>				i++;
+//<XML>				f = new File(baseDir+File.separator+"Express-frame"+String.valueOf(i)+".html");
+//<XML>			}
 //		indexName = f.getName();
-		f.createNewFile();
-		fw = new FileWriter(f);
-		pw = new PrintWriter(fw, true);
-		pw.println(partIndex);
-		pw.close();
+//<XML>			f.createNewFile();
+//<XML>			fw = new FileWriter(f);
+//<XML>			pw = new PrintWriter(fw, true);
+//<XML>			pw.println(partIndex);
+//<XML>			pw.close();
 	}
 
 	private String printComplexIndex(TreeSet index, String complex_title) throws SdaiException, IOException {
@@ -6565,9 +6768,47 @@ if so, return true
 		}
 		return result;
 	}
+
+	static public String getNonUpper(String s) {
+//		return (s.length()>0)?s.substring(0, 1).toUpperCase() + s.substring(1, s.length()).toLowerCase():"";
+			return s;
+	}
+
+	static public StringBuffer getNonUpper(StringBuffer result, String s) {
+/*
+		if(s.length()>0) {
+			result.append(Character.toUpperCase(s.charAt(0)));
+			int sLength = s.length();
+			for(int i = 1; i < sLength; i++) {
+				result.append(Character.toLowerCase(s.charAt(i)));
+			}
+		}
+*/
+		result.append(s);
+		return result;
+	}
+
+	static public StringBuffer getNonUpper(StringBuffer result, StrOp s) throws SdaiException {
+		int start = result.length();
+		s.op(result);
+		int end = result.length();
+/*
+		if(end > start) {
+			result.setCharAt(start, Character.toUpperCase(result.charAt(start)));
+			for(int i = start + 1; i < end; i++) {
+				result.setCharAt(i, Character.toLowerCase(result.charAt(i)));
+			}
+		}
+*/
+		return result;
+	}
+
 	
 	private String printHtmlHead(String s) {
 		return "<HTML>\n<HEAD>\n\t<TITLE>" + s + "</TITLE>\n</HEAD>\n<SCRIPT>\nfunction change_title(){\nparent.document.title=\""+ s +"\";\n}\n</SCRIPT>\n<BODY onload=\"change_title();\">\n";
+	}
+	private String printXmlHead(String s) {
+		return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<?xml-stylesheet type=\"text/xsl\" href=\"xsl/express_index.xsl\"?>\n<!DOCTYPE express_index SYSTEM \"dtd/express_index.dtd\">\n\n";
 	}
 
 	private void printHtmlHead(StringBuffer result, String s) {
@@ -6577,11 +6818,35 @@ if so, return true
 			.append(s)
 			.append("\";\n}\n</SCRIPT>\n<BODY onload=\"change_title();\">\n");
 	}
+	private void printXmlHead(StringBuffer result, String s) {
+		result.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n")
+			.append("<?xml-stylesheet type=\"text/xsl\" href=\"xsl/express_index.xsl\"?>\n")
+			.append("<!DOCTYPE express_index SYSTEM \"dtd/express_index.dtd\">\n\n");
+	}
+
+  private void printXmlComment(StringBuffer result, String s) {
+  	result.append("\t<!-- ").append(s).append(" -->\n");
+  }
+	private String printXmlComment(String s) {
+		return "\t<!-- " + s + " -->\n";
+	}
+
 
 	private String printHtmlTail() {
 		return "</BODY>\n</HTML>\n";
 	}
-
+	private String printExpress_indexHead() {
+		return "<express_index >\n\n"; 
+	}
+	private void printExpress_indexHead(StringBuffer result) {
+		result.append("<express_index >\n\n"); 
+	}
+	private String printExpress_indexTail() {
+		return "</express_index>\n"; 
+	}
+	private void printExpress_indexTail(StringBuffer result) {
+		result.append("</express_index>\n"); 
+	}
 	private static String println(String s) {
 		return s + "<BR>\n";
 	}
@@ -6646,6 +6911,10 @@ if so, return true
 	static public String printHRef(String s, String ref) {
 		return "<A HREF="+ref+">"+s+"</A>";
 	}
+	static public String printHRefXml(String s, String ref, String element_type) {
+//<XML>		return "<A HREF="+ref+">"+s+"</A>";
+		return "\t<element name=\"" + s + "\" type=\"" + element_type + "\" ref=\"" + ref + "\" />";
+	}
 	
 	public static StringBuffer printHRef(StringBuffer result, final StrOp s, final StrOp ref)
 	throws SdaiException {
@@ -6656,6 +6925,31 @@ if so, return true
 		result.append("</A>");
 		return result;
 	}
+	
+	public static StringBuffer printHRefXml(StringBuffer result, final StrOp element, final StrOp name, final StrOp directory, final StrOp type) throws SdaiException {
+		result.append("\t<");
+		element.op(result);
+		result.append(" name=\"");
+		name.op(result);
+		//result.append("\" type= \"" + element_type);
+		result.append("\" directory=\"");
+		directory.op(result);
+		result.append("\" type=\"");
+		type.op(result);
+		result.append("\" />");
+		return result;
+	}
+	public static StringBuffer printHRefXml_old(StringBuffer result, final StrOp s, final StrOp ref, final StrOp element_type) throws SdaiException {
+		result.append("\t<element name=\"");
+		s.op(result);
+		result.append("\" type=\"");
+		element_type.op(result);
+		//result.append("\" type= \"" + element_type);
+		result.append("\" ref=\"");
+		ref.op(result);
+		result.append("\" />");
+		return result;
+	}
 
 	private String printUnclosedTab(String s) {
 		return "&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; "+s;
@@ -6664,19 +6958,25 @@ if so, return true
 		return "&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ";
 	}	
 	
+	
+	//<XML> INTEREST
 	private static String printTab(String s) {
-		return "&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; "+s+"<BR>\n";
+//<XML>		return "&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; "+s+"<BR>\n";
+		return s + "\n";
 	}
 
 	private static StringBuffer printTab(StringBuffer result, String s) {
-		result.append("&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ").append(s).append("<BR>\n");
+//<XML>		result.append("&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ").append(s).append("<BR>\n");
+		result.append(s).append("\n");
 		return result;
 	}
 
 	private static StringBuffer printTab(StringBuffer result, StrOp s) throws SdaiException {
-		result.append("&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ");
+//<XML>		result.append("&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ");
+//<XML>		result.append("&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ");
 		s.op(result);
-		result.append("<BR>\n");
+//<XML>		result.append("<BR>\n");
+		result.append("\n");
 		return result;
 	}
 
@@ -6685,7 +6985,11 @@ if so, return true
 	}
 
 	private static String printHRefandTarget(String s, String ref, String target) {
-		return "<A HREF="+ref+" TARGET="+target+">"+s+"</A>\n";
+		//return "<A HREF="+ref+" TARGET="+target+">"+s+"</A>\n";
+		//RR<<>>
+//		return "<A HREF="+ref+" TARGET="+target+">"+s+"</A>\n";
+		return "<element name=\""+ s + "\" type=\"entity\" ref=\"" + ref + "\" />";
+
 	}
 
 	private static void printHRefandTarget(StringBuffer result, StrOp s, StrOp ref, String target)
@@ -6726,6 +7030,13 @@ if so, return true
 		s.op(result);
 		if(result.length() > start) {
 			result.setCharAt(start, Character.toUpperCase(result.charAt(start)));
+		}
+	}
+	private static void printNonCapitalCase(StringBuffer result, StrOp s) throws SdaiException {
+		int start = result.length();
+		s.op(result);
+		if(result.length() > start) {
+//			result.setCharAt(start, Character.toUpperCase(result.charAt(start)));
 		}
 	}
 
@@ -7224,15 +7535,12 @@ if (((EEntity_definition)entity).getName(null).equalsIgnoreCase("Action_status")
 else flag_debug = false;
 
         //<RR>
-//				printH3(result, "Users");
-				printH3(result, "Users - attributes");
+				printH3(result, "Users");
 				//printH3(result, "ENTITY Users");  // temp for experimenting
 //RRX printDebug("<DEBUG> before printEntityUsersAttributesX: " + entity);
-        used_types = new HashSet(); // not really needed
 				printEntityUsersAttributesX(result, entity, domain, true);
 				// for the implementation of printEntityUsersIdleTypes we might want to collect the information in PrintEntityUsersAttributesX to eliminate types that are used
-				printH3(result, "Users - defined types, not used for attribute types");
-				printEntityUsersIdleTypes(result, entity, domain, true, true, true); // two last booleans - include non-extensible selects, include aggregates, is outer_loop - may be needed or not
+				printEntityUsersIdleTypes(result, entity, domain, false, false, true); // two last booleans - include non-extensible selects, include aggregates, is outer_loop - may be needed or not
 //RRX printDebug("<DEBUG> after printEntityUsersAttributesX: " + entity);
 //			}
 		} else {
@@ -7282,188 +7590,7 @@ else flag_debug = false;
 	*/
 
 	private StringBuffer printEntityUsersIdleTypes(StringBuffer result, EEntity entity, ASdaiModel domain, boolean include_non_extensible_selects, boolean include_aggregates, boolean is_outer)  throws SdaiException {
-		//printEntityUsersXX(result, entity, domain);
-		//return result; 
-    //############ start #########################
-		boolean is_extensible_select = false;
-		if (entity instanceof EEntity_definition) {
-			EEntity_definition definition = (EEntity_definition)entity;
-			AEntity supertypes = definition.getGeneric_supertypes(null);
-			SdaiIterator it_super = supertypes.createIterator();
-			while (it_super.next()) {
-				EEntity_definition supertype = (EEntity_definition)supertypes.getCurrentMemberObject(it_super);
-//				if (supertype.getTemp() != definition) {
-//					supertype.setTemp(definition);
-					printEntityUsersXX(result, supertype, domain);
-//				}
-			}
-//			result += printEntityUsersX(definition, domain);
-			printHRef(result, getComplexNameOp(definition.getName(null)), getSchemaRefOp(definition, schema));
-			println(result);
-		}
-/*else if (entity instanceof EDefined_type) {
-			EDefined_type defined = (EDefined_type)entity;
-//			result += println(printHRef(getComplexName(defined.getName(null)), getSchemaNameIfDiffer(defined, schema)+getUpper(getComplexName(defined.getName(null)))+".html"));
-			result += printEntityUsersX(defined, domain);
-		}*/
-
-		if (entity instanceof EDefined_type) {
-			EEntity ut = ((EDefined_type)entity).getDomain(null);
-			if (ut instanceof EExtensible_select_type) {
-				is_extensible_select = true;
-			}
-		}
-
-
-		int resultStart = result.length();
-		//V.N.
-// 		Vector sorter = new Vector();
-// 		while (it_users.next()) {
-// 			addSortedForUsers(sorter, users.getCurrentMemberEntity(it_users));
-// 		}
-		//TreeSet sortedSet = new TreeSet(new SorterForUsers());
-        EEntity[] sortedSet;
-        int iContains=0;
-        int iSortedSetCount=0;
-        
-        // -- VV --
-        // -- Only one tree set is created per entity.
-        // using generation and copying of generated ones. HashMap for storage.
-        String sCurrentEntityPL=entity.getPersistentLabel();
-        if (hmUsedEntities.containsKey(sCurrentEntityPL)) {
-            sortedSet=(EEntity[])hmUsedEntities.get(sCurrentEntityPL);
-            iSortedSetCount = sortedSet.length;
-            iContains=1;
-        }
-        else {
-					AEntity users = new AEntity();
-					AEntity final_users = new AEntity();
-					entity.findEntityInstanceUsers(domain, users);
-// RR a fix: including indirect users as well, then non-final users will be ignored
-
-          SdaiIterator it_users = users.createIterator();
-          while (it_users.next()) {
-          	EEntity user = users.getCurrentMemberEntity(it_users);
-						// what about non-explicit attributes?
-						if (user instanceof EExplicit_attribute) {
-//<>							final_users.addUnordered(user);
-						} else 
-						if (user instanceof EDerived_attribute) {
-//<>							final_users.addUnordered(user);
-						} else 
-						if (user instanceof EAggregation_type) {
-
-							AAttribute attrs = new AAttribute();
-							SdaiIterator it_attrs;
-							// what about non-explicit attributes?
-							CExplicit_attribute.usedinDomain(null, user, domain, attrs);
-							it_attrs = attrs.createIterator();
-							while (it_attrs.next()) {
-								EAttribute attribute = (EAttribute)attrs.getCurrentMemberObject(it_attrs);
-//<>								final_users.addUnordered(attribute);								
-							}
-							// add also defined types here ? (later)
-							ADefined_type defs = new ADefined_type();
-							SdaiIterator it_defs;
-							CDefined_type.usedinDomain(null, user, domain, defs);
-							it_defs = defs.createIterator();
-							while (it_defs.next()) {
-								EDefined_type def = (EDefined_type)defs.getCurrentMemberObject(it_defs);
-								if (!used_types.contains(def)) {
-          				final_users.addUnordered(def);
-          			}
-          		}
-						} else if (user instanceof ESelect_type) {
-							ADefined_type defs = new ADefined_type();
-							SdaiIterator it_defs;
-							CDefined_type.usedinDomain(null, user, domain, defs);
-							it_defs = defs.createIterator();
-							while (it_defs.next()) {
-								EDefined_type def = (EDefined_type)defs.getCurrentMemberObject(it_defs);
-         				// final_users.addUnordered(def);
-       	
-          	// if entity is extensible select type and def is its based_on type, then do not add it
-          		 if ((user instanceof EExtended_select_type) && (is_extensible_select)) {
-//System.out.println("\nmain: " + entity + ", user:  " + def);
-
-          				if (((EExtended_select_type)user).getIs_based_on(null) != entity) {
-										if (!used_types.contains(def)) {
-		          				final_users.addUnordered(def);
-										}
-//System.out.println("not based on it: " + ((EExtended_select_type)user).getIs_based_on(null));
-          				}
-          			} else {
-									if (!used_types.contains(def)) {
-          					final_users.addUnordered(def);
-									}
-//System.out.println("not extensible-extended selects");
-          			}
-          		}
-          	}
-          } // while
-//---------
-					sortedSet = new EEntity[final_users.getMemberCount()];
-            SdaiIterator it_final_users = final_users.createIterator();
-            while (it_final_users.next()) {
-                sortedSet[iSortedSetCount]=final_users.getCurrentMemberEntity(it_final_users);
-                iSortedSetCount++;
-            }
-            Arrays.sort(sortedSet, new SorterForUsers());
-            hmUsedEntities.put(sCurrentEntityPL, sortedSet);
-            iContains=0;
-        }
-        /*--VV--
-        while (it_users.next()) {
-		    sortedSet.add(users.getCurrentMemberEntity(it_users));
-		}
-        */
-// 		for (int i = 0; i < sorter.size(); i++) {
-// 			EEntity user = (EEntity)sorter.elementAt(i);
-     for (int i=0; i<iSortedSetCount; i++) {
-			EEntity user = (EEntity)sortedSet[i];
-			if (user instanceof EExplicit_attribute) {
-				EAttribute attribute = (EAttribute)user;
-				EEntity_definition parent = (EEntity_definition)attribute.getParent(null);
-				if (parent != entity) {
-//<>					result.append(printUnclosedTab());
-//<>					printHRef(result, getEntityAttrNameOp(parent, attribute), getSchemaRefDicOp(parent, schema));
-//<>					result.append("<BR>\n");
-					// tmp += " ("+correctSchemaName(findSchemaForEntity(parent).getName(null))+")"+"<BR>\n";
-				}
-			} else 
-			if (user instanceof EDerived_attribute) {
-				EAttribute attribute = (EAttribute)user;
-				EEntity_definition parent = (EEntity_definition)attribute.getParent(null);
-				if (parent != entity) {
-//<>					result.append(printUnclosedTab());
-//<>					printHRef(result, getEntityAttrNameOp(parent, attribute), getSchemaRefDicOp(parent, schema));
-//<>					result.append("<BR>\n");
-					// tmp += " ("+correctSchemaName(findSchemaForEntity(parent).getName(null))+")"+"<BR>\n";
-				}
-			} else 
-			if (user instanceof EAggregation_type) {
-				// do nothing, resolved to explicit attributes (or defined types)
-			} else if (user instanceof ESelect_type) {
-				// do nothing, resolved to defined_types
-			} else if (user instanceof EDefined_type) {
-				EDefined_type def = (EDefined_type)user;
-				result.append(printUnclosedTab());
-				printHRef(result, getStringOp(def.getName(null)), getSchemaRefDicOp(def, schema));
-				result.append("<BR>\n");
-				// tmp += " ("+correctSchemaName(findSchemaForEntity(def).getName(null))+")"+"<BR>\n";
-				// new stuff - if select type, also print the users of it and the users of all the related extensible types with indentation
-				EEntity dtdomain = def.getDomain(null);
-				if (dtdomain instanceof ESelect_type) {
-					printExtensibleSelectTypesX(result, (ESelect_type)dtdomain, def, domain);
-				}
-			}
-		}
-		if (resultStart == result.length()) {
-			//result += println(printTab("-"));
-            printTab(result, "-");
-		}
-		return result;
-    //############ end   #########################
+		return result; 
 	}
 
 	private StringBuffer printEntityUsersAttributesX(StringBuffer result, EEntity entity, ASdaiModel domain, boolean is_outer) throws SdaiException {
@@ -7567,15 +7694,9 @@ else flag_debug = false;
 				result.append("<BR>\n");
 
 				if (user.dt != null) {
-
-          // needed for the subsequent implementation of empty types
-          used_types.add(user.dt);
-
 //RRX printDebug("<DEBUG> user.dt NOT NULL: " + user.dt);
 					// not direct entity, but something else
 					if (user.named_type != null) {
-
-						
 //RRX printDebug("<DEBUG> user.named_type NOT NULL: " + user.named_type);
 						NamedTypeClass ntc = user.named_type;
 						if (ntc.previous != null) {
@@ -11952,14 +12073,22 @@ pw.println("</HTML>");
 		}
 		OutputStreamWriter osw1 = new OutputStreamWriter(fos1);
     	PrintWriter pw1 = new PrintWriter(osw1);
-		pw1.println("<HTML>");
-		pw1.println("<HEAD>");
-		pw1.println("<TITLE>overview frame</TITLE>");
-		pw1.println("</HEAD>");
-		pw1.println("<BODY BGCOLOR=\"white\">");
 
-		pw1.println("</BODY>");
-		pw1.println("</HTML>");
+//<XML>		pw1.println("<HTML>");
+//<XML>		pw1.println("<HEAD>");
+//<XML>		pw1.println("<TITLE>overview frame</TITLE>");
+//<XML>		pw1.println("</HEAD>");
+//<XML>		pw1.println("<BODY BGCOLOR=\"white\">");
+
+//<XML>		pw1.println("</BODY>");
+//<XML>		pw1.println("</HTML>");
+
+pw1.println("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
+pw1.println("<?xml-stylesheet type=\"text/xsl\" href=\"xsl/express_index.xsl\"?>");
+pw1.println("<!DOCTYPE express_index SYSTEM \"dtd/express_index.dtd\">\n");
+
+pw1.println("<schema_index>\n");
+// pw1.println("</schema_index>\n\n");  // this one should go at the very end
 
 	    pw1.flush();
     	pw1.close();

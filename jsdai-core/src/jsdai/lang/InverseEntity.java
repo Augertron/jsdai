@@ -72,6 +72,9 @@ public abstract class InverseEntity extends SdaiCommon {
 		} else if (inverseList == value) {
 			inverseList = null;
 		} else {
+			if (!(inverseList instanceof Inverse)) {
+				return;
+			}
 			Inverse inv1 = (Inverse) inverseList;
 			if (inv1.value == value) {
 				inverseList = inv1.next;
@@ -83,6 +86,9 @@ public abstract class InverseEntity extends SdaiCommon {
 				inv1.next = null;
 			} else {
 				Inverse inv2 = inv1;
+				if (!(inv2.next instanceof Inverse)) {
+					return;
+				}
 				Inverse inv3 = (Inverse) inv2.next;
 				while (true) {
 					if (inv3 == null) {
@@ -100,7 +106,16 @@ public abstract class InverseEntity extends SdaiCommon {
 						break;
 					} else {
 						inv2 = inv3;
-						inv3 = (Inverse) inv2.next;
+/*if (!(inv2.next instanceof Inverse)) {printInverses();
+System.out.println("CEntity:  unset instance: #" + ((CEntity)value).instance_identifier);
+System.out.println("CEntity:  this instance: #" + ((CEntity)this).instance_identifier);
+}*/
+						if (inv2.next instanceof Inverse) {
+							inv3 = (Inverse) inv2.next;
+						} else {
+							inv3 = null;
+						}
+//						inv3 = (Inverse) inv2.next;
 					}
 				}
 			}
@@ -131,6 +146,9 @@ public abstract class InverseEntity extends SdaiCommon {
 				inv1.next = null;
 			} else {
 				Inverse inv2 = inv1;
+				if (!(inv2.next instanceof Inverse)) {
+					return;
+				}
 				Inverse inv3 = (Inverse) inv2.next;
 				while (true) {
 					if (inv3 == null) {
@@ -148,7 +166,12 @@ public abstract class InverseEntity extends SdaiCommon {
 						break;
 					} else {
 						inv2 = inv3;
-						inv3 = (Inverse) inv2.next;
+						if (inv2.next instanceof Inverse) {
+							inv3 = (Inverse) inv2.next;
+						} else {
+							inv3 = null;
+						}
+//						inv3 = (Inverse) inv2.next;
 					}
 				}
 			}
@@ -167,6 +190,9 @@ return;
 		} else if (inverseList == value) {
 			inverseList = null;
 		} else {
+			if (!(inverseList instanceof Inverse)) {
+				return;
+			}
 			Inverse inv1 = (Inverse) inverseList;
 			if (inv1.value == value) {
 				inverseList = inv1.next;
@@ -183,6 +209,9 @@ return;
 				inv1.next = null;
 			} else {
 				Inverse inv2 = inv1;
+				if (!(inv2.next instanceof Inverse)) {
+					return;
+				}
 				Inverse inv3 = (Inverse) inv2.next;
 				while (true) {
 if (inv3 == null) {
@@ -198,7 +227,12 @@ break;
 						inv3.next = null;
 					} else {
 						inv2 = inv3;
-						inv3 = (Inverse) inv2.next;
+						if (inv2.next instanceof Inverse) {
+							inv3 = (Inverse) inv2.next;
+						} else {
+							inv3 = null;
+						}
+//						inv3 = (Inverse) inv2.next;
 					}
 				}
 			}
@@ -226,13 +260,17 @@ break;
 		SdaiModel.Connector con;
 		CEntity old_inst = (CEntity)old;
 //long o_id = old_inst.instance_identifier;
-//if (o_id == 69) {
 //System.out.println("!!!!!!!!!!!!!!!!! old instance: " + old_inst);
 //CEntity n_inst = (CEntity)newer;
 //System.out.println("!!!!!!!!!!!!!!!!! new instance: " + n_inst);
-//}
 		SdaiSession se;
-		SdaiModel mod;
+		boolean allow_self_refs = true;
+		if (this instanceof CEntity) {
+			SdaiModel mod = ((CEntity)this).owning_model;
+			if (mod != null) {
+				allow_self_refs = !mod.substitute_operation;
+			}
+		}
 		CEntity instance;
 		while (o != null) {
 			if (o instanceof Inverse) {
@@ -245,25 +283,34 @@ break;
 						old_inst.instance_identifier, (CEntity)inst);
 					inst.changeReferences(old, con);
 					((CEntity)inst).modified();
-//if (o_id == 69) {
 //CEntity ii1 = (CEntity)inst;
 //System.out.println("!!!!! Case 1  referencing instance: " + ii1);
-//}
 				} else {
 					if (save4undo) {
 						instance = (CEntity)inst;
 						instance.owning_model.repository.session.undoRedoModifyPrepare(instance);
 					}
-					inst.changeReferences(old, newer);
-					if (inst instanceof CEntity) {
-						((CEntity)inst).modified();
-						if (print_to_logo) {
-							if (old_inst.owning_model != null) {
-								printWarningToLogo(old_inst.owning_model.repository.session, AdditionalMessages.RD_MINS, 
-									((CEntity)old).instance_identifier, ((CEntity)inst).instance_identifier);
-							} else {
-								printWarningToLogo(null, AdditionalMessages.RD_MINS, 
-									((CEntity)old).instance_identifier, ((CEntity)inst).instance_identifier);
+					if (inst != old || allow_self_refs) {
+						inst.changeReferences(old, newer);
+						if (inst instanceof CEntity) {
+//CEntity inst_in_list = (CEntity)inst;
+//if (inst_in_list.owning_model == null) {
+//CEntity inst8695 = (CEntity)((CEntity)this).owning_model.repository.getSessionIdentifier("#8695");
+//System.out.println("InverseEntity !!!!! referencing instance: " + inst8695);
+//CEntity inst8698 = (CEntity)((CEntity)this).owning_model.repository.getSessionIdentifier("#8698");
+//System.out.println("InverseEntity !!!!! referencing instance: " + inst8698);
+//CEntity this_inst = (CEntity)this;
+//System.out.println("InverseEntity !!!!! instance - owner of inverse list: " + this_inst);
+//}
+							((CEntity)inst).modified();
+							if (print_to_logo) {
+								if (old_inst.owning_model != null) {
+									printWarningToLogo(old_inst.owning_model.repository.session, AdditionalMessages.RD_MINS, 
+										((CEntity)old).instance_identifier, ((CEntity)inst).instance_identifier);
+								} else {
+									printWarningToLogo(null, AdditionalMessages.RD_MINS, 
+										((CEntity)old).instance_identifier, ((CEntity)inst).instance_identifier);
+								}
 							}
 						}
 					}
@@ -283,16 +330,18 @@ break;
 						instance = (CEntity)inst;
 						instance.owning_model.repository.session.undoRedoModifyPrepare(instance);
 					}
-					inst.changeReferences(old, newer);
-					if (inst instanceof CEntity) {
-						((CEntity)inst).modified();
-						if (print_to_logo) {
-							if (old_inst.owning_model != null) {
-								printWarningToLogo(old_inst.owning_model.repository.session, AdditionalMessages.RD_MINS, 
-									((CEntity)old).instance_identifier, ((CEntity)inst).instance_identifier);
-							} else {
-								printWarningToLogo(null, AdditionalMessages.RD_MINS, 
-									((CEntity)old).instance_identifier, ((CEntity)inst).instance_identifier);
+					if (inst != old || allow_self_refs) {
+						inst.changeReferences(old, newer);
+						if (inst instanceof CEntity) {
+							((CEntity)inst).modified();
+							if (print_to_logo) {
+								if (old_inst.owning_model != null) {
+									printWarningToLogo(old_inst.owning_model.repository.session, AdditionalMessages.RD_MINS, 
+										((CEntity)old).instance_identifier, ((CEntity)inst).instance_identifier);
+								} else {
+									printWarningToLogo(null, AdditionalMessages.RD_MINS, 
+										((CEntity)old).instance_identifier, ((CEntity)inst).instance_identifier);
+								}
 							}
 						}
 					}
@@ -518,6 +567,8 @@ break;
 				SdaiSession.line_separator + "   New instance definition: " + new_def;
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		} else if (ref_owner.owning_model == null) {
+/*System.out.println("InverseEntity ********  inverse list owner: #" + old.instance_identifier);
+old.printInverses();*/
 			String base = SdaiSession.line_separator + "Entity instance user is invalid." + 
 				SdaiSession.line_separator + "   Instance to be substituted: " + old + 
 				SdaiSession.line_separator + "   Its user's persistent label: " + ref_owner.instance_identifier + 

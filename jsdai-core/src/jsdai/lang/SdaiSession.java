@@ -807,6 +807,8 @@ static long tmbind0=0, tmbind1=0, tmbind2=0, tmbind3=0, tmbind4=0, tmbind5=0, tm
 
 	static final int SUBSTITUTE_OPERATION = 4;
 
+	static final int COPY_OPERATION = 5;
+
 /**
 	Count of entities in SDAI dictionary schema.
 */
@@ -6230,6 +6232,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 			bt = undo_redo_file.readByte();
 			switch (bt) {
 				case 'c':
+				case 'o':
 					inst_id = undo_redo_file.readLong();
 					index2mod = undo_redo_file.readShort();
 					if (index2mod < 0 || index2mod >= n_mods_undo) {
@@ -6372,6 +6375,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 				bypass_value_for_undo(ur_f, true, (byte)' ');
 				break;
 			case '1':
+				ur_f.readLong();
 				ur_f.readShort();
 				ur_f.readInt();
 				break;
@@ -6401,7 +6405,7 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 	}
 
 
-    boolean restore_group_forward() throws java.io.IOException, SdaiException {
+	boolean restore_group_forward() throws java.io.IOException, SdaiException {
 		if (!undo_performed) {
 			return false;
 		}
@@ -6432,6 +6436,18 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 					inst_index = undo_redo_file.readInt();
 					modif = undo_redo_file.readBoolean();
 					ref_mod.create_again(undo_redo_file, f_pointer, inst_id, pop_index, inst_index);
+					break;
+				case 'o':
+					inst_id = undo_redo_file.readLong();
+					index2mod = undo_redo_file.readShort();
+					if (index2mod < 0 || index2mod >= n_mods_undo) {
+						throw new SdaiException(SdaiException.SY_ERR);
+					}
+					ref_mod = mods_undo[index2mod];
+					pop_index = undo_redo_file.readShort();
+					inst_index = undo_redo_file.readInt();
+					modif = undo_redo_file.readBoolean();
+					ref_mod.copy_again(undo_redo_file, f_pointer, inst_id, pop_index, inst_index);
 					break;
 				case 'd':
 					inst_id = undo_redo_file.readLong();
@@ -6531,6 +6547,20 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 			}
 			// prepare for next instance
 			undoRedoOperation = CREATE_OPERATION;
+  			undoRedoInstance = instance;
+			modif_state = mod_modified;
+		}
+	}
+
+
+	final void undoRedoCopyPrepare(CEntity instance, boolean mod_modified) throws SdaiException {
+		if (undo_redo_file != null) {
+			if (undoRedoInstance != null) {//
+				// write out previous instance
+				writeToUndoRedoFile(undoRedoOperation, undoRedoInstance, undoRedoOldValue, modif_state);
+			}
+			// prepare for next instance
+			undoRedoOperation = COPY_OPERATION;
   			undoRedoInstance = instance;
 			modif_state = mod_modified;
 		}
@@ -6663,6 +6693,9 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 			switch (operation) {
 				case CREATE_OPERATION:
 					undo_redo_file.writeByte('c');
+					break;
+				case COPY_OPERATION:
+					undo_redo_file.writeByte('o');
 					break;
 				case DELETE_OPERATION:
 					undo_redo_file.writeByte('d');
@@ -6833,12 +6866,12 @@ System.out.println("SdaiSession   SdaiException is thrown    name: " + name +
 				}
 				((SdaiListener)loggingListenrList.myData).actionPerformed(sdaiEvent);
 			} else {
-				Object [] myDataA = (Object [])loggingListenrList.myData;
-				for (int i = 0; i < loggingListenrList.myLength; i++) {
-					// Lazily create the event:
-					if (sdaiEvent == null) {
-						sdaiEvent = new SdaiLoggingEvent(this, id, -1, null);
-					}
+				Object [] myDataA = new Object[loggingListenrList.myLength];
+				System.arraycopy(loggingListenrList.myData, 0, myDataA, 0, myDataA.length);
+				if (sdaiEvent == null) {
+					sdaiEvent = new SdaiLoggingEvent(this, id, -1, null);
+				}
+				for (int i = 0; i < myDataA.length; i++) {
 					((SdaiListener)myDataA[i]).actionPerformed(sdaiEvent);
 				}
 			}

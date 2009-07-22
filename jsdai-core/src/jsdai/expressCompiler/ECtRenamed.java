@@ -1,4 +1,4 @@
-/*
+ /*`
  * $Id$
  *
  * JSDAI(TM), a way to implement STEP, ISO 10303
@@ -161,6 +161,9 @@ public class ECtRenamed  {
   	// let's go through all the entities, check if they have RENAMED to resolve and attempt to resolve them
   	// go  through RW models, go through all the entity definitions, check for presence of ECtRenamed in temp object,
   	// if found, go through all the lines and try to resolve
+
+//System.out.println("=== RESOLVING attribute names in ECtRenamed ===");
+
     ASdaiModel models = repository.getModels();
     SdaiIterator iter_model = models.createIterator();
 
@@ -187,6 +190,8 @@ public class ECtRenamed  {
 						if (temp_object instanceof ECtRenamed) {
 							// ok, we have an entity with at least one attribute with RENAMED
 							ECtRenamed current = (ECtRenamed)temp_object;
+//System.out.println("found ECtRenamed object in the entity loop of resolve - entity: " + entity);
+//current.print();
 							if (current.renamed_attributes != null) {
 								Iterator iter = current.renamed_attributes.iterator();
 								while (iter.hasNext()) {
@@ -195,17 +200,25 @@ public class ECtRenamed  {
 									// if one or both attribute references are not present, we will have to resolve them
 									// if/when attribute references are present we could change the name to new in the new attribute
 									if (rattr != null) {
+//System.out.println("@@@ RENAMED attribute in entity loop:\n\told_name : " + rattr.old_name + "\n\tnew_name: " + rattr.new_name + "\n\told_entity: " + rattr.old_entity + "\n\tnew_entity: " + rattr.new_entity + "\n\told_attribute: " + rattr.old_attribute + "\n\tnew_attribute: " + rattr.new_attribute);										
 										if (rattr.old_name != null) {
+//System.out.println("<old_name NOT null>");
 											if (rattr.new_name != null) {
+//System.out.println("<new_name NOT null>");
 												if (rattr.old_entity != null) {
+//System.out.println("<old_entity NOT null>");
 													if (rattr.new_entity != null) {
+//System.out.println("<new_entity NOT null>");
+														// if (false) { //X
 														if ((rattr.old_attribute != null) && (rattr.new_attribute != null)) {
+//System.out.println("<old_attribute & new_attribute NOT null>");
 															// does not require resolving, just rename the attribute
 															if (!rattr.new_attribute.getName(null).equalsIgnoreCase(rattr.new_name)) {
+//System.out.println("RENAMING - attribute: " + rattr.new_attribute + ", new name: " + rattr.new_name);
 																rattr.new_attribute.setName(null,rattr.new_name);
 																// we might want to clear the temp object as well - no longer needed
 																// we could check if it contains new_name, just interesting to see.
-																rattr.new_attribute.setTemp(null);
+															rattr.new_attribute.setTemp(null);
 															}
 														} else {
 															// at least one attribute is not resolved, so resolving is needed
@@ -213,6 +226,31 @@ public class ECtRenamed  {
 															EEntity_definition current_e = rattr.new_entity;
 															EEntity_definition start = rattr.new_entity;
 															resolveAttributeRecursively(rattr, current_e, start, hs_entities, sml);
+														
+															// seems that after recursively resolving the renaming is not done in the recursive method, so repeat it here
+															if ((rattr.old_attribute != null) && (rattr.new_attribute != null)) {
+//System.out.println("<old_attribute & new_attribute NOT null 2>");
+															// does not require resolving, just rename the attribute
+																if (!rattr.new_attribute.getName(null).equalsIgnoreCase(rattr.new_name)) {
+//System.out.println("RENAMING (AFTER) - attribute: " + rattr.new_attribute + ", new name: " + rattr.new_name);
+																	rattr.new_attribute.setName(null,rattr.new_name);
+																// we might want to clear the temp object as well - no longer needed
+																// we could check if it contains new_name, just interesting to see.
+																rattr.new_attribute.setTemp(null);
+																}
+															} else {
+																// still not resolved?
+																/*
+																System.out.println("ECtRenamed - STILL NOT RESOLVED: ");
+																System.out.println("\told name: " + rattr.old_name);
+																System.out.println("\tnew name: " + rattr.new_name);
+																System.out.println("\told entity: " + rattr.old_entity);
+																System.out.println("\tnew entity: " + rattr.new_entity);
+																System.out.println("\told attribute: " + rattr.old_attribute);
+																System.out.println("\tnew attribute: " + rattr.new_attribute);
+																*/
+															}
+														
 														}
 													} else {
 														printWarning("<ECtRenamed><E1> resolve - new entity is NULL: " + entity 
@@ -253,6 +291,8 @@ public class ECtRenamed  {
 		// we no longer need ECtRenamed in temp object, we could have deleted those instances one-by-one just after resolving, perhaps
 		// but this way is safer and gives more flexibility if the implementation has to be tuned up.
 		deleteECtRenamed(repository);
+  
+//System.out.println("=== END OF resolve ===");  
   }
 
 	/*
@@ -307,6 +347,9 @@ public class ECtRenamed  {
 		// alternative - to go through the entities in the main method resolve() in the order from supertypes to subtypes
 		// that could be a simple solution, if we had entities in that order, if not, some sorting or recursion would be needed in that method
 		
+//System.out.println("--- Entering recursion:\n\tstart: " +  start + "\n\tcurrent: " + current + "\n\tattr: " + rattr0) ;
+		
+		
 		// let's try here going to the supertypes first
     if (!entities.add(current)) {
 	    // repeated inheritance
@@ -327,6 +370,10 @@ public class ECtRenamed  {
 						if (temp_object instanceof ECtRenamed) {
 							// ok, we have an entity with at least one attribute with RENAMED
 							ECtRenamed current_r = (ECtRenamed)temp_object;
+
+//System.out.println(">>>>> PRINTING ECtRenamed in RECURSION, entity: " + current);
+//current_r.print();            
+
 							if (current_r.renamed_attributes != null) {
 								Iterator iter = current_r.renamed_attributes.iterator();
 								while (iter.hasNext()) {
@@ -339,9 +386,11 @@ public class ECtRenamed  {
 											if (rattr.new_name != null) {
 												if (rattr.old_entity != null) {
 													if (rattr.new_entity != null) {
+														//if (false) { //X
 														if ((rattr.old_attribute != null) && (rattr.new_attribute != null)) {
 															// does not require resolving, just rename the attribute
 															if (!rattr.new_attribute.getName(null).equalsIgnoreCase(rattr.new_name)) {
+//System.out.println("RENAMING (in RECURSION) - attribute: " + rattr.new_attribute + ", new name: " + rattr.new_name);
 																rattr.new_attribute.setName(null,rattr.new_name);
 																// we might want to clear the temp object as well - no longer needed
 																// we could check if it contains new_name, just interesting to see.

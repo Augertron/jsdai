@@ -90,6 +90,7 @@ public class Support {
 	static String global_entity_name = null;
 	static String global_schema_name = null;
 	static String hm_attribute_key = null;
+	static boolean flag_no_special_reference_from = true;
 	static boolean flag_implicit_expressions = false;
 	static boolean flag_relative_exclude = false;
 	static boolean flag_stepmod = false;
@@ -120,7 +121,7 @@ public class Support {
   static boolean flag_deep_debug = false;
 	static boolean flag_debug_split_return = false;
 	static boolean flag_no_print_active_nodes = false;
-  static boolean flag_oc = false;
+  static boolean flag_oc = true;
 	static boolean flag_more_errors = false;
   static boolean flag_complex = false;
   static boolean flag_complex_off = false;
@@ -1103,7 +1104,8 @@ another solution would be to expant tabs - all tabs in the string
 			EAlgorithm_definition adf = (EAlgorithm_definition)fds.getCurrentMemberObject(iter);
 
 			if (flag_oc) { // is it needed?
-				result = constructFunctionProcedurePrefix(adf) + par.getName(null);
+				result = constructFunctionProcedurePrefix(adf) + par.getName(null).toLowerCase();
+//2009				result = constructFunctionProcedurePrefix(adf) + par.getName(null);
 			} else {
 				result = constructFunctionProcedurePrefix(adf) + par.getName(null).toLowerCase();
 			}
@@ -1132,7 +1134,8 @@ another solution would be to expant tabs - all tabs in the string
 
 		String result = null;
 		if (flag_oc) {
-			result = gr.getName(null) + "$";
+			result = gr.getName(null).toLowerCase() + "$";
+//2009			result = gr.getName(null) + "$";
 		} else {
 			result = gr.getName(null).toLowerCase() + "$";
 		}
@@ -1144,7 +1147,8 @@ another solution would be to expant tabs - all tabs in the string
 
 		String result = null;
 		if (flag_oc) {
-			result = ed.getName(null) + "$";
+			result = ed.getName(null).toLowerCase() + "$";
+//2009			result = ed.getName(null) + "$";
 		} else {
 			result = ed.getName(null).toLowerCase() + "$";
 		}
@@ -1158,7 +1162,8 @@ another solution would be to expant tabs - all tabs in the string
 
 		String result = null;
 		if (flag_oc) {
-			result = md.getName(null) + "$";
+			result = md.getName(null).toLowerCase() + "$";
+//2009			result = md.getName(null) + "$";
 		} else {
 			result = md.getName(null).toLowerCase() + "$";
 		}
@@ -1211,7 +1216,8 @@ another solution would be to expant tabs - all tabs in the string
 			if (fd3 == null) {
 				f_name = fd4.getName(null);
 				if (flag_oc) {
-					result += f_name + "$";
+					result += f_name.toLowerCase() + "$";
+//2009					result += f_name + "$";
 				} else {
 					result += f_name.toLowerCase() + "$";
 				}
@@ -1227,7 +1233,8 @@ another solution would be to expant tabs - all tabs in the string
 					fd2 = null;
 				}
 				if (flag_oc) {
-					result = f_name + "$" + result;
+					result = f_name.toLowerCase() + "$" + result;
+//2009					result = f_name + "$" + result;
 				} else {
 					result = f_name.toLowerCase() + "$" + result;
 				}
@@ -1262,7 +1269,8 @@ another solution would be to expant tabs - all tabs in the string
 			if (fd3 == null) {
 				f_name = fd4.getName(null);
 				if (flag_oc) {
-					result += f_name + "$";
+					result += f_name.toLowerCase() + "$";
+//2009					result += f_name + "$";
 			 	} else {
 					result += f_name.toLowerCase() + "$";
 			 	}	
@@ -1271,7 +1279,8 @@ another solution would be to expant tabs - all tabs in the string
 				// still inner function, add names
 				f_name = fd3.getName(null);
 				if (flag_oc) {
-					result = f_name + "$" + result;
+					result = f_name.toLowerCase() + "$" + result;
+//2009					result = f_name + "$" + result;
 				} else {
 					result = f_name.toLowerCase() + "$" + result;
 				}
@@ -1288,21 +1297,25 @@ another solution would be to expant tabs - all tabs in the string
 	static String constructVariableParameterKey(String id) throws SdaiException {
 		if (active_scope instanceof EAlgorithm_definition) {
 			if (flag_oc) {
-				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id;
+				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id.toLowerCase();
+//2009				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id;
 			} else {
 				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id.toLowerCase();
 			}
 		} else
 		if (active_scope instanceof EGlobal_rule) {
+      // is this opposite thing intentional? toLowerCase() could have been in NOT oc
 			if (flag_oc) {
 				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id.toLowerCase();
 			} else {
-				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id;
+				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id.toLowerCase();
+//2009				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id;
 			}
 		} else 
 		if (active_scope instanceof EEntity_definition) {
 			if (flag_oc) {
-				return constructEntityPrefix((EEntity_definition)active_scope) + id;
+				return constructEntityPrefix((EEntity_definition)active_scope) + id.toLowerCase();
+//2009				return constructEntityPrefix((EEntity_definition)active_scope) + id;
 			} else {
 				return constructEntityPrefix((EEntity_definition)active_scope) + id.toLowerCase();
 			}
@@ -1323,7 +1336,8 @@ another solution would be to expant tabs - all tabs in the string
 
 		String result = null;
 		if (flag_oc) {
-			result = id;
+			result = id.toLowerCase();
+//2009			result = id;
 		} else {
 			result = id.toLowerCase();
 		}
@@ -1353,7 +1367,8 @@ another solution would be to expant tabs - all tabs in the string
 //					result = key_prefix + "$" + result;
 					result = key_prefix + result;
 //System.out.println("CONSTRUCTING IMPLICIT KEY fineshed: " + result); 		
-					return result;
+//2009					return result;
+					return result.toLowerCase();
 				} else
 				if (a_scope.current_active_scope instanceof EEntity_definition) {
 					key_prefix =  ((EEntity_definition)a_scope.current_active_scope).getName(null) + "$" + key_prefix;
@@ -1410,7 +1425,8 @@ another solution would be to expant tabs - all tabs in the string
 //				if (active_scope == null) {
  // System.out.println(">02< CONSTRUCTING IMPLICIT SCOPE PREFIX FINESHED: " + key_prefix); 		
 //					return key_prefix + "$";
-					return key_prefix;
+//2009					return key_prefix;
+					return key_prefix.toLowerCase();
 				} else
 				if (a_scope.current_active_scope instanceof EEntity_definition) {
 					key_prefix =  ((EEntity_definition)a_scope.current_active_scope).getName(null) + "$" + key_prefix;
@@ -1440,14 +1456,14 @@ another solution would be to expant tabs - all tabs in the string
 		} else {
 // System.out.println("In constructImplicitScopePrefix - scope parent null!!!");
 // System.out.println(">09< CONSTRUCTING IMPLICIT SCOPE PREFIX - parent NULL: " + key_prefix); 		
-			return key_prefix + "$";
+//2009			return key_prefix + "$";
+			return key_prefix.toLowerCase() + "$";
 		}
 		
 		}
 		
 	
 	}
-
 
 
 	static String constructConstantKey(String id) throws SdaiException {
@@ -1458,20 +1474,23 @@ another solution would be to expant tabs - all tabs in the string
 		
 		if (active_scope instanceof EAlgorithm_definition) {
 			if (flag_oc) {
-				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id;
+				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id.toLowerCase();
+//2009				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id;
 			} else {
 				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id.toLowerCase();
 			}
 		} else 
 		if (active_scope instanceof EGlobal_rule) {
 			if (flag_oc) {
-				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id;
+				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id.toLowerCase();
+//2009				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id;
 			} else {
 				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id.toLowerCase();
 			}
 		}	else {
 			if (flag_oc) {
-				return id;
+				return id.toLowerCase();
+//2009				return id;
 			} else {
 				return id.toLowerCase();
 			}
@@ -1481,20 +1500,23 @@ another solution would be to expant tabs - all tabs in the string
 	static String constructFunctionKey(String id) throws SdaiException {
 		if (active_scope instanceof EAlgorithm_definition) {
 			if (flag_oc) {
-				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id;
+				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id.toLowerCase();
+//2009				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id;
 			} else {
 				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id.toLowerCase();
 			}
 		} else 
 		if (active_scope instanceof EGlobal_rule) {
 			if (flag_oc) {
-				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id;
+				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id.toLowerCase();
+//2009				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id;
 			} else {
 				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id.toLowerCase();
 			}
 		}	else {
 			if (flag_oc) {
-				return id;
+				return id.toLowerCase();
+//2009				return id;
 			} else {
 				return id.toLowerCase();
 			}
@@ -1503,20 +1525,23 @@ another solution would be to expant tabs - all tabs in the string
 	static String constructProcedureKey(String id) throws SdaiException {
 		if (active_scope instanceof EAlgorithm_definition) {
 			if (flag_oc) {
-				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id;
+				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id.toLowerCase();
+//2009				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id;
 			} else {
 				return constructFunctionProcedurePrefix((EAlgorithm_definition)active_scope) + id.toLowerCase();
 			}
 		} else 
 		if (active_scope instanceof EGlobal_rule) {
 			if (flag_oc) {
-				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id;
+				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id.toLowerCase();
+//2009				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id;
 			} else {
 				return constructGlobalRulePrefix((EGlobal_rule)active_scope) + id.toLowerCase();
 			}
 		}	else {
 			if (flag_oc) {
-				return id;
+				return id.toLowerCase();
+//2009				return id;
 			} else {
 				return id.toLowerCase();
 			}
@@ -1526,6 +1551,13 @@ another solution would be to expant tabs - all tabs in the string
 
 
 	static ECtVariable findVariableX(String name) throws jsdai.lang.SdaiException {
+
+    // not clear why resolving of variable names is case-sensitive even when -oc switch is used, especially that it is not working correctly
+    // let's try this
+    // no, it is not a solution
+		//2009
+		name = name.toLowerCase();
+
 
 //  System.out.println("X-01-X IN findVariableX: " + name); 		
 
@@ -1599,7 +1631,8 @@ if (name.equalsIgnoreCase("prd")) {
 		
 		String pure_name = null;
 		if (flag_oc) {
-			pure_name = name;
+			pure_name = name.toLowerCase();
+//2009			pure_name = name;
 		} else {
 			pure_name = name.toLowerCase();
 		}
@@ -1609,15 +1642,15 @@ if (name.equalsIgnoreCase("prd")) {
 		
 		Set key_set = hm_current_variables.keySet();
 
-// if (name.equalsIgnoreCase("prd")) {
+// if (name.equalsIgnoreCase("IsDifferent")) {
 //	System.out.println("<X-06-X-08 in findVariableX, key set: " + key_set);
-// }		
+//}		
 		
 		for (;;) {
 			String var_name = var_prefix + pure_name;
-// if (name.equalsIgnoreCase("prd")) {
- // System.out.println("<X-07-X in findVariableX, key: " + var_name);
-// }
+// if (name.equalsIgnoreCase("IsDifferent")) {
+//  System.out.println("<X-07-X in findVariableX, key: " + var_name);
+//}
 			if (hm_current_variables.containsKey(var_name)) {
 		 		ECtVariable var = (ECtVariable)hm_current_variables.get(var_name);
 //System.out.println("<in findVariableX, found: " + var);
@@ -1669,7 +1702,8 @@ if (active_scope != null) {
 		
 		String pure_name = null;
 		if (flag_oc) {
-			pure_name = name;
+			pure_name = name.toLowerCase();
+//2009			pure_name = name;
 		} else {	
 			pure_name = name.toLowerCase();
 		}
@@ -3125,7 +3159,8 @@ Obvious incompatibles:
 //			pw.println("\t\t-- recursing supertypes: from " + arm_entity.getName(null) + " to " + supertype.getName(null));
 
 			// NOTE - noticed later - should it be recurseSupertypes2 ??? !!!
-			result = recurseSupertypes(supertype, supertype_entity, start_entity, processed);
+//			result = recurseSupertypes(supertype, supertype_entity, start_entity, processed);
+			result = recurseSupertypes2(supertype, supertype_entity, start_entity, processed);
 			if (result) {
 				return true;
 			}
@@ -4164,21 +4199,35 @@ Obvious incompatibles:
 
 //System.out.println("attribute: " + attribute_name);
 //System.out.println("hm key: " + attr_key);
-System.out.println("===== hm_attributes ============");
+//System.out.println("===== hm_attributes ============");
 //System.out.println("===== hm_attributes: " + hm_attributes );
-Set keyset = hm_attributes.keySet();
-Iterator keyset_iterator = keyset.iterator();
-System.out.println("\n==============================================\n");
-while (keyset_iterator.hasNext()) {
-	String a_key = (String)keyset_iterator.next();
-System.out.println("a hashmap key: " + a_key + ", value: " + hm_attributes.get(a_key));
-}
+//Set keyset = hm_attributes.keySet();
+//Iterator keyset_iterator = keyset.iterator();
+//System.out.println("\n==============================================\n");
+//while (keyset_iterator.hasNext()) {
+//	String a_key = (String)keyset_iterator.next();
+//System.out.println("a hashmap key: " + a_key + ", value: " + hm_attributes.get(a_key));
+//}
 
 
 		}
 
 
-// System.out.println("in findAttribute - name: " + attribute_name + ", ed: " + ed + ", edx: " + edx + ", key: " + attr_key); 
+//System.out.println("in findAttribute - name: " + attribute_name + ", ed: " + ed + ", edx: " + edx + ", key: " + attr_key + ", type: " + attr_type); 
+
+if (false) {
+//if (true) {
+//if (attribute_name.equals("secondary")) {
+System.out.println("===== hm_attributes START ============: attribute: " + attribute_name + ", ed: " + ed + ", edx: " + edx + ", key: " + attr_key);
+Set keyset = hm_attributes.keySet();
+Iterator keyset_iterator = keyset.iterator();
+	while (keyset_iterator.hasNext()) {
+		String a_key = (String)keyset_iterator.next();
+		System.out.println("a hashmap key: " + a_key + ", value: " + hm_attributes.get(a_key));
+	}
+System.out.println("\n============================================== hm_attributes END ====\n");
+}
+
 
 		if (hm_attributes != null) {
 			if (attr_key != null) {
@@ -4395,6 +4444,7 @@ System.out.println("a hashmap key: " + a_key + ", value: " + hm_attributes.get(a
 //			if (debug_print) {
 //				System.out.println("invoking findAttribute for supertype: " + ed1);
 //    	}
+//System.out.println("findAttribute - entity: " + ed1.getName(null) + ", attribute: " + attribute_name + ", pass: " + parser_pass);
       EAttribute at = findAttribute(attribute_name, ed1, attr_type, ed, attr_key);
       if (at != null) {
 // System.out.println(">>> found in supertype : " + at);
@@ -7115,7 +7165,7 @@ static void printUsers(String msg, EEntity inst) throws SdaiException {
 
 			// flag_serialize = false;
 		
-       flag_serialize = false;
+      flag_serialize = false;
     	if (flag_serialize) {
     		if (x_data.children != null) {
       		for (int i = 0; i < x_data.children.length; ++i) {
@@ -7137,6 +7187,215 @@ static void printUsers(String msg, EEntity inst) throws SdaiException {
     	}
     }
   }
+
+	static void normalizeIDs(SdaiRepository repo) throws SdaiException {
+    ASdaiModel models2 = repo.getModels();
+    SdaiIterator iter_model = models2.createIterator();
+    while (iter_model.next()) {
+      SdaiModel model2 = models2.getCurrentMember(iter_model);
+
+      if (model2.getMode() != SdaiModel.READ_WRITE) {
+        continue;
+      }
+
+      // 1.
+      // normalise schema names - to all UPPERCASE
+			// ENTITY generic_schema_definition
+			// name : express_id;
+      Aggregate a_sd = model2.getEntityExtentInstances(EGeneric_schema_definition.class);
+      SdaiIterator iter_sd = a_sd.createIterator();
+    	while (iter_sd.next()) {
+	      EGeneric_schema_definition sd_inst = (EGeneric_schema_definition) a_sd.getCurrentMemberObject(iter_sd);
+  	    String sd_name = sd_inst.getName(null);
+    		sd_inst.setName(null, sd_name.toUpperCase());
+      }
+
+			// 2.
+		  // normalize named types names - changed to data_type names
+      // perhaps better just all data types:
+      // ENTITY data_type
+			// name : express_id;
+      Aggregate a_dt = model2.getEntityExtentInstances(EData_type.class);
+      SdaiIterator iter_dt = a_dt.createIterator();
+    	while (iter_dt.next()) {
+	      EData_type dt_inst = (EData_type) a_dt.getCurrentMemberObject(iter_dt);
+  	    String dt_name = dt_inst.getName(null);
+    		dt_inst.setName(null, dt_name.toLowerCase());
+      }
+		
+    	// 3.
+    	// normalize attribute names
+      Aggregate a_attr = model2.getEntityExtentInstances(EAttribute.class);
+      SdaiIterator iter_attr = a_attr.createIterator();
+    	while (iter_attr.next()) {
+	      EAttribute attr_inst = (EAttribute) a_attr.getCurrentMemberObject(iter_attr);
+  	    String attr_name = attr_inst.getName(null);
+    		attr_inst.setName(null, attr_name.toLowerCase());
+      }
+
+			// 4.
+      // functions, procedures
+      // ENTITY Algorithm_definition
+      // name : express_id; 
+      Aggregate a_ad = model2.getEntityExtentInstances(EAlgorithm_definition.class);
+      SdaiIterator iter_ad = a_ad.createIterator();
+    	while (iter_ad.next()) {
+	      EAlgorithm_definition ad_inst = (EAlgorithm_definition) a_ad.getCurrentMemberObject(iter_ad);
+  	    String ad_name = ad_inst.getName(null);
+    		ad_inst.setName(null, ad_name.toLowerCase());
+      }
+      
+			// 5.
+      // global rule
+			// ENTITY Global_rule;
+			// name : express_id;
+      Aggregate a_gr = model2.getEntityExtentInstances(EGlobal_rule.class);
+      SdaiIterator iter_gr = a_gr.createIterator();
+    	while (iter_gr.next()) {
+	      EGlobal_rule gr_inst = (EGlobal_rule) a_gr.getCurrentMemberObject(iter_gr);
+  	    String gr_name = gr_inst.getName(null);
+    		gr_inst.setName(null, gr_name.toLowerCase());
+      }
+
+			// 6.
+      // uniqueness rule
+			// ENTITY Uniqueness_rule;
+			// label : OPTIONAL express_id;
+      Aggregate a_ur = model2.getEntityExtentInstances(EUniqueness_rule.class);
+      SdaiIterator iter_ur = a_ur.createIterator();
+    	while (iter_ur.next()) {
+	      EUniqueness_rule ur_inst = (EUniqueness_rule) a_ur.getCurrentMemberObject(iter_ur);
+  	    // String ur_name = ur_inst.getLabel(null);
+    		if (ur_inst.testLabel(null)) { // it is OPTIONAL
+    			ur_inst.setLabel(null, ur_inst.getLabel(null).toLowerCase());
+				}
+      }
+
+      // 7.
+      // constants
+      // ENTITY Constant_definition;
+			// name : express_id;
+      Aggregate a_cd = model2.getEntityExtentInstances(EConstant_definition.class);
+      SdaiIterator iter_cd = a_cd.createIterator();
+    	while (iter_cd.next()) {
+	      EConstant_definition cd_inst = (EConstant_definition) a_cd.getCurrentMemberObject(iter_cd);
+  	    String cd_name = cd_inst.getName(null);
+    		cd_inst.setName(null, cd_name.toLowerCase());
+      }
+
+			// 8.
+      // supertype constraint
+			// ENTITY Sub_supertype_constraint;
+      // name : OPTIONAL express_id;
+      Aggregate a_sc = model2.getEntityExtentInstances(ESub_supertype_constraint.class);
+      SdaiIterator iter_sc = a_sc.createIterator();
+    	while (iter_sc.next()) {
+	      ESub_supertype_constraint sc_inst = (ESub_supertype_constraint) a_sc.getCurrentMemberObject(iter_sc);
+  	    // String sc_name = sc_inst.getName(null);
+    		if (sc_inst.testName(null)) { // it is OPTIONAL
+    			sc_inst.setName(null, sc_inst.getName(null).toLowerCase());
+      	}
+      }
+
+      // 9.
+      // enumeration IDs:
+			// ENTITY Enumeration_type 
+      //	local_elements : OPTIONAL LIST [0:?] OF UNIQUE express_id; 
+      Aggregate a_et = model2.getEntityExtentInstances(EEnumeration_type.class);
+      SdaiIterator iter_et = a_et.createIterator();
+    	while (iter_et.next()) {
+	      EEnumeration_type et_inst = (EEnumeration_type) a_et.getCurrentMemberObject(iter_et);
+				// further implementation different - go through the whole LIST, set each element
+      	if (et_inst.testLocal_elements(null)) { // it is OPTIONAL
+      		A_string local_elements = et_inst.getLocal_elements(null);
+      		SdaiIterator iter_e = local_elements.createIterator();
+      		while (iter_e.next()) {
+      			String local_element = (String)local_elements.getCurrentMember(iter_e);
+      			local_elements.setCurrentMember(iter_e, local_element.toLowerCase());
+      		}
+      	}
+      }
+
+      // 10.
+      // labels of where rules
+      // ENTITY Where_rule;
+			// label : OPTIONAL express_id;
+      Aggregate a_wr = model2.getEntityExtentInstances(EWhere_rule.class);
+      SdaiIterator iter_wr = a_wr.createIterator();
+    	while (iter_wr.next()) {
+	      EWhere_rule wr_inst = (EWhere_rule) a_wr.getCurrentMemberObject(iter_wr);
+  	    // String _name = _inst.getName(null);
+    		if (wr_inst.testLabel(null)) { // it is OPTIONAL
+    			wr_inst.setLabel(null, wr_inst.getLabel(null).toLowerCase());
+      	}
+      }
+      	
+      // 11-12.
+      // function return type
+			// ENTITY Function_definition 
+  		// return_type_label : OPTIONAL express_id;
+			// return_type_labels : OPTIONAL LIST [1:?] OF express_id;
+      Aggregate a_rt = model2.getEntityExtentInstances(EFunction_definition.class);
+      SdaiIterator iter_rt = a_rt.createIterator();
+    	while (iter_rt.next()) {
+	      EFunction_definition rt_inst = (EFunction_definition) a_rt.getCurrentMemberObject(iter_rt);
+  	    //String _name = _inst.getName(null);
+    		if (rt_inst.testReturn_type_label(null)) { // it is OPTIONAL
+    			rt_inst.setReturn_type_label(null, rt_inst.getReturn_type_label(null).toLowerCase());
+    		}
+      	if (rt_inst.testReturn_type_labels(null)) { // it is OPTIONAL
+      		A_string return_type_labels = rt_inst.getReturn_type_labels(null);
+      		SdaiIterator iter_e = return_type_labels.createIterator();
+      		while (iter_e.next()) {
+      			String return_type_label = (String)return_type_labels.getCurrentMember(iter_e);
+      			return_type_labels.setCurrentMember(iter_e, return_type_label.toLowerCase());
+      		}
+      	}
+      }
+      
+      // 13.
+      // alias in interfaced declarations
+			// ENTITY Interfaced_declaration
+			// alias_name : OPTIONAL express_id;
+      Aggregate a_id = model2.getEntityExtentInstances(EInterfaced_declaration.class);
+      SdaiIterator iter_id = a_id.createIterator();
+    	while (iter_id.next()) {
+	      EInterfaced_declaration id_inst = (EInterfaced_declaration) a_id.getCurrentMemberObject(iter_id);
+  	    // String _name = _inst.getName(null);
+    		if (id_inst.testAlias_name(null)) { // it is OPTIONAL
+    			id_inst.setAlias_name(null, id_inst.getAlias_name(null).toLowerCase());
+      	}
+      }
+      
+      // 14-15
+      // parameter
+			// ENTITY Parameter;
+			// name : express_id;
+			// type_labels: OPTIONAL LIST [1:?] OF express_id;
+      Aggregate a_p = model2.getEntityExtentInstances(EParameter.class);
+      SdaiIterator iter_p = a_p.createIterator();
+    	while (iter_p.next()) {
+	      EParameter p_inst = (EParameter) a_p.getCurrentMemberObject(iter_p);
+  	    String p_name = p_inst.getName(null);
+    		p_inst.setName(null, p_name.toLowerCase());
+      	if (p_inst.testType_labels(null)) { // it is OPTIONAL
+      		A_string type_labels = p_inst.getType_labels(null);
+      		SdaiIterator iter_e = type_labels.createIterator();
+      		while (iter_e.next()) {
+      			String type_label = (String)type_labels.getCurrentMember(iter_e);
+      			type_labels.setCurrentMember(iter_e, type_label.toLowerCase());
+      		}
+      	}
+      }
+
+      // alias in reference from specification - is it express-x only? 
+      // NOTE - there are other things that are express-x only, not included here, at least for now
+			// ENTITY reference_from_specification_as 
+			// alias_name : OPTIONAL express_id; 
+      
+
+		} // end while
+	}
 
   static void insertBinaries(SdaiRepository repo, X_AllSchemas x_data, boolean to_serialize) throws SdaiException, IOException {
 //  static void insertBinaries(SdaiRepository repo) throws SdaiException {
@@ -7255,7 +7514,7 @@ static void printUsers(String msg, EEntity inst) throws SdaiException {
       }
 
       copyFile(model2.getLocationURL(), destination);
-
+//System.out.println("<<>><<>>model location: " + model2.getLocationURL());
 			// flag_serialize = false;
 		
        flag_serialize = false;

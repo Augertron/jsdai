@@ -78,14 +78,14 @@ public class Compiler2 extends Support
 	static String progress;
 	static boolean in_progress = true;
 
-	static final String xc_build     = "467";
-	static final String xc_date      = "2008-11-04";
-	static final String xc_version   = "4.0.0";
+	static final String xc_build     = "476";
+	static final String xc_date      = "2009-07-02";
+	static final String xc_version   = "4.2.1";
 	static final String xc_title     = "JSDAI(TM) Express Compiler";
-	static final String xc_copyright = "Copyright (C) 1998-2006 LKSoftWare GmbH";
+	static final String xc_copyright = "Copyright (C) 1998-2009 LKSoftWare GmbH";
 
 	// old, perhaps updated during builds? If not, remove
-	static String build = "467";
+	static String build = "476";
 	
     final static int WA_UNKNOWN             =  0;
 		final static int WA_ATTRIBUTE_REF       =  1;
@@ -515,7 +515,7 @@ System.out.println("------------------------------");
 	flag_debug_split_return = false;
 	flag_no_print_active_nodes = false;
   flag_complex = false;
-	flag_oc = false;
+	flag_oc = true;
 	flag_more_errors = false;
 	flag_complex_off = false;
   flag_implicit_select = false;
@@ -700,6 +700,8 @@ System.out.println("------------------------------");
 
 
 
+			if (args[ihi].equalsIgnoreCase("-spec_reference_from")) flag_no_special_reference_from = false;
+			if (args[ihi].equalsIgnoreCase("-rf")) flag_no_special_reference_from = false;
 			if (args[ihi].equalsIgnoreCase("-express_x")) express_x = true;
 			if (args[ihi].equalsIgnoreCase("-attribute_not_found")) flag_print_attribute_not_found_error = true;
 			if (args[ihi].equalsIgnoreCase("-implicit_expressions")) flag_implicit_expressions = true;
@@ -711,6 +713,8 @@ System.out.println("------------------------------");
 			if (args[ihi].equalsIgnoreCase("-create_repository")) flag_allow_no_repository = true;
 			if (args[ihi].equalsIgnoreCase("-cr")) flag_allow_no_repository = true;
 			if (args[ihi].equalsIgnoreCase("-more_errors")) flag_more_errors = true;
+			if (args[ihi].equalsIgnoreCase("-normalized_case")) flag_oc = false;
+			if (args[ihi].equalsIgnoreCase("-nc")) flag_oc = false;
 			if (args[ihi].equalsIgnoreCase("-original_case")) flag_oc = true;
 			if (args[ihi].equalsIgnoreCase("-oc")) flag_oc = true;
 			if (args[ihi].equalsIgnoreCase("-complex_off")) flag_complex_off = true;
@@ -2241,9 +2245,33 @@ System.out.println("------------------------------");
 //repository.exportClearTextEncoding("after_remove_duplicates.pf");
 		if (generate_p21) {
 			repository.exportClearTextEncoding(physical_file);
-		}
+ 	  }
+   	File file_old = null;
+    File file_new = null;
+    String repo_path_old = repository.getLocation();
+	  String repo_path_new = repo_path_old.substring(0,repo_path_old.lastIndexOf(".")) + ".x";
 		if (generate_bin) {
 			trans.commit();
+
+		if (flag_oc) {
+
+			// move this file to subdirectory for original case, or just leave it there, but rename to something else
+      // movied does not work as I need, copying is better, because after moving, new model when running compiler again is created in the wrong repository file, etc,
+      // instead of investigating the issues, just copying instead.
+		  // String repo_path_new = repo_path_old.substring(0,repo_path_old.lastIndexOf(".")) + ".exd";
+		  //System.out.println("<<>><<>>repo location :" + source_path);
+    	file_old = new File(repo_path_old);
+      file_new = new File(repo_path_new);
+      copyFile_old(file_old, file_new);
+      //boolean is_renamed = file_old.renameTo(file_new);
+      //if (!is_renamed) {
+        // File was not successfully renamed
+			  //System.out.println("<<>><<>>renaming problem");
+      //}
+		  // normalize all IDs
+			normalizeIDs(repository);
+			trans.commit();
+		}	
             if (!(indexFileName.equalsIgnoreCase("none"))) {
 							String indexFilePath = null;
 							if (output_dir != null) {
@@ -2262,7 +2290,24 @@ System.out.println("------------------------------");
 		}
 		if (flag_insert) {
 			insertBinaries(repository, x_data, true);
+		  // now we could move the repository file back and delete the subdirectory
 		}
+		// at this point, if both files .x and .sdai are present, delete .sdai and rename .x to .sdai
+		// old - sdai, new - x,  x contains OC, sdai - normalized
+		// first, commit - sdai - with original case
+		// then rename to x
+		// then normalize IDs
+		// then commit again - sdai
+		// then insert binaries - from sdai
+		// then delete sdai
+		// then rename x back to sdai
+    //String repo_path_old = repository.getLocation();
+	  // String repo_path_new = repo_path_old.substring(0,repo_path_old.lastIndexOf(".")) + ".exd";
+	  //String repo_path_new = repo_path_old.substring(0,repo_path_old.lastIndexOf(".")) + ".x";
+	  //System.out.println("<<>><<>>repo location :" + source_path);
+   	//file_old = new File(repo_path_old);
+    //file_new = new File(repo_path_new);
+		
 		if (!generate_bin) {
 	    trans.endTransactionAccessAbort();
 		repository.closeRepository();
@@ -2274,7 +2319,23 @@ System.out.println("------------------------------");
 		printVerbose("total duration: " + total_elapsed_time);
 		System.out.println("Express Compiler ended");
 		in_progress = false;
+
+
+		if (flag_oc) {
+	 	  file_old = new File(repo_path_old);
+  	  file_new = new File(repo_path_new);
+    	boolean is_deleted = file_old.delete();
+	    if (!is_deleted) {
+			   System.out.println("<<>><<>>deleting problem");
+    	}
+	   	boolean is_renamed_back = file_new.renameTo(file_old);
+  	   if (!is_renamed_back) {
+    	  // File was not successfully renamed
+			   System.out.println("<<>><<>>renaming back problem");
+  	  }
+		}
  		return 0;
+
 	}
 
 }
@@ -2291,8 +2352,18 @@ SKIP : /* WHITE SPACE */
 | "\0"
 }
 
-
-
+TOKEN : /* spec case REFERENCE FROM - USE FROM */
+{
+	< REFERENCE2: "(*REFERENCE FROM*) USE" > 
+	{ 
+		if (Support.flag_no_special_reference_from) 
+			matchedToken.kind = USE;
+		else  
+			matchedToken.kind = REFERENCE;
+	}
+}
+ 
+ 
 /* COMMENTS */
 
 MORE :
@@ -2670,6 +2741,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef(jsdai.SExtended_dictio
 				// if (ed instanceof jsdai.SExtended_dictionary_schema.EEntity_definition) {
 					// attr.setParent_entity(null, ed);
 				// }
+//System.out.println("PUTTING INTO hm_attributes - parser pass: " + parser_pass + "\n\tkey: " + hm_attribute_key + "\n\tattribute: " + attr);
 				hm_attributes.put(hm_attribute_key, attr);
 				
 			} else
@@ -2838,6 +2910,29 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef(jsdai.SExtended_dictio
 //                      printDDebug("##_________## Inside Attribute Ref: " + attr.getName(null));
 //              }
 //System.out.println("<D2008> AttrRef returning: " + attr);		
+
+
+/*
+System.out.println("+++++++++++ Resolving attribute reference  in pass " + parser_pass +" +++++++++++++++++++++++");
+
+System.out.println("attribute_name: " + attribute_name);
+System.out.println("ed: " + ed);
+System.out.println("ed2: " + ed2);
+System.out.println("reference: " + reference);
+System.out.println("active_scope: " + active_scope);
+System.out.println("attr_key: " + attr_key);
+
+System.out.println("attr_type: " + attr_type);
+//System.out.println("attr_type_original: " + attr_type_original);
+
+System.out.println("hm_attributes: " + hm_attributes);
+System.out.println("---------------------------------------------------------------");
+System.out.println("resolved attr: "  + attr);
+
+
+System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+*/
+
 		return attr;
 	}
 }
@@ -3757,6 +3852,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeDecl(jsdai.SExtended_dicti
 //			   attr.setOrder(null, explicit_attribute_order_count++);
 				 // aea = ed.getExplicit_attributes(null);
 				 // aea.addByIndex(aea.getMemberCount() + 1, attr); // + 1 because it is a list?
+//System.out.println("PUTTING INTO hm_attributes - parser pass: " + parser_pass + "\n\tkey: " + hm_attribute_key + "\n\tattribute: " + attr);
 					hm_attributes.put(hm_attribute_key, attr);
 			 } else
 			 if (attr_type == 1) { // derived
@@ -3886,7 +3982,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier(jsdai.SExtended_
 		if (ed2 == null) {
 			if (active_scope instanceof jsdai.SExtended_dictionary_schema.EEntity_definition) {
 				ed2 = (jsdai.SExtended_dictionary_schema.EEntity_definition)active_scope;
-// System.out.println("@X 10-506 new e2: " + reference);
+// System.out.println("@X 10-506 new e2: " + reference);
 			} else {
 			}
 		}
@@ -3987,7 +4083,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier(jsdai.SExtended_
 				if (attr2 instanceof jsdai.SExtended_dictionary_schema.EExplicit_attribute) {
 					if (isRedeclared_attrCompatible(attr, attr2)) { 
 						if (attr == attr2) {
-							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself, entity: " + attr.getParent(null).getName(null), null, true);
+							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself (1), entity: " + attr.getParent(null).getName(null), null, true);
 							error_count++;
 						} else {
 //System.out.println("OXO- redeclaring attr: " + attr + ", redeclared attr2: " + attr2);
@@ -4043,7 +4139,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier(jsdai.SExtended_
 				if (attr2 instanceof jsdai.SExtended_dictionary_schema.EExplicit_attribute) {
 					if (isRedeclared_attrCompatible(attr, attr2)) { 
 						if (attr == attr2) {
-							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself, entity: " + attr.getParent(null).getName(null), null, true);
+							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself (2), entity: " + attr.getParent(null).getName(null), null, true);
 							error_count++;
 						} else {
 							((jsdai.SExtended_dictionary_schema.EDerived_attribute)attr).setRedeclaring(null, (jsdai.SExtended_dictionary_schema.EExplicit_attribute)attr2);
@@ -4061,7 +4157,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier(jsdai.SExtended_
 				if (attr2 instanceof jsdai.SExtended_dictionary_schema.EDerived_attribute) {
 					if (isRedeclared_attrCompatible(attr, attr2)) { 
 						if (attr == attr2) {
-							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself, entity: " + attr.getParent(null).getName(null), null, true);
+							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself (3), entity: " + attr.getParent(null).getName(null), null, true);
 							error_count++;
 						} else {
 							((jsdai.SExtended_dictionary_schema.EDerived_attribute)attr).setRedeclaring(null, (jsdai.SExtended_dictionary_schema.EDerived_attribute)attr2);
@@ -4095,7 +4191,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier(jsdai.SExtended_
 // System.out.println("redeclared: " + attr2);
 				if (isRedeclared_attrCompatible(attr, attr2)) { 
 						if (attr == attr2) {
-							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself, entity: " + attr.getParent(null).getName(null), null, true);
+							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself (4), entity: " + attr.getParent(null).getName(null), null, true);
 							error_count++;
 						} else {
 							((jsdai.SExtended_dictionary_schema.EInverse_attribute)attr).setRedeclaring(null, (jsdai.SExtended_dictionary_schema.EInverse_attribute)attr2);
@@ -4139,7 +4235,11 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier(jsdai.SExtended_
 
  	  if (renamed != null) {
  	  	if (renamed.isActive()) {
-				renamed.addNewAttribute(attr);
+				if (attr2 != attr) {
+					renamed.addNewAttribute(attr);
+  			} else {
+  				// this case is probably an internall error, should be fixed!!!
+  			}
   			ed.setTemp(renamed);
 			}		
 		}
@@ -8210,7 +8310,8 @@ jsdai.SExtended_dictionary_schema.EInteger_type IntegerType(jsdai.lang.EEntity w
 void InterfaceSpecification(Vector used_vector, Vector referenced_vector) throws jsdai.lang.SdaiException :
 {}
 {
-	(ReferenceClause(referenced_vector) | UseClause(used_vector))
+//	(ReferenceClause(referenced_vector) | UseClause(used_vector))
+	(Reference2Clause(referenced_vector) | ReferenceClause(referenced_vector) | UseClause(used_vector))
 }
 /* ------------------------------------------------------------------------------------ ISO 10303-11:A.2.229------------ */
 void Interval() throws jsdai.lang.SdaiException :
@@ -11025,6 +11126,9 @@ jsdai.SExtended_dictionary_schema.EAttribute ReferencedAttribute(jsdai.SExtended
 		return a;
 	}
 }
+
+
+
 /* ------------------------------------------------------------------------------------ ISO 10303-11:A.2.267------------ */
 /*  ISO 10303-14.B.2.168 */
 void ReferenceClause(Vector referenced_vector) throws jsdai.lang.SdaiException :
@@ -11043,6 +11147,92 @@ void ReferenceClause(Vector referenced_vector) throws jsdai.lang.SdaiException :
 {
 //      <REFERENCE> <FROM> reference_schema = SchemaRef()
 	<REFERENCE> <FROM> reference_schema = SchemaRefOrRename()
+	{
+
+	  if (reference_schema != null) {
+	  	if (reference_schema.getName(null).equalsIgnoreCase("mixed_complex_types")) {
+				error_count++;
+				printErrorMsg("REFERENCE FROM " + reference_schema.getName(null) + " - this special schema should not be interfaced explicitly", null, true);
+	  	}
+	  }
+
+		items_vector = new Vector();
+// what is that? next line, as found:
+//		interfaced_model = reference_schema.findEntityInstanceSdaiModel();
+		interfaced_model = findReferencedModel(reference_schema);
+		if ((interfaced_model == null) && (parser_pass != 1)) {
+			error_count++;
+			if (parser_pass == 2) {
+				if (reference_schema != null) {
+//					printError("interfaced schema not found: " + reference_schema.getName(null).toLowerCase());
+					printErrorMsg("" + reference_schema.getName(null) + " - interfaced schema not found", null, true);
+				} else {
+					printEDebug("interfaced schema not found, its name not determined");
+				}
+			}
+			printDebug("REFERENCEd FROM schema not found: " + reference_schema);
+		}
+
+// 		if ((parser_pass == 2) && (interfaced_model != null)) {
+ 		if (interfaced_model != null) {
+      			if (interfaced_model.getMode() == jsdai.lang.SdaiModel.NO_ACCESS) {
+        			interfaced_model.startReadOnlyAccess();
+      			}              
+    		}
+
+	}
+	 ["(" dc = ResourceOrRename(interfaced_model){items_listed = true; items_vector.addElement(dc);} ("," dc = ResourceOrRename(interfaced_model) { items_vector.addElement(dc);})* ")"] [ <AS> ( <SOURCE> | <TARGET> ) ] ";"
+	{
+		if (parser_pass == 2) {
+			rfs = (jsdai.SExtended_dictionary_schema.EReference_from_specification)model.createEntityInstance(jsdai.SExtended_dictionary_schema.CReference_from_specification.class);
+			jsdai.SExtended_dictionary_schema.ESchema_definition asd = getSchema_definitionFromModel(interfaced_model);
+			if (asd != null) {
+				rfs.setForeign_schema(null, asd);  // generic_schema_definition;
+			}
+			rfs.setCurrent_schema(null, sd); // generic_schema_definition;
+			if (!items_listed) {
+				if (interfaced_model != null) {
+					createAllReferencedDeclarations(interfaced_model);
+					referenced_vector.addElement(interfaced_model);
+				}
+			} else {
+				items = rfs.createItems(null);			
+//System.out.println("XXXOOOO: " + items);
+				for (int i = 0; i < items_vector.size(); i++) {
+//System.out.println("XXXOO: " + items_vector.elementAt(i));
+//					 items.addByIndex(i, (jsdai.SExtended_dictionary_schema.EReferenced_declaration)items_vector.elementAt(i));
+//					items.addByIndex(i, (jsdai.SExtended_dictionary_schema.EInterfaced_declaration)items_vector.elementAt(i));
+//					((jsdai.SExtended_dictionary_schema.AReferenced_declaration)items).addByIndex(i, (jsdai.SExtended_dictionary_schema.EReferenced_declaration)items_vector.elementAt(i));
+					Object ivi = items_vector.elementAt(i);
+					if (ivi != null) {
+						items.addUnordered((jsdai.SExtended_dictionary_schema.EReferenced_declaration)ivi);
+					}
+				}
+				if (items.getMemberCount() == 0) {
+					rfs.deleteApplicationInstance();
+				}
+			}
+		}
+	}
+}
+/* REFERENCE-USE */
+void Reference2Clause(Vector referenced_vector) throws jsdai.lang.SdaiException :
+{
+	jsdai.SExtended_dictionary_schema.EGeneric_schema_definition reference_schema = null;
+	String reference_schema_str;
+	jsdai.lang.SdaiModel interfaced_model = null;
+	boolean items_listed = false;
+	jsdai.SExtended_dictionary_schema.EDeclaration dc = null;
+	Vector items_vector;
+	jsdai.SExtended_dictionary_schema.EReference_from_specification rfs = null;
+//	jsdai.SExtended_dictionary_schema.AReferenced_declaration items = null;
+	jsdai.SExtended_dictionary_schema.AInterfaced_declaration items = null;
+
+}
+{
+//      <REFERENCE> <FROM> reference_schema = SchemaRef()
+//	<REFERENCE> <FROM> reference_schema = SchemaRefOrRename()
+	<REFERENCE2> <FROM> reference_schema = SchemaRefOrRename()
 	{
 
 	  if (reference_schema != null) {
@@ -15943,10 +16133,14 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef5(jsdai.SExtended_dicti
 
 		
 				if (flag_in_redeclaring) {
-//				 	attr_key = "#" + global_schema_name + "_#" + global_entity_name + "_#" + global_entity_ref + "_#" + attribute_name.toLowerCase();
+
+					// restoring back the seemingly correct version
+				 	//attr_key = "#" + global_schema_name + "_#" + global_entity_name + "_#" + global_entity_ref + "_#" + attribute_name.toLowerCase();
+					// something very wrong with this
 				 	attr_key = "#" + global_schema_name + "_#" + global_entity_ref + "_#_#" + attribute_name.toLowerCase();
 				} else {
-//				 	hm_attribute_key = "#" + global_schema_name + "_#" + global_entity_name + "_#_#" + attribute_name.toLowerCase();
+					// why this was commented out?
+				 	//hm_attribute_key = "#" + global_schema_name + "_#" + global_entity_name + "_#_#" + attribute_name.toLowerCase();
 					attr_key = null;
 				}
 		if (to_debug) {
@@ -15955,11 +16149,12 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef5(jsdai.SExtended_dicti
 		
 		
 		
+//System.out.println("debugging AttributeRef5, attr_key: " + attr_key);
 		
 			if (attr_type >= 0) {
 				if (attr_type == 3) {
 						// printDDebug("######0 in AttributeRef5 name: " + attribute_name + ", entity name: " + ed2.getName(null) + ", attribute type: " + attr_type);
-// System.out.println("@#@# Invoking findAttribute from AttributeRef5, pass = 5, type = 3, name: " + attribute_name + ", ed: " + ed2); 
+//System.out.println("@#@# Invoking findAttribute from AttributeRef5, pass = 5, type = 3, name: " + attribute_name + ", ed: " + ed2); 
 					attr = findAttribute(attribute_name, ed2, 0, ed, attr_key); 
 // if (attr == null) {
  //System.out.println("attr_type = 3, name: " + attribute_name + ", ed2: " + ed2 + ", ed: " + ed + ", attr: " + attr + ", key: " + attr_key); 
@@ -15968,9 +16163,9 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef5(jsdai.SExtended_dicti
 				else {	
 						// printDDebug("######else in AttributeRef5 name: " + attribute_name + ", entity name: " + ed2.getName(null) + ", attribute type: " + attr_type);
 //		repository.exportClearTextEncoding(p21_file);
-// System.out.println("XXXX 01: name: " + attribute_name + ", ed: " + ed2 + ", type: " + attr_type);
-// System.out.println("@#@# Invoking findAttribute from AttributeRef5, pass = 5, type != 3, name: " + attribute_name + ", ed: " + ed2); 
-// 	System.out.println("before findAttirbute: " + attr_type + ", name: " + attribute_name + ", ed2: " + ed2 + ", ed: " + ed + ", key: " + attr_key); 
+//System.out.println("XXXX 01: name: " + attribute_name + ", ed: " + ed2 + ", type: " + attr_type);
+//System.out.println("@#@# Invoking findAttribute from AttributeRef5, pass = 5, type != 3, name: " + attribute_name + ", ed: " + ed2); 
+//System.out.println("before findAttirbute: " + attr_type + ", name: " + attribute_name + ", ed2: " + ed2 + ", ed: " + ed + ", key: " + attr_key); 
 					attr = findAttribute(attribute_name, ed2, attr_type_original, ed, attr_key);
 //					attr = findAttribute(attribute_name, ed2, attr_type, ed, attr_key);
 		if (to_debug) {
@@ -15983,6 +16178,8 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef5(jsdai.SExtended_dicti
 //}
 // System.out.println("XXXX 02: attribute: " + attr);
 				}
+
+//System.out.println("haha after findAttribute: " + attr);
 
 /*	
 System.out.println("attribute: " + attribute_name);
@@ -17362,7 +17559,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier5(jsdai.SExtended
 //	"." attr2 = AttributeRef5(ed, ed2, attr_type, reference)
 	"." attr2 = AttributeRef5(ed, ed2, attr_type_original, reference) // debugging mode -40
 	{
-//		System.out.println("@X 6-2 - after AttributeRef5  - attr2: " + attr2);
+//		System.out.println("@X 6-2 - after AttributeRef5  - attr2: " + attr2 + ", ed: " + ed + ", ed2: " + ed2 + ", type: " + attr_type_original + ", reference: " + reference);
 		if(flag_in_redeclaring) {
 //			flag_in_redeclaring = false;
 		}
@@ -17452,6 +17649,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier5(jsdai.SExtended
     	}
 
 
+// System.out.println("@X 10 attr2: " + attr2);
 // System.out.println("@X 10 name: " + name + ", ed: " + ed);
 //		 System.out.println("@X 6-4 - before findAttribute - name: " + name + ", ed: " + ed + ", ed2: " + ed2);
 
@@ -17477,7 +17675,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier5(jsdai.SExtended
 				if (attr2 instanceof jsdai.SExtended_dictionary_schema.EExplicit_attribute) {
 					if (isRedeclared_attrCompatible(attr, attr2)) { 
 						if (attr == attr2) {
-							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself, entity: " + attr.getParent(null).getName(null), null, true);
+							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself (5), entity: " + attr.getParent(null).getName(null), null, true);
 							error_count++;
 						} else {
 //System.out.println("OXO- redeclaring attr: " + attr + ", redeclared attr2: " + attr2);
@@ -17523,7 +17721,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier5(jsdai.SExtended
 				if (attr2 instanceof jsdai.SExtended_dictionary_schema.EExplicit_attribute) {
 					if (isRedeclared_attrCompatible(attr, attr2)) { 
 						if (attr == attr2) {
-							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself, entity: " + attr.getParent(null).getName(null), null, true);
+							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself (6), entity: " + attr.getParent(null).getName(null), null, true);
 							error_count++;
 						} else {
 							((jsdai.SExtended_dictionary_schema.EDerived_attribute)attr).setRedeclaring(null, (jsdai.SExtended_dictionary_schema.EExplicit_attribute)attr2);
@@ -17542,7 +17740,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier5(jsdai.SExtended
 				if (attr2 instanceof jsdai.SExtended_dictionary_schema.EDerived_attribute) {
 					if (isRedeclared_attrCompatible(attr, attr2)) { 
 						if (attr == attr2) {
-							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself, entity: " + attr.getParent(null).getName(null), null, true);
+							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself (7), entity: " + attr.getParent(null).getName(null), null, true);
 							error_count++;
 						} else {
 							((jsdai.SExtended_dictionary_schema.EDerived_attribute)attr).setRedeclaring(null, (jsdai.SExtended_dictionary_schema.EDerived_attribute)attr2);
@@ -17566,7 +17764,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier5(jsdai.SExtended
 			if (attr_type == 2) { // inverse
 				if (isRedeclared_attrCompatible(attr, attr2)) { 
 						if (attr == attr2) {
-							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself, entity: " + attr.getParent(null).getName(null), null, true);
+							printErrorMsg("" + attr.getName(null) + " - attribute is redeclaring itself (8), entity: " + attr.getParent(null).getName(null), null, true);
 							error_count++;
 						} else {
 							((jsdai.SExtended_dictionary_schema.EInverse_attribute)attr).setRedeclaring(null, (jsdai.SExtended_dictionary_schema.EInverse_attribute)attr2);
@@ -22377,7 +22575,8 @@ jsdai.SExtended_dictionary_schema.EInteger_type IntegerType5(jsdai.lang.EEntity 
 void InterfaceSpecification5(Vector used_vector, Vector referenced_vector) throws jsdai.lang.SdaiException :
 {}
 {
-	(ReferenceClause5(referenced_vector) | UseClause5(used_vector))
+//	(ReferenceClause5(referenced_vector) | UseClause5(used_vector))
+	(Reference2Clause5(referenced_vector) | ReferenceClause5(referenced_vector) | UseClause5(used_vector))
 }
 /* ------------------------------------------------------------------------------------ ISO 10303-11:A.2.229------------ */
 void Interval5() throws jsdai.lang.SdaiException #Interval :
@@ -25542,6 +25741,7 @@ jsdai.SExtended_dictionary_schema.EAttribute ReferencedAttribute5(jsdai.SExtende
 		return a;
 	}
 }
+
 /* ------------------------------------------------------------------------------------ ISO 10303-11:A.2.267------------ */
 /*  ISO 10303-14.B.2.168 */
 void ReferenceClause5(Vector referenced_vector) throws jsdai.lang.SdaiException :
@@ -25560,6 +25760,74 @@ void ReferenceClause5(Vector referenced_vector) throws jsdai.lang.SdaiException 
 {
 //      <REFERENCE> <FROM> reference_schema = SchemaRef5()
 	<REFERENCE> <FROM> reference_schema = SchemaRef5OrRename5()
+	{
+
+		items_vector = new Vector();
+// what is that? next line, as found:
+//		interfaced_model = reference_schema.findEntityInstanceSdaiModel();
+		interfaced_model = findReferencedModel(reference_schema);
+		if ((interfaced_model == null) && (parser_pass != 1)) {
+			error_count++;
+			printErrorMsg5("" + reference_schema + " - schema not found", null, true);
+			printDebug("schema not found: " + reference_schema);
+		}
+
+// 		if ((parser_pass == 2) && (interfaced_model != null)) {
+ 		if (interfaced_model != null) {
+      			if (interfaced_model.getMode() == jsdai.lang.SdaiModel.NO_ACCESS) {
+        			interfaced_model.startReadOnlyAccess();
+      			}              
+    		}
+
+	}
+	 ["(" dc = ResourceOrRename5(interfaced_model){items_listed = true; items_vector.addElement(dc);} ("," dc = ResourceOrRename5(interfaced_model) { items_vector.addElement(dc);})* ")"] [ <AS> ( <SOURCE> | <TARGET> ) ] ";"
+	{
+		if (parser_pass == 2) {
+			rfs = (jsdai.SExtended_dictionary_schema.EReference_from_specification)model.createEntityInstance(jsdai.SExtended_dictionary_schema.CReference_from_specification.class);
+			jsdai.SExtended_dictionary_schema.ESchema_definition asd = getSchema_definitionFromModel(interfaced_model);
+			if (asd != null) {
+				rfs.setForeign_schema(null, asd);  // generic_schema_definition;
+			}
+
+			rfs.setCurrent_schema(null, sd); // generic_schema_definition;
+			if (!items_listed) {
+				if (interfaced_model != null) {
+					createAllReferencedDeclarations(interfaced_model);
+					referenced_vector.addElement(interfaced_model);
+				}
+			} else {
+				items = rfs.createItems(null);			
+//System.out.println("XXXOOOO: " + items);
+				for (int i = 0; i < items_vector.size(); i++) {
+//System.out.println("XXXOO: " + items_vector.elementAt(i));
+//					 items.addByIndex(i, (jsdai.SExtended_dictionary_schema.EReferenced_declaration)items_vector.elementAt(i));
+//					items.addByIndex(i, (jsdai.SExtended_dictionary_schema.EInterfaced_declaration)items_vector.elementAt(i));
+//					((jsdai.SExtended_dictionary_schema.AReferenced_declaration)items).addByIndex(i, (jsdai.SExtended_dictionary_schema.EReferenced_declaration)items_vector.elementAt(i));
+
+					 items.addUnordered((jsdai.SExtended_dictionary_schema.EReferenced_declaration)items_vector.elementAt(i));
+				}
+			}
+		}
+	}
+}
+/* Reference-Use */
+void Reference2Clause5(Vector referenced_vector) throws jsdai.lang.SdaiException :
+{
+	jsdai.SExtended_dictionary_schema.EGeneric_schema_definition reference_schema = null;
+	String reference_schema_str;
+	jsdai.lang.SdaiModel interfaced_model = null;
+	boolean items_listed = false;
+	jsdai.SExtended_dictionary_schema.EDeclaration dc = null;
+	Vector items_vector;
+	jsdai.SExtended_dictionary_schema.EReference_from_specification rfs = null;
+//	jsdai.SExtended_dictionary_schema.AReferenced_declaration items = null;
+	jsdai.SExtended_dictionary_schema.AInterfaced_declaration items = null;
+
+}
+{
+//      <REFERENCE> <FROM> reference_schema = SchemaRef5()
+//	<REFERENCE> <FROM> reference_schema = SchemaRef5OrRename5()
+	<REFERENCE2> <FROM> reference_schema = SchemaRef5OrRename5()
 	{
 
 		items_vector = new Vector();
@@ -26193,7 +26461,22 @@ jsdai.SExtended_dictionary_schema.EAttribute RedeclaredAttribute5(jsdai.SExtende
 				if (attr != null) {
 //					String old_name = attr.getName(null);
 // System.out.println("@X14 attr: " + attr);
-					attr.setName(null, new_name.image);
+					String old_name = null;
+					if (attr.testName(null)) {
+						old_name = attr.getName(null);
+					}
+					if (old_name == null) {
+						System.out.println("<INTERNAL ERROR> attribute has no name in pass 5: \n\tattribute: " + attr + "\n\tnew name: " + new_name.image);
+						attr.setName(null, new_name.image);
+					} else {
+						if (old_name.equalsIgnoreCase(new_name.image)) {
+							// already new name, nothing to do
+						} else {
+							// still the old name, resolving between passes 3 and 4 did not work
+							// printWarningMsg("RENAMED attribute, renaming in pass 5 only: " + attr + ", new name: " + new_name.image, null, true);
+							attr.setName(null, new_name.image);
+						}
+					}
 // System.out.println("@X15 attr: " + attr);
 				} else { // attr is NULL
 //				 System.out.println("<D2008>CURRENT REDECLARED attribute NULL in pass 5< new name if RENAMED: " + new_name);
@@ -31477,7 +31760,7 @@ JAVACODE
         	if (ntt_name != null) {
         		if (ntt_name.equalsIgnoreCase(dt.getName(null))) {
         			// a name conflict
-							error_count++;
+							//error_count++;
 
 
 
@@ -31490,7 +31773,9 @@ JAVACODE
 //		          original_source_schema_name = nt.findEntityInstanceSdaiModel().getName().toLowerCase();
 //		          original_source_schema_name = original_source_schema_name.substring(0, original_source_schema_name.length()-16);
 //        			printWarningMsg("" + ntt_name + " - attempting to interface " + nt_type_name + " from " + original_source_schema_name + " through " + source_schema_name + " into " + target_schema_name + " via chained USE FROMs but a local " + ntt_type_name + " already exists with this name", null, false); 
-							printErrorMsg("" + ntt_name + " - attempting to interface a type with REFERENCE FROM from " + dt_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+
+//							printErrorMsg("" + ntt_name + " - attempting to interface a type with REFERENCE FROM from " + dt_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+							printWarningMsg("" + ntt_name + " - attempting to interface a type with REFERENCE FROM from " + dt_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
         		}
         	}	
 
@@ -31613,7 +31898,7 @@ JAVACODE
         	if (ntt_name != null) {
         		if (ntt_name.equalsIgnoreCase(dt.getName(null))) {
         			// a name conflict
-							error_count++;
+							// error_count++;
 
 
 					jsdai.lang.SdaiModel def_model = def.findEntityInstanceSdaiModel();
@@ -31625,7 +31910,9 @@ JAVACODE
 //		          original_source_schema_name = nt.findEntityInstanceSdaiModel().getName().toLowerCase();
 //		          original_source_schema_name = original_source_schema_name.substring(0, original_source_schema_name.length()-16);
 //        			printWarningMsg("" + ntt_name + " - attempting to interface " + nt_type_name + " from " + original_source_schema_name + " through " + source_schema_name + " into " + target_schema_name + " via chained USE FROMs but a local " + ntt_type_name + " already exists with this name", null, false); 
-							printErrorMsg("" + ntt_name + " - attempting to interface a constant from " + cd_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+
+//							printErrorMsg("" + ntt_name + " - attempting to interface a constant from " + cd_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+							printWarningMsg("" + ntt_name + " - attempting to interface a constant from " + cd_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
         		}
         	}	
 			}
@@ -31715,7 +32002,7 @@ JAVACODE
         	if (ntt_name != null) {
         		if (ntt_name.equalsIgnoreCase(dt.getName(null))) {
         			// a name conflict
-							error_count++;
+							// error_count++;
 
 
 					jsdai.lang.SdaiModel def_model = def.findEntityInstanceSdaiModel();
@@ -31727,7 +32014,9 @@ JAVACODE
 //		          original_source_schema_name = nt.findEntityInstanceSdaiModel().getName().toLowerCase();
 //		          original_source_schema_name = original_source_schema_name.substring(0, original_source_schema_name.length()-16);
 //        			printWarningMsg("" + ntt_name + " - attempting to interface " + nt_type_name + " from " + original_source_schema_name + " through " + source_schema_name + " into " + target_schema_name + " via chained USE FROMs but a local " + ntt_type_name + " already exists with this name", null, false); 
-							printErrorMsg("" + ntt_name + " - attempting to interface a function from " + fd_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+
+//							printErrorMsg("" + ntt_name + " - attempting to interface a function from " + fd_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+							printWarningMsg("" + ntt_name + " - attempting to interface a function from " + fd_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
         		}
         	}	
 			}
@@ -31821,7 +32110,7 @@ JAVACODE
         	if (ntt_name != null) {
         		if (ntt_name.equalsIgnoreCase(dt.getName(null))) {
         			// a name conflict
-							error_count++;
+							// error_count++;
 
 
 					jsdai.lang.SdaiModel def_model = def.findEntityInstanceSdaiModel();
@@ -31833,7 +32122,9 @@ JAVACODE
 //		          original_source_schema_name = nt.findEntityInstanceSdaiModel().getName().toLowerCase();
 //		          original_source_schema_name = original_source_schema_name.substring(0, original_source_schema_name.length()-16);
 //        			printWarningMsg("" + ntt_name + " - attempting to interface " + nt_type_name + " from " + original_source_schema_name + " through " + source_schema_name + " into " + target_schema_name + " via chained USE FROMs but a local " + ntt_type_name + " already exists with this name", null, false); 
-							printErrorMsg("" + ntt_name + " - attempting to interface a subtype_constraint from " + fd_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+
+//							printErrorMsg("" + ntt_name + " - attempting to interface a subtype_constraint from " + fd_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+							printWarningMsg("" + ntt_name + " - attempting to interface a subtype_constraint from " + fd_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
         		}
         	}	
 			}
@@ -31928,7 +32219,7 @@ JAVACODE
         	if (ntt_name != null) {
         		if (ntt_name.equalsIgnoreCase(dt.getName(null))) {
         			// a name conflict
-							error_count++;
+							// error_count++;
 
 
 					jsdai.lang.SdaiModel def_model = def.findEntityInstanceSdaiModel();
@@ -31940,7 +32231,9 @@ JAVACODE
 //		          original_source_schema_name = nt.findEntityInstanceSdaiModel().getName().toLowerCase();
 //		          original_source_schema_name = original_source_schema_name.substring(0, original_source_schema_name.length()-16);
 //        			printWarningMsg("" + ntt_name + " - attempting to interface " + nt_type_name + " from " + original_source_schema_name + " through " + source_schema_name + " into " + target_schema_name + " via chained USE FROMs but a local " + ntt_type_name + " already exists with this name", null, false); 
-							printErrorMsg("" + ntt_name + " - attempting to interface a procedure from " + pd_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+
+//							printErrorMsg("" + ntt_name + " - attempting to interface a procedure from " + pd_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+							printWarningMsg("" + ntt_name + " - attempting to interface a procedure from " + pd_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
         		}
         	}	
 
@@ -32036,7 +32329,7 @@ JAVACODE
         	if (ntt_name != null) {
         		if (ntt_name.equalsIgnoreCase(dt.getName(null))) {
         			// a name conflict
-							error_count++;
+							// error_count++;
 
 
 					jsdai.lang.SdaiModel def_model = def.findEntityInstanceSdaiModel();
@@ -32048,7 +32341,9 @@ JAVACODE
 //		          original_source_schema_name = nt.findEntityInstanceSdaiModel().getName().toLowerCase();
 //		          original_source_schema_name = original_source_schema_name.substring(0, original_source_schema_name.length()-16);
 //        			printWarningMsg("" + ntt_name + " - attempting to interface " + nt_type_name + " from " + original_source_schema_name + " through " + source_schema_name + " into " + target_schema_name + " via chained USE FROMs but a local " + ntt_type_name + " already exists with this name", null, false); 
-							printErrorMsg("" + ntt_name + " - attempting to interface a global rule from " + gr_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+
+//							printErrorMsg("" + ntt_name + " - attempting to interface a global rule from " + gr_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+							printWarningMsg("" + ntt_name + " - attempting to interface a global rule from " + gr_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
         		}
         	}	
 
@@ -32215,7 +32510,7 @@ printDDebug("#@# neededEntityReferencedDeclaration, local exists. model: " + mod
         		if (ntt_name.equalsIgnoreCase(ed.getName(null))) {
         			if (!is_schema_map) {
         			// a name conflict
-								error_count++;
+							//	error_count++;
 
 
 							jsdai.lang.SdaiModel def_model = def.findEntityInstanceSdaiModel();
@@ -32227,7 +32522,9 @@ printDDebug("#@# neededEntityReferencedDeclaration, local exists. model: " + mod
 //		          original_source_schema_name = nt.findEntityInstanceSdaiModel().getName().toLowerCase();
 //		          original_source_schema_name = original_source_schema_name.substring(0, original_source_schema_name.length()-16);
 //        			printWarningMsg("" + ntt_name + " - attempting to interface " + nt_type_name + " from " + original_source_schema_name + " through " + source_schema_name + " into " + target_schema_name + " via chained USE FROMs but a local " + ntt_type_name + " already exists with this name", null, false); 
-								printErrorMsg("" + ntt_name + " - attempting to interface an entity with REFERENCE FROM from " + ed_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+
+//								printErrorMsg("" + ntt_name + " - attempting to interface an entity with REFERENCE FROM from " + ed_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+								printWarningMsg("" + ntt_name + " - attempting to interface an entity with REFERENCE FROM from " + ed_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
         			}
         		}
         	}	
@@ -32391,7 +32688,7 @@ JAVACODE
         	if (ntt_name != null) {
         		if (ntt_name.equalsIgnoreCase(ed.getName(null))) {
         			// a name conflict
-							error_count++;
+							// error_count++;
 							jsdai.lang.SdaiModel def_model = def.findEntityInstanceSdaiModel();
 							jsdai.SExtended_dictionary_schema.ESchema_definition def_schema = getSchema_definitionFromModel(def_model);
 							jsdai.lang.SdaiModel ed_model = ed.findEntityInstanceSdaiModel();
@@ -32401,7 +32698,9 @@ JAVACODE
 //		          original_source_schema_name = nt.findEntityInstanceSdaiModel().getName().toLowerCase();
 //		          original_source_schema_name = original_source_schema_name.substring(0, original_source_schema_name.length()-16);
 //        			printWarningMsg("" + ntt_name + " - attempting to interface " + nt_type_name + " from " + original_source_schema_name + " through " + source_schema_name + " into " + target_schema_name + " via chained USE FROMs but a local " + ntt_type_name + " already exists with this name", null, false); 
-							printErrorMsg("" + ntt_name + " - attempting to interface an entity with USE FROM from " + ed_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+
+//							printErrorMsg("" + ntt_name + " - attempting to interface an entity with USE FROM from " + ed_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+							printWarningMsg("" + ntt_name + " - attempting to interface an entity with USE FROM from " + ed_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
         		}
         	}	
 			
@@ -32551,7 +32850,7 @@ JAVACODE
         	if (ntt_name != null) {
         		if (ntt_name.equalsIgnoreCase(dt.getName(null))) {
         			// a name conflict
-							error_count++;
+							// error_count++;
 
 
 						jsdai.lang.SdaiModel def_model = def.findEntityInstanceSdaiModel();
@@ -32563,7 +32862,9 @@ JAVACODE
 //		          original_source_schema_name = nt.findEntityInstanceSdaiModel().getName().toLowerCase();
 //		          original_source_schema_name = original_source_schema_name.substring(0, original_source_schema_name.length()-16);
 //        			printWarningMsg("" + ntt_name + " - attempting to interface " + nt_type_name + " from " + original_source_schema_name + " through " + source_schema_name + " into " + target_schema_name + " via chained USE FROMs but a local " + ntt_type_name + " already exists with this name", null, false); 
-							printErrorMsg("" + ntt_name + " - attempting to interface a type with USE FROM from " + dt_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+
+//							printErrorMsg("" + ntt_name + " - attempting to interface a type with USE FROM from " + dt_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
+							printWarningMsg("" + ntt_name + " - attempting to interface a type with USE FROM from " + dt_schema_name + ", but " + ntt_type_name + " already is present with the same name, from schema " + def_schema_name, null, true);
         		}
         	}	
 			

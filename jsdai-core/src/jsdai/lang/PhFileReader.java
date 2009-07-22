@@ -3608,6 +3608,8 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 			if (created_instance != null) {
 				def = (CEntity_definition)((CEntity)created_instance).getInstanceType();
 				entity_values.def = def;
+//if (def==null)
+//System.out.println("PhFileReader def is NULL  entity class name: " + created_instance.getClass().getName());
 				for (int i = 0; i < def.noOfPartialEntityTypes; i++) {
 					entity_values.entityValues[i].def = def.partialEntityTypes[i];
 					if (entity_values.entityValues[i].count != def.partialEntityTypes[i].noOfPartialAttributes) {

@@ -82,6 +82,10 @@ class AdditionalMessages {
 	static final String SE_ARTS = "Select array is not provided or is too small";
 	static final String SE_ATSM = "Together with a value being set a select path (a sequence of defined types) specifying the actual type of this value shall be provided";
 	static final String AT_REDD = "Error: attribute, which is redeclared as derived, cannot be used as a role in usedin";
+	static final String AT_NEXS = "Error: attribute was not found in the entity";
+	static final String AT_INEX = "Error: inverse attribute was not found in the entity";
+	static final String AT_VANX = "Error: attribute value does not exist";
+	static final String AT_VAWR = "Error: wrong type of the attribute value";
 //   CAggregate and other aggregate classes
 	static final String AI_BVL  = "Aggregate instance bound is violated";
 	static final String AI_CREF = "Creation of the aggregate instance failed"; // also in SdaiModel class
@@ -103,6 +107,7 @@ class AdditionalMessages {
 	static final String DI_NOTF = "Data type not found: ";
 	static final String DI_NAME  = "   Data type name: ";
 	static final String DI_CODE  = "   Data type code: ";
+	static final String DI_ATNF  = "Error: entity attribute was not found in data dictionary ";
 //   For "exportClearTextEncoding"
 	static final String WR_OUT  = "Writer error (output to exchange structure)"; // PhFileWriter, Print_instance, Get_instance
 //   Reading/Writing binary files
@@ -196,6 +201,8 @@ class AdditionalMessages {
 	static final String RD_WSTR = "   String: ";
 	static final String RD_FILE = "   File: ";
 	static final String RD_SCHE = "   Schema: ";
+	static final String RD_VENT = "   Validated entity: ";
+	static final String RD_VINS = "   Validated instance: #";
 			// Parser
 	static final String RD_CORP = "comma or right parenthesis expected."; // embedded_list() in PhFileReader
 	static final String RD_WCHA = "Warning: wrong character (0) was encountered, in an exchange structure only 8-bit bytes with decimal values 32 to 126 are allowed."; 
@@ -241,7 +248,7 @@ class AdditionalMessages {
 	static final String RD_VADI = "Error: number of values differs from the number of attributes."; // entity_instance_RHS() in PhFileReader
 	static final String RD_VLEA = "Error: number of values is less than the number of attributes."; // parameters() in PhFileReader
 	static final String RD_VEXA = "Error: number of values exceeds the number of attributes."; // parameters() in PhFileReader
-	static final String RD_ELEX = "Error: the number of aggregate elements exceeds its upper limit."; 
+	static final String RD_ELEX = "Error: the number of aggregate elements exceeds its upper limit.";
          // Analysing of the strings
 	static final String RD_WRST = "Error: incorrect string."; // analyse_string() in PhFileReader
 	static final String RD_WRIS = "Error: incorrect string, trying to recover."; // analyse_string() in PhFileReader
@@ -319,6 +326,10 @@ class AdditionalMessages {
          // Remote connection
 	static final String RC_DAMI = "Warning: change date is not provided.";
 			// Express expressions
+	static final String EE_VADT = "   Declared value type: ";
+	static final String EE_VAAT = "   Actual value type: ";
+	static final String EE_VATP = "   Value type: ";
+	static final String EE_VAJT = "   Value java type: ";
 	static final String EE_NASA = "Error: standard aggregate not available, please report to jsdai@lksoft.com.";
 	static final String EE_ILOP = "Error: an operand is of illegal type.";
 	static final String EE_DIVZ = "Error: division by zero.";
@@ -331,6 +342,52 @@ class AdditionalMessages {
 	static final String EE_SCEM = "Error: SdaiContext with no schema attached. Use, for example, 'new SdaiContext(null, null, work_model)' thus providing schema that is underlying for 'work_model'."; // typeof method in Value
 	static final String EE_WMOD = "SdaiContext with no working model attached. Use, for example, 'new SdaiContext(null, null, work_model)'."; // makeInstance method in Value
 	static final String EE_CONC = "SdaiContext requires working model to be submitted."; // constructor in SdaiContext
+	static final String EE_NINS = "Error: asked value is not an entity instance.";
+	static final String EE_NVAL = "Error: the value is not provided (aggregate is expected).";
+	static final String EE_NAGG = "Error: the value is not an aggregate as expected.";
+	static final String EE_NATY = "Error: the declared type of the value is not an aggregation type.";
+	static final String EE_AIOB = "Error: aggregate member index is out of bounds.";
+	static final String EE_NOAT = "Error: attribute is not provided.";
+	static final String EE_ATNE = "Error: attribute is not defined.";
+	static final String EE_NOAD = "Error: data type cannot have attributes.";
+	static final String EE_NOVA = "Error: value for attribute is not provided.";
+	static final String EE_NTVA = "Error: the type of value is not indicated.";
+	static final String EE_UNVA = "Error: value assigned to the variable of undetermined type.";
+	static final String EE_INNF = "Error: integer value does not fit to the type of the variable.";
+	static final String EE_DONF = "Error: double value does not fit to the type of the variable.";
+	static final String EE_STNF = "Error: string value does not fit to the type of the variable.";
+	static final String EE_LONF = "Error: logical value does not fit to the type of the variable.";
+	static final String EE_ENNF = "Error: enumeration value does not fit to the type of the variable.";
+	static final String EE_BINF = "Error: binary value does not fit to the type of the variable.";
+	static final String EE_EINF = "Error: entity instance value does not fit to the type of the variable.";
+	static final String EE_AGNF = "Error: aggregate value does not fit to the type of the variable.";
+	static final String EE_IANF = "Error: instance aggregate value does not fit to the type of the variable.";
+	static final String EE_VANF = "Error: value does not fit to the type.";
+	static final String EE_VNLO = "Error: value is not of logical type.";
+	static final String EE_INNP = "Error: index is not provided.";
+	static final String EE_INNA = "Error: indexing operator is applied to a non-aggregate.";
+	static final String EE_DTNA = "Error: data type is not allowed for range qualifier.";
+	static final String EE_INZE = "Error: increment value is zero.";
+	static final String EE_INTI = "Error: incorrect increment value type.";
+	static final String EE_IVTI = "Error: incorrect type of the value to be incremented.";
+	static final String EE_DEZE = "Error: decrement value is zero.";
+	static final String EE_DETI = "Error: incorrect decrement value type.";
+	static final String EE_DVTI = "Error: incorrect type of the value to be decremented.";
+	static final String EE_VNAG = "Error: value is not of aggregation type.";
+	static final String EE_NAVA = "Error: the value is not provided.";
+	static final String EE_ITVA = "Error: incorrect type of the value.";
+	static final String EE_ITVR = "Error: incorrect type of the variable for storing result.";
+	static final String EE_NAAG = "Error: aggregate is not provided.";
+	static final String EE_NBAG = "Error: the argument of Express function bag_to_set shall be of BAG OF GENERIC type.";
+	static final String EE_OPUO = "Error: incompatible types of operands of union operator.";
+	static final String EE_SODO = "Error: the second operand of difference operator is illegal.";
+	static final String EE_ITDO = "Error: incompatible types of operands of difference operator.";
+	static final String EE_SOIO = "Error: the second operand of intersection operator is illegal.";
+	static final String EE_ITIO = "Error: incompatible types of operands of intersection operator.";
+	static final String EE_WOSO = "Error: wrong type of an operand of subset operator.";
+	static final String EE_EFNE = "Error: Express function is not defined at this value.";
+	static final String EE_INQN = "Error: incorrect qualified name.";
+	static final String EE_IDIN = "Error: incomplete data in the construction of an instance.";
 
 	static final String MP_NAVL = "JSDAI Mapping Extension is not available";
 	static final String RC_NAVL = "JSDAI DB Extension is not available";
