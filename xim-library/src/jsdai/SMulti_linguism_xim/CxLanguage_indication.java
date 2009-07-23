@@ -59,7 +59,7 @@ public class CxLanguage_indication extends CLanguage_indication implements EMapp
 		return (EClassification_role)get_instance(a2);
 	}*/
 	public void setRole(EAttribute_classification_assignment type, EClassification_role value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetRole(EAttribute_classification_assignment type) throws SdaiException {
 		a2 = unset_instance(a2);
@@ -216,7 +216,7 @@ public class CxLanguage_indication extends CLanguage_indication implements EMapp
 	      try {
 			armEntity.createItems(null).addUnordered(eci);
 	      } catch (SdaiException e) {
-			System.err.println("Problem with setting language_indication.considered_instance "+armEntity+" -> "+eci);
+	    	SdaiSession.getSession().printlnSession("Problem with setting language_indication.considered_instance "+armEntity+" -> "+eci);
 			e.printStackTrace();
 		}
 		}

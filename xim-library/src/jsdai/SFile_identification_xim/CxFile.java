@@ -49,12 +49,12 @@ public class CxFile extends CFile implements EMappedXIMEntity
 
 	// Taken from CCharacterized_object
 	/// methods for attribute: name, base type: STRING
-	public boolean testName(ECharacterized_object type) throws SdaiException {
+/*	public boolean testName(ECharacterized_object type) throws SdaiException {
 		return test_string(a4);
 	}
 	public String getName(ECharacterized_object type) throws SdaiException {
 		return get_string(a4);
-	}
+	}*/
 	public void setName(ECharacterized_object type, String value) throws SdaiException {
 		a4 = set_string(value);
 	}
@@ -69,12 +69,12 @@ public class CxFile extends CFile implements EMappedXIMEntity
 	//<01-0> current entity
 	//<01-0-0> explicit attribute - generateExplicitCurrentEntityMethodsX()
 	/// methods for attribute: description, base type: STRING
-	public boolean testDescription(ECharacterized_object type) throws SdaiException {
+/*	public boolean testDescription(ECharacterized_object type) throws SdaiException {
 		return test_string(a5);
 	}
 	public String getDescription(ECharacterized_object type) throws SdaiException {
 		return get_string(a5);
-	}
+	}*/
 	public void setDescription(ECharacterized_object type, String value) throws SdaiException {
 		a5 = set_string(value);
 	}
@@ -88,12 +88,12 @@ public class CxFile extends CFile implements EMappedXIMEntity
 
 	// Taken from CDocument	
 	/// methods for attribute: name, base type: STRING
-	public boolean testName(EDocument type) throws SdaiException {
+/*	public boolean testName(EDocument type) throws SdaiException {
 		return test_string(a1);
 	}
 	public String getName(EDocument type) throws SdaiException {
 		return get_string(a1);
-	}
+	}*/
 	public void setName(EDocument type, String value) throws SdaiException {
 		a1 = set_string(value);
 	}
@@ -108,12 +108,12 @@ public class CxFile extends CFile implements EMappedXIMEntity
 	//<01-0> current entity
 	//<01-0-0> explicit attribute - generateExplicitCurrentEntityMethodsX()
 	/// methods for attribute: description, base type: STRING
-	public boolean testDescription(EDocument type) throws SdaiException {
+/*	public boolean testDescription(EDocument type) throws SdaiException {
 		return test_string(a2);
 	}
 	public String getDescription(EDocument type) throws SdaiException {
 		return get_string(a2);
-	}
+	}*/
 	public void setDescription(EDocument type, String value) throws SdaiException {
 		a2 = set_string(value);
 	}
@@ -128,7 +128,7 @@ public class CxFile extends CFile implements EMappedXIMEntity
 	//<01-0> current entity
 	//<01-0-0> explicit attribute - generateExplicitCurrentEntityMethodsX()
 	// attribute (current explicit or supertype explicit) : kind, base type: entity document_type
-	public static int usedinKind(EDocument type, EDocument_type instance, ASdaiModel domain, AEntity result) throws SdaiException {
+/*	public static int usedinKind(EDocument type, EDocument_type instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a3$, domain, result);
 	}
 	public boolean testKind(EDocument type) throws SdaiException {
@@ -136,9 +136,9 @@ public class CxFile extends CFile implements EMappedXIMEntity
 	}
 	public EDocument_type getKind(EDocument type) throws SdaiException {
 		return (EDocument_type)get_instance(a3);
-	}
+	}*/
 	public void setKind(EDocument type, EDocument_type value) throws SdaiException {
-		a3 = set_instance(a3, value);
+		a3 = set_instanceX(a3, value);
 	}
 	public void unsetKind(EDocument type) throws SdaiException {
 		a3 = unset_instance(a3);

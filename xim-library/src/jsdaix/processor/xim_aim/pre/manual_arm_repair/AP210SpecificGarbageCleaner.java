@@ -38,6 +38,7 @@ import jsdai.lang.AEntity;
 import jsdai.lang.ASdaiModel;
 import jsdai.lang.EEntity;
 import jsdai.lang.SdaiException;
+import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * @author Giedrius
@@ -52,7 +53,7 @@ public class AP210SpecificGarbageCleaner {
 	 * @param model
 	 * @throws SdaiException
 	 */
-	public static void run(ASdaiModel models) throws SdaiException {
+	public static void run(ASdaiModel models, Importer importer) throws SdaiException {
 		//1) Check Shape_representations. Logic - 
 		// if we recognize it as part of some known mapping pattern - delete it.
 //		long time = System.currentTimeMillis();
@@ -70,6 +71,7 @@ public class AP210SpecificGarbageCleaner {
 				ARepresentation_item items = instanceToRemove.getItems(null);
 				if(items.getMemberCount() == 1){
 					if(items.getByIndex(1) instanceof ETemplate_location_in_structured_template_transform){
+						importer.logMessage(" Deleting "+instanceToRemove);
 						instanceToRemove.deleteApplicationInstance();
 						count++;
 						continue;
@@ -88,6 +90,7 @@ public class AP210SpecificGarbageCleaner {
 			// a) If we already unset one of mandatory attributes in some of the cleaners - this entity is garbage and we can delete it
 			if((!instanceToRemove.testRepresented_characteristic(null))||
 			  (!instanceToRemove.testRepresentation(null))){
+				importer.logMessage(" Deleting "+instanceToRemove);
 				instanceToRemove.deleteApplicationInstance();
 				continue;
 			}
@@ -106,6 +109,7 @@ public class AP210SpecificGarbageCleaner {
 				if(epusm.testShape_characterized_definition(null)){
 					// Now we are 100% sure that SDA is redundant
 					if(epusm.getShape_characterized_definition(null) == describedElement){
+						importer.logMessage(" Deleting "+instanceToRemove);
 						instanceToRemove.deleteApplicationInstance();
 						continue;
 					}
@@ -117,6 +121,7 @@ public class AP210SpecificGarbageCleaner {
 				if(eptsm.testShape_characterized_definition(null)){
 					// Now we are 100% sure that SDA is redundant
 					if(eptsm.getShape_characterized_definition(null).isMember(describedElement)){
+						importer.logMessage(" Deleting "+instanceToRemove);
 						instanceToRemove.deleteApplicationInstance();
 						continue;
 					}

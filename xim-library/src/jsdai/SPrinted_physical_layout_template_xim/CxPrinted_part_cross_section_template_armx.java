@@ -51,7 +51,7 @@ public class CxPrinted_part_cross_section_template_armx extends CPrinted_part_cr
 
 	// Product_view_definition
 	// From property_definition
-	public static int usedinDefinition(EProperty_definition type, EEntity instance, ASdaiModel domain, AEntity result) throws SdaiException {
+/*	public static int usedinDefinition(EProperty_definition type, EEntity instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a2$, domain, result);
 	}
 	public boolean testDefinition(EProperty_definition type) throws SdaiException {
@@ -62,9 +62,9 @@ public class CxPrinted_part_cross_section_template_armx extends CPrinted_part_cr
 		a2 = get_instance_select(a2);
 		return (EEntity)a2;
 	}
-
+*/
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
@@ -76,12 +76,12 @@ public class CxPrinted_part_cross_section_template_armx extends CPrinted_part_cr
 	}
 
 	/// methods for attribute: name, base type: STRING
-	public boolean testName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
+/*	public boolean testName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
 		return test_string(a0);
 	}
 	public String getName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
 		return get_string(a0);
-	}
+	}*/
 	public void setName(jsdai.SProduct_property_definition_schema.EProperty_definition type, String value) throws SdaiException {
 		a0 = set_string(value);
 	}
@@ -95,12 +95,12 @@ public class CxPrinted_part_cross_section_template_armx extends CPrinted_part_cr
 	// END OF Property_definition
 	
 	/// methods for attribute: description, base type: STRING
-	public boolean testDescription(EProduct_definition type) throws SdaiException {
+/*	public boolean testDescription(EProduct_definition type) throws SdaiException {
 		return test_string(a5);
 	}
 	public String getDescription(EProduct_definition type) throws SdaiException {
 		return get_string(a5);
-	}
+	}*/
 	public void setDescription(EProduct_definition type, String value) throws SdaiException {
 		a5 = set_string(value);
 	}
@@ -112,7 +112,7 @@ public class CxPrinted_part_cross_section_template_armx extends CPrinted_part_cr
 	}
 
 	// methods for derived attribute: name, base type: STRING
-	public boolean testName(EProduct_definition type) throws SdaiException {
+/*	public boolean testName(EProduct_definition type) throws SdaiException {
 			throw new SdaiException(SdaiException.FN_NAVL);
 	}
 	public Value getName(EProduct_definition type, SdaiContext _context) throws SdaiException {
@@ -123,7 +123,7 @@ public class CxPrinted_part_cross_section_template_armx extends CPrinted_part_cr
 	}
 	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition type) throws SdaiException {
 		return d0$;
-	}
+	}*/
 	
 	public void createAimData(SdaiContext context) throws SdaiException {
 		if (attributeState == ATTRIBUTES_MODIFIED) {

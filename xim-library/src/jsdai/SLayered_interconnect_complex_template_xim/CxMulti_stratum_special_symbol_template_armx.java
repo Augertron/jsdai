@@ -60,7 +60,7 @@ public class CxMulti_stratum_special_symbol_template_armx extends CMulti_stratum
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a6 = set_instance(a6, value);
+		a6 = set_instanceX(a6, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

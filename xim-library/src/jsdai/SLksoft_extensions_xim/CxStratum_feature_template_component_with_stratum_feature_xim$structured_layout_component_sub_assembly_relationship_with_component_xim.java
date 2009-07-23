@@ -123,7 +123,7 @@ public class CxStratum_feature_template_component_with_stratum_feature_xim$struc
 		return (EProduct_definition_formation)a5;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a5 = set_instance(a5, value);
+		a5 = set_instanceX(a5, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
 		a5 = unset_instance(a5);
@@ -144,7 +144,7 @@ public class CxStratum_feature_template_component_with_stratum_feature_xim$struc
 		return (jsdai.SApplication_context_schema.EProduct_definition_context)a6;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a6 = set_instance(a6, value);
+		a6 = set_instanceX(a6, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
 		a6 = unset_instance(a6);
@@ -184,7 +184,7 @@ public class CxStratum_feature_template_component_with_stratum_feature_xim$struc
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a18 = set_instance(a18, value);
+		a18 = set_instanceX(a18, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
@@ -229,7 +229,7 @@ public class CxStratum_feature_template_component_with_stratum_feature_xim$struc
 		return (EProduct_definition)get_instance(a10);
 	}*/
 	public void setRelating_product_definition(EProduct_definition_relationship type, EProduct_definition value) throws SdaiException {
-		a10 = set_instance(a10, value);
+		a10 = set_instanceX(a10, value);
 	}
 	public void unsetRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
 		a10 = unset_instance(a10);
@@ -252,7 +252,7 @@ public class CxStratum_feature_template_component_with_stratum_feature_xim$struc
 		return (jsdai.SProduct_definition_schema.EProduct_definition)get_instance(a8);
 	}
 	public void setOccurrence(EProduct_definition_occurrence_relationship type, jsdai.SProduct_definition_schema.EProduct_definition value) throws SdaiException {
-		a8 = set_instance(a8, value);
+		a8 = set_instanceX(a8, value);
 	}
 	public void unsetOccurrence(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		a8 = unset_instance(a8);
@@ -333,7 +333,7 @@ public class CxStratum_feature_template_component_with_stratum_feature_xim$struc
 	}
 
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a12 = set_instance(a12, value);
+		a12 = set_instanceX(a12, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

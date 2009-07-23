@@ -60,10 +60,10 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
 		     'GENERIC_MATERIAL_ASPECTS_XIM.MATERIAL_DESIGNATION.DEFINITION') | 
 		     (SIZEOF( QUERY( cla <* USEDIN(temp,'CLASSIFICATION_ASSIGNMENT_MIM.' + 
 		 	'APPLIED_CLASSIFICATION_ASSIGNMENT.' + 'ITEMS') | cla.role = 'potting compound')) = 1)));
-		base_package : SET [1:?] OF Package_armx := bag_to_set(QUERY(up <* used_package | 
+		base_package : SET [1:?] OF Package_armx := QUERY(up <* used_package | 		 
 		                                       (SIZEOF(['ALTERED_PACKAGE_XIM.ALTERED_PACKAGE_ARMX',
 		                                          'PART_EXTERNAL_REFERENCE_XIM.PACKAGE_EXTERNAL_REFERENCE'] * TYPEOF(up)) = 0)
-		                                          ));
+		                                          );
     INVERSE
       access_mechanisms : SET[0:?] OF packaged_part_terminal_armx FOR containing_shape(* TEMP-AD! *);
     WHERE

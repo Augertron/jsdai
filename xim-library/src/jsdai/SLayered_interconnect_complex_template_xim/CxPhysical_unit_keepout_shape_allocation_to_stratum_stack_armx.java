@@ -84,7 +84,7 @@ public class CxPhysical_unit_keepout_shape_allocation_to_stratum_stack_armx exte
 		return (ERepresentation_context)get_instance(a2);
 	}*/
 	public void setContext_of_items(ERepresentation type, ERepresentation_context value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetContext_of_items(ERepresentation type) throws SdaiException {
 		a2 = unset_instance(a2);
@@ -115,10 +115,10 @@ public class CxPhysical_unit_keepout_shape_allocation_to_stratum_stack_armx exte
 /*	public static int usedinItems(ERepresentation type, ERepresentation_item instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a1$, domain, result);
 	}*/
-	public boolean testItems2(ERepresentation type) throws SdaiException {
+	private boolean testItems2(ERepresentation type) throws SdaiException {
 		return test_aggregate(a1);
 	}
-	public ARepresentation_item getItems2(ERepresentation type) throws SdaiException {
+	private ARepresentation_item getItems2(ERepresentation type) throws SdaiException {
 		return (ARepresentation_item)get_aggregate(a1);
 	}
 	public ARepresentation_item createItems(ERepresentation type) throws SdaiException {
@@ -146,7 +146,7 @@ public class CxPhysical_unit_keepout_shape_allocation_to_stratum_stack_armx exte
 		return (ERepresentation)get_instance(a6);
 	}*/
 	public void setRep_2(ERepresentation_relationship type, ERepresentation value) throws SdaiException {
-		a6 = set_instance(a6, value);
+		a6 = set_instanceX(a6, value);
 	}
 	public void unsetRep_2(ERepresentation_relationship type) throws SdaiException {
 		a6 = unset_instance(a6);

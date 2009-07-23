@@ -58,24 +58,27 @@ import jsdai.SProduct_view_definition_xim.EProduct_view_definition;
 import jsdai.dictionary.EEntity_definition;
 import jsdai.lang.AEntity;
 import jsdai.lang.ASdaiModel;
+import jsdai.lang.EEntity;
 import jsdai.lang.SdaiException;
 import jsdai.lang.SdaiIterator;
 import jsdai.lang.SdaiModel;
 import jsdai.SMixed_complex_types.*;
+import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * @author evita
  */
 public class AssemblyRepair {
 	
-	public static void run(ASdaiModel models) throws SdaiException {
-		changeStructure(models);
-		fixAssemblies(models);
-		fixNauo(models);
-		makeSlcsarComplexes(models);
+	public static void run(ASdaiModel models, Importer importer) throws SdaiException {
+		changeStructure(models, importer);
+		fixAssemblies(models, importer);
+		fixReferenceDesignators(models, importer);
+		fixNauo(models, importer);
+		makeSlcsarComplexes(models, importer);
 	}
 
-	private static void makeSlcsarComplexes(ASdaiModel models) throws SdaiException {
+	private static void makeSlcsarComplexes(ASdaiModel models, Importer importer) throws SdaiException {
 		AAssembly_component_armx aAc = (AAssembly_component_armx)
 			models.getInstances(CAssembly_component_armx.definition);
 		Collection acList = new ArrayList();
@@ -130,9 +133,11 @@ public class AssemblyRepair {
 				}
 				EEntity_definition complextEntityDefinition =
 					model.getUnderlyingSchema().getEntityDefinition(complexName);
+				String message = "Substituted "+eAc;
 				EStructured_layout_component_sub_assembly_relationship_armx
 					newInstance = (EStructured_layout_component_sub_assembly_relationship_armx)
 					model.substituteInstance(eAc, complextEntityDefinition);
+				importer.logMessage(message+" to "+newInstance);
 				// System.err.println(" New "+newInstance);
 				// 4) copy attributes
 				// (RT) relating_view: structured_layout_component_armx;
@@ -163,8 +168,73 @@ public class AssemblyRepair {
 			}
 		}		
 	}
+
+	/**
+	 * Tries to fix reference designator for each Next_assembly_usage_occurrence
+	 * in specified domain, that has either no reference designator set, or
+	 * reference designator is composed solely of white spaces.
+	 * <p>
+	 * <i>Note: see bug #2927 for details.</i>
+	 * 
+	 * @param domain specified domain.
+	 * @throws SdaiException
+	 */
+	private static void fixReferenceDesignators(ASdaiModel domain, Importer importer) throws SdaiException {
+		ANext_assembly_usage_occurrence aNauor = (ANext_assembly_usage_occurrence)
+			domain.getInstances(CNext_assembly_usage_occurrence.definition);
+		for (SdaiIterator i = aNauor.createIterator(); i.next();) {
+			ENext_assembly_usage_occurrence eNauo = aNauor.getCurrentMember(i);
+			if (isValidRefDes(eNauo)) {
+				continue;
+			}
+			if (eNauo.testId(null)) {
+				eNauo.setReference_designator(null, eNauo.getId(null));
+				importer.logMessage(" Fix Reference_designator for "+eNauo);
+				if (isValidRefDes(eNauo)) {
+					continue;
+				}
+			}
+			if (eNauo.testDescription(null)) {
+				eNauo.setReference_designator(null, eNauo.getDescription(null));
+				importer.logMessage(" Fix Reference_designator for "+eNauo);
+				if (isValidRefDes(eNauo)) {
+					continue;
+				}
+			}
+			if (eNauo.testName(null)) {
+				eNauo.setReference_designator(null, eNauo.getName(null));
+				importer.logMessage(" Fix Reference_designator for "+eNauo);
+				if (isValidRefDes(eNauo)) {
+					continue;
+				}
+			}
+			if (eNauo.testRelated_product_definition(null)) {
+				EProduct_definition eComponent = eNauo.getRelated_product_definition(null);
+				if (eComponent.testId(null)) {
+					eNauo.setReference_designator(null, eComponent.getId(null));
+					importer.logMessage(" Fix Reference_designator for "+eNauo);
+					if (isValidRefDes(eNauo)) {
+						continue;
+					}
+				}
+			}
+		}
+	}
+
+	private static boolean isValidRefDes(ENext_assembly_usage_occurrence eNauo) throws SdaiException {
+		return eNauo.testReference_designator(null)
+			&& eNauo.getReference_designator(null).trim().length() > 0;
+	}
 	
-	public static void fixNauo(ASdaiModel models) throws SdaiException {
+	/**
+	 * Substitutes all Next_assembly_usage_occurrence in specified data domain with
+	 * Next_assembly_usage_occurrence_relationship_armx. This is done, because in XIM
+	 * we do not support Next_assembly_usage_occurrence.
+	 * 
+	 * @param models specified data domain.
+	 * @throws SdaiException
+	 */
+	public static void fixNauo(ASdaiModel models, Importer importer) throws SdaiException {
 		Collection nauoList = new ArrayList();
 		ANext_assembly_usage_occurrence aNauo = (ANext_assembly_usage_occurrence)
 			models.getInstances(ENext_assembly_usage_occurrence.class);
@@ -189,8 +259,10 @@ public class AssemblyRepair {
 					if(eRelatingView instanceof EAssembly_definition_armx){
 						type = CAssembled_part_association$next_assembly_usage_occurrence_relationship_armx.definition;
 					}
+					String message = " Changed "+eNauo;
 					eNauoRel = (ENext_assembly_usage_occurrence_relationship_armx)
 						model.substituteInstance(eNauo, type);
+					importer.logMessage(message+" to "+eNauoRel);
 				} catch (SdaiException e) {
 					model.getRepository().getSession().printlnSession("Failed to substitute " + eNauo + " bacause of " + e.getMessage());
 
@@ -198,18 +270,23 @@ public class AssemblyRepair {
 					// it can fail because of some users of old entity
 					// can not be transfered to new entity. So as a result
 					// we shall drop all users.
+					String message = " Changed "+eNauo;
 					eNauo.deleteApplicationInstance();
 					eNauoRel = (ENext_assembly_usage_occurrence_relationship_armx)
 						model.createEntityInstance(CNext_assembly_usage_occurrence_relationship_armx.definition);
+					importer.errorMessage(message+" to "+eNauoRel);
 				}
 				if (eRelatingView instanceof EProduct_view_definition) {
 					eNauoRel.setRelating_view(null, (EProduct_view_definition) eRelatingView);
+					importer.logMessage(" set Relating_view for "+eNauoRel);
 				}
 				if (eRelatedView instanceof EProduct_occurrence) {
 					eNauoRel.setRelated_view(null, (EProduct_occurrence) eRelatedView);
+					importer.logMessage(" set Related_view for "+eNauoRel);
 				}
 				if (refDes != null) {
 					eNauoRel.setReference_designator(null, refDes);
+					importer.logMessage(" set Reference_designator for "+eNauoRel);
 				}
 			}
 		}
@@ -226,7 +303,7 @@ public class AssemblyRepair {
 		 *
 		 *	Test file: H:\Step21\IDA-STEP\Duplo-Process.stp and all others containing assembly structure
 		 */
-	private static void changeStructure(ASdaiModel models) throws SdaiException {
+	private static void changeStructure(ASdaiModel models, Importer importer) throws SdaiException {
 		AEntity nextAssemblyList = models.getExactInstances(CNext_assembly_usage_occurrence.class);
 		for (SdaiIterator it = nextAssemblyList.createIterator(); it.next(); ) {
 			ENext_assembly_usage_occurrence nextAssembly = (ENext_assembly_usage_occurrence) nextAssemblyList.getCurrentMemberEntity(it);
@@ -247,7 +324,9 @@ public class AssemblyRepair {
 							EDefinition_based_part_occurrence edbpo = (EDefinition_based_part_occurrence)epd;
 							defBasedPartOcc = edbpo;
 							defBasedPartOcc.setDerived_from(null, componentDefinition);
+							importer.logMessage(" set Derived_from for "+defBasedPartOcc);
 							// Not sure on this, but I think we need to delete PDOR, as otherwise it is violating some rules
+							importer.logMessage(" Deleting "+apdor.getByIndex(i));
 							apdor.getByIndex(i).deleteApplicationInstance();								
 						}
 					}
@@ -256,9 +335,11 @@ public class AssemblyRepair {
 					defBasedPartOcc = (EDefinition_based_part_occurrence) nextAssembly.findEntityInstanceSdaiModel().createEntityInstance(CDefinition_based_part_occurrence.definition);
 					defBasedPartOcc.setId(null, "");
 					defBasedPartOcc.setDerived_from(null, componentDefinition);
+					importer.logMessage(" set multiple attributes for "+defBasedPartOcc);
 				}
 				
 				nextAssembly.setRelated_product_definition(null, defBasedPartOcc);
+				importer.logMessage(" set Related_product_definition for "+nextAssembly);
 			}
 		}
 	}
@@ -273,7 +354,7 @@ public class AssemblyRepair {
 	 * @param models
 	 * @throws SdaiException
 	 */
-	private static void fixAssemblies(ASdaiModel models) throws SdaiException {
+	private static void fixAssemblies(ASdaiModel models, Importer importer) throws SdaiException {
 		AEntity partViewDefinitions = models.getExactInstances(CPart_view_definition.class);
 		ArrayList partViewDefinitionList = new ArrayList(); 
 		for (SdaiIterator it = partViewDefinitions.createIterator(); it.next(); ) {
@@ -286,7 +367,9 @@ public class AssemblyRepair {
 			CNext_assembly_usage_occurrence.usedinRelating_product_definition(null, partViewDefinition, models, assemblyOccurences);
 			
 			if (assemblyOccurences.getMemberCount() > 0) {
-				partViewDefinition.findEntityInstanceSdaiModel().substituteInstance(partViewDefinition, CAssembly_definition_armx.class);
+				String message = " Changed "+partViewDefinition;
+				EEntity instance = partViewDefinition.findEntityInstanceSdaiModel().substituteInstance(partViewDefinition, CAssembly_definition_armx.class);
+				importer.logMessage(message+" to "+instance);
 			}
 		}
 	}

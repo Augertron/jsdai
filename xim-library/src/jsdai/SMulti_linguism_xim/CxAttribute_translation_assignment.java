@@ -69,7 +69,7 @@ public class CxAttribute_translation_assignment
 		return (EAttribute_value_role)get_instance(a2);
 	}*/
 	public void setRole(EAttribute_value_assignment type, EAttribute_value_role value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetRole(EAttribute_value_assignment type) throws SdaiException {
 		a2 = unset_instance(a2);

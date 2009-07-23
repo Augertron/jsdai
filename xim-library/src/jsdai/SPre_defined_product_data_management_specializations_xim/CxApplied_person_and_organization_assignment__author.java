@@ -52,7 +52,7 @@ public class CxApplied_person_and_organization_assignment__author extends CAppli
 		return (jsdai.SPerson_organization_schema.EPerson_and_organization_role)a1;
 	}*/
 	public void setRole(EPerson_and_organization_assignment type, jsdai.SPerson_organization_schema.EPerson_and_organization_role value) throws SdaiException {
-		a1 = set_instance(a1, value);
+		a1 = set_instanceX(a1, value);
 	}
 	public void unsetRole(EPerson_and_organization_assignment type) throws SdaiException {
 		a1 = unset_instance(a1);

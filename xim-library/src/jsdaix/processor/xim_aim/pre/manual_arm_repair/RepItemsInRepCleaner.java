@@ -33,6 +33,7 @@ import jsdai.SRepresentation_schema.ARepresentation_item;
 import jsdai.SRepresentation_schema.CRepresentation;
 import jsdai.SRepresentation_schema.ERepresentation;
 import jsdai.SRepresentation_schema.ERepresentation_item;
+import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * @author Giedrius
@@ -45,7 +46,7 @@ public class RepItemsInRepCleaner {
 	 * @param repo
 	 * @throws SdaiException
 	 */
-	public static void run(SdaiRepository repo) throws SdaiException {
+	public static void run(SdaiRepository repo, Importer importer) throws SdaiException {
 		// This may be expanded in the future
 		AEntity instancesToClean = repo.getModels().getInstances(CRepresentation.definition);
 		for(int index=1, countR=instancesToClean.getMemberCount(); index <= countR; index++){
@@ -60,6 +61,7 @@ public class RepItemsInRepCleaner {
 					ERepresentation_item item = items.getByIndex(i);
 					// Add more types here on demand
 					if(item instanceof ETemplate_location_in_structured_template_transform){
+						importer.logMessage(" Remove "+item+" from "+instanceToClean);
 						items.removeUnordered(item);
 					}else{
 						i++;
@@ -70,6 +72,7 @@ public class RepItemsInRepCleaner {
 			// if we recognize it as part of some known mapping pattern - delete it.
 			// Here pattern - Template_location_in_structured_template_transform.reference_location.
 			if(instanceToClean.getItems(null).getMemberCount() == 0){
+				importer.logMessage(" Deleting "+instanceToClean);
 				instanceToClean.deleteApplicationInstance();
 			}
 		}

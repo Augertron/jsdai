@@ -33,6 +33,7 @@ import jsdai.lang.ASdaiModel;
 import jsdai.lang.EEntity;
 import jsdai.lang.SdaiException;
 import jsdaix.processor.xim_aim.pre.AutomaticXimPopulationCreator;
+import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * @author Giedrius
@@ -45,7 +46,7 @@ public class FakedMappingCleaner {
 	 * @param repo
 	 * @throws SdaiException
 	 */
-	public static void run(ASdaiModel models, AutomaticXimPopulationCreator ximPopulationCreator) throws SdaiException {
+	public static void run(ASdaiModel models, AutomaticXimPopulationCreator ximPopulationCreator, Importer importer) throws SdaiException {
 		EEntity_definition[] types = AutomaticXimPopulationCreator.getSpecialTypes();
 		Map map = ximPopulationCreator.getSpecialTypeInstanceMap();
 		for(int t=0; t<types.length; t++){
@@ -59,7 +60,8 @@ public class FakedMappingCleaner {
 			for(int index=1; index <= instancesToClean.getMemberCount();){
 				EEntity instanceToClean = instancesToClean.getByIndexEntity(index);
 				if((instancesToKeep == null)||(!(instancesToKeep.contains(instanceToClean)))){
-					// System.err.println(" CLEANING REP "+instanceToClean+" "+instancesToKeep);					
+					// System.err.println(" CLEANING REP "+instanceToClean+" "+instancesToKeep);
+					importer.logMessage(" Deleting "+instanceToClean);
 					instanceToClean.deleteApplicationInstance();
 				}else{
 					index++;

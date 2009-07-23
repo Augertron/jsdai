@@ -32,6 +32,7 @@ package jsdai.SGeneric_product_occurrence_xim;
 import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SAssembly_structure_xim.AProduct_occurrence_definition_relationship_armx;
+import jsdai.SAssembly_structure_xim.CNext_assembly_usage_occurrence_relationship_armx;
 import jsdai.SAssembly_structure_xim.CProduct_occurrence_definition_relationship_armx;
 import jsdai.SPhysical_unit_design_view_mim.ANext_assembly_usage_occurrence_relationship;
 import jsdai.SPhysical_unit_design_view_mim.CNext_assembly_usage_occurrence_relationship;
@@ -96,7 +97,7 @@ public class CxDefinition_based_product_occurrence
 		return (EProduct_definition_formation)a2;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
 		a2 = unset_instance(a2);
@@ -117,7 +118,7 @@ public class CxDefinition_based_product_occurrence
 		return (jsdai.SApplication_context_schema.EProduct_definition_context)a3;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a3 = set_instance(a3, value);
+		a3 = set_instanceX(a3, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
 		a3 = unset_instance(a3);
@@ -197,11 +198,11 @@ public class CxDefinition_based_product_occurrence
 			if(epvd.testFormation(null)){
 				armEntity.setFormation(null, epvd.getFormation(null));	
 			}else{
-				System.err.println(" WARNING definition without version "+epvd);
+				SdaiSession.getSession().printlnSession(" WARNING definition without version "+epvd);
 			}
 	      
 		}else{
-			System.err.println(" WARNING component without definition "+armEntity);
+			SdaiSession.getSession().printlnSession(" WARNING component without definition "+armEntity);
 		}
 	}
 
@@ -434,25 +435,31 @@ public class CxDefinition_based_product_occurrence
 	// 3) AP210 - it is subtype of Assembly_component. For AP210 - Assembly_components - simply do nothing and do not invoke this method
 	public static void finalize_assembly_structure(SdaiContext context, EDefinition_based_product_occurrence component)throws SdaiException{
 		// Last chance to skip 1) or 2) patterns
+		// System.err.println(" Component "+component+" "+context.working_model.getUnderlyingSchemaString());
 		if(context.working_model.getUnderlyingSchemaString().equalsIgnoreCase("ap210_electronic_assembly_interconnect_and_packaging_design_mim")){
 			component.unsetDerived_from(null);
 			return;
 		}
 		// if new structure is used - do nothing
 		AProduct_occurrence_definition_relationship_armx apodr = new AProduct_occurrence_definition_relationship_armx();
-		CProduct_occurrence_definition_relationship_armx.usedinRelated_view(null, component, context.domain, apodr);
+		CProduct_occurrence_definition_relationship_armx.usedinRelated_view(null, component, null, apodr);
 		if(apodr.getMemberCount() > 0){
-			component.unsetDerived_from(null);
+			// component.unsetDerived_from(null);
+//			System.err.println(" ComponentA "+component+" "+apodr.getByIndex(1));
 			return;
 		}
-		// Maybe it is already implemented on AIM
+		// Maybe it is already implemented on AIM, but even than schema will not be compatible, so need to delete them
 		ANext_assembly_usage_occurrence_relationship anauor = new ANext_assembly_usage_occurrence_relationship();
 		CNext_assembly_usage_occurrence_relationship.usedinOccurrence(null, component, context.domain, anauor);
 		if(anauor.getMemberCount() > 0){
+//			for(int i=1, count=anauor.getMemberCount(); i<=count; i++){
+//				anauor.getByIndex(i).deleteApplicationInstance();
+//			}
 			component.unsetDerived_from(null);
+//			System.err.println(" ComponentB "+component+" "+anauor.getByIndex(1));
 			return;
 		}
-		
+		// System.err.println(" Component1 "+component);
 		AProduct_definition_relationship apdr = new AProduct_definition_relationship();
 		CProduct_definition_relationship.usedinRelated_product_definition(null, component, context.domain, apdr);
 		SdaiIterator iter = apdr.createIterator();
@@ -465,21 +472,29 @@ public class CxDefinition_based_product_occurrence
 				aacu.addUnordered(epdr);
 			}
 		}
-		// Get definition
-		EProduct_definition definition = component.getDerived_from(null);
-		component.unsetDerived_from(null);
+		EProduct_definition definition = null;
+		if(component.testDerived_from(null)){
+			// Get definition
+			definition = component.getDerived_from(null);
+			component.unsetDerived_from(null);
+		}
+		// System.err.println(" Component2 "+component+" count "+count);
 		// 1) Just delete this occurrence
 		if(count < 2){
 			// Clean ARM specific attributes
 			// component.unsetAdditional_characterization(null);
 			component.unsetAdditional_contexts(null);
-			
-			EEntity newComponent = component.findEntityInstanceSdaiModel().substituteInstance(component, definition.getInstanceType());
-			definition.moveUsersFrom(newComponent);
-			newComponent.deleteApplicationInstance();
+			if(count == 1){
+				aacu.getByIndex(1).deleteApplicationInstance();
+			}
+			if(definition != null){
+				EEntity newComponent = component.findEntityInstanceSdaiModel().substituteInstance(component, definition.getInstanceType());
+				definition.moveUsersFrom(newComponent);
+				newComponent.deleteApplicationInstance();
+			}
 		}
 		// 2) Create few needed entities - AP214 S7
-		else{
+		else if(definition != null){
 			EProduct_definition_relationship epdr = (EProduct_definition_relationship)
 				context.working_model.createEntityInstance(CProduct_definition_relationship.definition);
 			epdr.setRelated_product_definition(null, component);

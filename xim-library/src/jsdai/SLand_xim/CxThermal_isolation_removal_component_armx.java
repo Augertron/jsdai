@@ -21,7 +21,7 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.SInterconnect_module_connection_routing_xim;
+package jsdai.SLand_xim;
 
 /**
  * 
@@ -31,17 +31,17 @@ package jsdai.SInterconnect_module_connection_routing_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.SLayered_interconnect_module_design_xim.*;
+import jsdai.SLand_mim.CThermal_isolation_removal_component;
+import jsdai.SLayered_interconnect_module_design_xim.CxMaterial_removal_structured_component_armx;
 import jsdai.SGeneric_product_occurrence_xim.*;
-import jsdai.SInterconnect_module_connection_routing_mim.CPhysical_network_supporting_inter_stratum_feature;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
 import jsdai.SShape_property_assignment_xim.*;
 
-public class CxPhysical_network_supporting_inter_stratum_feature_armx
+public class CxThermal_isolation_removal_component_armx
 		extends
-			CPhysical_network_supporting_inter_stratum_feature_armx implements EMappedXIMEntity{
+			CThermal_isolation_removal_component_armx implements EMappedXIMEntity{
 
 	// Flags, which are used to determine the type of assembly, which has to be generated 
 	public static final int AP203 = 1;
@@ -49,7 +49,7 @@ public class CxPhysical_network_supporting_inter_stratum_feature_armx
 	public static final int AP21x = 2;
 	
 	public static int apFlag = AP21x; // Default is this style  
-
+	
 	// Taken from PDR
 	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
 		a11 = set_string(value);
@@ -82,7 +82,7 @@ public class CxPhysical_network_supporting_inter_stratum_feature_armx
 		return (EProduct_definition)get_instance(a14);
 	}*/
 	public void setRelating_product_definition(EProduct_definition_relationship type, EProduct_definition value) throws SdaiException {
-		a14 = set_instance(a14, value);
+		a14 = set_instanceX(a14, value);
 	}
 	public void unsetRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
 		a14 = unset_instance(a14);
@@ -91,7 +91,7 @@ public class CxPhysical_network_supporting_inter_stratum_feature_armx
 		return a14$;
 	}
 	// ENDOF taken from PDR
-
+	
 	// Product_view_definition
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(EProduct_definition type) throws SdaiException {
@@ -136,7 +136,7 @@ public class CxPhysical_network_supporting_inter_stratum_feature_armx
 		return (EProduct_definition_formation)a2;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
 		a2 = unset_instance(a2);
@@ -157,7 +157,7 @@ public class CxPhysical_network_supporting_inter_stratum_feature_armx
 		return (jsdai.SApplication_context_schema.EProduct_definition_context)a3;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a3 = set_instance(a3, value);
+		a3 = set_instanceX(a3, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
 		a3 = unset_instance(a3);
@@ -197,7 +197,7 @@ public class CxPhysical_network_supporting_inter_stratum_feature_armx
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a9 = set_instance(a9, value);
+		a9 = set_instanceX(a9, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
@@ -220,7 +220,7 @@ public class CxPhysical_network_supporting_inter_stratum_feature_armx
 			return;
 		}
 
-		setTemp("AIM", CPhysical_network_supporting_inter_stratum_feature.definition);
+		setTemp("AIM", CThermal_isolation_removal_component.definition);
 
 			setMappingConstraints(context, this);
 			
@@ -233,34 +233,26 @@ public class CxPhysical_network_supporting_inter_stratum_feature_armx
 			
 			//id - goes directly into AIM
 			
-			//additional_characterization - this is derived in laminate_component
+			//additional_characterization
 			// setAdditional_characterization(context, this);
 
 			//additional_context
 			setAdditional_contexts(context, this);
 
+			
+			
+			
+
 			setDerived_from(context, this);
 			
-			// feature_of_size
-			setFeature_of_size(context, this);
 			
-			setVertical_extent(context, this);
-			
-			// topological_requirement 
-			setTopological_requirement(context, this);
-			
-			// Clean ARM specific attributes - this is derived in laminate_component
+			// Clean ARM specific attributes
 			// unsetAdditional_characterization(null);
 			unsetAdditional_contexts(null);
 			
 			
 			unsetDerived_from(null);
 			unsetId_x(null);
-			unsetFeature_of_size(null);
-			unsetVertical_extent(null);
-			// topological_requirement 
-			unsetTopological_requirement(null);
-			
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
@@ -275,21 +267,16 @@ public class CxPhysical_network_supporting_inter_stratum_feature_armx
 			//additional_context
 			unsetAdditional_contexts(context, this);
 
-			//additional_characterization - this is derived in laminate_component
+			//additional_characterization
 			// unsetAdditional_characterization(context, this);
+
+			
+			
+			
 			
 			unsetDerived_from(context, this);
 			
-			unsetId_x(context, this);
-			
-			// feature_of_size
-			unsetFeature_of_size(context, this);
-
-			unsetVertical_extent(context, this);
-			
-			// topological_requirement 
-			unsetTopological_requirement(context, this);
-
+			unsetId_x(context, this);			
 	}
 
 	//		************************************* AUTOMOTIVE_DESIGN
@@ -299,22 +286,12 @@ public class CxPhysical_network_supporting_inter_stratum_feature_armx
 	 * Sets/creates data for mapping constraints.
 	 * 
 	 * <p>
-	 * mapping_constraints;
-	 *  plated_inter_stratum_feature &lt;=
-	 *  inter_stratum_feature &lt;=
+	 * mapping_constraints; 
+	 *  footprint_occurrence &lt;=
+	 *  assembly_group_component_definition &lt;=
 	 *  assembly_component &lt;=
-	 *  {product_definition_shape &lt;-
-	 *  shape_aspect.of_shape
-	 *  shape_aspect &lt;-
-	 *  shape_aspect_relationship.related_shape_aspect
-	 *  shape_aspect_relationship
-	 *  {shape_aspect_relationship
-	 *  shape_aspect_relationship.name = 'join implementation'} 
-	 *  shape_aspect_relationship.relating_shape_aspect -&gt;
-	 *  {shape_aspect
-	 *  shape_aspect.name = 'inter stratum join'}
-	 *  shape_aspect =&gt;
-	 *  join_shape_aspect} 
+	 *  component_definition &lt;=
+	 *  product_definition
 	 * end_mapping_constraints;
 	 * </p>
 	 * 
@@ -324,12 +301,10 @@ public class CxPhysical_network_supporting_inter_stratum_feature_armx
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	// Do nothing as it is abstract
 	public static void setMappingConstraints(SdaiContext context,
-			EPhysical_network_supporting_inter_stratum_feature_armx armEntity) throws SdaiException {
+			EThermal_isolation_removal_component_armx armEntity) throws SdaiException {
 		unsetMappingConstraints(context, armEntity);
-		CxPlated_inter_stratum_feature_armx.setMappingConstraints(context, armEntity); 
-		CxInter_stratum_join_implementation.setMappingConstraints(context, armEntity);
+		CxMaterial_removal_structured_component_armx.setMappingConstraints(context, armEntity);
 	}
 
 	/**
@@ -340,12 +315,12 @@ public class CxPhysical_network_supporting_inter_stratum_feature_armx
 	 * @throws SdaiException
 	 */
 	public static void unsetMappingConstraints(SdaiContext context,
-			EPhysical_network_supporting_inter_stratum_feature_armx armEntity) throws SdaiException {
-		CxPlated_inter_stratum_feature_armx.unsetMappingConstraints(context, armEntity); 
-		CxInter_stratum_join_implementation.unsetMappingConstraints(context, armEntity);
+			EThermal_isolation_removal_component_armx armEntity) throws SdaiException {
+		CxMaterial_removal_structured_component_armx.unsetMappingConstraints(context, armEntity);
 	}
 
 	//********** "design_discipline_item_definition" attributes
+
 	/**
 	 * Sets/creates data for additional_context attribute.
 	 * 
@@ -373,6 +348,35 @@ public class CxPhysical_network_supporting_inter_stratum_feature_armx
 			EProduct_view_definition armEntity) throws SdaiException {
 		CxProduct_view_definition.unsetAdditional_contexts(context, armEntity);		
 	}
+
+	/**
+	 * Sets/creates data for name attribute.
+	 * 
+	 * @param context
+	 *            SdaiContext.
+	 * @param armEntity
+	 *            arm entity.
+	 * @throws SdaiException
+	 */
+	public static void setAdditional_characterization(SdaiContext context,
+			EProduct_view_definition armEntity) throws SdaiException {
+		CxProduct_view_definition.setAdditional_characterization(context, armEntity);		
+	}
+
+	/**
+	 * Unsets/deletes data for name attribute.
+	 * 
+	 * @param context
+	 *            SdaiContext.
+	 * @param armEntity
+	 *            arm entity.
+	 * @throws SdaiException
+	 */
+	public static void unsetAdditional_characterization(SdaiContext context,
+			EProduct_view_definition armEntity) throws SdaiException {
+		CxProduct_view_definition.unsetAdditional_characterization(context, armEntity);		
+	}
+
 // Product_occurrence attributes	
 	
 	/**
@@ -430,85 +434,6 @@ public class CxPhysical_network_supporting_inter_stratum_feature_armx
 			EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.unsetId_x(context, armEntity);		
 	}
-
-	//********** "inter_stratum_feature" attributes
-
-	/**
-	* Sets/creates data for feature_of_size attribute.
-	*
-	* @param context SdaiContext.
-	* @param armEntity arm entity.
-	* @throws SdaiException
-	*/
-	public static void setFeature_of_size(SdaiContext context, EInter_stratum_feature_armx armEntity) throws SdaiException
-	{
-		CxInter_stratum_feature_armx.setFeature_of_size(context, armEntity);		
-	}
-
-
-	/**
-	* Unsets/deletes data for feature_of_size attribute.
-	*
-	* @param context SdaiContext.
-	* @param armEntity arm entity.
-	* @throws SdaiException
-	*/
-	public static void unsetFeature_of_size(SdaiContext context, EInter_stratum_feature_armx armEntity) throws SdaiException
-	{
-		CxInter_stratum_feature_armx.unsetFeature_of_size(context, armEntity);
-	}
-
-	/**
-	* Sets/creates data for vertical_extent attribute.
-	*
-	* @param context SdaiContext.
-	* @param armEntity arm entity.
-	* @throws SdaiException
-	*/
-	public static void setVertical_extent(SdaiContext context, EInter_stratum_feature_armx armEntity) throws SdaiException
-	{
-		CxInter_stratum_feature_armx.setVertical_extent(context, armEntity);		
-	}
-
-
-	/**
-	* Unsets/deletes data for Vertical_extent attribute.
-	*
-	* @param context SdaiContext.
-	* @param armEntity arm entity.
-	* @throws SdaiException
-	*/
-	public static void unsetVertical_extent(SdaiContext context, EInter_stratum_feature_armx armEntity) throws SdaiException
-	{
-		CxInter_stratum_feature_armx.unsetVertical_extent(context, armEntity);
-	}
 	
-	//********** "inter_stratum_join_implementation" attributes
 
-	/**
-	* Sets/creates data for setTopological_requirement attribute.
-	*
-	* @param context SdaiContext.
-	* @param armEntity arm entity.
-	* @throws SdaiException
-	*/
-	public static void setTopological_requirement(SdaiContext context, EInter_stratum_feature_armx armEntity) throws SdaiException
-	{
-		CxInter_stratum_join_implementation.setTopological_requirement(context, armEntity);		
-	}
-
-
-	/**
-	* Unsets/deletes data for setTopological_requirement attribute.
-	*
-	* @param context SdaiContext.
-	* @param armEntity arm entity.
-	* @throws SdaiException
-	*/
-	public static void unsetTopological_requirement(SdaiContext context, EInter_stratum_feature_armx armEntity) throws SdaiException
-	{
-		CxInter_stratum_join_implementation.unsetTopological_requirement(context, armEntity);
-	}
-	
-	
 }

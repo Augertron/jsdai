@@ -83,7 +83,7 @@ public class CxLinear_array_placement_group_component_link extends CLinear_array
 		return (EProduct_definition_formation)a2;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
 		a2 = unset_instance(a2);
@@ -104,7 +104,7 @@ public class CxLinear_array_placement_group_component_link extends CLinear_array
 		return (jsdai.SApplication_context_schema.EProduct_definition_context)a3;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a3 = set_instance(a3, value);
+		a3 = set_instanceX(a3, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
 		a3 = unset_instance(a3);
@@ -170,8 +170,7 @@ public class CxLinear_array_placement_group_component_link extends CLinear_array
 				}
 			}
 			if(user == null){
-				System.err.println("WARNING: Linear_array_placement_group_component_link shall have exactly one user by inverse Referenced_by "+armEntity+" count = "+users.getMemberCount()+" "+apdr.getMemberCount());
-				System.err.println(context.working_model.getRepository().getSessionIdentifier("#33013"));
+				SdaiSession.getSession().printlnSession("WARNING: Linear_array_placement_group_component_link shall have exactly one user by inverse Referenced_by "+armEntity+" count = "+users.getMemberCount()+" "+apdr.getMemberCount());
 			}
 		}else{
 			if(user == null){

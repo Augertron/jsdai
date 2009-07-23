@@ -31,9 +31,10 @@ package jsdai.SShape_property_assignment_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.CxAP210ARMUtilities;
+import jsdai.libutil.EMappedXIMEntity;
 import jsdai.SProduct_property_definition_schema.*;
 
-public class CxShape_element extends CShape_element {
+public class CxShape_element extends CShape_element implements EMappedXIMEntity {
 
 	EEntity getAimInstance(){
 		return this;

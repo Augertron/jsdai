@@ -26,11 +26,23 @@
 uof_mapping Property_assignment(Property_assignment);
 
 (* GL change - add explicitly requirement that this mapping is satisfied only if specific subtype mapping is satisfied *)
-entity_mapping Assigned_property(Assigned_property, 
+entity_mapping Assigned_property(Assigned_property, (property_definition)(operational_requirement_relationship));
+
+mapping_constraints;
+(* Avoid matching with classification_attribute *)
+!{property_definition
+derived_property_select = property_definition
+derived_property_select <- 
+general_property_association.derived_definition
+general_property_association.base_definition -> 
+general_property}
+(* CAX-IF stuff according to http://www.cax-if.de/documents/caxif_gvp_recprac.pdf *)
+(property_definition.name = 'geometric validation property')
+(property_definition.name = 'geometric_validation_property')
+(property_definition.description = 'Shape for Validation Properties')
 (/SUBTYPE(Applied_independent_property)/)
-(* (/SUBTYPE(Assigned_document_property)/) *) (* Alternative not supported for now *)
 (/SUBTYPE(Operational_requirement_relationship_armx)/)
-);
+end_mapping_constraints;
 
 attribute_mapping name(name, property_definition.name);
 end_attribute_mapping;
@@ -55,6 +67,24 @@ measure_representation_item <=
 measure_with_unit
 
 end_attribute_mapping;
+
+attribute_mapping representation(representation, $PATH, cartesian_point);
+property_definition
+represented_definition = property_definition
+represented_definition <-
+property_definition_representation.definition
+property_definition_representation 
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+representation_item
+representation_item =>
+geometric_representation_item =>
+point =>
+cartesian_point
+end_attribute_mapping;
+
 
 
 attribute_mapping representation(representation, $PATH);

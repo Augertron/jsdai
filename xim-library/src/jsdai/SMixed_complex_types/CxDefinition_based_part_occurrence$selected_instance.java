@@ -92,7 +92,7 @@ public class CxDefinition_based_part_occurrence$selected_instance
 		return (EProduct_definition_formation)a3;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a3 = set_instance(a3, value);
+		a3 = set_instanceX(a3, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
 		a3 = unset_instance(a3);
@@ -113,7 +113,7 @@ public class CxDefinition_based_part_occurrence$selected_instance
 		return (jsdai.SApplication_context_schema.EProduct_definition_context)a3;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a4 = set_instance(a4, value);
+		a4 = set_instanceX(a4, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
 		a4 = unset_instance(a4);

@@ -66,7 +66,7 @@ public class CxLand_with_join_terminal_xim$plated_passage_dependent_land_armx$st
 		return get_string(a24);
 	}*/
 	public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
-		a24 = set_instance(a24, value);
+		a24 = set_instanceX(a24, value);
 	}
 	public void unsetOf_shape(EShape_aspect type) throws SdaiException {
 		a24 = unset_instance(a24);
@@ -142,7 +142,7 @@ public class CxLand_with_join_terminal_xim$plated_passage_dependent_land_armx$st
 		return (EProduct_definition_formation)a10;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a10 = set_instance(a10, value);
+		a10 = set_instanceX(a10, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
 		a10 = unset_instance(a10);
@@ -163,7 +163,7 @@ public class CxLand_with_join_terminal_xim$plated_passage_dependent_land_armx$st
 		return (jsdai.SApplication_context_schema.EProduct_definition_context)a10;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a11 = set_instance(a11, value);
+		a11 = set_instanceX(a11, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
 		a11 = unset_instance(a11);
@@ -203,7 +203,7 @@ public class CxLand_with_join_terminal_xim$plated_passage_dependent_land_armx$st
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a21 = set_instance(a21, value);
+		a21 = set_instanceX(a21, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
@@ -232,7 +232,7 @@ public class CxLand_with_join_terminal_xim$plated_passage_dependent_land_armx$st
 	}
 
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a12 = set_instance(a12, value);
+		a12 = set_instanceX(a12, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

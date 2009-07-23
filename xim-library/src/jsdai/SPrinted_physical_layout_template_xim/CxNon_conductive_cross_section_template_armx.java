@@ -61,7 +61,7 @@ public class CxNon_conductive_cross_section_template_armx extends CNon_conductiv
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

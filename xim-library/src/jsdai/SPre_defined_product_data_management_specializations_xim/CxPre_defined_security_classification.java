@@ -87,7 +87,7 @@ public class CxPre_defined_security_classification extends CPre_defined_security
 			return (ESecurity_classification_level)get_instance(a2);
 		} */
 		public void setSecurity_level(ESecurity_classification type, ESecurity_classification_level value) throws SdaiException {
-			a2 = set_instance(a2, value);
+			a2 = set_instanceX(a2, value);
 		}
 		public void unsetSecurity_level(ESecurity_classification type) throws SdaiException {
 			a2 = unset_instance(a2);

@@ -74,7 +74,7 @@ public class CxResource_item extends CResource_item implements EMappedXIMEntity{
 		return (EAction_resource_type)a3;
 	}*/
 	public void setKind(EAction_resource type, EAction_resource_type value) throws SdaiException {
-		a3 = set_instance(a3, value);
+		a3 = set_instanceX(a3, value);
 	}
 	public void unsetKind(EAction_resource type) throws SdaiException {
 		a3 = unset_instance(a3);

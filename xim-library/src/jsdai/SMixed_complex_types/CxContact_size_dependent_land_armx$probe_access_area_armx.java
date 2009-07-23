@@ -88,7 +88,7 @@ public class CxContact_size_dependent_land_armx$probe_access_area_armx
 		return (EProduct_definition)get_instance(a12);
 	}*/
 	public void setRelating_product_definition(EProduct_definition_relationship type, EProduct_definition value) throws SdaiException {
-		a12 = set_instance(a12, value);
+		a12 = set_instanceX(a12, value);
 	}
 	public void unsetRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
 		a12 = unset_instance(a12);
@@ -143,7 +143,7 @@ public class CxContact_size_dependent_land_armx$probe_access_area_armx
 		return (EProduct_definition_formation)a7;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a7 = set_instance(a7, value);
+		a7 = set_instanceX(a7, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
 		a7 = unset_instance(a7);
@@ -164,7 +164,7 @@ public class CxContact_size_dependent_land_armx$probe_access_area_armx
 		return (jsdai.SApplication_context_schema.EProduct_definition_context)a3;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a8 = set_instance(a8, value);
+		a8 = set_instanceX(a8, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
 		a8 = unset_instance(a8);
@@ -204,7 +204,7 @@ public class CxContact_size_dependent_land_armx$probe_access_area_armx
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a18 = set_instance(a18, value);
+		a18 = set_instanceX(a18, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
@@ -265,7 +265,7 @@ public class CxContact_size_dependent_land_armx$probe_access_area_armx
 		return (EProduct_definition_shape)get_instance(a21);
 	}*/
 	public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
-		a21 = set_instance(a21, value);
+		a21 = set_instanceX(a21, value);
 	}
 	public void unsetOf_shape(EShape_aspect type) throws SdaiException {
 		a21 = unset_instance(a21);

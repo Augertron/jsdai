@@ -8,14 +8,15 @@ SCHEMA Layered_interconnect_module_design_arm;
 
 USE FROM Component_grouping_arm;	-- ISO/TS 10303-1656
 USE FROM Edge_shape_feature_arm;	-- ISO/TS 10303-1673
-USE FROM Interconnect_physical_requirement_allocation_arm;	-- ISO/TS 10303-1689
 USE FROM Footprint_definition_arm;	-- ISO/TS 10303-1646
-USE FROM Physical_connectivity_definition_arm;	-- ISO/TS 10303-1755
-USE FROM Interconnect_module_connection_routing_arm;
 USE FROM Assembly_component_placement_requirements_arm;	-- ISO/TS 10303-1634	
+(*REFERENCE FROM*) USE FROM Land_arm;	-- ISO/TS 10303-1692
+(*REFERENCE FROM*) USE FROM Layered_interconnect_module_with_printed_component_design_arm; -- ISO/TS 10303-1700
 
 REFERENCE FROM Physical_unit_design_view_arm(get_assemblies);  -- ISO/TS 10303-1765
 REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
+REFERENCE FROM Physical_unit_2d_design_view_arm(pu2dv_has_shape);  -- ISO/TS 10303-1724
+REFERENCE FROM Physical_unit_2d_design_view_arm(pu2dv_typeof);  -- ISO/TS 10303-1724
 
  CONSTANT
    Pre_defined_physical_network_group_types : SET OF STRING := [
@@ -26,6 +27,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
 
    Pre_defined_physical_network_group_relation_types : SET OF STRING := [
       'group to higher order group',
+      'group to higher ranking group',
       'element to ordered multiple line bus'];
 
  END_CONSTANT;
@@ -59,54 +61,6 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     (Stratum_feature_template_component, Stratum);
   END_TYPE;
     
-  SUBTYPE_CONSTRAINT limd_assembly_component_subtypes FOR Assembly_component; 
-    (ONEOF (Physical_component,
-     Laminate_component));
-  END_SUBTYPE_CONSTRAINT;
-	
-  SUBTYPE_CONSTRAINT array_placement_group_subtypes FOR Array_placement_group; 
-    (ONEOF (Laminate_text_string_component,
-     Linear_array_placement_group_component,
-     Rectangular_array_placement_group_component));
-  END_SUBTYPE_CONSTRAINT;
-
-  SUBTYPE_CONSTRAINT component_feature_subtypes FOR Component_feature;     
-    ONEOF (Physical_component_feature,
-           Laminate_component_feature);
-  END_SUBTYPE_CONSTRAINT;
-
-  SUBTYPE_CONSTRAINT component_terminal_subtypes FOR Component_terminal;     
-    ONEOF (Physical_component_terminal,
-           Laminate_component_join_terminal);
-  END_SUBTYPE_CONSTRAINT;
-
-  SUBTYPE_CONSTRAINT inter_stratum_feature_subtypes FOR Inter_stratum_feature;     
-    ONEOF (Cutout,
-           Interconnect_module_edge);
-  END_SUBTYPE_CONSTRAINT;
-
-  SUBTYPE_CONSTRAINT interconnect_module_terminal_subtypes FOR Interconnect_module_terminal;     
-    (ONEOF (Interconnect_module_interface_terminal,
-            Interconnect_module_macro_terminal));
-  END_SUBTYPE_CONSTRAINT; 
-
-  SUBTYPE_CONSTRAINT limd_part_view_definition_subtypes FOR Part_view_definition; 
-    (ONEOF (Part_usage_view,
-            Part_design_view,
-            Stratum));
-  END_SUBTYPE_CONSTRAINT; 
-	
-  SUBTYPE_CONSTRAINT limd_template_definition_subtypes FOR Template_definition; 
-    (ONEOF (
-       ONEOF(Printed_part_template, Special_symbol_template) ANDOR  Geometric_template, 
-             Non_conductive_cross_section_template,
-             Part_string_template, 
-             Parametric_template,
-             Part_text_template,
-             Stratum_stack_model,
-             Stratum_sub_stack));
-  END_SUBTYPE_CONSTRAINT;
-
   TYPE material_removal_feature_template_or_parametric_template = SELECT
    (Material_removal_feature_template, Parametric_template);
   END_TYPE;
@@ -159,18 +113,12 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
   END_TYPE;
 
   TYPE limd_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
-    (Stratum_feature_conductive_join,
-     Dielectric_crossover_area,
-     Layered_interconnect_module_design_view);
+    (Layered_interconnect_module_design_view);
   END_TYPE; 
 
   TYPE limd_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
     (stratum_concept,
      Stratum);
-  END_TYPE;
-
-  TYPE limd_trace_junction_or_via_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON trace_junction_or_via WITH 
-    (Inter_stratum_join_relationship);
   END_TYPE;
 
   TYPE limd_usage_concept = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON usage_concept WITH 
@@ -196,6 +144,13 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     (average_surface,
      primary_surface,
      secondary_surface);
+  END_TYPE;
+
+  TYPE terminal_or_inter_stratum_feature = EXTENSIBLE GENERIC_ENTITY SELECT(
+  	Embedded_physical_component_terminal,
+	Inter_stratum_feature,
+    Interconnect_module_terminal,
+    Printed_component_join_terminal);
   END_TYPE;
 
   ENTITY Adjacent_stratum_surface_embedded_physical_component_surface_definition;
@@ -233,9 +188,8 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     INVERSE
       replaced_by : SET [0:?] OF Area_component FOR replaced_component;
     WHERE
-      WR1: NOT(is_final XOR ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE' IN TYPEOF(implementation_or_resident_stratum)));
-      WR2: is_final OR (SIZEOF(QUERY(rp <* replaced_by | SELF\Stratum_feature_template_component.resident_stratum :<>: 
-        get_resident_stratum(rp))) = 0);      
+      WR1: NOT((is_final AND pu2dv_has_shape(SELF)) XOR ('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE' IN TYPEOF(implementation_or_resident_stratum))); 
+      WR2: is_final OR (SIZEOF(QUERY(rp <* replaced_by | SELF\Stratum_feature_template_component.resident_stratum :<>: get_resident_stratum(rp))) = 0);      
       WR3: NOT(SELF IN replaced_by);
       WR4: NOT(replaced_component IN replaced_by);
       WR5: is_final XOR (SIZEOF(USEDIN(SELF,'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.MATERIAL_REMOVAL_LAMINATE_COMPONENT.DESIGN_INTENT')) > 0);
@@ -246,6 +200,9 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
               = (SIZEOF(replaced_by))
              )
             );
+     WR7: pu2dv_has_shape(SELF) OR ('LAYERED_INTERCONNECT_MODULE_ARM.STRATUM' IN TYPEOF(implementation_or_resident_stratum)); 
+     WR8: NOT(SIZEOF(replaced_by) > 0) OR ('LAYERED_INTERCONNECT_MODULE_ARM.STRATUM' IN TYPEOF(implementation_or_resident_stratum));
+     WR9: NOT is_base OR VALUE_IN(pu2dv_typeof(SELF), 'CONSTRUCTIVE_SOLID_GEOMETRY_2D_ARM.SINGLE_BOUNDARY_CSG_2D_MODEL');
   END_ENTITY;
 
   ENTITY Breakout_occurrence
@@ -300,7 +257,8 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       WR3: NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.FIDUCIAL' IN TYPEOF(SELF));
       WR4: correlated_terminals(SELF\Conductive_interconnect_element.access_mechanisms,
          connected_points);      
-      WR5 : (1 + SIZEOF(connected_points)) = limd_get_sz_cp(connected_points);         
+      WR5 : (1 + SIZEOF(connected_points)) = limd_get_sz_cp(connected_points);
+      WR6: NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.AREA_COMPONENT' IN TYPEOF(SELF));         
   END_ENTITY;
 
   ENTITY Conductive_interconnect_element_terminal
@@ -406,14 +364,11 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       WR1 : start_vertex :<>: end_vertex;
   END_ENTITY;
 
-  ENTITY Dependent_thermal_isolation_removal_component
-    SUBTYPE OF (Material_removal_structured_component);
-      SELF\Definition_based_product_occurrence.derived_from : Dependent_thermal_isolation_removal_template;
-      associated_land : Land;
-    WHERE
-      WR1 : associated_land\Definition_based_product_occurrence.derived_from :=:
-            SELF\Definition_based_product_occurrence.derived_from\Dependent_thermal_isolation_removal_template.associated_item;
-  END_ENTITY;
+  ENTITY Dependently_located_layer_connection_point
+    SUBTYPE OF (Layer_connection_point);
+      associated_design_object : terminal_or_inter_stratum_feature;
+      reference_zone           : OPTIONAL Connection_zone_in_design_view;
+  END_ENTITY; 
 
   ENTITY Derived_stratum
      SUBTYPE OF (Stratum);
@@ -444,12 +399,15 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     SUBTYPE OF (Stratum);
     WHERE
       WR1: 'FABRICATION_TECHNOLOGY_ARM.DOCUMENTATION_LAYER_TECHNOLOGY' IN TYPEOF(SELF\Stratum.of_technology);
+      WR2: NOT(SIZEOF(SELF\Stratum.base_component) = 1) OR 
+           (NOT(SELF\Stratum.of_technology\Documentation_layer_technology.pre_defined_documentation_layer_purpose = 
+                predefined_documentation_layer_purpose.soldermask) OR (SIZEOF(get_mrlc_not_for_base(SELF, base_component)) = 0));
   END_ENTITY;
 
   ENTITY Electrical_isolation_laminate_component
     SUBTYPE OF (Material_removal_laminate_component);
       SELF\Definition_based_product_occurrence.derived_from : Electrical_isolation_removal_template;
-  END_ENTITY;
+  END_ENTITY;  
 
   ENTITY Embedded_physical_component_terminal
     SUBTYPE OF (Laminate_component_join_terminal);
@@ -458,6 +416,10 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     WHERE
       WR1 : NOT EXISTS(SELF\Shape_element.description);
   END_ENTITY;
+
+  ENTITY Explicitly_located_layer_connection_point
+    SUBTYPE OF (Layer_connection_point);
+  END_ENTITY; 
 
   ENTITY Fiducial
     SUBTYPE OF (Laminate_component);
@@ -645,6 +607,12 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       UR1 : connected_probe, inter_stratum_feature;
   END_ENTITY;
 
+  ENTITY Inter_stratum_join_implementation
+    ABSTRACT SUPERTYPE OF (ONEOF (Physical_network_supporting_stratum_feature_conductive_join,
+ 	  Physical_network_supporting_inter_stratum_feature));
+      topological_requirement : Inter_stratum_join_relationship;
+  END_ENTITY; 
+
   ENTITY Intra_stratum_join_relationship
     SUBTYPE OF (Routed_join_relationship);
       points_to_be_connected : SET[2:?] OF Layer_connection_point;
@@ -746,7 +714,9 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
   END_ENTITY;
 
   ENTITY Layer_connection_point
-    ABSTRACT SUPERTYPE
+    ABSTRACT SUPERTYPE OF (
+      ONEOF (Explicitly_located_layer_connection_point,
+		Dependently_located_layer_connection_point))
     SUBTYPE OF (Shape_element);
       SELF\Shape_element.element_name : STRING;
       location_2d                   : OPTIONAL Cartesian_point;
@@ -796,7 +766,6 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
   END_ENTITY;
 
   ENTITY Material_removal_laminate_component
-    SUPERTYPE OF (Electrical_isolation_laminate_component)
     SUBTYPE OF (Laminate_component);
       causal_item                                           : OPTIONAL limd_restriction_basis_item;
       design_intent                                         : SET[1:?] OF stratum_feature_template_component_or_stratum;
@@ -908,6 +877,16 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
         [related_group], 
         'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.PHYSICAL_NETWORK_GROUP_ELEMENT_RELATIONSHIP');
  END_ENTITY;
+
+  	ENTITY Physical_network_supporting_inter_stratum_feature
+    	SUBTYPE OF (Plated_inter_stratum_feature,
+ 			Inter_stratum_join_implementation);
+  	END_ENTITY; 
+
+  	ENTITY Physical_network_supporting_stratum_feature_conductive_join
+    	SUBTYPE OF (Stratum_feature_conductive_join,
+		Inter_stratum_join_implementation);
+  	END_ENTITY; 
 
  ENTITY Pre_defined_physical_network_group_element_relationship
    SUBTYPE OF (Physical_network_group_element_relationship);
@@ -1125,6 +1104,17 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
                  )) = 1;
   END_ENTITY;
 
+  	ENTITY Stratum_feature_conductive_join
+    	SUPERTYPE OF (Physical_network_supporting_stratum_feature_conductive_join);
+      	relating_concept : Stratum_feature_template_component;    
+      	related_concept  : Stratum_feature_template_component;
+        resulting_shape        : OPTIONAL Geometric_model;
+      INVERSE
+	    technology_requirement : SET[1:?] OF requirement_assignment FOR assigned_to;
+    WHERE
+      WR1 : related_concept.resident_stratum :<>: relating_concept.resident_stratum;
+	END_ENTITY; 
+
   ENTITY Stratum_feature_template_component
     SUBTYPE OF (Laminate_component);
       SELF\Definition_based_product_occurrence.derived_from : stratum_feature_template_or_parametric_template;
@@ -1264,6 +1254,59 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       WR1 : NOT EXISTS(SELF\Shape_element.description);
   END_ENTITY;
 
+  SUBTYPE_CONSTRAINT limd_assembly_component_subtypes FOR Assembly_component; 
+    (ONEOF (Physical_component,
+     Laminate_component));
+  END_SUBTYPE_CONSTRAINT;
+	
+  SUBTYPE_CONSTRAINT array_placement_group_subtypes FOR Array_placement_group; 
+    (ONEOF (Laminate_text_string_component,
+     Linear_array_placement_group_component,
+     Rectangular_array_placement_group_component));
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT component_feature_subtypes FOR Component_feature;     
+    ONEOF (Physical_component_feature,
+           Laminate_component_feature);
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT component_terminal_subtypes FOR Component_terminal;     
+    ONEOF (Physical_component_terminal,
+           Laminate_component_join_terminal);
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT inter_stratum_feature_subtypes FOR Inter_stratum_feature;     
+    ONEOF (Cutout,
+           Interconnect_module_edge);
+  END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT interconnect_module_terminal_subtypes FOR Interconnect_module_terminal;     
+    (ONEOF (Interconnect_module_interface_terminal,
+            Interconnect_module_macro_terminal));
+  END_SUBTYPE_CONSTRAINT; 
+
+  SUBTYPE_CONSTRAINT limd_part_view_definition_subtypes FOR Part_view_definition; 
+    (ONEOF (Part_usage_view,
+            Part_design_view,
+            Stratum));
+  END_SUBTYPE_CONSTRAINT; 
+	
+  SUBTYPE_CONSTRAINT limd_stratum_feature_template_component_subtypes FOR Stratum_feature_template_component;   
+	(ONEOF (Area_component,
+            Conductive_interconnect_element));
+	END_SUBTYPE_CONSTRAINT;
+
+  SUBTYPE_CONSTRAINT limd_template_definition_subtypes FOR Template_definition; 
+    (ONEOF (
+       ONEOF(Printed_part_template, Special_symbol_template) ANDOR  Geometric_template, 
+             Non_conductive_cross_section_template,
+             Part_string_template, 
+             Parametric_template,
+             Part_text_template,
+             Stratum_stack_model,
+             Stratum_sub_stack));
+  END_SUBTYPE_CONSTRAINT;
+
 RULE limd_unique_stratum FOR (Stratum, Layered_interconnect_module_design_view, Stratum_technology_occurrence);
  LOCAL
       s : BAG OF Stratum := [];
@@ -1391,29 +1434,57 @@ END_RULE;
     RETURN(pass);
   END_FUNCTION;
 
-  FUNCTION get_base_component(input : Stratum): SET OF Area_component;
-    LOCAL
-      sf : SET OF Stratum_feature := bag_to_set(USEDIN(input,'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE.RESIDENT_STRATUM'));
-      sftc : SET OF Stratum_feature_template_component := bag_to_set(
-             USEDIN(input,'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE_TEMPLATE_COMPONENT.IMPLEMENTATION_OR_RESIDENT_STRATUM'));
+FUNCTION get_base_component (input : Stratum) : SET OF Area_component;
+LOCAL
+      ac: SET OF Area_component := [];
       i : INTEGER := 0;
-      ac: SET OF Area_component;
+     sf : SET OF Stratum_feature := bag_to_set(USEDIN(input,'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE.RESIDENT_STRATUM'));
+ sftc_s : SET OF Stratum_feature_template_component := bag_to_set(
+             USEDIN(input,'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE_TEMPLATE_COMPONENT.IMPLEMENTATION_OR_RESIDENT_STRATUM'));
+sftc_sf : SET OF Stratum_feature_template_component := [];
+ sftc_t : SET OF Stratum_feature_template_component := [];
     END_LOCAL;
     REPEAT i := 1 TO HIINDEX(sf) BY 1;
-      ac := bag_to_set(QUERY(temp <* USEDIN(sf[i],
-                     'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE_TEMPLATE_COMPONENT.IMPLEMENTATION_OR_RESIDENT_STRATUM') | 
-                      (('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.AREA_COMPONENT' IN TYPEOF(temp)) AND
-                       (temp.is_base = TRUE))));
+      sftc_sf := sftc_sf + bag_to_set(USEDIN(sf[i],'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE_TEMPLATE_COMPONENT.IMPLEMENTATION_OR_RESIDENT_STRATUM'));
     END_REPEAT;
-    REPEAT i := 1 to HIINDEX(sftc) BY 1;
-      IF(('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.AREA_COMPONENT' IN TYPEOF(sftc[i])) AND
-         (sftc[i].is_base = TRUE))
+       sftc_t := sftc_s + sftc_sf;
+    REPEAT i := 1 to HIINDEX(sftc_t) BY 1;
+      IF(('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.AREA_COMPONENT' IN TYPEOF(sftc_t[i])) AND
+         (sftc_t[i]\Area_component.is_base = TRUE))
       THEN
-       ac := ac + sftc[i];
+       ac := ac + sftc_t[i];
       END_IF;
     END_REPEAT;
     RETURN(ac);
-  END_FUNCTION;
+END_FUNCTION; 
+
+FUNCTION get_mrlc_not_for_base (input1         : Documentation_layer_stratum;
+                                base_component : SET OF Area_component) : SET OF Material_removal_laminate_component;
+LOCAL
+      ac: SET OF Area_component := [];
+      i : INTEGER := 0;
+   mrlc : SET OF Material_removal_laminate_component := [];
+ mrlc_b : SET OF Material_removal_laminate_component := [];
+     sf : SET OF Stratum_feature := bag_to_set(USEDIN(input1,'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE.RESIDENT_STRATUM'));
+ sftc_s : SET OF Stratum_feature_template_component  := bag_to_set(
+             USEDIN(input1,'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE_TEMPLATE_COMPONENT.IMPLEMENTATION_OR_RESIDENT_STRATUM'));
+sftc_sf : SET OF Stratum_feature_template_component   := [];
+ sftc_t : SET OF Stratum_feature_template_component  := [];
+    END_LOCAL;
+    REPEAT i := 1 TO HIINDEX(sf) BY 1;
+      sftc_sf := sftc_sf + bag_to_set(USEDIN(sf[i],'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.STRATUM_FEATURE_TEMPLATE_COMPONENT.IMPLEMENTATION_OR_RESIDENT_STRATUM'));
+    END_REPEAT;
+       sftc_t := sftc_s + sftc_sf;
+    REPEAT i := 1 to HIINDEX(sftc_t) BY 1;
+        mrlc := mrlc + bag_to_set(USEDIN(sftc_t[i],'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.MATERIAL_REMOVAL_LAMINATE_COMPONENT.DESIGN_INTENT')); 
+    END_REPEAT;
+    REPEAT i := 1 to HIINDEX(base_component) BY 1;
+        mrlc_b := mrlc + bag_to_set(USEDIN(base_component[i],'LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.MATERIAL_REMOVAL_LAMINATE_COMPONENT.DESIGN_INTENT')); 
+    END_REPEAT;
+    RETURN(mrlc - mrlc_b);
+END_FUNCTION; 
+
+
 
   FUNCTION limd_get_sz_cp (
     input : SET[1:?] OF Conductive_interconnect_element_terminal_link) : INTEGER;

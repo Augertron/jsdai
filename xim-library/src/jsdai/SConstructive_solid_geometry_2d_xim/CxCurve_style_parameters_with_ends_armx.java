@@ -21,7 +21,7 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.SLayered_interconnect_simple_template_xim;
+package jsdai.SConstructive_solid_geometry_2d_xim;
 
 /**
 * @author Giedrius Liutkus
@@ -32,11 +32,11 @@ package jsdai.SLayered_interconnect_simple_template_xim;
 import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.util.LangUtils;
+import jsdai.SConstructive_solid_geometry_2d_mim.CCurve_style_parameters_with_ends;
 import jsdai.SMeasure_schema.ELength_measure_with_unit;
 import jsdai.SRepresentation_schema.CGlobal_uncertainty_assigned_context$parametric_representation_context;
 import jsdai.SMixed_complex_types.CLength_measure_with_unit$measure_representation_item;
 import jsdai.SMixed_complex_types.CLength_measure_with_unit$uncertainty_measure_with_unit;
-import jsdai.SLayered_interconnect_simple_template_mim.CCurve_style_parameters_with_ends;
 import jsdai.SRepresentation_schema.*;
 
 public class CxCurve_style_parameters_with_ends_armx extends CCurve_style_parameters_with_ends_armx implements EMappedXIMEntity
@@ -94,7 +94,7 @@ public class CxCurve_style_parameters_with_ends_armx extends CCurve_style_parame
 		return (ERepresentation_context)a2;
 	}
 	public void setContext_of_items(ERepresentation type, ERepresentation_context value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetContext_of_items(ERepresentation type) throws SdaiException {
 		a2 = unset_instance(a2);

@@ -8,6 +8,7 @@
 SCHEMA Constructive_solid_geometry_2d_mim;
 
 USE FROM Area_2d_mim;	-- ISO/TS 10303-1631	
+USE FROM Basic_curve_mim; -- ISO/TS 10303-1651
 
 USE FROM representation_schema(
 compound_representation_item,
@@ -52,6 +53,10 @@ USE FROM geometry_schema (composite_curve);
      SELF\boolean_result.second_operand : boolean_operand_2d;
   END_ENTITY;
 
+  ENTITY closed_curve_style_parameters
+    SUBTYPE OF(curve_style_parameters_representation);
+  END_ENTITY;  
+
   ENTITY complex_area
     ABSTRACT SUPERTYPE OF (area_with_outer_boundary)
     SUBTYPE OF (primitive_2d);
@@ -65,6 +70,8 @@ USE FROM geometry_schema (composite_curve);
   ENTITY csg_solid_2d
     SUBTYPE OF (csg_solid);
     SELF\csg_solid.tree_root_expression : csg_select_2d;
+   WHERE
+     WR1: valid_csg_2d_primitives(SELF);
   END_ENTITY;
   
   ENTITY csg_2d_shape_representation
@@ -93,6 +100,26 @@ USE FROM geometry_schema (composite_curve);
      --  SELF\csg_2d_shape_representation || SELF\representation)) = 0;
   END_ENTITY;
 
+ENTITY curve_style_parameters_representation
+  SUBTYPE OF(representation);
+END_ENTITY;  
+
+ENTITY curve_style_parameters_with_ends
+  SUBTYPE OF(curve_style_parameters_representation);
+END_ENTITY;  
+
+ENTITY path_area_with_parameters
+  SUBTYPE OF (complex_area, mapped_item);
+  WHERE
+    WR1: 'BASIC_CURVE.CURVE' IN TYPEOF(SELF\mapped_item.mapping_target);
+      -- the mapping source must be a curve (open or closed)
+      -- no the mapping target must be a curve (open or closed)
+    --wr2: -- the mapping_source.mapped_representation must be curve_style_parameters_representation;
+    WR2: 'CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.CURVE_STYLE_PARAMETERS_REPRESENTATION' IN TYPEOF(SELF\mapped_item.mapping_source\representation_map.mapped_representation);
+    WR3: SELF\mapped_item.mapping_source\representation_map.mapping_origin\representation_item.name = 'curve width';
+              --don't reall care on mapping_source.mapping_origin. Best to make it the line-width
+END_ENTITY;
+
   ENTITY primitive_2d_with_inner_boundary
     SUBTYPE OF (primitive_2d, compound_representation_item);
       SELF\compound_representation_item.item_element RENAMED inner_boundary : compound_inner_area_boundary;
@@ -100,7 +127,8 @@ USE FROM geometry_schema (composite_curve);
       WR1: SIZEOF(['GEOMETRIC_MODEL_SCHEMA.CIRCULAR_AREA', 'GEOMETRIC_MODEL_SCHEMA.ELLIPTIC_AREA', 'GEOMETRIC_MODEL_SCHEMA.RECTANGULAR_AREA',
         'GEOMETRIC_MODEL_SCHEMA.POLYGONAL_AREA', 'CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.COMPLEX_AREA'] * TYPEOF(SELF)) > 0;
       WR2: SIZEOF(QUERY(inner <* inner_boundary |
-        'CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.PRIMITIVE_2D_WITH_INNER_BOUNDARY' IN TYPEOF(inner))) = 0;      
+        'CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.PRIMITIVE_2D_WITH_INNER_BOUNDARY' IN TYPEOF(inner))) = 0;
+      WR3: open_path_based_inner_boundary(inner_boundary);
   END_ENTITY;
 
   ENTITY single_area_csg_2d_shape_representation
@@ -127,5 +155,47 @@ USE FROM geometry_schema (composite_curve);
   SUBTYPE_CONSTRAINT primitive_2d_subtypes FOR primitive_2d;
     ONEOF (elliptic_area, rectangular_area, polygonal_area, complex_area);
   END_SUBTYPE_CONSTRAINT;
+
+FUNCTION valid_csg_2d_primitives (input : csg_solid_2d) : BOOLEAN;
+CASE TRUE OF
+  ('GEOMETRIC_MODEL_SCHEMA.PRIMITIVE_2D' IN TYPEOF(input\csg_solid_2d.tree_root_expression)) :
+  BEGIN
+    IF (SIZEOF(['GEOMETRIC_MODEL_SCHEMA.CIRCULAR_AREA', 
+       'CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.COMPLEX_AREA',
+       'GEOMETRIC_MODEL_SCHEMA.ELLIPTIC_AREA',
+       'GEOMETRIC_MODEL_SCHEMA.POLYGONAL_AREA',
+       'CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.PRIMITIVE_2D_WITH_INNER_BOUNDARY',
+       'GEOMETRIC_MODEL_SCHEMA.RECTANGULAR_AREA'] * TYPEOF(input\csg_solid_2d.tree_root_expression)) > 0)
+    THEN 
+           RETURN(TRUE);
+    ELSE
+           RETURN(FALSE);
+    END_IF;
+  END;
+
+  ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.BOOLEAN_RESULT_2D' IN TYPEOF(input\csg_solid_2d.tree_root_expression)) : 
+    RETURN (valid_csg_2d_primitives(input\csg_solid_2d.tree_root_expression\boolean_result_2d.first_operand) 
+        AND valid_csg_2d_primitives(input\csg_solid_2d.tree_root_expression\boolean_result_2d.second_operand));
+
+  ('GEOMETRIC_MODEL_SCHEMA.HALF_SPACE_2D' IN TYPEOF(input\csg_solid_2d.tree_root_expression)) : RETURN(TRUE);
+
+  OTHERWISE : RETURN(FALSE);
+END_CASE;
+END_FUNCTION;
+
+
+FUNCTION open_path_based_inner_boundary (input : SET OF primitive_2d) : BOOLEAN;
+  LOCAL
+   pass : BOOLEAN := TRUE;
+  END_LOCAL;
+  REPEAT i := 1 TO SIZEOF(input);
+      IF ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.PATH_AREA_WITH_PARAMETERS' IN TYPEOF(input[i]))
+        AND ('BASIC_CURVE_MIM.CLOSED_CURVE' IN TYPEOF(input[i]\mapped_item.mapping_source))
+      THEN
+       pass := FALSE;
+      END_IF;
+  END_REPEAT;
+  RETURN(pass);                  
+END_FUNCTION;
 
 END_SCHEMA;

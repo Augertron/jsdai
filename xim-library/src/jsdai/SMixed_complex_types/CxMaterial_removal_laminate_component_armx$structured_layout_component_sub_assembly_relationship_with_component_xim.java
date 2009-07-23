@@ -86,7 +86,7 @@ public class CxMaterial_removal_laminate_component_armx$structured_layout_compon
 		return (EProduct_definition_formation)a8;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a8 = set_instance(a8, value);
+		a8 = set_instanceX(a8, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
 		a8 = unset_instance(a8);
@@ -107,7 +107,7 @@ public class CxMaterial_removal_laminate_component_armx$structured_layout_compon
 		return (jsdai.SApplication_context_schema.EProduct_definition_context)a9;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a9 = set_instance(a9, value);
+		a9 = set_instanceX(a9, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
 		a9 = unset_instance(a9);
@@ -147,7 +147,7 @@ public class CxMaterial_removal_laminate_component_armx$structured_layout_compon
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a21 = set_instance(a21, value);
+		a21 = set_instanceX(a21, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
@@ -192,7 +192,7 @@ public class CxMaterial_removal_laminate_component_armx$structured_layout_compon
 		return (EProduct_definition)get_instance(a13);
 	}*/
 	public void setRelating_product_definition(EProduct_definition_relationship type, EProduct_definition value) throws SdaiException {
-		a13 = set_instance(a13, value);
+		a13 = set_instanceX(a13, value);
 	}
 	public void unsetRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
 		a13 = unset_instance(a13);
@@ -215,7 +215,7 @@ public class CxMaterial_removal_laminate_component_armx$structured_layout_compon
 		return (jsdai.SProduct_definition_schema.EProduct_definition)get_instance(a8);
 	}
 	public void setOccurrence(EProduct_definition_occurrence_relationship type, jsdai.SProduct_definition_schema.EProduct_definition value) throws SdaiException {
-		a8 = set_instance(a8, value);
+		a8 = set_instanceX(a8, value);
 	}
 	public void unsetOccurrence(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		a8 = unset_instance(a8);
@@ -296,7 +296,7 @@ public class CxMaterial_removal_laminate_component_armx$structured_layout_compon
 	}
 
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a12 = set_instance(a12, value);
+		a12 = set_instanceX(a12, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

@@ -40,6 +40,8 @@ USE FROM product_property_definition_schema(
 
 USE FROM product_property_representation_schema(property_definition_representation);
 
+USE FROM geometry_schema(cartesian_point);
+
 USE FROM support_resource_schema(
 	identifier, 
 	label,
@@ -49,7 +51,8 @@ TYPE property_assignment_select = EXTENSIBLE SELECT;
 END_TYPE; 
 
 TYPE property_value_select = SELECT
-  (measure_with_unit,
+  (cartesian_point, -- Added on demand by CAX-IF file
+  measure_with_unit,
   text);
 END_TYPE; 
 
@@ -59,9 +62,9 @@ ENTITY Applied_independent_property
 DERIVE
   SELF\Property_definition.name : STRING := base_independent_property.name;
 END_ENTITY;
-(** Made it ABSTRACT in order to minimize wrong hits on the mapping *)
+
 ENTITY Assigned_property
-	(* CONNOTATIONAL *)ABSTRACT SUBTYPE OF (Property_definition);
+	(* CONNOTATIONAL *)SUBTYPE OF (property_definition);
   	id_x : OPTIONAL STRING;
   	SELF\property_definition.definition RENAMED described_element : property_assignment_select;
   	(** Added in XIMs only in order to simplify model and avoid property_representation, representation, etc. **)

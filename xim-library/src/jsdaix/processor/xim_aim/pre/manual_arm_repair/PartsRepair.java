@@ -26,13 +26,16 @@ package jsdaix.processor.xim_aim.pre.manual_arm_repair;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import jsdai.SPart_and_version_identification_xim.CPart;
 import jsdai.SPart_and_version_identification_xim.EPart;
 import jsdai.SProduct_identification_xim.CProduct_armx;
 import jsdai.SProduct_identification_xim.EProduct_armx;
 import jsdai.lang.AEntity;
 import jsdai.lang.ASdaiModel;
+import jsdai.lang.EEntity;
 import jsdai.lang.SdaiException;
 import jsdai.lang.SdaiIterator;
+import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * @author evita
@@ -54,7 +57,7 @@ import jsdai.lang.SdaiIterator;
  */
 public class PartsRepair {
 	
-	public static void run(ASdaiModel models) throws SdaiException {
+	public static void run(ASdaiModel models, Importer importer) throws SdaiException {
 		AEntity products = models.getExactInstances(CProduct_armx.class);
 		ArrayList productList = new ArrayList(); 
 		for (SdaiIterator it = products.createIterator(); it.next(); ) {
@@ -64,7 +67,9 @@ public class PartsRepair {
 		
 		for (Iterator it = productList.iterator(); it.hasNext(); ) {
 			EProduct_armx product = (EProduct_armx) it.next();
-			product.findEntityInstanceSdaiModel().substituteInstance(product, EPart.class);
+			String message = " Changed "+product;
+			EEntity instance = product.findEntityInstanceSdaiModel().substituteInstance(product, CPart.definition);
+			importer.logMessage(message+" to "+instance);
 		}
 	}
 }

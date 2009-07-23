@@ -43,12 +43,12 @@ public class CxComponent_3d_location_armx extends CComponent_3d_location_armx im
 
 	// From RR
 	/// methods for attribute: name, base type: STRING
-	public boolean testName(ERepresentation_relationship type) throws SdaiException {
+/*	public boolean testName(ERepresentation_relationship type) throws SdaiException {
 		return test_string(a2);
 	}
 	public String getName(ERepresentation_relationship type) throws SdaiException {
 		return get_string(a2);
-	}
+	}*/
 	public void setName(ERepresentation_relationship type, String value) throws SdaiException {
 		a2 = set_string(value);
 	}

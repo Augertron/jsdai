@@ -66,10 +66,10 @@ LOCAL
   ndea_set : SET OF Effectivity_assignment := [];
 END_LOCAL;
   ndea_set := QUERY(ea <* Effectivity_assignment | 
-	NOT ('SPECIFICATION_BASED_CONFIGURATION_ARM.DATED_EFFECTIVITY' IN TYPEOF(ea.assigned_effectivity)));
+	NOT ('SPECIFICATION_BASED_CONFIGURATION_XIM.DATED_EFFECTIVITY' IN TYPEOF(ea.assigned_effectivity)));
 WHERE
   WR1: SIZEOF(QUERY(ea <* ndea_set | 
-		(SIZEOF(['SPECIFICATION_BASED_CONFIGURATION_ARM.CONFIGURATION']*type_of_set(ea.items))>0) )) =0;
+		(SIZEOF(['SPECIFICATION_BASED_CONFIGURATION_XIM.CONFIGURATION']*type_of_set(ea.items))>0) )) =0;
 END_RULE;
 
 FUNCTION type_of_set(items: SET OF GENERIC_ENTITY): SET OF STRING;
@@ -84,7 +84,7 @@ RETURN(result);
 END_FUNCTION;
 
 FUNCTION consistent_configuration_type(config: Configuration): BOOLEAN;
-IF ('SPECIFICATION_BASED_CONFIGURATION_ARM.CLASS_CONDITION_ASSOCIATION' IN TYPEOF(config.is_solution_for)) THEN
+IF ('SPECIFICATION_BASED_CONFIGURATION_XIM.CLASS_CONDITION_ASSOCIATION' IN TYPEOF(config.is_solution_for)) THEN
   IF config.configuration_type = configuration_kind.usage THEN
     RETURN(config.is_solution_for\Class_condition_association.condition_type ='part usage');
   ELSE
@@ -92,7 +92,7 @@ IF ('SPECIFICATION_BASED_CONFIGURATION_ARM.CLASS_CONDITION_ASSOCIATION' IN TYPEO
   END_IF;
 END_IF;
 
-IF ('SPECIFICATION_BASED_CONFIGURATION_ARM.CLASS_SPECIFICATION_ASSOCIATION' IN TYPEOF(config.is_solution_for)) THEN
+IF ('SPECIFICATION_BASED_CONFIGURATION_XIM.CLASS_SPECIFICATION_ASSOCIATION' IN TYPEOF(config.is_solution_for)) THEN
   IF config.configuration_type = configuration_kind.usage THEN
     RETURN(config.is_solution_for\Class_specification_association.association_type ='part usage');
   ELSE 

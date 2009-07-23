@@ -84,7 +84,6 @@ END_TYPE;
 TYPE ap210_pdm_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON pdm_documented_element_select WITH 
    (external_source_identification,
     material_designation,
-    Product_category,
     Product_view_definition,
     Representation_item);
 END_TYPE; 
@@ -98,9 +97,9 @@ TYPE design_pdm_information_usage_right_item = EXTENSIBLE GENERIC_ENTITY SELECT 
     design_pdm_certification_item, 
     Characterizable_object);
 WHERE
-  WR1: SIZEOF(['INFORMATION_RIGHTS_ARM.INFORMATION_RIGHT',
-               'INFORMATION_RIGHTS_ARM.INFORMATION_USAGE_RIGHT',
-               'INFORMATION_RIGHTS_ARM.INFORMATION_USAGE_RIGHT_RELATIONSHIP'] * TYPEOF(SELF)) = 0;
+  WR1: SIZEOF(['INFORMATION_RIGHTS_XIM.INFORMATION_RIGHT',
+               'INFORMATION_RIGHTS_XIM.INFORMATION_USAGE_RIGHT',
+               'INFORMATION_RIGHTS_XIM.INFORMATION_USAGE_RIGHT_RELATIONSHIP'] * TYPEOF(SELF)) = 0;
   END_TYPE; 
 *)
 (* It is available from MIM
@@ -171,9 +170,9 @@ RULE unique_product_view_definition_id FOR
 WHERE
   WR1:  SIZEOF(QUERY (pv <* product_definition_formation | 
    (SIZEOF (QUERY (pvd1 <*
-USEDIN(pv,'PRODUCT_VIEW_DEFINITION_ARM.PRODUCT_VIEW_DEFINITION.DEFINED_VERSION') |  
+USEDIN(pv,'PRODUCT_VIEW_DEFINITION_XIM.PRODUCT_VIEW_DEFINITION.DEFINED_VERSION') |  
      (SIZEOF (QUERY (pvd2 <*
-USEDIN(pv,'PRODUCT_VIEW_DEFINITION_ARM.PRODUCT_VIEW_DEFINITION.DEFINED_VERSION')
+USEDIN(pv,'PRODUCT_VIEW_DEFINITION_XIM.PRODUCT_VIEW_DEFINITION.DEFINED_VERSION')
 |  pvd1.id = pvd2.id)) > 1)
      )) > 0)
    )) = 0;  

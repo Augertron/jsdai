@@ -49,9 +49,11 @@ import jsdai.lang.*;
 
 public final class ConformanceOptionsGenerator {
 /* Remove this comment if you want to use this class
-	private static final String REPOSITORY_NAME = "ExpressCompilerRepo";
-	private static final String ARM_REPOSITORY_LOCATION = "D:\\workspace\\stepmod_LKSOFT\\modules\\stepmod\\build_arm2\\repositories\\ExpressCompilerRepo.sdai";
-	private static final String MIM_REPOSITORY_LOCATION = "D:\\workspace\\stepmod_LKSOFT\\modules\\stepmod\\build_aim2\\repositories\\ExpressCompilerRepo.sdai";
+	private static final String REPOSITORY_NAME = "ExpressCompilerRepo3";
+	private static final String ARM_REPOSITORY_LOCATION = "D:\\workspace\\stepmod_LKSOFT\\modules\\stepmod\\build_arm2\\repositories\\ExpressCompilerRepo2.sdai";
+	private static final String MIM_REPOSITORY_LOCATION = "D:\\workspace\\stepmod_LKSOFT\\modules\\stepmod\\build_aim2\\repositories\\ExpressCompilerRepo3.sdai";
+	static SdaiRepository reposARM = null;
+	static SdaiRepository reposMIM = null;
 	private static Map<String, List> armEntityNameToCCO;
 	private static Map<String, List> mimEntityNameToCCO;
 	private static Map<String, ConformanceOption> coIdToCO;
@@ -319,22 +321,33 @@ public final class ConformanceOptionsGenerator {
 		Map<String, List> entityNameToCCO;
 		if(isARM){
 			schemaName = (moduleName+"_arm_dictionary_data").toUpperCase();
-			repos = session.linkRepository(REPOSITORY_NAME, ARM_REPOSITORY_LOCATION);
+			if(reposARM == null){
+				reposARM = repos = session.linkRepository(REPOSITORY_NAME, ARM_REPOSITORY_LOCATION);
+				repos.openRepository();
+			}else{
+				repos = reposARM;
+			}
 			entityNameToCCO = armEntityNameToCCO;
 		}else{
 			schemaName = (moduleName+"_mim_dictionary_data").toUpperCase();
-			repos = session.linkRepository(REPOSITORY_NAME, MIM_REPOSITORY_LOCATION);
+			if(reposMIM == null){
+				reposMIM = repos = session.linkRepository(REPOSITORY_NAME, MIM_REPOSITORY_LOCATION);
+				repos.openRepository();				
+			}else{
+				repos = reposMIM;
+			}
+			
 			entityNameToCCO = mimEntityNameToCCO;
 		}
-		
-		repos.openRepository();
-		// Process Module
+			// Process Module
 		SdaiModel topModel = repos.findSdaiModel(schemaName);
 		if(topModel == null){
 			System.err.println(" No schema found "+schemaName);
 			return;
 		}
-		topModel.startReadOnlyAccess();
+		if(topModel.getMode() != SdaiModel.READ_ONLY){			
+			topModel.startReadOnlyAccess();
+		}
 		AEntity_declaration declarations = (AEntity_declaration)topModel.getInstances(EEntity_declaration.class);
 		String completness = moduleNode.getAttribute("completness");
 		// Form a list of declarations to remove

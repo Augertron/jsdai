@@ -71,7 +71,7 @@ public class CxStratum_concept_to_physical_usage_view_assignment extends CStratu
 		return (EShape_aspect)a3;
 	}*/
 	public void setRelated_shape_aspect(EShape_aspect_relationship type, EShape_aspect value) throws SdaiException {
-		a3 = set_instance(a3, value);
+		a3 = set_instanceX(a3, value);
 	}
 	public void unsetRelated_shape_aspect(EShape_aspect_relationship type) throws SdaiException {
 		a3 = unset_instance(a3);
@@ -215,12 +215,8 @@ public class CxStratum_concept_to_physical_usage_view_assignment extends CStratu
 		if (armEntity.testAssigned_design_object(null)) {
 
 			EEntity armAssigned_design_object = armEntity.getAssigned_design_object(null);
-			// Cases 2, 3, 4, 6
-			if(armAssigned_design_object instanceof EShape_aspect){
-				armEntity.setRelated_shape_aspect(null, (EShape_aspect)armAssigned_design_object);
-			}
 			// Cases 1, 5
-			else if(armAssigned_design_object instanceof EProduct_definition_shape){
+			if(armAssigned_design_object instanceof EProduct_definition_shape){
 				// SA -> PDS
 				AShape_aspect asa = new AShape_aspect();
 				EProduct_definition_shape epds = (EProduct_definition_shape)armAssigned_design_object;
@@ -243,6 +239,9 @@ public class CxStratum_concept_to_physical_usage_view_assignment extends CStratu
 				}
 				// SAR -> SA
 				armEntity.setRelated_shape_aspect(null, suitableESA);
+			}			// Cases 2, 3, 4, 6
+			else if(armAssigned_design_object instanceof EShape_aspect){
+				armEntity.setRelated_shape_aspect(null, (EShape_aspect)armAssigned_design_object);
 			}
 			else
 				throw new SdaiException(SdaiException.ED_NVLD," this type is not supported here "+armEntity);

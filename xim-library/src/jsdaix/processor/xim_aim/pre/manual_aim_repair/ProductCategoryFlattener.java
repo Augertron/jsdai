@@ -42,17 +42,18 @@ import jsdai.lang.SchemaInstance;
 import jsdai.lang.SdaiException;
 import jsdai.lang.SdaiIterator;
 import jsdai.lang.SdaiRepository;
+import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * @author evita
  *
  * The main idea is that product->part (and subtypes) mapping searches directly for related
- * product_category with name "part" (or "raw materia" and others specific names). But in some cases 
+ * product_category with name "part" (or "raw material" and others specific names). But in some cases 
  * product category is not associated directly as:
  * 
  * 	product <- product_related_product_category.name="part"
  * 
- * but is associated indirectly throug product_category_relationship as:
+ * but is associated indirectly through product_category_relationship as:
  * 
  * 	product <- product_related_product_category <- product_category_relationship <- ... <- product category.name="part"
  * 
@@ -64,7 +65,7 @@ import jsdai.lang.SdaiRepository;
  */
 public class ProductCategoryFlattener {
 	
-	public static void run(ASdaiModel models) throws SdaiException {
+	public static void run(ASdaiModel models, Importer importer) throws SdaiException {
 		
 		HashMap categoriesWithParents = new HashMap();
 		
@@ -86,6 +87,7 @@ public class ProductCategoryFlattener {
 						((EProduct_related_product_category) superCategory).createProducts(null);
 					}
 					((EProduct_related_product_category) superCategory).getProducts(null).addUnordered(product); 
+					importer.logMessage(" Adding product "+product+" to category "+superCategory);
 				}
 			}
 		}

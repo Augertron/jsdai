@@ -110,7 +110,7 @@ public class CxStratum_armx extends CStratum_armx implements EMappedXIMEntity
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a8 = set_instance(a8, value);
+		a8 = set_instanceX(a8, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

@@ -83,7 +83,7 @@ public class CxMulti_stratum_printed_part_template_armx$stratum_stack_dependent_
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a11 = set_instance(a11, value);
+		a11 = set_instanceX(a11, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

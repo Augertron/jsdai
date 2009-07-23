@@ -21,7 +21,7 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.SInterconnect_module_connection_routing_xim;
+package jsdai.SLayered_interconnect_module_design_xim;
 
 /**
  * 
@@ -32,7 +32,6 @@ package jsdai.SInterconnect_module_connection_routing_xim;
 import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.util.LangUtils;
-import jsdai.SLayered_interconnect_module_design_xim.*;
 import jsdai.SGeneric_product_occurrence_xim.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;

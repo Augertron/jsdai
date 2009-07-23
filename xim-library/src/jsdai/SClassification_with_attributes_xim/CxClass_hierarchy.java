@@ -59,12 +59,12 @@ public class CxClass_hierarchy extends CClass_hierarchy implements EMappedXIMEnt
 	}
 
 	/// methods for attribute: description, base type: STRING
-	public boolean testDescription(EGroup_relationship type) throws SdaiException {
+/*	public boolean testDescription(EGroup_relationship type) throws SdaiException {
 		return test_string(a1);
 	}
 	public String getDescription(EGroup_relationship type) throws SdaiException {
 		return get_string(a1);
-	}
+	}*/
 	public void setDescription(EGroup_relationship type, String value) throws SdaiException {
 		a1 = set_string(value);
 	}

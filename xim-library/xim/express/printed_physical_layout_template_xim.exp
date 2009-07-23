@@ -174,11 +174,7 @@ END_SUBTYPE_CONSTRAINT;
       INVERSE
         access_mechanisms : SET [1:?] OF Printed_part_template_terminal_armx FOR containing_shape;
       WHERE
-        WR1: (SIZEOF(QUERY(prpc <* USEDIN(defined_version.of_product,
-            'PRODUCT_IDENTIFICATION_XIM.PRODUCT_CATEGORY_ASSIGNMENT.PRODUCTS')
-              | (prpc.category\Product_category.name = 'printed part'))) >= 0) OR 
-            ('LAYOUT_MACRO_DEFINITION_XIM.LAYOUT_MACRO_FLOOR_PLAN_TEMPLATE' IN TYPEOF(SELF));
-        WR2 : NOT EXISTS(SELF\Product_view_definition.name);
+        WR1 : NOT EXISTS(SELF\Product_view_definition.name);
   END_ENTITY;
 
   ENTITY Printed_part_template_connected_terminals_definition_armx
@@ -290,12 +286,12 @@ END_SUBTYPE_CONSTRAINT;
           )) = SIZEOF(passage_component_location));
         WR4: SIZEOF(QUERY(t <* SELF\Structured_template.templates | 'LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_XIM.STRATUM_FEATURE_TEMPLATE' IN TYPEOF(t\Template_location_in_structured_template.template))) > 0;
         WR5: SIZEOF(QUERY(spptt <* SELF\Printed_part_template.access_mechanisms | 
-          NOT(SIZEOF(USEDIN(spptt,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION.CONNECTED_TERMINALS')) = 1)
+          NOT(SIZEOF(USEDIN(spptt,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION.CONNECTED_TERMINALS')) = 1)
           )) = 0;
         WR6: SIZEOF(QUERY(spptt1 <* SELF\Printed_part_template.access_mechanisms |
           NOT(SIZEOF(QUERY(spptt2 <* SELF\Printed_part_template.access_mechanisms | 
-          (bag_to_set(USEDIN(spptt1,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION.CONNECTED_TERMINALS')) =
-          bag_to_set(USEDIN(spptt2,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION.CONNECTED_TERMINALS'))))) 
+          (bag_to_set(USEDIN(spptt1,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION.CONNECTED_TERMINALS')) =
+          bag_to_set(USEDIN(spptt2,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION.CONNECTED_TERMINALS'))))) 
           = SIZEOF(SELF\Printed_part_template.access_mechanisms)))) = 0;
         WR7: SIZEOF(QUERY(tl <* terminal_location |
           (SIZEOF(QUERY(pcl <* passage_component_location |

@@ -25,9 +25,13 @@ package jsdaix.processor.xim_aim.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import jsdai.dictionary.ADeclaration;
+import jsdai.dictionary.AEntity_definition;
 import jsdai.dictionary.CEntity_declaration;
 import jsdai.dictionary.EEntity_definition;
 import jsdai.lang.AEntity;
@@ -45,19 +49,13 @@ import jsdai.lang.SdaiSession;
  */
 public class Utilities {
 	
+	private Utilities() {}
+	
 	public static List findInconsistentEntities(AEntity instances, String schemaName) throws SdaiException {
 		List inconsistentEntities = new ArrayList(); 
-		ASdaiModel domain = new ASdaiModel();
 		HashMap testedDefinitions = new HashMap();
-		
-		SdaiRepository systemRepo = SdaiSession.getSession().getSystemRepository();
-		SdaiModel systemModel = systemRepo.findSdaiModel(String.valueOf(schemaName + "_DICTIONARY_DATA").toUpperCase());
-		
-		if (systemModel.getMode() == SdaiModel.NO_ACCESS) {
-			systemModel.startReadOnlyAccess();
-		}
-		
-		domain.addUnordered(systemModel, null);
+
+		ASdaiModel domain = getSystemDomain(schemaName);
 		
 		SdaiIterator it = instances.createIterator();
 		while (it.next()) {
@@ -70,17 +68,7 @@ public class Utilities {
 				// still not checked ..
 				// check for availability of eDefinition
 
-				ADeclaration usedBySchema = new ADeclaration();
-				CEntity_declaration.usedinDefinition(null, eDef, domain, usedBySchema);
-
-				if (usedBySchema.getMemberCount() > 0) {
-					// add to map as compatible entity definition
-					wasConsistent = new Boolean(true);
-				}
-				else {
-					// add to map as not compatible entity definition
-					wasConsistent = new Boolean(false);
-				}
+				wasConsistent = Boolean.valueOf(isTypeConsistent(domain, eDef));
 				testedDefinitions.put(eDef, wasConsistent);
 			}
 
@@ -92,4 +80,80 @@ public class Utilities {
 		
 		return inconsistentEntities;
 	}
+
+	/**
+	 * Returns <code>Set</code> of non-abstract <code>EEntity_definition</code>s that are supertypes
+	 * of the specified entity definition and are declared in the specified schema. If the
+	 * specified entity definition is itself declared in the specified schema, then the
+	 * returned <code>Set</code> will contain it as an only element.
+	 * 
+	 * @param schemaName specified schema name.
+	 * @param eInputType specified entity definition.
+	 * @return <code>Set</code> of non-abstract <code>EEntity_definition</code>s.
+	 * @throws SdaiException
+	 */
+	public static Set getConsistentTypes(String schemaName,
+		EEntity_definition eInputType) throws SdaiException {
+		
+		if (schemaName == null) {
+			throw new IllegalArgumentException();
+		}
+		if (eInputType == null) {
+			throw new IllegalArgumentException();
+		}
+		
+		ASdaiModel domain = getSystemDomain(schemaName);
+		if (domain == null) {
+			throw new IllegalArgumentException();
+		}
+
+		Set consistentTypes = new HashSet();
+		Set uncheckedTypes = new HashSet();
+		uncheckedTypes.add(eInputType);
+		while (uncheckedTypes.size() > 0) {
+			Iterator iterator = uncheckedTypes.iterator();
+			EEntity_definition eDef = (EEntity_definition) iterator.next();
+			iterator.remove();
+
+			if (isTypeConsistent(domain, eDef)) {
+				if (!eDef.getAbstract_entity(null)) {
+					consistentTypes.add(eDef);
+				}
+			} else {
+				AEntity_definition aSupertypes = eDef.getSupertypes(null);
+				for (SdaiIterator i = aSupertypes.createIterator(); i.next();) {
+					EEntity_definition eSupertype = aSupertypes.getCurrentMember(i);
+					if (!consistentTypes.contains(eSupertype)) {
+						uncheckedTypes.add(eSupertype);
+					}
+				}
+			}
+		}
+		
+		return consistentTypes;
+	}
+
+	private static boolean isTypeConsistent(ASdaiModel domain, EEntity_definition eDef) throws SdaiException {
+		ADeclaration usedBySchema = new ADeclaration();
+		CEntity_declaration.usedinDefinition(null, eDef, domain, usedBySchema);
+		return usedBySchema.getMemberCount() > 0;
+	}
+	
+	private static ASdaiModel getSystemDomain(String schemaName) throws SdaiException {
+
+		ASdaiModel domain = new ASdaiModel();
+		SdaiRepository systemRepo = SdaiSession.getSession().getSystemRepository();
+		SdaiModel systemModel = systemRepo.findSdaiModel(
+			String.valueOf(schemaName + "_DICTIONARY_DATA").toUpperCase());
+		if (systemModel == null) {
+			return null;
+		}
+		if (systemModel.getMode() == SdaiModel.NO_ACCESS) {
+			systemModel.startReadOnlyAccess();
+		}
+
+		domain.addUnordered(systemModel, null);
+		return domain;
+	}
+
 }

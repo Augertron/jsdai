@@ -34,5 +34,57 @@ USE FROM Area_2d_xim;	-- ISO/TS 10303-1004
 
 USE FROM Constructive_solid_geometry_2d_mim;
 
+USE FROM support_resource_schema(label);
+
+  TYPE extend_or_chord_2_extend_or_truncate_or_round = ENUMERATION OF
+    (truncate,
+     chord_2_extend,
+     round,
+     extend);
+  END_TYPE;
+
+  TYPE extend_or_truncate = ENUMERATION OF
+    (truncate,
+     extend);
+  END_TYPE;
+
+  TYPE square_or_round = ENUMERATION OF
+    (square,
+     round);
+  END_TYPE;
+
+  ENTITY Curve_style_parameters
+  	ABSTRACT SUPERTYPE OF(ONEOF(Closed_curve_style_parameters_armx, Curve_style_parameters_with_ends_armx))
+  	(* CONNOTATIONAL *) SUBTYPE OF (curve_style_parameters_representation);
+	  name_x            : STRING;
+      corner_style      : extend_or_chord_2_extend_or_truncate_or_round;
+      curve_width       : length_measure_with_unit;
+      width_uncertainty : Length_measure_with_unit;
+    DERIVE
+      SELF\representation.name : label := ?;
+      SELF\representation.items : SET [1:?] OF representation_item := ?;
+      SELF\representation.context_of_items : representation_context := ?;
+    UNIQUE
+      UR1 : name_x;
+  END_ENTITY;
+
+  ENTITY Closed_curve_style_parameters_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Curve_style_parameters, closed_curve_style_parameters);
+  END_ENTITY;
+
+  ENTITY Curve_style_parameters_with_ends_armx
+    SUBTYPE OF (Curve_style_parameters, curve_style_parameters_with_ends);
+      end_extension     : extend_or_truncate;
+      end_style         : square_or_round;
+  END_ENTITY;
+
+  ENTITY path_area_with_parameters_armx
+    SUBTYPE OF (path_area_with_parameters);
+      SELF\mapped_item.mapping_target RENAMED centreline : curve;
+      parameters : Curve_style_parameters;
+    DERIVE
+      SELF\mapped_item.mapping_source : representation_map := ?;
+  END_ENTITY; 
+
 END_SCHEMA;  -- Constructive_solid_geometry_2d_xim
 

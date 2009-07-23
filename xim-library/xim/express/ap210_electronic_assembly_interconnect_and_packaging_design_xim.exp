@@ -62,6 +62,7 @@ SCHEMA Ap210_electronic_assembly_interconnect_and_packaging_design_xim;
 	USE FROM Test_requirement_allocation_xim;	-- ISO/TS 10303-1751
 	USE FROM Thermal_network_definition_xim;	-- ISO/TS 10303-1752
 	USE FROM Via_component_xim;	-- ISO/TS 10303-1754
+	USE FROM Interconnect_physical_requirement_allocation_xim; -- ISO/TS 10303-1689	
 
 USE FROM drawing_definition_mim; -- 1309
 
@@ -170,7 +171,6 @@ TYPE ap210_managed_design_object_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_O
  Component_group_assignment,
  Component_make_from_relationship,
  Component_mounting_clearance_relationship,
- Component_non_planar_location,
  Component_overlap_relationship,
  Component_placement_restriction_assignment,
  Component_to_physical_usage_view_assignment,
@@ -223,8 +223,6 @@ TYPE ap210_managed_design_object_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_O
  Document_definition,
  material_designation,
  Product,
- Product_category,
- Product_category_hierarchy,
  configuration_item,
  Product_definition,
  Product_concept,
@@ -486,60 +484,22 @@ Most likely it should be defined in Interconnect_module CC *)
 	 Pre_defined_parallel_datum_axis_symbol_3d_2d_relationship_armx));
  END_SUBTYPE_CONSTRAINT;  
 
-RULE non_conductive_cross_section_template_population_constraint FOR
-    (Template_definition);
+RULE area_component_shape_constraint FOR
+    (Area_component_armx);
 WHERE
-  WR1:  SIZEOF( QUERY( td <* Template_definition |
-('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.NON_CONDUCTIVE_CROSS_SECTION_TEMPLATE_ARMX' IN TYPEOF(td))
+  WR1:  SIZEOF( QUERY( ac <* Area_component_armx |
+            NOT(SIZEOF (QUERY (ac2ds <* USEDIN(ac,'PHYSICAL_UNIT_2D_DESIGN_VIEW_XIM.ASSEMBLY_COMPONENT_2D_SHAPE_MODEL.SHAPE_CHARACTERIZED_COMPONENT') |
+              NOT('CONSTRUCTIVE_SOLID_GEOMETRY_2D_XIM.SINGLE_AREA_CSG_2D_MODEL' IN TYPEOF(ac2ds))
+                )) = 0)
               )) = 0;
+  WR2:  SIZEOF( QUERY( ac <* Area_component_armx |
+          NOT(ac\Area_component_armx.is_base) OR
+            NOT(SIZEOF (QUERY (ac2ds <* USEDIN(ac,'PHYSICAL_UNIT_2D_DESIGN_VIEW_XIM.ASSEMBLY_COMPONENT_2D_SHAPE_MODEL.SHAPE_CHARACTERIZED_COMPONENT') |
+              NOT('CONSTRUCTIVE_SOLID_GEOMETRY_2D_XIM.SINGLE_BOUNDARY_CSG_2D_MODEL' IN TYPEOF(ac2ds))
+                )) = 0)
+              )) = 0;              
 END_RULE;
 
-RULE printed_part_cross_section_template_population_constraint FOR
-    (Template_definition);
-WHERE
-  WR1:  SIZEOF( QUERY( td <* Template_definition |
-('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.PRINTED_PART_CROSS_SECTION_TEMPLATE_ARMX' IN TYPEOF(td))
-              )) = 0;
-END_RULE;
-
-RULE printed_part_cross_section_template_terminal_population_constraint FOR
-    (Printed_part_template_terminal_armx);
-WHERE
-  WR1:  SIZEOF( QUERY( pptt <* Printed_part_template_terminal_armx |
-('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.PRINTED_PART_CROSS_SECTION_TEMPLATE_TERMINAL_ARMX' IN TYPEOF(pptt))
-              )) = 0;
-END_RULE;
-
-RULE printed_part_template_material_population_constraint FOR
-    (Printed_part_template_material_armx);
-WHERE
-  WR1:  SIZEOF(Printed_part_template_material_armx) = 0;
-END_RULE;
-
-RULE printed_part_template_material_link_population_constraint FOR
-    (Printed_part_template_material_link_armx);
-WHERE
-  WR1:  SIZEOF(Printed_part_template_material_link_armx) = 0;
-END_RULE;
-
-RULE template_material_cross_section_boundary_population_constraint FOR
-    (Template_material_cross_section_boundary_armx);
-WHERE
-  WR1:  SIZEOF(Template_material_cross_section_boundary_armx) = 0;
-END_RULE;
-
-TYPE aitc_ee_product_definition_with_annotation_elements = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ee_product_definition_with_annotation_elements WITH 
-   	(Part_usage_view);
-END_TYPE; 
-
-TYPE apupc_analytical_model_port_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON analytical_model_port_assignment_select WITH  
-	(Part_feature);
-END_TYPE;
-
-TYPE apupc_ee_product_definition_with_annotation_elements = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ee_product_definition_with_annotation_elements WITH 
-   	(Part_usage_view);
-END_TYPE; 
-  
 RULE Physical_unit_network_definition_constraint FOR 
 (Physical_unit_network_definition_armx);
 WHERE

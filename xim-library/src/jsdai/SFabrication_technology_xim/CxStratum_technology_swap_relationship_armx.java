@@ -94,7 +94,7 @@ public class CxStratum_technology_swap_relationship_armx extends CStratum_techno
 		return (jsdai.SProduct_property_definition_schema.EProperty_definition)get_instance(a2);
 	}*/
 	public void setRelating_property_definition(EProperty_definition_relationship type, jsdai.SProduct_property_definition_schema.EProperty_definition value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetRelating_property_definition(EProperty_definition_relationship type) throws SdaiException {
 		a2 = unset_instance(a2);
@@ -114,7 +114,7 @@ public class CxStratum_technology_swap_relationship_armx extends CStratum_techno
 		return (jsdai.SProduct_property_definition_schema.EProperty_definition)get_instance(a3);
 	}*/
 	public void setRelated_property_definition(EProperty_definition_relationship type, jsdai.SProduct_property_definition_schema.EProperty_definition value) throws SdaiException {
-		a3 = set_instance(a3, value);
+		a3 = set_instanceX(a3, value);
 	}
 	public void unsetRelated_property_definition(EProperty_definition_relationship type) throws SdaiException {
 		a3 = unset_instance(a3);

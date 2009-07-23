@@ -21,7 +21,7 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.SLayered_interconnect_simple_template_xim;
+package jsdai.SConstructive_solid_geometry_2d_xim;
 
 /**
 * @author Giedrius Liutkus
@@ -31,8 +31,8 @@ package jsdai.SLayered_interconnect_simple_template_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
+import jsdai.SConstructive_solid_geometry_2d_mim.CPath_area_with_parameters;
 import jsdai.SMeasure_schema.ELength_measure_with_unit;
-import jsdai.SLayered_interconnect_simple_template_mim.CPath_area_with_parameters;
 import jsdai.SRepresentation_schema.ARepresentation_item;
 import jsdai.SRepresentation_schema.ARepresentation_map;
 import jsdai.SRepresentation_schema.CRepresentation_map;
@@ -62,7 +62,7 @@ public class CxPath_area_with_parameters_armx extends CPath_area_with_parameters
 		return (ERepresentation_map)a1;
 	}*/
 	public void setMapping_source(EMapped_item type, ERepresentation_map value) throws SdaiException {
-		a1 = set_instance(a1, value);
+		a1 = set_instanceX(a1, value);
 	}
 	public void unsetMapping_source(EMapped_item type) throws SdaiException {
 		a1 = unset_instance(a1);

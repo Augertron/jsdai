@@ -21,7 +21,7 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.SRequirement_decomposition_xim;
+package jsdai.SRequirement_view_definition_relationship_xim;
 
 /**
 * @author Giedrius Liutkus
@@ -30,7 +30,7 @@ package jsdai.SRequirement_decomposition_xim;
 */
 
 import jsdai.SProduct_definition_schema.EProduct_definition_relationship;
-import jsdai.SRequirement_decomposition_mim.CRequirement_view_definition_relationship;
+import jsdai.SRequirement_view_definition_relationship_mim.CRequirement_view_definition_relationship;
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
 

@@ -28,6 +28,7 @@ import java.io.PrintStream;
 
 import jsdai.SAction_schema.CAction_method_relationship;
 import jsdai.SApplication_context_schema.CProduct_context;
+import jsdai.SApproval_schema.CApproval_role;
 import jsdai.SBasic_attribute_schema.CDescription_attribute;
 import jsdai.SBasic_attribute_schema.CId_attribute;
 import jsdai.SBasic_attribute_schema.CName_attribute;
@@ -59,11 +60,9 @@ import jsdai.SQualified_measure_schema.CType_qualifier;
 import jsdai.SRepresentation_schema.CItem_defined_transformation;
 import jsdai.SRepresentation_schema.CParametric_representation_context;
 import jsdai.SRepresentation_schema.CRepresentation_item;
-import jsdai.SRepresentation_schema.CRepresentation_relationship;
 import jsdai.SRequirement_assignment_mim.CAssigned_requirement;
 import jsdai.SRequirement_assignment_mim.CRequirement_assigned_object;
 import jsdai.SShape_parameters_mim.CKeepout_design_object_category;
-import jsdai.SShape_property_assignment_xim.CShape_element;
 import jsdai.dictionary.EEntity_definition;
 import jsdai.lang.ASdaiModel;
 import jsdai.lang.SchemaInstance;
@@ -79,6 +78,8 @@ import jsdaix.processor.xim_aim.pre.manual_aim_repair.DocumentRepair;
 import jsdaix.processor.xim_aim.pre.manual_aim_repair.Item_defined_transformationRepair;
 import jsdaix.processor.xim_aim.pre.manual_aim_repair.ProductCategoryFlattener;
 import jsdaix.processor.xim_aim.pre.manual_aim_repair.RolesRepair;
+import jsdaix.processor.xim_aim.pre.manual_aim_repair.StylingModelRepair;
+import jsdaix.processor.xim_aim.pre.manual_aim_repair.ValueRangeFixer;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.AIMGarbageCleaner;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.AP210SpecificGarbageCleaner;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.AssemblyRepair;
@@ -87,6 +88,14 @@ import jsdaix.processor.xim_aim.pre.manual_arm_repair.DefinitionsRepair;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.FakedMappingCleaner;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.MRIDowngrader;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.PartsRepair;
+import jsdaix.processor.xim_aim.pre.manual_arm_repair.RepresentationRelationshipRepair;
+import jsdaix.processor.xim_aim.pre.manual_arm_repair.ShapeAspectRelationshipCleaner;
+
+
+// RR
+import java.io.*;
+import java.util.Properties;
+import jsdai.util.UtilMonitor;
 
 /**
  * Author Giedrius Liutkus
@@ -101,14 +110,32 @@ import jsdaix.processor.xim_aim.pre.manual_arm_repair.PartsRepair;
  */
 public class Importer {
 
+
+  // RR - perhaps don't have to be here (or at all - for debugging for now, but perhaps will be used permanently)
+	static PrintStream pout, perr;
+	static BufferedOutputStream bout, berr;
+	static FileOutputStream fout, ferr;
+
+
 	/**
 	 *	Log stream
 	 */
 	protected PrintStream outputLog = null;
 	
+	public static final String messagePrefix = "MIM2XIM Healing:";
+	
+	SdaiSession session;
+	
+	public void logMessage(String message)throws SdaiException{
+		session.printlnSession(message);
+	}
+
+	public void errorMessage(String message)throws SdaiException{
+		session.printlnSession(messagePrefix+message);
+	}
+	
 	private final EEntity_definition[] typesToRemove = {
-			CShape_aspect_relationship.definition,
-			CRepresentation_relationship.definition,
+			// CRepresentation_relationship.definition,
 			CProduct_definition_relationship.definition,
 			CShape_aspect.definition,
 			CProperty_definition_representation.definition,
@@ -141,10 +168,11 @@ public class Importer {
 			// At least in AP210 context it is impossible to distinguish this from garbage
 	//				CItem_shape.definition,
 			CItem_defined_transformation.definition,
-			CShape_element.definition,
-	//IDA					CShape_representation.definition,
+	//IDA		CShape_element.definition,
+	//IDA		CShape_representation.definition,
 			CRole_association.definition,			
 			CObject_role.definition,
+			CApproval_role.definition,
 			CGeneral_property_association.definition,
 			
 			// Cpart_view_definition.definition,
@@ -193,14 +221,14 @@ public class Importer {
 		SdaiTransaction transaction = importer.startTransactionReadWriteAccess(session);
 
 		SdaiRepository repo = session.importClearTextEncoding("", stepFileName, null);
-		session.printlnSession(" Importing time is "+(System.currentTimeMillis()-time)/1000+" seconds");
+		importer.errorMessage(" Importing time is "+(System.currentTimeMillis()-time)/1000+" seconds");
 		 
 		importer.runImport(repo);
-		session.printlnSession(" Time after processing is "+(System.currentTimeMillis()-time)/1000+" seconds");
+		importer.errorMessage(" Time after processing is "+(System.currentTimeMillis()-time)/1000+" seconds");
 		transaction.commit();
 		// -- Wrap up --
 		repo.exportClearTextEncoding(stepFileName+"_");
-		session.printlnSession(" Overall conversion time is "+(System.currentTimeMillis()-time)/1000+" seconds");
+		importer.errorMessage(" Overall conversion time is "+(System.currentTimeMillis()-time)/1000+" seconds");
 	}
 	
 	public void runImport(SdaiRepository inputRepo) throws SdaiException {
@@ -228,18 +256,19 @@ public class Importer {
 		SdaiContext context = new SdaiContext(model);
 		context.working_modelAggr = models;
 		context.working_model = null;
-		model.getRepository().getSession().setSdaiContext(context);
-		
-		DocumentRepair.run(models);
+		session = model.getRepository().getSession();
+		session.setSdaiContext(context);
+
+		DocumentRepair.run(models, this);
 		
 		// modifications and fixes before automatic mapping
-		AP203SpecificRepair.run(models);
+		AP203SpecificRepair.run(models, this);
 		
 		// this fixer must be ran after AP203SpecificRepair,
 		// because it does not "know" about AP203 specific AOs
-		RolesRepair.run(models);
+		RolesRepair.run(models, this);
 		
-		ProductCategoryFlattener.run(models);
+		ProductCategoryFlattener.run(models, this);
 		
 		// this fixer must be ran after ProductCategoryFlattener,
 		// because some AP203 designs have part category indirectly
@@ -247,30 +276,38 @@ public class Importer {
 		// makes this part category directly assigned to the product,
 		// Ap203ProductCategoryRepair does not need to repair anything
 		// in this case.
-		Ap203ProductCategoryRepair.run(models);
+		Ap203ProductCategoryRepair.run(models, this);
 		
-		Item_defined_transformationRepair.run(models);
+		Item_defined_transformationRepair.run(models, this);
+		ValueRangeFixer.run(models, this);
+		StylingModelRepair.run(models, this);
 		// automatic mapping launch
-		AutomaticXimPopulationCreator ximPopulationCreator = new AutomaticXimPopulationCreator(context);
+		AutomaticXimPopulationCreator ximPopulationCreator = new AutomaticXimPopulationCreator(context, this);
 		long timePure = System.currentTimeMillis();
 		// -> AIMGarbageCleaner.run(models, typesToRemove);
+
+
 		try {
 			SdaiSession.convertMapping(ximPopulationCreator.getMappingContext());
 		} catch(SdaiException ex){
 			ex.printStackTrace();
 			SdaiSession session = model.getRepository().getSession();
-			session.printlnSession("--------");
-			session.printlnSession(ex.getMessage());
-			session.printlnSession("--------");
+			logMessage("--------");
+			logMessage(ex.getMessage());
+			logMessage("--------");
+		} catch (Throwable tt) { //RR - there was a case with class definition not found and I was left completely in the dark without this
+			tt.printStackTrace();
 		}
+		
 		//System.out.println(" Pure mapping operations time is "+(System.currentTimeMillis()-timePure)/1000+" seconds"+inputRepo.getSessionIdentifier("#436"));
-		FakedMappingCleaner.run(models, ximPopulationCreator);
+		FakedMappingCleaner.run(models, ximPopulationCreator, this);
 		// For now we do not really need to check the original schema as we are checking 
 		// for specific patterns, which happens in AP210 schema only anyway
-		AP210SpecificGarbageCleaner.run(models);
-		AIMGarbageCleaner.run(models, typesToRemove);
-		MRIDowngrader.run(models);
-		Closed_curveFixer.run(models);
+		AP210SpecificGarbageCleaner.run(models, this);
+		AIMGarbageCleaner.run(models, typesToRemove, this);
+		MRIDowngrader.run(models, this);
+		Closed_curveFixer.run(models, this);
+		ShapeAspectRelationshipCleaner.run(models, this);
 		// System.out.println(" Cleaning E "+(System.currentTimeMillis()-timePure)/1000+" seconds");
 		// RepItemsInRepCleaner.run(repoAP210AIM);
 
@@ -280,10 +317,12 @@ public class Importer {
 		// changes some products to parts and only after that
 		// DefinitionsRepair can change some product_view_definitions
 		// to part_view_definition
-		PartsRepair.run(models);
+		PartsRepair.run(models, this);
 		// System.out.println(" Cleaning F "+(System.currentTimeMillis()-timePure)/1000+" seconds"+inputRepo.getSessionIdentifier("#436"));
-		DefinitionsRepair.run(models);
-		AssemblyRepair.run(models);
+		DefinitionsRepair.run(models, this);
+		AssemblyRepair.run(models, this);
+		RepresentationRelationshipRepair.run(models, this);
+		StylingModelRepair.runAfterMapping(models, this);
 		// System.out.println(" mapping operations + POST processing time is "+(System.currentTimeMillis()-timePure)/1000+" seconds"+inputRepo.getSessionIdentifier("#436"));
 		// repoAP210Extended.deleteRepository();
 		// session.closeSession();
@@ -302,6 +341,57 @@ public class Importer {
 			return session.startTransactionReadWriteAccess();
 	}
 	
+
+
+  	public static Runnable initAsRunnable(final String sdaireposDirectory, final String[] args, final UtilMonitor monitor) throws jsdai.lang.SdaiException {
+  		Properties jsdaiProperties = new Properties();
+  		jsdaiProperties.setProperty("repositories", sdaireposDirectory);
+			
+  		// jsdaiProperties.setProperty("jsdai.SIda_step_schema_xim","AC*;AI*;AP*;ASS*;AU*;B*;C*;D*;E*;F*;G*;H*;IDA_STEP_AIM*;ISO*;IN*;J*;K*;L*;M*;N*;O*;P*;Q*;R*;S*;T*;U*;V*;W*;X*;Y*;Z*;");
+
+	  	jsdaiProperties.setProperty("mapping.schema.IDA_STEP_SCHEMA_XIM","IDA_STEP_SCHEMA_XIM_MAPPING_DATA");
+  		jsdaiProperties.setProperty("mapping.schema.IDA_STEP_AIM_SCHEMA","IDA_STEP_SCHEMA_XIM_MAPPING_DATA");
+			jsdaiProperties.setProperty("mapping.schema.AUTOMOTIVE_DESIGN","IDA_STEP_SCHEMA_XIM_MAPPING_DATA");
+			jsdaiProperties.setProperty("jsdai.SIda_step_schema_xim","AC*;AI*;AP*;ASS*;AU*;B*;C*;D*;E*;F*;G*;H*;IDA_STEP_AIM*;ISO*;IN*;J*;K*;L*;M*;N*;O*;P*;Q*;R*;S*;T*;U*;V*;W*;X*;Y*;Z*;");
+
+
+  		SdaiSession.setSessionProperties(jsdaiProperties);
+  		return new Runnable() {
+  			public void run() {
+  				// main(args, null);
+  				try {
+
+						fout = new FileOutputStream(args[0]+"_log_conversion");
+						bout = new BufferedOutputStream(fout);
+						pout = new PrintStream(bout);
+						System.setOut(pout);
+
+						ferr = new FileOutputStream(args[0]+"_log_conversion_err");
+						berr = new BufferedOutputStream(ferr);
+						perr = new PrintStream(berr);
+						System.setErr(perr);
+
+						System.out.println("Conversion: invoking main: " + args);
+  					main(args);
+						System.out.println("Conversion: main ended ");
+					} catch (Exception eee) {
+
+						System.out.println("Conversion: exception occured: " + eee);
+	
+						eee.printStackTrace();
+
+        	} finally {
+           
+						pout.flush();
+						pout.close();
+
+						perr.flush();
+						perr.close();
+						
+					}  				
+  			}
+  		};
+  	}
 	
 	
 }

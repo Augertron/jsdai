@@ -151,7 +151,7 @@ public class CxDependent_template_location_in_padstack_definition extends CDepen
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a9 = set_instance(a9, value);
+		a9 = set_instanceX(a9, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

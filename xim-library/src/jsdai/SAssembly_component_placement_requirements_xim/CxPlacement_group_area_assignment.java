@@ -88,7 +88,7 @@ public class CxPlacement_group_area_assignment extends CPlacement_group_area_ass
 		return (EShape_aspect)a2;
 	}*/
 	public void setRelating_shape_aspect(EShape_aspect_relationship type, EShape_aspect value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetRelating_shape_aspect(EShape_aspect_relationship type) throws SdaiException {
 		a2 = unset_instance(a2);

@@ -116,6 +116,25 @@ RULE unique_assembly_component_2d_shape_model FOR (Assembly_component_2d_shape_m
           (pupsm1 = pupsm2))) > 1) )) > 0) )) = 0;  
   END_RULE;
 
+  function pu2dv_has_shape(input : Assembly_component_armx) : BOOLEAN;
+  LOCAL
+    ac2ds : BAG OF Assembly_component_2d_shape_model := USEDIN(input,'PHYSICAL_UNIT_2D_DESIGN_VIEW_XIM.ASSEMBLY_COMPONENT_2D_SHAPE_MODEL.SHAPE_CHARACTERIZED_COMPONENT');
+  END_LOCAL;
+
+  RETURN(SIZEOF(ac2ds) > 0);
+  END_FUNCTION;
+
+  function pu2dv_typeof(input : Assembly_component_armx) : SET OF STRING;
+  LOCAL
+    ac2ds : BAG OF Assembly_component_2d_shape_model := USEDIN(input,'PHYSICAL_UNIT_2D_DESIGN_VIEW_XIM.ASSEMBLY_COMPONENT_2D_SHAPE_MODEL.SHAPE_CHARACTERIZED_COMPONENT');
+  END_LOCAL;
+  IF SIZEOF(ac2ds) > 1 THEN 
+    RETURN(?);
+  END_IF;
+  RETURN(TYPEOF(ac2ds[1]));
+  END_FUNCTION;
+
+
 END_SCHEMA;
 
 

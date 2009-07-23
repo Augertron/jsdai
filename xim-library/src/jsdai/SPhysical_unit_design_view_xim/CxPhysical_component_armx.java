@@ -82,7 +82,7 @@ public class CxPhysical_component_armx
 		return (EProduct_definition)get_instance(a14);
 	}*/
 	public void setRelating_product_definition(EProduct_definition_relationship type, EProduct_definition value) throws SdaiException {
-		a14 = set_instance(a14, value);
+		a14 = set_instanceX(a14, value);
 	}
 	public void unsetRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
 		a14 = unset_instance(a14);
@@ -137,7 +137,7 @@ public class CxPhysical_component_armx
 		return (EProduct_definition_formation)a2;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
 		a2 = unset_instance(a2);
@@ -158,7 +158,7 @@ public class CxPhysical_component_armx
 		return (jsdai.SApplication_context_schema.EProduct_definition_context)a3;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a3 = set_instance(a3, value);
+		a3 = set_instanceX(a3, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
 		a3 = unset_instance(a3);
@@ -198,7 +198,7 @@ public class CxPhysical_component_armx
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a9 = set_instance(a9, value);
+		a9 = set_instanceX(a9, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

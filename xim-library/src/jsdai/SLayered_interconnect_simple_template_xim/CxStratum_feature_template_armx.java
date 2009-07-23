@@ -75,7 +75,7 @@ public class CxStratum_feature_template_armx extends CStratum_feature_template_a
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

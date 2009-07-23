@@ -72,7 +72,7 @@ public class CxAssembled_part_association$next_assembly_usage_occurrence_relatio
 		return (jsdai.SProduct_definition_schema.EProduct_definition)get_instance(a3);
 	}
 	public void setOccurrence(EProduct_definition_occurrence_relationship type, jsdai.SProduct_definition_schema.EProduct_definition value) throws SdaiException {
-		a3 = set_instance(a3, value);
+		a3 = set_instanceX(a3, value);
 	}
 	public void unsetOccurrence(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		a3 = unset_instance(a3);

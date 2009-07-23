@@ -32,13 +32,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import jsdai.SActivity_mim.CApplied_action_assignment;
-import jsdai.SApplication_context_schema.CProduct_context;
-import jsdai.SApplication_context_schema.CProduct_definition_context;
-import jsdai.SApproval_mim.CApplied_approval_assignment;
-import jsdai.SCertification_mim.CApplied_certification_assignment;
-import jsdai.SContract_mim.CApplied_contract_assignment;
-import jsdai.SDate_time_assignment_mim.CApplied_date_and_time_assignment;
-import jsdai.SDocument_assignment_mim.CApplied_document_reference;
 import jsdai.SAp203_configuration_controlled_3d_design_of_mechanical_parts_and_assemblies_mim.CCc_design_approval;
 import jsdai.SAp203_configuration_controlled_3d_design_of_mechanical_parts_and_assemblies_mim.CCc_design_certification;
 import jsdai.SAp203_configuration_controlled_3d_design_of_mechanical_parts_and_assemblies_mim.CCc_design_contract;
@@ -54,6 +47,13 @@ import jsdai.SAp203_configuration_controlled_3d_design_of_mechanical_parts_and_a
 import jsdai.SAp203_configuration_controlled_3d_design_of_mechanical_parts_and_assemblies_mim.CStart_request;
 import jsdai.SAp203_configuration_controlled_3d_design_of_mechanical_parts_and_assemblies_mim.CStart_work;
 import jsdai.SAp203_configuration_controlled_3d_design_of_mechanical_parts_and_assemblies_mim.CSupplied_part_relationship;
+import jsdai.SApplication_context_schema.CProduct_context;
+import jsdai.SApplication_context_schema.CProduct_definition_context;
+import jsdai.SApproval_mim.CApplied_approval_assignment;
+import jsdai.SCertification_mim.CApplied_certification_assignment;
+import jsdai.SContract_mim.CApplied_contract_assignment;
+import jsdai.SDate_time_assignment_mim.CApplied_date_and_time_assignment;
+import jsdai.SDocument_assignment_mim.CApplied_document_reference;
 import jsdai.SPerson_organization_assignment_mim.CApplied_person_and_organization_assignment;
 import jsdai.SProduct_definition_schema.CProduct_definition_formation;
 import jsdai.SProduct_definition_schema.CProduct_definition_formation_with_specified_source;
@@ -72,7 +72,7 @@ import jsdai.lang.CAggregate;
 import jsdai.lang.EEntity;
 import jsdai.lang.SdaiException;
 import jsdai.lang.SdaiIterator;
-import jsdai.lang.SdaiSession;
+import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * @author evita
@@ -124,7 +124,7 @@ public class AP203SpecificRepair {
 	 *@param repo	Source repository
 	 *@return Aggregate of translated instances
 	 */
-	public static void run(ASdaiModel models)
+	public static void run(ASdaiModel models, Importer importer)
 		throws SdaiException {
 		
 		for (Iterator i = ENTITIES_DICTIONARY.entrySet().iterator(); i.hasNext();) {
@@ -148,12 +148,12 @@ public class AP203SpecificRepair {
 
 				// gather old-type entity attributes - only direct ones, not from supertypes
 				HashMap ccEntityAttributes = collectEntityAttributes(ccEntity);
-				
+				String message = "Changing instance "+ccEntity+" to ";
 				// fix entity type
 				EEntity newEntity = ccEntity.findEntityInstanceSdaiModel().substituteInstance(ccEntity, eSubstDef);
-				
+				importer.logMessage(message+newEntity.toString());
 				// restore direct (not from supertype) attributes value which were lost
-				setEntityAttributes(newEntity, ccEntityAttributes);
+				setEntityAttributes(newEntity, ccEntityAttributes, importer);
 			}
 		}
 	}
@@ -195,8 +195,7 @@ public class AP203SpecificRepair {
 		return attributes;
 	}
 	
-	private static void setEntityAttributes(EEntity entity, HashMap attributesValues) throws SdaiException {
-		final SdaiSession session = entity.findEntityInstanceSdaiModel().getRepository().getSession();
+	private static void setEntityAttributes(EEntity entity, HashMap attributesValues, Importer importer) throws SdaiException {
 		final AAttribute entityAttributes = entity.getInstanceType().getAttributes(null, entity.findEntityInstanceSdaiModel().getRepository().getSession().getSystemRepository().getModels());
 
 		for (SdaiIterator itAttributes = entityAttributes.createIterator(); itAttributes.next(); ) {
@@ -214,7 +213,7 @@ public class AP203SpecificRepair {
 								aggregateToSet.addUnordered(next, null);
 							} catch (SdaiException e) {
 								if (!hasError) {
-									printError(session, entity, entityAttribute);
+									printError(entity, entityAttribute, importer);
 									// we do not want to print same error message more
 									// than once
 									hasError = true;
@@ -225,16 +224,16 @@ public class AP203SpecificRepair {
 						entity.set(entityAttribute, value, null);
 					}
 				} catch (SdaiException e) {
-					printError(session, entity, entityAttribute);
+					printError(entity, entityAttribute, importer);
 				}
 			}
 		}
 	}
 
-	private static void printError(SdaiSession session, EEntity entity, EAttribute attr)
+	private static void printError(EEntity entity, EAttribute attr, Importer importer)
 		throws SdaiException {
 
-		session.printlnSession("Error: Attribute \"" + attr.getName(null)
+		importer.errorMessage("Error: Attribute \"" + attr.getName(null)
 			+ "\" of entity instance " + entity.getPersistentLabel() + " is set to invalid value.");
 	}
 }

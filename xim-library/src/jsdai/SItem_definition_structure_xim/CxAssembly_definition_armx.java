@@ -32,6 +32,7 @@ package jsdai.SItem_definition_structure_xim;
 import jsdai.lang.*;
 import jsdai.libutil.CxAP210ARMUtilities;
 import jsdai.libutil.EMappedXIMEntity;
+import jsdai.SPart_view_definition_xim.CxPart_view_definition;
 import jsdai.SPart_view_definition_xim.EPart_view_definition;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
@@ -152,6 +153,7 @@ public class CxAssembly_definition_armx
 	public static void setMappingConstraints(SdaiContext context,
 			EPart_view_definition armEntity) throws SdaiException {
 		unsetMappingConstraints(context, armEntity);
+		CxPart_view_definition.setMappingConstraints(context, armEntity);
 		CxAP210ARMUtilities.assignPart_definition_type(context, armEntity, "assembly definition");
 	}
 
@@ -164,6 +166,7 @@ public class CxAssembly_definition_armx
 	 */
 	public static void unsetMappingConstraints(SdaiContext context,
 			EPart_view_definition armEntity) throws SdaiException {
+		CxPart_view_definition.unsetMappingConstraints(context, armEntity);		
 		CxAP210ARMUtilities.deassignPart_definition_type(context, armEntity, "assembly definition");
 	}
 

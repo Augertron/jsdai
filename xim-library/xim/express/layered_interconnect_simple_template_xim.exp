@@ -36,6 +36,8 @@ SCHEMA Layered_interconnect_simple_template_xim;
 
 USE FROM Layered_interconnect_simple_template_mim;
 
+REFERENCE FROM Requirement_decomposition_xim(get_rvd);	-- ISO/TS 10303-1740
+
 REFERENCE FROM support_resource_schema   -- ISO 10303-41
   (bag_to_set);
 
@@ -74,18 +76,6 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
 		(Land_template_terminal_armx);
 	END_TYPE;
  
-  TYPE extend_or_chord_2_extend_or_truncate_or_round = ENUMERATION OF
-    (truncate,
-     chord_2_extend,
-     round,
-     extend);
-  END_TYPE;
-
-  TYPE extend_or_truncate = ENUMERATION OF
-    (truncate,
-     extend);
-  END_TYPE;
-
   TYPE land_template_terminal_class = ENUMERATION OF
     (surface_point_class,
     edge_area_class,
@@ -103,11 +93,6 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
      (drilled_passage_context,
       finished_passage_context,
       unknown_context);
-  END_TYPE;
-
-  TYPE square_or_round = ENUMERATION OF
-    (square,
-     round);
   END_TYPE;
 
   ENTITY Blind_passage_template_armx
@@ -217,7 +202,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
 	    SELF\Product_view_definition.name_x : STRING := '';
 	 WHERE
         WR1 : SELF\Default_passage_based_land_physical_template_armx.of_passage_technology.plated_passage = TRUE;
-	    WR2 : NOT('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_XIM.VIA_TEMPLATE_ARMX' IN TYPEOF(SELF\Default_passage_based_land_physical_template_armx.of_passage_technology)) OR
+		WR2 : NOT('FABRICATION_TECHNOLOGY_XIM.DEFAULT_VIA_DEFINITION_ARMX' IN TYPEOF(SELF\Default_passage_based_land_physical_template_armx.of_passage_technology)) OR	    
 	        (SIZEOF(QUERY(ltjt <* SELF\Land_physical_template_armx.access_mechanisms | NOT('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_XIM.LAND_TEMPLATE_JOIN_TERMINAL' IN TYPEOF(ltjt)))) = 0);	  
 	END_ENTITY;
 
@@ -231,6 +216,21 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
       SELF\Default_passage_based_land_physical_template_armx.of_passage_technology : Default_unsupported_passage_definition;
     DERIVE
       SELF\Product_view_definition.name_x : STRING := '';
+  END_ENTITY;
+
+  ENTITY Electrical_isolation_removal_template_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Material_removal_feature_template_armx, electrical_isolation_removal_template);
+    DERIVE
+      electrical_isolation_spacing_requirement : SET[0:?] OF Requirement_view_definition := 
+        get_rvd(SELF, 'electrical requirement');
+    WHERE
+      WR1: SIZEOF(QUERY(eisr <* electrical_isolation_spacing_requirement |
+         NOT('INTERCONNECT_PHYSICAL_REQUIREMENT_ALLOCATION_XIM.ELECTRICAL_ISOLATION_REQUIREMENT'
+        IN TYPEOF(eisr)) )) =0;
+      WR2: SIZEOF(QUERY(s <* SELF\Geometric_template_armx.shapes |
+        ('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_MIM.PLANAR_CLOSED_PATH_SHAPE_REPRESENTATION_WITH_PARAMETERS' IN TYPEOF(s)))) = 0;
+      WR3: SIZEOF(QUERY(s <* SELF\Geometric_template_armx.shapes |
+        NOT ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_XIM.SINGLE_BOUNDARY_CSG_2D_SHAPE_REPRESENTATION' IN TYPEOF(s)))) = 0;                
   END_ENTITY;
 
   ENTITY Inter_stratum_feature_edge_segment_template_armx
@@ -271,14 +271,6 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
     (* CONNOTATIONAL *) SUBTYPE OF (Template_definition, part_text_template);
     	of_character                            : Character_glyph_symbol;
   END_ENTITY;
-
-  ENTITY path_area_with_parameters_armx
-    SUBTYPE OF (path_area_with_parameters);
-      SELF\mapped_item.mapping_target RENAMED centreline : curve;
-      parameters : Curve_style_parameters;
-    DERIVE
-      SELF\mapped_item.mapping_source : representation_map := ?;
-  END_ENTITY; 
 
   ENTITY Snowball_template_armx
     (* CONNOTATIONAL *) SUBTYPE OF (Teardrop_template_armx, snowball_template);
@@ -339,31 +331,6 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
     SUBTYPE OF (Path_area_with_parameters_armx);
     SELF\Path_area_with_parameters_armx.centreline : closed_curve;
     SELF\Path_area_with_parameters_armx.parameters : Closed_curve_style_parameters_armx;
-  END_ENTITY;
-
-  ENTITY Curve_style_parameters
-  	ABSTRACT SUPERTYPE OF(ONEOF(Closed_curve_style_parameters_armx, Curve_style_parameters_with_ends_armx))
-  	(* CONNOTATIONAL *) SUBTYPE OF (curve_style_parameters_representation);
-	  name_x            : STRING;
-      corner_style      : extend_or_chord_2_extend_or_truncate_or_round;
-      curve_width       : length_measure_with_unit;
-      width_uncertainty : Length_measure_with_unit;
-    DERIVE
-      SELF\representation.name : label := ?;
-      SELF\representation.items : SET [1:?] OF representation_item := ?;
-      SELF\representation.context_of_items : representation_context := ?;
-    UNIQUE
-      UR1 : name_x;
-  END_ENTITY;
-
-  ENTITY Closed_curve_style_parameters_armx
-    (* CONNOTATIONAL *) SUBTYPE OF (Curve_style_parameters, closed_curve_style_parameters);
-  END_ENTITY;
-
-  ENTITY Curve_style_parameters_with_ends_armx
-    SUBTYPE OF (Curve_style_parameters, curve_style_parameters_with_ends);
-      end_extension     : extend_or_truncate;
-      end_style         : square_or_round;
   END_ENTITY;
 
   ENTITY Fill_area_template_armx

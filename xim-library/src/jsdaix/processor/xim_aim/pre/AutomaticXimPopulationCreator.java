@@ -47,7 +47,6 @@ import jsdai.lang.MappingContext;
 import jsdai.lang.MappingPopulationCreator;
 import jsdai.lang.SdaiContext;
 import jsdai.lang.SdaiException;
-import jsdai.lang.SdaiSession;
 import jsdai.libutil.CMappedXIMEntity;
 import jsdai.mapping.EEntity_mapping;
 import jsdai.mapping.EGeneric_attribute_mapping;
@@ -71,10 +70,13 @@ public class AutomaticXimPopulationCreator extends JsdaiLangAccessor implements 
 		CProduct_definition_context.definition,
 		CRepresentation_context.definition};
 
-	public AutomaticXimPopulationCreator(SdaiContext context) throws SdaiException {
+	private Importer importer;
+	
+	public AutomaticXimPopulationCreator(SdaiContext context, Importer importer) throws SdaiException {
 		mappingContext = new MappingContext(context, this);
 		mappingContext.setInterleavedCreation(false);
 		specialTypeInstanceMap = new HashMap();
+		this.importer = importer;
 	}
 
 	public void createSourceInstance(EEntity_mapping type,
@@ -96,8 +98,7 @@ public class AutomaticXimPopulationCreator extends JsdaiLangAccessor implements 
 							deferredInstances, targetInstance instanceof ENext_assembly_usage_occurrence_relationship);
 			} catch(SdaiException e) {
 				String eString = e.getMessage(); //toString();
-				SdaiSession session = targetInstance.findEntityInstanceSdaiModel().getRepository().getSession();
-				session.printlnSession(" Problem while creating instance "+eString+" "+target+" vs "+targetInstance+" "+e.getErrorBase() );
+				importer.errorMessage(" Problem while creating instance "+eString+" "+target+" vs "+targetInstance+" "+e.getErrorBase() );
 				e.printStackTrace();
 			}
 		}
@@ -162,8 +163,7 @@ public class AutomaticXimPopulationCreator extends JsdaiLangAccessor implements 
 							eString = eString.substring(0, eString.indexOf('='));
 						}
 						attributeValuesCatchCount++;
-						SdaiSession session = ximInstance.findEntityInstanceSdaiModel().getRepository().getSession();
-						session.printlnSession(" Problem while setting attribute "+ximInstance+" "+explicitAttribute+" "+eString+" "+e.getErrorBase());
+						importer.errorMessage(" Problem while setting attribute "+ximInstance+" "+explicitAttribute+" "+eString+" "+e.getErrorBase());
 						e.printStackTrace();
 					}
 				}

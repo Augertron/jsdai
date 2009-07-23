@@ -40,6 +40,7 @@ import jsdai.lang.ASdaiModel;
 import jsdai.lang.EEntity;
 import jsdai.lang.SdaiException;
 import jsdai.util.LangUtils;
+import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * @author Giedrius
@@ -55,12 +56,12 @@ public class AIMGarbageCleaner {
 //	private static int countOfDeletions = 0; // TEMP - DEBUG
 //	private static int rmUsersCount = 0;
 	
-	public static void run(ASdaiModel models, EEntity_definition[] typesToRemove) throws SdaiException {
-		long time = System.currentTimeMillis();		
+	public static void run(ASdaiModel models, EEntity_definition[] typesToRemove, Importer importer) throws SdaiException {
+		// long time = System.currentTimeMillis();		
 		// System.out.println(" Remove "+typesToRemove.length);
 		for (int t=0,count=typesToRemove.length; t<count; t++) {
 			EEntity_definition typeToRemove = typesToRemove[t];
-			deleteExactInstances(models, typeToRemove);
+			deleteExactInstances(models, typeToRemove, importer);
 		}
 		// Special treatment for shape_representation
 		AEntity instancesToRemove = models.getExactInstances(CShape_representation.definition);
@@ -75,17 +76,17 @@ public class AIMGarbageCleaner {
 		// Special treatment for shape_representation, classification_role
 		// removeUnusedEntities(models, CApplied_classification_assignment.definition);
 		// removeUnusedEntities(models, CShape_representation.definition);
-		removeUnusedEntities(models, CClassification_role.definition);
-		removeUnusedEntities(models, CGeometric_representation_context.definition);
-		removeUnusedEntities(models, CApplication_context.definition);
-		removeUnusedEntities(models, CItem_shape.definition);
-		removeUnusedEntities(models, COrganization_role.definition);
-		removeUnusedEntities(models, CCharacterized_object.definition);
-		removeUnusedEntities(models, CContextual_item_shape.definition);
-		removeUnusedEntities(models, CPerson_and_organization_role.definition);
-		removeUnusedEntities(models, CSecurity_classification_level.definition);
+		removeUnusedEntities(models, CClassification_role.definition, importer);
+		removeUnusedEntities(models, CGeometric_representation_context.definition, importer);
+		removeUnusedEntities(models, CApplication_context.definition, importer);
+		removeUnusedEntities(models, CItem_shape.definition, importer);
+		removeUnusedEntities(models, COrganization_role.definition, importer);
+		removeUnusedEntities(models, CCharacterized_object.definition, importer);
+		removeUnusedEntities(models, CContextual_item_shape.definition, importer);
+		removeUnusedEntities(models, CPerson_and_organization_role.definition, importer);
+		removeUnusedEntities(models, CSecurity_classification_level.definition, importer);
 		// System.out.println(" Cleaning AIM F "+(System.currentTimeMillis()-time)/1000+" seconds");
-		removeUnusedEntities(models, CRepresentation_map.definition);
+		removeUnusedEntities(models, CRepresentation_map.definition, importer);
 		// System.out.println(" Cleaning AIM G "+(System.currentTimeMillis()-time)/1000+" seconds");
 		// Special treatment for Classification_role
 		
@@ -95,15 +96,18 @@ public class AIMGarbageCleaner {
 	 * @param schema
 	 * @throws SdaiException
 	 */
-	private static void removeUnusedEntities(ASdaiModel models, EEntity_definition typeToRemove) throws SdaiException {
+	private static void removeUnusedEntities(ASdaiModel models, EEntity_definition typeToRemove, Importer importer) throws SdaiException {
 		AEntity instancesToRemove = models.getExactInstances(typeToRemove);
 		// System.out.println(" instance count "+instancesToRemove.getMemberCount());
 		int index = 1;
 		while(instancesToRemove.getMemberCount() > index-1){
 			EEntity instanceToRemove = instancesToRemove.getByIndexEntity(index);
+			String message = "Deleted unused instance "+instanceToRemove;
 			boolean deleted = LangUtils.deleteInstanceIfUsageCountLessThan(models, instanceToRemove, 1);
 			if(!deleted){
 				index++;
+			}else{
+				importer.logMessage(message);
 			}
 		}
 	}
@@ -113,7 +117,7 @@ public class AIMGarbageCleaner {
 	 * @param typeToRemove
 	 * @throws SdaiException
 	 */
-	private static void deleteExactInstances(ASdaiModel models, EEntity_definition typeToRemove) throws SdaiException {
+	private static void deleteExactInstances(ASdaiModel models, EEntity_definition typeToRemove, Importer importer) throws SdaiException {
 		AEntity instancesToRemove = models.getExactInstances(typeToRemove);
 		int count = instancesToRemove.getMemberCount();
 		// countOfDeletions += count;
@@ -121,6 +125,7 @@ public class AIMGarbageCleaner {
 		// System.out.println(typeToRemove.getName(null)+" remove "+instancesToRemove.getMemberCount());
 		while(count > 0){
 			EEntity instanceToRemove = instancesToRemove.getByIndexEntity(count--);
+			importer.logMessage(" Deleting instance "+instanceToRemove);
 			instanceToRemove.deleteApplicationInstance();
 		}
 		// System.out.println(" Deleting "+typeToRemove.getName(null)+" takes "+(System.currentTimeMillis()-time)+" ms "+count2);

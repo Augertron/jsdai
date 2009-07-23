@@ -21,7 +21,7 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.SLayered_interconnect_simple_template_xim;
+package jsdai.SConstructive_solid_geometry_2d_xim;
 
 /**
 * @author Giedrius Liutkus
@@ -31,7 +31,7 @@ package jsdai.SLayered_interconnect_simple_template_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.SLayered_interconnect_simple_template_mim.CClosed_curve_style_parameters;
+import jsdai.SConstructive_solid_geometry_2d_mim.CClosed_curve_style_parameters;
 import jsdai.SRepresentation_schema.*;
 
 public class CxClosed_curve_style_parameters_armx extends CClosed_curve_style_parameters_armx implements EMappedXIMEntity
@@ -73,7 +73,7 @@ public class CxClosed_curve_style_parameters_armx extends CClosed_curve_style_pa
 	}
 	
 	public void setContext_of_items(ERepresentation type, ERepresentation_context value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetContext_of_items(ERepresentation type) throws SdaiException {
 		a2 = unset_instance(a2);

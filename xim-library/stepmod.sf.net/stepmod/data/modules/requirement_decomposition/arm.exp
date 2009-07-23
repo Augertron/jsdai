@@ -10,6 +10,7 @@ SCHEMA Requirement_decomposition_arm;
 	USE FROM Elemental_geometric_shape_arm;	-- ISO/TS 10303-1004
 	USE FROM Functional_specification_arm;	-- ISO/TS 10303-1679
 	USE FROM Production_rule_arm;	-- ISO/TS 10303-1739
+	USE FROM Requirement_view_definition_relationship_arm;  -- ISO/TS 10303-1142
 
 	REFERENCE FROM Specification_document_arm(get_document_definition);	-- ISO/TS 10303-1747
 	REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
@@ -113,16 +114,6 @@ SCHEMA Requirement_decomposition_arm;
           ['mechanical', 'thermal', 'electromechancial', 'electromagnetic compatibility', 'electrical'];
       WR3: SELF\Product_view_definition.initial_context.life_cycle_stage in ['design', 'qualify', 'inspect', 'test'];
       WR4 : NOT EXISTS(SELF\Product_view_definition.name);
-  END_ENTITY;
-
-  ENTITY Requirement_view_definition_relationship
-     SUBTYPE OF (View_definition_relationship);
-       SELF\View_definition_relationship.relating_view RENAMED primary  : Requirement_view_definition;
-       SELF\View_definition_relationship.related_view RENAMED secondary : Requirement_view_definition;
-       SELF\View_definition_relationship.relation_type                  : STRING;
-     WHERE
-       WR1 : primary :<>: secondary;
-       WR2 : SELF\View_definition_relationship.relation_type IN ['derived from', 'precedence', 'reference to', 'supplemental'];
   END_ENTITY;
 
   ENTITY Shape_and_view_based_constraint_occurrence

@@ -52,7 +52,7 @@ public class CxFootprint_occurrence_sub_assembly_relationship extends CFootprint
 		return (jsdai.SProduct_definition_schema.EProduct_definition)get_instance(a8);
 	}
 	public void setOccurrence(EProduct_definition_occurrence_relationship type, jsdai.SProduct_definition_schema.EProduct_definition value) throws SdaiException {
-		a8 = set_instance(a8, value);
+		a8 = set_instanceX(a8, value);
 	}
 	public void unsetOccurrence(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		a8 = unset_instance(a8);

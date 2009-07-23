@@ -58,7 +58,7 @@ public class CxMaterial_removal_feature_template_armx extends CMaterial_removal_
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

@@ -88,7 +88,7 @@ public class CxInternal_probe_access_area_armx$plated_passage_dependent_land_arm
 			return (EProduct_definition)get_instance(a14);
 		}*/
 		public void setRelating_product_definition(EProduct_definition_relationship type, EProduct_definition value) throws SdaiException {
-			a14 = set_instance(a14, value);
+			a14 = set_instanceX(a14, value);
 		}
 		public void unsetRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
 			a14 = unset_instance(a14);
@@ -106,7 +106,7 @@ public EProduct_definition_shape getOf_shape(EShape_aspect type) throws SdaiExce
 	return (EProduct_definition_shape)get_instance(a23);
 }*/
 public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
-	a23 = set_instance(a23, value);
+	a23 = set_instanceX(a23, value);
 }
 public void unsetOf_shape(EShape_aspect type) throws SdaiException {
 	a23 = unset_instance(a23);
@@ -145,7 +145,7 @@ public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) 
 		return (EProduct_definition_formation)a6;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a9 = set_instance(a9, value);
+		a9 = set_instanceX(a9, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
 		a9 = unset_instance(a9);
@@ -166,7 +166,7 @@ public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) 
 		return (jsdai.SApplication_context_schema.EProduct_definition_context)a7;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a10 = set_instance(a10, value);
+		a10 = set_instanceX(a10, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
 		a10 = unset_instance(a10);
@@ -206,7 +206,7 @@ public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) 
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a20 = set_instance(a20, value);
+		a20 = set_instanceX(a20, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
@@ -235,7 +235,7 @@ public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) 
 	}
 
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a12 = set_instance(a12, value);
+		a12 = set_instanceX(a12, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

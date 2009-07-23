@@ -52,7 +52,7 @@ public class CxApplied_organization_assignment__id_owner extends CApplied_organi
 		return (jsdai.SPerson_organization_schema.EOrganization_role)a1;
 	}*/
 	public void setRole(EOrganization_assignment type, jsdai.SPerson_organization_schema.EOrganization_role value) throws SdaiException {
-		a1 = set_instance(a1, value);
+		a1 = set_instanceX(a1, value);
 	}
 	public void unsetRole(EOrganization_assignment type) throws SdaiException {
 		a1 = unset_instance(a1);

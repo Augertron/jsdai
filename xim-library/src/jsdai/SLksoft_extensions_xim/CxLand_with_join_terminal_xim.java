@@ -68,7 +68,7 @@ public class CxLand_with_join_terminal_xim extends CLand_with_join_terminal_xim 
 		return get_string(a21);
 	}*/
 	public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
-		a21 = set_instance(a21, value);
+		a21 = set_instanceX(a21, value);
 	}
 	public void unsetOf_shape(EShape_aspect type) throws SdaiException {
 		a21 = unset_instance(a21);

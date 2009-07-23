@@ -110,7 +110,7 @@ public class CxAssembly_definition_armx$part_design_view extends CAssembly_defin
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a10 = set_instance(a10, value);
+		a10 = set_instanceX(a10, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

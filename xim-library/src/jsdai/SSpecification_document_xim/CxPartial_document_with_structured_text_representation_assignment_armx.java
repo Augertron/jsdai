@@ -67,7 +67,7 @@ public class CxPartial_document_with_structured_text_representation_assignment_a
 		return (jsdai.SDocument_schema.EDocument_usage_constraint)get_instance(a0);
 	}*/
 	public void setAssigned_document_usage(EDocument_usage_constraint_assignment type, jsdai.SDocument_schema.EDocument_usage_constraint value) throws SdaiException {
-		a0 = set_instance(a0, value);
+		a0 = set_instanceX(a0, value);
 	}
 	public void unsetAssigned_document_usage(EDocument_usage_constraint_assignment type) throws SdaiException {
 		a0 = unset_instance(a0);
@@ -87,7 +87,7 @@ public class CxPartial_document_with_structured_text_representation_assignment_a
 		return (EDocument_usage_role)get_instance(a1);
 	}*/
 	public void setRole(EDocument_usage_constraint_assignment type, EDocument_usage_role value) throws SdaiException {
-		a1 = set_instance(a1, value);
+		a1 = set_instanceX(a1, value);
 	}
 	public void unsetRole(EDocument_usage_constraint_assignment type) throws SdaiException {
 		a1 = unset_instance(a1);

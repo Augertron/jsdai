@@ -8,11 +8,10 @@
 SCHEMA Layered_interconnect_module_design_mim;
 USE FROM Component_grouping_mim;	-- ISO/TS 10303-1656
 USE FROM Edge_shape_feature_mim;	-- ISO/TS 10303-1673
-USE FROM Interconnect_module_connection_routing_mim;	-- ISO/TS 10303-1684
-USE FROM Interconnect_physical_requirement_allocation_mim;	-- ISO/TS 10303-1689
 USE FROM Footprint_definition_mim;	-- ISO/TS 10303-1646
-USE FROM Physical_connectivity_definition_mim;	-- ISO/TS 10303-1755
 USE FROM Assembly_component_placement_requirements_mim;	-- ISO/TS 10303-1634	
+(*REFERENCE FROM*) USE FROM Land_mim;	-- ISO/TS 10303-1692
+(*REFERENCE FROM*) USE FROM Layered_interconnect_module_with_printed_component_design_mim; -- ISO/TS 10303-1700
 	
   SUBTYPE_CONSTRAINT array_placement_group_subtypes FOR array_placement_group; 
     (ONEOF (laminate_text_string_component,
@@ -61,9 +60,14 @@ USE FROM Assembly_component_placement_requirements_mim;	-- ISO/TS 10303-1634
          stratum_sub_stack));
   END_SUBTYPE_CONSTRAINT;
 
+  SUBTYPE_CONSTRAINT stratum_feature_template_component_subtypes FOR stratum_feature_template_component;   
+     (ONEOF (area_component,
+            conductive_interconnect_element));
+  END_SUBTYPE_CONSTRAINT;
+
   TYPE limd_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH 
-    (stratum_feature_conductive_join,
-     dielectric_crossover_area,
+    (-- stratum_feature_conductive_join,
+     -- dielectric_crossover_area,
      layered_interconnect_module_design_view);
   END_TYPE; 
 
@@ -144,10 +148,6 @@ USE FROM Assembly_component_placement_requirements_mim;	-- ISO/TS 10303-1634
     WHERE
       WR1: SELF\shape_aspect_relationship.relating_shape_aspect :<>:
         SELF\shape_aspect_relationship.related_shape_aspect;
-  END_ENTITY;
-
-  ENTITY dependent_thermal_isolation_removal_component
-    SUBTYPE OF (material_removal_structured_component);
   END_ENTITY;
 
   ENTITY derived_stratum
@@ -386,6 +386,10 @@ USE FROM Assembly_component_placement_requirements_mim;	-- ISO/TS 10303-1634
     SUBTYPE OF (physical_network_group_element_relationship);
   END_ENTITY; 
 
+  ENTITY physical_network_supporting_inter_stratum_feature
+    SUBTYPE OF (plated_inter_stratum_feature);
+  END_ENTITY; 
+
   ENTITY plated_cutout
     SUBTYPE OF (cutout, plated_inter_stratum_feature);
   END_ENTITY;
@@ -456,12 +460,21 @@ USE FROM Assembly_component_placement_requirements_mim;	-- ISO/TS 10303-1634
     SUBTYPE OF(characterized_object, property_definition_relationship);
   END_ENTITY;
 
+  ENTITY stratum_feature_conductive_join
+    SUBTYPE OF (product_definition_relationship);
+  END_ENTITY;
+	
   ENTITY stratum_feature_template_component
     SUBTYPE OF (laminate_component);
   END_ENTITY;
 
   ENTITY stratum_feature_template_component_with_stratum_feature
-    SUBTYPE OF (stratum_feature_template_component, stratum_feature);
+    SUBTYPE OF (stratum_feature_template_component, stratum_feature, shape_aspect_relationship);
+    DERIVE
+      SELF\shape_aspect_relationship.related_shape_aspect  : stratum_feature_template_component_with_stratum_feature := SELF;
+      SELF\shape_aspect_relationship.relating_shape_aspect : stratum_feature_template_component_with_stratum_feature := SELF;
+    WHERE
+      WR1: SELF\shape_aspect_relationship.name = 'implementation';
   END_ENTITY;
 
   ENTITY stratum_surface

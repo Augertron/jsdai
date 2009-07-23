@@ -24,138 +24,6 @@
 (*schema_mapping interconnect_module_connection_routing(Interconnect_module_connection_routing_arm, Interconnect_module_connection_routing_mim);*)
 
 
-entity_mapping Dependently_located_layer_connection_point(Dependently_located_layer_connection_point, layer_connection_point);
-
-mapping_constraints;
-layer_connection_point <=
-shape_aspect
-{shape_aspect
-shape_aspect.description = 'dependently located'}
-
-end_mapping_constraints;
-
-attribute_mapping reference_zone(reference_zone, $PATH, Connection_zone_in_design_view);
-layer_connection_point <=
-shape_aspect <-
-shape_aspect_relationship.related_shape_aspect
-shape_aspect_relationship
-{shape_aspect_relationship
-shape_aspect_relationship.name = 'reference zone'}
-shape_aspect_relationship.relating_shape_aspect ->
-shape_aspect
-{shape_aspect.description = 'connection zone'}
-
-end_attribute_mapping;
-
-attribute_mapping associated_design_object(associated_design_object, $PATH, terminal_or_inter_stratum_feature);
-layer_connection_point <=
-shape_aspect <-
-shape_aspect_relationship.related_shape_aspect
-shape_aspect_relationship
-{shape_aspect_relationship
-shape_aspect_relationship.name = 'associated design object'}
-shape_aspect_relationship.relating_shape_aspect ->
-shape_aspect
-(shape_aspect =>
-component_feature =>
-component_terminal =>
-laminate_component_join_terminal)
-(shape_aspect =>
-interconnect_module_terminal)
-(shape_aspect =>
-component_feature =>
-component_terminal =>
-physical_component_terminal =>
-interconnect_module_macro_component_join_terminal)
-(shape_aspect.of_shape ->
-product_definition_shape =>
-assembly_component =>
-laminate_component =>
-inter_stratum_feature)
-
-end_attribute_mapping;
-
-attribute_mapping associated_design_object(associated_design_object, $PATH, Embedded_physical_component_terminal);
-layer_connection_point <=
-				shape_aspect <-
-				shape_aspect_relationship.related_shape_aspect
-				shape_aspect_relationship
-				{shape_aspect_relationship
-				shape_aspect_relationship.name = 'associated design object'}
-				shape_aspect_relationship.relating_shape_aspect ->
-				shape_aspect
-				shape_aspect =>
-				component_feature =>
-				component_terminal =>
-				laminate_component_join_terminal
-				
-end_attribute_mapping;
-
-attribute_mapping associated_design_object(associated_design_object, $PATH, Inter_stratum_feature_armx);
-layer_connection_point <=
-shape_aspect <-
-shape_aspect_relationship.related_shape_aspect
-shape_aspect_relationship
-{shape_aspect_relationship
-shape_aspect_relationship.name = 'associated design object'}
-shape_aspect_relationship.relating_shape_aspect ->
-shape_aspect
-shape_aspect.of_shape ->
-product_definition_shape =>
-assembly_component =>
-laminate_component =>
-inter_stratum_feature
-
-end_attribute_mapping;
-
-attribute_mapping associated_design_object(associated_design_object, $PATH, Interconnect_module_macro_component_join_terminal_armx);
-layer_connection_point <=
-				shape_aspect <-
-				shape_aspect_relationship.related_shape_aspect
-				shape_aspect_relationship
-				{shape_aspect_relationship
-				shape_aspect_relationship.name = 'associated design object'}
-				shape_aspect_relationship.relating_shape_aspect ->
-				shape_aspect
-				shape_aspect =>
-				component_feature =>
-				component_terminal =>
-				physical_component_terminal =>
-				interconnect_module_macro_component_join_terminal
-				
-end_attribute_mapping;
-
-attribute_mapping associated_design_object(associated_design_object, $PATH, Interconnect_module_terminal_armx);
-layer_connection_point <=
-				shape_aspect <-
-				shape_aspect_relationship.related_shape_aspect
-				shape_aspect_relationship
-				{shape_aspect_relationship
-				shape_aspect_relationship.name = 'associated design object'}
-				shape_aspect_relationship.relating_shape_aspect ->
-				shape_aspect
-				shape_aspect =>
-				interconnect_module_terminal
-				
-end_attribute_mapping;
-
-attribute_mapping associated_design_object(associated_design_object, $PATH, Printed_component_join_terminal);
-layer_connection_point <=
-				shape_aspect <-
-				shape_aspect_relationship.related_shape_aspect
-				shape_aspect_relationship
-				{shape_aspect_relationship
-				shape_aspect_relationship.name = 'associated design object'}
-				shape_aspect_relationship.relating_shape_aspect ->
-				shape_aspect
-				shape_aspect =>
-				component_feature =>
-				component_terminal =>
-				laminate_component_join_terminal
-				
-end_attribute_mapping;
-
-end_entity_mapping;
 
 entity_mapping Dielectric_crossover_area_armx(Dielectric_crossover_area_armx, dielectric_crossover_area);
 
@@ -247,18 +115,6 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Explicitly_located_layer_connection_point(Explicitly_located_layer_connection_point, layer_connection_point);
-
-mapping_constraints;
-layer_connection_point <=
-shape_aspect
-{shape_aspect
-shape_aspect.description = 'explicitly located'}
-
-end_mapping_constraints;
-
-end_entity_mapping;
-
 entity_mapping Indirect_stratum_component_join_implementation_armx(Indirect_stratum_component_join_implementation_armx, indirect_stratum_component_join_implementation);
 
 mapping_constraints;
@@ -310,53 +166,6 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Inter_stratum_join_implementation(Inter_stratum_join_implementation, (stratum_feature_conductive_join) (plated_inter_stratum_feature));
-
-mapping_constraints;
-(stratum_feature_conductive_join <=
-product_definition_relationship
-{product_definition_relationship
-product_definition_relationship.description = 'physical net supporting stratum feature conductive join'})
-(plated_inter_stratum_feature <=
-inter_stratum_feature <=
-laminate_component <=
-assembly_component <=
-component_definition <=
-product_definition)
-
-end_mapping_constraints;
-
-attribute_mapping topological_requirement(topological_requirement, $PATH, Inter_stratum_join_relationship);
-(stratum_feature_conductive_join <=
-product_definition_relationship
-characterized_product_definition = product_definition_relationship
-characterized_definition = characterized_product_definition
-characterized_definition <-
-property_definition.definition					
-property_definition =>
-product_definition_shape)
-(plated_inter_stratum_feature <=
-inter_stratum_feature <=
-laminate_component <=
-assembly_component <=
-product_definition_shape)
-product_definition_shape <-
-shape_aspect.of_shape
-shape_aspect
-shape_aspect <-
-shape_aspect_relationship.related_shape_aspect
-shape_aspect_relationship
-{shape_aspect_relationship
-shape_aspect_relationship.name = 'join implementation'}
-shape_aspect_relationship.relating_shape_aspect ->
-{shape_aspect
-shape_aspect.name = 'inter stratum join'}
-shape_aspect =>
-join_shape_aspect
-
-end_attribute_mapping;
-
-end_entity_mapping;
 
 entity_mapping Junction_vertex_allocation(Junction_vertex_allocation, shape_aspect_relationship);
 
@@ -471,78 +280,20 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Physical_network_supporting_inter_stratum_feature_armx(Physical_network_supporting_inter_stratum_feature_armx, physical_network_supporting_inter_stratum_feature);
+entity_mapping requirement_assignment_armx(requirement_assignment_armx, requirement_assignment)
+extended;
 
-mapping_constraints;
-physical_network_supporting_inter_stratum_feature <=
-plated_inter_stratum_feature <=
-inter_stratum_feature <=
-laminate_component <=
-assembly_component <=
-product_definition_shape
+attribute_mapping assigned_to(assigned_to, , Stratum_feature_conductive_join_armx);
 
-end_mapping_constraints;
-
-end_entity_mapping;
-
-entity_mapping Physical_network_supporting_stratum_feature_conductive_join(Physical_network_supporting_stratum_feature_conductive_join, stratum_feature_conductive_join);
-
-mapping_constraints;
-stratum_feature_conductive_join <=
-product_definition_relationship
-{product_definition_relationship
-product_definition_relationship.description = 'physical net supporting stratum feature conductive join'}
-
-end_mapping_constraints;
-
-end_entity_mapping;
-
-entity_mapping Stratum_feature_conductive_join_armx(Stratum_feature_conductive_join_armx, stratum_feature_conductive_join);
-
-mapping_constraints;
-stratum_feature_conductive_join <=
-product_definition_relationship
-
-end_mapping_constraints;
-
-attribute_mapping related_concept(related_concept, $PATH, Stratum_feature_template_component_armx);
-stratum_feature_conductive_join <=
-product_definition_relationship
-product_definition_relationship.related_product_definition ->
-product_definition =>
-component_definition =>
-assembly_component =>
-laminate_component =>
-stratum_feature_template_component
-
+					requirement_assigned_item *> imcr_requirement_assigned_item
+					imcr_requirement_assigned_item = stratum_feature_conductive_join
+				
 end_attribute_mapping;
+attribute_mapping assigned_to(assigned_to, , Dielectric_crossover_area_armx);
 
-attribute_mapping relating_concept(relating_concept, $PATH, Stratum_feature_template_component_armx);
-stratum_feature_conductive_join <=
-product_definition_relationship
-product_definition_relationship.relating_product_definition ->
-product_definition =>
-component_definition =>
-assembly_component =>
-laminate_component =>
-stratum_feature_template_component
-
-end_attribute_mapping;
-
-attribute_mapping resulting_shape(resulting_shape, $PATH, Shape_representation);
-stratum_feature_conductive_join <=
-product_definition_relationship
-characterized_product_definition = product_definition_relationship
-characterized_product_definition
-characterized_definition = characterized_product_definition
-characterized_definition <-
-property_definition.definition
-property_definition <-
-property_definition_representation.definition
-property_definition_representation
-property_definition_representation.used_representation ->
-representation
-
+					requirement_assigned_item *> imcr_requirement_assigned_item
+					imcr_requirement_assigned_item = dielectric_crossover_area
+				
 end_attribute_mapping;
 
 end_entity_mapping;

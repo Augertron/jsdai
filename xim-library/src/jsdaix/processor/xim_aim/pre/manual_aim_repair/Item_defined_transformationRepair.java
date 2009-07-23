@@ -42,6 +42,7 @@ import jsdai.lang.SdaiException;
 import jsdai.lang.SdaiIterator;
 import jsdai.lang.SdaiModel;
 import jsdai.lang.SdaiSession;
+import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * In stepmod we basically support only the pattern that item_defined_transformation points to 2 axis_placements.
@@ -57,7 +58,7 @@ public final class Item_defined_transformationRepair {
 	
 	private final static float precision = 0.00001f; // precision with which we treat that number is close enough to 0 to be treated as 0
 
-	public static void run(ASdaiModel models)
+	public static void run(ASdaiModel models, Importer importer)
 		throws SdaiException {
 		
 		for (SdaiIterator i = models.createIterator(); i.next();) {
@@ -65,12 +66,12 @@ public final class Item_defined_transformationRepair {
 			AItem_defined_transformation transformations = (AItem_defined_transformation) model.getInstances(CItem_defined_transformation.definition);
 			for (SdaiIterator j = transformations.createIterator(); j.next();) {
 				EItem_defined_transformation transformation = transformations.getCurrentMember(j);
-				ARepresentation_relationship_with_transformation arrwt = getItemsToRepair(transformation, models);
+				ARepresentation_relationship_with_transformation arrwt = getItemsToRepair(transformation, models, importer);
 				if(arrwt == null){
 					continue;
 				}
 				// Now we will really make some repairs
-				ECartesian_transformation_operator cto = getCTO(transformation, models);
+				ECartesian_transformation_operator cto = getCTO(transformation, models, importer);
 				for(int r=1, rCount=arrwt.getMemberCount(); r<=rCount; r++){
 					ERepresentation_relationship_with_transformation errwt = arrwt.getByIndex(r);
 					errwt.setTransformation_operator(null, cto);
@@ -79,20 +80,19 @@ public final class Item_defined_transformationRepair {
 		}
 	}
 	
-	private static ARepresentation_relationship_with_transformation getItemsToRepair(EItem_defined_transformation transformation, ASdaiModel models)throws SdaiException {
+	private static ARepresentation_relationship_with_transformation getItemsToRepair(EItem_defined_transformation transformation, ASdaiModel models, Importer importer)throws SdaiException {
 		boolean needToSearchForInverses = false;
-		SdaiSession session = transformation.findEntityInstanceSdaiModel().getRepository().getSession();
 		if((transformation.testTransform_item_1(null))&&(transformation.getTransform_item_1(null) instanceof ECartesian_transformation_operator)){
 			if((transformation.testTransform_item_2(null))&&(transformation.getTransform_item_2(null) instanceof EPlacement)){			
 				needToSearchForInverses = true;
 			}else{
-				session.printlnSession(" Unsupported combination of item_1 and item_2 for "+transformation);
+				importer.logMessage(" Unsupported combination of item_1 and item_2 for "+transformation);
 			}
 		}else if((transformation.testTransform_item_2(null))&&(transformation.getTransform_item_2(null) instanceof ECartesian_transformation_operator)){
 			if((transformation.testTransform_item_1(null))&&(transformation.getTransform_item_1(null) instanceof EPlacement)){			
 				needToSearchForInverses = true;
 			}else{
-				session.printlnSession(" Unsupported combination of item_1 and item_2 for "+transformation);
+				importer.logMessage(" Unsupported combination of item_1 and item_2 for "+transformation);
 			}
 		}
 		if(needToSearchForInverses){
@@ -103,13 +103,13 @@ public final class Item_defined_transformationRepair {
 		return null;
 	}
 
-	private static ECartesian_transformation_operator getCTO(EItem_defined_transformation transformation, ASdaiModel domain)
+	private static ECartesian_transformation_operator getCTO(EItem_defined_transformation transformation, ASdaiModel domain, Importer importer)
 		throws SdaiException {
 		if((transformation.testTransform_item_1(null))&&(transformation.getTransform_item_1(null) instanceof ECartesian_transformation_operator)){
 			ECartesian_transformation_operator ecto = (ECartesian_transformation_operator)transformation.getTransform_item_1(null);
 			if((transformation.testTransform_item_2(null))&&(transformation.getTransform_item_2(null) instanceof EPlacement)){
 				EPlacement placement = (EPlacement)transformation.getTransform_item_2(null);
-				raiseErrorOrWarning(placement, transformation);
+				raiseErrorOrWarning(placement, transformation, importer);
 				return ecto;
 			}
 		}
@@ -117,7 +117,7 @@ public final class Item_defined_transformationRepair {
 			ECartesian_transformation_operator ecto = (ECartesian_transformation_operator)transformation.getTransform_item_2(null);
 			if((transformation.testTransform_item_1(null))&&(transformation.getTransform_item_1(null) instanceof EPlacement)){
 				EPlacement placement = (EPlacement)transformation.getTransform_item_1(null);
-				raiseErrorOrWarning(placement, transformation);
+				raiseErrorOrWarning(placement, transformation, importer);
 				return ecto;
 			}
 		}
@@ -125,8 +125,7 @@ public final class Item_defined_transformationRepair {
 	}
 
 	// Check if axis_placement has now transformation encoded - if so - raise ERROR, otherwise - warning
-	private static void raiseErrorOrWarning(EPlacement placement, EItem_defined_transformation transformation)throws SdaiException {
-		SdaiSession session = transformation.findEntityInstanceSdaiModel().getRepository().getSession();		
+	private static void raiseErrorOrWarning(EPlacement placement, EItem_defined_transformation transformation, Importer importer)throws SdaiException {
 		String ERROR_MESSAGE = "Item_definition_transformation has Axis_placment with non zero transformation AND Cartesian_transformation_operation "+transformation;  
 		String WARNING_MESSAGE = "Item_definition_transformation has Axis_placment AND Cartesian_transformation_operation - transforming to geometric_relationship_with_operator_transformation"+transformation;
 		// is no transformation encoded?
@@ -139,7 +138,7 @@ public final class Item_defined_transformationRepair {
 					double x = ratios.getByIndex(1);
 					double y = ratios.getByIndex(2);
 					if((Math.abs(x-1)>precision)||(Math.abs(y)>precision)){
-						session.printlnSession(ERROR_MESSAGE);
+						importer.errorMessage(ERROR_MESSAGE);
 						return;
 					}
 				}
@@ -150,7 +149,7 @@ public final class Item_defined_transformationRepair {
 				double x = coords.getByIndex(1);
 				double y = coords.getByIndex(2);
 				if((Math.abs(x)>precision)||(Math.abs(y)>precision)){
-					session.printlnSession(ERROR_MESSAGE);
+					importer.errorMessage(ERROR_MESSAGE);
 					return;
 				}
 			}
@@ -164,7 +163,7 @@ public final class Item_defined_transformationRepair {
 						double y = ratios.getByIndex(2);
 						double z = ratios.getByIndex(3);
 						if((Math.abs(x-1)>precision)||(Math.abs(y)>precision)||(Math.abs(z)>precision)){
-							session.printlnSession(ERROR_MESSAGE);
+							importer.errorMessage(ERROR_MESSAGE);
 							return;
 						}
 					}
@@ -177,7 +176,7 @@ public final class Item_defined_transformationRepair {
 						double y = ratios.getByIndex(2);
 						double z = ratios.getByIndex(3);
 						if((Math.abs(x)>precision)||(Math.abs(y)>precision)||(Math.abs(z-1)>precision)){
-							session.printlnSession(ERROR_MESSAGE);
+							importer.errorMessage(ERROR_MESSAGE);
 							return;
 						}
 					}
@@ -189,11 +188,11 @@ public final class Item_defined_transformationRepair {
 					double y = coords.getByIndex(2);
 					double z = coords.getByIndex(2);
 					if((Math.abs(x)>precision)||(Math.abs(y)>precision)||(Math.abs(z)>precision)){
-						session.printlnSession(ERROR_MESSAGE);
+						importer.errorMessage(ERROR_MESSAGE);
 						return;
 					}
 				}
 			}
-		session.printlnSession(WARNING_MESSAGE);			
+		importer.logMessage(WARNING_MESSAGE);			
 	}
 }

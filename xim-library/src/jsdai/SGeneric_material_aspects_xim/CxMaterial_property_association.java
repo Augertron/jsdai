@@ -85,7 +85,7 @@ public class CxMaterial_property_association extends CMaterial_property_associat
 	}
 */
 	public void setProperty(EMaterial_designation_characterization type, EEntity value) throws SdaiException { // case 1
-		a3 = set_instance(a3, value);
+		a3 = set_instanceX(a3, value);
 	}
 
 	public void unsetProperty(EMaterial_designation_characterization type) throws SdaiException {

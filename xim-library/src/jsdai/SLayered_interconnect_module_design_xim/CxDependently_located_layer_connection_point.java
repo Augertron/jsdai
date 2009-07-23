@@ -21,7 +21,7 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.SInterconnect_module_connection_routing_xim;
+package jsdai.SLayered_interconnect_module_design_xim;
 
 /**
  * 
@@ -35,7 +35,6 @@ import jsdai.SInterconnect_module_usage_view_mim.EInterconnect_module_terminal;
 import jsdai.SInterconnect_module_with_macros_mim.EInterconnect_module_macro_component_join_terminal;
 import jsdai.SLayered_interconnect_module_design_mim.CLayer_connection_point;
 import jsdai.SLayered_interconnect_module_design_mim.ELaminate_component_join_terminal;
-import jsdai.SLayered_interconnect_module_design_xim.*;
 import jsdai.SPhysical_unit_design_view_xim.*;
 import jsdai.SProduct_property_definition_schema.*;
 
@@ -349,7 +348,6 @@ public class CxDependently_located_layer_connection_point extends CDependently_l
 					continue;
 				}
 			}
-			System.err.println(" DELETING "+sar);
 			sar.deleteApplicationInstance();
 
 		}//for

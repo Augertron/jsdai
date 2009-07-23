@@ -12,11 +12,7 @@ USE FROM Part_view_definition_arm;	-- ISO/TS 10303-1023
 USE FROM Person_organization_assignment_arm; -- ISO/TS 10303-1013
 USE FROM Product_view_definition_relationship_arm; -- ISO/TS 10303-1041
  
-REFERENCE FROM Product_identification_arm    --  ISO/TS 10303-1017 
-  (types_of_product);  
-
 REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
- 
  
   CONSTANT 
   -- normative reference: ISO 31-9, Annex A 
@@ -154,20 +150,15 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
         'ORGANIZATION_OR_PERSON_IN_ORGANIZATION_ASSIGNMENT.ITEMS')) |
                          (temp.role = 'id owner') );
     WHERE 
-      WR1: SIZEOF([ 'chemical compound' ] * types_of_product(SELF))= 1 ; 
-      WR2 : EXISTS (id_owner) AND (SIZEOF(id_owner) = 1);
+      WR1 : EXISTS (id_owner) AND (SIZEOF(id_owner) = 1);
   END_ENTITY; 
    
   ENTITY Chemical_element 
     SUBTYPE OF (Substance); 
-    WHERE 
-      WR1: SIZEOF([ 'chemical element' ] * types_of_product(SELF))= 1 ; 
   END_ENTITY; 
  
   ENTITY Physical_particle
     SUBTYPE OF (Substance);
-    WHERE 
-      WR1: SIZEOF([ 'physical particle' ] * types_of_product(SELF))= 1 ;
   END_ENTITY;
 
   ENTITY Raw_material_definition_relationship
@@ -185,8 +176,6 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     SUBTYPE OF (Product);    
     UNIQUE 
       UR1: SELF\Product.id;
-    WHERE 
-      WR1: SIZEOF([ 'substance' ] * types_of_product(SELF))= 1 ; 
   END_ENTITY; 
    
   ENTITY Substance_composition_relationship 

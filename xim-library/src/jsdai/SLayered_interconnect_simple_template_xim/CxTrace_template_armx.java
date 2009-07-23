@@ -31,6 +31,7 @@ package jsdai.SLayered_interconnect_simple_template_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
+import jsdai.SConstructive_solid_geometry_2d_xim.ECurve_style_parameters;
 import jsdai.SLayered_interconnect_simple_template_mim.CTrace_template;
 import jsdai.SPart_template_xim.*;
 import jsdai.SProduct_definition_schema.EProduct_definition;
@@ -59,7 +60,7 @@ public class CxTrace_template_armx extends CTrace_template_armx implements EMapp
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

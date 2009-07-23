@@ -11,6 +11,10 @@ USE FROM Physical_unit_2d_shape_mim; -- ISO/TS 10303-1726
 
 USE FROM product_property_definition_schema (characterized_definition);
 
+  TYPE ipra_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH 
+    (thermal_isolation_removal_template);
+  END_TYPE; 
+
   TYPE lict_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH 
     (assembly_component_usage,
      structured_template);
@@ -20,6 +24,14 @@ USE FROM product_property_definition_schema (characterized_definition);
     SUBTYPE OF (stratum_stack_dependent_template, passage_padstack_definition);
   END_ENTITY;
 
+  ENTITY dependent_electrical_isolation_removal_template
+    SUBTYPE OF (electrical_isolation_removal_template);
+  END_ENTITY;
+
+  ENTITY dependent_thermal_isolation_removal_template
+    SUBTYPE OF (thermal_isolation_removal_template);
+  END_ENTITY;
+  
   ENTITY design_specific_stratum_technology_mapping_relationship
     SUBTYPE OF(stratum_technology_mapping_relationship, property_definition);
       SELF\property_definition.definition RENAMED scope : library_to_design_stack_model_mapping;
@@ -99,6 +111,10 @@ USE FROM product_property_definition_schema (characterized_definition);
   ENTITY structured_template
     ABSTRACT SUPERTYPE OF (ONEOF (single_stratum_structured_template, multi_stratum_structured_template))
     SUBTYPE OF (geometric_template);
+  END_ENTITY;
+  
+  ENTITY thermal_isolation_removal_template
+    SUBTYPE OF (material_removal_structured_template);
   END_ENTITY;
 	
 END_SCHEMA;

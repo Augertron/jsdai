@@ -51,6 +51,38 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
+entity_mapping Part_connected_terminals_definition_domain_armx(Part_connected_terminals_definition_domain_armx, part_connected_terminals_definition_domain);
+
+mapping_constraints;
+part_connected_terminals_definition_domain <=
+shape_aspect
+end_mapping_constraints;
+
+attribute_mapping domain_type(domain_type, shape_aspect.name);
+part_connected_terminals_definition_domain <=
+shape_aspect
+shape_aspect.name
+(shape_aspect.name = 'electrical')
+(shape_aspect.name = 'thermal')
+(shape_aspect.name = 'optical')
+(shape_aspect.name = 'magnetic')
+end_attribute_mapping;
+
+
+attribute_mapping associated_definition(associated_definition, $PATH, Part_connected_terminals_definition_armx);
+	part_connected_terminals_definition_domain <=
+	shape_aspect <-
+	shape_aspect_relationship.relating_shape_aspect
+	shape_aspect_relationship
+	{shape_aspect_relationship
+	shape_aspect_relationship.name  = 'associated definition'}
+	shape_aspect_relationship.related_shape_aspect ->
+	shape_aspect =>
+	part_connected_terminals_definition
+end_attribute_mapping;
+
+end_entity_mapping;
+
 entity_mapping Part_connected_terminals_layout_topology_requirement_assignment_armx(Part_connected_terminals_layout_topology_requirement_assignment_armx, part_connected_terminals_layout_topology_requirement_assignment);
 
 mapping_constraints;

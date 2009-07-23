@@ -21,7 +21,7 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.SInterconnect_module_connection_routing_xim;
+package jsdai.SLayered_interconnect_module_design_xim;
 
 /**
  * 
@@ -32,7 +32,6 @@ package jsdai.SInterconnect_module_connection_routing_xim;
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
 import jsdai.SLayered_interconnect_module_design_mim.CLayer_connection_point;
-import jsdai.SLayered_interconnect_module_design_xim.*;
 import jsdai.SProduct_property_definition_schema.*;
 
 public class CxExplicitly_located_layer_connection_point extends CExplicitly_located_layer_connection_point implements EMappedXIMEntity{

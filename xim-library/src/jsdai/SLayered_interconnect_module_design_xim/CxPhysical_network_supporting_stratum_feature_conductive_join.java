@@ -21,7 +21,7 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.SInterconnect_module_connection_routing_xim;
+package jsdai.SLayered_interconnect_module_design_xim;
 
 /**
  * 
@@ -142,7 +142,7 @@ public class CxPhysical_network_supporting_stratum_feature_conductive_join
 		return (EProduct_definition_shape)a8;
 	}*/
 	public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
-		a8 = set_instance(a8, value);
+		a8 = set_instanceX(a8, value);
 	}
 	public void unsetOf_shape(EShape_aspect type) throws SdaiException {
 		a8 = unset_instance(a8);

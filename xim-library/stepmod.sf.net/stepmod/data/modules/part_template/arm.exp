@@ -9,8 +9,6 @@ SCHEMA Part_template_arm;
 USE FROM Analytical_model_arm;	-- ISO/TS 10303-1603
 USE FROM Feature_and_connection_zone_arm;	-- ISO/TS 10303-1671
    
-REFERENCE FROM product_identification_arm(types_of_product); -- ISO/TS 10303-1017 
-
   TYPE correlated_or_independent = SELECT
     (Property_value_representation,
      characteristic);
@@ -35,8 +33,6 @@ REFERENCE FROM product_identification_arm(types_of_product); -- ISO/TS 10303-101
   	SUBTYPE OF (Product);
     UNIQUE 
       UR1: SELF\Product.id;
-  	WHERE 
-      WR1 : SIZEOF([ 'template model' ] * types_of_product(SELF))= 1 ;
   END_ENTITY;
 
   ENTITY Template_definition
@@ -45,9 +41,6 @@ REFERENCE FROM product_identification_arm(types_of_product); -- ISO/TS 10303-101
       physical_characteristic                      : OPTIONAL SET[1:?] OF correlated_or_independent;
     DERIVE	
       SELF\Item_shape.described_element : template_definition := SELF;      
-    WHERE
-      WR1 : SIZEOF(QUERY(prpc <* USEDIN(SELF\Product_view_definition.defined_version.of_product,
-        'PRODUCT_IDENTIFICATION_ARM.PRODUCT_CATEGORY_ASSIGNMENT.PRODUCTS') | (prpc.category\Product_category.name = 'template model'))) > 0;
   END_ENTITY;
 
   ENTITY Template_version

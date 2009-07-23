@@ -80,7 +80,7 @@ public class CxExternal_source_identification extends CExternal_source_identific
 		return (EIdentification_role)a1;
 	}*/
 	public void setRole(EIdentification_assignment type, EIdentification_role value) throws SdaiException {
-		a1 = set_instance(a1, value);
+		a1 = set_instanceX(a1, value);
 	}
 	public void unsetRole(EIdentification_assignment type) throws SdaiException {
 		a1 = unset_instance(a1);
@@ -103,7 +103,7 @@ public class CxExternal_source_identification extends CExternal_source_identific
 		return (jsdai.SExternal_reference_schema.EExternal_source)a2;
 	}*/
 	public void setSource(EExternal_identification_assignment type, jsdai.SExternal_reference_schema.EExternal_source value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetSource(EExternal_identification_assignment type) throws SdaiException {
 		a2 = unset_instance(a2);

@@ -37,64 +37,6 @@ USE FROM Integral_shield_xim;
 REFERENCE FROM support_resource_schema   -- ISO 10303-41
   (bag_to_set);
 
-REFERENCE FROM Requirement_decomposition_xim(get_rvd);  
-
-  TYPE land_physical_template_or_inter_stratum_feature_template = SELECT
-       (Land_physical_template,
-        Inter_stratum_feature_template);
-  END_TYPE;
-  
-  ENTITY Dependent_electrical_isolation_removal_template_armx
-    SUBTYPE OF (Electrical_isolation_removal_template_armx, dependent_electrical_isolation_removal_template);
-      associated_item : land_physical_template_or_inter_stratum_feature_template;
-    WHERE
-      WR1 : SIZEOF(QUERY (dtlipd <* USEDIN(SELF,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
-                  NOT(
-                     (SIZEOF(QUERY (tlist <* USEDIN(associated_item,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
-                             NOT(
-                                 (tlist\Template_location_in_structured_template.assembly :=: 
-                                  dtlipd\Template_location_in_structured_template.assembly) AND
-                                 ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.DEPENDENT_TEMPLATE_LOCATION_IN_PADSTACK_DEFINITION' IN TYPEOF(dtlipd)) AND                                 
-                                 (tlist :=: dtlipd\Dependent_template_location_in_padstack_definition.reference_location)
-                                 )
-                      )) = 0)
-                      )
-             )) = 0;      
-  END_ENTITY;
-
-  ENTITY Dependent_thermal_isolation_removal_template_armx
-    SUBTYPE OF (Thermal_isolation_removal_template_armx, dependent_thermal_isolation_removal_template);
-      associated_item : Land_physical_template_armx;
-    WHERE
-      WR1 : SIZEOF(QUERY (dtlipd <* USEDIN(SELF,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
-                  NOT(
-                     (SIZEOF(QUERY (tlist <* USEDIN(associated_item,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
-                             NOT(
-                                 (tlist\Template_location_in_structured_template.assembly :=: 
-                                  dtlipd\Template_location_in_structured_template.assembly) AND
-                                 ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.DEPENDENT_TEMPLATE_LOCATION_IN_PADSTACK_DEFINITION' IN TYPEOF(dtlipd)) AND                                 
-                                 (tlist :=: dtlipd\Dependent_template_location_in_padstack_definition.reference_location)
-                                 )
-                      )) = 0)
-                      )
-             )) = 0;      
-  END_ENTITY;
-  
-  ENTITY Electrical_isolation_removal_template_armx
-    (* CONNOTATIONAL *) SUBTYPE OF (Material_removal_feature_template_armx, electrical_isolation_removal_template);
-    DERIVE
-      electrical_isolation_spacing_requirement : SET[1:?] OF Requirement_view_definition := 
-        get_rvd(SELF, 'electrical requirement');
-    WHERE
-      WR1: SIZEOF(QUERY(eisr <* electrical_isolation_spacing_requirement |
-         NOT('INTERCONNECT_PHYSICAL_REQUIREMENT_ALLOCATION_XIM.ELECTRICAL_ISOLATION_REQUIREMENT'
-        IN TYPEOF(eisr)) )) =0;
-      WR2: SIZEOF(QUERY(s <* SELF\Geometric_template_armx.shapes |
-        ('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_MIM.PLANAR_CLOSED_PATH_SHAPE_REPRESENTATION_WITH_PARAMETERS' IN TYPEOF(s)))) = 0;
-      WR3: SIZEOF(QUERY(s <* SELF\Geometric_template_armx.shapes |
-        NOT ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_XIM.SINGLE_BOUNDARY_CSG_2D_SHAPE_REPRESENTATION' IN TYPEOF(s)))) = 0;                
-  END_ENTITY;
-
   ENTITY Electrical_isolation_requirement
     SUBTYPE OF (Requirement_view_definition);
       effective_voltage_withstand_capacity_requirement : OPTIONAL Value_limit;
@@ -120,17 +62,6 @@ ENTITY Interconnect_shield_allocation_armx
      WR1 : assigned_requirement_property\Product_view_definition.initial_context\product_definition_context.application_domain = 'electrical';      
   END_ENTITY;
 		
-  ENTITY Thermal_isolation_removal_template_armx
-    (* CONNOTATIONAL *) SUBTYPE OF (Material_removal_structured_template_armx, thermal_isolation_removal_template);
-	DERIVE
-  		thermal_isolation_spacing_requirement: SET[1:?] OF Requirement_view_definition :=
-		  get_rvd(SELF, 'thermal requirement');
-	WHERE
-	  WR1: SIZEOF(QUERY(tisr <* THERMAL_ISOLATION_SPACING_REQUIREMENT |
-       NOT('INTERCONNECT_PHYSICAL_REQUIREMENT_ALLOCATION_XIM.THERMAL_ISOLATION_REQUIREMENT' IN TYPEOF(tisr))
-       )) =0;
-  END_ENTITY;
-
   ENTITY Thermal_isolation_requirement
   	SUBTYPE OF (Requirement_view_definition);
     thermal_bar_width                        : OPTIONAL Length_tolerance_characteristic;

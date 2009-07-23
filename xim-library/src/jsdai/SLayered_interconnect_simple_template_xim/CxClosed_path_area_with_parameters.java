@@ -25,7 +25,9 @@ package jsdai.SLayered_interconnect_simple_template_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.SLayered_interconnect_simple_template_mim.CPath_area_with_parameters;
+import jsdai.SConstructive_solid_geometry_2d_mim.CPath_area_with_parameters;
+import jsdai.SConstructive_solid_geometry_2d_xim.CxPath_area_with_parameters_armx;
+import jsdai.SConstructive_solid_geometry_2d_xim.EPath_area_with_parameters_armx;
 import jsdai.SRepresentation_schema.EMapped_item;
 import jsdai.SRepresentation_schema.ERepresentation_map;
 
@@ -51,7 +53,7 @@ public class CxClosed_path_area_with_parameters extends CClosed_path_area_with_p
 	}*/
 
 	public void setMapping_source(EMapped_item type, ERepresentation_map value) throws SdaiException {
-		a1 = set_instance(a1, value);
+		a1 = set_instanceX(a1, value);
 	}
 
 	public void unsetMapping_source(EMapped_item type) throws SdaiException {
@@ -92,13 +94,13 @@ public class CxClosed_path_area_with_parameters extends CClosed_path_area_with_p
 	* @param armEntity arm entity.
 	* @throws SdaiException
 	*/
-	public static void setMappingConstraints(SdaiContext context, EPath_area_with_parameters_armx armEntity) throws SdaiException
+	public static void setMappingConstraints(SdaiContext context, EClosed_path_area_with_parameters armEntity) throws SdaiException
 	{
 		unsetMappingConstraints(context, armEntity);
 		CxPath_area_with_parameters_armx.setMappingConstraints(context, armEntity);
 	}
 
-	public static void unsetMappingConstraints(SdaiContext context, EPath_area_with_parameters_armx armEntity) throws SdaiException
+	public static void unsetMappingConstraints(SdaiContext context, EClosed_path_area_with_parameters armEntity) throws SdaiException
 	{
 		CxPath_area_with_parameters_armx.setMappingConstraints(context, armEntity);
 	}

@@ -46,12 +46,12 @@ public class CxClass_with_attributes extends CClass_with_attributes implements E
 
 	// Taken from Characterized_object
 	/// methods for attribute: name, base type: STRING
-	public boolean testName(ECharacterized_object type) throws SdaiException {
+/*	public boolean testName(ECharacterized_object type) throws SdaiException {
 		return test_string(a3);
 	}
 	public String getName(ECharacterized_object type) throws SdaiException {
 		return get_string(a3);
-	}
+	}*/
 	public void setName(ECharacterized_object type, String value) throws SdaiException {
 		a3 = set_string(value);
 	}
@@ -67,12 +67,12 @@ public class CxClass_with_attributes extends CClass_with_attributes implements E
 	//<01-0> current entity
 	//<01-0-0> explicit attribute - generateExplicitCurrentEntityMethodsX()
 	/// methods for attribute: description, base type: STRING
-	public boolean testDescription(ECharacterized_object type) throws SdaiException {
+/*	public boolean testDescription(ECharacterized_object type) throws SdaiException {
 		return test_string(a4);
 	}
 	public String getDescription(ECharacterized_object type) throws SdaiException {
 		return get_string(a4);
-	}
+	}*/
 	public void setDescription(ECharacterized_object type, String value) throws SdaiException {
 		a4 = set_string(value);
 	}

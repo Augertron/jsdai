@@ -51,7 +51,7 @@ import jsdai.util.LangUtils;
 
 /**
  * Class for any XIM model data export to appropriate AIM model.
- * 
+ *
  * @author Giedrius Liutkus
  * @version $Revision$
  */
@@ -60,11 +60,11 @@ public class Main {
 	public static void export(SchemaInstance schemaInstance, SdaiContext context) throws SdaiException {
 		ASdaiModel allIncludedModels = new ASdaiModel();
 		gatherNestedSchemaModels(schemaInstance, allIncludedModels, new HashSet());
-		
+
 		ArrayList allXimEntities = firstRun(context, allIncludedModels, null);
 		secondRun(context, allIncludedModels, null);
 		thirdRun(context, null, allXimEntities);
-		
+
 //		export(context, allIncludedModels, null);
 	}
 
@@ -270,7 +270,7 @@ public class Main {
 
 		// session.closeSession();
 	}
-	
+
 	private static ArrayList firstRun(SdaiContext context, ASdaiModel allIncludedModels, SdaiModel modelAIM) throws SdaiException {
 		if (modelAIM == null)
 			modelAIM = context.domain.getByIndex(2);
@@ -288,7 +288,7 @@ public class Main {
 			modelAIM.substituteInstance(category);
 		}
 		// NAUO&co uses some stuff from Assembly_components, so assure that Cx for AC is invoked at the end of process
-		AAssembly_component_armx aac = new AAssembly_component_armx(); 
+		AAssembly_component_armx aac = new AAssembly_component_armx();
 		for (int index = 0; index < allOriginalInstances.length; index++) {
 			EEntity instanceExtended = (EEntity) allOriginalInstances[index];
 			EEntity_definition oldType = instanceExtended.getInstanceType();
@@ -316,15 +316,15 @@ public class Main {
 				if(instanceExtended instanceof ESequential_stratum_technology_occurrence_group_xim){
 					instanceExtended.deleteApplicationInstance();
 				}else{
-					System.err.println("Missing Cx " + instanceExtended.getClass() + " within " + schemaName);
+					sessionLog(context, "Missing Cx " + instanceExtended.getClass() + " within " + schemaName);
 				}
 			}
 		}
 		for (int index=1,count=aac.getMemberCount(); index<=count ; index++) {
 			EAssembly_component_armx instanceExtended = aac.getByIndex(index);
 			createAimData(context, allInstancesBasedOnXIM, instanceExtended);
-		}		
-		
+		}
+
 		return allInstancesBasedOnXIM;
 	}
 
@@ -335,7 +335,9 @@ public class Main {
 			instance.createAimData(context);
 		}
 		catch (SdaiException ex) {
-			ex.printStackTrace();
+			String log = "Problems with createAimData for "+instance;
+			sessionLog(context, log);
+			exceptionWraper(context, ex);
 		}
 		// Set link, so that we can faster make a downgrade to AIM type
 		// instanceExtended.setTemp(AIM, newType);
@@ -344,7 +346,7 @@ public class Main {
 			allInstancesBasedOnXIM.add(instanceExtended);
 		}
 	}
-	
+
 	private static void secondRun(SdaiContext context, ASdaiModel allIncludedModels, SdaiModel modelAIM) throws SdaiException {
 		//		 SECOND RUN
 		if (modelAIM == null)
@@ -358,13 +360,14 @@ public class Main {
 					instanceExtended = modelAIM.substituteInstance(instanceExtended);
 				}
 				catch (SdaiException ex) {
-					ex.printStackTrace();
-					System.err.println(" oldType " + oldType + " instance " + instanceExtended);
+					String log = "Problems with substituting instances: "+
+						" oldType " + oldType + " to new type " + instanceExtended;
+					sessionLog(context, log);
 				}
 			}
 		}
 	}
-	
+
 	private static void thirdRun(SdaiContext context, SdaiModel modelAIM, ArrayList allInstancesBasedOnXIM) throws SdaiException {
 		Iterator iter = allInstancesBasedOnXIM.iterator();
 		while (iter.hasNext()) {
@@ -373,6 +376,9 @@ public class Main {
 			// if(instance instanceof EShape_element)
 			// continue;
 			EMappedXIMEntity instanceExtended = (EMappedXIMEntity) instance;
+			if(!instanceExtended.isValid()){
+				continue;
+			}
 			EEntity_definition newType = (EEntity_definition) instanceExtended.getTemp("AIM");
 			try {
 				EEntity temporaryInstance = null;
@@ -380,10 +386,10 @@ public class Main {
 					XimEntityStandalone ximInstance = (XimEntityStandalone)instanceExtended;
 					temporaryInstance = ximInstance.getAimInstance(context);
 					ximInstance.unsetAimInstance(context);
-				}	
+				}
 				AEntity instances = new AEntity();
 				instance.findEntityInstanceUsers(context.domain, instances);
-				
+
 				// System.err.println(instanceExtended+" "+instanceExtended.getAllReferences()+" "+instances);
 				EEntity substitute = modelAIM.substituteInstance(instanceExtended, newType);
 				// this is needed in order to preserve instance numbers
@@ -395,50 +401,60 @@ public class Main {
 						temporaryInstance.deleteApplicationInstance();
 					}
 				}
-				
+
 			}
 			catch (Exception ex) {
-				ex.printStackTrace();
-				System.err.println(instanceExtended + " AIM1 " + newType + " " + instanceExtended.getClass() + " "
-						+ instanceExtended.getTemp("AIM"));
+				exceptionWraper(context, ex);
+				String log = instanceExtended + " AIM1 " + newType + " " + instanceExtended.getClass() + " "
+						+ instanceExtended.getTemp("AIM");
+				sessionLog(context, log);
 				EEntity_definition oldType = instanceExtended.getInstanceType();
-				if (!oldType.isSubtypeOf(newType))
-					System.err.println(newType + " NOT SUB-AIM " + oldType);
+				if (!oldType.isSubtypeOf(newType)){
+					sessionLog(context, "");
+					sessionLog(context, newType + " NOT SUB-AIM " + oldType);
+				}
 				AEntity result = new AEntity();
+				if(!instanceExtended.isValid()){
+					sessionLog(context, "");
+					continue;
+				}
 				instanceExtended.findEntityInstanceUsers(context.domain, result);
 				for (int i = 1; i <= result.getMemberCount(); i++) {
-					System.err.print(" " + i + " : " + result.getByIndexEntity(i));
+					sessionLog(context, " " + i + " : " + result.getByIndexEntity(i));
 				}
-				System.err.println();
+				sessionLog(context, "");
 			}
 		}
 
 		allInstancesBasedOnXIM.clear();
 	}
 
-	// New version
-	public void export(SdaiRepository repoXIM, ASdaiModel dataDomain, String stepFileName, String schemaName,
+	/**
+	 * This method converts specified XIM population to MIM population in place.
+	 */
+	public void export(SdaiRepository repoXIM, ASdaiModel dataDomain, String schemaName,
 			SdaiSession session) throws SdaiException {
+
 		ASdaiModel domainAIM = new ASdaiModel();
 		ESchema_definition schema = session.findSchemaDefinition(schemaName);
 		// System.err.println(schemaName + " " + schema + " " + dataDomain.getMemberCount());
-		SchemaInstance asi = repoXIM.createSchemaInstance(stepFileName, schema);
-		SchemaInstance asiARM = repoXIM.createSchemaInstance(stepFileName + "-mim", schema);
-		
-		HashMap ximToAim = new HashMap(); 
+		SchemaInstance asi = repoXIM.createSchemaInstance("mim2xim", schema);
+		SchemaInstance asiARM = repoXIM.createSchemaInstance("mim2xim-mim", schema);
+
+		HashMap ximToAim = new HashMap();
 		HashMap ximEntitiesToAim = new HashMap();
-		
-		ArrayList modelsXim = new ArrayList(); 
+
+		ArrayList modelsXim = new ArrayList();
 		for (int i = 1, count = dataDomain.getMemberCount(); i <= count; i++) {
 			modelsXim.add(dataDomain.getByIndex(i));
 		}
-		
+
 		for (int i = 0; i < modelsXim.size(); ++i) {
 			SdaiModel modelXIM = (SdaiModel) modelsXim.get(i);
 			String modelName = modelXIM.getName();
 
 			SdaiModel modelAIM = repoXIM.createSdaiModel(modelName + "-MIM", schema);
-			
+
 			ximToAim.put(modelXIM, modelAIM);
 
 			domainAIM.addByIndex(i + 1, modelAIM, null);
@@ -450,22 +466,22 @@ public class Main {
 			ASdaiModel domainARM = new ASdaiModel();
 			domainARM.addByIndex(1, modelXIM, null);
 			asiARM.addSdaiModel(modelXIM);
-			
+
 			ximEntitiesToAim.put(modelXIM, firstRun(context, domainARM, modelAIM));
 			secondRun(context, domainARM, modelAIM);
 		}
-		
+
 
 		for (int i = 0; i < modelsXim.size(); ++i) {
 			SdaiModel modelXIM = (SdaiModel) modelsXim.get(i);
 			String modelName = modelXIM.getName();
-			
+
 			SdaiModel modelAIM = (SdaiModel) ximToAim.get(modelXIM);
-			
+
 			SdaiContext context = new SdaiContext(modelAIM.getUnderlyingSchema(), domainAIM, modelAIM);
-			
+
 			thirdRun(context, modelAIM, (ArrayList) ximEntitiesToAim.get(modelXIM));
-			
+
 
 			// -- Wrap up --
 			ASchemaInstance associatedSchemas = modelXIM.getAssociatedWith();
@@ -481,9 +497,46 @@ public class Main {
 		}
 		asi.delete();
 		asiARM.delete();
-		repoXIM.exportClearTextEncoding(stepFileName, stepFileName);
 		CxAP210ARMUtilities.mostlyUsedInstances.clear();
 		// System.err.println(" CLEANING ");
+	}
+
+	// New version
+	public void export(SdaiRepository repoXIM, ASdaiModel dataDomain, String stepFileName, String schemaName,
+			SdaiSession session) throws SdaiException {
+
+		export(repoXIM, dataDomain, schemaName, session);
+		repoXIM.exportClearTextEncoding(stepFileName, stepFileName);
+	}
+
+	private static void sessionLog(SdaiContext context, String log){
+		try{
+			SdaiSession session = context.working_model.getRepository().getSession();
+			session.printlnSession(log);
+		}
+		catch (SdaiException ex2) {
+			System.err.println("Problems with logging in session ");
+			System.err.println(log);
+			ex2.printStackTrace();
+		}
+	}
+
+	private static void exceptionWraper(SdaiContext context, Exception ex) {
+		SdaiSession session;
+		try{
+			session = context.working_model.getRepository().getSession();
+			session.printlnSession("  ");
+			session.printlnSession("  "+ex.toString());
+			StackTraceElement[] stes = ex.getStackTrace();
+			for(int i=0;i<stes.length;i++){
+				session.printlnSession("  "+stes[i].toString());
+			}
+			session.printlnSession("  ");
+		}catch (Exception ex2) {
+			System.err.println("Problems with logging in session ");
+			ex2.printStackTrace();
+			ex.printStackTrace();
+		}
 	}
 
 }

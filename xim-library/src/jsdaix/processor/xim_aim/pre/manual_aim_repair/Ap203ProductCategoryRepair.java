@@ -36,6 +36,7 @@ import jsdai.lang.ASdaiModel;
 import jsdai.lang.SdaiException;
 import jsdai.lang.SdaiIterator;
 import jsdai.lang.SdaiModel;
+import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * This class contains utility method, that tries to repair
@@ -84,7 +85,7 @@ public final class Ap203ProductCategoryRepair {
 	 * @param models models that should be repaired
 	 * @throws SdaiException
 	 */
-	public static void run(ASdaiModel models)
+	public static void run(ASdaiModel models, Importer importer)
 		throws SdaiException {
 		
 		EProduct_related_product_category ePartCategory = null;
@@ -98,7 +99,7 @@ public final class Ap203ProductCategoryRepair {
 						if (ePartCategory == null) {
 							// use lazy category creation in order
 							// to avoid creation of unneeded category
-							ePartCategory = createPartCategory(model);
+							ePartCategory = createPartCategory(model, importer);
 						}
 						
 						ePartCategory.getProducts(null).addUnordered(eProduct);
@@ -108,7 +109,7 @@ public final class Ap203ProductCategoryRepair {
 		}
 	}
 	
-	private static EProduct_related_product_category createPartCategory(SdaiModel model)
+	private static EProduct_related_product_category createPartCategory(SdaiModel model, Importer importer)
 		throws SdaiException {
 		
 		EProduct_related_product_category ePartCategory = (EProduct_related_product_category)
@@ -116,7 +117,7 @@ public final class Ap203ProductCategoryRepair {
 		ePartCategory.setName(null, PART_CATEGORY_NAME);
 		ePartCategory.setDescription(null, "generated");
 		ePartCategory.createProducts(null);
-		
+		importer.logMessage(" Created new category "+ePartCategory);
 		return ePartCategory;
 	}
 	

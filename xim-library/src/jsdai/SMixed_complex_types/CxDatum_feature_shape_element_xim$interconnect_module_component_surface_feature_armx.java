@@ -71,7 +71,7 @@ public class CxDatum_feature_shape_element_xim$interconnect_module_component_sur
 		return (EProduct_definition_shape)a3;
 	}*/
 	public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
-		a3 = set_instance(a3, value);
+		a3 = set_instanceX(a3, value);
 	}
 	public void unsetOf_shape(EShape_aspect type) throws SdaiException {
 		a3 = unset_instance(a3);

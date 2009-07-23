@@ -52,7 +52,7 @@ public class CxApplied_date_assignment__registration extends CApplied_date_assig
 		return (jsdai.SDate_time_schema.EDate_role)a1;
 	}*/
 	public void setRole(EDate_assignment type, jsdai.SDate_time_schema.EDate_role value) throws SdaiException {
-		a1 = set_instance(a1, value);
+		a1 = set_instanceX(a1, value);
 	}
 	public void unsetRole(EDate_assignment type) throws SdaiException {
 		a1 = unset_instance(a1);

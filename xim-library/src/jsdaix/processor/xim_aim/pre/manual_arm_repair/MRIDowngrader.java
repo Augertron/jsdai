@@ -27,9 +27,14 @@ package jsdaix.processor.xim_aim.pre.manual_arm_repair;
 import jsdai.dictionary.EEntity_definition;
 import jsdai.lang.AEntity;
 import jsdai.lang.ASdaiModel;
+import jsdai.lang.EEntity;
 import jsdai.lang.SdaiException;
 import jsdai.SDocument_assignment_mim.AApplied_document_reference;
 import jsdai.SDocument_assignment_mim.CApplied_document_reference;
+import jsdai.SExtended_measure_representation_mim.AValue_range;
+import jsdai.SExtended_measure_representation_mim.CValue_range;
+import jsdai.SExtended_measure_representation_xim.AValue_range_armx;
+import jsdai.SExtended_measure_representation_xim.CValue_range_armx;
 import jsdai.SFabrication_technology_xim.APassage_technology_armx;
 import jsdai.SFabrication_technology_xim.CPassage_technology_armx;
 import jsdai.SMeasure_schema.CLength_measure_with_unit;
@@ -40,9 +45,12 @@ import jsdai.SMixed_complex_types.*;
 import jsdai.SPart_template_xim.ATemplate_definition;
 import jsdai.SPart_template_xim.CTemplate_definition;
 import jsdai.SQualified_measure_schema.CMeasure_representation_item;
+import jsdai.SQualified_measure_schema.EMeasure_representation_item;
+import jsdai.SRepresentation_schema.ACompound_representation_item;
 import jsdai.SRepresentation_schema.AGlobal_uncertainty_assigned_context;
 import jsdai.SRepresentation_schema.ARepresentation;
 import jsdai.SRepresentation_schema.AUncertainty_assigned_representation;
+import jsdai.SRepresentation_schema.CCompound_representation_item;
 import jsdai.SRepresentation_schema.CGlobal_uncertainty_assigned_context;
 import jsdai.SRepresentation_schema.CRepresentation;
 import jsdai.SRepresentation_schema.CUncertainty_assigned_representation;
@@ -52,6 +60,7 @@ import jsdai.SRequirement_decomposition_xim.APredefined_requirement_view_definit
 import jsdai.SRequirement_decomposition_xim.CPredefined_requirement_view_definition_armx;
 import jsdai.SMeasure_schema.CFrequency_measure_with_unit;
 import jsdai.SMeasure_schema.CPower_measure_with_unit;
+import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * @author Giedrius
@@ -64,14 +73,14 @@ public class MRIDowngrader {
 	 * @param models
 	 * @throws SdaiException
 	 */
-	public static void run(ASdaiModel models) throws SdaiException {
+	public static void run(ASdaiModel models, Importer importer) throws SdaiException {
 		// This may be expanded in the future
 		// 1) LMWU+MRI
 		downgradeMRI(models, CLength_measure_with_unit$measure_representation_item.definition,
-				CLength_measure_with_unit.definition);
+				CLength_measure_with_unit.definition, importer);
 		// 2) MMWU+MRI
 		downgradeMRI(models, CMass_measure_with_unit$measure_representation_item.definition,
-				CMass_measure_with_unit.definition);
+				CMass_measure_with_unit.definition, importer);
 		// 3) LMWU+UMWU
 		AEntity instancesToRename = models.getExactInstances(CLength_measure_with_unit$uncertainty_measure_with_unit.definition);
 		for(int index=1; index <= instancesToRename.getMemberCount();){
@@ -88,20 +97,22 @@ public class MRIDowngrader {
 				index++;
 				continue;
 			}
-			instanceToRename.findEntityInstanceSdaiModel().substituteInstance(instanceToRename, CLength_measure_with_unit.definition);
+			String message = " Changed "+instanceToRename; 
+			EEntity instance = instanceToRename.findEntityInstanceSdaiModel().substituteInstance(instanceToRename, CLength_measure_with_unit.definition);
+			importer.logMessage(message+" to "+instance);
 		}
 		// 4) MRI
 		downgradeMRI(models, CMeasure_representation_item.definition,
-				CMeasure_with_unit.definition);
+				CMeasure_with_unit.definition, importer);
 		// 5) FMWU+MRI
 		downgradeMRI(models, CFrequency_measure_with_unit$measure_representation_item.definition,
-				CFrequency_measure_with_unit.definition);
+				CFrequency_measure_with_unit.definition, importer);
 		// 6) PMWU+MRI
 		downgradeMRI(models, CMeasure_representation_item$power_measure_with_unit.definition,
-				CPower_measure_with_unit.definition);
+				CPower_measure_with_unit.definition, importer);
 		// 7) VMWU+MRI
 		downgradeMRI(models, CMeasure_representation_item$volume_measure_with_unit.definition,
-				CVolume_measure_with_unit.definition);
+				CVolume_measure_with_unit.definition, importer);
 		
 	}
 
@@ -110,10 +121,10 @@ public class MRIDowngrader {
 	 * @throws SdaiException
 	 */
 	private static void downgradeMRI(ASdaiModel models, EEntity_definition oldType,
-			EEntity_definition newType) throws SdaiException {
+			EEntity_definition newType, Importer importer) throws SdaiException {
 		AEntity instancesToRename = models.getExactInstances(oldType);
 		for(int index=1; index <= instancesToRename.getMemberCount();){
-			ERepresentation_item instanceToRename = (ERepresentation_item)instancesToRename.getByIndexEntity(index);
+			EMeasure_representation_item instanceToRename = (EMeasure_representation_item)instancesToRename.getByIndexEntity(index);
 			ARepresentation representations = new ARepresentation();
 			CRepresentation.usedinItems(null, instanceToRename, null, representations);
 			if(representations.getMemberCount() > 0){
@@ -145,8 +156,31 @@ public class MRIDowngrader {
 				index++;
 				continue;
 			}
+			
+			ACompound_representation_item acri = new ACompound_representation_item();
+			CCompound_representation_item.usedinItem_element(null, instanceToRename, null, acri);
+			if(acri.getMemberCount() > 0){
+				index++;
+				continue;
+			}
+			
+			AValue_range_armx avr = new AValue_range_armx();
+			CValue_range_armx.usedinLower_limit(null, instanceToRename, null, avr);
+			if(avr.getMemberCount() > 0){
+				index++;
+				continue;
+			}
+
+			CValue_range_armx.usedinUpper_limit(null, instanceToRename, null, avr);
+			if(avr.getMemberCount() > 0){
+				index++;
+				continue;
+			}
+			
 			// System.err.println(" Downgrading "+instanceToRename);
-			instanceToRename.findEntityInstanceSdaiModel().substituteInstance(instanceToRename, newType);
+			String message = " Changed "+instanceToRename;
+			EEntity instance = instanceToRename.findEntityInstanceSdaiModel().substituteInstance(instanceToRename, newType);
+			importer.logMessage(message+" to "+instance);
 		}
 	}
 }

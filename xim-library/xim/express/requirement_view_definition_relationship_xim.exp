@@ -35,6 +35,26 @@ USE FROM Product_view_definition_relationship_xim;    -- ISO/TS 10303-1041
 
 USE FROM Requirement_view_definition_xim;    -- ISO/TS 10303-1141
 
+USE FROM Requirement_view_definition_relationship_mim;
+
+	TYPE requirement_view_relationship_type = ENUMERATION OF
+    	(derived_from,
+	     precedence,
+    	 supplemental);
+	END_TYPE;
+
+ ENTITY Requirement_view_definition_relationship_armx
+     (* CONNOTATIONAL *) SUBTYPE OF (requirement_view_definition_relationship);
+       SELF\product_definition_relationship.relating_product_definition RENAMED primary  : Requirement_view_definition;
+       SELF\product_definition_relationship.related_product_definition RENAMED secondary : Requirement_view_definition;
+     (** GL in ARM it is o type STRINg, but here we leave ENUMERATION for easier handling **)       
+       relation_type                                                                     : requirement_view_relationship_type;
+    DERIVE      
+      SELF\product_definition_relationship.id : identifier := ?;
+      SELF\product_definition_relationship.name : label := ?;
+     WHERE
+       WR1 : primary :<>: secondary;
+  END_ENTITY;
 
 ENTITY Requirement_collection_relationship
   (* CONNOTATIONAL *) SUBTYPE OF (Product_definition_relationship);
@@ -45,9 +65,9 @@ ENTITY Requirement_collection_relationship
 END_ENTITY;
 
 ENTITY Tracing_relationship
-  (* CONNOTATIONAL *) SUBTYPE OF (Product_definition_relationship);
-  SELF\Product_definition_relationship.relating_product_definition RENAMED traces_from : Requirement_view_definition;
-  SELF\Product_definition_relationship.related_product_definition RENAMED traces_to : Requirement_view_definition;
+  (* CONNOTATIONAL *) SUBTYPE OF (Requirement_view_definition_relationship_armx);
+  SELF\Requirement_view_definition_relationship_armx.primary RENAMED traces_from : Requirement_view_definition;
+  SELF\Requirement_view_definition_relationship_armx.secondary RENAMED traces_to : Requirement_view_definition;
 END_ENTITY;
 
 END_SCHEMA;  -- Requirement_view_definition_relationship_xim

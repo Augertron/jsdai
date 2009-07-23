@@ -59,7 +59,7 @@ public class CxDefault_attachment_size_based_land_physical_template_armx extends
 	}
 
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
@@ -166,7 +166,7 @@ public class CxDefault_attachment_size_based_land_physical_template_armx extends
 		return (EProduct_definition_shape)get_instance(a14);
 	}*/
 	public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
-		a13 = set_instance(a13, value);
+		a13 = set_instanceX(a13, value);
 	}
 	public void unsetOf_shape(EShape_aspect type) throws SdaiException {
 		a13 = unset_instance(a13);

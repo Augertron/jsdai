@@ -57,6 +57,7 @@ import jsdai.lang.EEntity;
 import jsdai.lang.SdaiException;
 import jsdai.lang.SdaiIterator;
 import jsdai.lang.SdaiModel;
+import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * @author evita
@@ -77,17 +78,17 @@ import jsdai.lang.SdaiModel;
  */
 public class DefinitionsRepair {
 
-	public static void run(ASdaiModel models) throws SdaiException {
+	public static void run(ASdaiModel models, Importer importer) throws SdaiException {
 		List productDefinitionList = getDefinitions(models);
 		for (Iterator it = productDefinitionList.iterator(); it.hasNext(); ) {
 			EProduct_definition productDefinition = (EProduct_definition) it.next();
-			repairDocuments(productDefinition, models);
-			repairType(productDefinition);
+			repairDocuments(productDefinition, models, importer);
+			repairType(productDefinition, importer);
 		}
 	}
 
 	private static void repairDocuments(EProduct_definition productDefinition,
-			ASdaiModel domain) throws SdaiException {
+			ASdaiModel domain, Importer importer) throws SdaiException {
 
 		if (!(productDefinition instanceof EProduct_definition_with_associated_documents)) {
 			return;
@@ -99,7 +100,7 @@ public class DefinitionsRepair {
 			return;
 		}
 		
-		AEntity assignedDocuments = getAssignedDocuments(pdwss, domain);
+		AEntity assignedDocuments = getAssignedDocuments(pdwss, domain, importer);
 		SdaiModel model = pdwss.findEntityInstanceSdaiModel();
 		
 		ADocument documents = pdwss.getDocumentation_ids(null);
@@ -111,12 +112,13 @@ public class DefinitionsRepair {
 				da.setAssigned_document_x(null, doc);
 				da.createIs_assigned_to(null).addUnordered(pdwss);
 				da.setRole_x(null, "");
+				importer.logMessage(" Created new instance "+da);
 			}
 		}
 	}
 	
 	private static AEntity getAssignedDocuments(EProduct_definition productDefinition,
-		ASdaiModel domain) throws SdaiException {
+		ASdaiModel domain, Importer importer) throws SdaiException {
 		
 		AEntity assignedDocuments = new AEntity();
 		
@@ -128,6 +130,7 @@ public class DefinitionsRepair {
 				EEntity eDoc = eDa.getAssigned_document_x(null);
 				if (!assignedDocuments.isMember(eDoc)) {
 					assignedDocuments.addUnordered(eDoc);
+					importer.logMessage(" Added "+eDoc+" to assigned documents ");
 				}
 			}
 		}
@@ -135,7 +138,7 @@ public class DefinitionsRepair {
 		return assignedDocuments;
 	}
 
-	private static void repairType(EProduct_definition productDefinition)
+	private static void repairType(EProduct_definition productDefinition, Importer importer)
 		throws SdaiException {
 
 		if (!productDefinition.testFormation(null)) {
@@ -151,20 +154,26 @@ public class DefinitionsRepair {
 		if (product instanceof EPart) {
 			productDefinition.findEntityInstanceSdaiModel().substituteInstance(productDefinition, EPart_view_definition.class);
 			if (!(version instanceof EPart_version)) {
-				version.findEntityInstanceSdaiModel().substituteInstance(version,
+				String message = " Changed "+version;
+				EEntity instance = version.findEntityInstanceSdaiModel().substituteInstance(version,
 					CPart_version.definition);
+				importer.logMessage(message+" to "+instance);
 			}
 		} else if (product instanceof EDocument_armx) {
 			productDefinition.findEntityInstanceSdaiModel().substituteInstance(productDefinition, EDocument_definition.class);
 			if (!(version instanceof EDocument_version)) {
-				version.findEntityInstanceSdaiModel().substituteInstance(version,
+				String message = " Changed "+version;
+				EEntity instance = version.findEntityInstanceSdaiModel().substituteInstance(version,
 					CDocument_version.definition);
+				importer.logMessage(message+" to "+instance);
 			}
 		} else if (product instanceof EBreakdown || product instanceof EBreakdown_element) {
 			productDefinition.findEntityInstanceSdaiModel().substituteInstance(productDefinition, EBreakdown_element_definition.class);
 			if (!(version instanceof EBreakdown_version)) {
-				version.findEntityInstanceSdaiModel().substituteInstance(version,
+				String message = " Changed "+version;
+				EEntity instance = version.findEntityInstanceSdaiModel().substituteInstance(version,
 					CBreakdown_version.definition);
+				importer.logMessage(message+" to "+instance);
 			}
 		}
 	}

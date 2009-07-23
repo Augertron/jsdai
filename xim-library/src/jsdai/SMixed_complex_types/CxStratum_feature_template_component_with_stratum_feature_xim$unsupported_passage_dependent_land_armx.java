@@ -85,7 +85,7 @@ public class CxStratum_feature_template_component_with_stratum_feature_xim$unsup
 		return (EProduct_definition)get_instance(a11);
 	}*/
 	public void setRelating_product_definition(EProduct_definition_relationship type, EProduct_definition value) throws SdaiException {
-		a11 = set_instance(a11, value);
+		a11 = set_instanceX(a11, value);
 	}
 	public void unsetRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
 		a11 = unset_instance(a11);
@@ -124,7 +124,7 @@ public class CxStratum_feature_template_component_with_stratum_feature_xim$unsup
 		return (EProduct_definition_formation)a5;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a5 = set_instance(a5, value);
+		a5 = set_instanceX(a5, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
 		a5 = unset_instance(a5);
@@ -145,7 +145,7 @@ public class CxStratum_feature_template_component_with_stratum_feature_xim$unsup
 		return (jsdai.SApplication_context_schema.EProduct_definition_context)a6;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a6 = set_instance(a6, value);
+		a6 = set_instanceX(a6, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
 		a6 = unset_instance(a6);
@@ -185,7 +185,7 @@ public class CxStratum_feature_template_component_with_stratum_feature_xim$unsup
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a16 = set_instance(a16, value);
+		a16 = set_instanceX(a16, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
@@ -214,7 +214,7 @@ public class CxStratum_feature_template_component_with_stratum_feature_xim$unsup
 	}
 
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a12 = set_instance(a12, value);
+		a12 = set_instanceX(a12, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

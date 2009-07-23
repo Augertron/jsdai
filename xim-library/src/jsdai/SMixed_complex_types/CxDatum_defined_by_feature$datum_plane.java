@@ -55,7 +55,7 @@ public class CxDatum_defined_by_feature$datum_plane extends CDatum_defined_by_fe
 		return (EProduct_definition_shape)a2;
 	}*/
 	public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
-		a4 = set_instance(a4, value);
+		a4 = set_instanceX(a4, value);
 	}
 	public void unsetOf_shape(EShape_aspect type) throws SdaiException {
 		a4 = unset_instance(a4);

@@ -89,7 +89,7 @@ public class CxPhysical_connectivity_definition_armx extends CPhysical_connectiv
 		return (EProduct_definition_shape)a2;
 	}*/
 	public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetOf_shape(EShape_aspect type) throws SdaiException {
 		a2 = unset_instance(a2);

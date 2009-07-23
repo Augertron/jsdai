@@ -98,7 +98,7 @@ public class CxPitch_class extends CPitch_class implements EMappedXIMEntity
 		return (ERepresentation_context)get_instance(a2);
 	}*/
 	public void setContext_of_items(ERepresentation type, ERepresentation_context value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetContext_of_items(ERepresentation type) throws SdaiException {
 		a2 = unset_instance(a2);

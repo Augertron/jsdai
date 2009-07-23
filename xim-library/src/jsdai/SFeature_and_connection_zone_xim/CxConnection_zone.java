@@ -141,7 +141,7 @@ public class CxConnection_zone extends CConnection_zone implements EMappedXIMEnt
 				aimEntity.setOf_shape(null, ((EShape_aspect)(aimUser)).getOf_shape(null));
 		}
 		if(!aimEntity.testOf_shape(null)){
-			System.err.println(aimEntity+" connection zone without a valid user " +users.getMemberCount()+" "+armEntity);
+			SdaiSession.getSession().printlnSession(aimEntity+" connection zone without a valid user " +users.getMemberCount()+" "+armEntity);
 		}
 	}
 

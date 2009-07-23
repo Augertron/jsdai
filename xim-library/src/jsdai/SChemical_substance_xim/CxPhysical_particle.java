@@ -45,7 +45,7 @@ public class CxPhysical_particle extends CPhysical_particle implements EMappedXI
 /*	public static int usedinFrame_of_reference(EProduct type, jsdai.SApplication_context_schema.EProduct_context instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a3$, domain, result);
 	}*/
-	public boolean testFrame_of_reference2(EProduct type) throws SdaiException {
+	private boolean testFrame_of_reference2(EProduct type) throws SdaiException {
 		return test_aggregate(a3);
 	}
 /*	public jsdai.SApplication_context_schema.AProduct_context getFrame_of_reference(EProduct type) throws SdaiException {

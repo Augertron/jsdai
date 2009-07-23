@@ -31,14 +31,9 @@ SCHEMA Information_product_xim;
 USE FROM Product_view_definition_xim;    --  ISO/TS 10303-1019
 USE FROM File_identification_xim;	--  ISO/TS 10303-1127
 
-REFERENCE FROM Product_identification_xim(types_of_product);
-
-(* Note: further specializations are needed *)
 ENTITY Information_product
   (* CONNOTATIONAL *) ABSTRACT SUPERTYPE 
   	SUBTYPE OF (product_armx);
-  WHERE	
- 	 WR1 : SIZEOF(['document', 'information'] * types_of_product(SELF)) = 0;
 END_ENTITY;
 
 ENTITY Information_version
@@ -51,10 +46,6 @@ ENTITY Information_definition
   SELF\Product_view_definition.defined_version : Information_version;
 END_ENTITY;
 
-(*
-Every Product_version referencing an Information_product is a
-Information_version. EXPRESS specification:
-*)
 RULE Information_product_version_constraint FOR
 (Product_definition_formation);
 WHERE

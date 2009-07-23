@@ -51,7 +51,7 @@ public class CxProject_assignment__work_program extends CProject_assignment__wor
 		return (EOrganizational_project_role)a1;
 	}*/
 	public void setRole(EOrganizational_project_assignment type, EOrganizational_project_role value) throws SdaiException {
-		a1 = set_instance(a1, value);
+		a1 = set_instanceX(a1, value);
 	}
 	public void unsetRole(EOrganizational_project_assignment type) throws SdaiException {
 		a1 = unset_instance(a1);

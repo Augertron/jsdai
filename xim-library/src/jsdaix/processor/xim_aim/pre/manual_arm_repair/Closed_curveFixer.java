@@ -25,19 +25,19 @@ package jsdaix.processor.xim_aim.pre.manual_arm_repair;
 
 import jsdai.lang.AEntity;
 import jsdai.lang.ASdaiModel;
+import jsdai.lang.EEntity;
 import jsdai.lang.SdaiException;
-import jsdai.SBasic_curve_xim.CClosed_curve;
-import jsdai.SBasic_curve_xim.EClosed_curve;
+import jsdai.SBasic_curve_xim.CClosed_composite_curve;
+import jsdai.SBasic_curve_xim.EClosed_composite_curve;
+import jsdai.SConstructive_solid_geometry_2d_xim.CPath_area_with_parameters_armx;
 import jsdai.SGeometry_schema.AComposite_curve_segment;
 import jsdai.SGeometry_schema.CComposite_curve;
 import jsdai.SGeometry_schema.EComposite_curve_segment;
 import jsdai.SGeometry_schema.ETransition_code;
-import jsdai.SLayered_interconnect_simple_template_xim.AClosed_curve_style_parameters_armx;
 import jsdai.SLayered_interconnect_simple_template_xim.AClosed_path_area_with_parameters;
-import jsdai.SLayered_interconnect_simple_template_xim.CClosed_curve_style_parameters_armx;
 import jsdai.SLayered_interconnect_simple_template_xim.CClosed_path_area_with_parameters;
-import jsdai.SLayered_interconnect_simple_template_xim.CPath_area_with_parameters_armx;
 import jsdai.SLayered_interconnect_simple_template_xim.EClosed_path_area_with_parameters;
+import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * @author Giedrius
@@ -50,16 +50,16 @@ public class Closed_curveFixer {
 	 * @param models
 	 * @throws SdaiException
 	 */
-	public static void run(ASdaiModel models) throws SdaiException {
+	public static void run(ASdaiModel models, Importer importer) throws SdaiException {
 		// This may be expanded in the future
-		AEntity instancesToRename = models.getExactInstances(CClosed_curve.definition);
+		AEntity instancesToRename = models.getExactInstances(CClosed_composite_curve.definition);
 		for(int index=1; index <= instancesToRename.getMemberCount();){
 			// basically check for constraint
 			// {composite_curve
 			// composite_curve.closed_curve = .TRUE.}
 			// Where composite_curve.closed_curve is derived as follows:
 			// closed_curve : LOGICAL :=  segments [ n_segments ] . transition <> discontinuous ;
-			EClosed_curve instanceToRename = (EClosed_curve)instancesToRename.getByIndexEntity(index);
+			EClosed_composite_curve instanceToRename = (CClosed_composite_curve)instancesToRename.getByIndexEntity(index);
 			AComposite_curve_segment segments = instanceToRename.getSegments(null);
 			EComposite_curve_segment lastSegment = segments.getByIndex(segments.getMemberCount());
 			if(lastSegment.getTransition(null) == ETransition_code.DISCONTINUOUS){
@@ -69,7 +69,9 @@ public class Closed_curveFixer {
 				// Also downgrade its users if needed
 				for(int j=1,count2=acpawp.getMemberCount(); j<=count2; j++){
 					EClosed_path_area_with_parameters ecpawp = acpawp.getByIndex(j);
-					ecpawp.findEntityInstanceSdaiModel().substituteInstance(ecpawp, CPath_area_with_parameters_armx.definition);
+					String message = " Changed "+ecpawp; 
+					EEntity instance = ecpawp.findEntityInstanceSdaiModel().substituteInstance(ecpawp, CPath_area_with_parameters_armx.definition);
+					importer.logMessage(message+" to "+instance);
 				}
 			}else{
 				index++;

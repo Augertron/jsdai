@@ -9,8 +9,6 @@ SCHEMA Package_arm;
 	USE FROM Extended_geometric_tolerance_arm;	-- ISO/TS 10303-1666
 	USE FROM Part_feature_function_arm;	-- ISO/TS 10303-1712
 	
-	REFERENCE FROM Product_identification_arm(types_of_product); -- ISO/TS 10303-1017 
-
 	REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
 
   	TYPE mounting_technology_type = EXTENSIBLE ENUMERATION OF
@@ -125,20 +123,19 @@ SCHEMA Package_arm;
       WR2  : NOT (EXISTS(maximum_lead_length_below_seating_plane)) OR (maximum_lead_length_below_seating_plane\Value_with_unit.value_component > 0.0);
       WR3  : NOT (EXISTS(least_lead_length_below_seating_plane)) OR (least_lead_length_below_seating_plane\Value_with_unit.value_component > 0.0);
       WR4  : NOT EXISTS(mounting_technology) OR (SIZEOF(package_seating_plane) = 1);
-      WR5  : 'package' IN types_of_product(SELF\Product_view_definition.defined_version.of_product);
-      WR6  : SIZEOF(QUERY(pa <* package_accesses | 'PACKAGE_ARM.PRIMARY_REFERENCE_TERMINAL' IN TYPEOF(pa))) = 1;
-	  WR7  : SIZEOF(QUERY(nt <* package_accesses |
+      WR5  : SIZEOF(QUERY(pa <* package_accesses | 'PACKAGE_ARM.PRIMARY_REFERENCE_TERMINAL' IN TYPEOF(pa))) = 1;
+	  WR6  : SIZEOF(QUERY(nt <* package_accesses |
 	                      EXISTS(nt\Part_feature.precedent_feature)
 	               )) = (SIZEOF(package_accesses) - 1);
-	  WR8  : SIZEOF(QUERY(nt <* package_accesses |
+	  WR7  : SIZEOF(QUERY(nt <* package_accesses |
 	                     (SIZEOF(nt\Part_feature.subsequent_feature) = 1)
 	               )) = (SIZEOF(package_accesses) - 1);
-      WR9  : NOT one_orientation_feature    OR ('PACKAGE_ARM.PRIMARY_ORIENTATION_FEATURE' IN TYPEOF(orientation_feature[1]));
-      WR10 : NOT two_orientation_features   OR ((SIZEOF(QUERY(orf <* orientation_feature |
+      WR8  : NOT one_orientation_feature    OR ('PACKAGE_ARM.PRIMARY_ORIENTATION_FEATURE' IN TYPEOF(orientation_feature[1]));
+      WR9 : NOT two_orientation_features   OR ((SIZEOF(QUERY(orf <* orientation_feature |
                                                   ('PACKAGE_ARM.PRIMARY_ORIENTATION_FEATURE' IN TYPEOF(orf)))) = 1) AND
                                                 (SIZEOF(QUERY(orf <* orientation_feature |
                                                   ('PACKAGE_ARM.SECONDARY_ORIENTATION_FEATURE' IN TYPEOF(orf)))) = 1));
-      WR11 : NOT three_orientation_features OR ((SIZEOF(QUERY(orf <* orientation_feature |
+      WR10 : NOT three_orientation_features OR ((SIZEOF(QUERY(orf <* orientation_feature |
                                                   ('PACKAGE_ARM.PRIMARY_ORIENTATION_FEATURE' IN TYPEOF(orf)))) = 1) AND
                                                 (SIZEOF(QUERY(orf <* orientation_feature |
                                                   ('PACKAGE_ARM.SECONDARY_ORIENTATION_FEATURE' IN TYPEOF(orf)))) = 1) AND

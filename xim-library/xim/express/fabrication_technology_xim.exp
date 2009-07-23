@@ -382,7 +382,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
 	  WR6: NOT EXISTS(target_stratum) OR
 			  ((target_stratum IN SELF\Stratum_sub_stack_armx.associated_stackup.composing_occurrence) AND
 	           (target_stratum IN terminus_stratum));
-      WR7: SIZEOF(ft_get_unspecified_asto(minimum_annular_ring) < 2);	           	           
+      WR7: ft_count_unspecified_asto(minimum_annular_ring) < 2;	           
   END_ENTITY;
 
   ENTITY Stratum_stack_model_armx
@@ -452,8 +452,8 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
   	    		get_document_definition(SELF, 'surface specification',  	
                                         'SPECIFICATION_DOCUMENT_XIM.SURFACE_FINISH_SPECIFICATION');
   WHERE
-    WR1 : (SIZEOF(USEDIN(SELF,'SURFACE_CONDITIONS_ARM.SURFACE_CONDITION_ASSOCIATION.DESCRIBED_ELEMENT')) > 0) OR 
-          (SIZEOF(get_document_definition(SELF, 'surface specification', 'SPECIFICATION_DOCUMENT_ARM.SURFACE_FINISH_SPECIFICATION')) = 1);
+    WR1 : (SIZEOF(USEDIN(SELF,'SURFACE_CONDITIONS_XIM.SURFACE_CONDITION_ASSOCIATION.DESCRIBED_ELEMENT')) > 0) OR 
+          (SIZEOF(get_document_definition(SELF, 'surface specification', 'SPECIFICATION_DOCUMENT_XIM.SURFACE_FINISH_SPECIFICATION')) = 1);
   END_ENTITY;
 
   ENTITY Stratum_technology_mapping_relationship_armx
@@ -603,7 +603,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
   RETURN(sto);
  END_FUNCTION;
 
-  FUNCTION ft_get_unspecified_asto(input : SET OF Allocated_passage_minimum_annular_ring_armx) : INTEGER;
+  FUNCTION ft_count_unspecified_asto(input : SET OF Allocated_passage_minimum_annular_ring_armx) : INTEGER;
     LOCAL
      count : INTEGER := 0;
     END_LOCAL;

@@ -38,6 +38,7 @@ import jsdai.SFile_identification_mim.EDocument_file;
 import jsdai.lang.ASdaiModel;
 import jsdai.lang.SdaiException;
 import jsdai.lang.SdaiIterator;
+import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * see bug #2317 for some details
@@ -58,21 +59,22 @@ public class DocumentRepair {
 		REQUIRED_TYPES = Collections.unmodifiableSet(requiredTypes);
 	}
 
-	public static void run(ASdaiModel domain) throws SdaiException {
+	public static void run(ASdaiModel domain, Importer importer) throws SdaiException {
 		ADocument aDoc = (ADocument) domain.getInstances(CDocument.definition);
 		for (SdaiIterator i = aDoc.createIterator(); i.next();) {
 			EDocument eDoc = aDoc.getCurrentMember(i);
-			eDoc = ensureCorrectEntityType(eDoc);
-			ensureCorrectRepresentationType(domain, eDoc);
+			eDoc = ensureCorrectEntityType(eDoc, importer);
+			ensureCorrectRepresentationType(domain, eDoc, importer);
 		}		
 	}
 
-	private static EDocument ensureCorrectEntityType(EDocument eDoc)
+	private static EDocument ensureCorrectEntityType(EDocument eDoc, Importer importer)
 		throws SdaiException {
 
 		if (!(eDoc instanceof EDocument_file)) {
 			// currently only Document_files can be mapped to something
 			// in XIM, so we must convert all documents to document_files
+			importer.logMessage(" Change "+eDoc+" to Document_file");
 			eDoc = (EDocument) eDoc.findEntityInstanceSdaiModel().substituteInstance(
 				eDoc, CDocument_file.definition);
 		}
@@ -80,7 +82,7 @@ public class DocumentRepair {
 		return eDoc;
 	}
 	
-	private static void ensureCorrectRepresentationType(ASdaiModel domain, EDocument eDoc)
+	private static void ensureCorrectRepresentationType(ASdaiModel domain, EDocument eDoc, Importer importer)
 		throws SdaiException {
 
 		if (!hasAppropriateType(domain, eDoc)) {
@@ -89,6 +91,7 @@ public class DocumentRepair {
 				CDocument_representation_type.definition);
 			eDrt.setName(null, TYPE_DIGITAL);
 			eDrt.setRepresented_document(null, eDoc);
+			importer.logMessage(" Created missing instance "+eDrt);
 		}
 	}
 

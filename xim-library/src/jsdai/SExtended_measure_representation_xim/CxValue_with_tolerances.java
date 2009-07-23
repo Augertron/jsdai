@@ -181,7 +181,7 @@ public class CxValue_with_tolerances extends CValue_with_tolerances implements E
 				qualifiers = cxEntity.createQualifiers(null);
 			}
 		}else{
-			System.err.println("Not supported subtype of value_with_tolerances "+armEntity);
+			SdaiSession.getSession().printlnSession("Not supported subtype of value_with_tolerances "+armEntity);
 			return;
 		}
 		qualifiers.addUnordered(esu);

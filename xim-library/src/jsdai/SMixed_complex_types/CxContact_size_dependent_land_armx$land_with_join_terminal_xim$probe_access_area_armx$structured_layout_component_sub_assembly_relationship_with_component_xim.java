@@ -74,7 +74,7 @@ public EProduct_definition_shape getOf_shape(EShape_aspect type) throws SdaiExce
 	return (EProduct_definition_shape)get_instance(a28);
 }*/
 public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
-	a28 = set_instance(a28, value);
+	a28 = set_instanceX(a28, value);
 }
 public void unsetOf_shape(EShape_aspect type) throws SdaiException {
 	a28 = unset_instance(a28);
@@ -150,7 +150,7 @@ public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) 
 		return (EProduct_definition_formation)a12;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a12 = set_instance(a12, value);
+		a12 = set_instanceX(a12, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
 		a12 = unset_instance(a12);
@@ -171,7 +171,7 @@ public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) 
 		return (jsdai.SApplication_context_schema.EProduct_definition_context)a13;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a13 = set_instance(a13, value);
+		a13 = set_instanceX(a13, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
 		a13 = unset_instance(a13);
@@ -211,7 +211,7 @@ public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) 
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a25 = set_instance(a25, value);
+		a25 = set_instanceX(a25, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
@@ -255,7 +255,7 @@ public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) 
 		return (EProduct_definition)get_instance(a17);
 	}*/
 	public void setRelating_product_definition(EProduct_definition_relationship type, EProduct_definition value) throws SdaiException {
-		a17 = set_instance(a17, value);
+		a17 = set_instanceX(a17, value);
 	}
 	public void unsetRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
 		a17 = unset_instance(a17);
@@ -278,7 +278,7 @@ public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) 
 		return (jsdai.SProduct_definition_schema.EProduct_definition)get_instance(a8);
 	}
 	public void setOccurrence(EProduct_definition_occurrence_relationship type, jsdai.SProduct_definition_schema.EProduct_definition value) throws SdaiException {
-		a8 = set_instance(a8, value);
+		a8 = set_instanceX(a8, value);
 	}
 	public void unsetOccurrence(EProduct_definition_occurrence_relationship type) throws SdaiException {
 		a8 = unset_instance(a8);
@@ -359,7 +359,7 @@ public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) 
 	}
 
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a12 = set_instance(a12, value);
+		a12 = set_instanceX(a12, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

@@ -55,7 +55,7 @@ public class CxGeometric_relationship_with_placement_transformation extends CGeo
 	}
 
 	public void setTransformation_operator(ERepresentation_relationship_with_transformation type, EEntity value) throws SdaiException { // case 1
-		a4 = set_instance(a4, value);
+		a4 = set_instanceX(a4, value);
 	}
 
 	public void unsetTransformation_operator(ERepresentation_relationship_with_transformation type) throws SdaiException {

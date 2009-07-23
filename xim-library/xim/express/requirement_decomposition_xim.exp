@@ -36,6 +36,8 @@ USE FROM Functional_specification_xim;
 
 USE FROM Conductivity_material_aspects_xim;
 
+USE FROM Requirement_view_definition_relationship_xim;  -- ISO/TS 10303-1142
+	
 USE FROM support_resource_schema(label);
 
 USE FROM Requirement_decomposition_mim;
@@ -89,12 +91,6 @@ REFERENCE FROM Specification_document_xim(get_document_definition);	-- ISO/TS 10
 		or_operation);
 	END_TYPE;
 
-	TYPE requirement_view_relationship_type = ENUMERATION OF
-    	(derived_from,
-	     precedence,
-    	 supplemental);
-	END_TYPE;
-
   ENTITY Constraint_occurrence
     SUPERTYPE OF (View_based_constraint_occurrence)
     (* CONNOTATIONAL *) SUBTYPE OF (Predefined_requirement_view_definition_armx);
@@ -120,19 +116,6 @@ REFERENCE FROM Specification_document_xim(get_document_definition);	-- ISO/TS 10
       electrical_conductivity_characteristic : material_conductivity_classification;
   END_ENTITY;
 
- ENTITY Requirement_view_definition_relationship_armx
-     (* CONNOTATIONAL *) SUBTYPE OF (requirement_view_definition_relationship);
-       SELF\product_definition_relationship.relating_product_definition RENAMED primary  : Requirement_view_definition;
-       SELF\product_definition_relationship.related_product_definition RENAMED secondary : Requirement_view_definition;
-     (** GL in ARM it is o type STRINg, but here we leave ENUMERATION for easier handling **)       
-       relation_type                                                                     : requirement_view_relationship_type;
-    DERIVE      
-      SELF\product_definition_relationship.id : identifier := ?;
-      SELF\product_definition_relationship.name : label := ?;
-     WHERE
-       WR1 : primary :<>: secondary;
-  END_ENTITY;
-  
   ENTITY Operational_requirement_relationship_armx
      (* CONNOTATIONAL *) SUBTYPE OF (Assigned_property, operational_requirement_relationship);
        SELF\product_definition_relationship.relating_product_definition RENAMED operand_1 : Requirement_view_definition;

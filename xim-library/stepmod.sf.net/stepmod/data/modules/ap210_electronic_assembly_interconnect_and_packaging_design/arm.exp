@@ -40,6 +40,7 @@ SCHEMA Ap210_electronic_assembly_interconnect_and_packaging_design_arm;
 	USE FROM Test_requirement_allocation_arm;	-- ISO/TS 10303-1751
 	USE FROM Thermal_network_definition_arm;	-- ISO/TS 10303-1752
 	USE FROM Via_component_arm;	-- ISO/TS 10303-1754
+	USE FROM Interconnect_physical_requirement_allocation_arm; -- ISO/TS 10303-1689
 
 	REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
 
@@ -90,7 +91,6 @@ TYPE ap210_managed_design_object = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON man
  Component_group_assignment,
  Component_make_from_relationship,
  Component_mounting_clearance_relationship,
- Component_non_planar_location,
  Component_overlap_relationship,
  Component_placement_restriction_assignment,
  Component_to_physical_usage_view_assignment,
@@ -141,8 +141,6 @@ TYPE ap210_managed_design_object = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON man
  Document_definition,
  Material_identification,
  Product,
- Product_category,
- Product_category_hierarchy,
  Product_configuration,
  Product_view_definition,
  Product_concept,
@@ -460,50 +458,23 @@ Most likely it should be defined in Interconnect_module_design_view CC *)
 	 Pre_defined_parallel_datum_axis_symbol_3d_2d_relationship));
  END_SUBTYPE_CONSTRAINT;  
 
-
-RULE non_conductive_cross_section_template_population_constraint FOR
-    (Template_definition);
+RULE area_component_shape_constraint FOR
+    (Area_component);
 WHERE
-  WR1:  SIZEOF( QUERY( td <* Template_definition |
-('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.NON_CONDUCTIVE_CROSS_SECTION_TEMPLATE' IN TYPEOF(td))
+  WR1:  SIZEOF( QUERY( ac <* Area_component |
+            NOT(SIZEOF (QUERY (ac2ds <* USEDIN(ac,'PHYSICAL_UNIT_2D_DESIGN_VIEW_ARM.ASSEMBLY_COMPONENT_2D_SHAPE_MODEL.SHAPE_CHARACTERIZED_COMPONENT') |
+              NOT('CONSTRUCTIVE_SOLID_GEOMETRY_2D_ARM.SINGLE_AREA_CSG_2D_MODEL' IN TYPEOF(ac2ds))
+                )) = 0)
               )) = 0;
+  WR2:  SIZEOF( QUERY( ac <* Area_component |
+          NOT(ac\Area_component.is_base) OR
+            NOT(SIZEOF (QUERY (ac2ds <* USEDIN(ac,'PHYSICAL_UNIT_2D_DESIGN_VIEW_ARM.ASSEMBLY_COMPONENT_2D_SHAPE_MODEL.SHAPE_CHARACTERIZED_COMPONENT') |
+              NOT('CONSTRUCTIVE_SOLID_GEOMETRY_2D_ARM.SINGLE_BOUNDARY_CSG_2D_MODEL' IN TYPEOF(ac2ds))
+                )) = 0)
+              )) = 0;              
 END_RULE;
 
-RULE printed_part_cross_section_template_population_constraint FOR
-    (Template_definition);
-WHERE
-  WR1:  SIZEOF( QUERY( td <* Template_definition |
-('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.PRINTED_PART_CROSS_SECTION_TEMPLATE' IN TYPEOF(td))
-              )) = 0;
-END_RULE;
-
-RULE printed_part_cross_section_template_terminal_population_constraint FOR
-    (Printed_part_template_terminal);
-WHERE
-  WR1:  SIZEOF( QUERY( pptt <* Printed_part_template_terminal |
-('PRINTED_PHYSICAL_LAYOUT_TEMPLATE_ARM.PRINTED_PART_CROSS_SECTION_TEMPLATE_TERMINAL' IN TYPEOF(pptt))
-              )) = 0;
-END_RULE;
-
-RULE printed_part_template_material_population_constraint FOR
-    (Printed_part_template_material);
-WHERE
-  WR1:  SIZEOF(Printed_part_template_material) = 0;
-END_RULE;
-
-RULE printed_part_template_material_link_population_constraint FOR
-    (Printed_part_template_material_link);
-WHERE
-  WR1:  SIZEOF(Printed_part_template_material_link) = 0;
-END_RULE;
-
-RULE template_material_cross_section_boundary_population_constraint FOR
-    (Template_material_cross_section_boundary);
-WHERE
-  WR1:  SIZEOF(Template_material_cross_section_boundary) = 0;
-END_RULE;
-
-RULE Physical_unit_network_definition_constraint FOR 
+RULE physical_unit_network_definition_constraint FOR 
 (Physical_unit_network_definition);
 WHERE
   WR1: SIZEOF ( QUERY ( fund <* Physical_unit_network_definition | 

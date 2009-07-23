@@ -53,7 +53,7 @@ public class CxDate_time_interval_assignment extends CDate_time_interval_assignm
 		return (jsdai.SDate_time_schema.ETime_interval_role)a1;
 	}*/
 	public void setRole(ETime_interval_assignment type, jsdai.SDate_time_schema.ETime_interval_role value) throws SdaiException {
-		a1 = set_instance(a1, value);
+		a1 = set_instanceX(a1, value);
 	}
 	public void unsetRole(ETime_interval_assignment type) throws SdaiException {
 		a1 = unset_instance(a1);

@@ -32,10 +32,10 @@ SCHEMA Packaged_part_black_box_model_arm;
 		     'GENERIC_MATERIAL_ASPECTS_ARM.MATERIAL_IDENTIFICATION.ITEMS') | 
 		     (SIZEOF( QUERY( cla <* USEDIN(temp,'CLASSIFICATION_ASSIGNMENT_ARM.' + 
 		 	'CLASSIFICATION_ASSIGNMENT.' + 'ITEMS') | cla.role = 'potting compound')) = 1)));
-		base_package : SET [1:?] OF Package := bag_to_set(QUERY(up <* used_package | 
+		base_package : SET [1:?] OF Package := QUERY(up <* used_package | 
 		                                       (SIZEOF(['ALTERED_PACKAGE_ARM.ALTERED_PACKAGE',
 		                                          'PART_EXTERNAL_REFERENCE_ARM.PACKAGE_EXTERNAL_REFERENCE'] * TYPEOF(up)) = 0)
-		                                          ));
+		                                          );
     INVERSE
       access_mechanisms : SET[0:?] OF packaged_part_terminal FOR associated_definition;
     WHERE

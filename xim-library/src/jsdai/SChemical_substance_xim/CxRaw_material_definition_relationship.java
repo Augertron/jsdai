@@ -115,7 +115,7 @@ public class CxRaw_material_definition_relationship extends CRaw_material_defini
 		return (jsdai.SMeasure_schema.EMeasure_with_unit)get_instance(a7);
 	}*/
 	public void setQuantity(EMake_from_usage_option type, jsdai.SMeasure_schema.EMeasure_with_unit value) throws SdaiException {
-		a7 = set_instance(a7, value);
+		a7 = set_instanceX(a7, value);
 	}
 	public void unsetQuantity(EMake_from_usage_option type) throws SdaiException {
 		a7 = unset_instance(a7);

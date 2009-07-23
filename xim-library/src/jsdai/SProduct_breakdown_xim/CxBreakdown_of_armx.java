@@ -52,7 +52,7 @@ public class CxBreakdown_of_armx extends CBreakdown_of_armx implements EMappedXI
 		return (EProduct_definition)get_instance(a3);
 	}*/
 	public void setRelating_product_definition(EProduct_definition_relationship type, EProduct_definition value) throws SdaiException {
-		a3 = set_instance(a3, value);
+		a3 = set_instanceX(a3, value);
 	}
 	public void unsetRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
 		a3 = unset_instance(a3);

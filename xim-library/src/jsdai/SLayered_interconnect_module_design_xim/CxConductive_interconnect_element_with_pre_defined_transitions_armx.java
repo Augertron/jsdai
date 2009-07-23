@@ -31,11 +31,11 @@ package jsdai.SLayered_interconnect_module_design_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
+import jsdai.SConstructive_solid_geometry_2d_xim.EPath_area_with_parameters_armx;
 import jsdai.SGeneric_product_occurrence_xim.*;
 import jsdai.SGeometry_schema.CGeometric_representation_context;
 import jsdai.SGeometry_schema.EGeometric_representation_context;
 import jsdai.SLayered_interconnect_module_design_mim.*;
-import jsdai.SLayered_interconnect_simple_template_xim.EPath_area_with_parameters_armx;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_property_representation_schema.CShape_representation;
@@ -87,7 +87,7 @@ public class CxConductive_interconnect_element_with_pre_defined_transitions_armx
 		return (jsdai.SRepresentation_schema.ERepresentation)get_instance(a21);
 	}
 	public void setUsed_representation(EItem_identified_representation_usage type, jsdai.SRepresentation_schema.ERepresentation value) throws SdaiException {
-		a21 = set_instance(a21, value);
+		a21 = set_instanceX(a21, value);
 	}
 	public void unsetUsed_representation(EItem_identified_representation_usage type) throws SdaiException {
 		a21 = unset_instance(a21);
@@ -130,7 +130,7 @@ public class CxConductive_interconnect_element_with_pre_defined_transitions_armx
 		return (EProduct_definition)get_instance(a14);
 	}*/
 	public void setRelating_product_definition(EProduct_definition_relationship type, EProduct_definition value) throws SdaiException {
-		a14 = set_instance(a14, value);
+		a14 = set_instanceX(a14, value);
 	}
 	public void unsetRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
 		a14 = unset_instance(a14);
@@ -185,7 +185,7 @@ public class CxConductive_interconnect_element_with_pre_defined_transitions_armx
 		return (EProduct_definition_formation)a2;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
 		a2 = unset_instance(a2);
@@ -206,7 +206,7 @@ public class CxConductive_interconnect_element_with_pre_defined_transitions_armx
 		return (jsdai.SApplication_context_schema.EProduct_definition_context)a3;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a3 = set_instance(a3, value);
+		a3 = set_instanceX(a3, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
 		a3 = unset_instance(a3);
@@ -246,7 +246,7 @@ public class CxConductive_interconnect_element_with_pre_defined_transitions_armx
 	}*/
 
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a9 = set_instance(a9, value);
+		a9 = set_instanceX(a9, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
@@ -384,7 +384,7 @@ public class CxConductive_interconnect_element_with_pre_defined_transitions_armx
 				er.setContext_of_items(null, egrc);
 				er.createItems(null).addUnordered(curve);
 			}else{
-				System.err.println(" Reps for curve in CIEWPDT > 1 "+ar.getMemberCount());				
+				SdaiSession.getSession().printlnSession(" Reps for curve in CIEWPDT > 1 "+ar.getMemberCount());				
 			}
 			if(er != null){
 				armEntity.setUsed_representation(null, er);

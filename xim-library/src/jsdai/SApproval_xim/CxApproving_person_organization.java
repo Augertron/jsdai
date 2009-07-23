@@ -62,7 +62,7 @@ public class CxApproving_person_organization extends CApproving_person_organizat
 		return (EApproval_role)get_instance(a2);
 	}
 	public void setRole(EApproval_person_organization type, EApproval_role value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetRole(EApproval_person_organization type) throws SdaiException {
 		a2 = unset_instance(a2);
@@ -302,7 +302,7 @@ public class CxApproving_person_organization extends CApproving_person_organizat
 					items.addUnordered(armEntity);
 				}
 			}else{
-				System.err.println("Unsupported type of date for CApproving_person_organization.approval_date "+armEntity);
+				SdaiSession.getSession().printlnSession("Unsupported type of date for CApproving_person_organization.approval_date "+armEntity);
 			}
 			
 		}

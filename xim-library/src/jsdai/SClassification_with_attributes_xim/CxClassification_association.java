@@ -50,7 +50,7 @@ public class CxClassification_association extends CClassification_association im
 		return (EClassification_role)get_instance(a1);
 	}*/
 	public void setRole(EClassification_assignment type, EClassification_role value) throws SdaiException {
-		a1 = set_instance(a1, value);
+		a1 = set_instanceX(a1, value);
 	}
 	public void unsetRole(EClassification_assignment type) throws SdaiException {
 		a1 = unset_instance(a1);

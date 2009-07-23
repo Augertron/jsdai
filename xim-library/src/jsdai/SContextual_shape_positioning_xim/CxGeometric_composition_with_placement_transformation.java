@@ -45,17 +45,17 @@ public class CxGeometric_composition_with_placement_transformation extends CGeom
 /*	public static int usedinTransformation_operator(ERepresentation_relationship_with_transformation type, EEntity instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a4$, domain, result);
 	}*/
-	public boolean testTransformation_operator2(ERepresentation_relationship_with_transformation type) throws SdaiException {
+	private boolean testTransformation_operator2(ERepresentation_relationship_with_transformation type) throws SdaiException {
 		return test_instance(a4);
 	}
 
-	public EEntity getTransformation_operator2(ERepresentation_relationship_with_transformation type) throws SdaiException { // case 1
+	private EEntity getTransformation_operator2(ERepresentation_relationship_with_transformation type) throws SdaiException { // case 1
 		a4 = get_instance_select(a4);
 		return (EEntity)a4;
 	}
 
 	public void setTransformation_operator(ERepresentation_relationship_with_transformation type, EEntity value) throws SdaiException { // case 1
-		a4 = set_instance(a4, value);
+		a4 = set_instanceX(a4, value);
 	}
 
 	public void unsetTransformation_operator(ERepresentation_relationship_with_transformation type) throws SdaiException {

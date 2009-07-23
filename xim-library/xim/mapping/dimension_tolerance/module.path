@@ -23,8 +23,10 @@
 
 (*schema_mapping dimension_tolerance(Dimension_tolerance_arm, Dimension_tolerance_mim);*)
 
-
-entity_mapping Document_assignment(Document_assignment, (applied_document_reference)(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment) *))
+(* Remove stuff which will likely be remodelled
+entity_mapping Document_assignment(Document_assignment, (applied_document_reference)
+-- alternative moved to Partial_document... (applied_document_usage_constraint_assignment)
+)
 extended;
 
 attribute_mapping is_assigned_to(is_assigned_to, ($PATH)($PATH), Externally_defined_size_dimension);
@@ -42,22 +44,6 @@ dimension_tolerance_document_reference_item
 dimension_tolerance_document_reference_item = externally_defined_dimension_definition
 externally_defined_dimension_definition
        )
-(* alternative moved to Partial_document... (applied_document_usage_constraint_assignment)       
-(
-applied_document_usage_constraint_assignment
-{applied_document_usage_constraint_assignment <=
-document_usage_constraint_assignment
-document_usage_constraint_assignment.assigned_document_usage ->
-document_usage_constraint
-document_usage_constraint.source ->
-document
-document.description = 'external size dimension specification' }
-applied_document_usage_constraint_assignment.items[i] ->
-document_reference_item
-document_reference_item *> 
-dimension_tolerance_document_reference_item
-dimension_tolerance_document_reference_item  = externally_defined_dimension_definition
-) *)
 end_attribute_mapping;
 
 end_entity_mapping;
@@ -168,7 +154,7 @@ dimensional_size.name = 'diameter'}
 end_mapping_constraints;
 
 end_entity_mapping;
-
+*)
 entity_mapping Dimension_value_with_limitation(Dimension_value_with_limitation, plus_minus_tolerance);
 
 attribute_mapping defined_by(defined_by, $PATH, Limits_and_fits);
@@ -222,8 +208,8 @@ tolerance_value
 end_attribute_mapping;
 
 end_entity_mapping;
-
-entity_mapping Externally_defined_size_dimension(Externally_defined_size_dimension, externally_defined_dimension_definition); (* (([externally_defined_dimension_definition][dimensional_size_with_path]))); *)
+(* Remove stuff which will likely be remodelled
+entity_mapping Externally_defined_size_dimension(Externally_defined_size_dimension, externally_defined_dimension_definition); -- (([externally_defined_dimension_definition][dimensional_size_with_path]))); 
 
 mapping_constraints;
 
@@ -280,7 +266,8 @@ attribute_mapping dimension_value(dimension_value, ($PATH)($PATH), Dimension_val
 dimensional_characteristic = dimensional_location
 dimensional_characteristic <-
 plus_minus_tolerance.toleranced_dimension
-plus_minus_tolerance))((dimensional_size 
+plus_minus_tolerance))
+((dimensional_size 
 dimensional_characteristic = dimensional_size
 dimensional_characteristic <-
 plus_minus_tolerance.toleranced_dimension
@@ -288,7 +275,14 @@ plus_minus_tolerance))
 end_attribute_mapping;
 
 attribute_mapping dimension_value(dimension_value, ($PATH)($PATH), measure_representation_item);
-((dimensional_location 
+((
+-- add more contraints to avoid multiple matched
+!{dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <-
+plus_minus_tolerance.toleranced_dimension
+plus_minus_tolerance}
+dimensional_location 
 dimensional_characteristic = dimensional_location
 dimensional_characteristic <- 
 dimensional_characteristic_representation.dimension 
@@ -299,8 +293,15 @@ shape_representation <=
 representation  
 representation.items[i] -> 
 representation_item => 
-measure_representation_item) 
-)((dimensional_size 
+measure_representation_item))
+((
+-- GL added
+!{dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <-
+plus_minus_tolerance.toleranced_dimension
+plus_minus_tolerance}
+dimensional_size 
 dimensional_characteristic = dimensional_size
 dimensional_characteristic <- 
 dimensional_characteristic_representation.dimension 
@@ -311,8 +312,7 @@ shape_representation <=
 representation  
 representation.items[i] -> 
 representation_item => 
-measure_representation_item) 
-)
+measure_representation_item))
 end_attribute_mapping;
 
 attribute_mapping dimension_value(dimension_value, ($PATH)($PATH), Value_limit);
@@ -471,7 +471,7 @@ representation
 end_attribute_mapping;
 
 end_entity_mapping;
-(* Entity with the same name is taken from AIM
+-- Entity with the same name is taken from AIM
 entity_mapping Limits_and_fits(Limits_and_fits, limits_and_fits);
 
 attribute_mapping deviation(deviation, limits_and_fits.form_variance);
@@ -487,7 +487,7 @@ attribute_mapping grade(grade, limits_and_fits.grade);
 end_attribute_mapping;
 
 end_entity_mapping;
-*)
+
 entity_mapping Linear_distance_dimension(Linear_distance_dimension, ((dimensional_location))((directed_dimensional_location)));
 
 mapping_constraints;
@@ -530,19 +530,11 @@ end_entity_mapping;
 entity_mapping Location_dimension(Location_dimension, dimensional_location);
 
 
-attribute_mapping directed(directed, $IDENTICAL_MAPPING); (* It has to be directed_dimensional_location subtype *)
-
-end_attribute_mapping;
-
-attribute_mapping origin(origin, $PATH, element_with_dimension_select);
-dimensional_location <= 
-  shape_aspect_relationship
-end_attribute_mapping;
-
-attribute_mapping origin(origin, $PATH, placed_element_select);
-dimensional_location <= 
-shape_aspect_relationship 
-shape_aspect_relationship.relating_shape_aspect
+attribute_mapping directed(directed, $PATH); -- It has to be directed_dimensional_location subtype
+(dimensional_location =>
+directed_dimensional_location .TRUE.)
+(!{dimensional_location =>
+directed_dimensional_location} .FALSE.)
 end_attribute_mapping;
 
 attribute_mapping origin(origin, $PATH, Shape_element);
@@ -722,18 +714,6 @@ geometric_representation_item =>
 surface =>
 oriented_surface
 )
-end_attribute_mapping;
-
-attribute_mapping target(target, $PATH, placed_element_select);
-dimensional_location <= 
-shape_aspect_relationship 
-shape_aspect_relationship.related_shape_aspect
-end_attribute_mapping;
-
-attribute_mapping target(target, $PATH, element_with_dimension_select);
-dimensional_location <= 
-  shape_aspect_relationship
-  shape_aspect_relationship.related_shape_aspect
 end_attribute_mapping;
 
 attribute_mapping target(target, $PATH, Shape_element);
@@ -924,7 +904,7 @@ shape_aspect_relationship.description
 end_attribute_mapping;
 
 end_entity_mapping;
-
+*)
 entity_mapping Plus_minus_bounds(Plus_minus_bounds, tolerance_value);
 
 attribute_mapping lower_bound(lower_bound, $PATH, measure_with_unit);
@@ -973,7 +953,7 @@ type_qualifier.name
 end_attribute_mapping;
 
 end_entity_mapping;
-
+(* Remove stuff which will likely be remodelled
 entity_mapping Radial_size_dimension(Radial_size_dimension, dimensional_size);
 
 mapping_constraints;
@@ -1144,4 +1124,5 @@ representation
 end_attribute_mapping;
 
 end_entity_mapping;
+*)
 (*end_schema_mapping;*)

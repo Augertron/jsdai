@@ -18,6 +18,10 @@ USE FROM Part_view_definition_mim; -- ISO/TS 10303-1023
 
 USE FROM product_structure_schema (make_from_usage_option);
 
+USE FROM product_definition_schema     --  ISO 10303-41
+    (product_related_product_category); 
+
+
   TYPE sm_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
     (product_definition);
   END_TYPE;
@@ -45,12 +49,11 @@ USE FROM product_structure_schema (make_from_usage_option);
       REPEAT j:= LOINDEX (make_from_usage_option) TO 
                  HIINDEX (make_from_usage_option);
 
-        IF (product_related_product_category[kp].products[i] = 
-          make_from_usage_option[j].relating_product_definition.
-          formation.of_product) THEN
-
           rp := make_from_usage_option[j].related_product_definition.
                 formation.of_product;
+
+        IF (product_related_product_category[kp].products[i] = rp) THEN
+
           REPEAT k:= LOINDEX (product_related_product_category) TO
                      HIINDEX (product_related_product_category);
 

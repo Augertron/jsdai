@@ -74,7 +74,7 @@ public class CxGeometric_placement$usage_concept_usage_relationship_armx extends
 		return (ERepresentation_map)a7;
 	}
 	public void setMapping_source(EMapped_item type, ERepresentation_map value) throws SdaiException {
-		a7 = set_instance(a7, value);
+		a7 = set_instanceX(a7, value);
 	}
 	public void unsetMapping_source(EMapped_item type) throws SdaiException {
 		a7 = unset_instance(a7);

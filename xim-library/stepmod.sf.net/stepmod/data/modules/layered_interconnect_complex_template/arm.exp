@@ -13,6 +13,11 @@ REFERENCE FROM Requirement_decomposition_arm(get_rvd);	-- ISO/TS 10303-1740
 REFERENCE FROM Fabrication_technology_arm(get_stack);	-- ISO/TS 10303-1670
 REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
 
+  TYPE land_physical_template_or_inter_stratum_feature_template = SELECT
+       (Land_physical_template,
+        Inter_stratum_feature_template);
+  END_TYPE;
+  
   TYPE lict_ee_product_definition_with_annotation_elements = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ee_product_definition_with_annotation_elements WITH 
     (Structured_template);
   END_TYPE; 
@@ -87,6 +92,24 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
            (SELF\Template_location_in_structured_template.assembly)) = 2);
   END_ENTITY;
 
+  ENTITY Dependent_thermal_isolation_removal_template
+    SUBTYPE OF (Thermal_isolation_removal_template);
+      associated_item : Land_physical_template;
+    WHERE
+      WR1 : SIZEOF(QUERY (dtlipd <* USEDIN(SELF,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+                  NOT(
+                     (SIZEOF(QUERY (tlist <* USEDIN(associated_item,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+                             NOT(
+                                 (tlist\Template_location_in_structured_template.assembly :=: 
+                                  dtlipd\Template_location_in_structured_template.assembly) AND
+                                 ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.DEPENDENT_TEMPLATE_LOCATION_IN_PADSTACK_DEFINITION' IN TYPEOF(dtlipd)) AND                                 
+                                 (tlist :=: dtlipd\Dependent_template_location_in_padstack_definition.reference_location)
+                                 )
+                      )) = 0)
+                      )
+             )) = 0;
+  END_ENTITY;
+
   ENTITY Design_specific_stratum_technology_mapping_relationship
       SUBTYPE OF(Stratum_technology_mapping_relationship);
       scope : Library_to_design_stack_model_mapping;
@@ -108,6 +131,24 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
         'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.STRATUM_STACK_DEPENDENT_TEMPLATE.STACK') | ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.PADSTACK_DEFINITION' IN TYPEOF(p))));
   END_ENTITY;
 
+  ENTITY Dependent_electrical_isolation_removal_template
+    SUBTYPE OF (Electrical_isolation_removal_template);
+      associated_item : land_physical_template_or_inter_stratum_feature_template;
+    WHERE
+      WR1 : SIZEOF(QUERY (dtlipd <* USEDIN(SELF,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+                  NOT(
+                     (SIZEOF(QUERY (tlist <* USEDIN(associated_item,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+                             NOT(
+                                 (tlist\Template_location_in_structured_template.assembly :=: 
+                                  dtlipd\Template_location_in_structured_template.assembly) AND
+                                 ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.DEPENDENT_TEMPLATE_LOCATION_IN_PADSTACK_DEFINITION' IN TYPEOF(dtlipd)) AND                                 
+                                 (tlist :=: dtlipd\Dependent_template_location_in_padstack_definition.reference_location)
+                                 )
+                      )) = 0)
+                      )
+             )) = 0;
+        END_ENTITY;
+
   ENTITY Library_to_design_stack_model_mapping 
     SUBTYPE OF (View_definition_relationship);
       SELF\View_definition_relationship.relating_view : Library_stack_model;
@@ -115,7 +156,9 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     WHERE
       WR1: ((SELF\View_definition_relationship.related_view.composing_occurrence *
             SELF\View_definition_relationship.relating_view.composing_occurrence) = 
-            SELF\View_definition_relationship.relating_view.composing_occurrence);
+            SELF\View_definition_relationship.related_view.composing_occurrence);
+      WR2: acyclic_library_to_design_stack_model_mapping(SELF, [related_view], 
+           'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.LIBRARY_TO_DESIGN_STACK_MODEL_MAPPING');            
   END_ENTITY;
 
   ENTITY Material_removal_structured_template
@@ -141,12 +184,10 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     SUPERTYPE OF (Passage_padstack_definition)
     SUBTYPE OF (Multi_stratum_structured_template);
     WHERE
-      WR1 : SIZEOF(QUERY(prpc <* USEDIN(SELF\Product_view_definition.defined_version.of_product,
-        'PRODUCT_IDENTIFICATION_ARM.PRODUCT_CATEGORY_ASSIGNMENT.PRODUCTS') | (prpc.category\Product_category.name = 'template model'))) > 0;
-      WR2: NOT('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.PASSAGE_PADSTACK_DEFINITION' IN TYPEOF(SELF)) XOR 
+      WR1: NOT('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.PASSAGE_PADSTACK_DEFINITION' IN TYPEOF(SELF)) XOR 
           (SIZEOF(QUERY(tlict <* SELF\Structured_template.templates |
          ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.INTER_STRATUM_FEATURE_TEMPLATE_LOCATION' IN TYPEOF(tlict)))) > 0);
-      WR3: SIZEOF(QUERY(tlict <* SELF\Structured_template.templates |
+      WR2: SIZEOF(QUERY(tlict <* SELF\Structured_template.templates |
          (NOT ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.INTER_STRATUM_FEATURE_TEMPLATE_LOCATION' IN TYPEOF(tlict))) AND
           (NOT ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.STRATUM_SPECIFIC_TEMPLATE_LOCATION' IN TYPEOF(tlict))))) = 0;
   END_ENTITY;
@@ -277,9 +318,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
                   OR
                NOT (temp\Stratum_specific_template_location.bound_stratum IN stack\Stratum_stack_model.composing_occurrence)
         ))) = 0;
-      WR2 : SIZEOF(['LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.PADSTACK_DEFINITION',
-           'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.MULTI_STRATUM_SPECIAL_SYMBOL_TEMPLATE'] 
-          * TYPEOF(SELF)) > 0;          
+      WR2 : TYPEOF(SELF) <> TYPEOF(SELF\Stratum_stack_dependent_template);          
   END_ENTITY;
 
   ENTITY Structured_inter_stratum_feature_template
@@ -334,9 +373,43 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       WR1 : assembly_shape.shape_characterized_definition[1] :=: reference_location.assembly;
   END_ENTITY;
 
+  ENTITY Thermal_isolation_removal_template
+    SUBTYPE OF (Material_removal_structured_template);
+	DERIVE
+  		thermal_isolation_spacing_requirement: SET[0:?] OF Requirement_view_definition :=
+		  get_rvd(SELF, 'thermal requirement');
+	WHERE
+	  WR1: SIZEOF(QUERY(tisr <* THERMAL_ISOLATION_SPACING_REQUIREMENT |
+       NOT('INTERCONNECT_PHYSICAL_REQUIREMENT_ALLOCATION_ARM.THERMAL_ISOLATION_REQUIREMENT' IN TYPEOF(tisr))
+       )) =0;
+  END_ENTITY;
+
   SUBTYPE_CONSTRAINT stratum_stack_model_subtypes FOR Stratum_stack_model;
     ONEOF (Design_stack_model, Library_stack_model);
   END_SUBTYPE_CONSTRAINT;
+
+  FUNCTION acyclic_library_to_design_stack_model_mapping
+    (relation : Library_to_design_stack_model_mapping; relatives : SET[1:?] OF
+     Design_stack_model; specific_relation : STRING) : BOOLEAN; 
+  LOCAL
+      x : SET OF Library_to_design_stack_model_mapping := [];
+  END_LOCAL;
+
+      IF relation. relating_view IN relatives THEN
+        RETURN (FALSE);
+      END_IF;
+        x := QUERY(pd <* bag_to_set(USEDIN(relation. relating_view,
+          'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.' +
+          'LIBRARY_TO_DESIGN_STACK_MODEL_MAPPING.' +
+          'RELATED_VIEW')) | specific_relation IN TYPEOF(pd));
+      REPEAT i := 1 TO HIINDEX(x);
+        IF NOT acyclic_library_to_design_stack_model_mapping(x[i], relatives +
+          relation. relating_view, specific_relation) THEN
+          RETURN (FALSE);
+        END_IF;
+      END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION; 
 
 END_SCHEMA;
   

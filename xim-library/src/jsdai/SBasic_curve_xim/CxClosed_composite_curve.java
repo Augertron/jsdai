@@ -33,7 +33,7 @@ import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SGeometry_schema.CComposite_curve;
 
-public class CxClosed_curve extends CClosed_curve implements EMappedXIMEntity
+public class CxClosed_composite_curve extends CClosed_composite_curve implements EMappedXIMEntity
 {
 
 	public int attributeState = ATTRIBUTES_MODIFIED;	
@@ -82,11 +82,11 @@ public class CxClosed_curve extends CClosed_curve implements EMappedXIMEntity
 	* @param armEntity arm entity.
 	* @throws SdaiException
 	*/
-	public static void setMappingConstraints(SdaiContext context, EClosed_curve armEntity) throws SdaiException
+	public static void setMappingConstraints(SdaiContext context, EClosed_composite_curve armEntity) throws SdaiException
 	{
 	}
 
-	public static void unsetMappingConstraints(SdaiContext context, EClosed_curve armEntity) throws SdaiException
+	public static void unsetMappingConstraints(SdaiContext context, EClosed_composite_curve armEntity) throws SdaiException
 	{
 	}
 	

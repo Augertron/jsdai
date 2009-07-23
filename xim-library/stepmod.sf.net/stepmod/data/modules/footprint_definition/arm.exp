@@ -74,7 +74,7 @@ SCHEMA Footprint_definition_arm;
                 reference_shape);
       WR9 : NOT EXISTS(reference_seating_plane_placement) OR 
                 ((reference_seating_plane_placement\Usage_concept_usage_relationship.associated_usage\Non_feature_shape_element.scope) =
-                SELF\Footprint_definition.reference_package);
+                shape_characterized_definition[1]\Footprint_definition.reference_package);
      WR10 : NOT EXISTS(reference_seating_plane_placement) OR ('PHYSICAL_UNIT_3D_SHAPE_ARM.PHYSICAL_UNIT_3D_SHAPE_MODEL' IN 
                 TYPEOF(reference_seating_plane_placement\Usage_concept_usage_relationship.associating_usage_shape\Usage_view_level_non_feature_shape_model.model_shape));
      WR11 : NOT (EXISTS(reference_seating_plane_placement) AND ('PHYSICAL_UNIT_2D_SHAPE_ARM.PHYSICAL_UNIT_2D_SHAPE_MODEL' IN TYPEOF(reference_shape)));
@@ -87,13 +87,12 @@ SCHEMA Footprint_definition_arm;
     SUBTYPE OF (Multi_stratum_structured_template);
     DERIVE 
       padstack_based_location : template_arrangement := get_template_arrangement(padstacks);
-      padstacks : SET[1:?] OF Template_location_in_structured_template := bag_to_set(QUERY(tlict <* SELF\Structured_template.templates |
-         ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.PADSTACK_DEFINITION' IN TYPEOF(tlict.template))));
-      single_stratum_components : SET[0:?] OF Single_stratum_template := bag_to_set(QUERY(tlict <* SELF\Structured_template.templates |
-         ('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_ARM.SINGLE_STRATUM_TEMPLATE' IN TYPEOF(tlict.template))));   
+      padstacks : SET[1:?] OF Template_location_in_structured_template := QUERY(tlict <* SELF\Structured_template.templates |
+         ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_ARM.PADSTACK_DEFINITION' IN TYPEOF(tlict.template)));
+      single_stratum_components : SET[0:?] OF Single_stratum_template := fd_get_single_stratum_components(SELF\Structured_template.templates);   
     WHERE
-      WR1 : SIZEOF(QUERY(ps <* templates | (ps.template\Multi_stratum_structured_template.location <> SELF\Multi_stratum_structured_template.location)
-              AND (ps.template\Multi_stratum_structured_template.location <> template_arrangement.symmetrical))) = 0;
+      WR1 : SIZEOF(QUERY(ps <* SELF\Structured_template.templates | (ps\Template_location_in_structured_template.template\Multi_stratum_structured_template.location <> SELF\Multi_stratum_structured_template.location)
+              AND (ps\Template_location_in_structured_template.template\Multi_stratum_structured_template.location <> template_arrangement.symmetrical))) = 0;
       WR2 : ((SELF\Multi_stratum_structured_template.location = template_arrangement.top) AND (SELF\Product_view_definition.initial_context\View_definition_context.description = 'top')) OR 
             (NOT (SELF\Multi_stratum_structured_template.location = template_arrangement.top) AND NOT (SELF\Product_view_definition.initial_context\View_definition_context.description = 'top'));
       WR3 : ((SELF\Multi_stratum_structured_template.location = template_arrangement.bottom) AND (SELF\Product_view_definition.initial_context\View_definition_context.description = 'bottom')) OR 
@@ -115,8 +114,12 @@ SCHEMA Footprint_definition_arm;
     INVERSE
       related_elements : SET [2:2] OF View_definition_relationship for related_view;
     WHERE
-      WR1: 'PACKAGE_ARM.PACKAGE' IN fd_get_components(related_elements);
-      WR2: 'FOOTPRINT_DEFINITION_ARM.FOOTPRINT_DEFINITION' in fd_get_components(related_elements);
+      WR1: SIZEOF(QUERY(re <* related_elements | 
+            ('PACKAGE_ARM.PACKAGE' IN TYPEOF(re\View_definition_relationship.relating_view))
+            )) = 1;
+      WR2: SIZEOF(QUERY(re <* related_elements | 
+            ('FOOTPRINT_DEFINITION_ARM.FOOTPRINT_DEFINITION' IN TYPEOF(re\View_definition_relationship.relating_view))
+            )) = 1;
       WR3: SIZEOF(related_models) = 2;
       WR4: SIZEOF(associated_model) = 1;
       WR5: SIZEOF(QUERY(rm <* related_models |
@@ -202,6 +205,20 @@ SCHEMA Footprint_definition_arm;
     END_IF;
     RETURN(?);
   END_FUNCTION; 
+  
+  FUNCTION fd_get_single_stratum_components(input : SET OF Template_location_in_structured_template) : SET OF Single_stratum_template;
+    LOCAL
+      sst : SET OF Single_stratum_template := [];
+    END_LOCAL;
+    REPEAT i := 1 TO HIINDEX(input);
+      IF ('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_ARM.SINGLE_STRATUM_TEMPLATE' IN TYPEOF(input[i]\Template_location_in_structured_template.template))
+      THEN      
+        sst := sst + input[i]\Template_location_in_structured_template.template;
+      END_IF;
+    END_REPEAT;
+    RETURN (sst);
+  END_FUNCTION;   
+  
 
   FUNCTION get_template_arrangement(
     input : SET OF Template_location_in_structured_template

@@ -95,7 +95,6 @@ ENTITY Common_datum_armx
   (* CONNOTATIONAL *) SUBTYPE OF (common_datum);
   made_up_by : SET[2:?] OF Single_datum;
 DERIVE
-  SELF\shape_aspect.of_shape : product_definition_shape := ?;
   SELF\shape_aspect.product_definitional : LOGICAL := ?;
   SELF\shape_aspect.description : text := ?;
   SELF\datum.identification : identifier := ?;
@@ -136,6 +135,10 @@ ENTITY Flatness_tolerance_armx
   (* CONNOTATIONAL *) SUBTYPE OF (flatness_tolerance, Geometric_tolerance_armx);
 END_ENTITY;
 
+(**	
+* modification : OPTIONAL limit_condition; - not available on XIM. If someone wants to have this value - he has to make a complex with Modified_geometric_tolerance 
+* segment_size : OPTIONAL Measure_with_unit; - not available on XIM. If someone wants to have this value - he has to make a complex with geometric_tolerance_with_defined_unit.
+*)
 ENTITY Geometric_tolerance_armx
   ABSTRACT SUPERTYPE OF (ONEOF (Angularity_tolerance_armx,
                                 Circular_runout_tolerance_armx,
@@ -153,17 +156,13 @@ ENTITY Geometric_tolerance_armx
                                 Symmetry_tolerance_armx,
                                 Total_runout_tolerance_armx))
 	(* CONNOTATIONAL *) SUBTYPE OF (geometric_tolerance);                                
-  applied_to : Shape_element;
-  segment_size : OPTIONAL Measure_with_unit;
+  SELF\geometric_tolerance.toleranced_shape_aspect RENAMED applied_to : Shape_element;
   significant_digits : OPTIONAL INTEGER;
   value_determination : OPTIONAL STRING;
-	modification : OPTIONAL limit_condition;
   SELF\geometric_tolerance.description RENAMED qualifying_note : OPTIONAL STRING;
   SELF\geometric_tolerance.magnitude RENAMED tolerance_value : length_measure_with_unit;
-DERIVE
-  SELF\geometric_tolerance.toleranced_shape_aspect : shape_aspect := ?;
 WHERE
-  WR1: (NOT (EXISTS(segment_size))) OR ('Geometric_tolerance_xim.LENGTH_MEASURE' IN TYPEOF(segment_size.value_component));
+  WR1: (NOT('SHAPE_TOLERANCE_SCHEMA.geometric_tolerance_with_defined_unit' IN TYPEOF(SELF)) OR ('Geometric_tolerance_xim.LENGTH_MEASURE' IN TYPEOF(SELF\Geometric_tolerance_with_defined_unit.unit_size.value_component)));
   WR2: (NOT (EXISTS(magnitude))) OR ('Geometric_tolerance_xim.LENGTH_MEASURE' IN TYPEOF(magnitude.value_component));
   WR3: (NOT (EXISTS(significant_digits))) OR (significant_digits > 0);
 END_ENTITY;
@@ -217,7 +216,6 @@ ENTITY Single_datum
   SELF\datum.identification RENAMED datum_name : STRING;
   modification : OPTIONAL limit_condition;
 DERIVE
-  SELF\shape_aspect.of_shape : product_definition_shape := ?;
   SELF\shape_aspect.description : text := ?;
   SELF\shape_aspect.product_definitional : LOGICAL := ?;
   SELF\shape_aspect.name : label := ?;

@@ -50,9 +50,6 @@ USE FROM support_resource_schema(text, label);
 
 USE FROM application_context_schema(product_context);
 
-REFERENCE FROM Product_identification_xim    --  ISO/TS 10303-1017 
-  (types_of_product);  
-
 REFERENCE FROM support_resource_schema   -- ISO 10303-41
   (bag_to_set);
  
@@ -220,14 +217,11 @@ Example 2: The CAS number of water is "7732-18-5".
          'APPLIED_PERSON_AND_ORGANIZATION_ASSIGNMENT.ITEMS') |
                          (temp.role.name = 'id owner') ));
   WHERE 
-     WR1: SIZEOF([ 'chemical compound' ] * types_of_product(SELF))= 1 ; 
-     WR2 : ((SIZEOF(id_owner_organization)+SIZEOF(id_owner_pao)) = 1);
+      WR1 : ((SIZEOF(id_owner_organization)+SIZEOF(id_owner_pao)) = 1);
   END_ENTITY; 
    
   ENTITY Chemical_element 
     (* CONNOTATIONAL *) SUBTYPE OF (Substance); 
-  WHERE 
-     WR1: SIZEOF([ 'chemical element' ] * types_of_product(SELF))= 1 ; 
   END_ENTITY; 
    
  
@@ -238,8 +232,6 @@ Example 2: The CAS number of water is "7732-18-5".
 *)
   ENTITY Physical_particle
     (* CONNOTATIONAL *) SUBTYPE OF (Substance);
-  WHERE 
-     WR1: SIZEOF([ 'physical particle' ] * types_of_product(SELF))= 1 ;
   END_ENTITY;
 
    ENTITY Raw_material_definition_relationship
@@ -260,8 +252,6 @@ Example 2: The CAS number of water is "7732-18-5".
     (* CONNOTATIONAL *) SUBTYPE OF (Product_armx);    
     UNIQUE 
       UR1: SELF\product.id;
-    WHERE 
-      WR1: SIZEOF([ 'substance' ] * types_of_product(SELF))= 1 ; 
   END_ENTITY; 
    
   ENTITY Substance_composition_relationship 

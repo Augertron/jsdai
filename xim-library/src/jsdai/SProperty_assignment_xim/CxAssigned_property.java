@@ -176,8 +176,13 @@ public class CxAssigned_property extends CAssigned_property implements EMappedXI
 		unsetRepresentation(context, armEntity);
 		ERepresentation_item eri;
 		if (armEntity.testRepresentation(null) == 1){
-			EMeasure_with_unit emwu = (EMeasure_with_unit)armEntity.getRepresentation(null);
-			eri = CxAP210ARMUtilities.upgradeToMRI(context.working_model, (EMeasure_with_unit)emwu);
+			EEntity ee = armEntity.getRepresentation(null);
+			if(ee instanceof EMeasure_with_unit){
+				EMeasure_with_unit emwu = (EMeasure_with_unit)armEntity.getRepresentation(null);
+				eri = CxAP210ARMUtilities.upgradeToMRI(context.working_model, (EMeasure_with_unit)emwu);
+			}else{
+				eri = (ERepresentation_item)ee;
+			}
 		}else if (armEntity.testRepresentation(null) == sRepresentationText){
 			String name = (String)armEntity.getRepresentation(null, null);
 			EDescriptive_representation_item edri = (EDescriptive_representation_item)

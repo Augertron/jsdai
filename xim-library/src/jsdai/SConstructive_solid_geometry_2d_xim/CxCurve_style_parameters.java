@@ -21,7 +21,7 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.SLayered_interconnect_simple_template_xim;
+package jsdai.SConstructive_solid_geometry_2d_xim;
 
 /**
 * @author Giedrius Liutkus
@@ -79,7 +79,7 @@ public class CxCurve_style_parameters extends CCurve_style_parameters implements
 	
 	
 	public void setContext_of_items(ERepresentation type, ERepresentation_context value) throws SdaiException {
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetContext_of_items(ERepresentation type) throws SdaiException {
 		a2 = unset_instance(a2);
@@ -238,7 +238,7 @@ public class CxCurve_style_parameters extends CCurve_style_parameters implements
 				erc = temp.getContext_of_items2(null);
 			}
 		}else{
-			System.err.println("Unsupported type of Cx class within CxCurve_style_parameters "+armEntity);
+			SdaiSession.getSession().printlnSession("Unsupported type of Cx class within CxCurve_style_parameters "+armEntity);
 		}
 		return erc;
 	}

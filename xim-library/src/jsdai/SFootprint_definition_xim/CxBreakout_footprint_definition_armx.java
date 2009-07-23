@@ -79,7 +79,7 @@ public class CxBreakout_footprint_definition_armx extends CBreakout_footprint_de
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a6 = set_instance(a6, value);
+		a6 = set_instanceX(a6, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

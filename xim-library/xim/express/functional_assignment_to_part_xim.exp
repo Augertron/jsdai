@@ -46,6 +46,14 @@ USE FROM Functional_assignment_to_part_mim;
 	 Part_connected_terminals_topological_junction);
   END_TYPE;
   
+
+  TYPE fatp_part_connected_terminals_definition_domain_enumeration = EXTENSIBLE ENUMERATION OF
+    (electrical,
+	 thermal,
+	 optical,
+	 magnetic);
+  END_TYPE;
+  
   ENTITY Functional_usage_view_to_part_terminal_assignment
   	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
       SELF\shape_aspect_relationship.related_shape_aspect RENAMED physical_usage_view_terminal		: Part_terminal;
@@ -65,11 +73,24 @@ USE FROM Functional_assignment_to_part_mim;
     DERIVE
       SELF\shape_aspect.description : text := ?;
       SELF\shape_aspect.product_definitional : LOGICAL := ?;
+    INVERSE
+      domain : SET [0:1] OF Part_connected_terminals_definition_domain_armx for associated_definition;
     UNIQUE
       UR1 : name,
  associated_definition;
     WHERE
       WR1 : SIZEOF(QUERY(ct <* connected_terminals | NOT (associated_definition = ct\Shape_element.containing_shape))) = 0;
+  END_ENTITY;
+
+  ENTITY Part_connected_terminals_definition_domain_armx
+    SUBTYPE OF(part_connected_terminals_definition_domain);
+      domain_type : fatp_part_connected_terminals_definition_domain_enumeration;
+      associated_definition : Part_connected_terminals_definition;
+    DERIVE
+      -- Overlaps with domain_type
+      SELF\shape_aspect.name : label := ?;
+      SELF\shape_aspect.of_shape : product_definition_shape := associated_definition.of_shape;
+      SELF\shape_aspect.product_definitional : LOGICAL := ?;
   END_ENTITY;
 
   ENTITY Part_connected_terminals_layout_topology_requirement_assignment_armx

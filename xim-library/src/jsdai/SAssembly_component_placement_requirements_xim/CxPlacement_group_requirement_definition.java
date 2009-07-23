@@ -132,7 +132,7 @@ public class CxPlacement_group_requirement_definition extends CPlacement_group_r
 		// AIM gap
 		AComponent_group_assignment composition = armEntity.getComposition(null, context.domain);
 		if(composition.getMemberCount() == 0){
-			System.err.println("Group does not have a single member via coposition INVERSE "+armEntity);
+			SdaiSession.getSession().printlnSession("Group does not have a single member via coposition INVERSE "+armEntity);
 			return;
 		}
 		EEntity component_or_feature = composition.getByIndex(1).getAssigned_component(null);
@@ -143,7 +143,7 @@ public class CxPlacement_group_requirement_definition extends CPlacement_group_r
 			EComponent_feature_armx feature = (EComponent_feature_armx)component_or_feature;
 			component = feature.getAssociated_component(null);
 		}
-		EProduct_definition assembly = component.getOccurrence_contexts(null, context.domain).getByIndex(1).getRelating_view(null);
+		EProduct_definition assembly = component.getOccurrence_contexts(null, null).getByIndex(1).getRelating_view(null);
 		armEntity.setRelating_product_definition(null, assembly);
 	}
 

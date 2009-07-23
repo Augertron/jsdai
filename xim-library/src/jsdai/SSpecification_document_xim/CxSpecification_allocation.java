@@ -54,7 +54,7 @@ public class CxSpecification_allocation extends CSpecification_allocation implem
 		return (jsdai.SDocument_schema.EDocument)a0;
 	}*/
 	public void setAssigned_document(EDocument_reference type, jsdai.SDocument_schema.EDocument value) throws SdaiException {
-		a0 = set_instance(a0, value);
+		a0 = set_instanceX(a0, value);
 	}
 	public void unsetAssigned_document(EDocument_reference type) throws SdaiException {
 		a0 = unset_instance(a0);

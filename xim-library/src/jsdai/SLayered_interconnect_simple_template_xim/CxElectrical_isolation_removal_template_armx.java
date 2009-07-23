@@ -21,7 +21,7 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.SInterconnect_physical_requirement_allocation_xim;
+package jsdai.SLayered_interconnect_simple_template_xim;
 
 /**
 * @author Giedrius Liutkus
@@ -31,44 +31,20 @@ package jsdai.SInterconnect_physical_requirement_allocation_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.SInterconnect_physical_requirement_allocation_mim.CThermal_isolation_removal_template;
-import jsdai.SLayered_interconnect_complex_template_xim.CxMaterial_removal_structured_template_armx;
+import jsdai.SLayered_interconnect_simple_template_mim.CElectrical_isolation_removal_template;
 import jsdai.SPart_template_xim.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
 import jsdai.SShape_property_assignment_xim.*;
 
-public class CxThermal_isolation_removal_template_armx extends CThermal_isolation_removal_template_armx implements EMappedXIMEntity
+public class CxElectrical_isolation_removal_template_armx extends CElectrical_isolation_removal_template_armx implements EMappedXIMEntity
 {
 
 	public int attributeState = ATTRIBUTES_MODIFIED;	
 
-	// Taken from Single_stratum_template_armx
-	// methods for attribute: of_stratum_technology, base type: SET OF ENTITY
-/*	public static int usedinOf_stratum_technology(ESingle_stratum_template_armx type, EStratum_technology_armx instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a11$, domain, result);
-	}
-	public boolean testOf_stratum_technology(ESingle_stratum_template_armx type) throws SdaiException {
-		return test_aggregate(a11);
-	}
-	public AStratum_technology_armx getOf_stratum_technology(ESingle_stratum_template_armx type) throws SdaiException {
-		return (AStratum_technology_armx)get_aggregate(a11);
-	}*/
-/*	public AStratum_technology_armx createOf_stratum_technology(ESingle_stratum_template_armx type) throws SdaiException {
-		a11 = (AStratum_technology_armx)create_aggregate_class(a11, a11$,  AStratum_technology_armx.class, 0);
-		return a11;
-	}
-	public void unsetOf_stratum_technology(ESingle_stratum_template_armx type) throws SdaiException {
-		unset_aggregate(a11);
-		a11 = null;
-	}
-	public static jsdai.dictionary.EAttribute attributeOf_stratum_technology(ESingle_stratum_template_armx type) throws SdaiException {
-		return a11$;
-	}*/
-	// ENDOF Taken from Single_stratum_template_armx
-	
 	// Product_view_definition
+
 	// From property_definition
 /*	public static int usedinDefinition(EProperty_definition type, EEntity instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a2$, domain, result);
@@ -83,7 +59,7 @@ public class CxThermal_isolation_removal_template_armx extends CThermal_isolatio
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a2 = set_instance(a2, value);
+		a2 = set_instanceX(a2, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
@@ -93,7 +69,7 @@ public class CxThermal_isolation_removal_template_armx extends CThermal_isolatio
 	public static jsdai.dictionary.EAttribute attributeDefinition(EProperty_definition type) throws SdaiException {
 		return a2$;
 	}
-
+	
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
 		return test_string(a0);
@@ -151,7 +127,7 @@ public class CxThermal_isolation_removal_template_armx extends CThermal_isolatio
 			return;
 		}
 
-		setTemp("AIM", CThermal_isolation_removal_template.definition);
+		setTemp("AIM", CElectrical_isolation_removal_template.definition);
 
 		setMappingConstraints(context, this);
 
@@ -168,7 +144,6 @@ public class CxThermal_isolation_removal_template_armx extends CThermal_isolatio
 		// Clean ARM specific attributes
 		
 		//	********** "product_view_definition" attributes
-
 		//id - goes directly into AIM
 		
 		//additional_characterization
@@ -179,6 +154,7 @@ public class CxThermal_isolation_removal_template_armx extends CThermal_isolatio
 
 		// setOf_stratum_technology(context, this);
 		
+		// setElectrical_isolation_spacing_requirement(context, this);
 		
 		// Clean ARM specific attributes
 		unsetId_x(null);
@@ -187,6 +163,7 @@ public class CxThermal_isolation_removal_template_armx extends CThermal_isolatio
 		unsetPhysical_characteristic(null);
 		// unsetOf_stratum_technology(null);
 		
+		// unsetElectrical_isolation_spacing_requirement(null);	
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
@@ -202,7 +179,6 @@ public class CxThermal_isolation_removal_template_armx extends CThermal_isolatio
 		unsetId_x(context, this);
 
 		//	********** "product_view_definition" attributes
-
 		//id - goes directly into AIM
 		
 		//additional_characterization
@@ -213,6 +189,7 @@ public class CxThermal_isolation_removal_template_armx extends CThermal_isolatio
 
 		// unsetOf_stratum_technology(context, this);
 	
+		//unsetElectrical_isolation_spacing_requirement(context, this);		
 	}
 	
 	
@@ -231,16 +208,16 @@ public class CxThermal_isolation_removal_template_armx extends CThermal_isolatio
 	* @param armEntity arm entity.
 	* @throws SdaiException
 	*/
-	public static void setMappingConstraints(SdaiContext context, EThermal_isolation_removal_template_armx armEntity) throws SdaiException
+	public static void setMappingConstraints(SdaiContext context, EElectrical_isolation_removal_template_armx armEntity) throws SdaiException
 	{
 		unsetMappingConstraints(context, armEntity);
 		
-		CxMaterial_removal_structured_template_armx.setMappingConstraints(context, armEntity);
+		CxMaterial_removal_feature_template_armx.setMappingConstraints(context, armEntity);
 	}
 
-	public static void unsetMappingConstraints(SdaiContext context, EThermal_isolation_removal_template_armx armEntity) throws SdaiException
+	public static void unsetMappingConstraints(SdaiContext context, EElectrical_isolation_removal_template_armx armEntity) throws SdaiException
 	{
-		CxMaterial_removal_structured_template_armx.unsetMappingConstraints(context, armEntity);		
+		CxMaterial_removal_feature_template_armx.unsetMappingConstraints(context, armEntity);		
 	}	
 	//********** "managed_design_object" attributes
 
@@ -339,30 +316,107 @@ public class CxThermal_isolation_removal_template_armx extends CThermal_isolatio
  		CxTemplate_definition.setPhysical_characteristic(context, armEntity); 		
  	}
     
- 	/**
- 	* Sets/creates data for Of_stratum_technology attribute.
- 	*
- 	* @param context SdaiContext.
- 	* @param armEntity arm entity.
- 	* @throws SdaiException
- 	*/
-    // PTD <- PD <- PDR -> R -> RI <- AGA -> CT
-/* 	public static void setOf_stratum_technology(SdaiContext context, ESingle_stratum_structured_template_armx armEntity) throws SdaiException
- 	{
- 		CxSingle_stratum_structured_template_armx.setOf_stratum_technology(context, armEntity);
- 	}
+	//********** "material_removal_feature_template" attributes
+// Changed since WD26
+   /**
+   * Sets/creates data for of_stratum_technology attribute.
+   *
+   * @param context SdaiContext.
+   * @param armEntity arm entity.
+   * @throws SdaiException
+   */
+  // PD <- PDS <- SA <-ed SAR ing-> SA -> PDS -> ST
+/*   public static void setOf_stratum_technology(SdaiContext context, EMaterial_removal_feature_template_armx armEntity) throws SdaiException
+   {
+   	CxMaterial_removal_feature_template_armx.setOf_stratum_technology(context, armEntity);   	
+   }
 */
 
- 	/**
- 	* Unsets/deletes data for Of_stratum_technology attribute.
- 	*
- 	* @param context SdaiContext.
- 	* @param armEntity arm entity.
- 	* @throws SdaiException
- 	*/
-/* 	public static void unsetOf_stratum_technology(SdaiContext context, ESingle_stratum_structured_template_armx armEntity) throws SdaiException
+   /**
+   * Unsets/deletes data for of_stratum_technology attribute.
+   *
+   * @param context SdaiContext.
+   * @param armEntity arm entity.
+   * @throws SdaiException
+   */
+/*   public static void unsetOf_stratum_technology(SdaiContext context, EMaterial_removal_feature_template_armx armEntity) throws SdaiException
    {
- 		CxSingle_stratum_structured_template_armx.unsetOf_stratum_technology(context, armEntity); 		
- 	}
-*/ 	
+   	CxMaterial_removal_feature_template_armx.unsetOf_stratum_technology(context, armEntity);   	
+   }
+*/
+	//********** "electrical_isolation_removal_template" attributes
+
+	/**
+	* Sets/creates data for electrical_isolation_spacing_requirement attribute.
+	*
+	* <p>
+	*  attribute_mapping electrical_isolation_spacing_requirement_layout_spacing_requirement_occurrence (electrical_isolation_spacing_requirement
+	* , (*PATH*), layout_spacing_requirement_occurrence);
+		part_template_definition &lt;=
+		product_definition_shape &lt;=
+		property_definition &lt;-
+		property_definition_relationship.related_property_definition
+		property_definition_relationship
+		property_definition_relationship.relating_property_definition -&gt;
+		property_definition =&gt;
+		requirements_property =&gt;
+		grouped_requirements_property
+		{grouped_requirements_property &lt;=
+		group
+		group.name = 'layout spacing requirements property'}
+	*  end_attribute_mapping;
+	* </p>
+	* @param context SdaiContext.
+	* @param armEntity arm entity.
+	* @throws SdaiException
+	*/
+  // PTD <- PD <- PDR -> GRP
+  // See SEDS-881
+// MADE derived
+/*   
+	public static void setElectrical_isolation_spacing_requirement(SdaiContext context, EElectrical_isolation_removal_template armEntity) throws SdaiException
+	{
+		//unset old values
+		unsetElectrical_isolation_spacing_requirement(context, armEntity);
+
+		if (armEntity.testElectrical_isolation_spacing_requirement(null))
+		{
+			ELayout_spacing_requirement_occurrence armElectrical_isolation_spacing_requirement = 
+					armEntity.getElectrical_isolation_spacing_requirement(null);
+         // PDR
+         EProperty_definition_relationship epdr = (EProperty_definition_relationship)
+            context.working_model.createEntityInstance(CProperty_definition_relationship.definition);
+         epdr.setRelated_property_definition(null, armEntity);
+         epdr.setRelating_property_definition(null, armElectrical_isolation_spacing_requirement);
+         epdr.setName(null, "spacing requirement");
+         epdr.setDescription(null, "");
+
+		}
+	}
+
+*/
+	/**
+	* Unsets/deletes data for electrical_isolation_spacing_requirement attribute.
+	*
+	* @param context SdaiContext.
+	* @param armEntity arm entity.
+	* @throws SdaiException
+	*/
+/* Made derived   
+	public static void unsetElectrical_isolation_spacing_requirement(SdaiContext context, EElectrical_isolation_removal_template armEntity) throws SdaiException
+	{
+     AProperty_definition_relationship apdr = new AProperty_definition_relationship();
+     CProperty_definition_relationship.usedinRelated_property_definition(null, armEntity, context.domain, apdr);
+     SdaiIterator iterator2 = apdr.createIterator();
+     while(iterator2.next()){
+        EProperty_definition_relationship epdr = apdr.getCurrentMember(iterator2);
+        if((epdr.testName(null))&&(epdr.getName(null).equals("spacing requirement"))&&
+           (epdr.testRelating_property_definition(null))&&
+           (epdr.getRelating_property_definition(null) instanceof EGrouped_requirements_property)){
+           epdr.deleteApplicationInstance();
+        }
+     }
+	}
+*/	
+
 }

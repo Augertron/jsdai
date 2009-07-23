@@ -58,7 +58,7 @@ public class CxPassage_padstack_definition_armx$stratum_stack_dependent_template
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a10 = set_instance(a10, value);
+		a10 = set_instanceX(a10, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {

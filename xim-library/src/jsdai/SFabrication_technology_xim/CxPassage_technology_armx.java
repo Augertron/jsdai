@@ -504,7 +504,12 @@ public class CxPassage_technology_armx extends CPassage_technology_armx implemen
     unsetAs_finished_passage_extent(context, armEntity);
 
     if (armEntity.testAs_finished_passage_extent(null)) {
-      ERepresentation_item characteristic = (ERepresentation_item)armEntity.getAs_finished_passage_extent(null);
+    	EEntity ee = armEntity.getAs_finished_passage_extent(null);
+    	if(!(ee instanceof ERepresentation_item)){
+    		SdaiSession.println("wrong type of attribute for Passage_technology_armx.as_finished_passage_extent"+ee);
+    		return;
+    	}
+      ERepresentation_item characteristic = (ERepresentation_item)ee;
       ARepresentation ar = new ARepresentation();
       CRepresentation.usedinItems(null, characteristic, context.domain, ar);
       ERepresentation er;

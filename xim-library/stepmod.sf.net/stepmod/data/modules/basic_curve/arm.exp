@@ -14,10 +14,19 @@ SCHEMA Basic_curve_arm;
 		Trimmed_curve);    
 	END_SUBTYPE_CONSTRAINT;
 
-  ENTITY Closed_curve
+  TYPE closed_curve = EXTENSIBLE GENERIC_ENTITY SELECT
+    (Circle,
+     Closed_composite_curve);
+  END_TYPE;
+
+  ENTITY Circle
     SUBTYPE OF (Curve);
   END_ENTITY;
 
+  ENTITY Closed_composite_curve
+    SUBTYPE OF (Composite_curve);
+  END_ENTITY;
+  
   ENTITY Composite_curve
     SUBTYPE OF (Curve);
       curve_segment : LIST[1:?] OF UNIQUE Composite_curve_segment;

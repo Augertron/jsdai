@@ -11,6 +11,8 @@ SCHEMA Layered_interconnect_simple_template_arm;
 	USE FROM Fabrication_technology_arm;	-- ISO/TS 10303-1670
 	USE FROM Text_representation_arm;	-- ISO/TS 10303-1750
 	USE FROM Part_template_shape_with_parameters_arm;	-- ISO/TS 10303-1720
+	REFERENCE FROM Requirement_decomposition_arm(get_rvd);	-- ISO/TS 10303-1740
+
 
 REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
 
@@ -20,18 +22,6 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
      edge_curve_class,
      edge_point_class,
      surface_area_class);
-  END_TYPE;
-
-  TYPE extend_or_chord_2_extend_or_truncate_or_round = ENUMERATION OF
-    (truncate,
-     chord_2_extend,
-     round,
-     extend);
-  END_TYPE;
-
-  TYPE extend_or_truncate = ENUMERATION OF
-    (truncate,
-     extend);
   END_TYPE;
 
   TYPE land_template_terminal_class = ENUMERATION OF
@@ -61,11 +51,6 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       unknown_context);
   END_TYPE;
 
-  TYPE square_or_round = ENUMERATION OF
-    (square,
-     round);
-  END_TYPE;
-
   SUBTYPE_CONSTRAINT list_template_definition_subtypes FOR Template_definition; 
     (ONEOF (Geometric_template,
 			Parametric_template,
@@ -85,7 +70,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
 
   ENTITY Closed_path_area_with_parameters
     SUBTYPE OF (Path_area_with_parameters);
-    SELF\Path_area_with_parameters.centreline : Closed_curve;
+    SELF\Path_area_with_parameters.centreline : closed_curve;
     SELF\Path_area_with_parameters.parameters : Closed_curve_style_parameters;
   END_ENTITY;
 
@@ -95,20 +80,6 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       connection_zone_category            : OPTIONAL SET[1:?] OF land_connection_zone_class;
   END_ENTITY; 
   
-  ENTITY Curve_style_parameters
-  	ABSTRACT SUPERTYPE OF(ONEOF(Closed_curve_style_parameters, Curve_style_parameters_with_ends));
-      name              : STRING;
-      corner_style      : extend_or_chord_2_extend_or_truncate_or_round;
-      curve_width       : Length_data_element;
-      width_uncertainty : Length_data_element;
-    UNIQUE
-      UR1 : name;
-  END_ENTITY;
-
-  ENTITY Closed_curve_style_parameters
-    SUBTYPE OF (Curve_style_parameters);
-  END_ENTITY;
-
   ENTITY Continuous_template
     SUBTYPE OF (Geometric_template);
     WHERE
@@ -159,12 +130,6 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       WR1 : NOT EXISTS(SELF\Shape_element.description);
   END_ENTITY;
 
-  ENTITY Curve_style_parameters_with_ends
-    SUBTYPE OF (Curve_style_parameters);
-      end_extension     : extend_or_truncate;
-      end_style         : square_or_round;
-  END_ENTITY;
-
   ENTITY Default_attachment_size_based_land_physical_template
     SUBTYPE OF (Land_physical_template, Shape_feature);
     DERIVE
@@ -201,7 +166,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
 	SUBTYPE OF (Default_passage_based_land_physical_template);
 	WHERE
 	  WR1 : SELF\Default_passage_based_land_physical_template.of_passage_technology.plated_passage = TRUE;
-	  WR2 : NOT('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_ARM.VIA_TEMPLATE' IN TYPEOF(SELF\Default_passage_based_land_physical_template.of_passage_technology)) OR
+	  WR2 : NOT('FABRICATION_TECHNOLOGY_ARM.DEFAULT_VIA_DEFINITION' IN TYPEOF(SELF\Default_passage_based_land_physical_template.of_passage_technology)) OR
 	        (SIZEOF(QUERY(ltjt <* SELF\Land_physical_template.access_mechanisms | NOT('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_ARM.LAND_TEMPLATE_JOIN_TERMINAL' IN TYPEOF(ltjt)))) = 0);	  
   END_ENTITY;
  
@@ -213,6 +178,21 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
   ENTITY Default_trace_template
     SUBTYPE OF (Trace_template);
       of_stratum_technology : Stratum_technology;
+  END_ENTITY;
+
+  ENTITY Electrical_isolation_removal_template
+    SUBTYPE OF (Material_removal_feature_template);
+    DERIVE
+      electrical_isolation_spacing_requirement : SET[0:?] OF Requirement_view_definition := 
+        get_rvd(SELF, 'electrical requirement');
+    WHERE
+      WR1: SIZEOF(QUERY(eisr <* electrical_isolation_spacing_requirement |
+         NOT('INTERCONNECT_PHYSICAL_REQUIREMENT_ALLOCATION_ARM.ELECTRICAL_ISOLATION_REQUIREMENT'
+        IN TYPEOF(eisr)) )) =0;
+      WR2: SIZEOF(QUERY(s <* SELF\Geometric_template.shapes |
+        ('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_ARM.PLANAR_CLOSED_PATH_SHAPE_MODEL_WITH_PARAMETERS' IN TYPEOF(s)))) = 0;
+      WR3: SIZEOF(QUERY(s <* SELF\Geometric_template.shapes |
+        NOT ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_ARM.SINGLE_BOUNDARY_CSG_2D_MODEL' IN TYPEOF(s)))) = 0;        
   END_ENTITY;
 
   ENTITY Fill_area_template
@@ -330,12 +310,6 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
            TYPEOF(of_character)) = 1;  
   END_ENTITY;
 
-  ENTITY Path_area_with_parameters
-    SUBTYPE OF (Detailed_geometric_model_element);
-    centreline : Curve;
-    parameters : Curve_style_parameters;
-  END_ENTITY;
-
  ENTITY Planar_path_shape_model_with_parameters
     SUBTYPE OF (Single_area_csg_2d_model);
     WHERE
@@ -343,7 +317,7 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
       ('EXTENDED_BASIC_GEOMETRY_ARM.AXIS_PLACEMENT_2D' IN TYPEOF(it))
                 )) = 1;
       WR2: SIZEOF(QUERY(it <* SELF\Representation.items |   
-      ('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_ARM.PATH_AREA_WITH_PARAMETERS' IN TYPEOF(it))
+      ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_ARM.PATH_AREA_WITH_PARAMETERS' IN TYPEOF(it))
                 )) = 1;
       WR3: SIZEOF(SELF\Representation.items) = 2;                      
   END_ENTITY;

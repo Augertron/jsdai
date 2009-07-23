@@ -65,10 +65,10 @@ public class CxDatum_based_length_measure extends CDatum_based_length_measure im
 /*	public static int usedinItems(ERepresentation type, ERepresentation_item instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a1$, domain, result);
 	}*/
-	boolean testItems2(ERepresentation type) throws SdaiException {
+	private boolean testItems2(ERepresentation type) throws SdaiException {
 		return test_aggregate(a1);
 	}
-	ARepresentation_item getItems2(ERepresentation type) throws SdaiException {
+	private ARepresentation_item getItems2(ERepresentation type) throws SdaiException {
 		return (ARepresentation_item)get_aggregate(a1);
 	}
 	public ARepresentation_item createItems(ERepresentation type) throws SdaiException {
@@ -186,7 +186,7 @@ public class CxDatum_based_length_measure extends CDatum_based_length_measure im
 				items = cx.createItems(null);
 			items.addUnordered(eri);
 		}else{
-			System.err.println("Unsupported subtype "+armEntity);
+			SdaiSession.getSession().printlnSession("Unsupported subtype "+armEntity);
 		}
 	}
 

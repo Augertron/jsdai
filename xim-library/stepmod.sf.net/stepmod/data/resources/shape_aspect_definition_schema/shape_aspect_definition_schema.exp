@@ -30,17 +30,11 @@ INVERSE
   established_by_relationships : SET [1:?] OF shape_aspect_relationship
                                  FOR related_shape_aspect;
 WHERE
-  WR1: ('SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM_FEATURE' IN TYPEOF(SELF)) OR
-       NOT
+  WR1: ('SHAPE_ASPECT_DEFINITION_SCHEMA.COMMON_DATUM' IN TYPEOF(SELF)) XOR
+       ((SIZEOF(QUERY(x <* SELF\datum.established_by_relationships |
+       ('SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM_FEATURE' IN TYPEOF(x\shape_aspect_relationship.relating_shape_aspect)))) = 1) XOR
        (SIZEOF(QUERY(x <* SELF\datum.established_by_relationships |
-       (SIZEOF(TYPEOF(x\shape_aspect_relationship.relating_shape_aspect) * 
-       ['SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM_FEATURE', 
-       'SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM_TARGET']) = 1)
-       XOR
-       (SIZEOF(TYPEOF(x\shape_aspect_relationship.relating_shape_aspect) * 
-       ['SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM_FEATURE', 
-       'SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM_TARGET']) >= 1)
-       )) = 0);
+       ('SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM_TARGET' IN TYPEOF(x\shape_aspect_relationship.relating_shape_aspect)))) >= 1));
 END_ENTITY;
 
 ENTITY datum_feature

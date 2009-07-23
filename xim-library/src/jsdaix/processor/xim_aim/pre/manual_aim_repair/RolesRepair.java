@@ -39,6 +39,7 @@ import jsdai.SPerson_organization_schema.EPerson_and_organization_role;
 import jsdai.lang.ASdaiModel;
 import jsdai.lang.SdaiException;
 import jsdai.lang.SdaiIterator;
+import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * This class tries to fix different roles (for example applied_person_and_organization_assignments),
@@ -79,14 +80,14 @@ public class RolesRepair {
 
 	private RolesRepair() { }
 	
-	public static void run(ASdaiModel domain)
+	public static void run(ASdaiModel domain, Importer importer)
 		throws SdaiException {
 		
-		repairApaoaRoles(domain);
-		repairAoaRoles(domain);
+		repairApaoaRoles(domain, importer);
+		repairAoaRoles(domain, importer);
 	}
 
-	private static void repairApaoaRoles(ASdaiModel domain)
+	private static void repairApaoaRoles(ASdaiModel domain, Importer importer)
 		throws SdaiException {
 
 		// we travetrse all Applied_person_and_organization_assignments and not
@@ -104,13 +105,14 @@ public class RolesRepair {
 					String correctRole = getCorrectRole(ORGANIZATION_ROLES, role);
 					if (correctRole != null) {
 						eRole.setName(null, correctRole);
+						importer.logMessage("Fixing role name for "+eRole);
 					}
 				}
 			}
 		}
 	}
 
-	private static void repairAoaRoles(ASdaiModel domain)
+	private static void repairAoaRoles(ASdaiModel domain, Importer importer)
 		throws SdaiException {
 
 		// we travetrse all Applied_organization_assignments and not
@@ -128,6 +130,7 @@ public class RolesRepair {
 					String correctRole = getCorrectRole(ORGANIZATION_ROLES, role);
 					if (correctRole != null) {
 						eRole.setName(null, correctRole);
+						importer.logMessage("Fixing role name for "+eRole);
 					}
 				}
 			}

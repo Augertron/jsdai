@@ -7,8 +7,7 @@
 SCHEMA Extended_basic_geometry_arm;
 
 USE FROM Basic_geometry_arm;	-- ISO/TS 10303-1652
-
-REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
+USE FROM Geometric_model_relationship_arm;
 
   SUBTYPE_CONSTRAINT alternate_extended_geometry_items FOR
     Detailed_geometric_model_element;
@@ -25,15 +24,6 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
            Vector);
   END_SUBTYPE_CONSTRAINT;
 
-  ENTITY Definitional_representation_relationship
-    SUBTYPE OF (Representation_relationship);
-      WHERE
-        WR1: acyclic_representation_relationship(SELF,
-          [SELF\representation_relationship.rep_2],
-          'FOUNDATION_REPRESENTATION_ARM.'+
-          'REPRESENTATION');
-  END_ENTITY;  
-
   ENTITY Detailed_geometric_model_element_relationship;
     item_1: Detailed_geometric_model_element;
     item_2: Detailed_geometric_model_element;
@@ -45,14 +35,6 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     SUBTYPE OF (Detailed_geometric_model_element_relationship, Detailed_geometric_model_element);
   END_ENTITY;
 
-  ENTITY Geometric_model_relationship
-   SUBTYPE OF (Representation_relationship);
-      SELF\Representation_relationship.rep_1 : Geometric_model;
-      SELF\Representation_relationship.rep_2 : Geometric_model;
-    WHERE
-      WR1 : rep_1 <> rep_2;
-  END_ENTITY;
-
   ENTITY Vector
     SUBTYPE OF (Detailed_geometric_model_element);
       orientation: Direction;
@@ -60,23 +42,5 @@ REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
     WHERE
       WR1 : magnitude >= 0.0 ;
   END_ENTITY;
-
-  FUNCTION acyclic_representation_relationship
-    (relation : representation_relationship; relatives : SET[1:?] OF representation; specific_relation : STRING) : BOOLEAN; 
-    LOCAL
-      x : SET OF representation_relationship;
-    END_LOCAL;
-
-    IF relation.rep_1 IN relatives THEN
-      RETURN (FALSE);
-    END_IF;
-    x := QUERY(r <* bag_to_set(USEDIN(relation.rep_1, 'FOUNDATION_REPRESENTATION_ARM.' + 'REPRESENTATION_RELATIONSHIP.' + 'REP_2')) | specific_relation IN TYPEOF(r));
-    REPEAT i := 1 TO HIINDEX(x);
-      IF NOT acyclic_representation_relationship(x[i], relatives + relation.rep_1, specific_relation) THEN
-        RETURN (FALSE);
-      END_IF;
-    END_REPEAT;
-    RETURN (TRUE);
-  END_FUNCTION; 
 
 END_SCHEMA;

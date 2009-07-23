@@ -41,6 +41,9 @@ SCHEMA Ap210_electronic_assembly_interconnect_and_packaging_design_mim '{ 1 0 10
 	USE FROM Test_requirement_allocation_mim;	-- ISO/TS 10303-1751
 	USE FROM Thermal_network_definition_mim;	-- ISO/TS 10303-1752
 	USE FROM Via_component_mim;	-- ISO/TS 10303-1754
+	USE FROM Interconnect_physical_requirement_allocation_mim; -- ISO/TS 10303-1689
+	
+	REFERENCE FROM support_resource_schema(bag_to_set);
 
 USE FROM geometry_schema(offset_curve_2d);
 
@@ -301,6 +304,14 @@ FUNCTION valid_2d_wireframe_edge_curve
 END_FUNCTION;
 
 
+FUNCTION apeaid_is_base(input : area_component) : LOGICAL;
+LOCAL
+ pd : SET OF property_definition := bag_to_set(QUERY(pd <* USEDIN(input,'PRODUCT_PROPERTY_DEFINITION_SCHEMA.PROPERTY_DEFINITION.DEFINITION') |
+              pd\property_definition.name = 'is base'));
+END_LOCAL;
+ RETURN(pd[1].description = 'true');
+END_FUNCTION;
+
 -- from SCHEMA Ap210_assembly_physical_design_mim;
 
 	SUBTYPE_CONSTRAINT packaged_part_subtypes FOR packaged_part; 
@@ -334,6 +345,25 @@ USEDIN(ac,'APPLICATION_CONTEXT_SCHEMA.APPLICATION_PROTOCOL_DEFINITION.APPLICATIO
                 )) > 0)
               )) > 0;
 END_RULE;
+
+RULE area_component_shape_constraint FOR
+    (area_component);
+WHERE
+  WR1:  SIZEOF( QUERY( ac <* area_component |
+            NOT(SIZEOF (QUERY (pdr <* USEDIN(ac,'PRODUCT_PROPERTY_REPRESENTATION_SCHEMA.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION') |
+              NOT(NOT(pdr\property_definition_representation.used_representation\representation.id = 'ac2dsm') OR 
+                      ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.SINGLE_AREA_CSG_2D_SHAPE_REPRESENTATION' IN TYPEOF(pdr\property_definition_representation.used_representation)))
+                )) = 0)
+              )) = 0;
+  WR2:  SIZEOF( QUERY( ac <* area_component |
+          NOT(apeaid_is_base(ac)) OR
+            NOT(SIZEOF (QUERY (pdr <* USEDIN(ac,'PRODUCT_PROPERTY_REPRESENTATION_SCHEMA.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION') |
+              NOT(NOT(pdr\property_definition_representation.used_representation\representation.id = 'ac2dsm') OR 
+                      ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.SINGLE_BOUNDARY_CSG_2D_SHAPE_REPRESENTATION' IN TYPEOF(pdr\property_definition_representation.used_representation)))
+                )) = 0)
+              )) = 0;              
+END_RULE;
+
 
 RULE cartesian_coordinate_system_constraint FOR
      (global_unit_assigned_context,

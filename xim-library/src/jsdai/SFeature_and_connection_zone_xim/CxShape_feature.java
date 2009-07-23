@@ -143,7 +143,7 @@ public class CxShape_feature extends CShape_feature implements EMappedXIMEntity
 				aimEntity.setOf_shape(null, ((EShape_aspect)(aimUser)).getOf_shape(null));
 		}
 		if(!aimEntity.testOf_shape(null)){
-			System.err.println(aimEntity+" shape_feature without a valid user " +users.getMemberCount()+" "+armEntity);
+			SdaiSession.getSession().printlnSession(aimEntity+" shape_feature without a valid user " +users.getMemberCount()+" "+armEntity);
 		}
 	}
 

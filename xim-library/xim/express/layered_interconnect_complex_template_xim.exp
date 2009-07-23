@@ -49,6 +49,11 @@ REFERENCE FROM Requirement_decomposition_xim(get_rvd);	-- ISO/TS 10303-1740
 REFERENCE FROM Fabrication_technology_xim(get_stack);	-- ISO/TS 10303-1670
 
 USE FROM Layered_interconnect_complex_template_mim;
+
+  TYPE land_physical_template_or_inter_stratum_feature_template = SELECT
+       (Land_physical_template,
+        Inter_stratum_feature_template);
+  END_TYPE;
  
 	TYPE lict_ee_product_definition_with_annotation_elements = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ee_product_definition_with_annotation_elements WITH 
    	(Structured_template_armx);
@@ -96,6 +101,53 @@ USE FROM Layered_interconnect_complex_template_mim;
 	 is_unknown);
   END_TYPE;
 
+  ENTITY Dependent_electrical_isolation_removal_template_armx
+    SUBTYPE OF (Electrical_isolation_removal_template_armx, dependent_electrical_isolation_removal_template);
+      associated_item : land_physical_template_or_inter_stratum_feature_template;
+    WHERE
+      WR1 : SIZEOF(QUERY (dtlipd <* USEDIN(SELF,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+                  NOT(
+                     (SIZEOF(QUERY (tlist <* USEDIN(associated_item,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+                             NOT(
+                                 (tlist\Template_location_in_structured_template.assembly :=: 
+                                  dtlipd\Template_location_in_structured_template.assembly) AND
+                                 ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.DEPENDENT_TEMPLATE_LOCATION_IN_PADSTACK_DEFINITION' IN TYPEOF(dtlipd)) AND                                 
+                                 (tlist :=: dtlipd\Dependent_template_location_in_padstack_definition.reference_location)
+                                 )
+                      )) = 0)
+                      )
+             )) = 0;      
+  END_ENTITY;
+
+  ENTITY Dependent_thermal_isolation_removal_template_armx
+    SUBTYPE OF (Thermal_isolation_removal_template_armx, dependent_thermal_isolation_removal_template);
+      associated_item : Land_physical_template_armx;
+    WHERE
+      WR1 : SIZEOF(QUERY (dtlipd <* USEDIN(SELF,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+                  NOT(
+                     (SIZEOF(QUERY (tlist <* USEDIN(associated_item,'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.TEMPLATE') | 
+                             NOT(
+                                 (tlist\Template_location_in_structured_template.assembly :=: 
+                                  dtlipd\Template_location_in_structured_template.assembly) AND
+                                 ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.DEPENDENT_TEMPLATE_LOCATION_IN_PADSTACK_DEFINITION' IN TYPEOF(dtlipd)) AND                                 
+                                 (tlist :=: dtlipd\Dependent_template_location_in_padstack_definition.reference_location)
+                                 )
+                      )) = 0)
+                      )
+             )) = 0;      
+  END_ENTITY;
+
+  ENTITY Thermal_isolation_removal_template_armx
+    (* CONNOTATIONAL *) SUBTYPE OF (Material_removal_structured_template_armx, thermal_isolation_removal_template);
+	DERIVE
+  		thermal_isolation_spacing_requirement: SET[1:?] OF Requirement_view_definition :=
+		  get_rvd(SELF, 'thermal requirement');
+	WHERE
+	  WR1: SIZEOF(QUERY(tisr <* THERMAL_ISOLATION_SPACING_REQUIREMENT |
+       NOT('INTERCONNECT_PHYSICAL_REQUIREMENT_ALLOCATION_XIM.THERMAL_ISOLATION_REQUIREMENT' IN TYPEOF(tisr))
+       )) =0;
+  END_ENTITY;
+
   ENTITY Complex_passage_padstack_definition_armx
    SUBTYPE OF (Stratum_stack_dependent_template_armx, Passage_padstack_definition_armx, complex_passage_padstack_definition);
   END_ENTITY;
@@ -136,6 +188,12 @@ USE FROM Layered_interconnect_complex_template_mim;
     SUBTYPE OF (library_to_design_stack_model_mapping);
     SELF\product_definition_relationship.related_product_definition  : Design_stack_model_armx;
     SELF\product_definition_relationship.relating_product_definition : Library_stack_model_armx;
+    WHERE
+      WR1: ((SELF\product_definition_relationship.related_product_definition.composing_occurrence *
+            SELF\product_definition_relationship.relating_product_definition.composing_occurrence) = 
+            SELF\product_definition_relationship.related_product_definition.composing_occurrence);
+      WR2: acyclic_library_to_design_stack_model_mapping(SELF, [related_product_definition], 
+           'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.LIBRARY_TO_DESIGN_STACK_MODEL_MAPPING');            
   END_ENTITY;
 
 -- has many Stratum_technology_occurrence, more than may be actually used
@@ -150,14 +208,12 @@ USE FROM Layered_interconnect_complex_template_mim;
     SUPERTYPE OF (Passage_padstack_definition_armx)
     SUBTYPE OF (Multi_stratum_structured_template_armx, padstack_definition);
     WHERE
-      WR1 : SIZEOF(QUERY(prpc <* USEDIN(SELF\Product_view_definition.defined_version.of_product,
- 'PRODUCT_DEFINITION_SCHEMA.PRODUCT_RELATED_PRODUCT_CATEGORY.PRODUCTS') |  (prpc\Product_category.name = 'template model'))) > 0;
-      WR2: NOT('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.PASSAGE_PADSTACK_DEFINITION_ARMX' IN TYPEOF(SELF)) XOR 
+      WR1: NOT('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.PASSAGE_PADSTACK_DEFINITION_ARMX' IN TYPEOF(SELF)) XOR 
           (SIZEOF(QUERY(tlict <* SELF\Structured_template_armx.templates |
          ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.INTER_STRATUM_FEATURE_TEMPLATE_LOCATION' IN TYPEOF(tlict)))) > 0);
-      WR3: SIZEOF(QUERY(tlict <* SELF\Structured_template_armx.templates |
+      WR2: SIZEOF(QUERY(tlict <* SELF\Structured_template_armx.templates |
          (NOT ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.INTER_STRATUM_FEATURE_TEMPLATE_LOCATION' IN TYPEOF(tlict))) AND
-          (NOT ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.STRATUM_SPECIFIC_TEMPLATE_LOCATION_ARMX' IN TYPEOF(tlict))))) = 0;
+          (NOT ('LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.STRATUM_SPECIFIC_TEMPLATE_LOCATION' IN TYPEOF(tlict))))) = 0;
   END_ENTITY;
 
   ENTITY Passage_padstack_definition_armx
@@ -339,9 +395,7 @@ USE FROM Layered_interconnect_complex_template_mim;
                NOT (temp\Stratum_specific_template_location_armx.bound_stratum IN stack\Stratum_stack_model_armx.composing_occurrence)
             )
           )) = 0;
-    WR2 : SIZEOF(['LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.PADSTACK_DEFINITION_ARMX',
-           'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.MULTI_STRATUM_SPECIAL_SYMBOL_TEMPLATE_ARMX'] 
-          * TYPEOF(SELF)) > 0;          
+	WR2 : TYPEOF(SELF) <> TYPEOF(SELF\Stratum_stack_dependent_template_armx);                        
   END_ENTITY;
 
   ENTITY Structured_inter_stratum_feature_template_armx
@@ -402,5 +456,28 @@ USE FROM Layered_interconnect_complex_template_mim;
     ONEOF (Design_stack_model_armx, Library_stack_model_armx);
   END_SUBTYPE_CONSTRAINT;
 
+  FUNCTION acyclic_library_to_design_stack_model_mapping
+    (relation : Library_to_design_stack_model_mapping_armx; relatives : SET[1:?] OF
+     Design_stack_model_armx; specific_relation : STRING) : BOOLEAN; 
+  LOCAL
+      x : SET OF Library_to_design_stack_model_mapping_armx := [];
+  END_LOCAL;
+
+      IF relation. relating_view IN relatives THEN
+        RETURN (FALSE);
+      END_IF;
+        x := QUERY(pd <* bag_to_set(USEDIN(relation. relating_view,
+          'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.' +
+          'LIBRARY_TO_DESIGN_STACK_MODEL_MAPPING_ARMX.' +
+          'RELATED_VIEW')) | specific_relation IN TYPEOF(pd));
+      REPEAT i := 1 TO HIINDEX(x);
+        IF NOT acyclic_library_to_design_stack_model_mapping(x[i], relatives +
+          relation.relating_view, specific_relation) THEN
+          RETURN (FALSE);
+        END_IF;
+      END_REPEAT;
+    RETURN (TRUE);
+  END_FUNCTION;
+  
 END_SCHEMA;
 
