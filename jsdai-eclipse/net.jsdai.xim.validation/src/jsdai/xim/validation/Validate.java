@@ -669,6 +669,7 @@ You should see in the log file something similar to:
   	throws SdaiException {
   		Properties jsdaiProperties = new Properties();
   		jsdaiProperties.setProperty("repositories", sdaireposDirectory);
+  		jsdaiProperties.setProperty("jsdai.SIda_step_schema_xim","AC*;AI*;AP*;ASS*;AU*;B*;C*;D*;E*;F*;G*;H*;IDA_STEP_AIM*;ISO*;IN*;J*;K*;L*;M*;N*;O*;P*;Q*;R*;S*;T*;U*;V*;W*;X*;Y*;Z*;");
   		SdaiSession.setSessionProperties(jsdaiProperties);
   		return new Runnable() {
   			public void run() {

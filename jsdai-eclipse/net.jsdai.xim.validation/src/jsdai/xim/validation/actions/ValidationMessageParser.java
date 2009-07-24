@@ -173,6 +173,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import jsdai.xim.validation.ValidationPlugin;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -193,6 +195,8 @@ public class ValidationMessageParser {
 	String previous_line = null;
 
 
+  boolean fExit = false;
+  boolean fImportOnly = false;
 	boolean fImport_messages = true;
 	boolean fValidate_messages = false;
 	boolean fImport_error = false;
@@ -216,6 +220,7 @@ public class ValidationMessageParser {
 
 
 	int fLine_number = 0;
+	static int fLine_counter = 0;
 	IProject fProject;
 
 
@@ -223,6 +228,9 @@ public class ValidationMessageParser {
 //	public void parseValidationMessages(IProject project, IFile validated_file, String validation_output, IPath validated_path) throws CoreException {
 	public void parseValidationMessages(IProject project, IFile validated_file, String validation_output, IPath validated_path, IProgressMonitor monitor) throws CoreException {
 	
+	  fExit = false;
+	  fImportOnly = false;
+		fLine_counter = 0;
 		fProject = project;
 //		StringTokenizer tokenizer = new StringTokenizer(validation_output, "\n"); //$NON-NLS-1$
 		StringTokenizer tokenizer = new StringTokenizer(validation_output, "\n\r"); //$NON-NLS-1$
@@ -234,6 +242,10 @@ public class ValidationMessageParser {
 			if (current_line != null) {
 //				System.out.println("parsing line: "  + current_line);
 	//monitor.setTaskName(("Parsing validation messages: " + current_line));
+//		ValidationPlugin.log("processing line: " + current_line,1);
+		fLine_counter++;
+//		ValidationPlugin.log("<OLD> current line " + fLine_counter + ": " + current_line,1);
+//		ValidationPlugin.log("\t<OLD> previous_line: " + previous_line,1);
 				processLine(validated_file, current_line, validated_path);
 			} else {
 //				System.out.println("parsing line NULL");
@@ -242,6 +254,37 @@ public class ValidationMessageParser {
   		monitor.setTaskName(("Parsing validation messages - done: " + current_line));
 	}
 
+
+	public void parseValidationImportMessages(IProject project, IFile validated_file, String validation_output, IPath validated_path, IProgressMonitor monitor) throws CoreException {
+	
+	  fExit = false;
+	  fImportOnly = true;
+		fLine_counter = 0;
+		fProject = project;
+//		StringTokenizer tokenizer = new StringTokenizer(validation_output, "\n"); //$NON-NLS-1$
+		StringTokenizer tokenizer = new StringTokenizer(validation_output, "\n\r"); //$NON-NLS-1$
+  	String current_line = null;
+	//monitor.setTaskName(("Parsing validation messages"));
+  		while (tokenizer.hasMoreElements()) {
+  			previous_line = current_line;
+			current_line = (String) tokenizer.nextElement();
+			if (current_line != null) {
+//				System.out.println("parsing line: "  + current_line);
+	//monitor.setTaskName(("Parsing validation messages: " + current_line));
+//		ValidationPlugin.log("processing line: " + current_line,1);
+		fLine_counter++;
+//		ValidationPlugin.log("<OLD> current line " + fLine_counter + ": " + current_line,1);
+//		ValidationPlugin.log("\t<OLD> previous_line: " + previous_line,1);
+				processLine(validated_file, current_line, validated_path);
+				if (fExit) {
+					return;
+				}
+			} else {
+//				System.out.println("parsing line NULL");
+			}
+  		}
+  		monitor.setTaskName(("Parsing import messages - done: " + current_line));
+	}
 	
 	
 	
@@ -385,6 +428,10 @@ public class ValidationMessageParser {
 			fImport_messages = false;
 			fImport_error = false;
 			fValidate_messages = true;
+			if (fImportOnly) {
+				fExit = true;
+				return;
+			}
 		} else 
 		if (line.startsWith("count of instances in model")) {
 			// the 1st line of actual validation messages? 
@@ -827,7 +874,7 @@ For the global rule "nice_family" validation gives FALSE
 	
     if (file_with_the_problem != null) {
 
-			IMarker marker = file_with_the_problem.createMarker("net.jsdai.express_compiler.p21problem");
+			IMarker marker = file_with_the_problem.createMarker("net.jsdai.step_editor.p21problem");
 		
 			switch (severity) {
 				case SEVERITY_ERROR:

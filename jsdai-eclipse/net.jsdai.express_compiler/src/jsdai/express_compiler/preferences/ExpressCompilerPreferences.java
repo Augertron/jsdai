@@ -214,7 +214,7 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
 		store.setDefault(SWITCH_ARM, false);
 		store.setDefault(SWITCH_MIM, false);
 		store.setDefault(ENABLE_EXPRESSIONS, true);
-		store.setDefault(ORIGINAL_CASE, true);
+		store.setDefault(ORIGINAL_CASE, false);
 		store.setDefault(SEPARATE_PROCESS, false);
 		store.setDefault(ENABLE_ADVANCED, false);
 		
@@ -603,6 +603,7 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
         
     }
 
+    
     private final void createIdCaseGroup(Composite parent) {
         Font font = parent.getFont();
         Group listGroup = new Group(parent, SWT.NONE);
@@ -611,10 +612,10 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
         listGroup.setLayout(layout);
         listGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         listGroup.setFont(font);
-        listGroup.setText("Settings for handling case of identifiers");
+        listGroup.setText("Handling of (*REFERENCE FROM*) USE FROM");
 
         originalCaseButton = new Button(listGroup, SWT.CHECK | SWT.LEFT);
-        originalCaseButton.setText("use original case");
+        originalCaseButton.setText("treat as REFERENCE FROM");
         originalCaseButton.setSelection(fOriginalCase);
         originalCaseButton.setFont(font);
 
@@ -633,7 +634,7 @@ public class ExpressCompilerPreferences extends PreferencePage   implements IWor
 
         
     }
-
+		
 
     private final void createEnableAdvancedGroup(Composite parent) {
         Font font = parent.getFont();

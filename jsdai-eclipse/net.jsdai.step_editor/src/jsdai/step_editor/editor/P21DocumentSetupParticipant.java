@@ -21,9 +21,9 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.express_compiler.p21_editor;
+package jsdai.step_editor.editor;
 
-import jsdai.express_compiler.utils.PartitionUtils;
+import jsdai.step_editor.utils.PartitionUtils;
 
 import org.eclipse.core.filebuffers.IDocumentSetupParticipant;
 import org.eclipse.jface.text.IDocument;

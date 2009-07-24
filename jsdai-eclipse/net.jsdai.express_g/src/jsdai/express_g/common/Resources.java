@@ -72,6 +72,7 @@ public final class Resources {
 	public static final int LETTER_S8 = 34;
 	public static final int SCHEMA_CURRENT = 35;
 	public static final int EXG_FILE = 36;
+	public static final int GENERATE_XML = 37;
 	
 	private static final String[] files = {"entity.gif", "entity_r.gif", "entity_ref.gif", "entity_ref_r.gif",
 			"schema.gif", "schema_r.gif", "defined.gif", "defined_r.gif", "enumeration.gif", "enumeration_r.gif",
@@ -79,7 +80,7 @@ public final class Resources {
 			"mouse.GIF", "jsdai_icon_16.png", "model_schema.gif", "diagram_blank.gif", "model.gif",
 			"constraint.gif", "constraint_r.gif", "jsdai_schema_C.png", "delete_obj.gif", "add_obj.gif", 
 			"move.gif", "jsdai_schema_P.png", "jsdai_schema_X.png", "error_co.gif", "warning_co.gif",
-			"diagram_c.gif", "diagram_p.gif", "diagram_l.gif", "diagram_s.gif", "schema_current.gif", "exg_file.gif"}; 
+			"diagram_c.gif", "diagram_p.gif", "diagram_l.gif", "diagram_s.gif", "schema_current.gif", "exg_file.gif", "generate_xml.gif"}; 
 	private static final int TOTAL = files.length;
 	
 	private static Hashtable imageDescriptors = new Hashtable(); 

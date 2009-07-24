@@ -155,6 +155,7 @@ public class WizardFileSelectionPage extends WizardPage implements Listener {
 		extension.setSize(main_composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		extension.setFont(parent.getFont());
 		fillInExtension(extension);
+		stepmodOrNotExtension(extension);
 
 //		createDestinationGroup(composite);
 
@@ -185,6 +186,8 @@ public class WizardFileSelectionPage extends WizardPage implements Listener {
 	}
 	
 	protected void fillInExtension(Composite parent) {
+	}
+	protected void stepmodOrNotExtension(Composite parent) {
 	}
 	
 	

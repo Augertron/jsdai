@@ -97,6 +97,8 @@ public interface PropertySharing extends UINaming, Named {
   public static final int MODE_LAYOUT_COMPLETE = MODE_LAYOUT_MASK | MODE_LAYOUT_COMPLETE_MASK;	// 000101
   public static final int MODE_LAYOUT_COMPLETE_LONG = MODE_LAYOUT_COMPLETE | MODE_LONGFORM_MASK;// 100101
   public static final int MODE_LAYOUT_PARTIAL_LONG = MODE_LAYOUT_PARTIAL | MODE_LONGFORM_MASK;	// 100110
+  // RR we don't need this at all
+  public static final int MODE_XML = 0; 
   
   public int getEditMode();
 
@@ -235,6 +237,8 @@ public interface PropertySharing extends UINaming, Named {
 
   	public void setPageRenumber(int page);
   	public int getPageRenumber();
+  	public int getPageRenumber(int page);
+  	public int getMaxPageRenumber(int page);
   	
   	/**
   	 * storing last used visibility of simple types

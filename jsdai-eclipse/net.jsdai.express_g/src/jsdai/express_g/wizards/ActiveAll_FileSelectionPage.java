@@ -26,6 +26,9 @@ package jsdai.express_g.wizards;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -38,7 +41,8 @@ import org.eclipse.swt.widgets.Group;
 public class ActiveAll_FileSelectionPage extends WizardFileSelectionPage {
 	private Button selectAll = null;
 	private Button selectSingle = null;
-
+  private Button selectStepmod = null;
+  private Button selectFlat = null;
 
 	/**
 	 * @param projectPath
@@ -80,13 +84,29 @@ public class ActiveAll_FileSelectionPage extends WizardFileSelectionPage {
 	 * @see jsdai.express_g.wizards.WizardFileSelectionPage#fillInExtension(org.eclipse.swt.widgets.Composite)
 	 */
 	protected void fillInExtension(Composite parent) {
-		parent.setLayout(new FillLayout());
+		// parent.setLayout(new FillLayout());
+        parent.setLayout(new GridLayout());
+        parent.setLayoutData(new GridData(GridData.FILL_BOTH));
 		Group group = new Group(parent, SWT.NONE);
-		group.setLayout(new RowLayout(SWT.VERTICAL));
+		group.setLayout(new GridLayout());
+		group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		selectAll = new Button(group, SWT.RADIO);
 		selectAll.setText("Export all schemas in this file");
 		selectSingle = new Button(group, SWT.RADIO);
 		selectSingle.setText("Export only active schema");
+	}
+
+	protected void stepmodOrNotExtension(Composite parent) {
+//		parent.setLayout(new FillLayout());
+        parent.setLayout(new GridLayout());
+        parent.setLayoutData(new GridData(GridData.FILL_BOTH));
+		Group group = new Group(parent, SWT.NONE);
+		group.setLayout(new GridLayout());
+		group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		selectStepmod = new Button(group, SWT.RADIO);
+		selectStepmod.setText("Add stepmod-specific subdirectories \"modules\" and/or \"resources\"");
+		selectFlat = new Button(group, SWT.RADIO);
+		selectFlat.setText("Do not add stepmod-specific subdirectories");
 	}
 	
 	public void setSchemaSelection(boolean enabled) {
@@ -97,8 +117,25 @@ public class ActiveAll_FileSelectionPage extends WizardFileSelectionPage {
 		selectAll.setEnabled(enabled);
 		selectSingle.setEnabled(enabled);
 	}
+
+	public void setStepmodSelection(boolean enabled) {
+		if (enabled) {
+			selectStepmod.setSelection(true);
+			//selectFlat.setSelection(false);
+		} else	{		
+			selectFlat.setSelection(true);
+			//selectStepmod.setSelection(false);
+		}
+	  selectFlat.setEnabled(enabled);
+		selectStepmod.setEnabled(enabled);
+	}
 	
 	public boolean isExportSingle() {
 		return selectSingle.getSelection();
 	}
+
+	public boolean isExportStepmod() {
+		return selectStepmod.getSelection();
+	}
+
 }

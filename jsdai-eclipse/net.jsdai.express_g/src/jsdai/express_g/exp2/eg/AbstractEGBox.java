@@ -547,6 +547,7 @@ System.err.println("THIS: " + this + " <" + this.getClass().getName() + ">");
 	 * @see jsdai.express_g.exp2.Paging#setPage(int)
 	 */
 	public void setPage(int pgNr) {
+//System.out.println("<0XO><09>setPage: " + pgNr);
 		super.setPage(pgNr);
 	}
 }

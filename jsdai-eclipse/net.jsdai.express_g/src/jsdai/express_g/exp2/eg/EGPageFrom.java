@@ -83,6 +83,7 @@ public class EGPageFrom extends EGPage {
   public String getText() {
     String text = super.getText();
     if (references != null) {
+//    	text = EGToolKit.convertPageNrToString(getPage()) + ", " + getRefCount() + " (";
     	text = EGToolKit.convertPageNrToString(getPage()) + ", " + getRefCount() + " (";
     	Iterator iter = references.iterator();
     	while (iter.hasNext()) {

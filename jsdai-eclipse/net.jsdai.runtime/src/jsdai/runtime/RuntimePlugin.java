@@ -86,13 +86,15 @@ public class RuntimePlugin extends Plugin {
 		URL url = bundle.getEntry(resourceName);
 		try {
 			url = FileLocator.toFileURL(url);
-			return new File(new URI(url.toString())).getAbsolutePath();
+//			return new File(new URI(url.toString())).getAbsolutePath();
+			return new File(url.getPath()).getAbsolutePath();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
+//		} catch (URISyntaxException e) {
+//			throw new RuntimeException(e);
 		}
 	}
+ 
 
 	public String getLibraryVersionsAsString() throws IOException {
 		IExtension[] libExtensions =

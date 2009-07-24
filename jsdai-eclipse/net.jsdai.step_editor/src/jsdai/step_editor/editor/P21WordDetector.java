@@ -21,19 +21,29 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.express_compiler.p21_editor;
+package jsdai.step_editor.editor;
 
-import org.eclipse.jface.text.rules.IWhitespaceDetector;
+import org.eclipse.jface.text.rules.IWordDetector;
 
 /**
- * A java aware white space detector.
+ * A P21 aware word detector.
  */
-public class P21WhitespaceDetector implements IWhitespaceDetector {
+public class P21WordDetector implements IWordDetector {
 
 	/* (non-Javadoc)
-	 * Method declared on IWhitespaceDetector
+	 * Method declared on IWordDetector.
 	 */
-	public boolean isWhitespace(char character) {
-		return Character.isWhitespace(character);
+	public boolean isWordPart(char character) {
+//		return Character.isJavaIdentifierPart(character);
+//		return Character.isLetterOrDigit(character) || (character == '-') || (character == '_');
+		return Character.isLetterOrDigit(character) || (character == '_');
+	}
+	
+	/* (non-Javadoc)
+	 * Method declared on IWordDetector.
+	 */
+	public boolean isWordStart(char character) {
+//		return Character.isJavaIdentifierStart(character);
+		return Character.isLetter(character) || (character == '_');
 	}
 }

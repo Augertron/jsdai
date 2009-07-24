@@ -566,6 +566,7 @@ System.out.println(")");
       out = true;
     }
     prop.status().setStatus(this.command.getStatus());
+//System.out.println("<0XO><06>command: " + command);
     if (out) command.start();
 /*
 System.out.print(this.command + " (");

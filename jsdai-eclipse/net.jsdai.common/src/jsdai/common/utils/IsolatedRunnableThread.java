@@ -64,18 +64,18 @@ public class IsolatedRunnableThread extends Thread {
 			JarFileClassLoader classLoader =
 				new JarFileClassLoader(classPathJars, IsolatedRunnableThread.class.getClassLoader(), exceptions);
 			Class runnableCreatorClass = Class.forName(className, true, classLoader);
-			System.out.println("trying to get method - methodName: " + methodName + ", parameterTypes: " + parameterTypes);
+//			System.out.println("trying to get method - methodName: " + methodName + ", parameterTypes: " + parameterTypes);
 			for (int xixigigi = 0; xixigigi < parameterTypes.length; xixigigi++) {
-				System.out.println("index: " + xixigigi + ", class: " + parameterTypes[xixigigi]);
+//				System.out.println("index: " + xixigigi + ", class: " + parameterTypes[xixigigi]);
 			}
-			System.out.println("from class: " + runnableCreatorClass);
+//			System.out.println("from class: " + runnableCreatorClass);
 
 
 			Method runnableCreatorMethod = runnableCreatorClass.getMethod(methodName, parameterTypes);
-			System.out.println("selected method: " + runnableCreatorMethod);
+//			System.out.println("selected method: " + runnableCreatorMethod);
 
 			for (int xixigigi3 = 0; xixigigi3 < parameters.length; xixigigi3++) {
-				System.out.println("index: " + xixigigi3 + ", parameter: " + parameters[xixigigi3]);
+//				System.out.println("index: " + xixigigi3 + ", parameter: " + parameters[xixigigi3]);
 			}
 
 			Runnable runnable = (Runnable)runnableCreatorMethod.invoke(null, parameters);

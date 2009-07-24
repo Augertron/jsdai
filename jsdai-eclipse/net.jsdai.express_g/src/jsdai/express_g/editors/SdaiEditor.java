@@ -515,8 +515,10 @@ public class SdaiEditor extends EditorPart implements IInternalPartProvider {
 			ListenerList list = (ListenerList)iter.next();
 			Object[] listener = list.getListeners();
 			IWorkbenchPart part = getActiveInternalPart();
-			for (int i = 0; i < listener.length; i++)
+			for (int i = 0; i < listener.length; i++) {
+//System.out.println("<0XO><03>listener: " + listener[i] + ", part: " + part);
 				((IInternalPartListener)listener[i]).internalPartChanged(part);
+			}
 		}
 	}
 	

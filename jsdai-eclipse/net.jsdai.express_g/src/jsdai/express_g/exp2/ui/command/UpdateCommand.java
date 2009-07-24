@@ -52,6 +52,7 @@ public class UpdateCommand extends AbstractCommand {
 		for (int pgNr = 1; pgNr <= max; pgNr++) {
 			Collection items = prop.handler().drawable(pgNr);
 		    Collection changed = EGToolKit.PageRef.changePage(prop, items, max + 1);
+//System.out.println("<0XO><07>start-pgNr: " + pgNr + ", items: " + items + ", prop: " + prop);
 		    changed.addAll(EGToolKit.PageRef.changePage(prop, items, pgNr));
 		    Iterator iter = changed.iterator();
 		    GC g = prop.getPainting().getLastGraphics();

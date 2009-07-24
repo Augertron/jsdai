@@ -30,10 +30,15 @@ import java.util.Vector;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
+import jsdai.SExpress_g_schema.ARelation_placement;
+import jsdai.SExpress_g_schema.EGraphics_diagram;
+import jsdai.SExpress_g_schema.EPage;
 import jsdai.SExpress_g_schema.EPage_reference_bundle;
+import jsdai.express_g.editors.RepositoryHandler;
 import jsdai.express_g.exp2.EGToolKit;
 import jsdai.express_g.exp2.ui.PropertySharing;
 import jsdai.express_g.exp2.ui.event.PageChangeEvent;
+import jsdai.lang.EEntity;
 import jsdai.lang.SdaiException;
 import jsdai.lang.SdaiModel;
 
@@ -60,22 +65,111 @@ public class EGPageRefLocalFrom extends EGPageRefLocal {
 	}
 
 	public String getText() {
-		String text = EGToolKit.renumber(prop(), getPage()) + ", " + getReferencedID() + " (";
+		// how to get page entity in express_g_schema from here?
+/*
+    EEntity definition_placement0 = getDefinitionPlacement();
+    EPage_reference_bundle page_reference_bundle0 = null;
+    EPage a_page0 = null;
+    String a_comment0 = "_NO_COMMENT_";
+    int a_page_number0 = -1;
+		EGraphics_diagram diagram0 = null;
+//	    EData_type_extension referenced0 = null;
+        EEntity referenced0 = null;
+		ARelation_placement relation0 = null;
+		EPage_reference_bundle link0 = null;
+    
+	try {	
+    if (definition_placement0 instanceof EPage_reference_bundle) {
+    	page_reference_bundle0 = (EPage_reference_bundle)definition_placement0;
+			if (page_reference_bundle0.testPresented_on(null)) {
+				a_page0 = page_reference_bundle0.getPresented_on(null);
+				a_page_number0 = a_page0.getPage_number(null);
+				if (a_page0.testComment(null)) {
+					a_comment0 = a_page0.getComment(null);
+				}
+				diagram0 = a_page0.getDiagram(null);
+			}
+    	referenced0 = page_reference_bundle0.getReferenced(null);
+    	relation0 = page_reference_bundle0.getRelation(null);
+    	if (page_reference_bundle0.testLink(null)) {
+    		link0 = page_reference_bundle0.getLink(null);
+    	}
+    } 
+	} catch (SdaiException e) {
+	}
+	
+*/	
+//System.out.println("-----------------------START");
+//System.out.println("<definition_placement>: " + definition_placement0);
+//System.out.println("<page_reference_bundle>: " + page_reference_bundle0);
+//System.out.println("<page>: " + a_page0);
+//System.out.println("<page number>: " + a_page_number0);
+//System.out.println("<page comment>: " + a_comment0);
+//System.out.println("<diagram>: " + diagram0);
+//System.out.println("<referenced>: " + referenced0);
+//System.out.println("<relation>: " + relation0);
+//System.out.println("<link>: " + link0);
+//System.out.println("<PROP>: " + prop());
+//System.out.println("<PROP-Name>: " + prop().getName());
+//System.out.println("<PROP-NameEG>: " + prop().getNameEG());
+//System.out.println("<PROP-PageRenumber>: " + prop().getPageRenumber());
+//System.out.println("========================END");
+//System.out.println("<PROP-handler>: " + prop().handler());
+//System.out.println("<PROP-RepositoryHandler>: " + prop().getRepositoryHandler());
+//System.out.println("<PROP-SelectionHandler>: " + prop().getSelectionHandler());
+//RepositoryHandler rh00 = prop().getRepositoryHandler();
+//try {
+//System.out.println("model: " + rh00.getRepository().findSdaiModel(prop().getNameEG().toUpperCase() + "_EXPRESS_G_DATA").getName());;
+//} catch (SdaiException e00) {
+//	e00.printStackTrace();
+//}
+//Throwable thrw = new Throwable();
+//thrw.printStackTrace();
+//System.out.println("<0XO><09>getText");
+
+//original		String text = EGToolKit.renumber(prop(), getPage()) + ", " + getReferencedID() + " (";
+		String text = null;
+		String text1 = "" + EGToolKit.renumber(prop(), getPage());
+		String text2 = ", " + getReferencedID();
+		String text3 = " (";
 		if (linkedRef != null) {
 			Iterator iter = linkedRef.iterator();
 			while (iter.hasNext()) {
 				EGPageRefLocalTo pgt = (EGPageRefLocalTo)iter.next();
 				Iterator wit = pgt.getWires().iterator();
 				while (wit.hasNext()) {
-					text += EGToolKit.convertPageNrToString(EGToolKit.renumber(prop(), 
-							((Wire)wit.next()).getRelation().getParent().getPage()));
-					if (wit.hasNext()) text += ", ";
+
+//System.out.println("<definition>: " + getDefinition());
+//System.out.println("<definitionPlacement>: " + getDefinitionPlacement());
+
+          Wire a_wire = (Wire)wit.next();
+//System.out.println("<wire>: " + a_wire);
+          AbstractEGRelation aegr = a_wire.getRelation();
+//System.out.println("<AbstractEGRelation>: " + aegr);
+					AbstractEGBox aegb = aegr.getParent();
+//System.out.println("<AbstractEGBox>: " + aegb);
+					int page_nr = aegb.getPage();
+//System.out.println("<page>: " + page_nr);
+//original			text +=  EGToolKit.convertPageNrToString(EGToolKit.renumber(prop(),page_nr));
+					text3 +=  EGToolKit.convertPageNrToString(EGToolKit.renumber(prop(),page_nr));
+
+//							EGToolKit.renumber(prop(), 
+//							a_wire.getRelation().getParent().getPage()));
+
+//					text += EGToolKit.convertPageNrToString(EGToolKit.renumber(prop(), 
+//							((Wire)wit.next()).getRelation().getParent().getPage()));
+//original					if (wit.hasNext()) text += ", ";
+					if (wit.hasNext()) text3 += ", ";
 				}
-				if (iter.hasNext()) text += ", ";
+//original				if (iter.hasNext()) text += ", ";
+				if (iter.hasNext()) text3 += ", ";
 			}
 		}
-		text += ")";
-	    return text;
+//original		text += ")";
+		text3 += ")";
+
+		text = text1 + text2 + text3;
+		return text;
 	}
 	
 	public void addLinkedRef(EGPageRefLocalTo linked) {
@@ -149,6 +243,7 @@ public class EGPageRefLocalFrom extends EGPageRefLocal {
 			EGPageRefLocalTo ref = (EGPageRefLocalTo)src;
 			eliminatePageReference(ref);
 		}
+//System.out.println("<0XO><13>pageChanged-src: " + src + ", event: " + e);
 		super.pageChanged(e);
 	}
 	

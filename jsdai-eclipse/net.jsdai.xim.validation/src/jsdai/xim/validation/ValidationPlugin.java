@@ -135,7 +135,7 @@ public class ValidationPlugin extends AbstractUIPlugin {
 	 * Returns the shared instance.
 	 */
 	public static ValidationPlugin getDefault() {
-System.out.println("<<>> ValidationPlugin getDefault() - plugin: " + plugin);
+//System.out.println("<<>> ValidationPlugin getDefault() - plugin: " + plugin);
 		return plugin;
 	}
 

@@ -21,12 +21,12 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.express_compiler.p21_editor;
+package jsdai.step_editor.editor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import jsdai.express_compiler.preferences.P21EditorPreferences;
+import jsdai.step_editor.preferences.P21EditorPreferences;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.TextAttribute;

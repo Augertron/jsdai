@@ -959,6 +959,7 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 					if (constraint.testTotal_cover(null)) {
 						AEntity_definition subtypes = constraint
 								.getTotal_cover(null);
+//System.out.println("<<RR-A total_over: " + subtypes);
 						SdaiIterator sid = subtypes.createIterator();
 						AbstractEGRelation rel = null;
 						if (subtypes.getMemberCount() == 1) {

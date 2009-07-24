@@ -613,13 +613,20 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
     	if (getParent() instanceof EGConstraint) {
     		Point pl = pline[pline.length - 1];
     		double angle = EGToolKit.angle(pline[pline.length - 2], pl);
+//System.out.println("<<RR>>SIMPLE - angle: " + angle);
+//System.out.println("<<RR>>SIMPLE - x1: " + pline[pline.length - 2].x + ", y1: " + pline[pline.length - 2].y + ", x2: " + pl.x + ", y2: " +  pl.y);
     		if (!Double.isNaN(angle)) {
         		Point pp = new Point(0, 0);
         		pp.x = (int)(pl.x - circleR * 2 * Math.cos(angle + Math.PI / 6));
         		pp.y = (int)(pl.y - circleR * 2 * Math.sin(angle + Math.PI / 6));
+// System.out.println("<<RR-HH>>");
+        		// drawing first half of an arrow - RR
+//System.out.println("<<RR>>SIMPLE - arrow 1 - x1: " + pp.x + ", y1: " + pp.y + ", x2: " + pl.x + ", y2: " + pl.y);
         		g.drawLine(pp.x, pp.y, pl.x, pl.y);
         		pp.x = (int)(pl.x - circleR * 2 * Math.cos(angle - Math.PI / 6));
         		pp.y = (int)(pl.y - circleR * 2 * Math.sin(angle - Math.PI / 6));
+        		// drawing 2nd half of an arrow - RR
+//System.out.println("<<RR>>SIMPLE - arrow 2 - x1: " + pp.x + ", y1: " + pp.y + ", x2: " + pl.x + ", y2: " + pl.y);
         		g.drawLine(pp.x, pp.y, pl.x, pl.y);
     		}
     	} else {

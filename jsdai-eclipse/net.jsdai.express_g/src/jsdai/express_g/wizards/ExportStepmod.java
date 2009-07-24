@@ -66,6 +66,8 @@ public class ExportStepmod extends Wizard implements IExportWizard {
 	
 	private ActiveAll_FileSelectionPage page = null;
 
+	private static boolean fStepmod = true;
+
 	/**
 	 * 
 	 */
@@ -78,6 +80,9 @@ public class ExportStepmod extends Wizard implements IExportWizard {
 		setDialogSettings(section);
 	}
 	
+	public static boolean isStepmod() {
+		return fStepmod;
+	}
 	
 
 	/* (non-Javadoc)
@@ -87,12 +92,18 @@ public class ExportStepmod extends Wizard implements IExportWizard {
 		boolean ok = false;
 		if ((editor != null) && (page != null)) {
 //			String fileName = page.getFileName();
+			if (page.isExportStepmod()) {
+				fStepmod = true;
+			} else {
+				fStepmod = false;
+			}
 			if (page.isExportSingle()) {
 				RepositoryHandler handler = editor.getRepositoryHandler();
 				RepositoryChanger changer = new RepositoryChanger(handler.getModels(), "Exporting Stepmod");
 				String msg = handler.startROChanger(changer);
 				if (msg != null) {
-					MessageDialog.openWarning(getShell(), "Export to Stepmod Action", msg);
+//					MessageDialog.openWarning(getShell(), "Export to Stepmod Action", msg);
+					MessageDialog.openWarning(getShell(), "Exporting Express-G diagrams Action", msg);
 				} else {
 					try {
 						Runnable runnable = new Runnable(page.getFileName(), editor);
@@ -115,7 +126,8 @@ public class ExportStepmod extends Wizard implements IExportWizard {
 				RepositoryChanger changer = new RepositoryChanger(handler.getModels(), "Exporting Stepmod");
 				String msg = handler.startROChanger(changer);
 				if (msg != null) {
-					MessageDialog.openWarning(getShell(), "Export to Stepmod Action", msg);
+//					MessageDialog.openWarning(getShell(), "Export to Stepmod Action", msg);
+					MessageDialog.openWarning(getShell(), "Exporting Express-G diagrams Action", msg);
 				} else {
 					Object adapt = editor.getAdapter(IContentOutlinePage.class);
 					if (adapt instanceof SdaiEditorOutline) {
@@ -159,7 +171,8 @@ public class ExportStepmod extends Wizard implements IExportWizard {
 						}
 						ok = true;
 					} else {
-						MessageDialog.openWarning(getShell(), "Export to Stepmod Action", "Exporting all is not implemented yet");
+//						MessageDialog.openWarning(getShell(), "Export to Stepmod Action", "Exporting all is not implemented yet");
+						MessageDialog.openWarning(getShell(), "Exporting Express-G diagrams Action", "Exporting all is not implemented yet");
 					}
 				}
 				changer.done();
@@ -168,7 +181,12 @@ public class ExportStepmod extends Wizard implements IExportWizard {
 			try {
 				IPath path = new Path(page.getFileName());
 				IResource file = ResourcesPlugin.getWorkspace().getRoot().getContainerForLocation(path);
-				file.refreshLocal(IResource.DEPTH_INFINITE, null);
+				if (file != null) {
+					file.refreshLocal(IResource.DEPTH_INFINITE, null);
+				} else {
+					// This is the case when the chosed target directory for generated gif/xml files is outside the existing projects in the workspace
+					// System.out.println("REFRESHING - file is NULL, path: " + path);
+				}
 			} catch (Throwable t) {
 				t.printStackTrace();
 			}
@@ -255,14 +273,17 @@ public class ExportStepmod extends Wizard implements IExportWizard {
 		if (editor != null) {
 			page = new ActiveAll_FileSelectionPage(
 					editor.getRepositoryHandler().getRepoPath().removeLastSegments(1).append("modules"),
-					"Select Stepmod directory", "Stepmod directory:", "Select Stepmod directory", 
+//					"Select Stepmod directory", "Stepmod directory:", "Select Stepmod directory", 
+					"Choose a directory to export to", "Export to directory:", "Choose a directory to export to", 
 					ActiveAll_FileSelectionPage.DIALOG_DIRECTORY, false);
-			page.setTitle("Export to Stepmod");
-			page.setDescription("Exporting schemas to Stepmod");
+//			page.setTitle("Export to Stepmod");
+			page.setTitle("Export Express-G diagrams");
+			page.setDescription("Exporting Express-G diagrams");
 			addPage(page);
 		} else {
 			WizardInfoPage wp = new WizardInfoPage("Error", "");//"This wizard can be started only on opened Express-G file (*.exg)");
-			wp.setTitle("Export to Stepmod");
+//			wp.setTitle("Export to Stepmod");
+			wp.setTitle("Export Express-G diagrams");
 			wp.setDescription("This wizard can be started only on opened Express-G file (*.exg)");
 			addPage(wp);
 		}
@@ -277,7 +298,8 @@ public class ExportStepmod extends Wizard implements IExportWizard {
 			editor = (SdaiEditor)part;
 		}
 
-		setWindowTitle("Export to stepmod"); //$NON-NLS-1$
+//		setWindowTitle("Export to stepmod"); //$NON-NLS-1$
+		setWindowTitle("Export Express-G diagrams"); //$NON-NLS-1$
 		setNeedsProgressMonitor(true);
 	}
 
@@ -288,6 +310,7 @@ public class ExportStepmod extends Wizard implements IExportWizard {
 		super.createPageControls(pageContainer);
 		if ((page != null) && (editor != null))
 			page.setSchemaSelection(editor.getActiveInternalPart() instanceof ExpressGEditor);
+		page.setStepmodSelection(true);
 	}
 
 	/* (non-Javadoc)

@@ -72,6 +72,7 @@ public abstract class EGPageRef extends AbstractEGBox {
 	public void updateWrapper() {
 //System.err.println("\tUPDATE WRAPPER:" + this);
 //System.err.println(getText());
+//System.out.println("<0XO><15>setText-getText");
   		if (wrapper != null) wrapper.setText(getText());
 	}
 	

@@ -21,10 +21,10 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.express_compiler.p21_editor;
+package jsdai.step_editor.editor;
 
-import jsdai.express_compiler.ExpressCompilerPlugin;
-import jsdai.express_compiler.help.IExpressCompilerHelpContextIds;
+import jsdai.step_editor.Step_editorPlugin;
+import jsdai.step_editor.help.IStep_editorHelpContextIds;
 
 import org.eclipse.jface.text.ITextViewerExtension5;
 import org.eclipse.jface.text.Region;
@@ -81,7 +81,7 @@ public class P21Editor extends TextEditor {
 //		setSourceViewerConfiguration(new P21SourceViewerConfiguration());
 	  setSourceViewerConfiguration(new P21SourceViewerConfiguration(fP21ColorProvider));
 		setPreferenceStore(EditorsPlugin.getDefault().getPreferenceStore());
-	  setHelpContextId(IExpressCompilerHelpContextIds.P21_EDITOR);
+	  setHelpContextId(IStep_editorHelpContextIds.P21_EDITOR);
 }
 
 	protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
@@ -128,7 +128,7 @@ public class P21Editor extends TextEditor {
 	P21CommentScanner comscanner = sourceViewerConfiguration.getCommentScanner();
 
 	//	exscanner.setRules(null);  // parameter - IRule []
-	P21ColorProvider provider = ExpressCompilerPlugin.getDefault().getP21ColorProvider();
+	P21ColorProvider provider = Step_editorPlugin.getDefault().getP21ColorProvider();
 	p21scanner.initRules(provider);
 	complexscanner.initRules(provider);
 	comscanner.initRules(provider);

@@ -1246,7 +1246,7 @@ String express_list_file = fProject.getLocation().toString() + File.separator + 
 		exec_strings[ii++] = "-jsdaiproperties";
 		exec_strings[ii++] = jsdai_properties_path;
 		if (fOriginalCase) {
-			exec_strings[ii++] = "-original_case";
+			exec_strings[ii++] = "-rf";
 		} else {
 			exec_strings[ii++] = "-nothing";
 		}

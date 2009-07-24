@@ -26,14 +26,42 @@ package jsdai.express_g.exp2.ui.command;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.Iterator;
 
+import jsdai.SExpress_g_schema.EGraphics_diagram;
+import jsdai.SExtended_dictionary_schema.ESchema_definition;
+import jsdai.SExtended_dictionary_schema.SExtended_dictionary_schema;
+import jsdai.common.CommonPlugin;
+import jsdai.express_g.SdaieditPlugin;
+import jsdai.express_g.editors.ExpressGEditor;
+import jsdai.express_g.editors.IExpressGEditor;
+import jsdai.express_g.editors.ModelHandler;
+import jsdai.express_g.editors.RepositoryHandler;
+import jsdai.express_g.editors.RepositoryHandlerInput;
 import jsdai.express_g.exp2.ColorSchema;
 import jsdai.express_g.exp2.EGToolKit;
 import jsdai.express_g.exp2.IXMLDefinition;
 import jsdai.express_g.exp2.eg.AbstractEGObject;
+import jsdai.express_g.exp2.ui.Application;
 import jsdai.express_g.exp2.ui.VisualPage;
+import jsdai.express_g.util.xml.ExpressXmlConverter;
+import jsdai.express_g.util.xml.IPAdder;
+import jsdai.express_g.util.xml.IsoDbTools;
+import jsdai.express_g.wizards.ExportStepmod;
+import jsdai.lang.ASdaiModel;
+import jsdai.lang.SdaiException;
+import jsdai.lang.SdaiModel;
+import jsdai.lang.SdaiRepository;
+import jsdai.lang.SdaiSession;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.GC;
@@ -44,6 +72,8 @@ import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.MessageConsoleStream;
 
 /**
  * @author Mantas Balnys
@@ -51,13 +81,15 @@ import org.eclipse.swt.widgets.Display;
  */
 public class ExportToStepmod extends AbstractCommand {
 	public static final int IMAGE_INSETS = 10;
-	
+	boolean fStepmod = true;
 	protected File file = null;
 	protected File schemaFile = null;
 	protected String schema_ext = "";
 	protected String schema_name = "";
 	protected String doc_file = "";
-
+    String warning_messages = "";
+    MessageConsoleStream stream;
+    
 	/**
 	 * @param invoker
 	 */
@@ -212,23 +244,57 @@ public class ExportToStepmod extends AbstractCommand {
 	public void start() {
 		if (file.exists()) {
 			prop.status().setStatus("Exporting to Stepmod", prop.handler().getMaxPage());
+//System.out.println("prop: " + prop);
 			// GIF initial startup
 			loader = new ImageLoader();
 			// XML initial startup
-			String[] names = EGToolKit.parseSchemaName(prop.getName());
+//System.out.println("prop name: " + prop.getName());
+			String[] names = null;
+			if (prop.getName() != null) {
+				names = EGToolKit.parseSchemaName(prop.getName());
+			} else {
+				// this is probably a case o an orfan diagram wihout a schema_definition
+				// the name should be perhaps constructed from the model name
+				names = new String [3];
+//				names[0] = "my_schema_name";
+//				names[1] = "my_schema_ext";
+				
+        // RepositoryHandler rh = prop.getRepositoryHandler();
+         		
+				// it is probably safe to assume without checking that prop is Application and IExpressGEditor is ExpressGEditor, etc.
+				
+				IExpressGEditor g_editor = ((Application)prop).getEditor();
+				RepositoryHandlerInput input = ((ExpressGEditor)g_editor).getInput();
+				ModelHandler mh = input.getModelHandler();
+				names[0] = mh.getName();
+				names[1] = names[0];
+				names[2] = ".xml";   // perhaps "4_info_reqs.xml" ? - not mim, not arm
+  
+			}
 			schema_name = names[0];
 			schema_ext = names[1];
 			doc_file = names[2];
+
 			String modules_resources = null;
 			if (schema_ext.equalsIgnoreCase("ARM") || schema_ext.equalsIgnoreCase("MIM")) {
 				modules_resources = "modules";
 			} else {
 				modules_resources = "resources";
 			}
+			
+			fStepmod = ExportStepmod.isStepmod();
+			String schema_file_str = null;
 // flat - arms mims and resources all together - original as found - suitable for exporting only one-by-one
 //			schemaFile = new File(file.getAbsolutePath() + File.separator + schema_name.toLowerCase());
 // non-flat modules/... resources/...
-			schemaFile = new File(file.getAbsolutePath() + File.separator + modules_resources + File.separator + schema_name.toLowerCase());
+			
+			if (fStepmod) {
+				schema_file_str = file.getAbsolutePath() + File.separator + modules_resources + File.separator + schema_name.toLowerCase();
+			} else {
+				schema_file_str = file.getAbsolutePath() + File.separator + schema_name.toLowerCase();
+			}
+			schemaFile = new File(schema_file_str);
+//			schemaFile = new File(file.getAbsolutePath() + File.separator + modules_resources + File.separator + schema_name.toLowerCase());
 			schemaFile.mkdirs();
 			
 			for (int i = 1; i <= prop.handler().getMaxPage(); i++) {
@@ -240,6 +306,8 @@ public class ExportToStepmod extends AbstractCommand {
 					prop.status().log(e);
 				}
 			}
+			// RR adding xml generation here
+			generateXmlFile(schema_file_str, schema_ext);
 		} else {
 			setExitCode(INTERUPTED);
 		}
@@ -331,4 +399,189 @@ for (int i = 0; i < 256; i++) {
 		
 		return data2;
 	}
+
+	void generateXmlFile(String schema_file_str, String schema_ext) {
+
+		SdaiModel modelg0 = null;
+		SdaiModel model0 = null;
+		SdaiRepository repo0 = null;
+		SdaiRepository repo2 = null;
+		SdaiSession session0 = null;
+		SdaiModel work0 = null;
+		boolean flag_is_active = false;
+		boolean flag_closed = true;
+		RepositoryHandlerInput rphinput0 = null;
+		IExpressGEditor g_editor0 = null;
+		ModelHandler mhDict0 = null;
+		RepositoryHandler rph0 = null;
+		EGraphics_diagram gd0 = null;
+		ESchema_definition sd0 = null;
+		//ESchema_definition sd = null;
+
+		try {
+	    g_editor0 = ((Application)prop).getEditor();
+//System.out.println("<retreaved g-editor: " +  g_editor0);    
+			rphinput0 = ((ExpressGEditor)g_editor0).getInput();
+//System.out.println("<retreaved repository handler input: " +  rphinput0);    
+			//rphinput.getModelHandler();
+			//rphinput.getRepositoryHandler();
+			mhDict0 = rphinput0.getModelHandler();
+//System.out.println("<retreaved model handler: " +  mhDict0);    
+			rph0 = mhDict0.getRepositoryHandler();
+//System.out.println("<retreaved repository handler: " +  rph0);    
+			repo0 = rph0.getRepository();
+//System.out.println("<retreaved repository: " +  repo0);    
+
+			flag_is_active = repo0.isActive();
+			if (!flag_is_active) {
+			    repo0.openRepository();
+					flag_closed = false;
+			}
+
+	      gd0 = mhDict0.getDiagram_definition();
+	//System.out.println("<retreaved diagram: " +  gd0);    
+  	      if (gd0.testDic_schema(null)) {	
+  	    	  sd0 = gd0.getDic_schema(null);
+  	      } else {
+  	    	// this is the case of orphan diagram without a schema definition, nothing to generate  
+  				if (!flag_is_active) {
+  					repo0.closeRepository();
+  	    		flag_closed = true;
+  	    	}
+  	    	return;
+  	      }
+			  model0 = repo0.findSdaiModel(sd0.getName(null).toUpperCase() + "_DICTIONARY_DATA");
+
+
+		session0 = repo0.getSession();
+    	work0 = repo0.createSdaiModel("working", SExtended_dictionary_schema.class);
+
+//        String xml_file = model.getName().toLowerCase();
+        // String xml_file = sd0.getName(null).toLowerCase();
+
+        String xml_path = null;
+              // - no, just leave arm/mim xml names, they are in separate subdirectories anyway.
+              /*
+			  if (!fStepmod) { // we want flat, without modules/resources
+					xml_path = schema_file_str + File.separator + sd0.getName(null).toLowerCase() + ".xml";
+			  } else
+			  */
+			  if (schema_ext.equalsIgnoreCase("ARM")) {
+					xml_path = schema_file_str + File.separator + "arm.xml";
+			  } else
+			  if (schema_ext.equalsIgnoreCase("MIM")) {
+					xml_path = schema_file_str + File.separator + "mim.xml";
+			  } else { // resources or non-stepmod
+					xml_path = schema_file_str + File.separator + sd0.getName(null).toLowerCase() + ".xml";
+			  }
+
+        //    int end_index = xml_file.lastIndexOf("_dictionary_data");
+//            if (end_index  >0) xml_file = xml_file.substring(0,end_index);
+
+//            String xml_path = rph0.getRepoPath().toOSString();
+//            int last_slash = xml_path.lastIndexOf(File.separator);
+//            if (last_slash > 0) xml_path = xml_path.substring(0,last_slash);
+//            xml_path = xml_path + File.separator + xml_file + ".xml"; 				
+
+//			System.out.println("<>underlying schema: " + model.getUnderlyingSchema().getName(null));
+//			System.out.println("<>xml: " + xml_path);
+
+
+			String iso_number = null;
+			  
+			  
+		  
+
+            String informal_propositions = "";
+            String iso_db_path = "";
+
+						ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getSelection();
+            
+            IProject fProject = null;
+
+						if (selection instanceof IStructuredSelection) {
+
+							Object obj = ((IStructuredSelection)selection).getFirstElement();
+							if (obj instanceof IResource) {
+								fProject = ((IResource)obj).getProject();
+							} else {
+								System.out.println("selection element is NOT a resource: " + obj);
+							}
+						}
+						stream = CommonPlugin.getDefault().getConsole();
+
+            if (fProject != null) {
+            	informal_propositions = fProject.getLocation().toOSString() + File.separator + "informal_propositions.txt";
+            	iso_db_path = fProject.getLocation().toOSString() + File.separator + "document_reference.txt";
+          	} else {
+          		stream.println("WARNING! Export was not initiated in a project, references will not be set, informal_propositions stage skipped");
+          	}
+
+						String schema_name = sd0.getName(null).toLowerCase();
+						IsoDbTools.readIsoNumbersOfSchemas(iso_db_path);						
+						HashMap hm_iso_numbers = IsoDbTools.getIsoNumbers();
+						
+						if (hm_iso_numbers != null) {
+							iso_number = (String)hm_iso_numbers.get(schema_name);
+							if (iso_number == null) {
+								iso_number = "";
+								warning_messages += "WARNING! Schema " + schema_name + " not found in document_reference.txt\n";
+								//stream.println("WARNING! Schema " + schema_name + " not found in document_reference.txt");
+							} else {
+								// stream.println("OK! schema found in document_reference.txt: " + schema_name);
+							}
+							
+						} else {
+							stream.println("WARNING! document_reference.txt not found in the project, empty references will be generated");
+						}
+						
+						//if (iso_number.equals("")) {
+						//	iso_number = null;
+						//}
+
+
+
+            ExpressXmlConverter.convertModel(model0, session0, repo0, work0, xml_path, iso_number, false);
+
+            if (fProject != null) {
+            	IPAdder.addIPsForSchema(schema_name, xml_path, informal_propositions, stream);
+            }
+
+     		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+			IPath xml_location = rph0.getRepoPath().removeLastSegments(1);
+       		// System.out.println("<location> : " + xml_location);
+      		IResource xml_res = (root.findContainersForLocation(xml_location))[0];
+			xml_res.refreshLocal(1, null);
+
+		}
+		catch (Exception e) {
+			System.out.println("<exception>: " +  e);
+			SdaieditPlugin.log(e);
+			e.printStackTrace();
+		}
+		finally {
+		  
+		  try {
+			if ((work0 != null) & (work0 instanceof SdaiModel)) work0.deleteSdaiModel();
+			if (!flag_is_active && !flag_closed) {
+				repo0.closeRepository();
+				flag_closed = true;
+			}
+
+			if (!warning_messages.equals("")) {
+				stream.print(warning_messages);
+			}
+
+ 		  } catch (SdaiException e) {
+			// TODO Auto-generated catch block
+			  SdaieditPlugin.log(e);
+			  e.printStackTrace();
+		   }	
+						
+}
+		
+	}
+
+	
+	
 }

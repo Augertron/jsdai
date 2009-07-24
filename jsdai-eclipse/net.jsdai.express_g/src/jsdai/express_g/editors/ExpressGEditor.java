@@ -228,6 +228,12 @@ public class ExpressGEditor extends EditorPart implements IExpressGEditor, Comma
 		super.setInput(input);
 	}
 	
+	// RR - need input for orfan diagrams
+	public RepositoryHandlerInput getInput() {
+		return input;
+	}
+	
+	
 	/* (non-Javadoc)
 	 * @see jsdai.express_g.exp2.ui.command.CommandInvoker#commandDone(jsdai.express_g.exp2.ui.command.Command)
 	 */
@@ -246,6 +252,7 @@ public class ExpressGEditor extends EditorPart implements IExpressGEditor, Comma
 					try { 
 						ESchema_definition schemaDef = mh.getSchema_definition();
 						String schemaName = null;
+//System.out.println("<<A>> schemaDef: " + schemaDef + ", model handler: " + mh + ", input: " + input);
 						if (schemaDef != null) 
 							schemaName = schemaDef.getName(null); 
 //						ModelHandler mhs = rh.getModelHandler(schemaName);
@@ -302,6 +309,7 @@ public class ExpressGEditor extends EditorPart implements IExpressGEditor, Comma
 						drop.addDropListener(ExpressGEditor.this);
 						
 						// starting application
+//System.out.println("<<A>>Setting schema name: " + schemaName);
 						application.setName(schemaName);
 						application.setNameEG(mh.getName());
 						
@@ -419,8 +427,10 @@ public class ExpressGEditor extends EditorPart implements IExpressGEditor, Comma
 	 * @see jsdai.express_g.editors.outline.IInternalPartListener#internalPartChanged(org.eclipse.ui.IWorkbenchPart)
 	 */
 	public void internalPartChanged(IWorkbenchPart part) {
-		if (part == this) 
+		if (part == this) {
+//System.out.println("<0XO><04>part: " + part);
 			initEditor();
+		}	
 		else
 			if (panel != null) panel.suspend();
 	}

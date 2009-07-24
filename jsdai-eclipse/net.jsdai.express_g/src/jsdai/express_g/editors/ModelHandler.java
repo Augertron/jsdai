@@ -72,6 +72,7 @@ public class ModelHandler {
 	public ModelHandler(RepositoryHandler repositoryHandler, SdaiModel model) throws SdaiException {
 		this.model = model;
 		this.repositoryHandler = repositoryHandler;
+//System.out.println("<<A>>Creating new ModelHandler - inside - going to init - model: " + model);
 		init();
 	}
 	
@@ -241,6 +242,7 @@ public class ModelHandler {
 				diagram_definition = (EGraphics_diagram)diagrams.getCurrentMemberEntity(schemas_it);
 				if (diagram_definition.testDic_schema(null)) {
 					schema_definition = diagram_definition.getDic_schema(null);
+//System.out.println("<<>> getting dic_schema: " + schema_definition + ", diagram: " + diagram_definition);
 				} else {
 					schema_definition = null;
 				}
@@ -284,6 +286,7 @@ public class ModelHandler {
 			} else {
 				name = model.getName();
 			}
+//System.out.println("<<A>> updating name: " + name);
 		} catch (SdaiException sex) {
 			SdaieditPlugin.log(sex);
 		}

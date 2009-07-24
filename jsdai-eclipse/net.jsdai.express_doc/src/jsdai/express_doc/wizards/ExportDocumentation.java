@@ -122,14 +122,14 @@ public class ExportDocumentation extends Wizard implements IExportWizard {
 				} // else - destination location is not in eclipse workspace, therefore no refreshing can be done
 			} catch (Throwable t) {
 //				t.printStackTrace();
-					System.out.println("problems with ExpressDoc 1, see log: " + t);
+//					System.out.println("problems with ExpressDoc 1, see log: " + t);
 					ExpressDocPlugin.log("problems with ExpressDoc export 1: " + t,1);				
 					ExpressDocPlugin.log(t);				
 			}
 		} catch (InterruptedException e) {
 //System.err.println("Export to html CANCELED: " + e);
 			MessageDialog.openError(getShell(), "Export Documentation Error", "Interupted by user");
-					System.out.println("problems with ExpressDoc export 2, see log: " + e);
+//					System.out.println("problems with ExpressDoc export 2, see log: " + e);
 					// e2.printStackTrace();
 					ExpressDocPlugin.log("ExpressDoc interrupted by user 2",1);				
 					//ExpressDocPlugin.log(e);				
@@ -181,21 +181,21 @@ System.err.println("ExportToHtmlAction real excption: " + realException);
 		super.createPageControls(pageContainer);
 
 		String dictionaryFileName = null;
-		System.out.println("createPageControls - selection: " + selection);
+//		System.out.println("createPageControls - selection: " + selection);
 		if(selection != null) {
 			IProject project = null;
 			List selResources = IDE.computeSelectedResources(selection);
 			for(Iterator i = selResources.iterator(); i.hasNext();) {
 				IResource resource = (IResource) i.next();
-				System.out.println("createPageControls - resource: " + resource);
+//				System.out.println("createPageControls - resource: " + resource);
 				if (fProject == null) {
 					// not sure why setting project is after continue - not reached
-					System.out.println("<I> attemptingto set fProject: " + resource);
+//					System.out.println("<I> attemptingto set fProject: " + resource);
 					fProject = resource.getProject();
 				}
 				if (resource instanceof IFile) {
 					IFile file = (IFile) resource;
-					System.out.println("createPageControls - file: " + file);
+//					System.out.println("createPageControls - file: " + file);
 					String fext = file.getFileExtension();
 					if (fext.equalsIgnoreCase("exd") || fext.equalsIgnoreCase("exg") || 
 							fext.equalsIgnoreCase("sdai")) {
@@ -208,7 +208,7 @@ System.err.println("ExportToHtmlAction real excption: " + realException);
 				if(project == null) {
 					project = resource.getProject();
 				}
-				System.out.println("<O> attemptingto set fProject: " + resource + ", project: " + resource.getProject());
+//				System.out.println("<O> attemptingto set fProject: " + resource + ", project: " + resource.getProject());
 			}
 			if(dictionaryFileName == null && project != null) {
 				dictionaryFileName = project.getLocation().toOSString();
@@ -244,17 +244,29 @@ System.err.println("ExportToHtmlAction real excption: " + realException);
 		 * @see org.eclipse.jface.operation.IRunnableWithProgress#run(org.eclipse.core.runtime.IProgressMonitor)
 		 */
 		public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-ExpressDocPlugin.log("in run - 01",1);				
+//ExpressDocPlugin.log("in run - 01",1);				
 			monitor.beginTask("Generating html documentation", IProgressMonitor.UNKNOWN);
+
+
+//  this is when iso_db is called iso_db and is located in the root of the express_doc plugin
+//			String iso_db_path = RuntimePlugin.getFragmentResourcePath(Platform.getBundle("net.jsdai.express_doc"), "iso_db");
+// new specification requires iso_db to be called document_reference.txt and be used when present in the corresponding project root,
+// if not found, do not use it (btw, perhaps no need to check if present, if an unsuccessful attempt is made to use it from ExpressDoc itself - ok)
+			String iso_db_path = fProject.getLocation().toOSString() + File.separator + "document_reference.txt";
+
+
+//      System.out.println("ISO_DB: " + iso_db_path);
 
 			String [] args;
 
 			if (true) {  // if not a single schema (how to know if a single schema, and
 							// its name?
-				args = new String[generateJavaDocPart ? 15  : 16];
+//				args = new String[generateJavaDocPart ? 15  : 16];
+				args = new String[generateJavaDocPart ? 17  : 18];
 				
 			} else {
-				args = new String[9];
+//				args = new String[9];
+				args = new String[11];
 				
 			}
 
@@ -270,6 +282,8 @@ ExpressDocPlugin.log("in run - 01",1);
 			args[ii++] = html_destination_path;
 			args[ii++] = "-title";
 			args[ii++] = "Express Data"; // TODO project name
+			args[ii++] = "-iso_db_path";
+			args[ii++] = iso_db_path;
 			if(!generateJavaDocPart) {
 				args[ii++] = "-noJava";
 			}
@@ -296,7 +310,7 @@ ExpressDocPlugin.log("in run - 01",1);
 
 //			System.setProperty("jsdai.properties", ExpressDocPlugin.class.getResource("jsdai.properties").getFile());
 
-ExpressDocPlugin.log("in run - 02 - after args before try",1);				
+//ExpressDocPlugin.log("in run - 02 - after args before try",1);				
 
 
 			try {
@@ -304,10 +318,10 @@ ExpressDocPlugin.log("in run - 02 - after args before try",1);
 				Properties prop = new Properties();
 				File repoDir = ExpressDocPlugin.getDefault().getStateLocation().append("sdairepos").toFile();
 				if (!repoDir.exists()) repoDir.mkdirs();
-System.out.println("<>JSDAI-PROPERTIES: " + repoDir.getAbsolutePath());
+//System.out.println("<>JSDAI-PROPERTIES: " + repoDir.getAbsolutePath());
 				prop.setProperty("repositories", repoDir.getAbsolutePath());
 				SdaiSession.setSessionProperties(prop);
-ExpressDocPlugin.log("in run - 03 - after repodir",1);				
+//ExpressDocPlugin.log("in run - 03 - after repodir",1);				
 				} catch (SdaiException sex) {
 //					ExpressDocPlugin.log(,1);
 					System.out.println("problems with ExpressDoc 5, see log: " + sex);
@@ -346,7 +360,7 @@ ExpressDocPlugin.log("in run - 03 - after repodir",1);
 //       final File[] classPathJars;
 
 // it is null, unfortunately       	 
-System.out.println("<KUKU> fProject: " + fProject);       	 
+//System.out.println("<KUKU> fProject: " + fProject);       	 
 
 /*       	 
 	    	 	String jar_path =  fProject.getProject().getLocation().toOSString();
@@ -357,7 +371,7 @@ System.out.println("<KUKU> fProject: " + fProject);
 		    	}
 */
 
-ExpressDocPlugin.log("in run - 05 - before classpaths",1);				
+//ExpressDocPlugin.log("in run - 05 - before classpaths",1);				
 
 	    	 	File[] classPathJars = {
 	    				new File(getClassPath(
@@ -369,7 +383,7 @@ ExpressDocPlugin.log("in run - 05 - before classpaths",1);
 						// new File(jar_path),
 	    			};
 
-ExpressDocPlugin.log("in run - 06 - after classpaths",1);				
+// ExpressDocPlugin.log("in run - 06 - after classpaths",1);				
 
 //				ClassLoader loader = new JarFileClassLoader(...);
 
@@ -377,10 +391,10 @@ ExpressDocPlugin.log("in run - 06 - after classpaths",1);
 
 				try {
 
-					System.out.println("classPathJars: " + classPathJars);					
+//					System.out.println("classPathJars: " + classPathJars);					
                     for (int ihi = 0; ihi < classPathJars.length; ihi++) {
                     	
-    					System.out.println("classPathJars - i: " + ihi + " - " + classPathJars[ihi]);					
+//    					System.out.println("classPathJars - i: " + ihi + " - " + classPathJars[ihi]);					
                     }
 
 
@@ -395,10 +409,10 @@ ExpressDocPlugin.log("in run - 06 - after classpaths",1);
 	    	 				new Class[] { String.class, String[].class },
 	    	 				new Object[] { repoDirStr, args },
 	    	 				classPathJars, null);
-ExpressDocPlugin.log("in run - 07 - before thread start",1);				
+// ExpressDocPlugin.log("in run - 07 - before thread start",1);				
 
 	    		expressdocThread.start();
-ExpressDocPlugin.log("in run - 08 - after thread start",1);				
+// ExpressDocPlugin.log("in run - 08 - after thread start",1);				
 
 		if (true) {
 
@@ -436,12 +450,12 @@ ExpressDocPlugin.log("in run - 08 - after thread start",1);
 						new JarFileClassLoader(classPathJars, ExportDocumentation.class.getClassLoader(), exceptions);
 
 //		    	 	Class express_doc_class = loader.loadClass("ExpressDoc", true);
-System.out.println("<> before class - loader: "  + loader);
+//System.out.println("<> before class - loader: "  + loader);
 		    	 	Class express_doc_class = loader.loadClass("jsdai.tools.ExpressDoc", false);
 //		    	 	Class express_doc_class = Class.forName("jsdai.tools.ExpressDoc", true, loader);
-System.out.println("<> after class");
+//System.out.println("<> after class");
 
-System.out.println("loader: " + express_doc_class.getClassLoader());
+//System.out.println("loader: " + express_doc_class.getClassLoader());
 //		    	 	Method main = express_doc_class.getMethod("main", new Class[] {String[].class});
                     Class[] m_pars = new Class [2];
                     m_pars[0] = String.class;
@@ -449,7 +463,7 @@ System.out.println("loader: " + express_doc_class.getClassLoader());
                     
 //		    	 	Method init_runnable = express_doc_class.getMethod("initAsRunnable", new Class[] {String.class, String[].class});
 		    	 	Method init_runnable = express_doc_class.getMethod("initAsRunnable", m_pars);
-System.out.println("after getMethod, before invoke");
+//System.out.println("after getMethod, before invoke");
 //					int modifiers = main.getModifiers();
 //					if (Modifier.isPublic
 
@@ -462,9 +476,9 @@ System.out.println("after getMethod, before invoke");
                         arguments[1] = args;
 //						init_runnable.invoke(null, new Object[] {args  });
 						java.lang.Runnable the_runnable = (java.lang.Runnable)init_runnable.invoke(null, arguments);
-System.out.println("after invoke - DONE");
+//System.out.println("after invoke - DONE");
 			            the_runnable.run();
-System.out.println("after run - DONE");
+//System.out.println("after run - DONE");
 
 */
 

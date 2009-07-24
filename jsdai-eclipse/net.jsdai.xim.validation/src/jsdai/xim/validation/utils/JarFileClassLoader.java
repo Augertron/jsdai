@@ -33,6 +33,7 @@ import java.util.NoSuchElementException;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import jsdai.util.JarFileURLStreamHandler;
+import jsdai.xim.validation.ValidationPlugin;
 
 /**
  * @author vaidas
@@ -72,7 +73,8 @@ public class JarFileClassLoader extends ClassLoader {
 		this.exceptions = exceptions;
 		fileUrlStrings = new String[files.length];
 		for(int i = 0; i < files.length; i++) {
-System.out.println("classPathJars - " + i + ": " + files[i]);
+//System.out.println("classPathJars - " + i + ": " + files[i]);
+//ValidationPlugin.log("<JarFileClassLoader>-01 - classPathJars - " + i + ": " + files[i], 1);
 			fileUrlStrings[i] = files[i].toURL().toString(); 
 		}
 		jarUrlStreamHandlers = new JarFileURLStreamHandler[files.length];
@@ -97,6 +99,8 @@ System.out.println("classPathJars - " + i + ": " + files[i]);
 	 */
 	protected synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
 		Class c = findLoadedClass(name);
+//System.out.println("loadClass - Class: " + c);
+//ValidationPlugin.log("<JarFileClassLoader>-02 - Class: " + c, 1);
 		if(c == null) {
 			c = findClassOrNull(name);
 			if(c == null) {

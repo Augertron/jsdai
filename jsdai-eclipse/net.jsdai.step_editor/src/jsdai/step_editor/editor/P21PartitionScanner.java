@@ -21,7 +21,7 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.express_compiler.p21_editor;
+package jsdai.step_editor.editor;
 
 import java.util.ArrayList;
 import java.util.List;

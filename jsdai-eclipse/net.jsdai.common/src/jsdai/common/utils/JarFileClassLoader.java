@@ -116,22 +116,22 @@ public class JarFileClassLoader extends ClassLoader {
 
 	protected Class findClassOrNull(String name) throws ClassNotFoundException {
 
-System.out.println("<findClassOrNull> name: " + name + " >>>>>>>>>>>>>>");
+//System.out.println("<findClassOrNull> name: " + name + " >>>>>>>>>>>>>>");
 
 		if(open) {
 			String jarName = name.replace('.', '/') + ".class";
-System.out.println("<findClassOrNull> - jarName: " + jarName);
+//System.out.println("<findClassOrNull> - jarName: " + jarName);
 			if(exceptions != null) {
-System.out.println("<findClassOrNull> - exceptions NOT null: " + exceptions);
+//System.out.println("<findClassOrNull> - exceptions NOT null: " + exceptions);
 				for (int i = 0; i < exceptions.length; i++) {
-System.out.println("<findClassOrNull> - exception: " + exceptions[i]);
+//System.out.println("<findClassOrNull> - exception: " + exceptions[i]);
 					if(jarName.startsWith(exceptions[i])) {
 						return null;
 					}
 				}
 			}
 			for(int i = 0; i < files.length; i++) {
-System.out.println("<findClassOrNull> finding class - i: " + i);
+//System.out.println("<findClassOrNull> finding class - i: " + i);
 				Class c = findClass(i, name, jarName);
 				if(c != null) {
 					return c;

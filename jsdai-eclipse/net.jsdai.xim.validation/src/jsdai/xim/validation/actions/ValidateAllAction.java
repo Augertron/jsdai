@@ -570,15 +570,17 @@ System.out.println("lib - XIM-MIM: " + fDestination);
         IEditorRegistry edreg = PlatformUI.getWorkbench().getEditorRegistry();
         IEditorDescriptor eddes0 = edreg.getDefaultEditor("*.stp");
         String edlabel0 = eddes0.getLabel();
- PlatformUI.getWorkbench().getEditorRegistry().setDefaultEditor("*.stp", "net.jsdai.express_compiler.p21_editor.P21Editor");
-       IEditorDescriptor eddes = edreg.findEditor("net.jsdai.express_compiler.p21_editor.P21Editor");
+// PlatformUI.getWorkbench().getEditorRegistry().setDefaultEditor("*.stp", "net.jsdai.express_compiler.p21_editor.P21Editor");
+ PlatformUI.getWorkbench().getEditorRegistry().setDefaultEditor("*.stp", "net.jsdai.step_editor.editor.P21Editor");
+//       IEditorDescriptor eddes = edreg.findEditor("net.jsdai.express_compiler.p21_editor.P21Editor");
+       IEditorDescriptor eddes = edreg.findEditor("net.jsdai.step_editor.editor.P21Editor");
        String edlabel = eddes.getLabel();
        IEditorDescriptor eddes2 = edreg.getDefaultEditor("*.stp");
        String edlabel2 = eddes2.getLabel();
-System.out.println("<<>><<OOOOOOOOOOOOO>>>>>>label: " + edlabel);       
-System.out.println("<<>><<OOOOOOOOOOOOO>>>>>>DEFAULT label BEFORE: " + edlabel0);       
-System.out.println("<<>><<OOOOOOOOOOOOO>>>>>>DEFAULT label AFTER: " + edlabel2);       
-ValidationPlugin.log("label: " + edlabel, 1);
+//System.out.println("<<>><<OOOOOOOOOOOOO>>>>>>label: " + edlabel);       
+//System.out.println("<<>><<OOOOOOOOOOOOO>>>>>>DEFAULT label BEFORE: " + edlabel0);       
+//System.out.println("<<>><<OOOOOOOOOOOOO>>>>>>DEFAULT label AFTER: " + edlabel2);       
+//ValidationPlugin.log("label: " + edlabel, 1);
        
  //		fPage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		fPage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -690,12 +692,14 @@ ValidationPlugin.log("label: " + edlabel, 1);
 			fErrorBox.setText("MIM-XIM conversion problem");
 			fErrorBox.setMessage("" + fSdaiException + "\n\n\t\tSee .log for details\n\n\tContinue with XIM validation anyway?");
 			int result = fErrorBox.open(); // yes - 64, no - 128
-			 PlatformUI.getWorkbench().getEditorRegistry().setDefaultEditor("*.stp", "net.jsdai.express_compiler.p21_editor.P21Editor");
+//			 PlatformUI.getWorkbench().getEditorRegistry().setDefaultEditor("*.stp", "net.jsdai.express_compiler.p21_editor.P21Editor");
+			 PlatformUI.getWorkbench().getEditorRegistry().setDefaultEditor("*.stp", "net.jsdai.step_editor.editor.P21Editor");
 			if (result > 64) {
 			   return;
 			}
 		}
-		 PlatformUI.getWorkbench().getEditorRegistry().setDefaultEditor("*.stp", "net.jsdai.express_compiler.p21_editor.P21Editor");
+//		 PlatformUI.getWorkbench().getEditorRegistry().setDefaultEditor("*.stp", "net.jsdai.express_compiler.p21_editor.P21Editor");
+		 PlatformUI.getWorkbench().getEditorRegistry().setDefaultEditor("*.stp", "net.jsdai.step_editor.editor.P21Editor");
 		
 		// end of mim-xim conversion ----------------------------------------------------
     // and let's put xim validation here --------------------------------------------
@@ -1209,18 +1213,18 @@ System.out.println("Got output string: " + validateOutput);
     // String sdaireposDirectory = "G:\\REPOSITORIES";
     String sdaireposDirectory = fWorking_directory; // should be created by the previous mim validation
  		Properties jsdaiProperties = new Properties();
-  		jsdaiProperties.setProperty("repositories", sdaireposDirectory);
+  	jsdaiProperties.setProperty("repositories", sdaireposDirectory);
 
-  		jsdaiProperties.setProperty("mapping.schema.IDA_STEP_SCHEMA_XIM","IDA_STEP_SCHEMA_XIM_MAPPING_DATA");
-  		jsdaiProperties.setProperty("mapping.schema.IDA_STEP_AIM_SCHEMA","IDA_STEP_SCHEMA_XIM_MAPPING_DATA");
+  	jsdaiProperties.setProperty("mapping.schema.IDA_STEP_SCHEMA_XIM","IDA_STEP_SCHEMA_XIM_MAPPING_DATA");
+  	jsdaiProperties.setProperty("mapping.schema.IDA_STEP_AIM_SCHEMA","IDA_STEP_SCHEMA_XIM_MAPPING_DATA");
 		jsdaiProperties.setProperty("mapping.schema.AUTOMOTIVE_DESIGN","IDA_STEP_SCHEMA_XIM_MAPPING_DATA");
 		jsdaiProperties.setProperty("jsdai.SIda_step_schema_xim","AC*;AI*;AP*;ASS*;AU*;B*;C*;D*;E*;F*;G*;H*;IDA_STEP_AIM*;ISO*;IN*;J*;K*;L*;M*;N*;O*;P*;Q*;R*;S*;T*;U*;V*;W*;X*;Y*;Z*;");
 
 
   		try {
-			ValidationPlugin.log("<CONVERSION>00-PRE", 1);
+//			ValidationPlugin.log("<CONVERSION>00-PRE", 1);
 			SdaiSession.setSessionProperties(jsdaiProperties);
-			ValidationPlugin.log("<CONVERSION>00-AFTER", 1);
+//			ValidationPlugin.log("<CONVERSION>00-AFTER", 1);
 		} catch (SdaiException e1) {
 			// TODO Auto-generated catch block
             fSdaiException = e1;
@@ -1234,9 +1238,9 @@ System.out.println("Got output string: " + validateOutput);
 		SdaiTransaction transaction = null;
 		SdaiRepository repo = null;
 		try {
-			ValidationPlugin.log("<CONVERSION>01-PRE", 1);
+//			ValidationPlugin.log("<CONVERSION>01-PRE", 1);
 			session = SdaiSession.openSession();
-			ValidationPlugin.log("<CONVERSION>01-AFTER", 1);
+//			ValidationPlugin.log("<CONVERSION>01-AFTER", 1);
 		} catch (SdaiException e) {
 			// TODO Auto-generated catch block
             fSdaiException = e;
@@ -1247,9 +1251,9 @@ System.out.println("Got output string: " + validateOutput);
 		}
 		Importer importer = new Importer();
 		try {
-			ValidationPlugin.log("<CONVERSION>02-PRE", 1);
+//			ValidationPlugin.log("<CONVERSION>02-PRE", 1);
 			transaction = session.startTransactionReadWriteAccess();
-			ValidationPlugin.log("<CONVERSION>02-AFTER", 1);
+//			ValidationPlugin.log("<CONVERSION>02-AFTER", 1);
 		} catch (SdaiException e) {
 			try {
 				session.closeSession();
@@ -1266,9 +1270,9 @@ System.out.println("Got output string: " + validateOutput);
 		}
 //		SdaiTransaction transaction = importer.startTransactionReadWriteAccess(session);
 		try {
-			ValidationPlugin.log("<CONVERSION>03-PRE", 1);
+//			ValidationPlugin.log("<CONVERSION>03-PRE", 1);
 			repo = session.importClearTextEncoding("", fStepFile, null);
-			ValidationPlugin.log("<CONVERSION>03-AFTER", 1);
+//			ValidationPlugin.log("<CONVERSION>03-AFTER", 1);
 		} catch (SdaiException e) {
 			try {
 				transaction.endTransactionAccessAbort();
@@ -1285,9 +1289,9 @@ System.out.println("Got output string: " + validateOutput);
 			e.printStackTrace();
 		}
 		try {
-			ValidationPlugin.log("<CONVERSION>04-PRE", 1);
+//			ValidationPlugin.log("<CONVERSION>04-PRE", 1);
 			importer.runImport(repo);
-			ValidationPlugin.log("<CONVERSION>04-AFTER", 1);
+//			ValidationPlugin.log("<CONVERSION>04-AFTER", 1);
 		} catch (SdaiException e) {
 			try {
 				transaction.endTransactionAccessAbort();
@@ -1309,9 +1313,9 @@ System.out.println("Got output string: " + validateOutput);
 		// transaction.endTransactionAccessAbort();
 		// probably need to commit to export
 		try {
-			ValidationPlugin.log("<CONVERSION>05-PRE", 1);
+//			ValidationPlugin.log("<CONVERSION>05-PRE", 1);
 			transaction.commit();
-			ValidationPlugin.log("<CONVERSION>05-AFTER", 1);
+//			ValidationPlugin.log("<CONVERSION>05-AFTER", 1);
 		} catch (SdaiException e) {
 			try {
 				transaction.endTransactionAccessAbort();
@@ -1330,9 +1334,9 @@ System.out.println("Got output string: " + validateOutput);
 			e.printStackTrace();
 		}
 		try {
-			ValidationPlugin.log("<CONVERSION>06-PRE", 1);
+//			ValidationPlugin.log("<CONVERSION>06-PRE", 1);
 			repo.exportClearTextEncoding(fXimFile);
-			ValidationPlugin.log("<CONVERSION>06-AFTER", 1);
+//			ValidationPlugin.log("<CONVERSION>06-AFTER", 1);
 		} catch (SdaiException e) {
 			try {
 				repo.closeRepository();
@@ -1350,9 +1354,9 @@ System.out.println("Got output string: " + validateOutput);
 			e.printStackTrace();
 		}
 		try {
-			ValidationPlugin.log("<CONVERSION>07-PRE", 1);
+//			ValidationPlugin.log("<CONVERSION>07-PRE", 1);
 			repo.closeRepository();
-			ValidationPlugin.log("<CONVERSION>07-AFTER", 1);
+//			ValidationPlugin.log("<CONVERSION>07-AFTER", 1);
 		} catch (SdaiException e) {
 			try {
 				repo.deleteRepository(); // maybe not
@@ -1369,9 +1373,9 @@ System.out.println("Got output string: " + validateOutput);
 			e.printStackTrace();
 		}
 		try {
-			ValidationPlugin.log("<CONVERSION>08-PRE", 1);
+//			ValidationPlugin.log("<CONVERSION>08-PRE", 1);
 			repo.deleteRepository();
-			ValidationPlugin.log("<CONVERSION>08-AFTER", 1);
+//			ValidationPlugin.log("<CONVERSION>08-AFTER", 1);
 		} catch (SdaiException e) {
 			try {
 				session.closeSession();
@@ -1387,9 +1391,9 @@ System.out.println("Got output string: " + validateOutput);
 			e.printStackTrace();
 		}
 		try {
-			ValidationPlugin.log("<CONVERSION>09-PRE", 1);
+//			ValidationPlugin.log("<CONVERSION>09-PRE", 1);
 			session.closeSession();
-			ValidationPlugin.log("<CONVERSION>09-AFTER", 1);
+//			ValidationPlugin.log("<CONVERSION>09-AFTER", 1);
 		} catch (SdaiException e) {
 			// TODO Auto-generated catch block
             fSdaiException = e;
@@ -1461,7 +1465,8 @@ System.out.println("Got output string: " + validateOutput);
 
 		if (fValidationCount == 0) {
 		
-			IMarker[] p21problems = root.findMarkers("net.jsdai.express_compiler.p21problem", true, IResource.DEPTH_INFINITE);
+//			IMarker[] p21problems = root.findMarkers("net.jsdai.express_compiler.p21problem", true, IResource.DEPTH_INFINITE);
+			IMarker[] p21problems = root.findMarkers("net.jsdai.step_editor.p21problem", true, IResource.DEPTH_INFINITE);
 
 			//monitor.setTaskName(("Creating Markers - 03"));
 			
@@ -1488,7 +1493,8 @@ System.out.println("Got output string: " + validateOutput);
 			
 			if (flagDeleteAllJSDAIMarkers) {
 				// delete also all p21 problem markers
-				IMarker[] xproblems = root.findMarkers("net.jsdai.express_compiler.expressproblem", true, IResource.DEPTH_INFINITE);
+//				IMarker[] xproblems = root.findMarkers("net.jsdai.express_compiler.expressproblem", true, IResource.DEPTH_INFINITE);
+				IMarker[] xproblems = root.findMarkers("net.jsdai.step_editor.expressproblem", true, IResource.DEPTH_INFINITE);
 				for (int i = 0; i < xproblems.length; i++) {
 					IMarker marker = xproblems[i];
 					if (marker.exists()) { // this check may not be needed

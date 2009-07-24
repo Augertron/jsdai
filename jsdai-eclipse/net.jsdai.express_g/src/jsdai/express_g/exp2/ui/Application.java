@@ -40,6 +40,8 @@ import org.eclipse.swt.printing.Printer;
 import org.eclipse.swt.printing.PrinterData;
 import org.eclipse.swt.widgets.Display;
 
+import jsdai.SExpress_g_schema.APage;
+import jsdai.SExpress_g_schema.EPage;
 import jsdai.express_g.SdaieditPlugin;
 import jsdai.express_g.editors.IExpressGEditor;
 import jsdai.express_g.editors.RepositoryHandler;
@@ -55,6 +57,10 @@ import jsdai.express_g.exp2.ui.event.PageChangeEvent;
 import jsdai.express_g.exp2.ui.event.PageListener;
 import jsdai.express_g.exp2.ui.event.StatusListener;
 import jsdai.express_g.exp2.ui.panels.IPaintPanel;
+import jsdai.lang.SdaiException;
+import jsdai.lang.SdaiIterator;
+import jsdai.lang.SdaiModel;
+import jsdai.lang.SdaiRepository;
 
 /**
  * @author Mantas Balnys
@@ -196,6 +202,12 @@ public class Application implements PropertySharing, StatusListener, CommandInvo
 	  	return nameEG;
 	  }
 
+    // RR I need to get this thing for exporting orphan diagrams
+		public IExpressGEditor getEditor() {
+			return editorPart;
+		}
+
+
 	/* (non-Javadoc)
 	 * @see jsdai.express_g.exp.ui.UINaming#getUIName()
 	 */
@@ -209,6 +221,7 @@ public class Application implements PropertySharing, StatusListener, CommandInvo
 	 * @see jsdai.express_g.exp.Named#setName(java.lang.String)
 	 */
 	public void setName(String name) {
+//System.out.println("<<Application>> setting name: " + name); 
 		this.name = name;
 	}
 
@@ -216,6 +229,7 @@ public class Application implements PropertySharing, StatusListener, CommandInvo
 	 * @see jsdai.express_g.exp.Named#getName()
 	 */
 	public String getName() {
+//System.out.println("<<Application>> getting name: " + name); 
 		return name;
 	}
 
@@ -489,6 +503,19 @@ public class Application implements PropertySharing, StatusListener, CommandInvo
   	
   	private int pageRenumber = 0;
 
+
+		// modified version - RR
+  	public void setPageRenumber_new(int page) {
+  		if (page < 0) throw new IllegalArgumentException("unallowed negative page number: " + page);
+			int new_page = page; //recalculatedPage(page);
+  		if (pageRenumber != new_page) {
+  	  		pageRenumber = new_page;
+  	  		setModified(true);
+  	  		handler.updatePageRefText();
+  	  		editorPart.updateTabNames();
+  		}
+  	}
+
   	public void setPageRenumber(int page) {
   		if (page < 0) throw new IllegalArgumentException("unallowed negative page number: " + page);
   		if (pageRenumber != page) {
@@ -502,6 +529,224 @@ public class Application implements PropertySharing, StatusListener, CommandInvo
   	public int getPageRenumber() {
   		return pageRenumber;
   	}
+
+  	public int getPageRenumber(int page) {
+  		int recalculated_page = recalculatedPage(page);
+  		//return pageRenumber;
+//System.out.println("<###> old: " + page + ", new: " + recalculated_page);
+  		return (page-recalculated_page);
+  	}
+
+  	/*
+		here we attempt to correct the page number - sechama and entity level diagram pages numbered separately
+		we we'll try this approach: the last page of a level has @ in its name, let's say, it starts with @
+		so, the next page will have number 1, etc.
+  	*/
+  	int recalculatedPage(int page) {
+//System.out.println("<RE-CALCULATING> page nr: " + page);
+  		// get the model first
+  		String model_name = null;
+  		SdaiModel model = null;
+  		RepositoryHandler rh = null;
+  		SdaiRepository rp = null;
+  		try {
+				model_name = getNameEG();
+				if (model_name != null) {
+					model_name = model_name.toUpperCase() + "_EXPRESS_G_DATA";
+  				rh = getRepositoryHandler();
+  				if (rh != null) {
+  					rp = rh.getRepository();
+  					if (rp != null) {
+  						model = rp.findSdaiModel(model_name);
+  					} else {
+//				  		System.out.println("<SETTING PAGE RENUMBER - Repository is NULL>: " + model_name);      
+  					}
+  				} else {
+//			  		System.out.println("<SETTING PAGE RENUMBER - RepositoryHandler is NULL>: " + model_name);      
+  				}
+  			} else {
+//		  		System.out.println("<SETTING PAGE RENUMBER - model name is NULL>");      
+  			}
+  			// model = getRepositoryHandler().getRepository().findSdaiModel(model_name);
+  			if (model != null) {
+  				// ok, we're in business!
+  				// we can assume that all the pages of this model belong to the same diagram (the 1st has number 0) 
+				APage pages = (APage)model.getInstances(EPage.class);
+	  			SdaiIterator i_pages = pages.createIterator();
+	  			boolean was_last = false;
+	  			int current_page_nr = 0;
+	  			int page_count = 0;
+	  			int total_count = 0;
+//System.out.println("<RE-CALCULATING> nr of pages: " + pages.getMemberCount());
+	  			for (int i = pages.getMemberCount(); i > 0; i--) {
+//	  			while (i_pages.next()) {
+//		  			EPage a_page = (EPage)pages.getCurrentMember(i_pages);
+//	  				System.out.println("<RE-CALCULATING> index: " + i);
+		  			EPage a_page = (EPage)pages.getByIndex(i);
+					  String page_name = "";
+		  			int page_number = -1;
+		  			if (a_page.testComment(null)) {
+			  			page_name = a_page.getComment(null);
+		  			}
+		  			if (a_page.testPage_number(null)) {
+			  			page_number = a_page.getPage_number(null);
+		  			}
+						if (page_name.startsWith("@")) {
+							// the last page - the next page will be 1
+							total_count++;
+							if (was_last) {
+								page_count = 1;
+							} else {
+								if (page_number > 0)
+									page_count++;
+							}							
+							was_last = true;
+						} else {
+							total_count++;
+							if (was_last) {
+								page_count = 1;
+							} else {
+								if (page_number > 0)
+									page_count++;
+							}
+							was_last = false;
+						}
+//System.out.println("<RE-CALCULATING> page name: " + page_name + ", dict.number: " + page_number + ", current nr: " + page_count);
+						if (page == page_number) {
+//System.out.println("<RE-CALCULATING> RETURN IN LOOP: " + page_count);
+							return page_count;
+						}
+						
+					} // while
+  				
+//System.out.println("<RE-CALCULATING> RETURN AFTER LOOP: " + page_count);
+  				return page_count; // why not found inside the loop?
+  				// (new Throwable()).printStackTrace();
+  			} else {
+//System.out.println("<RE-CALCULATING> RETURN MODEL NULL: " + page);
+  				return page;
+  			}
+  		} catch (SdaiException e) {
+  			// TODO Auto-generated catch block
+  			e.printStackTrace();
+//System.out.println("<RE-CALCULATING> RETURN EXCEPTION: " + page);
+				return page;
+  		}
+  		//System.out.println("<SETTING PAGE RENUMBER - model>: " + model);      
+  		//return page;	
+  	}
+
+  	public int getMaxPageRenumber(int page) {
+  		int recalculated_page = recalculatedMaxPage(page);
+  		//return pageRenumber;
+//System.out.println("<###-2> old: " + page + ", new: " + recalculated_page);
+  		return recalculated_page;
+  	}
+
+
+  	/*
+		here we attempt to calculate the max page number - sechama and entity level diagram pages numbered separately
+		we we'll try this approach: the last page of a level has @ in its name, let's say, it starts with @
+		so, the next page will have number 1, etc.
+		so, there is a separate max page for schema level and for entity level, for example
+  	*/
+  	int recalculatedMaxPage(int page) {
+//System.out.println("<RE-CALCULATING> page nr: " + page);
+  		// get the model first
+  		String model_name = null;
+  		SdaiModel model = null;
+  		RepositoryHandler rh = null;
+  		SdaiRepository rp = null;
+  		try {
+				model_name = getNameEG();
+				if (model_name != null) {
+					model_name = model_name.toUpperCase() + "_EXPRESS_G_DATA";
+  				rh = getRepositoryHandler();
+  				if (rh != null) {
+  					rp = rh.getRepository();
+  					if (rp != null) {
+  						model = rp.findSdaiModel(model_name);
+  					} else {
+//				  		System.out.println("<SETTING PAGE RENUMBER - Repository is NULL>: " + model_name);      
+  					}
+  				} else {
+//			  		System.out.println("<SETTING PAGE RENUMBER - RepositoryHandler is NULL>: " + model_name);      
+  				}
+  			} else {
+//		  		System.out.println("<SETTING PAGE RENUMBER - model name is NULL>");      
+  			}
+  			// model = getRepositoryHandler().getRepository().findSdaiModel(model_name);
+  			if (model != null) {
+  				// ok, we're in business!
+  				// we can assume that all the pages of this model belong to the same diagram (the 1st has number 0) 
+				APage pages = (APage)model.getInstances(EPage.class);
+	  			SdaiIterator i_pages = pages.createIterator();
+	  			boolean was_last = false;
+	  			int current_page_nr = 0;
+	  			int page_count = 0;
+	  			int total_count = 0;
+//System.out.println("<RE-CALCULATING> nr of pages: " + pages.getMemberCount());
+	  			for (int i = pages.getMemberCount(); i > 0; i--) {
+//	  			while (i_pages.next()) {
+//		  			EPage a_page = (EPage)pages.getCurrentMember(i_pages);
+//	  				System.out.println("<RE-CALCULATING> index: " + i);
+		  			EPage a_page = (EPage)pages.getByIndex(i);
+					  String page_name = "";
+		  			int page_number = -1;
+		  			if (a_page.testComment(null)) {
+			  			page_name = a_page.getComment(null);
+		  			}
+		  			if (a_page.testPage_number(null)) {
+			  			page_number = a_page.getPage_number(null);
+		  			}
+						if (page_name.startsWith("@")) {
+							// the last page - the next page will be 1
+							total_count++;
+							if (was_last) {
+								page_count = 1;
+							} else {
+								if (page_number > 0)
+									page_count++;
+							}							
+							was_last = true;
+							if (page <= page_number) {
+								return page_count;
+							}
+						} else {
+							total_count++;
+							if (was_last) {
+								page_count = 1;
+							} else {
+								if (page_number > 0)
+									page_count++;
+							}
+							was_last = false;
+						}
+//System.out.println("<RE-CALCULATING> page name: " + page_name + ", dict.number: " + page_number + ", current nr: " + page_count);
+						if (page == page_number) {
+//System.out.println("<RE-CALCULATING> RETURN IN LOOP: " + page_count);
+//							return page_count;
+						}
+						
+					} // while
+  				
+//System.out.println("<RE-CALCULATING> RETURN AFTER LOOP: " + page_count);
+  				return page_count; // why not found inside the loop?
+  				// (new Throwable()).printStackTrace();
+  			} else {
+//System.out.println("<RE-CALCULATING> RETURN MODEL NULL: " + page);
+  				return page;
+  			}
+  		} catch (SdaiException e) {
+  			// TODO Auto-generated catch block
+  			e.printStackTrace();
+//System.out.println("<RE-CALCULATING> RETURN EXCEPTION: " + page);
+				return page;
+  		}
+  		//System.out.println("<SETTING PAGE RENUMBER - model>: " + model);      
+  		//return page;	
+  	}
+
 
 }
 

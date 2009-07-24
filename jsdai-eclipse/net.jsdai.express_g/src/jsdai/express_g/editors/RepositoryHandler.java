@@ -126,6 +126,7 @@ public class RepositoryHandler {
 		if (repository == null)	repository = session.linkRepository("", osPath);
 
 		if (!repository.isActive()) repository.openRepository();
+//System.out.println("<<A>> see if update is invoked from init() or not - we are in init now!");
 		update();
 	}
 	
@@ -189,6 +190,7 @@ public class RepositoryHandler {
         Hashtable models2 = new Hashtable(mods.getMemberCount());
         while (it_models.next()) {
         	SdaiModel model = mods.getCurrentMember(it_models);
+//System.out.println("<<A>>Creating new ModelHandler - outside - model: " + model);
         	ModelHandler mh = new ModelHandler(this, model);
         	String name = mh.getName();
         	ModelHandler mh1 = (ModelHandler)models.get(name);
@@ -215,6 +217,7 @@ public class RepositoryHandler {
         			schemas.put(name, new Vector());
         	} else { // Unknown model
 //        		System.err.println("Unknown model format: " + model);
+//System.out.println("<<A>> unknown model format: " + model);
         	}
         }
         models = models2;
@@ -231,6 +234,17 @@ public class RepositoryHandler {
         		names[i][j + 1] = (String)diagrams.get(j);
         	i++;
     	}
+		
+// 		System.out.println("<<A>> === after update names and models === ");
+  	
+//  	for (int ix = 0; ix < names.length; ix++) {
+//	  	for (int iy = 0; iy < names[ix].length; iy++) {
+//				System.out.println("<<A>>names[" + ix + "][" + iy + "]: " + names[ix][iy]);
+//			}  	
+//  	}	 	
+// 		System.out.println("<<A>> models: " + models);
+		
+	
 	}
 	
 	public void saveAll() throws SdaiException {

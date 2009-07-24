@@ -827,7 +827,8 @@ For the global rule "nice_family" validation gives FALSE
 	
     if (file_with_the_problem != null) {
 
-			IMarker marker = file_with_the_problem.createMarker("net.jsdai.express_compiler.p21problem");
+			IMarker marker = file_with_the_problem.createMarker("net.jsdai.step_editor.p21problem");
+//			IMarker marker = file_with_the_problem.createMarker("net.jsdai.express_compiler.p21problem");
 		
 			switch (severity) {
 				case SEVERITY_ERROR:

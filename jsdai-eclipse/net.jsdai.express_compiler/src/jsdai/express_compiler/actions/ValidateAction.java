@@ -712,7 +712,8 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 
 //		monitor.setTaskName(("Creating Markers - 02"));
 		
-			IMarker[] p21problems = root.findMarkers("net.jsdai.express_compiler.p21problem", true, IResource.DEPTH_INFINITE);
+//			IMarker[] p21problems = root.findMarkers("net.jsdai.express_compiler.p21problem", true, IResource.DEPTH_INFINITE);
+			IMarker[] p21problems = root.findMarkers("net.jsdai.step_editor.p21problem", true, IResource.DEPTH_INFINITE);
 
 //			monitor.setTaskName(("Creating Markers - 03"));
 			
@@ -741,7 +742,8 @@ public class ValidateAction extends Action implements IWorkbenchWindowActionDele
 			
 			if (flagDeleteAllJSDAIMarkers) {
 				// delete also all p21 problem markers
-				IMarker[] xproblems = root.findMarkers("net.jsdai.express_compiler.expressproblem", true, IResource.DEPTH_INFINITE);
+//				IMarker[] xproblems = root.findMarkers("net.jsdai.express_compiler.expressproblem", true, IResource.DEPTH_INFINITE);
+				IMarker[] xproblems = root.findMarkers("net.jsdai.step_editor.expressproblem", true, IResource.DEPTH_INFINITE);
 				monitor.beginTask("Deleting other jsdai error markers", xproblems.length);
 				for (int i = 0; i < xproblems.length; i++) {
 					monitor.worked(1);

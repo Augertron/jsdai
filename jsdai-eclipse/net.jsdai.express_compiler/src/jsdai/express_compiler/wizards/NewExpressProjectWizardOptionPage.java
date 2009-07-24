@@ -778,7 +778,7 @@ public class NewExpressProjectWizardOptionPage extends WizardPage {
 
 
 
-
+    
     private final void createIdCaseGroup(Composite listGroup) {
 
 			Font font = listGroup.getFont();
@@ -789,7 +789,7 @@ public class NewExpressProjectWizardOptionPage extends WizardPage {
 			idCaseGroup.setLayout(layout2);
 			idCaseGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 			idCaseGroup.setFont(font);
-			idCaseGroup.setText("Use original case of identifiers");
+			idCaseGroup.setText("Treat (*REFERENCE FROM*) USE FROM as REFERENCE FROM");
 
 
 			final Button idCaseDefaultButton = new Button(idCaseGroup, SWT.RADIO | SWT.LEFT);
@@ -848,7 +848,7 @@ public class NewExpressProjectWizardOptionPage extends WizardPage {
 			idCaseNoButton.addSelectionListener(listener);
 
 		}
-
+		
 
 
 

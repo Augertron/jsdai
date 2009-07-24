@@ -21,9 +21,9 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.express_compiler.preferences;
+package jsdai.step_editor.preferences;
 
-import jsdai.express_compiler.help.IExpressCompilerHelpContextIds;
+import jsdai.step_editor.help.IStep_editorHelpContextIds;
 
 import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -1336,7 +1336,7 @@ public class P21EditorPreferences extends PreferencePage  implements IWorkbenchP
 	protected Control createContents(Composite parent) {
 
 
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, IExpressCompilerHelpContextIds.P21_EDITOR_PREFERENCE_PAGE);
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, IStep_editorHelpContextIds.P21_EDITOR_PREFERENCE_PAGE);
 
 
 		Group colorGroup = new Group(parent, SWT.NONE);

@@ -20,7 +20,6 @@
  * This software is also available under commercial licenses.
  * See also http://www.jsdai.net/
  */
-
 package jsdai.express_g.exp2.eg;
 
 import java.util.Vector;
@@ -57,6 +56,8 @@ import org.eclipse.swt.graphics.Rectangle;
 /**
  * <p>Title: JSDAI Express-G</p>
  * <p>Description: </p>
+ * <p>Copyright: Copyright (c) 2004</p>
+ * <p>Company: LKSoftWare GmbH</p>
  * @author Mantas Balnys
  * @version 1.0
  */
@@ -317,11 +318,13 @@ public class EGRelationTree extends AbstractEGRelation {
     schema.apply(g);
 	g.setFont(prop().getFont2());
 	
+//System.out.println("<<RR>>Vertical Line - x1: " + pline[1].x + ", y1: " + pline[1].y + ", x2: " + pline[2].x + ", y2: " + pline[2].y);
     g.drawLine(pline[1].x, pline[1].y, pline[2].x, pline[2].y);
 	if (special_draw) {
 	    Iterator itline = plines.iterator();
 	    while (itline.hasNext()) {
 	      Point line = (Point)itline.next();
+//System.out.println("<<RR>>Horizontal Line - x1: " + line.x + ", y1: " + line.y + ", x2: " + pline[0].x + ", y2: " + line.y);
 	      g.drawLine(line.x, line.y, pline[0].x, line.y);
 	      g.drawLine(pline[0].x, pline[0].y, pline[0].x, line.y);
 	    }
@@ -338,7 +341,33 @@ public class EGRelationTree extends AbstractEGRelation {
     		Iterator itline = plines.iterator();
     	    while (itline.hasNext()) {
     	    	Point pl = (Point)itline.next();
-        		double angle = EGToolKit.angle(new Point(pl.x, pline[1].y), pl);
+
+//System.out.println("===================");
+//System.out.println("pl.x: " + pl.x + " - pline[0].x: " + pline[0].x + " - pline[1].x: " + pline[1].x + " - pline[2].x: " + pline[2].x);
+//System.out.println("pl.y: " + pl.y + " - pline[0].y: " + pline[0].y + " - pline[1].y: " + pline[1].y + " - pline[2].y: " + pline[2].y);
+
+
+	          double angle = 0.;
+	          if (pline[0].y == pline[1].y) {
+	          	// horizontal, requires RR - example: Assembly_structure_arm
+	          	angle = EGToolKit.angle(new Point(pline[0].x,pl.y),pl); // RR - my own version 2 - works on horizontal
+	          } else 
+	          if (pline[0].y == pline[2].y) {
+	          	// also horizontal, requires RR - example: PartTaxonomySchema
+	          	angle = EGToolKit.angle(new Point(pline[0].x,pl.y),pl); // RR - my own version 2 - works on horizontal
+	          } else {
+	          	// vertical, requires original
+	        		angle = EGToolKit.angle(new Point(pl.x, pline[1].y), pl); // original - works on vertical
+	          }
+
+
+//        		double angle = EGToolKit.angle(new Point(pl.x, pline[1].y), pl); // original - works on vertical
+//System.out.println("angle original: " + angle);
+//          	double angle = EGToolKit.angle(new Point(pline[0].x,pl.y),pl); // RR - my own version 2 - works on horizontal
+//          	double angle2 = EGToolKit.angle(new Point(pline[0].x,pl.y),pl); // RR - my own version 2 - works on horizontal
+//System.out.println("angle RR: " + angle2);
+//System.out.println("-------------------");
+
         		if (!Double.isNaN(angle)) {
             		Point pp = new Point(0, 0);
             		pp.x = (int)(pl.x - circleR * 2 * Math.cos(angle + Math.PI / 6));

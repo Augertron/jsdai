@@ -83,6 +83,7 @@ public abstract class AbstractDraw implements Updateable, Selectable,
   public void firePageChanged(PageChangeEvent e) {
     Iterator iter = pageListeners.iterator();
     while (iter.hasNext()) {
+//System.out.println("<0XO><12>to page listeners: " + e);
     	((PageListener)iter.next()).pageChanged(e);
     }
   }
@@ -212,6 +213,7 @@ public abstract class AbstractDraw implements Updateable, Selectable,
     PageChangeEvent e = new PageChangeEvent(this, page_nr, pgNr);
     page_nr = pgNr;
     if (prop() != null) prop().setModified(true);
+//System.out.println("<0XO><11>sePage: " + pgNr + ", event: " + e);
     firePageChanged(e);
   }
 

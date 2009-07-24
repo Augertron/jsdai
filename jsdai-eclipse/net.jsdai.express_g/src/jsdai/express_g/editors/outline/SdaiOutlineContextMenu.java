@@ -26,6 +26,7 @@ package jsdai.express_g.editors.outline;
 import jsdai.express_g.action.RunnableAction;
 import jsdai.express_g.action.runnable.DeleteDiagram;
 import jsdai.express_g.action.runnable.DeleteSchema;
+import jsdai.express_g.action.runnable.GeneratingXml;
 import jsdai.express_g.action.runnable.NewDiagram;
 import jsdai.express_g.action.runnable.NewSchema;
 import jsdai.express_g.common.Resources;
@@ -54,6 +55,7 @@ public class SdaiOutlineContextMenu extends MenuManager implements IMenuListener
 	private RunnableAction deleteDiagram;
 	private RunnableAction newSchema;
 	private RunnableAction deleteSchema;
+	private RunnableAction generateXml;
 	
 	/**
 	 * 
@@ -88,6 +90,11 @@ public class SdaiOutlineContextMenu extends MenuManager implements IMenuListener
 	 *
 	 */
 	private void init() {
+//		generateXml = new RunnableAction("Generate XML", 
+//				Resources.getImageDescriptor(Resources.GENERATE_XML), 
+//				new GeneratingXml(editor, viewer, PropertySharing.MODE_XML));
+		//generateXml = new RunnableAction("Generate XML", 
+		//		new GeneratingXml(editor, viewer, PropertySharing.MODE_XML));
 		newDiagram = new MenuManager("New Diagram");
 		newDiagramCompleteShort = new RunnableAction("Complete Short", 
 				Resources.getImageDescriptor(Resources.MODEL_LAYOUT_COMPLETE_SHORT), 
@@ -127,6 +134,7 @@ public class SdaiOutlineContextMenu extends MenuManager implements IMenuListener
 		if (newDiagramPartialShort.isEnabled()) newDiagram.add(newDiagramPartialShort);
 		if (newDiagramCompleteLong.isEnabled()) newDiagram.add(newDiagramCompleteLong);
 		if (newDiagramPartialLong.isEnabled()) newDiagram.add(newDiagramPartialLong);
+		//generateXml.updateVisibility();
 		deleteDiagram.updateVisibility();
 		newSchema.updateVisibility();
 		deleteSchema.updateVisibility();
@@ -135,5 +143,6 @@ public class SdaiOutlineContextMenu extends MenuManager implements IMenuListener
 		if (deleteDiagram.isEnabled()) this.add(deleteDiagram);
 		if (newSchema.isEnabled()) this.add(newSchema);
 		if (deleteSchema.isEnabled()) this.add(deleteSchema);
+		//if (generateXml.isEnabled()) this.add(generateXml);
 	}
 }

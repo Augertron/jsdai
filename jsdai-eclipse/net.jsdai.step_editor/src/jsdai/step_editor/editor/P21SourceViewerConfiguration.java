@@ -22,9 +22,9 @@
  */
 
    
-package jsdai.express_compiler.p21_editor;
+package jsdai.step_editor.editor;
 
-import jsdai.express_compiler.ExpressCompilerPlugin;
+import jsdai.step_editor.Step_editorPlugin;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextAttribute;
@@ -123,7 +123,7 @@ Perhaps it is convenient to isolate all the new api calls in a single class Part
     protected P21CodeScanner getCodeScanner() {
     	if (fCodeScanner == null) {
 //      	fScanner = new ExpressCodeScanner(fColorProvider);
-      	fCodeScanner = new P21CodeScanner(ExpressCompilerPlugin.getDefault().getP21ColorProvider());
+      	fCodeScanner = new P21CodeScanner(Step_editorPlugin.getDefault().getP21ColorProvider());
       }
       return fCodeScanner;
     }
@@ -132,7 +132,7 @@ Perhaps it is convenient to isolate all the new api calls in a single class Part
     protected P21CommentScanner getCommentScanner() {
     	if (fCommentScanner == null) {
 //      	fScanner = new ExpressCodeScanner(fColorProvider);
-      	fCommentScanner = new P21CommentScanner(ExpressCompilerPlugin.getDefault().getP21ColorProvider());
+      	fCommentScanner = new P21CommentScanner(Step_editorPlugin.getDefault().getP21ColorProvider());
       }
       return fCommentScanner;
     }
@@ -140,7 +140,7 @@ Perhaps it is convenient to isolate all the new api calls in a single class Part
     protected P21ComplexInstanceScanner getComplexInstanceScanner() {
     	if (fComplexScanner == null) {
 //      	fScanner = new ExpressCodeScanner(fColorProvider);
-      	fComplexScanner = new P21ComplexInstanceScanner(ExpressCompilerPlugin.getDefault().getP21ColorProvider());
+      	fComplexScanner = new P21ComplexInstanceScanner(Step_editorPlugin.getDefault().getP21ColorProvider());
       }
       return fComplexScanner;
     }

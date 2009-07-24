@@ -102,6 +102,7 @@ public abstract class EGPageRefLocal extends EGPageRef implements LabelListener,
 	 * @see jsdai.express_g.exp2.ui.event.PageListener#pageChanged(jsdai.express_g.exp2.ui.event.PageChangeEvent)
 	 */
 	public void pageChanged(PageChangeEvent e) {
+//System.out.println("<0XO><14>pageChanged: " + e);
 		updateWrapper();
 	}
 	

@@ -21,9 +21,19 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.express_compiler.p21_editor;
+package jsdai.step_editor.editor;
 
-import org.eclipse.ui.editors.text.TextEditorActionContributor;
+import org.eclipse.jface.text.rules.IWhitespaceDetector;
 
-public class P21ActionContributor extends TextEditorActionContributor {
+/**
+ * A java aware white space detector.
+ */
+public class P21WhitespaceDetector implements IWhitespaceDetector {
+
+	/* (non-Javadoc)
+	 * Method declared on IWhitespaceDetector
+	 */
+	public boolean isWhitespace(char character) {
+		return Character.isWhitespace(character);
+	}
 }

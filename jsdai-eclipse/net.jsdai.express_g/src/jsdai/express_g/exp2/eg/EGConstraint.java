@@ -230,6 +230,7 @@ public class EGConstraint extends AbstractEGBox {
 			+ schema_name + "_" + schema_ext + "." + getName()
 			+ "\" />";
 		}
+//System.out.println("<<RR-OO>>: schema: " + schema_name + ", text: " + text);
 		return text;
 	}
 }

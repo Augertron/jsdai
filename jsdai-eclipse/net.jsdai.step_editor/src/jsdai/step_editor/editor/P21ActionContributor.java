@@ -21,29 +21,9 @@
  * See also http://www.jsdai.net/
  */
 
-package jsdai.express_compiler.p21_editor;
+package jsdai.step_editor.editor;
 
-import org.eclipse.jface.text.rules.IWordDetector;
+import org.eclipse.ui.editors.text.TextEditorActionContributor;
 
-/**
- * A P21 aware word detector.
- */
-public class P21WordDetector implements IWordDetector {
-
-	/* (non-Javadoc)
-	 * Method declared on IWordDetector.
-	 */
-	public boolean isWordPart(char character) {
-//		return Character.isJavaIdentifierPart(character);
-//		return Character.isLetterOrDigit(character) || (character == '-') || (character == '_');
-		return Character.isLetterOrDigit(character) || (character == '_');
-	}
-	
-	/* (non-Javadoc)
-	 * Method declared on IWordDetector.
-	 */
-	public boolean isWordStart(char character) {
-//		return Character.isJavaIdentifierStart(character);
-		return Character.isLetter(character) || (character == '_');
-	}
+public class P21ActionContributor extends TextEditorActionContributor {
 }

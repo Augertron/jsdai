@@ -22,13 +22,13 @@
  */
 
 
-package jsdai.express_compiler.p21_editor;
+package jsdai.step_editor.editor;
 
 //public interface P21Constants {
 public class P21Constants {
 
 
-  public static final String P21_PARTITIONER = "net.jsdai.express_compiler.p21_editor.P21Partitioner";
+  public static final String P21_PARTITIONER = "net.jsdai.step_editor.editor.P21Partitioner";
 
   public final static String P21_MULTILINE_COMMENT = "__p21_multiline_comment"; //$NON-NLS-1$
   public final static String P21_COMPLEX_INSTANCE = "__p21_complex_instance"; //$NON-NLS-1$

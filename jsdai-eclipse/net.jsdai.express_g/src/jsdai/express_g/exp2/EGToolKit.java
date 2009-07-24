@@ -45,6 +45,7 @@ import jsdai.SExpress_g_schema.EPage_reference_to;
 import jsdai.SExtended_dictionary_schema.ESchema_definition;
 import jsdai.SExtended_dictionary_schema.ESimple_type;
 import jsdai.express_g.SdaieditPlugin;
+import jsdai.express_g.editors.RepositoryHandler;
 import jsdai.express_g.exp2.Paging;
 import jsdai.express_g.exp2.eg.AbstractEGBox;
 import jsdai.express_g.exp2.eg.AbstractEGObject;
@@ -95,13 +96,24 @@ public class EGToolKit {
 	 * @param current_page current page
 	 * @return
 	 */
-	public static int renumberMaxPage(PropertySharing prop, int current_page) {
+	public static int renumberMaxPage_old(PropertySharing prop, int current_page) {
+//		int page_ren = prop.getMaxPageRenumber(current_page);
 		int page_ren = prop.getPageRenumber();
 		int page_max = prop.handler().getMaxPage();
 		if (current_page > page_ren) 
 			return page_max - page_ren;
 		else
 			return Math.min(page_ren, page_max);
+	}
+	public static int renumberMaxPage(PropertySharing prop, int current_page) {
+		int page_ren = prop.getMaxPageRenumber(current_page);
+//		int page_ren = prop.getPageRenumber();
+		// int page_max = prop.handler().getMaxPage();
+		//if (current_page > page_ren) 
+			//return page_max - page_ren;
+		//else
+			//return Math.min(page_ren, page_max);
+		return page_ren;
 	}
 	
 	/**
@@ -112,7 +124,9 @@ public class EGToolKit {
 	 * @return
 	 */
 	public static int renumber(PropertySharing prop, int page_number) {
-		int page_ren = prop.getPageRenumber();
+
+//  	int page_ren = prop.getPageRenumber();
+  	int page_ren = prop.getPageRenumber(page_number);
 		if (page_number > page_ren) 
 			return page_number - page_ren;
 		else
@@ -980,6 +994,7 @@ public class EGToolKit {
 		 */
 		public static Collection changePage(PropertySharing prop,
 				Collection items, int pgNr) {
+//System.out.println("<0XO><08>changePage: " + pgNr);
 			return changePage(prop, items.iterator(), pgNr);
 		}
 
@@ -1035,6 +1050,8 @@ public class EGToolKit {
 					}
 				}
 			}
+//System.out.println("<0XO><01>before updatePageRefs: " + changes);
+
 			updatePageRefs(prop, changes);
 			updateRelations(prop, changes);
 
@@ -1137,6 +1154,7 @@ public class EGToolKit {
 						Integer page = new Integer(wire.getRelation().getPage());
 						if (map.size() == 0) {
 							map.put(page, ref);
+//System.out.println("<0XO><08>before setPage: " + page  + ", ref: " + ref);
 							ref.setPage(page.intValue());
 							changes.add(ref);
 						} else {

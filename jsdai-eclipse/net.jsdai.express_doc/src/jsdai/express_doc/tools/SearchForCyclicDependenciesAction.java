@@ -1,7 +1,25 @@
 /*
-    Copyright (C) 2005 LKSoftWare GmbH
-*/
-
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ */
 package jsdai.express_doc.tools;
 
 import java.io.File;
@@ -18,6 +36,7 @@ import jsdai.express_doc.ExpressDocPlugin;
 //import jsdai.common.utils.IsolatedRunnableThread;
 import jsdai.express_doc.utils.IsolatedRunnableThread;
 import jsdai.common.utils.CommonUtils;
+import jsdai.common.utils.UtilMonitorImpl;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -160,7 +179,7 @@ public class SearchForCyclicDependenciesAction extends Action implements IWorkbe
 //		try {
 			if (selection instanceof IStructuredSelection) {
 
-System.out.println("in structured selection - ############");
+// System.out.println("in structured selection - ############");
 
 
 				IStructuredSelection sel = (IStructuredSelection) selection;
@@ -615,9 +634,9 @@ System.out.println("current directory: " + current_directory);
 				int subtaskCount;
 				int subtaskCounter;
 				synchronized (cycliccheckMonitor) {
-					subtaskMessage = cycliccheckMonitor.message;
-					subtaskCount = (int)cycliccheckMonitor.count;
-					subtaskCounter = (int)cycliccheckMonitor.counter;
+					subtaskMessage = cycliccheckMonitor.getMessage();
+					subtaskCount = (int)cycliccheckMonitor.getCount();
+					subtaskCounter = (int)cycliccheckMonitor.getCounter();
 					if (subtaskCounter > 0) {
 					 subtaskCount -= subtaskCounter;
 			    }
@@ -750,7 +769,7 @@ System.out.println("Got output string: " + cycliccheckOutput);
 	
 	}
 
-
+/*
 		static final class UtilMonitorImpl implements UtilMonitor {
 			String message;
 			long count;
@@ -776,6 +795,7 @@ System.out.println("Got output string: " + cycliccheckOutput);
 			public void worked(int value) {
 			}
 		}
-
+*/
+		
 }
 

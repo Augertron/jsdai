@@ -32,14 +32,14 @@ import jsdai.express_compiler.editor.ExpressColorProvider;
 import jsdai.express_compiler.editor.ExpressPartitionScanner;
 import jsdai.express_compiler.list_editor.ExpressListColorProvider;
 import jsdai.express_compiler.list_editor.ExpressListPartitionScanner;
-import jsdai.express_compiler.p21_editor.P21CodeScanner;
-import jsdai.express_compiler.p21_editor.P21ColorProvider;
+import jsdai.step_editor.editor.P21CodeScanner;
+import jsdai.step_editor.editor.P21ColorProvider;
 import jsdai.express_compiler.preferences.ExpressCompilerIOPreferences;
 import jsdai.express_compiler.preferences.ExpressCompilerPreferences;
 import jsdai.express_compiler.preferences.ExpressEditorPreferences;
 import jsdai.express_compiler.preferences.ExpressPreferences;
 import jsdai.express_compiler.preferences.ExpressProjectPreferences;
-import jsdai.express_compiler.preferences.P21EditorPreferences;
+import jsdai.step_editor.preferences.P21EditorPreferences;
 import jsdai.express_compiler.utils.ExpressCompilerUtils;
 
 import org.eclipse.ui.console.ConsolePlugin;

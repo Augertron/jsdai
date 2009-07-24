@@ -1225,7 +1225,7 @@ public class ExpressProjectCompilerPropertyPage extends PropertyPage {
     }
 
 
-
+    
     private final void createIdCaseGroup(Composite listGroup) {
       Font font = listGroup.getFont();
       Group idCaseGroup = new Group(listGroup, SWT.NONE);
@@ -1234,7 +1234,7 @@ public class ExpressProjectCompilerPropertyPage extends PropertyPage {
       idCaseGroup.setLayout(layout2);
       idCaseGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
       idCaseGroup.setFont(font);
-      idCaseGroup.setText("Use original case of identifiers");
+      idCaseGroup.setText("Treat (*REFERENCE FROM*) USE FROM as REFERENCE FROM");
 
       final Button idCaseDefaultButton = new Button(idCaseGroup, SWT.RADIO | SWT.LEFT);
       String default_case_value = "default";
@@ -1297,7 +1297,7 @@ public class ExpressProjectCompilerPropertyPage extends PropertyPage {
       idCaseYesButton.addSelectionListener(listener);
       idCaseNoButton.addSelectionListener(listener);
     }
-
+    
 
     private final void createStepmodStepmodGroup(Composite listGroup) {
       Font font = listGroup.getFont();
