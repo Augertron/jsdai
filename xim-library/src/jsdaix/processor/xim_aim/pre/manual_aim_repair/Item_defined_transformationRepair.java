@@ -41,7 +41,6 @@ import jsdai.lang.A_double;
 import jsdai.lang.SdaiException;
 import jsdai.lang.SdaiIterator;
 import jsdai.lang.SdaiModel;
-import jsdai.lang.SdaiSession;
 import jsdaix.processor.xim_aim.pre.Importer;
 
 /**

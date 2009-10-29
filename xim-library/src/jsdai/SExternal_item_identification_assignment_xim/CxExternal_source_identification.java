@@ -71,14 +71,14 @@ public class CxExternal_source_identification extends CExternal_source_identific
 	// attribute (current explicit or supertype explicit) : role, base type: entity identification_role
 /*	public static int usedinRole(EIdentification_assignment type, EIdentification_role instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a1$, domain, result);
-	}
-	public boolean testRole(EIdentification_assignment type) throws SdaiException {
-		return test_instance(a1);
-	}
-	public EIdentification_role getRole(EIdentification_assignment type) throws SdaiException {
+	}*/
+	public EIdentification_role getRole2(EIdentification_assignment type) throws SdaiException {
 		a1 = get_instance(a1);
 		return (EIdentification_role)a1;
-	}*/
+	}
+	private boolean testRole2(EIdentification_assignment type) throws SdaiException {
+		return test_instance(a1);
+	}
 	public void setRole(EIdentification_assignment type, EIdentification_role value) throws SdaiException {
 		a1 = set_instanceX(a1, value);
 	}
@@ -271,7 +271,7 @@ public class CxExternal_source_identification extends CExternal_source_identific
          				CIdentification_role.attributeName(null), externalID)
          };
          EIdentification_role eir = (EIdentification_role)
-         	LangUtils.createInstanceIfNeeded(context, CExternal_source.definition, irStructure);
+         	LangUtils.createInstanceIfNeeded(context, CIdentification_role.definition, irStructure);
          armEntity.setRole(null, eir);
 		}
 	}
@@ -308,9 +308,18 @@ public class CxExternal_source_identification extends CExternal_source_identific
 		unsetDescription(context, armEntity);
 		if(armEntity.testDescription(null)){
 			String externalID = armEntity.getDescription(null);
-			if(!armEntity.testRole(null))
-				throw new SdaiException(SdaiException.AI_NSET, " It is impossible to set description withou source_type set ");
-         EIdentification_role eir = armEntity.getRole(null);
+			boolean test = false;
+			EIdentification_role eir = null;
+			if(armEntity instanceof CxExternal_source_identification){
+				CxExternal_source_identification esi = (CxExternal_source_identification)armEntity;
+				test = ((CxExternal_source_identification)(armEntity)).testRole2(null);
+				if(test){
+					eir = (EIdentification_role)esi.getRole2(null);  
+				}
+			}
+			if(eir == null)
+				throw new SdaiException(SdaiException.AI_NSET, " It is impossible to set description without source_type set ");
+         
          // Need to search for another Identification_role
          if((eir.testDescription(null))&&(!eir.getDescription(null).equals(externalID))){
 				AEntity result = new AEntity();
@@ -341,11 +350,19 @@ public class CxExternal_source_identification extends CExternal_source_identific
 
 	public static void unsetDescription(SdaiContext context, EExternal_source_identification armEntity) throws SdaiException
 	{
-		if(armEntity.testRole(null)){
-			EIdentification_role eir = armEntity.getRole(null);
-			eir.unsetDescription(null);
+		boolean test = false;
+		if(armEntity instanceof CxExternal_source_identification){
+			CxExternal_source_identification esi = (CxExternal_source_identification)armEntity;
+			test = esi.testRole2(null);
+			EIdentification_role eir = esi.getRole2(null);
+			if(eir != null){
+				eir.unsetDescription(null);
+			}
 		}
-
+		// TODO - support other subtypes when they will be implemented in Cx classes (document_location_identification (DOCUMENT_DEFINITION_XIM), file_location_identification (FILE_IDENTIFICATION_XIM))
+		else{
+			armEntity.findEntityInstanceSdaiModel().getRepository().getSession().printlnSession("Not supported subtype of External_source_identification "+armEntity);
+		}
 	}
 
 	/**

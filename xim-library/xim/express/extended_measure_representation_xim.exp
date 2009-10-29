@@ -42,8 +42,11 @@ USE FROM qualified_measure_schema(
   value_qualifier);
 
 ENTITY Measure_item_with_precision
-  (* CONNOTATIONAL *) SUBTYPE OF (measure_representation_item);
-  significant_digits : INTEGER;
+  (* CONNOTATIONAL *) SUBTYPE OF (measure_representation_item, qualified_representation_item);
+    significant_digits : INTEGER;
+  DERIVE
+    (* Overlaps with significant_digits *)
+    SELF\qualified_representation_item.qualifiers : SET [1:?] OF value_qualifier := ?;
 END_ENTITY;
 
 ENTITY Value_limit

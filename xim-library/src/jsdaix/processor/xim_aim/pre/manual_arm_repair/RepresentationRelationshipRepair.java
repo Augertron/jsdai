@@ -23,8 +23,12 @@
 
 package jsdaix.processor.xim_aim.pre.manual_arm_repair;
 
+import jsdai.SAic_advanced_brep.EAdvanced_brep_shape_representation;
 import jsdai.SAic_associative_draughting_elements.EDraughting_model;
 import jsdai.SAssembly_structure_xim.ENext_assembly_usage_occurrence_relationship_armx;
+import jsdai.SConstruction_geometry_mim.AConstructive_geometry_representation_relationship;
+import jsdai.SConstruction_geometry_mim.CConstructive_geometry_representation_relationship;
+import jsdai.SConstruction_geometry_mim.EConstructive_geometry_representation_relationship;
 import jsdai.SContextual_shape_positioning_xim.EGeometric_relationship_with_placement_transformation;
 import jsdai.SGeneric_product_occurrence_xim.EDefinition_based_product_occurrence;
 import jsdai.SLayered_interconnect_complex_template_xim.EPhysical_unit_keepout_shape_allocation_to_stratum_stack_armx;
@@ -34,6 +38,8 @@ import jsdai.SProduct_property_representation_schema.AContext_dependent_shape_re
 import jsdai.SProduct_property_representation_schema.AShape_definition_representation;
 import jsdai.SProduct_property_representation_schema.CContext_dependent_shape_representation;
 import jsdai.SProduct_property_representation_schema.CShape_definition_representation;
+import jsdai.SProduct_property_representation_schema.CShape_representation;
+import jsdai.SProduct_property_representation_schema.CShape_representation_relationship;
 import jsdai.SProduct_property_representation_schema.EContext_dependent_shape_representation;
 import jsdai.SProduct_property_representation_schema.EShape_definition_representation;
 import jsdai.SProduct_property_representation_schema.EShape_representation;
@@ -61,6 +67,9 @@ public final class RepresentationRelationshipRepair {
 	
 	public static void run(ASdaiModel models, Importer importer)
 		throws SdaiException {
+		
+		processCGRR(models, importer);
+		preossSRAndProductStructure(models, importer);
 		
 		for (SdaiIterator i = models.createIterator(); i.next();) {
 			SdaiModel model = models.getCurrentMember(i);
@@ -203,4 +212,87 @@ public final class RepresentationRelationshipRepair {
 		}
 		return null;
 	}
+	
+	/**
+	 * This class should implement bug http://bugzilla.lksoft.lt/show_bug.cgi?id=3283.
+	 */
+	public static void processCGRR(ASdaiModel models, Importer importer)throws SdaiException {
+		for (SdaiIterator i = models.createIterator(); i.next();) {
+			SdaiModel model = models.getCurrentMember(i);
+			AConstructive_geometry_representation_relationship acgrr = (AConstructive_geometry_representation_relationship) model.getInstances(CConstructive_geometry_representation_relationship.definition);
+			for (SdaiIterator j = acgrr.createIterator(); j.next();) {
+				EConstructive_geometry_representation_relationship ecgrr = acgrr.getCurrentMember(j);
+				ERepresentation er = ecgrr.getRep_2(null);
+				ARepresentation_relationship arr = new ARepresentation_relationship();
+				CRepresentation_relationship.usedinRep_2(null, er, models, arr);
+				for (SdaiIterator k = arr.createIterator(); k.next();) {
+					ERepresentation_relationship err = arr.getCurrentMember(k);
+					if(err != ecgrr){
+						if((err.getInstanceType() == CRepresentation_relationship.definition)||
+						   (err.getInstanceType() == CShape_representation_relationship.definition)){
+							if(err.getRep_1(null) == ecgrr.getRep_1(null)){
+								importer.logMessage(" Deleting "+err+", which is duplicate of "+ecgrr);
+								err.deleteApplicationInstance();
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * This class should implement bug http://bugzilla.lksoft.lt/show_bug.cgi?id=3394.
+	 */
+	public static void preossSRAndProductStructure(ASdaiModel models, Importer importer)throws SdaiException {
+		for (SdaiIterator i = models.createIterator(); i.next();) {
+			SdaiModel model = models.getCurrentMember(i);
+			AShape_definition_representation asdr = (AShape_definition_representation) model.getInstances(CShape_definition_representation.definition);
+			top: for (SdaiIterator j = asdr.createIterator(); j.next();) {
+				EShape_definition_representation esdr = asdr.getCurrentMember(j);
+				if(esdr.testUsed_representation(null)){
+					ERepresentation er = esdr.getUsed_representation(null);
+					// our product structure points to something more specific than shape_representation
+					if((!er.isInstanceOf(CShape_representation.class))&&(!er.isInstanceOf(CRepresentation.class))){
+						ARepresentation ar = new ARepresentation();
+						CRepresentation.usedinContext_of_items(null, er.getContext_of_items(null), models, ar);
+						
+						ARepresentation_relationship arr1 = new ARepresentation_relationship();
+						CRepresentation_relationship.usedinRep_1(null, er, models, arr1);
+						for(int c=1,cm=ar.getMemberCount(); c<=cm; c++){
+							for(int r=1,rm=arr1.getMemberCount(); r<=rm; r++){
+								ERepresentation_relationship err = arr1.getByIndex(r);
+								ERepresentation erTemp = ar.getByIndex(c);
+								if(err.getRep_2(null) == erTemp){
+									// finally found it
+									if(erTemp.isInstanceOf(CShape_representation.class)){
+										esdr.setUsed_representation(null, erTemp);
+										importer.logMessage(" Changed value for attribute Used_representation for entity "+esdr);
+										continue top;
+									}
+								}
+							}
+						}	
+						ARepresentation_relationship arr2 = new ARepresentation_relationship();
+						CRepresentation_relationship.usedinRep_2(null, er, models, arr2);
+						for(int c=1,cm=ar.getMemberCount(); c<=cm; c++){
+							for(int r=1,rm=arr2.getMemberCount(); r<=rm; r++){
+								ERepresentation_relationship err = arr2.getByIndex(r);
+								ERepresentation erTemp = ar.getByIndex(c);
+								if(err.getRep_1(null) == erTemp){
+									// finally found it
+									if(erTemp.isInstanceOf(EShape_representation.class)){
+										esdr.setUsed_representation(null, erTemp);
+										importer.logMessage(" Changed value for attribute Used_representation for entity "+esdr);
+										continue top;
+									}
+								}
+							}
+						}						
+					}
+				}
+			}
+		}
+	}
+	
 }

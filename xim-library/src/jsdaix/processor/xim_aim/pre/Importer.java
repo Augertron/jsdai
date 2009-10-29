@@ -86,6 +86,7 @@ import jsdaix.processor.xim_aim.pre.manual_arm_repair.AssemblyRepair;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.Closed_curveFixer;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.DefinitionsRepair;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.FakedMappingCleaner;
+import jsdaix.processor.xim_aim.pre.manual_arm_repair.IncorrectReuseOfContextRepair;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.MRIDowngrader;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.PartsRepair;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.RepresentationRelationshipRepair;
@@ -115,6 +116,7 @@ public class Importer {
 	static PrintStream pout, perr;
 	static BufferedOutputStream bout, berr;
 	static FileOutputStream fout, ferr;
+  static boolean flag_from_initAsRunnable = false;
 
 
 	/**
@@ -127,11 +129,20 @@ public class Importer {
 	SdaiSession session;
 	
 	public void logMessage(String message)throws SdaiException{
-		session.printlnSession(message);
+		
+		if (flag_from_initAsRunnable) {
+			System.out.println(message);
+		} else {
+			session.printlnSession(message);
+		}
 	}
 
 	public void errorMessage(String message)throws SdaiException{
-		session.printlnSession(messagePrefix+message);
+		if (flag_from_initAsRunnable) {
+			System.err.println(messagePrefix+message);
+		} else {
+			session.printlnSession(messagePrefix+message);
+		}
 	}
 	
 	private final EEntity_definition[] typesToRemove = {
@@ -221,9 +232,11 @@ public class Importer {
 		SdaiTransaction transaction = importer.startTransactionReadWriteAccess(session);
 
 		SdaiRepository repo = session.importClearTextEncoding("", stepFileName, null);
-		importer.errorMessage(" Importing time is "+(System.currentTimeMillis()-time)/1000+" seconds");
-		 
+// RR - moving errorMesssage down after runImport() so that session is set correctly before errorMessage() is used
+//    importer.errorMessage(" Importing time is "+(System.currentTimeMillis()-time)/1000+" seconds");
+    long time2 = System.currentTimeMillis();
 		importer.runImport(repo);
+    importer.errorMessage(" Importing time is "+(time2-time)/1000+" seconds");
 		importer.errorMessage(" Time after processing is "+(System.currentTimeMillis()-time)/1000+" seconds");
 		transaction.commit();
 		// -- Wrap up --
@@ -322,6 +335,7 @@ public class Importer {
 		DefinitionsRepair.run(models, this);
 		AssemblyRepair.run(models, this);
 		RepresentationRelationshipRepair.run(models, this);
+		IncorrectReuseOfContextRepair.run(models, this);
 		StylingModelRepair.runAfterMapping(models, this);
 		// System.out.println(" mapping operations + POST processing time is "+(System.currentTimeMillis()-timePure)/1000+" seconds"+inputRepo.getSessionIdentifier("#436"));
 		// repoAP210Extended.deleteRepository();
@@ -361,6 +375,8 @@ public class Importer {
   				// main(args, null);
   				try {
 
+	  				flag_from_initAsRunnable = true;
+
 						fout = new FileOutputStream(args[0]+"_log_conversion");
 						bout = new BufferedOutputStream(fout);
 						pout = new PrintStream(bout);
@@ -382,6 +398,8 @@ public class Importer {
 
         	} finally {
            
+	  				flag_from_initAsRunnable = false;
+
 						pout.flush();
 						pout.close();
 
