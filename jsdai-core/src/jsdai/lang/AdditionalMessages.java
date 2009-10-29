@@ -86,6 +86,7 @@ class AdditionalMessages {
 	static final String AT_INEX = "Error: inverse attribute was not found in the entity";
 	static final String AT_VANX = "Error: attribute value does not exist";
 	static final String AT_VAWR = "Error: wrong type of the attribute value";
+	static final String EI_ROMD = "Error: entity instance to be deleted is referenced by an instance in a Read-Only model.";
 //   CAggregate and other aggregate classes
 	static final String AI_BVL  = "Aggregate instance bound is violated";
 	static final String AI_CREF = "Creation of the aggregate instance failed"; // also in SdaiModel class

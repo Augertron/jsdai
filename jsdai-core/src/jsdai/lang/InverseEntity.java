@@ -272,6 +272,7 @@ break;
 			}
 		}
 		CEntity instance;
+		SdaiModel ref_owner;
 		while (o != null) {
 			if (o instanceof Inverse) {
 				Inverse inv = (Inverse) o;
@@ -291,8 +292,16 @@ break;
 						instance.owning_model.repository.session.undoRedoModifyPrepare(instance);
 					}
 					if (inst != old || allow_self_refs) {
-						inst.changeReferences(old, newer);
 						if (inst instanceof CEntity) {
+							instance = (CEntity)inst;
+							ref_owner = instance.owning_model;
+							if (ref_owner != null && ref_owner.mode == SdaiModel.READ_ONLY) {
+								String base = SdaiSession.line_separator + AdditionalMessages.EI_ROMD + 
+								SdaiSession.line_separator + AdditionalMessages.RD_MODL + ref_owner.name + 
+								SdaiSession.line_separator + AdditionalMessages.RD_INST + instance.instance_identifier;
+								throw new SdaiException(SdaiException.MX_NRW, base);
+							}
+							inst.changeReferences(old, newer);
 //CEntity inst_in_list = (CEntity)inst;
 //if (inst_in_list.owning_model == null) {
 //CEntity inst8695 = (CEntity)((CEntity)this).owning_model.repository.getSessionIdentifier("#8695");
@@ -302,16 +311,18 @@ break;
 //CEntity this_inst = (CEntity)this;
 //System.out.println("InverseEntity !!!!! instance - owner of inverse list: " + this_inst);
 //}
-							((CEntity)inst).modified();
+							instance.modified();
 							if (print_to_logo) {
 								if (old_inst.owning_model != null) {
 									printWarningToLogo(old_inst.owning_model.repository.session, AdditionalMessages.RD_MINS, 
-										((CEntity)old).instance_identifier, ((CEntity)inst).instance_identifier);
+										((CEntity)old).instance_identifier, instance.instance_identifier);
 								} else {
 									printWarningToLogo(null, AdditionalMessages.RD_MINS, 
-										((CEntity)old).instance_identifier, ((CEntity)inst).instance_identifier);
+										((CEntity)old).instance_identifier, instance.instance_identifier);
 								}
 							}
+						} else {
+							inst.changeReferences(old, newer);
 						}
 					}
 				}
@@ -331,18 +342,28 @@ break;
 						instance.owning_model.repository.session.undoRedoModifyPrepare(instance);
 					}
 					if (inst != old || allow_self_refs) {
-						inst.changeReferences(old, newer);
 						if (inst instanceof CEntity) {
-							((CEntity)inst).modified();
+							instance = (CEntity)inst;
+							ref_owner = instance.owning_model;
+							if (ref_owner != null && ref_owner.mode == SdaiModel.READ_ONLY) {
+								String base = SdaiSession.line_separator + AdditionalMessages.EI_ROMD + 
+								SdaiSession.line_separator + AdditionalMessages.RD_MODL + ref_owner.name + 
+								SdaiSession.line_separator + AdditionalMessages.RD_INST + instance.instance_identifier;
+								throw new SdaiException(SdaiException.MX_NRW, base);
+							}
+							inst.changeReferences(old, newer);
+							instance.modified();
 							if (print_to_logo) {
 								if (old_inst.owning_model != null) {
 									printWarningToLogo(old_inst.owning_model.repository.session, AdditionalMessages.RD_MINS, 
-										((CEntity)old).instance_identifier, ((CEntity)inst).instance_identifier);
+										((CEntity)old).instance_identifier, instance.instance_identifier);
 								} else {
 									printWarningToLogo(null, AdditionalMessages.RD_MINS, 
-										((CEntity)old).instance_identifier, ((CEntity)inst).instance_identifier);
+										((CEntity)old).instance_identifier, instance.instance_identifier);
 								}
 							}
+						} else {
+							inst.changeReferences(old, newer);
 						}
 					}
 				}

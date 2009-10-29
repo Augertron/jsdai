@@ -27,10 +27,15 @@ import jsdai.dictionary.*;
 import java.io.*;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class PhFileWriter {
 
 	private static final int INSTANCE_ID_LENGTH = (Long.toString(Long.MAX_VALUE)).length() + 2;
+	private static final Pattern BUILD_ID_PATTERN =
+		Pattern.compile("(^[0-9]{4})-([0-9]{2})-([0-9]{2})_([0-9]{2})-([0-9]{2})-([0-9]{2})$");
+	private static final String BUILD_ID_REPLACEMENT = "$1-$2-$3T$4:$5:$6";
 	DataOutputStream output_stream;
 	int row_length;
 	Print_instance print_inst;
@@ -295,7 +300,22 @@ class PhFileWriter {
 		output_stream.write(RETURN);
 		writeString(" * " + HEADER_COMMENT_2);
 		output_stream.write(RETURN);
-		writeString(" * " + HEADER_COMMENT_3 + Implementation.version);
+
+		// Write runtime version
+		writeString(" * " + HEADER_COMMENT_3);
+		boolean useFallbackRuntimeVersion = true;
+		Package runtimePackage = PhFileWriter.class.getPackage();
+		if(runtimePackage != null) {
+			String specVersion = runtimePackage.getSpecificationVersion();
+			String implVersion = runtimePackage.getImplementationVersion();
+			if(specVersion != null && implVersion != null) {
+				writeString("Version " + specVersion + " " + formatAsDate(implVersion));
+				useFallbackRuntimeVersion = false;
+			}
+		}
+		if(useFallbackRuntimeVersion) {
+			writeString(Implementation.version);
+		}
 		output_stream.write(RETURN);
 
 		// Write library versions
@@ -324,7 +344,7 @@ class PhFileWriter {
 						String implVersion = schemaPackage.getImplementationVersion();
 						if(implVersion != null) {
 							schemaVersionBuf.append(specVersion != null ? " " : " Version ");
-							schemaVersionBuf.append(implVersion);
+							schemaVersionBuf.append(formatAsDate(implVersion));
 						}
 						String schemaVersion = schemaVersionBuf.toString();
 						if(!usedSchemaVersions.contains(schemaVersion)) {
@@ -1254,6 +1274,11 @@ if (SdaiSession.debug2) System.out.println("  WRITER index = " + index);
 				System.out.print(")  ");*/
 				break;
 			}
+	}
+
+	private static String formatAsDate(String implVersion) {
+		Matcher buildIdMatcher = BUILD_ID_PATTERN.matcher(implVersion);
+		return buildIdMatcher.replaceAll(BUILD_ID_REPLACEMENT);
 	}
 
 }
