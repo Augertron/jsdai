@@ -470,6 +470,65 @@ if (SdaiSession.debug2) System.out.println("  SIMPLE type  " + count);
 	}
 
 
+	boolean search_entity_select(CEntity_definition def_for_value) throws SdaiException {
+		AEntity sels;
+		if (express_type >= DataType.EXTENSIBLE_SELECT && express_type <= DataType.ENT_EXT_EXT_SELECT) {
+			sels = ((EExtensible_select_type)this).getSelections(null, null);
+		} else {
+			sels = ((ESelect_type)this).getSelections(null);
+		}
+
+		if (sels.myLength < 0) {
+			sels.resolveAllConnectors();
+		}
+		Object [] myDataA = null;
+		if (sels.myLength > 1) {
+			myDataA = (Object [])sels.myData;
+		}
+		boolean res = false;
+		for (int i = 0; i < sels.myLength; i++) {
+			DataType dom;
+			if (sels.myLength == 1) {
+				dom = (DataType)sels.myData;
+			} else {
+				dom = (DataType)myDataA[i];
+			}
+			if (dom.express_type == DataType.ENTITY) {
+				if (def_for_value.isSubtypeOf((CEntity_definition)dom)) {
+					return true;
+				}
+			} else if (dom.express_type >= DataType.LIST && dom.express_type <= DataType.AGGREGATE) {
+				res = ((AggregationType)dom).search_entity_aggregate(def_for_value);
+				if (res) {
+					return true;
+				}
+			} else if (dom.express_type >= DataType.SELECT && dom.express_type <= DataType.ENT_EXT_EXT_SELECT) {
+				res = ((SelectType)dom).search_entity_select(def_for_value);
+				if (res) {
+					return true;
+				}
+			} else if (dom.express_type != DataType.DEFINED_TYPE) {
+				continue;
+			}
+			while (dom.express_type == DataType.DEFINED_TYPE) {
+				dom = (DataType)((CDefined_type)dom).getDomain(null);
+			}
+			if (dom.express_type >= DataType.SELECT && dom.express_type <= DataType.ENT_EXT_EXT_SELECT) {
+				res = ((SelectType)dom).search_entity_select(def_for_value);
+				if (res) {
+					return true;
+				}
+			} else {
+				res = dom.search_entity(def_for_value);
+				if (res) {
+					return true;
+				}
+			}
+		}
+		return res;
+	}
+
+
 /**
 	Checks if the specified entity is valid for the specified select type,
 	that is, belongs to its (or of a select type derived from it) selections list.

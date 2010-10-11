@@ -200,6 +200,7 @@ public class Value {
 	static final int NUMBER_OF_TYPES = 16;
 
 	static final int NUMBER_OF_UNQUALIFIED_TYPES = 11;
+	private static final int WRONG_VALUE_TAG = -99;
 
 //	private static final boolean use_asterisk = false;
 	private static final boolean use_asterisk = true;
@@ -589,6 +590,52 @@ public class Value {
 	}
 
 
+	void find_user(CEntity user, CEntity target, AEntity users) throws SdaiException {
+		switch (tag) {
+			case PhFileReader.TYPED_PARAMETER:
+				nested_values[0].find_user(user, target, users);
+				break;
+			case PhFileReader.ENTITY_REFERENCE:
+				if (reference == target) {
+					if (users.myType == null || users.myType.express_type == DataType.LIST) {
+						users.addAtTheEnd(user, null);
+					} else {
+						users.setForNonList(user, users.myLength, null, null);
+					}
+				}
+				break;
+			case PhFileReader.EMBEDDED_LIST:
+				for (int i = 0; i < length; i++) {
+					nested_values[i].find_user(user, target, users);
+				}
+				break;
+			default:
+		}
+	}
+
+
+	boolean user_exists(CEntity target) throws SdaiException {
+		switch (tag) {
+			case PhFileReader.TYPED_PARAMETER:
+				return nested_values[0].user_exists(target);
+			case PhFileReader.ENTITY_REFERENCE:
+				if (reference == target) {
+					return true;
+				}
+				break;
+			case PhFileReader.EMBEDDED_LIST:
+				for (int i = 0; i < length; i++) {
+					boolean res = nested_values[i].user_exists(target);
+					if (res) {
+						return true;
+					}
+				}
+				break;
+			default:
+		}
+		return false;
+	}
+
 
 
 //--------------------------------  get methods  ------------------------------
@@ -899,7 +946,9 @@ public class Value {
 		if (tag == PhFileReader.ENTITY_REFERENCE) {
 			if (reference instanceof CEntity) {
 				CEntity ref = (CEntity)reference;
-				inst.addToInverseList(ref);
+				if (!(ref.owning_model != null && ref.owning_model.optimized)) {
+					inst.addToInverseList(ref);
+				}
 				return ref;
 			} else {
 				return (SdaiModel.Connector)reference;
@@ -979,7 +1028,10 @@ if (SdaiSession.debug2) System.out.println("   DEFINED TYPE: " + def.getName(nul
 			case PhFileReader.ENTITY_REFERENCE:
 					sel_number = 1;
 					if (reference instanceof CEntity && inst != null) {
-						inst.addToInverseList((CEntity)reference);
+						CEntity ref = (CEntity)reference;
+						if (!(ref.owning_model != null && ref.owning_model.optimized)) {
+							inst.addToInverseList(ref);
+						}
 					}
 					return reference;
 			case PhFileReader.ENTITY_REFERENCE_SPECIAL:
@@ -1455,7 +1507,10 @@ if (SdaiSession.debug2) System.out.println("  Value  domain type: " + domain.get
 		switch (tag) {
 			case PhFileReader.ENTITY_REFERENCE:
 					if (inst != null && inverse && reference instanceof CEntity) {
-						inst.addToInverseList((CEntity)reference);
+						CEntity ref = (CEntity)reference;
+						if (!(ref.owning_model != null && ref.owning_model.optimized)) {
+							inst.addToInverseList(ref);
+						}
 					}
 					return reference;
 			case PhFileReader.ENTITY_REFERENCE_SPECIAL:
@@ -19078,6 +19133,159 @@ System.out.println("Value CASE OF NEGATIVE  val1.v_type: " + val1.v_type +
 				return true;
 		}
 		return false;
+	}
+
+
+	final void check_aggregate(CExplicit_attribute eattr, long instance_identifier, 
+			String ent_name_except, SdaiSession session) throws SdaiException, java.io.IOException {
+
+		DataType type = (DataType)eattr.getDomain(null);
+		while (type.express_type == DataType.DEFINED_TYPE) {
+			type = (DataType)((CDefined_type)type).getDomain(null);
+		}
+		if (type.express_type < DataType.LIST || type.express_type > DataType.AGGREGATE) {
+			return;
+		}
+		EAggregation_type aggr_type = (EAggregation_type)type;
+		check_aggr_elements(aggr_type, instance_identifier, ent_name_except, session);
+	}
+
+
+	private final boolean check_aggr_elements(EAggregation_type aggr_type, long instance_identifier, 
+			String ent_name_except, SdaiSession session)
+			throws SdaiException, java.io.IOException {
+		int i;
+		boolean repaired = false;
+
+		DataType el_type = (DataType)aggr_type.getElement_type(null);
+		while (el_type.express_type == DataType.DEFINED_TYPE) 	{
+			el_type = (DataType)((CDefined_type)el_type).getDomain(null);
+		}
+		if (el_type.express_type >= DataType.SELECT && el_type.express_type <= DataType.ENT_EXT_EXT_SELECT) {
+			return repaired;
+		}
+		if (el_type.express_type >= DataType.LIST && el_type.express_type <= DataType.AGGREGATE) {
+			for (i = 0; i < length; i++) {
+				boolean res = nested_values[i].check_aggr_elements((EAggregation_type)el_type, instance_identifier, 
+					ent_name_except, session);
+				if (res) {
+					repaired = true;
+				}
+			}
+			return repaired;
+		}
+		boolean viol_found = false;
+		for (i = 0; i < length; i++) {
+			if (nested_values[i].compare_against_type(el_type)) {
+				continue;
+			}
+			viol_found = true;
+			nested_values[i].sel_number = WRONG_VALUE_TAG;
+		}
+		if (!viol_found) {
+			return repaired;
+		}
+		String element_type = el_type.get_data_type_name();
+		int k = 0;
+		for (i = 0; i < length; i++) {
+			if (nested_values[i].sel_number != WRONG_VALUE_TAG) {
+				nested_values[k] = nested_values[i];
+				k++;
+				continue;
+			}
+			nested_values[i].sel_number = 0;
+         String value_type = nested_values[i].get_value_type_name();
+         int index = i + 1;
+			String text = AdditionalMessages.RD_IMAG + 
+					SdaiSession.line_separator + AdditionalMessages.RD_INST + instance_identifier +
+					SdaiSession.line_separator + AdditionalMessages.RD_ENT + ent_name_except.toUpperCase() + 
+					SdaiSession.line_separator + AdditionalMessages.RD_MEIN + index + 
+					SdaiSession.line_separator + AdditionalMessages.RD_MEAT + value_type + 
+					SdaiSession.line_separator + AdditionalMessages.RD_MEDT + element_type; 
+			if (session != null && session.logWriterSession != null) {
+				session.printlnSession(text);
+			} else {
+				SdaiSession.println(text);
+			}
+		}
+		length = k;
+		return true;
+	}
+
+
+	private final boolean compare_against_type(DataType el_type) throws SdaiException, java.io.IOException {
+		switch (tag) {
+			case PhFileReader.MISSING:
+			case PhFileReader.REDEFINE:
+				return true;
+			case PhFileReader.INTEGER:
+				if (el_type.express_type == DataType.INTEGER || el_type.express_type == DataType.REAL) {
+					return true;
+				}
+				return false;
+			case PhFileReader.REAL:
+				if (el_type.express_type == DataType.REAL) {
+					return true;
+				}
+				return false;
+			case PhFileReader.LOGICAL:
+				if (el_type.express_type == DataType.LOGICAL) {
+					return true;
+				}
+				return false;
+			case PhFileReader.ENUM:
+				if (el_type.express_type >= DataType.ENUMERATION && el_type.express_type <= DataType.EXTENDED_EXTENSIBLE_ENUM) {
+					return true;
+				}
+				return false;
+			case PhFileReader.STRING:
+				if (el_type.express_type == DataType.STRING) {
+					return true;
+				}
+				return false;
+			case PhFileReader.BINARY:
+				if (el_type.express_type == DataType.BINARY) {
+					return true;
+				}
+				return false;
+			case PhFileReader.TYPED_PARAMETER:
+				return nested_values[0].compare_against_type(el_type);
+			case PhFileReader.ENTITY_REFERENCE:
+			case PhFileReader.ENTITY_REFERENCE_SPECIAL:
+				if (el_type.express_type == DataType.ENTITY) {
+					return true;
+				}
+				return false;
+			case PhFileReader.EMBEDDED_LIST:
+				return false;
+		}
+		return true;
+	}
+
+
+	final String get_value_type_name() throws SdaiException, java.io.IOException {
+		switch (tag) {
+			case PhFileReader.INTEGER:
+				return "integer";
+			case PhFileReader.REAL:
+				return "real";
+			case PhFileReader.LOGICAL:
+				return "logical";
+			case PhFileReader.ENUM:
+				return "enumeration";
+			case PhFileReader.STRING:
+				return "string";
+			case PhFileReader.BINARY:
+				return "binary";
+			case PhFileReader.TYPED_PARAMETER:
+				return nested_values[0].get_value_type_name();
+			case PhFileReader.ENTITY_REFERENCE:
+			case PhFileReader.ENTITY_REFERENCE_SPECIAL:
+				return "entity instance";
+			case PhFileReader.EMBEDDED_LIST:
+				return "aggregate";
+		}
+		return "";
 	}
 
 

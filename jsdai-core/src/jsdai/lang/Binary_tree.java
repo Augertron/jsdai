@@ -163,7 +163,7 @@ class Binary_tree {
 		boolean found = false;
 		if (node.content instanceof CLateBindingEntity) {
 			CLateBindingEntity forward = (CLateBindingEntity)node.content;
-			forward.changeInverseReferences(forward, null, false, true, false);
+			forward.changeInverseReferences(forward, null, true, false);
 			found = true;
 		}
 		boolean left = false, right = false;
@@ -453,7 +453,7 @@ class Binary_tree {
 		}
 		insertion_node.content = objec;
 		objec.inverseList = forward.inverseList;
-		forward.changeInverseReferences(forward, objec, false, false, false);
+		forward.changeInverseReferences(forward, objec, false, false);
 		return forward;
 	}
 

@@ -116,4 +116,14 @@ public abstract class AggregationType extends DataType implements EAggregation_t
 	}
 
 
+	boolean search_entity_aggregate(CEntity_definition def_for_value) throws SdaiException {
+		if (select == null) {
+			DataType type = (DataType)((EAggregation_type)this).getElement_type(null);
+			return type.search_entity(def_for_value);
+		} else {
+			return select.search_entity_select(def_for_value);
+		}
+	}
+
+
 }

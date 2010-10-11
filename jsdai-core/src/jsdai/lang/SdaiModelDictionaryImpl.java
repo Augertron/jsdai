@@ -448,7 +448,7 @@ class SdaiModelDictionaryImpl extends SdaiModel {
 			EDeclaration decl = (EDeclaration)instances[i];
 			CEntity interfacedType = (CEntity)decl.getDefinition(null);
 			SdaiModel m = interfacedType.owning_model;
-			if (!m.initialized) {
+			if (!m.initialized && !m.early_binding_linking) {
 				if (iInterfacedModel >= aInterfacedModel.length) {
 					int new_length = iInterfacedModel * 2;
 					SdaiModel [] new_mods = new SdaiModel[new_length];

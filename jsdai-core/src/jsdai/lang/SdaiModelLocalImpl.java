@@ -91,8 +91,12 @@ if (SdaiSession.debug) System.out.println("model deleted = " + identifier);
 				exists = true;
 //				deleteContents(true);
 				refreshContents();
+//for (int i = 0; i < instances_sim.length; i++) {
+//lengths[i] = 0;
+//}
+//instances_sim = null;
 				long max_ident = loadLocal(old_mode);
-                if (repository.getPersistentLabel() < max_ident) {
+				if (repository.getPersistentLabel() < max_ident) {
 					repository.setNextPersistentLabel(max_ident+1);
 				}
 			} else if (repository.model_deleted && (mode & MODE_MODE_MASK) == NO_ACCESS) {
@@ -219,6 +223,7 @@ if (SdaiSession.debug) System.out.println("model deleted = " + identifier);
     }
 
 	private void startAccess(int mode_to_start) throws SdaiException {
+//setOptimized(true);
 		if (repository == null) {
 			throw new SdaiException(SdaiException.MO_NEXS);
 		}
@@ -315,7 +320,7 @@ if (SdaiSession.debug) System.out.println("model deleted = " + identifier);
 		FileInputStream file;
 		long res;
 		try {
-            handle = new File((String)repository.location, "m" + identifier);
+			handle = new File((String)repository.location, "m" + identifier);
 			if(handle.exists()) {
 				file = new FileInputStream(handle);
 				DataInput stream = new DataInputStream( new BufferedInputStream(file));
@@ -560,16 +565,18 @@ if (SdaiSession.debug) System.out.println("model deleted = " + identifier);
                     }
                 }
             }
-            if (ind >= 0) {
-                if (owning_instance == null) {
-                    return inst;
-                }
-                if (remove_con) {
-                    inst.inverseAdd(owning_instance);
-                    disconnect();
-                }
-                return inst;
-            }
+				if (ind >= 0) {
+					if (owning_instance == null) {
+						return inst;
+					}
+					if (remove_con) {
+						if (!(inst.owning_model != null && inst.owning_model.optimized)) {
+							inst.inverseAdd(owning_instance);
+						}
+						disconnect();
+					}
+					return inst;
+				}
 			if(aborting) {
 				if(remove_con) {
 					disconnect();

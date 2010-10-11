@@ -254,16 +254,14 @@ break;
 	protected abstract void changeReferences(InverseEntity old, InverseEntity newer) throws SdaiException;
 
 	final protected void changeInverseReferences(InverseEntity old, InverseEntity newer, 
-			boolean replace_by_connector, boolean print_to_logo, boolean save4undo) throws SdaiException {
+			boolean print_to_logo, boolean save4undo) throws SdaiException {
 //		synchronized (syncObject) {
 		Object o = inverseList;
-		SdaiModel.Connector con;
 		CEntity old_inst = (CEntity)old;
 //long o_id = old_inst.instance_identifier;
 //System.out.println("!!!!!!!!!!!!!!!!! old instance: " + old_inst);
 //CEntity n_inst = (CEntity)newer;
 //System.out.println("!!!!!!!!!!!!!!!!! new instance: " + n_inst);
-		SdaiSession se;
 		boolean allow_self_refs = true;
 		if (this instanceof CEntity) {
 			SdaiModel mod = ((CEntity)this).owning_model;
@@ -277,31 +275,21 @@ break;
 			if (o instanceof Inverse) {
 				Inverse inv = (Inverse) o;
 				InverseEntity inst = (InverseEntity) inv.value;
-				if (replace_by_connector && ((CEntity)inst).owning_model != null &&
-						((CEntity)inst).owning_model != old_inst.owning_model) {
-					con = ((CEntity)inst).owning_model.newConnector(old_inst.owning_model, 
-						((CEntityDefinition)old_inst.getInstanceType()).getCorrectName(), 
-						old_inst.instance_identifier, (CEntity)inst);
-					inst.changeReferences(old, con);
-					((CEntity)inst).modified();
-//CEntity ii1 = (CEntity)inst;
-//System.out.println("!!!!! Case 1  referencing instance: " + ii1);
-				} else {
-					if (save4undo) {
+				if (save4undo) {
+					instance = (CEntity)inst;
+					instance.owning_model.repository.session.undoRedoModifyPrepare(instance);
+				}
+				if (inst != old || allow_self_refs) {
+					if (inst instanceof CEntity) {
 						instance = (CEntity)inst;
-						instance.owning_model.repository.session.undoRedoModifyPrepare(instance);
-					}
-					if (inst != old || allow_self_refs) {
-						if (inst instanceof CEntity) {
-							instance = (CEntity)inst;
-							ref_owner = instance.owning_model;
-							if (ref_owner != null && ref_owner.mode == SdaiModel.READ_ONLY) {
-								String base = SdaiSession.line_separator + AdditionalMessages.EI_ROMD + 
-								SdaiSession.line_separator + AdditionalMessages.RD_MODL + ref_owner.name + 
-								SdaiSession.line_separator + AdditionalMessages.RD_INST + instance.instance_identifier;
-								throw new SdaiException(SdaiException.MX_NRW, base);
-							}
-							inst.changeReferences(old, newer);
+						ref_owner = instance.owning_model;
+						if (ref_owner != null && ref_owner.mode == SdaiModel.READ_ONLY) {
+							String base = SdaiSession.line_separator + AdditionalMessages.EI_ROMD + 
+							SdaiSession.line_separator + AdditionalMessages.RD_MODL + ref_owner.name + 
+							SdaiSession.line_separator + AdditionalMessages.RD_INST + instance.instance_identifier;
+							throw new SdaiException(SdaiException.MX_NRW, base);
+						}
+						inst.changeReferences(old, newer);
 //CEntity inst_in_list = (CEntity)inst;
 //if (inst_in_list.owning_model == null) {
 //CEntity inst8695 = (CEntity)((CEntity)this).owning_model.repository.getSessionIdentifier("#8695");
@@ -311,60 +299,50 @@ break;
 //CEntity this_inst = (CEntity)this;
 //System.out.println("InverseEntity !!!!! instance - owner of inverse list: " + this_inst);
 //}
-							instance.modified();
-							if (print_to_logo) {
-								if (old_inst.owning_model != null) {
-									printWarningToLogo(old_inst.owning_model.repository.session, AdditionalMessages.RD_MINS, 
-										((CEntity)old).instance_identifier, instance.instance_identifier);
-								} else {
-									printWarningToLogo(null, AdditionalMessages.RD_MINS, 
-										((CEntity)old).instance_identifier, instance.instance_identifier);
-								}
+						instance.modified();
+						if (print_to_logo) {
+							if (old_inst.owning_model != null) {
+								printWarningToLogo(old_inst.owning_model.repository.session, AdditionalMessages.RD_MINS, 
+									((CEntity)old).instance_identifier, instance.instance_identifier);
+							} else {
+								printWarningToLogo(null, AdditionalMessages.RD_MINS, 
+									((CEntity)old).instance_identifier, instance.instance_identifier);
 							}
-						} else {
-							inst.changeReferences(old, newer);
 						}
+					} else {
+						inst.changeReferences(old, newer);
 					}
 				}
 				o = inv.next;
 			} else {
 				InverseEntity inst = (InverseEntity) o;
-				if (replace_by_connector && ((CEntity)inst).owning_model != null &&
-						((CEntity)inst).owning_model != old_inst.owning_model) {
-					con = ((CEntity)inst).owning_model.newConnector(old_inst.owning_model, 
-						((CEntityDefinition)old_inst.getInstanceType()).getCorrectName(), 
-						old_inst.instance_identifier, (CEntity)inst);
-					inst.changeReferences(old, con);
-					((CEntity)inst).modified();
-				} else {
-					if (save4undo) {
+				if (save4undo) {
+					instance = (CEntity)inst;
+					instance.owning_model.repository.session.undoRedoModifyPrepare(instance);
+				}
+				if (inst != old || allow_self_refs) {
+					if (inst instanceof CEntity) {
 						instance = (CEntity)inst;
-						instance.owning_model.repository.session.undoRedoModifyPrepare(instance);
-					}
-					if (inst != old || allow_self_refs) {
-						if (inst instanceof CEntity) {
-							instance = (CEntity)inst;
-							ref_owner = instance.owning_model;
-							if (ref_owner != null && ref_owner.mode == SdaiModel.READ_ONLY) {
-								String base = SdaiSession.line_separator + AdditionalMessages.EI_ROMD + 
-								SdaiSession.line_separator + AdditionalMessages.RD_MODL + ref_owner.name + 
-								SdaiSession.line_separator + AdditionalMessages.RD_INST + instance.instance_identifier;
-								throw new SdaiException(SdaiException.MX_NRW, base);
-							}
-							inst.changeReferences(old, newer);
-							instance.modified();
-							if (print_to_logo) {
-								if (old_inst.owning_model != null) {
-									printWarningToLogo(old_inst.owning_model.repository.session, AdditionalMessages.RD_MINS, 
-										((CEntity)old).instance_identifier, instance.instance_identifier);
-								} else {
-									printWarningToLogo(null, AdditionalMessages.RD_MINS, 
-										((CEntity)old).instance_identifier, instance.instance_identifier);
-								}
-							}
-						} else {
-							inst.changeReferences(old, newer);
+						ref_owner = instance.owning_model;
+						if (ref_owner != null && ref_owner.mode == SdaiModel.READ_ONLY) {
+							String base = SdaiSession.line_separator + AdditionalMessages.EI_ROMD + 
+							SdaiSession.line_separator + AdditionalMessages.RD_MODL + ref_owner.name + 
+							SdaiSession.line_separator + AdditionalMessages.RD_INST + instance.instance_identifier;
+							throw new SdaiException(SdaiException.MX_NRW, base);
 						}
+						inst.changeReferences(old, newer);
+						instance.modified();
+						if (print_to_logo) {
+							if (old_inst.owning_model != null) {
+								printWarningToLogo(old_inst.owning_model.repository.session, AdditionalMessages.RD_MINS, 
+									((CEntity)old).instance_identifier, instance.instance_identifier);
+							} else {
+								printWarningToLogo(null, AdditionalMessages.RD_MINS, 
+									((CEntity)old).instance_identifier, instance.instance_identifier);
+							}
+						}
+					} else {
+						inst.changeReferences(old, newer);
 					}
 				}
 				o = null;
@@ -444,7 +422,7 @@ break;
 	}
 
 
-	final protected void unsetInverseReferences(boolean replace_by_connector) throws SdaiException {
+	final protected void unsetInverseReferences(boolean replace_by_connector, boolean aborting) throws SdaiException {
 		Object o = inverseList;
 		SdaiModel.Connector con;
 		CEntity inst;
@@ -456,7 +434,8 @@ break;
 				inst = (CEntity) inv.value;
 				if (inst.owning_model != null && inst.owning_model != old_inst.owning_model && 
 						!inst.owning_model.closingAll) {
-					if (replace_by_connector) {
+					if (aborting && inst.owning_model.modified) {
+					} else if (replace_by_connector) {
 						con = inst.owning_model.newConnector(old_inst.owning_model, 
 							((CEntityDefinition)old_inst.getInstanceType()).getCorrectName(), 
 							old_inst.instance_identifier, inst);
@@ -471,7 +450,8 @@ break;
 				inst = (CEntity) o;
 				if (inst.owning_model != null &&
 						inst.owning_model != old_inst.owning_model && !inst.owning_model.closingAll) {
-					if (replace_by_connector) {
+					if (aborting && inst.owning_model.modified) {
+					} else if (replace_by_connector) {
 						con = inst.owning_model.newConnector(old_inst.owning_model, 
 							((CEntityDefinition)old_inst.getInstanceType()).getCorrectName(), 
 							old_inst.instance_identifier, inst);

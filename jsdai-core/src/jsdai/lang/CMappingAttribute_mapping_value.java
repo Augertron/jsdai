@@ -23,7 +23,11 @@
 
 package jsdai.lang;
 
+import java.util.Map;
+import java.util.Set;
+
 import jsdai.lang.MappingContext.CachedInstances;
+import jsdai.lang.MappingContext.ImmutableArraySet;
 import jsdai.mapping.CAttribute_mapping_value;
 import jsdai.mapping.EAttribute_mapping_value;
 
@@ -63,9 +67,13 @@ public abstract class CMappingAttribute_mapping_value
 			} else {
 				outInstances = mappingContext.newAllInstances(MatcherInstances.STATUS_FORWARD);
 			}
+			Map outInstanceMap = outInstances.getInstanceMap();
+			Set outInstanceMapKeys = outInstanceMap.keySet();
+			if(outInstanceMap instanceof AEntityMap) {
+				outInstanceMapKeys = new ImmutableArraySet(outInstanceMapKeys);
+			}
 			outInstances =
-				outInstances.dup(new FixedValueMap(outInstances.getInstanceMap().keySet(),
-												   getMappedValueObject()),
+				outInstances.dup(new FixedValueMap(outInstanceMapKeys, getMappedValueObject()),
 								 outInstances.status);
 			mappingContext.setPersistentCacheInstances(this, instances, outInstances);
 			return outInstances;
@@ -77,7 +85,7 @@ public abstract class CMappingAttribute_mapping_value
      */
 	public MatcherInstances findBackward(MappingContext mappingContext,
 			MatcherInstances instances, boolean decCacheUseCnt) throws SdaiException {
-		throw new SdaiException(SdaiException.FN_NAVL, 
+		throw new SdaiException(SdaiException.FN_NAVL,
 								"This constraint can not be called as part of backward references: " +
 								this);
 	}
@@ -96,7 +104,7 @@ public abstract class CMappingAttribute_mapping_value
      */
 	public MatcherInstances findPathBackward(MappingContext mappingContext,
 			MatcherInstances instances, boolean decCacheUseCnt) throws SdaiException {
-		throw new SdaiException(SdaiException.FN_NAVL, 
+		throw new SdaiException(SdaiException.FN_NAVL,
 								"This constraint can not be called as part of path backward references: " +
 								this);
 	}
@@ -105,7 +113,7 @@ public abstract class CMappingAttribute_mapping_value
      * @since 4.1.0
      */
     public EEntity[] findDependentInstances() throws SdaiException {
-		throw new SdaiException(SdaiException.FN_NAVL, 
+		throw new SdaiException(SdaiException.FN_NAVL,
 				"This constraint can not be called as part of path forward references: " +
 				this);
     }

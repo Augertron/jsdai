@@ -498,6 +498,15 @@ public class SchemaInstanceBean extends SdaiPanel {
 			cedtCount.setText(String.valueOf(extentsModel.getCedtCount()));
 			folderCount.setText(String.valueOf(extentsModel.getFolderCount()));
 			refreshModelButtons();
+
+			// is there 'first' model?
+			if (xmodels.getMemberCount() > 0) {
+				SdaiModel firstModel = xmodels.getByIndex(1);
+				SdaiSession.getSession().setSdaiContext(
+						new SdaiContext(firstModel.getUnderlyingSchema(), 
+						xmodels, firstModel));
+			}
+			
 		} catch (SdaiException ex) { processMessage(ex); }
 	}
 

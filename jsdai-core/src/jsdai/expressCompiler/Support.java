@@ -3355,6 +3355,82 @@ Obvious incompatibles:
 	}
 
 
+  static jsdai.lang.SdaiModel  getDocumentationModel() throws jsdai.lang.SdaiException
+  {
+
+		jsdai.lang.SdaiModel model_doc = null;
+
+		String name_searched = "_DOCUMENTATION_" + getSchema_definitionFromModel(model).getName(null).toUpperCase();
+	  jsdai.lang.ASdaiModel models  = repository.getModels();
+		jsdai.lang.SdaiIterator iter_models = models.createIterator();
+		while (iter_models.next()) {
+			jsdai.lang.SdaiModel sm1 = models.getCurrentMember(iter_models);
+			String model_name = sm1.getName();
+// printDDebug("findModel - searching: " + name_searched + ", current: " + model_name + ", nr of models: " + models.getMemberCount());
+			if (model_name.equalsIgnoreCase(name_searched)) {
+				return sm1;
+			}
+		}
+		// model not found, create
+// listModels();
+// System.out.println("Creating model: : " + name_searched);
+
+		model_doc = repository.createSdaiModel(name_searched, jsdai.SExtended_dictionary_schema.SExtended_dictionary_schema.class);
+		model_doc.startReadWriteAccess();
+		return model_doc;
+  }
+
+	static void createTagDocumentationEntity(jsdai.lang.EEntity target, String description) throws jsdai.lang.SdaiException {
+		if (parser_pass != 5) return;
+
+		if (description != null) {
+			jsdai.lang.SdaiModel sm = getDocumentationModel(); // finds or creates if not yet exists (or maybe better to create together with the main model always?
+			jsdai.SExtended_dictionary_schema.EDocumentation doc = (jsdai.SExtended_dictionary_schema.EDocumentation)sm.createEntityInstance(jsdai.SExtended_dictionary_schema.CDocumentation.class);
+
+			// New dictionary
+			jsdai.lang.A_string values = doc.createValues(null);
+			values.addByIndex(1, description);
+
+
+			// All this for jsdai 1.1, for jsdai 1.2 just one set method
+			if (target instanceof jsdai.SExtended_dictionary_schema.ESchema_definition) {
+				doc.setTarget(null, (jsdai.SExtended_dictionary_schema.ESchema_definition)target);
+			} else
+			if (target instanceof jsdai.SExtended_dictionary_schema.EConstant_definition) {
+				doc.setTarget(null, (jsdai.SExtended_dictionary_schema.EConstant_definition)target);
+			} else
+			if (target instanceof jsdai.SExtended_dictionary_schema.ENamed_type) {
+				doc.setTarget(null, (jsdai.SExtended_dictionary_schema.ENamed_type)target);
+			} else
+//                      if (target instanceof jsdai.SExtended_dictionary_schema.EDerived_attribute) {
+//                              doc.setTarget(null, (jsdai.SExtended_dictionary_schema.EDerived_attribute)target);
+//printDDebug("Derived Attribute target:" + ((jsdai.SExtended_dictionary_schema.EDerived_attribute)target).getName(null));
+//                      } else
+			if (target instanceof jsdai.SExtended_dictionary_schema.EAttribute) {
+				doc.setTarget(null, (jsdai.SExtended_dictionary_schema.EAttribute)target);
+// printDDebug("Attribute target:" + ((jsdai.SExtended_dictionary_schema.EAttribute)target).getName(null));
+			} else
+			if (target instanceof jsdai.SExtended_dictionary_schema.EFunction_definition) {
+				doc.setTarget(null, (jsdai.SExtended_dictionary_schema.EFunction_definition)target);
+			} else
+			if (target instanceof jsdai.SExtended_dictionary_schema.EProcedure_definition) {
+				doc.setTarget(null, (jsdai.SExtended_dictionary_schema.EProcedure_definition)target);
+			} else
+			if (target instanceof jsdai.SExtended_dictionary_schema.EGlobal_rule) {
+				doc.setTarget(null, (jsdai.SExtended_dictionary_schema.EGlobal_rule)target);
+			} else
+			if (target instanceof jsdai.SExtended_dictionary_schema.EWhere_rule) {
+				doc.setTarget(null, (jsdai.SExtended_dictionary_schema.EWhere_rule)target);
+			} else
+			if (target instanceof jsdai.SExtended_dictionary_schema.EParameter) {
+				doc.setTarget(null, (jsdai.SExtended_dictionary_schema.EParameter)target);
+			} else
+			if (target instanceof jsdai.SExtended_dictionary_schema.ESub_supertype_constraint) {
+				doc.setTarget(null, (jsdai.SExtended_dictionary_schema.ESub_supertype_constraint)target);
+			}
+		}
+	}
+
 
   static EEntity_definition findEntity_definition_not_optimal(String name, ESchema_definition optional_schema)
                                     throws SdaiException {
@@ -3387,17 +3463,1019 @@ Obvious incompatibles:
     return null;
   }
 
+		/* 
+		
+		remark_tag = ’"’ remark_ref { ’.’ remark_ref } ’"’ .
+		remark_ref = 
+								 attribute_ref | 
+									constant_ref | 
+										entity_ref | 
+							 enumeration_ref | 
+							 		function_ref | 
+							 	 parameter_ref | 
+							 	 procedure_ref | 
+							 	rule_label_ref | 
+										 	rule_ref | 
+										schema_ref | 
+				subtype_constraint_ref | 
+								type_label_ref | 
+											type_ref | 
+									variable_ref 
+		
+		
+		
+			tag may be simple or compound: tag1.tag2.tag3
+			Unfortunately, currently there is no method to resolve such a general reference,
+			even special keys used to resolve variables, attributes, etc, require special form and are apliicable only to some references
+			So we have to:
+			- either attempt to resove the tag by a try-and-error method
+			- or to attempt to construct the key of correct format, still, by guessing what tag parts may be
+			- or to make a method that compares such a compound key directly as full or sub-key with the existing keys, by converting them to the format of the tag
+			  which may not be enough.
+			
+			BTW, part 11 seems not to support hierarchical tags, for example:
+			
+			(*"entity_a" this is entity entity_a
+				("attribute_a_a" this is attribute attribute_a_a
+				*)
+			*)	
+			
+			because the attribute tag is an inner tag, and the outer tag is an entity tag, the inner attribute tag could be interpreted as 
+			"entity_a.attribute_a_a"
+			but it seems that part11 requires it to be written as:
+
+			(*"entity_a" this is entity entity_a
+				("entity_a.attribute_a_a" this is attribute attribute_a_a
+				*)
+			*)	
+			
+			In other words, part 11 does not take advantage of the nested structure of the remark, it could just as well be written:
+
+			(*"entity_a" this is entity entity_a
+			*)	
+			("entity_a.attribute_a_a" this is attribute attribute_a_a of entity entity_a
+			*)
+			
+		  At least part11 explicitly says nothing about the tags of inner remarks being further qualified by the tags of their outer remarks.
+		  So perhaps we should allow that, it is a logical thing to do, otherwise why to have nested tagged remarks at all.
+		
+		  In other words, we could allow all 3 ways to tag an attribute:
+		  
+		  1.
+
+			("entity_a.attribute_a_a" this is attribute attribute_a_a of entity entity_a
+			*)
+		
+			2.
+
+			(*"entity_a" this is entity entity_a
+				("entity_a.attribute_a_a" this is attribute attribute_a_a
+				*)
+			*)	
+
+			3.
+
+			(*"entity_a" this is entity entity_a
+				("attribute_a_a" this is attribute attribute_a_a
+				*)
+			*)	
+		
+      In a short form express, also schema prefix may be needed in the tag, and could be handled in any of the above ways, just as the entity prefix.
+		
+		  Another issue:  
+		  part 11 says that tags should be resolved according to visibility rules of of 10.2
+		  
+		  However, part 11 does not say anything about the remark tag being affected by the location of the tagged remark itsef.
+		  For example:
+		  
+		  ENTITY aaaa;
+		  	bbbb : STRING;
+		  END_ENTITY;
+		  (*"aaaa.bbbb" this is an attribute of entity aaaa *) 	
+		  
+		  but if the remark itself is located inside the scope of entity aaaa, perhaps it would be enough for the tag to be resolved to have only the attribute part?
+		  
+		  ENTITY aaaa;
+		  	bbbb : STRING;
+		  	(*"bbbb" this is an attribute of entity aaaa *) 	
+		  END_ENTITY;
+		  
+		  or
+
+		  ENTITY aaaa;
+		  	(*"bbbb" this is an attribute of entity aaaa *) 	
+		  	bbbb : STRING;
+		  END_ENTITY;
+
+      By the way, as to tagged tail remarks, why not also this:
+
+		  ENTITY aaaa;
+		  	bbbb : STRING; --"bbbb" this is an attribute of entity aaaa
+		  END_ENTITY;
+		  		  
+		  If we do not allow this, do we also need to add schema prefix for each tag if the remark itself is inside the schema anyway? - The same thing.
+		  So, because explicitly this is not clearly said in part 11, perhaps we should be helpful and allow omission of such unnecessary prefices.
+
+		  We could show some flexibility, robustness and user-friendliness and try to resolve all such cases:
+		  1. try adding the tag of the outer remark as a prefix to tags of the inner remarks
+		  2. look in which scope the remark itself is placed and do not require the corresponding prefix (prefices) to be present.
+		  3. If such (unnecessary?) prefix or prefices already is/are explicitly present in the tag, that is ok too.
+		  
+		  
+		  Notice that if a tag cannot be resolved, it is not an error in express, just that comment is considered to be not tagged.
+		  Still, perhaps it would be a good idea to print a warning, because if someone tried to write a tag, probably a tag was intended and a mistake was made in it.
+		
+		------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+			OK, let's try to do this:
+
+      - Let's take also the stack with tags and try using them as prefixes - only for resolving tags for multi-line remarks, no need for tail remarks
+        Furthermore, the tags in the stack should already be resolved, so perhaps better to use the already resolved tags - depends on the implemenation,
+        if the implementatios is hashtable/key based, then perhaps not.
+      - Let's try to find out what exactly we are currently parsing (location of the remark) and try using that information prefix tag - like			
+			
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+       10.1 Scope rules:
+       
+Item                Scope  Identifier
+_________________________________________________________
+alias statement       •        •1
+attribute                      • 
+constant                       • 
+enumeration                    • 
+entity                •        • 
+function              •        • 
+parameter                      • 
+procedure             •        • 
+query expression      •        •1
+repeat statement      •        •1,2
+rule                  •        •3
+rule label                     • 
+schema                •        • 
+subtype constraint    •        • 
+type                  •        • 
+type label                     • 
+variable                       •
+_________________________________________________________
+NOTE 1  The identifier is an implicitly declared variable
+				within the defined scope of the declaration.
+NOTE 2  The variable is only implicitly declared when an
+				increment control is specified.
+NOTE 3  An implicit variable declaration is made for all
+				entities which are constrained by the rule.       
+_________________________________________________________
+
+
+			10.2 Visibility rules:
+
+________________________________________________________________________________________________________
+a)  An identifier is visible in the scope in which it is declared. This scope is called the local
+		scope of the identifier.
+
+b)  If an identifier is visible in a particular scope, it is also visible in all scopes defined within
+		that scope, subject to rule (d).
+
+c)  An identifier is not visible in any scope outside its local scope, subject to rule (f).
+
+d)  When an identifier i visible in a scope P is re-declared in some inner scope Q enclosed
+		within P, then:
+		— If the i declared in P refers to a named data type or a type label and the i declared in
+			Q does not refere to a named data type or a type label, then both the i declared in P
+			and the i declared in Q are visible in Q.
+		— Otherwise; only the i declared in scope Q is visible in Q and any scopes declared
+			within Q. The i declared in scope P is visible in P and in any inner scopes which do
+			not re-declare i.
+
+e)  The built-in constants, functions, procedures and types of EXPRESS are considered to be
+		declared in an imaginary universal scope. All schemas are nested within this scope. The
+		identifiers which refer to the built-in constants, functions, procedures, types of EXPRESS,
+		and schemas are visible in all scopes defined by EXPRESS.
+
+      EXPRESS data types: 
+				simple data types:			NUMBER | REAL | INTEGER | LOGICAL | BOOLEAN | STRING | BINARY 
+      	aggregation data types: ARRAY | BAG | LIST | SET 
+        named data types:       ENTITY | TYPE
+        constructed data types: ENUMERATION | SELECT
+        generalized data types: GENERIC | AGGREGATE | GENERIC ENTITY
+      
+			built-in constants:   CONST_E | PI | SELF | ’?’ 
+	
+			built-in functions:   ABS | ACOS | ASIN | ATAN | BLENGTH | COS | EXISTS | EXP | 
+														FORMAT | HIBOUND | HIINDEX | LENGTH | LOBOUND | LOINDEX | 
+														LOG | LOG2 | LOG10 | NVL | ODD | ROLESOF | SIN | SIZEOF | 
+														SQRT | TAN | TYPEOF | USEDIN | VALUE | VALUE_IN | VALUE_UNIQUE 
+
+			built-in procedure:   INSERT | REMOVE 
+
+f)  Enumeration item identifiers declared within the scope of a defined data type are visible
+		wherever the defined data type is visible, unless this outer scope contains a declaration of
+		the same identifier for some other item.
+		
+		NOTE  If the next outer scope contains a declaration of the same identifier, the enumeration items
+					are still accessible, but have to be prefixed by the defined data type identifier (see 12.7.2).
+
+g)  Declarations in one schema are made visible to items in another schema by the interface
+		specification (see clause 11).
+________________________________________________________________________________________________________
+
+			
+			
+		
+		remark_tag = ’"’ remark_ref { ’.’ remark_ref } ’"’ .
+		remark_ref = 
+								 attribute_ref |  +
+									constant_ref |  +
+										entity_ref |  +
+							 enumeration_ref |  +
+							 		function_ref |  +
+							 	 parameter_ref |  +
+							 	 procedure_ref |  +
+							 	rule_label_ref |  +
+										 	rule_ref |  +
+										schema_ref |  +
+				subtype_constraint_ref |  +
+								type_label_ref |  +
+											type_ref |  +
+									variable_ref    +
+
+
++		attribute in: entity and its subtypes
++		constant   in: function, procedure, rule, schema
++		enumeration item in: where the defining type of that enumeration is visible, unless outer scope contains the same identifier (then prefixed)
++		entity   in: function, procedure, rule, schema
++	  function in: function, procedure, rule, schema
++		procedure in: function, procedure, rule, schema
++		rule in: schema
++		rule label in: entity, rule, type
++		schema in: everywhere
++		subtype constraint in: schema
++		type: function, procedure, rule, schema
++		type label in: entity, function, procedure
++		variable in: function, procedure, rule
++		parameter in: function, procedure
+
+
+
+(function_ref | procedure_ref | rule_ref |schema_ref) + entity_ref + attribute_ref		
+             (function_ref | procedure_ref | rule_ref |schema_ref) + constant_ref
+             (function_ref | procedure_ref | rule_ref |schema_ref) + entity_ref
+             (function_ref | procedure_ref | rule_ref |schema_ref) + enumeration_ref
+             (function_ref | procedure_ref | rule_ref |schema_ref) + function_ref
+             (function_ref | procedure_ref | rule_ref |schema_ref) + procedure_ref		                                        
+                                                        schema_ref + rule_ref
+                                (entity_ref | rule_ref | type_ref) + rule_label_ref
+                                                        schema_ref + subtype_constraint_ref
+             (function_ref | procedure_ref | rule_ref |schema_ref) + type_ref
+                                   (entity | function | procedure) + type_label_ref
+                                     (function | procedure | rule) + variable_ref
+                                            (function | procedure) + parameter_ref
+                                                                     schema_ref
+
+
+
+(function_ref | procedure_ref | rule_ref |schema_ref)  means one of:
+
+schema_ref
+schema_ref + rule_ref
+schema_ref + {function_ref | procedure_ref} 
+schema_ref + {function_ref | procedure_ref}  + rule_ref
+
+
+algorithm_head present in functions, procedures and rules,
+algorithm_head contains declaration, 
+
+algorithm_head = { declaration } [ constant_decl ] [ local_decl ]
+
+
+and declaration contain: 
+
+declaration = entity_decl | function_decl | procedure_decl |
+subtype_constraint_decl | type_decl .
+
+
+so functions and procedures may be nested,
+
+rule may contain functions and/or procedures but itself cannot be inner
+
+entity may be declared inside procedure function or rule
+
+etc
+		
+		
++  static EEntity active_scope = null;
++	static ECtScope active_scope_extension = null;
+
++  static Vector current_scope;
+
++	static String global_entity_ref = null;
++	static String global_entity_name = null;
++	static String global_schema_name = null;
++	static String hm_attribute_key = null;
+		
+
++  static Stack scope_stack = new Stack();
++  static Vector current_scope;
+		
++	static HashMap hm_variables;
++	static HashMap hm_current_variables;
++	static HashMap hm_parameters;
++	static HashMap hm_current_parameters;
++	static HashMap hm_entity_declarations;
++	static HashMap hm_current_entity_declarations;
++	static HashMap hm_type_declarations;
++	static HashMap hm_current_type_declarations;
++	static HashMap hm_function_declarations;
++	static HashMap hm_current_function_declarations;
++	static HashMap hm_procedure_declarations;
++	static HashMap hm_current_procedure_declarations;
++	static HashMap hm_rule_declarations;
++	static HashMap hm_current_rule_declarations;
++	static HashMap hm_constant_declarations;
++	static HashMap hm_current_constant_declarations;
++	static HashMap hm_subtype_constraint_declarations;
++	static HashMap hm_current_subtype_constraint_declarations;
+	static HashMap hm_attributes;
+
++  static String global_name1_global;
+  static int global_kind1_global;
++  static String global_name2_global;
+  static int global_kind2_global;
++  static String global_name3_global;
+  static int global_kind3_global;
+
+  static int variable_uid = 0;
+  static Stack variable_id_stack = new Stack();
+  static Stack argument_stack = new Stack();
+  static Stack type_stack = new Stack();
+  static Stack expression_stack = new Stack();
++  static EEntity active_scope = null;
++	static ECtScope active_scope_extension = null;
++  static String active_scope_string = null;
+  static Vector used_vectors = new Vector();
+  static Vector referenced_vectors = new Vector();
+  static Vector model_vector = new Vector();
+
+
+		
+		
+		*/	
+
+  // this is primarily for tail remarks, no tag stack is used
+	static EEntity resolveTag(String tag_name) throws SdaiException {
+		EEntity result_tag = null;
+/*
+		System.out.println("<RESOLVING-TAIL-TAG-01> tag name: " + tag_name);
+		System.out.println("<RESOLVING-TAIL-TAG-02> active scope: " + active_scope);
+		System.out.println("<RESOLVING-TAIL-TAG-03> active scope extension: " + active_scope_extension);
+		System.out.println("<RESOLVING-TAIL-TAG-03B> active scope string: " + active_scope_string);
+		System.out.println("<RESOLVING-TAIL-TAG-04> current scope: " + current_scope);
+		System.out.println("<RESOLVING-TAIL-TAG-05> global_entity_ref: " + global_entity_ref);
+		System.out.println("<RESOLVING-TAIL-TAG-06> global_entity_name: " + global_entity_name);
+		System.out.println("<RESOLVING-TAIL-TAG-07> global_schema_name: " + global_schema_name);
+		System.out.println("<RESOLVING-TAIL-TAG-08> hm_attribute_key: " + hm_attribute_key);
+		System.out.println("<RESOLVING-TAIL-TAG-09> scope_stack: " + scope_stack);
+		System.out.println("<RESOLVING-TAIL-TAG-10> schema_definition: " + sd);
+		System.out.println("<RESOLVING-TAIL-TAG-11> model: " + model);
+		System.out.println("<RESOLVING-TAIL-TAG-12> global_name1_global: " + global_name1_global);
+		System.out.println("<RESOLVING-TAIL-TAG-13> global_name2_global: " + global_name2_global);
+		System.out.println("<RESOLVING-TAIL-TAG-14> global_name3_global: " + global_name3_global);
+		System.out.println("<RESOLVING-TAIL-TAG-15> hm_variables: " + hm_variables);
+		System.out.println("<RESOLVING-TAIL-TAG-16> hm_current_variables: " + hm_current_variables);
+		System.out.println("<RESOLVING-TAIL-TAG-17> hm_parameters: " + hm_parameters);
+		System.out.println("<RESOLVING-TAIL-TAG-18> hm_current_parameters: " + hm_current_parameters);
+		System.out.println("<RESOLVING-TAIL-TAG-19> hm_entity_declarations: " + hm_entity_declarations);
+		System.out.println("<RESOLVING-TAIL-TAG-20> hm_current_entity_declarations: " + hm_current_entity_declarations);
+		System.out.println("<RESOLVING-TAIL-TAG-21> hm_type_declarations: " + hm_type_declarations);
+		System.out.println("<RESOLVING-TAIL-TAG-22> hm_current_type_declarations: " + hm_current_type_declarations);
+		System.out.println("<RESOLVING-TAIL-TAG-23> hm_function_declarations: " + hm_function_declarations);
+		System.out.println("<RESOLVING-TAIL-TAG-24> hm_current_function_declarations: " + hm_current_function_declarations);
+		System.out.println("<RESOLVING-TAIL-TAG-25> hm_procedure_declarations: " + hm_procedure_declarations);
+		System.out.println("<RESOLVING-TAIL-TAG-26> hm_current_procedure_declarations: " + hm_current_procedure_declarations);
+		System.out.println("<RESOLVING-TAIL-TAG-27> hm_rule_declarations: " + hm_rule_declarations);
+		System.out.println("<RESOLVING-TAIL-TAG-28> hm_current_rule_declarations: " + hm_current_rule_declarations);
+		System.out.println("<RESOLVING-TAIL-TAG-29> hm_constant_declarations: " + hm_constant_declarations);
+		System.out.println("<RESOLVING-TAIL-TAG-30> hm_current_constant_declarations: " + hm_current_constant_declarations);
+		System.out.println("<RESOLVING-TAIL-TAG-31> hm_subtype_constraint_declarations: " + hm_subtype_constraint_declarations);
+		System.out.println("<RESOLVING-TAIL-TAG-32> hm_current_subtype_constraint_declarations: " + hm_current_subtype_constraint_declarations);
+		System.out.println("<RESOLVING-TAIL-TAG-33> hm_attributes: " + hm_attributes);
+*/
+		//System.out.println("<RESOLVING-TAIL-TAG-34> : " + );
+		//System.out.println("<RESOLVING-TAIL-TAG-35> : " + );
+		//System.out.println("<RESOLVING-TAIL-TAG-36> : " + );
+		//System.out.println("<RESOLVING-TAIL-TAG-37> : " + );
+		//System.out.println("<RESOLVING-TAIL-TAG-38> : " + );
+		//System.out.println("<RESOLVING-TAIL-TAG-39> : " + );
+		//System.out.println("<RESOLVING-TAIL-TAG-40> : " + );
+
+    /*
+     	let's see if we have any prefixes and get them:
+     
+     	prefix1.prefix2.prefix3.tag
+    
+    	put them in a stack, perhaps:
+    	
+    	
+    	prefix1
+    	prefix2
+    	prefix3
+    	tag
+    	
+    	so that the wider scope is resolved first, then narrow down
+    	the other way around - may not resolve at all or get multiple/wrong objects
+   
+    */
+
+//System.out.println("The whole tag: " + tag_name);
+		Stack prefix_stack = new Stack();
+		int last_index = tag_name.length()-1;
+		int index = last_index;
+		String current_prefix = null;
+		while (index > 0) {
+			index = tag_name.lastIndexOf('.', last_index); 
+//System.out.println("index: " + index + ", last_index: " + last_index);
+			if (index > 0) {
+				current_prefix = tag_name.substring(index+1,last_index+1);
+//System.out.println("CURRENT PREFIX: " + current_prefix);
+				prefix_stack.push(current_prefix);
+				last_index = index-1;
+			} else {
+				current_prefix = tag_name.substring(0,last_index+1);
+//System.out.println("CURRENT PREFIX 2: " + current_prefix);
+				prefix_stack.push(current_prefix);
+				break;
+			}
+		}
+//System.out.println("prefix stack: " + prefix_stack);
+
+
+		// let's add here some quick simple cases
+		// if there is only one tag, no prefixes:
+		if (prefix_stack.size() == 1) {
+			// just try to resolve everything, probably starting from inside (because if the same ID is redeclared, the outers are hidden, the inner - visible
+			// so also look what is the scope (if we even need to look what is the scope, perhaps some findAttribute() method does it itself, if I implemented such a method, that is
+			result_tag = resolveSingleTag((String)prefix_stack.pop());
+//System.out.println("RESOLVING SINGLE TAG: " + result_tag);
+			return result_tag;
+		} else
+		if (prefix_stack.size() == 2) {
+			// check for situations such as entity.attribute
+			result_tag = resolveDoubleTag((String)prefix_stack.pop(), (String)prefix_stack.pop());
+			return result_tag;
+		}
+
+
+		// Ok, so now we have the tag split to component parts and in the stack
+		// if the tag contains no prefixes, still one item in the stack - the tag itself
+		// let's try resolving this item
+		
+		EEntity subtag_object = null;
+		EEntity outer_subtag_object = null;
+		String current_subtag = null;
+		while (!prefix_stack.empty()) {
+			current_subtag = (String)prefix_stack.pop();	
+			subtag_object = resolveSubtag(current_subtag, outer_subtag_object);
+			if (subtag_object != null) {
+				outer_subtag_object = subtag_object;
+			} else {
+				// failed to resolve, so further resolving makes no point - 
+				// perhaps not enough prefixes were present, try taking into account the scope of the location of the remark itself
+				subtag_object = resolveSubtagTryHarder(current_subtag, outer_subtag_object);	
+				if (subtag_object != null) {
+					outer_subtag_object = subtag_object;
+				} else {
+					// we give up - the tag not resolved
+					// actually, a third possibility exists - 
+					// some prefixes were present, but only relativelly inner ones 
+					// start from location scope, then go to prefixes
+					// or perhaps it is a good idea first to eliminate duplications between prefixes and scopes, and add scopes as prefixes, etc.
+					return null;
+				}
+			}
+		}
+		
+
+		if (active_scope == null) { 
+			// possibly a schema level - or between schemas
+		} else 
+		if (active_scope instanceof EEntity_definition) {
+		} else {
+		}
+
+
+		return outer_subtag_object;
+	} 
+
+/*
+	static ESchema_definition findSchema_definition(String tag_name) throws SdaiException {
+	}
+*/
+
+	static EDefined_type findDefined_typeT(String tag_name) throws SdaiException {
+		EDefined_type tdf = null;
+		if (hm_current_type_declarations != null ) {
+			EType_declaration tdc = (EType_declaration)hm_current_type_declarations.get(tag_name.toLowerCase());
+			if (tdc != null) {
+				tdf = (EDefined_type)tdc.getDefinition(null);
+			}	
+		} else {
+			return findType_definition_non_optimalT(tag_name);
+		}
+		return tdf;
+	}
+
+
+	static EGeneric_schema_definition findSchema_definitionT(String name) throws jsdai.lang.SdaiException {
+		
+//System.out.println("<SCHEMA>: " + name);		
+		
+		SdaiModel  a_model = findModel2(name);
+
+//System.out.println("<SCHEMA> model: " + a_model);		
+
+		if (a_model == null) return null;
+		if(a_model.getMode() == jsdai.lang.SdaiModel.NO_ACCESS) {
+			a_model.startReadOnlyAccess();
+		}
+
+		Aggregate ia = a_model.getEntityExtentInstances(EGeneric_schema_definition.class);
+//		printDebug("findGeneric_schema_definition count: " + ia.getMemberCount() + ", name: " + name);
+		jsdai.lang.SdaiIterator iter_inst = ia.createIterator();
+		while (iter_inst.next()) {
+			EGeneric_schema_definition inst = (EGeneric_schema_definition)ia.getCurrentMemberObject(iter_inst);
+			String instance_name = inst.getName(null);
+//printDDebug("findInterpretedId2 - in loop - current name: " + instance_name);
+
+			if (instance_name.equalsIgnoreCase(name)) { // found! return it
+				return inst;
+			}
+		}
+		return null;
+	}
+
+/*
+	static EEntity findEnumeration_type_element(String tag_name) throws SdaiException {
+	}
+*/
+	static EAttribute findAttribute(String tag_name) throws SdaiException {
+		if (active_scope instanceof EEntity_definition) {
+		// ok, we can search for attributes of that entity - not using hashmap and keys, not taking into account support for RENAMED attributes (TODO later)
+			EEntity_definition ed = (EEntity_definition)active_scope;
+	    SdaiModel mdl = ed.findEntityInstanceSdaiModel();
+  	  Aggregate ia = mdl.getEntityExtentInstances(EAttribute.class);
+    	SdaiIterator iter_inst = ia.createIterator();
+
+	    while (iter_inst.next()) {
+  	    EAttribute inst = (EAttribute) ia.getCurrentMemberObject(iter_inst);
+    	  String instance_name = inst.getName(null);
+
+      	if (instance_name.equalsIgnoreCase(tag_name)) {
+      		EEntity_definition ed2 = (EEntity_definition)inst.getParent_entity(null);
+					if (ed2 == ed) {
+						// ok, found it
+						return inst;
+					}
+				}
+			} // while
+
+	    AEntity_or_view_definition aed = ed.getGeneric_supertypes(null);
+//System.out.println("supertypes: " + aed);
+  	  SdaiIterator iter_super = aed.createIterator();
+
+    	while (iter_super.next()) {
+      	EEntity_definition ed1 = (EEntity_definition) aed.getCurrentMemberObject(iter_super);
+	      EAttribute at = findAttribute_2_tags(ed1, tag_name);
+  	    if (at != null) {
+    	    return at;
+      	}
+			} // while		
+
+		} else {
+		// hm, leave unresolved
+			return null;
+		}
+		return null;
+	}
+
+	static EAttribute findAttribute_2_tags(EEntity_definition ed, String tag_name) throws SdaiException {
+		// ok, we can search for attributes of that entity - not using hashmap and keys, not taking into account support for RENAMED attributes (TODO later)
+	    SdaiModel mdl = ed.findEntityInstanceSdaiModel();
+  	  Aggregate ia = mdl.getEntityExtentInstances(EAttribute.class);
+    	SdaiIterator iter_inst = ia.createIterator();
+
+	    while (iter_inst.next()) {
+  	    EAttribute inst = (EAttribute) ia.getCurrentMemberObject(iter_inst);
+    	  String instance_name = inst.getName(null);
+
+      	if (instance_name.equalsIgnoreCase(tag_name)) {
+      		EEntity_definition ed2 = (EEntity_definition)inst.getParent_entity(null);
+					if (ed2 == ed) {
+						// ok, found it
+						return inst;
+					}
+				}
+			} // while
+
+	    AEntity_or_view_definition aed = ed.getGeneric_supertypes(null);
+  	  SdaiIterator iter_super = aed.createIterator();
+
+    	while (iter_super.next()) {
+      	EEntity_definition ed1 = (EEntity_definition) aed.getCurrentMemberObject(iter_super);
+	      EAttribute at = findAttribute(tag_name);
+  	    if (at != null) {
+    	    return at;
+      	}
+			} // while		
+
+		return null;
+	}
+
+// inverse attributes do not work here
+	static EWhere_rule findWhere_rule_does_not_work(String tag_name) throws SdaiException {
+//System.out.println("<WR> trying to find where rule: " + tag_name);
+    // this does not help either
+    ASdaiModel models2 = repository.getModels();
+		AWhere_rule where_rules = null;
+		if (active_scope instanceof ENamed_type) {
+			where_rules = ((ENamed_type)active_scope).getWhere_rules(null, models2);
+//System.out.println("<WR> NT - where_rules found: " + where_rules);
+		} else 
+		if (active_scope instanceof EGlobal_rule) {
+			where_rules = ((EGlobal_rule)active_scope).getWhere_rules(null, models2);
+//System.out.println("<WR> GR - where_rules found: " + where_rules);
+		}
+		if (where_rules == null) {
+			return null;
+		}
+ 	  SdaiIterator iter_wr = where_rules.createIterator();
+   	while (iter_wr.next()) {
+			EWhere_rule where_rule = (EWhere_rule)where_rules.getCurrentMemberObject(iter_wr);
+			String a_label = null;
+			if (where_rule.testLabel(null)) {
+				a_label = where_rule.getLabel(null);
+				if (tag_name.equalsIgnoreCase(a_label)) {
+					return where_rule;
+				}
+			}
+			
+		}		
+		return null;
+	}
+
+// does not work because label and parent_item are set in pass 5
+	static EWhere_rule findWhere_rule(String tag_name) throws SdaiException {
+//System.out.println("<WR> active_scope: " + active_scope);
+		if ((active_scope instanceof ENamed_type) || (active_scope instanceof EGlobal_rule)) {
+	    SdaiModel mdl = active_scope.findEntityInstanceSdaiModel();
+  	  Aggregate where_rules = mdl.getEntityExtentInstances(EWhere_rule.class);
+//System.out.println("<WR> where rules: " + where_rules);
+    	SdaiIterator iter_wr = where_rules.createIterator();
+
+	    while (iter_wr.next()) {
+  	    EWhere_rule where_rule = (EWhere_rule) where_rules.getCurrentMemberObject(iter_wr);
+				if (where_rule.testParent_item(null)) { // should be always set, but may be unset at certain stages while still during parsing
+					if (where_rule.getParent_item(null) == active_scope) {
+  	  	  	String wr_label = null;
+						if (where_rule.testLabel(null)) {
+							wr_label = where_rule.getLabel(null);
+							if (tag_name.equalsIgnoreCase(wr_label)) {
+								return where_rule;
+							} // if the same label
+						} // if has label
+					} // if parent_item
+				} // parent_item set
+			} // while				
+		} else {
+			return null;
+		}
+		return null;
+	}
+
+	static EWhere_rule findNamed_type_where_rule(ENamed_type nt, String tag_name) throws SdaiException {
+    SdaiModel mdl = nt.findEntityInstanceSdaiModel();
+ 	  Aggregate where_rules = mdl.getEntityExtentInstances(EWhere_rule.class);
+   	SdaiIterator iter_wr = where_rules.createIterator();
+
+    while (iter_wr.next()) {
+ 	    EWhere_rule where_rule = (EWhere_rule) where_rules.getCurrentMemberObject(iter_wr);
+			if (where_rule.testParent_item(null)) { // should be always set, but may be unset at certain stages while still during parsing
+				if (where_rule.getParent_item(null) == nt) {
+  	 	  	String wr_label = null;
+					if (where_rule.testLabel(null)) {
+						wr_label = where_rule.getLabel(null);
+						if (tag_name.equalsIgnoreCase(wr_label)) {
+							return where_rule;
+						} // if the same label
+					} // if has label
+				} // if parent_item
+			} // parent_item set
+		} // while				
+	 return null;
+	}
+
+	static EWhere_rule findNamed_type_where_rule_not_working(ENamed_type nt, String tag_name) throws SdaiException {
+		AWhere_rule where_rules = null;
+		where_rules = nt.getWhere_rules(null, null);
+		if (where_rules == null) {
+			return null;
+		}
+ 	  SdaiIterator iter_wr = where_rules.createIterator();
+   	while (iter_wr.next()) {
+			EWhere_rule where_rule = (EWhere_rule)where_rules.getCurrentMemberObject(iter_wr);
+			String a_label = null;
+			if (where_rule.testLabel(null)) {
+				a_label = where_rule.getLabel(null);
+				if (tag_name.equalsIgnoreCase(a_label)) {
+					return where_rule;
+				}
+			}
+			
+		}		
+		return null;
+	}
+
+	static EWhere_rule findGlobal_rule_where_rule(EGlobal_rule gr, String tag_name) throws SdaiException {
+    SdaiModel mdl = gr.findEntityInstanceSdaiModel();
+ 	  Aggregate where_rules = mdl.getEntityExtentInstances(EWhere_rule.class);
+   	SdaiIterator iter_wr = where_rules.createIterator();
+
+    while (iter_wr.next()) {
+ 	    EWhere_rule where_rule = (EWhere_rule) where_rules.getCurrentMemberObject(iter_wr);
+			if (where_rule.testParent_item(null)) { // should be always set, but may be unset at certain stages while still during parsing
+				if (where_rule.getParent_item(null) == gr) {
+   	  		String wr_label = null;
+					if (where_rule.testLabel(null)) {
+						wr_label = where_rule.getLabel(null);
+						if (tag_name.equalsIgnoreCase(wr_label)) {
+							return where_rule;
+						} // if the same label
+					} // if has label
+				} // if parent_item
+			} // parent_item set
+		} // while				
+	 return null;
+	}
+
+	static EWhere_rule findGlobal_rule_where_rule_not_working(EGlobal_rule gr, String tag_name) throws SdaiException {
+		AWhere_rule where_rules = null;
+		where_rules = gr.getWhere_rules(null, null);
+		if (where_rules == null) {
+			return null;
+		}
+ 	  SdaiIterator iter_wr = where_rules.createIterator();
+   	while (iter_wr.next()) {
+			EWhere_rule where_rule = (EWhere_rule)where_rules.getCurrentMemberObject(iter_wr);
+			String a_label = null;
+			if (where_rule.testLabel(null)) {
+				a_label = where_rule.getLabel(null);
+				if (tag_name.equalsIgnoreCase(a_label)) {
+					return where_rule;
+				}
+			}
+			
+		}		
+		return null;
+	}
+
+
+  static EDefined_type findType_definition_non_optimalT(String name)
+                                        throws SdaiException {
+    Aggregate ia = model.getEntityExtentInstances(EType_declaration.class);
+    SdaiIterator iter_inst = ia.createIterator();
+
+    while (iter_inst.next()) {
+      EDeclaration dec = (EDeclaration) ia.getCurrentMemberObject(iter_inst);
+
+//      EDefined_type inst = (EDefined_type)dec.getDefinition(null, (ENamed_type)null);
+      EDefined_type inst = (EDefined_type)dec.getDefinition(null);
+      //EFunction_definition inst = (EFunction_definition) dec.getDefinition(null);
+      String instance_name = inst.getName(null);
+
+      if (instance_name.equalsIgnoreCase(name)) { // found! return it
+
+        return inst;
+      } else if (dec instanceof EInterfaced_declaration) {
+        if (((EInterfaced_declaration) dec).testAlias_name(null)) {
+          instance_name = ((EInterfaced_declaration) dec).getAlias_name(null);
+
+          if (instance_name.equalsIgnoreCase(name)) { // found! return it
+
+            return (EDefined_type)dec.getDefinition(null);
+//            return (EDefined_type)dec.getDefinition(null, (ENamed_type)null);
+            //return (EFunction_definition) dec.getDefinition(null);
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+	static EParameter findParameter_for_single_tag(String tag_name) throws jsdai.lang.SdaiException {
+
+		AParameter parameters = null;
+		if (active_scope instanceof jsdai.SExtended_dictionary_schema.EAlgorithm_definition) {
+			parameters = ((jsdai.SExtended_dictionary_schema.EAlgorithm_definition)active_scope).getParameters(null);
+//System.out.println("parameters: " + parameters);
+		} else {
+			return null;
+		}
+		
+		jsdai.lang.SdaiIterator iter = parameters.createIterator();
+		while (iter.next()) {
+			jsdai.SExtended_dictionary_schema.EParameter inst = (jsdai.SExtended_dictionary_schema.EParameter)parameters.getCurrentMemberObject(iter);
+			String its_name = inst.getName(null);
+			if (its_name.equalsIgnoreCase(tag_name)) { // found! return it
+				return inst;
+			}
+		}
+//		System.out.println("@#NULL find parameter null, name: " + name + ", active_scope: " + active_scope + ", pass: " + parser_pass);
+		return null;
+	}
+
+	static EParameter findParameter_for_double_tag(EAlgorithm_definition tag1_object, String tag2_name) throws jsdai.lang.SdaiException {
+
+//System.out.println("tag1: " + tag1_object + ", tag2: " + tag2_name);
+
+		AParameter parameters = null;
+
+	
+		parameters = ((jsdai.SExtended_dictionary_schema.EAlgorithm_definition)tag1_object).getParameters(null);
+//System.out.println("its parameters: " + parameters);
+		
+		jsdai.lang.SdaiIterator iter = parameters.createIterator();
+		while (iter.next()) {
+			jsdai.SExtended_dictionary_schema.EParameter inst = (jsdai.SExtended_dictionary_schema.EParameter)parameters.getCurrentMemberObject(iter);
+			String its_name = inst.getName(null);
+			if (its_name.equalsIgnoreCase(tag2_name)) { // found! return it
+				return inst;
+			}
+		}
+//		System.out.println("@#NULL find parameter null, name: " + name + ", active_scope: " + active_scope + ", pass: " + parser_pass);
+		return null;
+	}
+
+
+
+
+	static EEntity resolveDoubleTag(String tag1_name, String tag2_name) throws SdaiException {
+		EEntity tag2_object = null;
+		EEntity tag1_object = resolveSingleTag(tag1_name);
+		if (tag1_object == null) {
+			return null;
+		}
+		// check for some pairs, such as entity-attribute
+//System.out.println("tag1 object: " + tag1_object);
+		if (tag1_object instanceof EEntity_definition) {
+			tag2_object = findAttribute_2_tags((EEntity_definition)tag1_object, tag2_name);
+			if (tag2_object == null) {
+				tag2_object = findNamed_type_where_rule((ENamed_type)tag1_object, tag2_name);
+			}
+		} else 
+		if (tag1_object instanceof EDefined_type) {
+			tag2_object = findNamed_type_where_rule((ENamed_type)tag1_object, tag2_name);
+		} else
+		if (tag1_object instanceof EGlobal_rule) {
+			tag2_object = findGlobal_rule_where_rule((EGlobal_rule)tag1_object, tag2_name);
+		} else
+		if (tag1_object instanceof EAlgorithm_definition) {
+//System.out.println("<<<<<HERE>>>>>");
+			tag2_object = findParameter_for_double_tag((EAlgorithm_definition)tag1_object, tag2_name);
+		}
+		
+		return tag2_object;
+	}
+
+	// this version returns first non-null without checking for possible name conflicts
+	static EEntity resolveSingleTag(String tag_name) throws SdaiException {
+  	EEntity tag_object = null;
+		Object tag_object2 = null;
+		Object tag_object3 = null;
+		Object tag_object4 = null;
+		Object tag_object5 = null;
+
+// we need also: schema, type (defined_type), enumeration, enumeration item (can do when have type), where rule labels, type labels. And attributes!!!
+
+
+		// entity - already used separately
+    tag_object = findAttribute(tag_name);
+    if (tag_object != null) return tag_object;
+    tag_object = findWhere_rule(tag_name);
+    if (tag_object != null) return tag_object;
+		tag_object = findEntity_definition(tag_name, (jsdai.SExtended_dictionary_schema.ESchema_definition)null);
+    if (tag_object != null) return tag_object;
+		tag_object = findDefined_typeT(tag_name);
+    if (tag_object != null) return tag_object;
+//    tag_object = findEnumeration_type_element(tag_name);
+//    if (tag_object != null) return tag_object;
+		tag_object = findParameter_for_single_tag(tag_name); // tinka par ir var
+    if (tag_object != null) return tag_object;
+		tag_object2 = findVariableX(tag_name);
+		if (tag_object2 instanceof ECtVariable) {
+			tag_object = ((ECtVariable)tag_object2).getType();
+		}		
+    if (tag_object != null) return tag_object;
+    tag_object = findFunction_definition(tag_name);
+//    tag_object = findFunction_definitionX(tag_name);
+    if (tag_object != null) return tag_object;
+		tag_object = findProcedure_definition(tag_name);
+//		tag_object = findProcedure_definitionX(tag_name);
+    if (tag_object != null) return tag_object;
+		tag_object = findGlobal_rule(tag_name);
+    if (tag_object != null) return tag_object;
+		tag_object = findSubtype_constraint(tag_name);
+    if (tag_object != null) return tag_object;
+		tag_object = findConstant_definition(tag_name);
+		//tag_object = findConstant_definitionX(tag_name);
+    if (tag_object != null) return tag_object;
+		tag_object = findSchema_definitionT(tag_name);
+    if (tag_object != null) return tag_object;
+//		tag_object3 = findInterpretedId(tag_name);  // tinka par 
+//		tag_object4 = findVariableX(tag_name); // ECtVariable - tinka var
+//		tag_object5 = findVariableY(tag_name); // ECtVariable - tinka var
+//System.out.println("2: " + tag_object2); 		
+//System.out.println("3: " + tag_object3); 		
+//System.out.println("4: " + tag_object4); 		
+//System.out.println("5: " + tag_object5); 		
+
+// attribute - no readily suitable method found:
+
+/*
+  static EAttribute findAttribute(String attribute_name3, String attribute_name2, EEntity_definition ed, int attr_type, EEntity_definition edx, String attr_key)
+                    throws SdaiException {
+
+  static EAttribute findAttribute(String attribute_name, EEntity_definition ed, int attr_type, EEntity_definition edx, String attr_key)
+                    throws SdaiException {
+
+  static EAttribute findAttribute(String attribute_name3, String attribute_name2, EEntity_definition ed, int attr_type, EEntity_definition edx, String attr_key)
+                    throws SdaiException {
+
+  static EAttribute findAttribute(String attribute_name, EEntity_definition ed, int attr_type, EEntity_definition edx, String attr_key)
+                    throws SdaiException {
+*/
+
+
+  	return tag_object;
+  }
+
+	static EEntity resolveSubtag(String tag_name, EEntity outer_tag) throws SdaiException {
+		EEntity result_object = null;
+		if (outer_tag == null) {
+			// the first one, or prefixes not present
+			// try the outer possible scope first - schema
+//			result_object = findModel2(tag_name);	
+			if (result_object != null) {
+				// hm, what if a schema has the same name as an entity in it, does our compiler allows this?
+				// yes, it does - you may have the schema, the entity and the attribute all with the same name.
+				// or schema -> function -> inner entity -> attribute - all with the same name - OK
+				// but an outer function and an inner function cannot have the same name - why, is it a bug? scopes are different
+				//return result_object;
+			}
+		} else {
+			// cannot be schema, because at least one outer tag present
+		}
+//System.out.println("resulting tag object: " + result_object);		
+		return result_object;
+	}
+
+	static EEntity resolveSubtagTryHarder(String tag_name, EEntity outer_tag) throws SdaiException {
+		return null;
+	}
+	 
+
+	// this is for multi-line remarks only
+	static EEntity resolveTag(String tag_name,  Stack tag_stack) throws SdaiException {
+		return null;
+	} 
+
+
   static EEntity_definition findEntity_definition(String name, ESchema_definition optional_schema)
                                     throws SdaiException {
-// System.out.println("X___X 01 in findEntity_definition, entity name: " + name + ", pass: " + parser_pass);
+ //System.out.println("X___X 01 in findEntity_definition, entity name: " + name + ", pass: " + parser_pass);
+ //System.out.println("hashed declarations: " + hm_current_entity_declarations);
 		EEntity_definition edf = null;
 		if (hm_current_entity_declarations != null) {
-// System.out.println("X___X 02 in findEntity_definition, hm_current_entity_declarations not NULL: " + hm_current_entity_declarations);
+//System.out.println("X___X 02 in findEntity_definition, hm_current_entity_declarations not NULL: " + hm_current_entity_declarations);
 			EEntity_declaration edc = (EEntity_declaration)hm_current_entity_declarations.get(name.toLowerCase());
-// System.out.println("X___X 03 in findEntity_definition, declaration: " + edc);
+//System.out.println("X___X 03 in findEntity_definition, declaration: " + edc + ", key: " + name.toLowerCase());
 			if (edc != null) {
 				edf = (EEntity_definition)edc.getDefinition(null);
 			} else {
+				/*
+				System.out.println("DOES IT CONTAIN THE KEY: " + hm_current_entity_declarations.containsKey(name.toLowerCase()));
+				Set all_keys = hm_current_entity_declarations.keySet();
+				System.out.println("ALL KEYS: " + all_keys);
+				System.out.println("does it contain our name: " + all_keys.contains(name.toLowerCase()));
+				//if (all_keys.contains(name.toLowerCase())) {
+					Iterator it = all_keys.iterator();
+					if (it.hasNext()) {
+						String the_key = (String)it.next();
+						System.out.println("EXTRACTED KEY: " + the_key + ", length: " + the_key.length());
+						edc = (EEntity_declaration)hm_current_entity_declarations.get(the_key);
+						System.out.println("2nd ATTEMPT: " + edc);
+					}
+				//}
+			*/
 			}
 		} else {
 // System.out.println("X___X 04 in findEntity_definition, declaration, going to non-optimal search");

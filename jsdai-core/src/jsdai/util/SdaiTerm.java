@@ -110,7 +110,7 @@ public class SdaiTerm implements SdaiListener {
 		"  SdaiTransaction t: r(start read only)  c(commit) e(commit+end)   i(info)",
 		"                     w(start read write) a(abort)  b(abort+end)",
 		"   SdaiRepository r: =(nr) o(open)  d(delete) i(info) s(create-c)",
-		"                   :       c(close) e(export) l(list) m(create-m)",
+		"                   :       c(close) e(export) l(list) m(create-m) x(import-r p28)",
 		"        SdaiModel m: d(delete) r(startReadOnly) e(endReadOnly) p(promote to RW)",
 		"                   : n(rename) w(startReadWrite) f(endReadWrite) i(info)",
 		"                   : =(nr) c(create) l(list) o(reduce to RO)",
@@ -173,6 +173,7 @@ public class SdaiTerm implements SdaiListener {
 		"ro : openRepository - () - Open this repository.",
 		"rc : closeRepository - () - Close this repository.",
 		"rd : deleteRepository - () - Imediatly delete this repository.",
+		"rx : importXml p28 - (path, [name, [location]]) - Import part28 file.",		
 		"re : exportClearTextEncoding - (path) - Export to phisical file",
 		"ri : getName.. - () - Show information about this repository.",
 		"rl : getModels, getSchemas - () - List all models and schemas of repository.",
@@ -731,6 +732,15 @@ public class SdaiTerm implements SdaiListener {
 					break;
 				case 'e':
 					repositories[ir].exportClearTextEncoding(tokens[1]);
+					break;
+				case 'x':
+					InputStream fromStream = new BufferedInputStream(new FileInputStream(tokens[1]));
+					try {
+						repositories[ir].importXml(fromStream);
+					}
+					finally {
+						fromStream.close();
+					}
 					break;
 				case 'i':
 					out.println("--------------- Repository -------------");

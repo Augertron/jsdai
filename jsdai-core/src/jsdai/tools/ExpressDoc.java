@@ -75,6 +75,9 @@ public class ExpressDoc {
 	static boolean flag_go_to_extensible_root = true;
 
 	HashMap hm_iso_numbers;
+	HashMap hm_iso_ids;
+	HashMap hm_part_names;
+	
 	Vector aggregates = new Vector();
 	Vector deep_agg = new Vector();
 	boolean doNotGenerateJava = false;
@@ -734,7 +737,8 @@ REMOVE
 			if (printISO_DBpath) {
 			 System.out.println("iso_db file path: " + fiso.getAbsolutePath());
 			}
-			readIsoNumbersOfSchemas(iso_file);
+			//readIsoNumbersOfSchemas(iso_file);
+			readIsoIdsAndPartNamesOfSchemas(iso_file);
 		} else {
 			if (printISO_DBpath) {
 				System.out.println("iso_db file path - file does not exist: " + fiso.getAbsolutePath());
@@ -928,17 +932,17 @@ REMOVE
           select_type = calculateSelectPaths(count, current_nodes, current_node_strings, indeces, depth, depth_count, (ESelect_type) domain, with_type);
 
           if ((select_type == 0) || (domain instanceof EEntity_select_type)) { // includes only entities
-System.out.println("<1>: " + dt);
+//System.out.println("<1>: " + dt);
 						partAggr += printH3("public class A"+getUpper(dt.getName(null))+" extends "+printHRef("AEntitySelect", "../lang/AEntitySelect.html"));
 						partAggr += printAggregateForSelect((ESelect_type)domain, new MyInteger(2), new Vector());
 					} else {
-System.out.println("<2>: " + dt);
+//System.out.println("<2>: " + dt);
 						partAggr += printH3("public class A"+getUpper(dt.getName(null))+" extends "+printHRef("CAggregate", "../lang/CAggregate.html"));
 						partAggr += printAggregateForSelect((ESelect_type)domain, new MyInteger(2), new Vector());
 					}
 					
 				} else {
-System.out.println("<3>: " + nt);
+//System.out.println("<3>: " + nt);
 					partAggr += printH3("public class A"+getUpper(nt.getName(null))+" extends "+printHRef("AEntity", "../lang/AEntity.html"));
 					partAggr += printBreak();
 				}
@@ -1983,8 +1987,8 @@ System.out.println("<3>: " + nt);
 
 	String printIsoNumber(String schema_name) {
 		String iso_number = "";
-		if (hm_iso_numbers != null) {
-			iso_number = (String)hm_iso_numbers.get(schema_name.toLowerCase());
+		if (hm_iso_ids != null) {
+			iso_number = (String)hm_iso_ids.get(schema_name.toLowerCase());
 			if (iso_number == null) {
 				iso_number = "";
 			}
@@ -1997,8 +2001,8 @@ System.out.println("<3>: " + nt);
 
 	void printIsoNumber(StringBuffer result, String schema_name) {
 		String iso_number = "";
-		if (hm_iso_numbers != null) {
-			iso_number = (String)hm_iso_numbers.get(schema_name.toLowerCase());
+		if (hm_iso_ids != null) {
+			iso_number = (String)hm_iso_ids.get(schema_name.toLowerCase());
 			if (iso_number == null) {
 				iso_number = "";
 			}
@@ -2018,8 +2022,8 @@ System.out.println("<3>: " + nt);
 
 	String printIsoNumberComment(String schema_name) {
 		String iso_number = "";
-		if (hm_iso_numbers != null) {
-			iso_number = (String)hm_iso_numbers.get(schema_name.toLowerCase());
+		if (hm_iso_ids != null) {
+			iso_number = (String)hm_iso_ids.get(schema_name.toLowerCase());
 			if (iso_number == null) {
 				iso_number = "";
 			}
@@ -2032,8 +2036,8 @@ System.out.println("<3>: " + nt);
 
 	void printIsoNumberComment(StringBuffer result, String schema_name) {
 		String iso_number = "";
-		if (hm_iso_numbers != null) {
-			iso_number = (String)hm_iso_numbers.get(schema_name.toLowerCase());
+		if (hm_iso_ids != null) {
+			iso_number = (String)hm_iso_ids.get(schema_name.toLowerCase());
 			if (iso_number == null) {
 				iso_number = "";
 			}
@@ -3002,17 +3006,20 @@ System.out.println("<3>: " + nt);
 		   partInterface += printTableHeader();
 			partInterface += printH3(printName("public final class E" + getUpper(type.getName(null)), "E" + getUpper(type.getName(null))));
 //			partInterface += printTab("public static int unset = Integer.MIN_VALUE");
-			A_string ant = ((EEnumeration_type) domain).getElements(null);
+			//A_string ant = ((EEnumeration_type) domain).getElements(null);
+			//A_string ant = getElements((EEnumeration_type) domain);
+			Vector ant = getElements((EEnumeration_type) domain);
+//			A_string ant = ((EEnumeration_type) domain).getElements(null,null);
 			String s = "";
 			boolean first = true;
 			int i = 0;
-			for (i = 1; i <= ant.getMemberCount(); i++) {
-				partInterface += printTab("static final int "+ant.getByIndex(i).toUpperCase()+" = "+String.valueOf(i));
+			for (i = 0; i < ant.size(); i++) {
+				partInterface += printTab("static final int "+((String)ant.elementAt(i)).toUpperCase()+" = "+String.valueOf(i+1));
 				if (first) {
-					s += "\""+ant.getByIndex(i).toUpperCase()+"\"";
+					s += "\""+((String)ant.elementAt(i)).toUpperCase()+"\"";
 					first = false;
 				} else {
-					s += ", \""+ant.getByIndex(i).toUpperCase()+"\"";
+					s += ", \""+((String)ant.elementAt(i)).toUpperCase()+"\"";
 				}
 			}
 			partInterface += printTab("static String[] "+printBold("values")+" = {"+s+"}");
@@ -4604,7 +4611,8 @@ System.out.println("<2005-05-23> explicit redeclared attribute: " + (EAttribute)
 */
 
 
-				partType += print("BASED ON ");
+//				partType += print("BASED ON ");  // this must be  bug #3594 - the only such occurrence
+				partType += print("BASED_ON ");
 				if (def != null) {
 //l					partType  += print(printHRef(def.getName(null).toLowerCase(), getSchemaNameIfDiffer(def, schema)+getUpper(def.getName(null))+".html"));
 					partType  += print(printHRef(def.getName(null), getSchemaNameIfDiffer(def, schema)+getUpper(def.getName(null))+".html"));
@@ -4654,6 +4662,72 @@ System.out.println("<2005-05-23> explicit redeclared attribute: " + (EAttribute)
 			
 //			partType += println("SELECT (");
 		}
+//####################################################################333
+		else if (type instanceof EEnumeration_type) {
+			// RR: add support for extensible enumeration types?
+
+			if ((type instanceof EExtensible_enumeration_type) && (type instanceof EExtended_enumeration_type)) {
+				partType += print("EXTENSIBLE ENUMERATION BASED_ON ");
+				EDefined_type based_on = ((EExtended_enumeration_type)type).getIs_based_on(null);
+				partType += print(based_on.getName(null));
+			} else
+			if (type instanceof EExtensible_enumeration_type) {
+				partType += print("EXTENSIBLE ENUMERATION");
+			} else
+			if (type instanceof EExtended_enumeration_type) {
+				partType += print("ENUMERATION BASED_ON ");
+				EDefined_type based_on = ((EExtended_enumeration_type)type).getIs_based_on(null);
+				partType += print(based_on.getName(null));
+			} else { // just a regular enumeration
+				partType += print("ENUMERATION OF (");
+			}
+
+			A_string ant = ((EEnumeration_type) type).getElements(null);
+			int iDim =  ant.getMemberCount();
+			if (iDim >= 1) {
+
+				if ((type instanceof EExtensible_enumeration_type) && (type instanceof EExtended_enumeration_type)) {
+					partType += print(" WITH (");
+				} else
+				if (type instanceof EExtensible_enumeration_type) {
+					partType += print(" OF (");
+				} else
+				if (type instanceof EExtended_enumeration_type) {
+					partType += print(" WITH (");
+				} else {
+				}
+
+				partType += println();
+				int i = 1;
+				while (i <= iDim) {
+					String temp = "";
+					temp += print(ant.getByIndex(i));
+					if (i < iDim) {
+						temp += print(",");
+					} else {
+						//temp += print(" )");
+                        temp += print(" );");
+					}
+					i++;
+					partType += printTab(temp);
+				}
+			} else {
+				//partType += print(" )");
+				if ((type instanceof EExtensible_enumeration_type) && (type instanceof EExtended_enumeration_type)) {
+                partType += print(";\n");
+				} else
+				if (type instanceof EExtensible_enumeration_type) {
+                partType += print(";\n"); // for regular enumeration with have println to handle new line
+				} else
+				if (type instanceof EExtended_enumeration_type) {
+                partType += print(";\n");
+				} else {
+                partType += print(" );");
+				}
+			}
+		}
+
+/*#############################################################################
 		else if (type instanceof EEnumeration_type) {
 			// RR: add support for extensible enumeration types?
 			partType += print("ENUMERATION (");
@@ -4679,6 +4753,7 @@ System.out.println("<2005-05-23> explicit redeclared attribute: " + (EAttribute)
                 partType += print(" );");
 			}
 		}
+#########################################################################*/
         else {
             partType += print("GENERIC");
         }
@@ -4966,7 +5041,8 @@ System.out.println("<2005-05-23> explicit redeclared attribute: " + (EAttribute)
                 EParameter p = ap.getCurrentMember(iter_ap);
                 if (p.testName(null)) {
                     if (!parameter_list.equals("")) {
-                        parameter_list += ", ";
+                        //parameter_list += ", ";
+                        parameter_list += "; ";
                     }
                     if (p.testVar_type(null) && p.getVar_type(null)) {
                         parameter_list += "VAR ";
@@ -4981,7 +5057,8 @@ System.out.println("<2005-05-23> explicit redeclared attribute: " + (EAttribute)
                             String stl="";
                             while (iter_atl.next()) {
                                 if (!stl.equals("")) {
-                                    stl += ",";
+                                    //stl += ",";
+                                    stl += ";";
                                 }
                                 stl+=atl.getCurrentMember(iter_atl);
                             }
@@ -8107,8 +8184,112 @@ else flag_debug = false;
 		return selections;
 	}
 
+//################################ for extensible enumerations
+
+   // made from the corresponding implementation for extensible select types
+
+	// getEnumerationElements - seems not to work with extended dictionary schema, so artificial local implementation instead
+
+	Vector getElements(EEnumeration_type st) throws SdaiException {
+		Vector l_selections = null;
+		Vector selections = null;
+		if (st.testLocal_elements(null)) {
+			//l_selections = st.getLocal_elements(null);
+			l_selections = getLocal_elements(st);
+// System.out.println("XAM 01: local nr: " + l_selections.getMemberCount() + " -: " + l_selections);			
+		}
+		if (st instanceof EExtended_enumeration_type) {
+			selections = addElementsFromExtensible((EExtended_enumeration_type)st, l_selections);
+			return selections;
+		}
+// System.out.println("XAM: number of selections: " + selections.getMemberCount());
+		return l_selections;
+	}
 
 
+/*	
+	static ANamed_type getElements(EEnumeration_type st, EDefined_type dt, ASdaiModel domain) throws SdaiException {
+		ANamed_type l_selections = null;
+		ANamed_type prior_selections = null;
+		ANamed_type selections = null;
+		if (st.testLocal_elements(null)) {
+//			l_selections = st.getLocal_selections(null);
+			selections = st.getLocal_elements(null);
+		}
+		if (st instanceof EExtended_enumeration_type) {
+			// this adds only in backward direction, from the select types that are extended by this type
+//			prior_selections = addSelectionsFromExtensible((EExtended_select_type)st, l_selections);
+			selections = addElementsFromExtensible((EExtended_enumeration_type)st, selections);
+		}
+		if (st instanceof EExtensible_enumeration_type) {
+			// what about future types that further extend this type?
+//			selections = addSelectionsFromExtensions((EExtensible_select_type)st, dt, selections, domain); 
+		}	
+		
+		return selections;
+		
+// System.out.println("XAM: number of selections: " + selections.getMemberCount());
+//		return l_selections;
+	}
+*/
+
+	static Vector addElementsFromExtensible(EExtended_enumeration_type st, Vector current_selections) throws SdaiException {
+	
+// System.out.println("adding selections from Extensible: " + st);	
+	
+		Vector l_selections = null;
+		Vector selections = null;
+//		ESelect_type prior = st.getIs_based_on(null);
+// System.out.println("PROBLEM with based_on: " + st);
+		EEnumeration_type prior = (EEnumeration_type)st.getIs_based_on(null).getDomain(null);
+		if (prior.testLocal_elements(null)) {
+//			l_selections = prior.getLocal_elements(null);
+			l_selections = getLocal_elements(prior);
+//new A_string(ExpressTypes.SET_STRING_TYPE, this);
+			selections = new Vector();
+			for (int i = 0; i < l_selections.size(); i++) {
+				String element = (String)l_selections.elementAt(i);
+				//selections.addUnordered(element);
+				selections.addElement(element);
+			}
+		}
+		if (current_selections != null) {
+			if (current_selections.size() > 0) {
+				if (selections == null) {
+					selections = new Vector();
+				}	
+		
+		// selections = selections + current_selections, in that order, perhaps check for duplicates because it is SET
+// System.out.println("XXRR: number of selections: " + current_selections.getMemberCount());
+				for (int i = 0; i < current_selections.size(); i++) {
+// System.out.println("Index: " + i + " - type: " + st);
+				  String element = (String)current_selections.elementAt(i);
+//					if (!(selections.isMember(element))) {
+					if (!(selections.contains(element))) {
+// System.out.println("XXRR Adding element from extensible: " + element);				
+						selections.addElement(element);
+					}
+				}
+			}
+		}
+		if (prior instanceof EExtended_enumeration_type) {
+// System.out.println("PROBLEM with based_on - prior: " + prior);
+			selections = addElementsFromExtensible((EExtended_enumeration_type)prior, selections);
+		}
+		return selections;
+	}
+
+//################################################################## for extensible enumerations
+
+static Vector getLocal_elements(EEnumeration_type et) throws SdaiException {
+			Vector result = new Vector();
+			A_string elements = et.getLocal_elements(null);
+	    for (int i = 1; i < elements.getMemberCount() + 1; i++) {
+	    	String element = (String)elements.getByIndex(i);
+	    	result.addElement(element);
+	    }
+			return result;
+}
 
 	private class AttributeClass {
 		EEntity_definition the_entity = null;
@@ -9790,7 +9971,7 @@ else flag_debug = false;
 							if (!(non_final_users.containsKey(attribute))) {
 								non_final_users.put(attribute, new UserClass(attribute, true, domain, parent, non_final_users));								
 							}							
-							System.out.println("USER-AGGREGATE attribute: " + attribute);
+//x							System.out.println("USER-AGGREGATE attribute: " + attribute);
 						}
             
             // adding also derived
@@ -9802,7 +9983,7 @@ else flag_debug = false;
 							if (!(non_final_users.containsKey(attribute))) {
 								non_final_users.put(attribute, new UserClass(attribute, true, domain, parent, non_final_users));								
 							}							
-							System.out.println("USER-AGGREGATE derived attribute: " + attribute);
+//x							System.out.println("USER-AGGREGATE derived attribute: " + attribute);
 						}
 
 						ADefined_type defs = new ADefined_type();
@@ -9814,7 +9995,7 @@ else flag_debug = false;
 							if (!(non_final_users.containsKey(def))) {
  	        			non_final_users.put(def, new UserClass(def, false, domain, parent, non_final_users));
 							}							
-							System.out.println("USER-AGGREGATE-DEFINED type: "  + def);
+//x							System.out.println("USER-AGGREGATE-DEFINED type: "  + def);
          		}
 					} else 
 					if (user instanceof ESelect_type) {
@@ -9824,7 +10005,7 @@ else flag_debug = false;
 						it_defs = defs.createIterator();
 						while (it_defs.next()) {
 							EDefined_type def = (EDefined_type)defs.getCurrentMemberObject(it_defs);
-							System.out.println("<01>adding USER - SELECT type: " + def);
+//x							System.out.println("<01>adding USER - SELECT type: " + def);
 							if (already_done == null) {
 								already_done = new HashSet();
 							}
@@ -9849,13 +10030,13 @@ else flag_debug = false;
 								if (!(non_final_users.containsKey(user2))) {
 									non_final_users.put(user2, new UserClass(user2, parent));
 								}							
-								System.out.println("@-@ adding USER - EXPLICIT attribute: " + user2 + ", user: " + user + ", parent: " + parent.the_user);
+//x								System.out.println("@-@ adding USER - EXPLICIT attribute: " + user2 + ", user: " + user + ", parent: " + parent.the_user);
 							}	else
 							if (user2 instanceof EDerived_attribute) {
 								if (!(non_final_users.containsKey(user2))) {
 									non_final_users.put(user2, new UserClass(user2, parent));
 								}							
-								System.out.println("@-@ USER-DERIVED: " + user2);
+//x								System.out.println("@-@ USER-DERIVED: " + user2);
 							} else {
 	//					System.out.println("@-@ NOT IMPLEMENTED (implemented) - USER-DEFINED type: "  + user2);
 								if (!(non_final_users.containsKey(user2))) {
@@ -9997,11 +10178,11 @@ else flag_debug = false;
        		EEntity user = users.getCurrentMemberEntity(it_users);
 					if (user instanceof EExplicit_attribute) {
 						final_users.add(new UserClass(user));
-							System.out.println("adding USER - EXPLICIT attribute - entity: " + entity + ", user: " + user);
+//x							System.out.println("adding USER - EXPLICIT attribute - entity: " + entity + ", user: " + user);
 					}	else
 					if (user instanceof EDerived_attribute) {
 						final_users.add(new UserClass(user));
-							System.out.println("USER-DERIVED - entity: " + entity + ", user: " + user);
+//x							System.out.println("USER-DERIVED - entity: " + entity + ", user: " + user);
 					} else 
 					if (user instanceof EAggregation_type) {
 
@@ -10013,7 +10194,7 @@ else flag_debug = false;
 						while (it_attrs.next()) {
 							EAttribute attribute = (EAttribute)attrs.getCurrentMemberObject(it_attrs);
 							final_users.add(new UserClass(attribute));								
-							System.out.println("USER-AGGREGATE attribute - entity: " + entity + ", user: " + attribute);
+//x							System.out.println("USER-AGGREGATE attribute - entity: " + entity + ", user: " + attribute);
 						}
 						// add also defined types here ? (later)
 						ADefined_type defs = new ADefined_type();
@@ -10023,7 +10204,7 @@ else flag_debug = false;
 						while (it_defs.next()) {
 							EDefined_type def = (EDefined_type)defs.getCurrentMemberObject(it_defs);
          			final_users.add(new UserClass(def));
-							System.out.println("USER-AGGREGATE-DEFINED type - entity: " + entity + ", user: " + def);
+//x							System.out.println("USER-AGGREGATE-DEFINED type - entity: " + entity + ", user: " + def);
          		}
 
 					} else 
@@ -10034,7 +10215,7 @@ else flag_debug = false;
 						it_defs = defs.createIterator();
 						while (it_defs.next()) {
 							EDefined_type def = (EDefined_type)defs.getCurrentMemberObject(it_defs);
-							System.out.println("adding USER - SELECT type - entity: " + entity + ", user: " + def);
+//x							System.out.println("adding USER - SELECT type - entity: " + entity + ", user: " + def);
 							addSelectUsersXYZ(final_users, (ESelect_type)user, def, domain);
          			// temp for testing
          			// final_users.add(new UserClass(def, false));
@@ -10043,7 +10224,7 @@ else flag_debug = false;
 					} else
 					if (user instanceof EDefined_type) {
 						// could it happen?
-						System.out.println("USER-DEFINED type - entity: " + entity + ", user: " + user);
+//x						System.out.println("USER-DEFINED type - entity: " + entity + ", user: " + user);
 					}
 			 } // while through users
 
@@ -10203,13 +10384,13 @@ else flag_debug = false;
 						if (!(non_final_users.containsKey(user))) {
 							non_final_users.put(user, new UserClass(user));
 						}							
-						System.out.println("adding USER - EXPLICIT attribute - entity: " + entity + ", user: " + user);
+//x						System.out.println("adding USER - EXPLICIT attribute - entity: " + entity + ", user: " + user);
 					}	else
 					if (user instanceof EDerived_attribute) {
 						if (!(non_final_users.containsKey(user))) {
 							non_final_users.put(user, new UserClass(user));
 						}							
-						System.out.println("USER-DERIVED - entity: " + entity + ", user: " + user);
+//x						System.out.println("USER-DERIVED - entity: " + entity + ", user: " + user);
 					} else {
 						if (!(non_final_users.containsKey(user))) {
 							non_final_users.put(user, new UserClass(user, false, domain, null, non_final_users));
@@ -12332,70 +12513,546 @@ pw.println("</HTML>");
 
 		
 	}
+
+
+	/*
+
+    The new implementation takes three first tokens separated by commas:
+    schema_name, iso_id, part_name
+    
+    It is very robust and flexible and accepts anything without breaking and extracts maximum of useful information from it.
+    However, occasionally it prints warnings, if it appears that the author of document_reference.txt did not intended what was encountered.
+    
+    If the first token is not present (no schema name) - the line is skipped, but a warning is printed:
+    , iso_id, part_name
+    , iso_id
+    ,, part_name
+    etc
+   
+    If the first token is present but both iso_id and part_name are absent, then, again, such a line is skipped and a warning is printed.:
+    schema_name
+    schema_name,
+    schema_name,,
+    schema_name,,,
+    etc.
+    
+    If one of iso_id or part_name is present and the other one is absent, then it is considered a correct line, no warning.
+    schema_name, iso_id
+    schema_name,, part_name
+    
+    There are three ways for the last token to end: 1) EOF, 2) EOL, 3) another comma - because comma separates tokens
+    So there may be more commas after the last useful token, or anything really after another comma.
+    That allows us to use commas for comments - see below.
+ 
+    Here are the allowed characters.
+    the character range is as follows: 0-31 - control symbols, I decided not to allow them, some of them may cause unintended consequences
+    32-255 - allowed, except comma (we use it as a separator) and possibly except the comment character.
+    
+    The comment character, if defined, makes everything from it (put anythere in the line) to the end of the line a comment.
+    Therefore it is not possible to use it as a line comment character only at the begining of a line, but as a regular allowed character elsewhere.
+    So we should choose for the line comment character such a character that is not needed in iso_id or part_name.
+    My previous implementation used # as the comment character. For backward compatibility perhaps we should use it as well.
+    On the other hand, if it is needed in iso_id, etc, we may choose a different comment character.
+    
+    There is another possibility - not to have a comment character at all.
+    Comments may be marked by the same separator character comma.
+    
+    You can write a comment after the 3rd comma, because after the part_name anything is accepted and ignored, and the part_name ends with EOL or with a comma:
+		
+		presentation_appearance_schema, ISO 10303-46, visual_presentation, ========= IMPORTANT LINE HERE ===========
+		
+		or, if part_name is not present, still after the 3rd comma:
+		
+		presentation_appearance_schema, ISO 10303-46,, ========= IMPORTANT LINE HERE ===========
+        
+    or, if part_name is present, but iso_id is not present (not sure if it makes sense, but it is allowed):
+    
+		presentation_appearance_schema,, visual_presentation, ========= IMPORTANT LINE HERE ===========
+    
+    of course, once the 3rd comma is encountered, there may be more commas, because anything is allowed.
+    It does not matter if the whole comment is one skipped toked, or multiple skipped tokens.
+    
+    		presentation_appearance_schema, ISO 10303-46,, ========= IMPORTANT == , also important, ,,,,,,,,,, even more important,,,,,,,
+
+    
+    
+    Also the whole line may be marked as a comment by using a comma:
+    
+    ,>>>>>>>>>>>>>>>>>>>> the really important stuff starts here <<<<<<<<<<<<<<<<<<
+    
+    When a comma is encountered before the schema name, then such a line is ignored and skipped, because you can do nothing without a schema name.
+    However, I also print a warning, assuming that the author of document_reference.txt intended something else.
+    If we want to use a line begining with a comma as a comment line, I will not print that warning, that is all.
+    
+    
+    The use of commas for comments is a side-effect of the implementation, I just made it flexible to be able to handle without breaking any garbage thrown at it.
+    And as long as the name of the schema and at least one of the two - iso_id and part_name - are present, no warnings are printed.
+    
+    
+    
+    
+    
+
+		1) valid when both iso_id and part name are present:
+		
+			presentation_appearance_schema, ISO 10303-46, visual_presentation   
+			
+			also valid, flexible handling of garbage:
+			
+			presentation_appearance_schema, ISO 10303-46, visual_presentation,   
+			presentation_appearance_schema, ISO 10303-46, visual_presentation, some other garbage ignored - ignored
+			presentation_appearance_schema, ISO 10303-46, visual_presentation, some other garbage ignored - ignored, and maybe more garbage etc  
+			presentation_appearance_schema, ISO 10303-46, visual_presentation, , and maybe only more garbage etc  
+
+      and so on
+
+      BTW, it allows to write end-of-line comments, because everything after the part_name is ignored until EOL, but don't forget to use comma after part_name,
+      otherwise your comment will become a part of the part name.
+
+			presentation_appearance_schema, ISO 10303-46, visual_presentation, this allows to generate imgfile.content module="visual_presentation"
+			presentation_appearance_schema, ISO 10303-46, visual_presentation, ========= IMPORTANT LINE HERE ===========
+     
+
+		2) iso_id is present,  part name is absent
+
+			presentation_appearance_schema, ISO 10303-46
+
+			also valid:
+			
+			presentation_appearance_schema, ISO 10303-46, 
+			presentation_appearance_schema, ISO 10303-46, , >>>>>>> THIS IS A COMMENT <<<<<<<<<<<<<
+			presentation_appearance_schema, ISO 10303-46, , , , , , >>>>>>> THIS IS ALSO A COMMENT <<<<<<<<<<<<< , , , --- comment continues ----
+
+		3) iso_id is absent, part name is present
+		
+			presentation_appearance_schema, , visual_presentation
 	
-	void readIsoNumbersOfSchemas(String iso_file_name) {
+			also valid:
 
-  	final int TK_START_LINE = 0;
-  	final int TK_LONG = 1;
-  	final int TK_SHORT = 2;
-  	final int TK_COMMA = 3;
+			presentation_appearance_schema, , visual_presentation,
+			presentation_appearance_schema, , visual_presentation,,,,,,,, so yes, we skipped the iso_id here, see, comments may contain also commas!
+		
+		
+		 COMMENTS:
+		 
+		 We already saw that if there is a comma after part name (even if part name itself is absent) is ignored and therefore may be used as comment.
+		 That is the end-of-line-comment.
+		 
+		 A single line comment officially begins with #:
+		 
+		 # this is a comment line
+		 
+		 But because this implementation handles garbage flexibly and avoids breaking with errors, the following lines are also ignored and have no effect:
+ 
+			presentation_appearance_schema
+			,presentation_appearance_schema, ISO 10303-46, visual_presentation   
 
-		hm_iso_numbers = new HashMap();
+     The first one contains only the schema name, and therefore iso_id and part name are not specified, as if this line were not present at all
+     The second one contains a comma at the very beginning, therefore the schema part is absent and it is not possible to associate the following tokens with a schema,
+     so it is also ignored.
+     
+     However, both those cases may occur unintentionally when the author of the document_reference.txt thinks that everything is ok, therefore, warning messages are printed.
+     Therefore don't use those cases as single line comments, use #..... instead.
+     
+     Also, if several lines contain the same schema name, only the first one is taken (or the last one?)
+     And a warning is printed, because perhaps the author intended to write the name of a different schema
+     
 
-    try {
-      FileInputStream ins = new FileInputStream(iso_file_name);
-      InputStreamReader isr = new InputStreamReader(ins);
-      StreamTokenizer st = new StreamTokenizer(isr);
-      st.eolIsSignificant(true);
-      st.wordChars('_', '_');
-      st.wordChars(' ', ' ');
-      st.wordChars('-', '-');
-      st.wordChars('/', '/');
-      st.ordinaryChar(',');
-      st.commentChar('#');
+								
+  */
 
-      int status = TK_START_LINE;
-      String current_schema_name = null;
-      String current_schema_iso_number = null;
+	
+//	public static boolean readIsoIdsAndPartNamesOfSchemas(String iso_file_name, MessageConsoleStream constream) {
+	boolean readIsoIdsAndPartNamesOfSchemas(String iso_file_name) {
 
-      while (st.ttype != StreamTokenizer.TT_EOF) {
-        st.nextToken();
-//System.out.println("<<>><> status: " + status + ", type: " + st.ttype + ", value: " + st.sval);
-        if ((status == TK_START_LINE) && (st.ttype == StreamTokenizer.TT_WORD)) {
-          current_schema_name = st.sval.toLowerCase();
-          status = TK_LONG;
-        } else if ((status == TK_LONG) && (st.ttype == ',')) {
-          status = TK_COMMA;
-        } else if ((status == TK_COMMA) && (st.ttype == StreamTokenizer.TT_WORD)) {
-          current_schema_iso_number = st.sval;
-          status = TK_SHORT;
-					hm_iso_numbers.put(current_schema_name, current_schema_iso_number);
-//System.out.println("<<>> schema: " + current_schema_name + ", number: " +  current_schema_iso_number);       	
-        } else if (((status == TK_SHORT) && (st.ttype == StreamTokenizer.TT_EOL)) || 
-                       (st.ttype == StreamTokenizer.TT_EOF)) {
-          // current reading completed. Now, use it.
-          if (st.ttype == StreamTokenizer.TT_EOF) {
-            status = TK_START_LINE;
 
-            break;
-          } else if (st.ttype == StreamTokenizer.TT_EOL) {
-            // ok, next complex entity
-            status = TK_START_LINE;
-          }
-        } else if ((status == TK_START_LINE) && (st.ttype == StreamTokenizer.TT_EOL)) {
-        } else {
-          System.out.println("ERROR in input file, line: " + st.lineno());
+		final int TK_START             = 0;
+		final int TK_SCHEMA_NAME       = 1;
+		final int TK_COMMA_1           = 2;
+		final int TK_ISO_ID            = 3;
+		final int TK_COMMA_2           = 4;
+		// final int TK_PART_NAME         = 5;
+		// final int TK_COMMA_OTHER       = 6;
+		// final int TK_WORD_OTHER        = 7;
+		final int TK_SKIPPING_THE_LINE = 5;
+		
+		
+		
+		// hm_iso_ids = new HashMap();
+		// hm_part_names = new HashMap();
 
-          break;
-        }
-      }
+/*		
+		if (hm_iso_ids == null) {
+			hm_iso_ids = new HashMap();
+			hm_part_names = new HashMap();
+		} else {
+			return true;
+		}
+*/
 
-    } // try
-    catch (IOException e) {
+		hm_iso_ids = new HashMap();
+		hm_part_names = new HashMap();
+
+		try {
+
+			FileInputStream ins = new FileInputStream(iso_file_name);
+			InputStreamReader isr = new InputStreamReader(ins);
+			StreamTokenizer st = new StreamTokenizer(isr);
+
+			st.eolIsSignificant(true);
+			st.slashSlashComments(true);
+			st.slashStarComments(false);
+
+			// st.wordChars(0, 31); // these are Ctrl characters, leaving them alone
+			// st.wordChars(32, 43);
+			st.wordChars(32, 34);
+			st.commentChar('#'); // 35
+			//st.wordChars('#', '#');
+			st.wordChars(36, 43);
+			st.ordinaryChar(','); // 44
+			st.wordChars(45, 255);
+
+			int status = TK_START;
+			
+			String current_schema_name = null;
+			String current_schema_iso_id = null;
+			String current_schema_part_name = null;
+			Object previous = null;
+
+			while (st.ttype != StreamTokenizer.TT_EOF) {
+				st.nextToken();
+
+				if (status == TK_START) {
+					if (st.ttype == StreamTokenizer.TT_WORD) {
+						current_schema_name = st.sval.trim().toLowerCase();
+						status = TK_SCHEMA_NAME;
+					} else
+					if (st.ttype == StreamTokenizer.TT_EOL) {
+						// an empty line - ignore, skip it.
+						// do absolutely nothing, status remains the same (TK_START) for the next line
+					} else
+					if (st.ttype == StreamTokenizer.TT_EOF) {
+						break;
+					} else {
+						// something else (probably a comma) at the begining of the line is so wrong that the line is ignored and skipped, just like a comment line #......
+						// but a warning is printed
+						status = TK_SKIPPING_THE_LINE;
+						if (st.ttype == ',') {
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " starts with a comma - IGNORED");
+						} else 
+						if (st.ttype == StreamTokenizer.TT_NUMBER) {
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " starts with a number: " + st.nval + " - IGNORED");
+						} else {
+							// what can it be? impossible?
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " starts with not sure what: " + st.toString() + "  - IGNORED");
+						}
+					
+					}
+				} else
+				if (status == TK_SCHEMA_NAME) {
+					if (st.ttype == ',') {
+						status = TK_COMMA_1;
+					} else
+					if (st.ttype == StreamTokenizer.TT_EOL) {
+						// seems that there is nothing after the schema name - ignore, skip it, but print a warning
+							System.out.println("ISO_DB WARNING! line: " + (st.lineno()-1) + " contains only the schema name - IGNORED");
+							status = TK_START;
+							current_schema_name = null;
+							current_schema_iso_id = null;  // not really needed
+							current_schema_part_name = null; // not really needed
+					} else
+					if (st.ttype == StreamTokenizer.TT_EOF) {
+							System.out.println("ISO_DB WARNING! (last) line: " + st.lineno() + " contains only the schema name - IGNORED");
+							status = TK_START; // not really needed
+							current_schema_name = null; // not really needed
+							current_schema_iso_id = null;  // not really needed
+							current_schema_part_name = null; // not really needed
+							break;
+					} else {
+						// it is not even possible - if schema name is not followed by comma, then what can it be?
+						if (st.ttype == StreamTokenizer.TT_WORD) {
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - schema name followed by " + st.sval + " - IGNORED");
+							status = TK_SKIPPING_THE_LINE;
+							current_schema_name = null;
+							current_schema_iso_id = null;  // not really needed
+							current_schema_part_name = null; // not really needed
+						} else 
+						if (st.ttype == StreamTokenizer.TT_NUMBER) {
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - schema name followed by " + st.nval + " - IGNORED");
+							status = TK_SKIPPING_THE_LINE;
+							current_schema_name = null;
+							current_schema_iso_id = null;  // not really needed
+							current_schema_part_name = null; // not really needed
+						} else {
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - schema name followed by not sure what: " + st.toString() + " - IGNORED");
+							status = TK_SKIPPING_THE_LINE;
+							current_schema_iso_id = null;  // not really needed
+							current_schema_part_name = null; // not really needed
+							current_schema_name = null;
+						}
+					}
+				} else
+				if (status == TK_COMMA_1) {
+					if (st.ttype == StreamTokenizer.TT_WORD) {
+						current_schema_iso_id = st.sval.trim();
+						status = TK_ISO_ID;
+					} else
+					if (st.ttype == ',') {
+						// the iso_id is absent, but perhaps part_name is present
+						status = TK_COMMA_2;
+					} else
+					if (st.ttype == StreamTokenizer.TT_EOL) {
+						// incomplete line, no iso_id nor part_name, print a warning
+						System.out.println("ISO_DB WARNING! line: " + (st.lineno()-1) + " contains only the schema name and a comma - IGNORED");
+						status = TK_START;
+						current_schema_name = null;
+						current_schema_iso_id = null;  // not really needed
+						current_schema_part_name = null; // not really needed
+					} else
+					if (st.ttype == StreamTokenizer.TT_EOF) {
+						// incomplete line, no iso_id nor part_name, print a warning
+						System.out.println("ISO_DB WARNING! (last) line: " + st.lineno() + " contains only the schema name and a comma - IGNORED");
+						status = TK_START; // not really needed
+						current_schema_name = null; // not really needed
+						current_schema_iso_id = null;  // not really needed
+						current_schema_part_name = null; // not really needed
+						break;
+					} else {
+						// this should not be even possible
+						if (st.ttype == StreamTokenizer.TT_NUMBER) {
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - schema name and a comma followed by " + st.nval + " - IGNORED");
+							status = TK_SKIPPING_THE_LINE;
+							current_schema_name = null;
+							current_schema_iso_id = null;  // not really needed
+							current_schema_part_name = null; // not really needed
+						} else {
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - schema name and a comma followed by not sure what: " + st.toString() + " - IGNORED");
+							status = TK_SKIPPING_THE_LINE;
+							current_schema_name = null;
+							current_schema_iso_id = null;  // not really needed
+							current_schema_part_name = null; // not really needed
+						}
+					}
+				} else
+				if (status == TK_ISO_ID) {
+					if (st.ttype == ',') {
+						status = TK_COMMA_2;
+					} else
+					if (st.ttype == StreamTokenizer.TT_EOL) {
+						// iso_id present, part_name absent, ok, add it
+						previous = hm_iso_ids.put(current_schema_name, current_schema_iso_id);
+						if (previous != null) {
+							System.out.println("ISO_DB WARNING! line: " + (st.lineno()-1) + " - a duplicate line for schema: " + current_schema_name + ", previous values replaced");
+							previous = null;
+						}
+						hm_part_names.put(current_schema_name, ""); // because we are doing it in pairs, no need to check the result again
+//System.out.println("LINE COMPLETED (1) - schema: "  + current_schema_name + ", iso_id: " + current_schema_iso_id + ", part_name: ABSENT");
+						current_schema_name = null;
+						current_schema_iso_id = null;
+						current_schema_part_name = null;
+						status = TK_START;
+					} else
+					if (st.ttype == StreamTokenizer.TT_EOF) {
+						// iso_id present, part_name absent, ok, add it
+						previous = hm_iso_ids.put(current_schema_name, current_schema_iso_id);
+						if (previous != null) {
+							System.out.println("ISO_DB WARNING! (last) line: " + st.lineno() + " - a duplicate line for schema: " + current_schema_name + ", previous values replaced");
+							previous = null;
+						}
+						hm_part_names.put(current_schema_name, ""); // because we are doing it in pairs, no need to check the result again
+//System.out.println("LINE COMPLETED (2)- schema: "  + current_schema_name + ", iso_id: " + current_schema_iso_id + ", part_name: ABSENT");
+						current_schema_name = null; // not really needed
+						current_schema_iso_id = null; // not really needed
+						current_schema_part_name = null; // not really needed
+						status = TK_START; // not really needed
+						break;
+					} else {
+						// something seriosly wrong here, should be not possible, but we can store the line assuming that part_name is absent, but print a warning
+						if (st.ttype == StreamTokenizer.TT_WORD) {
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - iso_id followed by " + st.sval + " - assumed part_name absent");
+						} else 
+						if (st.ttype == StreamTokenizer.TT_NUMBER) {
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - iso_id followed by " + st.nval + " - assumed part_name absent");
+						} else {
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - iso_id followed by not sure what: " + st.toString() + " - assumed part_name absent");
+						}
+						previous = hm_iso_ids.put(current_schema_name, current_schema_iso_id);
+						if (previous != null) {
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - a duplicate line for schema: " + current_schema_name + ", previous values replaced");
+							previous = null;
+						}
+						hm_part_names.put(current_schema_name, ""); // because we are doing it in pairs, no need to check the result again
+//System.out.println("LINE COMPLETED (3)- schema: "  + current_schema_name + ", iso_id: " + current_schema_iso_id + ", part_name: ABSENT, the line ends BADLY");
+						current_schema_name = null;
+						current_schema_iso_id = null;
+						current_schema_part_name = null;
+						status = TK_SKIPPING_THE_LINE;
+					}
+				} else 
+				if (status == TK_COMMA_2) {
+					if (st.ttype == StreamTokenizer.TT_WORD) {
+						current_schema_part_name = st.sval.trim();
+						// we have now the complete info, can add now.
+						if (current_schema_iso_id == null) {
+							// iso_id is absent, part_name - present
+							current_schema_iso_id = "";
+						} 
+						previous = hm_iso_ids.put(current_schema_name, current_schema_iso_id);
+						if (previous != null) {
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - a duplicate line for schema: " + current_schema_name + ", previous values replaced");
+							previous = null;
+						}
+						hm_part_names.put(current_schema_name, current_schema_part_name); // because we are doing it in pairs, no need to check the result again
+//System.out.println("LINE COMPLETED (4)- schema: "  + current_schema_name + ", iso_id: " + current_schema_iso_id + ", part_name: " + current_schema_part_name);
+						current_schema_name = null;
+						current_schema_iso_id = null;
+						current_schema_part_name = null;
+						// status = TK_PART_NAME;
+						status = TK_SKIPPING_THE_LINE; // perhaps we could have done it with TK_PART_NAME as well
+					} else
+					if (st.ttype == ',') {
+						// the part_name is absent, but perhaps the iso_id part is present
+						if (current_schema_iso_id != null) {
+							// add this line
+							previous = hm_iso_ids.put(current_schema_name, current_schema_iso_id);
+							if (previous != null) {
+								System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - a duplicate line for schema: " + current_schema_name + ", previous values replaced");
+								previous = null;
+							}
+							hm_part_names.put(current_schema_name, ""); // because we are doing it in pairs, no need to check the result again
+//System.out.println("LINE COMPLETED (5)- schema: "  + current_schema_name + ", iso_id: " + current_schema_iso_id + ", part_name is ABSENT ");
+						} else {
+							// both iso_id and part_name are absent, so no need to add this line, but perhaps it makes sense to print a warning
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - both iso_id and part_name are absent, the line is ignored");
+						}
+						current_schema_name = null;
+						current_schema_iso_id = null;
+						current_schema_part_name = null;
+						// status = TK_COMMA_3;
+						status = TK_SKIPPING_THE_LINE; // perhaps we could have done it with TK_COMMA_3 as well
+					} else
+					if (st.ttype == StreamTokenizer.TT_EOL) {
+						// the part_name is absent, but perhaps the iso_id part is present
+						if (current_schema_iso_id != null) {
+							// add this line
+							previous = hm_iso_ids.put(current_schema_name, current_schema_iso_id);
+							if (previous != null) {
+								System.out.println("ISO_DB WARNING! line: " + (st.lineno()-1) + " - a duplicate line for schema: " + current_schema_name + ", previous values replaced");
+								previous = null;
+							}
+							hm_part_names.put(current_schema_name, ""); // because we are doing it in pairs, no need to check the result again
+//System.out.println("LINE COMPLETED (6)- schema: "  + current_schema_name + ", iso_id: " + current_schema_iso_id + ", part_name: " + current_schema_part_name);
+						} else {
+							
+							// both iso_id and part_name are absent, so no need to add this line, but perhaps it makes sense to print a warning
+							System.out.println("ISO_DB WARNING! line: " + (st.lineno()-1) + " - both iso_id and part_name are absent, the line is ignored");
+						}
+						current_schema_name = null;
+						current_schema_iso_id = null;
+						current_schema_part_name = null;
+						status = TK_START;
+					} else
+					if (st.ttype == StreamTokenizer.TT_EOF) {
+						// the part_name is absent, but perhaps the iso_id part is present
+						if (current_schema_iso_id != null) {
+							// add this line
+							previous = hm_iso_ids.put(current_schema_name, current_schema_iso_id);
+							if (previous != null) {
+								System.out.println("ISO_DB WARNING! (last) line: " + st.lineno() + " - a duplicate line for schema: " + current_schema_name + ", previous values replaced");
+								previous = null;
+							}
+							hm_part_names.put(current_schema_name, ""); // because we are doing it in pairs, no need to check the result again
+//System.out.println("LINE COMPLETED (7)- schema: "  + current_schema_name + ", iso_id: " + current_schema_iso_id + ", part_name: " + current_schema_part_name);
+						} else {
+							
+							// both iso_id and part_name are absent, so no need to add this line, but perhaps it makes sense to print a warning
+							System.out.println("ISO_DB WARNING! (last) line: " + st.lineno() + " - both iso_id and part_name are absent, the line is ignored");
+						}
+						current_schema_name = null; // not really needed
+						current_schema_iso_id = null; // not really needed
+						current_schema_part_name = null; // not really needed
+						status = TK_START; // not really needed
+						break;
+					} else {
+						// this should not happen, but just in case
+						// whatever happened, part_name is absent, add the line
+						if (st.ttype == StreamTokenizer.TT_NUMBER) {
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - 2nd comma followed by " + st.nval + " - assumed part_name absent");
+						} else {
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - 2nd comma followed by not sure what: " + st.toString() + " - assumed part_name absent");
+						}
+						if (current_schema_iso_id != null) {
+							// add this line
+							previous = hm_iso_ids.put(current_schema_name, current_schema_iso_id);
+							if (previous != null) {
+								System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - a duplicate line for schema: " + current_schema_name + ", previous values replaced");
+								previous = null;
+							}
+							hm_part_names.put(current_schema_name, ""); // because we are doing it in pairs, no need to check the result again
+//System.out.println("LINE COMPLETED (8)- schema: "  + current_schema_name + ", iso_id: " + current_schema_iso_id + ", part_name is ABSENT ");
+						} else {
+							// both iso_id and part_name are absent, so no need to add this line, but perhaps it makes sense to print a warning
+							System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - both iso_id and part_name are absent, the line is ignored");
+						}
+						current_schema_name = null;
+						current_schema_iso_id = null;
+						current_schema_part_name = null;
+						status = TK_SKIPPING_THE_LINE; // perhaps we could have done it with TK_COMMA_3 as well
+					}
+				} else
+				if (status == TK_SKIPPING_THE_LINE) {
+					if (st.ttype == StreamTokenizer.TT_EOL) {
+						status = TK_START;
+						current_schema_name = null; // should not be needed
+						current_schema_iso_id = null;  // should not be needed
+						current_schema_part_name = null; // should not be needed
+					} else 
+					if (st.ttype == StreamTokenizer.TT_EOF) {
+						status = TK_START; // not really needed
+						current_schema_name = null; // should not be needed
+						current_schema_iso_id = null;  // should not be needed
+						current_schema_part_name = null; // should not be needed
+						break;
+					} 
+				} else {
+					status = TK_START;
+					current_schema_name = null; 
+					current_schema_iso_id = null;  
+					current_schema_part_name = null; 
+					if (st.ttype == StreamTokenizer.TT_WORD) {
+						System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - something completely wrong with this line, ignored, current token: " + st.sval);
+					} else
+					if (st.ttype == StreamTokenizer.TT_NUMBER) {
+						System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - something completely wrong with this line, ignored, current token: " + st.nval);
+					} else
+					if (st.ttype == StreamTokenizer.TT_EOL) {
+						System.out.println("ISO_DB WARNING! line: " + (st.lineno()-1) + " - something completely wrong with this line, ignored, current token: EOL");
+					} else
+					if (st.ttype == StreamTokenizer.TT_EOF) {
+						System.out.println("ISO_DB WARNING! (last) line: " + st.lineno() + " - something completely wrong with this line, ignored, current token: EOF");
+						break;
+					} else
+					if (st.ttype == ',') {
+						System.out.println("ISO_DB WARNING! line: " + st.lineno() + " - something completely wrong with this line, ignored, current token: comma");
+					}
+				}
+				 
+			} // while
+      return true;
+		} // try
+		catch (IOException e) {
 			// no schema - no iso numbers
-      return;
-   }
-  }
+			//System.out.println("ISO_DB WARNING! - file not found: " + iso_file_name);
+			hm_iso_ids = null;
+			hm_part_names = null;
+		
+			return false;
+	 }
+	}
+
+
+
+
 
   // calculating select type --------------- start ------------------------------------------------------
   
@@ -12913,10 +13570,10 @@ if (st instanceof EExtensible_select_type) {
 		    EEntity e1 = (EEntity)o1;
 		    EEntity e2 = (EEntity)o2;	    
 if ((e1 == null) || (e2 == null)) {
-	System.out.println("O NULL, o1: " + o1 + ", o2: " + o2);				
+//	System.out.println("O NULL, o1: " + o1 + ", o2: " + o2);				
 }
 if (getDictionaryEntityName(e1) == null) {
-	System.out.println("DEN NULL, den e1: " + e1);				
+//	System.out.println("DEN NULL, den e1: " + e1);				
 }
 		    
 		    int result = getDictionaryEntityName(e1).compareToIgnoreCase(getDictionaryEntityName(e2));
@@ -12924,8 +13581,8 @@ if (getDictionaryEntityName(e1) == null) {
 ESchema_definition s1 = findSchemaForEntity(e1);
 ESchema_definition s2 = findSchemaForEntity(e2);
 if ((s1 == null) ||(s2 == null)) {
-	System.out.println("Schema NULL, s1: " + s1 + ", s2: " + s2);				
-	System.out.println("Entities, o1 " + o1 + ", o2: " + o2);				
+//	System.out.println("Schema NULL, s1: " + s1 + ", s2: " + s2);				
+//	System.out.println("Entities, o1 " + o1 + ", o2: " + o2);				
 }
 			    String e1_schemaName = findSchemaForEntity(e1).getName(null);
 			    String e2_schemaName = findSchemaForEntity(e2).getName(null);

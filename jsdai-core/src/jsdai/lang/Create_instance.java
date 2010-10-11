@@ -148,15 +148,25 @@ System.out.println(" index = " + i + "    *****NORMAL NAME: " + schemaData.sName
 			}
 			if (failure) {
 				result = takeBestFit(staticFields, model, items_count, instance_identifier, model_app.repository.session);
+				PhFileReader rd = (PhFileReader)owner;
 				if (result >= 0) {
 					int ind_long = schemaData.toLong[result];
+					String cor_ent_name;
+					if (rd.inst_is_required) {
+						cor_ent_name = new String(rd.req_instance_name, 0, rd.req_instance_name_length);
+					} else {
+						cor_ent_name = null;
+					}
 					AdditionalMessages.printWarningToLogo(model_app.repository.session, AdditionalMessages.RD_CONF, 
-						instance_identifier, new String(key, 0, key_length), new String(schemaData.bLongNames[ind_long]));
+						instance_identifier, new String(key, 0, key_length), cor_ent_name, 
+						new String(schemaData.bLongNames[ind_long]));
+					rd.inst_is_required = false;
 				} else if (result == -2) {
+					rd.inst_is_required = false;
 					String message = AdditionalMessages.RD_UNET;
 					String entity_type_name;
 					boolean first = true;
-					PartialEntityName [] complex_name_byte = ((PhFileReader)owner).get_complex_name();
+					PartialEntityName [] complex_name_byte = rd.get_complex_name();
 					for (int i = 0; i < items_count; i++) {
 						if (staticFields.complex_name[i] == null) {
 							entity_type_name = 
@@ -174,6 +184,7 @@ System.out.println(" index = " + i + "    *****NORMAL NAME: " + schemaData.sName
 						new String(key, 0, key_length));
 					return null;
 				} else {
+					rd.inst_is_required = false;
 					AdditionalMessages.printWarningToLogo(model_app.repository.session, AdditionalMessages.RD_CONF, 
 						instance_identifier, new String(key, 0, key_length));
 					return null;
@@ -223,6 +234,8 @@ if (SdaiSession.debug2) System.out.println("  CLASS FOUND: " + class_found.getNa
 			return null;
 		}
 		SchemaData schemaData = model.schemaData;
+//if (rd.saved_ent_name[2] == rd.saved_ent_name[3]) 
+//System.out.println("Create_instance ...................aaaaa  VIOLA on instance: #" + instance_identifier);
 		for (m = 0; m < items_count; m++) {
 			int result;
 			if (staticFields.short_names) {
@@ -265,6 +278,8 @@ if (SdaiSession.debug2) System.out.println("  CLASS FOUND: " + class_found.getNa
 			complex_name[m].def = def;
 			complex_name[m].index = result;
 		}
+//if (rd.saved_ent_name[2] == rd.saved_ent_name[3]) 
+//System.out.println("Create_instance ...................bbbbb  VIOLA on instance: #" + instance_identifier);
 		int miss_count = 0;
 		boolean found;
 		for (m = 0; m < items_count; m++) {

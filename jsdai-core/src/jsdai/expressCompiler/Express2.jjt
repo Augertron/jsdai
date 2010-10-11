@@ -78,14 +78,14 @@ public class Compiler2 extends Support
 	static String progress;
 	static boolean in_progress = true;
 
-	static final String xc_build     = "476";
-	static final String xc_date      = "2009-07-02";
-	static final String xc_version   = "4.2.1";
+	static final String xc_build     = "484";
+	static final String xc_date      = "2010-07-09";
+	static final String xc_version   = "4.3";
 	static final String xc_title     = "JSDAI(TM) Express Compiler";
 	static final String xc_copyright = "Copyright (C) 1998-2009 LKSoftWare GmbH";
 
 	// old, perhaps updated during builds? If not, remove
-	static String build = "476";
+	static String build = "484";
 	
     final static int WA_UNKNOWN             =  0;
 		final static int WA_ATTRIBUTE_REF       =  1;
@@ -1480,7 +1480,7 @@ System.out.println("------------------------------");
 // just see if Encountered: is <EOF>, and if after is empty
 // curLexState = 1 means in single line comment, the same situation in multi-line comment occurs only if end of comment is missing,
 // therefore it is a legitimate error, and better to throw it and stop parsing
-   if (Compiler2TokenManager.curLexState == 1) { // single-line comment
+   if ((Compiler2TokenManager.curLexState > 0) && (Compiler2TokenManager.curLexState < 4)){ // single-line comment
 			String error_msg = e.getMessage();
 			if (error_msg.indexOf("Encountered: <EOF> after : \"\"") > 0) {
 				// do nothing at all for now
@@ -1821,6 +1821,7 @@ System.out.println("------------------------------");
 //		Gui.status_label.setText(progress);		
 
 			try {
+				parser_pass = 5; // trying here - seems that ReInit() scans everything until the 1st token is encountered
 				parser.ReInit(new java.io.DataInputStream(new java.io.FileInputStream(express_file))); 
 //			parser = new Compiler2(new java.io.DataInputStream(new java.io.FileInputStream(express_file)));
 			} catch (java.io.FileNotFoundException e) {
@@ -1844,7 +1845,7 @@ System.out.println("------------------------------");
       	is_complex_schema = false;
 //				error_count = 0;
   variable_uid = 0;
-				parser_pass = 5;
+				parser_pass = 5; // too late here for comments before the first schema!
 			flag_in_redeclaring = false;
 //                      X_AllSchemas x_data = parser.AllSchemas();
 //      initializeExpressTypes(repository);
@@ -2342,6 +2343,36 @@ System.out.println("------------------------------");
 
 PARSER_END(Compiler2)
 
+TOKEN_MGR_DECLS : { 
+
+  // the problem - when java 1.4 then need to be careful, lexical states are generated as int, not Integer, so handle appropriately 
+  // in Integer.valueOf(int), stack.push(int), Integer = int situations. with java 1.6 (1.5) - no problems.
+
+	static int comment_nesting_depth ; 
+
+	//static String comment_tag;
+	static jsdai.lang.EEntity tagged_object;
+	//static jsdai.SExtended_dictionary_schema.EEntity_definition tagged_object;
+	static String current_comment;
+
+	static Stack tag_stack;
+	static Stack image_stack; // no longer used? try to remove
+	static Stack state_stack; 
+	static Stack object_stack;
+	static Stack index_stack; // new: replaces image_stack, current_image, prev_image, also:  MORE replaces SKIP everywhere
+
+	static String current_tag;
+	static String current_image; // no longer used? try to remove
+	static String previous_image; // no longer used? try to remove
+	static Integer current_state;
+  static int open_index;
+
+  // because IN_DOCUMENT_COMMENT state uses SPECIAL_TOKEN and we need MORE for this implementation, I introduced IN_DOCUMENT_COMMENT_5 - for 5th pass only.
+  // currently in the code there are unnecessary duplications, implementations for 5th pass which never can occur, and vice versa - to clean up.
+
+
+}
+
 SKIP : /* WHITE SPACE */
 {
 	" "
@@ -2350,7 +2381,9 @@ SKIP : /* WHITE SPACE */
 | "\r"
 | "\f"
 | "\0"
+| "\240"
 }
+
 
 TOKEN : /* spec case REFERENCE FROM - USE FROM */
 {
@@ -2364,21 +2397,284 @@ TOKEN : /* spec case REFERENCE FROM - USE FROM */
 }
  
  
-/* COMMENTS */
+/*
 
-MORE :
+remark tag:
+
+part 11:
+
+(*"ent.attr" The attr attribute ... *)
+
+(*"my_second_schema.a_complicated_function" This complicated function ... *)
+
+
+my example:
+
+(*"the_perp" this stupid entity has attributes: (*"the_perp.name" - the name of the perp *)(*"the_perp.weapon" - the weapon used *)*) 
+
+
+if a space is not allowed between * and " (it says "immediately" in part 11) then perhaps
+the sequence (*" could be recognized as a comment with a tag present?
+then we could skip (*", accumulate with MORE everything else up to the next ", etc.
+
+------
+
+perhaps we could do something like that:
+
+1. ignore tags, handle comments with tags as regular comments in parser passes 1-4. Only deal with tags in pass 5.
+2. in pass 5, recognize and resolve tags and create documentation instances directly in the token manager, not in the parser
+
+
+
+*/ 
+/*
+
+  (*TAG1 message1-1 (*TAG2-1 message2-1-1 (*TAG3-1 message3-1 *) message2-1-2 (*TAG3-2 message3-2 *) message2-1-3 *) message1-2 (*TAG2-2 message2-2-1 *) message1-3 *)
+
+                                                                 state: DEFAULT
+               - (*" found 1st time: comment_nesting_depth -> 1, state: IN_MULTI_LINE_COMMENT_TAG
+  TAG1         - " found 1st time: take tag, resolve tag,        state: IN_MULTI_LINE_TAGGED_COMMENT, if not resolved: IN_MULTI_LINE_COMMENT
+  message1-1   - (*" found 2nd time: comment_nesting_depth -> 2, state: IN_MULTI_LINE_COMMENT_TAG          remember previous resolved TAG and message1-1: push TAG1 into stack, push message into stack
+  TAG2-1       - " found 2nd time: take tag, resolve tag,        state: IN_MULTI_LINE_TAGGED_COMMENT, if not resolved: IN_MULTI_LINE_COMMENT
+  message2-1-1 - (*" found 3rd time: comment_nesting_depth -> 3, state: IN_MULTI_LINE_COMMENT_TAG          remember previous resolved TAG and message2-1-1: push TAG2-1 into stack, push message into stack
+  TAG3-1       - " found 3rd time: take tag, resolve tag,        state: IN_MULTI_LINE_TAGGED_COMMENT, if not resolved: IN_MULTI_LINE_COMMENT
+  message3-1   - *) found 1st time: create document instance with TAG3-1 and message3-1, comment_nesting_depth->2, pop TAG2-1 from the stack, pop message2-1-1 and add to it (*"TAG3-1" message3-1 *), pop state?
+  message2-1-2 - (*" found 4th time: comment_nesting_depth -> 3, state: IN_MULTI_LINE_COMMENT_TAG          push previous resolved TAG2-1 and accumulated message (and state?)
+  TAG3-2       - " found 4th time: take tag, resolve tag, state: IN_MULTI_LINE_TAGGED_COMMENT, if not resolved: IN_MULTI_LINE_COMMENT
+  message3-2   - *) found 2nd time: create document instance with TAG3-2 message3-2, comment_nesting_depth->2, pop TAG2-1, pop accumulated message and add more to it, pop state?
+  message2-1-3 - *) found 3rd time: create document instance with TAG2-1 and accumulated message + message2-1-3, comment_nesting_depth->1,pop TAG1, pop message1-1 and add to it,,, pop state? 
+  message1-2   - (*" found 5th time: comment_nesting_depth->2, state: IN_MULTI_LINE_COMMENT_TAG, push TAG1, push accumulated message message1-1 etc, push state?
+  TAG2-2       - " found 5th time: take tag, resolve tag, state: IN_MULTI_LINE_TAGGED_COMMENT, if not resolved: IN_MULTI_LINE_COMMENT
+  message2-2-1 - *) found 4th time: create document instance with TAG2-2 and message2-2-1, comment_nesting_depth->1, pop TAG1, pop message, add to it, pop state?
+  message1-3   - *) found 5th time: create document instance with TAG1 and message1-1 (accumulated), comment_nesting_depth->0, nothing to pop, state->DE  
+
+  also test mixed versions with tags and without tags
+
+
+
+
+(*" - push    jei ne 1st time states     IN_MULTI_LINE_COMMENT, IN_MULTI_LINE_TAGGED_COMMENT IN_DOCUMENT_COMMENT 
+
+" - resolve
+
+*) - pop
+
+
+(*"vegetable" is not an (*"animal" at all *) but something else *)
+
+1. DEFAULT:                       (*" encountered: depth -> 1, -> IN_MULTI_LINE_COMMENT_TAG
+2. IN_MULTI_LINE_COMMENT_TAG:     "    encountered: extract tag, resolve tag, if resolved -> IN_MULTI_LINE_TAGGED_COMMENT (if not resolved -> IN_MULTI_LINE_COMMENT) vegetable
+3. IN_MULTI_LINE_TAGGED_COMMENT:  (*" encountered: depth -> 2, -> IN_MULTI_LINE_COMMENT_TAG : remember previously resolved tag "vegetable" and message [ is not an (*"]   (*" better to include, as will  be part of outer comment 
+                                                                                              push("vegetabel") tag, push( is not an (*")
+4. IN_MULTI_LINE_COMMENT_TAG:     "    encountered: extract tag, resolve tag, if resolved -> IN_MULTI_LINE_TAGGED_COMMENT  animal
+5. IN_MULTI_LINE_TAGGED_COMMENT:  *)   encountered: depth-> 1, create document instance with TAG [animal] and message [ at all ],  pop message [ is not an (*"] 
+                                                                                                to popped message [ is not an (*"] add TAG [animal] add comment [ at all ]  add [)*] (or perhaps image.toString() then pop TAG [vegetable]
+                                                                                                pop state: IN_MULTI_LINE_TAGGED_COMMENT
+6  IN_MULTI_LINE_TAGGED_COMMENT:  *)   encountered: depth-> 0, create document instance with TAG [vegetable] and message [ is not an (*"animal" at all *)] + add current message [ but something else]  -> DEFAuLT                                                                   
+
+      we need to know if  before  *) previous was opening (* or another closing *) so perhaps first we pop the previous state
+              1. pop the state
+              if poped state is  (* - then just create document instance with the current tag and current message
+              if popped state is *) - then pop previous message + add the current message, create instance, 
+                                      construct message prev + tag + current,
+                                      pop previous tag
+
+
+
+
+*/	
+ 
+ 
+ 
+ 
+ 
+
+//MORE:  // or SKIP - probably can have SKIP, because here we are switching from DEFAULT and do not need those characters
+//SKIP:
+MORE:
 {
-	"--" : IN_SINGLE_LINE_COMMENT
+	"--\"" { 
+	//            image.delete(0,image.length());
+//System.out.println("<DEFAULT>: tagged single-line comment encountered -> IN_SINGLE_LINE_COMMENT_TAG, pass: " + Support.parser_pass);
+							if (Support.parser_pass == 5) {
+
+//System.out.println("<DEFAULT>: tagged single-line comment encountered -> IN_SINGLE_LINE_COMMENT_TAG, image: " + image.toString());
+							
+							} 
+		
+			SwitchTo(Support.parser_pass == 5 ? IN_SINGLE_LINE_COMMENT_TAG : IN_SINGLE_LINE_COMMENT); 
+	}  // possibly, no initializations are necessary here, because nothing to accumulate
 |
-	"(**" : IN_DOCUMENT_COMMENT
+	"--"  {	
+//System.out.println("<TL> tail remark encountered: " + image.toString());	
+//          image.delete(0,image.length());
+				} : IN_SINGLE_LINE_COMMENT
 |
-	"(*" : IN_MULTI_LINE_COMMENT
+	"(**" { comment_nesting_depth = 1; 
+//	            image.delete(0,image.length());
+							if (Support.parser_pass == 5) {
+//System.out.println("<DEFAULT>: (** encountered, image: " + image.toString());
+							  current_tag = "";
+							  previous_image = image.toString();
+							  //current_image = image.toString();
+						    current_image = "";
+							  current_state = new Integer(IN_DOCUMENT_COMMENT_5);
+							  tag_stack = new Stack();
+							  object_stack = new Stack();
+							  image_stack = new Stack();
+							  state_stack = new Stack();
+							  state_stack.push(new Integer(DEFAULT));
+							  index_stack = new Stack();
+							  tag_stack.push(current_tag);
+							  object_stack.push(null);
+							  image_stack.push(current_image);
+							  state_stack.push(current_state);
+							  index_stack.push(new Integer(image.length()));
+//System.out.println("<C-DEFAULT>: documment comment encountered, depth: " + comment_nesting_depth + " -> IN_DOCUMENT_COMMENT");
+//System.out.println("<DEFAULT (**> exiting, state stack: " + state_stack + ", current state: " + current_state);
+								SwitchTo(IN_DOCUMENT_COMMENT_5);
+							} else {
+							  current_state = new Integer(IN_DOCUMENT_COMMENT);
+							  state_stack = new Stack();
+								SwitchTo(IN_DOCUMENT_COMMENT);
+							}
+				
+				}  // perhaps we need to support inner comments inside our special comments, because someone may use such a comment accidentally
+|
+	"(*\""  {
+//            image.delete(0,image.length());
+						comment_nesting_depth = 1;
+						if (Support.parser_pass == 5) {
+//System.out.println("<DEFAULT>: (*\" encountered, image: " + image.toString());
+						  // this is the 1st time, so nothing to push, but perhaps need to initialize stuff here
+						  current_tag = "";
+							previous_image = image.toString();
+							//current_image = image.toString();
+						  current_image = "";
+						  current_state = new Integer(IN_MULTI_LINE_COMMENT_TAG);
+						  tag_stack = new Stack();
+						  tag_stack.push(current_tag);
+						  object_stack = new Stack();
+ 					    index_stack = new Stack();
+						  object_stack.push(null);
+						  image_stack = new Stack();
+						  //current_image = image.toString();
+						  image_stack.push(current_image);
+						  state_stack = new Stack();
+							state_stack.push(new Integer(DEFAULT));
+						  state_stack.push(current_state);
+ 					    index_stack.push(new Integer(image.length()));
+//System.out.println("<C-DEFAULT>: tagged multi-line comment encountered, depth: " + comment_nesting_depth + " -> IN_MULTI_LINE_COMMENT_TAG");
+// System.out.println("<DEFAULT (*\"> exiting, state stack: " + state_stack + ", current state: " + current_state);
+							SwitchTo(IN_MULTI_LINE_COMMENT_TAG);
+						} else {
+							current_state = new Integer(IN_MULTI_LINE_COMMENT);
+							state_stack = new Stack();
+							SwitchTo(IN_MULTI_LINE_COMMENT);
+						}
 }
+|
+	"(*"  		{ 
+//	            image.delete(0,image.length());
+							comment_nesting_depth = 1; 
+							if (Support.parser_pass == 5) {
+//System.out.println("<DEFAULT>: (* encountered, image: " + image.toString());
+							  current_tag = "";
+	  						previous_image = image.toString();
+		  					//current_image = image.toString();
+							  current_image = "";
+							  current_state = new Integer(IN_MULTI_LINE_COMMENT);
+							  tag_stack = new Stack();
+							  object_stack = new Stack();
+							  image_stack = new Stack();
+							  state_stack = new Stack();
+							  state_stack.push(new Integer(DEFAULT));
+	 					    index_stack = new Stack();
+							  tag_stack.push(current_tag);
+							  object_stack.push(null);
+							  image_stack.push(current_image);
+							  state_stack.push(current_state);
+	 					    index_stack.push(new Integer(image.length()));
+//System.out.println("<C-DEFAULT>: multi-line comment encountered, depth: " + comment_nesting_depth + " -> IN_MULTI_LINE_COMMENT");
+// System.out.println("<DEFAULT (*> exiting, state stack: " + state_stack + ", current state: " + current_state);
+							} else {
+//System.out.println("<C-DEFAULT>: multi-line comment encountered, pass: " + Support.parser_pass + ", depth: " + comment_nesting_depth + " -> IN_MULTI_LINE_COMMENT");
+							current_state = new Integer(IN_MULTI_LINE_COMMENT);
+							state_stack = new Stack();
+							}
+				} : IN_MULTI_LINE_COMMENT
+}
+	
 
 <IN_SINGLE_LINE_COMMENT>
 SPECIAL_TOKEN :
 {
-	<SINGLE_LINE_COMMENT: "\n" | "\r" | "\r\n" | "<EOF>" > : DEFAULT
+	<SINGLE_LINE_COMMENT: "\n" | "\r" | "\r\n" | "<EOF>" > 
+//	{
+//System.out.println("<SLC-0>: single-line comment ended, pass: " + Support.parser_pass);
+//	}
+	: DEFAULT
+}
+
+
+<IN_SINGLE_LINE_COMMENT_TAG>
+MORE :
+{
+	"\"" 
+	{ 
+	  // TAG complete
+		
+		current_tag = image.toString().substring(3,image.length()-1);
+//		System.out.println("<C-SLCT1>:single-line COMMENT TAG: " + current_tag);		
+		try {
+//			tagged_object = Support.findEntity_definition(current_tag.toLowerCase(), (jsdai.SExtended_dictionary_schema.ESchema_definition)null);
+			tagged_object = Support.resolveTag(current_tag.toLowerCase());
+		} catch (jsdai.lang.SdaiException ex) {
+			System.out.println("EXCEPTION while resolving the single-line-comment tag: " + current_tag);
+		}
+if (tagged_object == null)  {
+//System.out.println("<C-SLCT>: single-line-comment COMMENT TAG ended: " + current_tag + ", tagged object: " + tagged_object + " -> IN_SINGLE_LINE_COMMENT,");		
+} else {
+//System.out.println("<C-SLCT2>: single-line-comment COMMENT TAG ended: " + current_tag + ", tagged object: " + tagged_object + " -> IN_SINGLE_LINE_TAGGED_COMMENT,");		
+}
+		SwitchTo(tagged_object == null ? IN_SINGLE_LINE_COMMENT : IN_SINGLE_LINE_TAGGED_COMMENT); 
+		
+	}
+	
+}
+
+<IN_SINGLE_LINE_COMMENT_TAG>
+MORE :
+{
+	< ~[] >
+}
+
+<IN_SINGLE_LINE_TAGGED_COMMENT>
+SPECIAL_TOKEN :
+{
+	<SINGLE_LINE_TAGGED_COMMENT: "\n" | "\r" | "\r\n" | "<EOF>" > 
+	{
+		// extract the whole comment and create the instance here
+		//TODO
+//System.out.println("<C-SLTC1>: single-line-tagged-comment ended - tag: " +  current_tag + ", tagged object: " + tagged_object + ", image: " + image.toString() + " -> DEFAULT");		
+		current_comment = image.toString().substring(current_tag.length()+4,image.length()-2);
+		try {
+			Support.createTagDocumentationEntity(tagged_object, current_comment);
+		} catch (jsdai.lang.SdaiException ex) {
+			System.out.println("EXCEPTION while creating documentation entity: " + current_tag);
+		}
+//System.out.println("<C-SLTC2>: single-line-tagged-comment ended - CREATED - current_comment: " + current_comment);		
+
+	}: DEFAULT
+}
+
+
+
+
+<IN_SINGLE_LINE_TAGGED_COMMENT>
+MORE :
+{
+	< ~[] >
 }
 
 <IN_SINGLE_LINE_COMMENT>
@@ -2388,16 +2684,606 @@ MORE :
 }
 
 <IN_DOCUMENT_COMMENT>
-SPECIAL_TOKEN :
-{
-	<DOCUMENT_COMMENT: "*)" > : DEFAULT
+MORE :  // instead of SKIP
+{  
+	"(**" { 
+					comment_nesting_depth += 1; 
+					if (Support.parser_pass == 5) {
+//System.out.println("<DOCUMENT (**> entering, state stack: " + state_stack);
+//System.out.println("<DOCUMENT>: (** encountered, image: " + image.toString());
+						  tag_stack.push(current_tag);
+						  object_stack.push(tagged_object);
+						  image_stack.push(current_image);
+						  current_state = new Integer(IN_DOCUMENT_COMMENT);
+						  state_stack.push(current_state);
+	 					  index_stack.push(new Integer(image.length()));
+//System.out.println("<C-DC>: in document comment document comment encountered, depth: " + comment_nesting_depth + " -> IN_DOCUMENT_COMMENT");
+					    previous_image = image.toString();
+//System.out.println("<DOCUMENT (**> exiting, state stack: " + state_stack + ", current state: " + current_state);
+
+					} else {
+						  current_state = new Integer(IN_DOCUMENT_COMMENT);
+						  state_stack.push(current_state);
+					}
+				} : IN_DOCUMENT_COMMENT
+|
+	"(*\""  {
+						comment_nesting_depth += 1;
+						if (Support.parser_pass == 5) {
+//System.out.println("<DOCUMENT (*\"> entering, state stack: " + state_stack);
+//System.out.println("<DOCUMENT>: (*\" encountered, image: " + image.toString());
+ 
+						  tag_stack.push(current_tag);
+						  object_stack.push(tagged_object);
+						  image_stack.push(current_image);
+						  current_state = new Integer(IN_MULTI_LINE_COMMENT_TAG);
+//						  current_state = new Integer(IN_DOCUMENT_COMMENT);
+						  state_stack.push(current_state);
+	 					  index_stack.push(new Integer(image.length()));
+							SwitchTo(IN_MULTI_LINE_COMMENT_TAG);
+//System.out.println("<C-DC>: in document comment tagged multi-line comment encountered, depth: " + comment_nesting_depth + " -> IN_MULTI_LINE_COMMENT_TAG");
+					    previous_image = image.toString();
+
+//System.out.println("<DOCUMENT (*\"> exiting, state stack: " + state_stack + ", current state: " + current_state);
+
+						} else {
+						  //current_state = new Integer(IN_MULTI_LINE_COMMENT);
+						  current_state = new Integer(IN_DOCUMENT_COMMENT);
+						  state_stack.push(current_state);
+							SwitchTo(IN_MULTI_LINE_COMMENT); // or IN_DOCUMENT_COMMENT?
+						}
+					}			
+|
+	"(*" 
+	{ 
+		comment_nesting_depth += 1; 
+		if (Support.parser_pass == 5) {
+//System.out.println("<DOCUMENT (*> entering, state stack: " + state_stack);
+//System.out.println("<DOCUMENT>: (* encountered, image: " + image.toString());
+			tag_stack.push("");
+			object_stack.push(tagged_object);
+			image_stack.push(image.toString());
+	 		index_stack.push(new Integer(image.length()));
+			current_state = new Integer(IN_MULTI_LINE_COMMENT);  
+			//current_state = new Integer(IN_DOCUMENT_COMMENT);
+			state_stack.push(current_state);
+//System.out.println("<C-DC>: in document comment multi-line comment encountered, depth: " +  comment_nesting_depth + " -> IN_MULTI_LINE_COMMENT");
+	    previous_image = image.toString();
+
+//System.out.println("<DOCUMENT (*> exiting, state stack: " + state_stack + ", current state: " + current_state);
+
+		} else {
+			//current_state = new Integer(IN_MULTI_LINE_COMMENT);
+			current_state = new Integer(IN_DOCUMENT_COMMENT);
+			state_stack.push(current_state);
+		}
+	} : IN_MULTI_LINE_COMMENT  // or IN_DOCUMENT_COMMENT? 
 }
 
-<IN_MULTI_LINE_COMMENT>
+
+
+<IN_DOCUMENT_COMMENT_5>
+MORE :  // instead of SKIP
+{  
+	"(**" { 
+					comment_nesting_depth += 1; 
+					if (Support.parser_pass == 5) {
+//System.out.println("<DOCUMENT (**> entering, state stack: " + state_stack);
+//System.out.println("<DOCUMENT>: (** encountered, image: " + image.toString());
+						  tag_stack.push(current_tag);
+						  object_stack.push(tagged_object);
+						  image_stack.push(current_image);
+						  current_state = new Integer(IN_DOCUMENT_COMMENT_5);
+						  state_stack.push(current_state);
+	 					  index_stack.push(new Integer(image.length()));
+//System.out.println("<C-DC>: in document comment document comment encountered, depth: " + comment_nesting_depth + " -> IN_DOCUMENT_COMMENT_5");
+					    previous_image = image.toString();
+//System.out.println("<DOCUMENT (**> exiting, state stack: " + state_stack + ", current state: " + current_state);
+
+					} else {
+						  current_state = new Integer(IN_DOCUMENT_COMMENT_5);
+						  state_stack.push(current_state);
+					}
+				} : IN_DOCUMENT_COMMENT_5
+|
+	"(*\""  {
+						comment_nesting_depth += 1;
+						if (Support.parser_pass == 5) {
+//System.out.println("<DOCUMENT (*\"> entering, state stack: " + state_stack);
+//System.out.println("<DOCUMENT>: (*\" encountered, image: " + image.toString());
+ 
+						  tag_stack.push(current_tag);
+						  object_stack.push(tagged_object);
+						  image_stack.push(current_image);
+						  current_state = new Integer(IN_MULTI_LINE_COMMENT_TAG);
+//						  current_state = new Integer(IN_DOCUMENT_COMMENT_5);
+						  state_stack.push(current_state);
+	 					  index_stack.push(new Integer(image.length()));
+							SwitchTo(IN_MULTI_LINE_COMMENT_TAG);
+//System.out.println("<C-DC>: in document comment tagged multi-line comment encountered, depth: " + comment_nesting_depth + " -> IN_MULTI_LINE_COMMENT_TAG");
+					    previous_image = image.toString();
+
+//System.out.println("<DOCUMENT (*\"> exiting, state stack: " + state_stack + ", current state: " + current_state);
+
+						} else {
+						  //current_state = new Integer(IN_MULTI_LINE_COMMENT);
+						  current_state = new Integer(IN_DOCUMENT_COMMENT_5);
+						  state_stack.push(current_state);
+							SwitchTo(IN_MULTI_LINE_COMMENT); // or IN_DOCUMENT_COMMENT_5?
+						}
+					}			
+|
+	"(*" 
+	{ 
+		comment_nesting_depth += 1; 
+		if (Support.parser_pass == 5) {
+//System.out.println("<DOCUMENT (*> entering, state stack: " + state_stack);
+//System.out.println("<DOCUMENT>: (* encountered, image: " + image.toString());
+			tag_stack.push("");
+			object_stack.push(tagged_object);
+			image_stack.push(image.toString());
+	 		index_stack.push(new Integer(image.length()));
+			current_state = new Integer(IN_MULTI_LINE_COMMENT);  
+			//current_state = new Integer(IN_DOCUMENT_COMMENT_5);
+			state_stack.push(current_state);
+//System.out.println("<C-DC>: in document comment multi-line comment encountered, depth: " +  comment_nesting_depth + " -> IN_MULTI_LINE_COMMENT");
+	    previous_image = image.toString();
+
+//System.out.println("<DOCUMENT (*> exiting, state stack: " + state_stack + ", current state: " + current_state);
+
+		} else {
+			//current_state = new Integer(IN_MULTI_LINE_COMMENT);
+			current_state = new Integer(IN_DOCUMENT_COMMENT_5);
+			state_stack.push(current_state);
+		}
+	} : IN_MULTI_LINE_COMMENT  // or IN_DOCUMENT_COMMENT_5? 
+}
+
+
+
+
+<IN_DOCUMENT_COMMENT>
 SPECIAL_TOKEN :
 {
-	<MULTI_LINE_COMMENT: "*)" > : DEFAULT
+	 <DOCUMENT_COMMENT: "*)" >
+	{ 
+		comment_nesting_depth -= 1;
+					if (Support.parser_pass == 5) {
+//System.out.println("<DOCUMENT *)> entering, state stack: " + state_stack);
+//System.out.println("<DOCUMENT>: *) encountered, image: " + image.toString());
+//System.out.println("<C-D0>: document comment ended - before POP - depth: " + comment_nesting_depth + " tag: " + current_tag + ", tagged_object: " + tagged_object + ", image: " + image.toString() + ", state: " + current_state.intValue());
+						  if (comment_nesting_depth > 0) {
+						  	current_tag = (String)tag_stack.pop();
+								tagged_object = (jsdai.lang.EEntity)object_stack.pop();
+						  	current_image = (String)image_stack.pop();
+						  	//current_state = (Integer)state_stack.pop();
+						  	state_stack.pop();
+						  	current_state = (Integer)state_stack.peek();
+								index_stack.pop();
+//System.out.println("<C-D2>: document comment ended - after POP - tag: " + current_tag + ", tagged_object: " + tagged_object + ", image: " + current_image + " -> " + current_state.intValue());
+						  } else {
+//System.out.println("<C-DC>: Our special multi-line comment ended - NO POP  -> DEFAULT");
+						  }
+
+    					previous_image = image.toString();
+
+//System.out.println("<DOCUMENT *)> exiting, state stack: " + state_stack + ", current state: " + current_state);
+//System.out.println("<DOCUMENT>: *) image: " + image.toString());
+
+					} else {
+						  if (comment_nesting_depth > 0) {
+						  	current_state = (Integer)state_stack.pop();
+						  }
+					}
+		
+		if (comment_nesting_depth == 0 ) {
+			image.delete(0,image.length());
+		}
+		
+		SwitchTo(comment_nesting_depth == 0 ? DEFAULT : current_state.intValue()) ;  // initially was IN_MULTI_LINE_COMMENT here
+	} 
+	  
 }
+
+<IN_DOCUMENT_COMMENT_5>
+MORE :
+{
+	 "*)" 
+	{ 
+		comment_nesting_depth -= 1;
+					if (Support.parser_pass == 5) {
+//System.out.println("<DOCUMENT *)> entering, state stack: " + state_stack);
+//System.out.println("<DOCUMENT>: *) encountered, image: " + image.toString());
+//System.out.println("<C-D0>: document comment ended - before POP - depth: " + comment_nesting_depth + " tag: " + current_tag + ", tagged_object: " + tagged_object + ", image: " + image.toString() + ", state: " + current_state.intValue());
+						  if (comment_nesting_depth > 0) {
+						  	current_tag = (String)tag_stack.pop();
+								tagged_object = (jsdai.lang.EEntity)object_stack.pop();
+						  	current_image = (String)image_stack.pop();
+						  	//current_state = (Integer)state_stack.pop();
+						  	state_stack.pop();
+						  	current_state = (Integer)state_stack.peek();
+								index_stack.pop();
+//System.out.println("<C-D2>: document comment ended - after POP - tag: " + current_tag + ", tagged_object: " + tagged_object + ", image: " + current_image + " -> " + current_state.intValue());
+						  } else {
+//System.out.println("<C-DC>: Our special multi-line comment ended - NO POP  -> DEFAULT");
+						  }
+
+    					previous_image = image.toString();
+
+//System.out.println("<DOCUMENT *)> exiting, state stack: " + state_stack + ", current state: " + current_state);
+//System.out.println("<DOCUMENT>: *) image: " + image.toString());
+
+					} else {
+						  if (comment_nesting_depth > 0) {
+						  	current_state = (Integer)state_stack.pop();
+						  }
+					}
+		
+		if (comment_nesting_depth == 0 ) {
+			image.delete(0,image.length());
+		}
+		SwitchTo(comment_nesting_depth == 0 ? DEFAULT : current_state.intValue()) ;  // initially was IN_MULTI_LINE_COMMENT here
+	} 
+	  
+}
+
+
+<IN_MULTI_LINE_COMMENT_TAG>
+MORE :
+//SKIP:
+{
+
+	"\"" 
+	{ 
+// System.out.println("<TAG> entering, state stack: " + state_stack); 
+//System.out.println("<TAG>: \" encountered");
+//System.out.println("<TAG>\timage: " + image.toString());
+//System.out.println("<TAG>\tcurrent_image: " + current_image);
+//System.out.println("<TAG>\tprevious_image: " + previous_image);
+		//current_tag = image.toString().substring(3,image.length()-1);
+		//current_tag = image.toString().substring(0,image.length()-1);
+		  current_tag = image.toString().substring(previous_image.length(),image.length()-1);
+		
+//System.out.println("<TAG> - TAG: " + current_tag);		
+		try {
+//System.out.println("CREATING - sd: " + Support.sd + ", model: " + Support.model + ", pass: " + Support.parser_pass);
+//			tagged_object = Support.findEntity_definition(current_tag.toLowerCase(), (jsdai.SExtended_dictionary_schema.ESchema_definition)null);
+			tagged_object = Support.resolveTag(current_tag.toLowerCase());
+		} catch (jsdai.lang.SdaiException ex) {
+			tagged_object = null;
+			ex.printStackTrace();
+			System.out.println("EXCEPTION while resolving the tag: " + current_tag);
+		}
+//System.out.println("<TAG> - tagged object: " + tagged_object);		
+//if (tagged_object == null) 
+//System.out.println("<C-MLCT>: multi-line COMMENT TAG ended: " + current_tag + ", tagged object: " + tagged_object + " -> IN_MULTI_LINE_COMMENT");		
+//else 
+//System.out.println("<C-MLCT>: multi-line COMMENT TAG ended: " + current_tag + ", tagged object: " + tagged_object + " -> IN_MULTI_LINE_TAGGED_COMMENT");		
+
+    previous_image = image.toString();
+		//current_image = image.toString();
+		state_stack.pop();
+		if (tagged_object == null) {
+//			current_state = IN_MULTI_LINE_COMMENT;
+			current_state = new Integer(IN_MULTI_LINE_COMMENT);
+		} else {
+//			current_state = IN_MULTI_LINE_TAGGED_COMMENT;
+			current_state = new Integer(IN_MULTI_LINE_TAGGED_COMMENT);
+		}
+    state_stack.push(current_state);
+   
+//    System.out.println("<TAG> exiting, state stack: " + state_stack); 
+    
+		SwitchTo(tagged_object == null ? IN_MULTI_LINE_COMMENT : IN_MULTI_LINE_TAGGED_COMMENT); 
+
+	}
+	
+}
+
+<IN_MULTI_LINE_COMMENT_TAG>
+MORE :
+{
+	< ~[] >
+}
+
+<IN_MULTI_LINE_TAGGED_COMMENT>
+MORE : 
+//SKIP:
+{  
+	"(**" { 
+					comment_nesting_depth += 1; 
+					if (Support.parser_pass == 5) {
+//System.out.println("<TAGGED (**> entering, state stack: " + state_stack);
+
+//System.out.println("<TAGGED>: (** encountered, image: " + image.toString());
+						  tag_stack.push(current_tag);
+						  object_stack.push(tagged_object);
+						  image_stack.push(current_image);
+						  current_state = new Integer(IN_DOCUMENT_COMMENT_5);
+						  state_stack.push(current_state);
+	 					  index_stack.push(new Integer(image.length()));
+						  
+						  
+						  //previous_image = current_image();
+						  previous_image = image.toString();
+						  //current_image = image.toString();
+//System.out.println("<TAGGED (**> exiting, state stack: " + state_stack + ", current state: " + current_state);
+						  
+//System.out.println("<C-MLTC>: in multi-line-tagged-comment a document coment encountered, depth: " + comment_nesting_depth + " -> IN_DOCUMENT_COMMENT_5");
+					} else {
+						  // can never occur
+						  current_state = new Integer(IN_DOCUMENT_COMMENT_5);
+						  state_stack.push(current_state);
+					}
+				} : IN_DOCUMENT_COMMENT_5  // perhaps we need to support inner comments inside our special comments, because someone may use such a comment accidentally
+|
+	"(*\""  {
+						comment_nesting_depth += 1;
+						if (Support.parser_pass == 5) {
+//System.out.println("<TAGGED (*\"> entering, state stack: " + state_stack);
+//System.out.println("<TAGGED>: (*\" encountered, image: " + image.toString());
+ 
+						  tag_stack.push(current_tag);
+						  object_stack.push(tagged_object);
+						  //image_stack.push(current_image);
+						  image_stack.push(image.toString());
+						  current_state = new Integer(IN_MULTI_LINE_COMMENT_TAG);
+						  state_stack.push(current_state);
+	 					  index_stack.push(new Integer(image.length()));
+
+						  // depending on implemnetation, may have to go up before push()
+						  //previous_image = current_image();
+						  //current_image = image.toString();
+						  previous_image = image.toString();
+              
+//System.out.println("<TAGGED (*\"> exiting, state stack: " + state_stack + ", current state: " + current_state);
+
+//System.out.println("<C-MLTC>: in multi-line-tagged-comment a multi-line-coment-TAG encountered, depth: " + comment_nesting_depth + " -> IN_MULTI_LINE_COMMENT_TAG");
+							SwitchTo(IN_MULTI_LINE_COMMENT_TAG);
+						} else {
+						  // can never occur
+						  current_state = new Integer(IN_MULTI_LINE_COMMENT);
+						  state_stack.push(current_state);
+							SwitchTo(IN_MULTI_LINE_COMMENT);
+						}
+					}			
+|
+	"(*"  {
+					comment_nesting_depth += 1; 
+					if (Support.parser_pass == 5) {
+//System.out.println("<TAGGED (*> entering, state stack: " + state_stack);
+//System.out.println("<TAGGED>: (* encountered, image: " + image.toString());
+						  tag_stack.push(current_tag);
+						  object_stack.push(tagged_object);
+						  image_stack.push(current_image);
+						  current_state = new Integer(IN_MULTI_LINE_COMMENT);
+						  state_stack.push(current_state);
+	 					  index_stack.push(new Integer(image.length()));
+
+						  // depending on implemnetation, may have to go up before push()
+						  //previous_image = current_image();
+						  //current_image = image.toString();
+						  previous_image = image.toString();
+						  
+//System.out.println("<TAGGED (*> exiting, state stack: " + state_stack + ", current state: " + current_state);
+
+//System.out.println("<C-MLTC>: in multi-line-tagged-comment a multi-line-coment encountered, depth: " + comment_nesting_depth + " -> IN_MULTI_LINE_COMMENT");
+					} else {
+					    // can never occur
+						  current_state = new Integer(IN_MULTI_LINE_COMMENT);
+						  state_stack.push(current_state);
+					}
+				} : IN_MULTI_LINE_COMMENT
+}
+
+
+
+<IN_MULTI_LINE_TAGGED_COMMENT>
+MORE : 
+//SKIP:
+{  
+	"*)" 
+	{ 
+//System.out.println("<TAGGED>: *) encountered, image: " + image.toString());
+	
+		comment_nesting_depth -= 1;
+		// create document instance with current TAG  and image/message,  pop previous TAG, pop previous imagem, add current comment to the previous image, pop state	
+//		current_comment = image.toString().substring(current_tag.length()+4,image.length()-2);
+//		current_comment = image.toString();
+		if (comment_nesting_depth >= 0) {
+
+//			System.out.println("<TAGGED *)> entering, state stack: " + state_stack);
+			// add other possible states, not sure if it will be enough though, for multi-line-comment, for example, as there is no state for it indicating (* or *)
+		  open_index = ((Integer)index_stack.pop()).intValue();
+//	System.out.println("<TAGGED *)> index: " + open_index + ", image: " + image.toString()); 
+		  current_comment = image.toString().substring(open_index+current_tag.length()+1,image.length()-2);
+	//System.out.println("<TAGGED *)> tag: " + current_tag + ", comment: " + current_comment); 
+//	System.out.println("<TAGGED *)> tagged object: " + tagged_object + ", comment: " + current_comment); 
+			try {
+				Support.createTagDocumentationEntity(tagged_object, current_comment);
+			} catch (jsdai.lang.SdaiException ex) {
+				System.out.println("EXCEPTION while creating documentation entity: " + current_tag);
+			}
+			current_tag = (String)tag_stack.pop();
+			tagged_object = (jsdai.lang.EEntity)object_stack.pop();
+			current_image = (String)image_stack.pop() + current_tag + image.toString();
+//			current_state = (Integer)state_stack.pop();
+			state_stack.pop();
+			current_state = (Integer)state_stack.peek();
+
+//System.out.println("<C-MLTC0-1>: constructed  immage: " + current_image);
+			// current_state = new Integer(IN_MULTI_LINE_TAGGED_COMMENT);  --------------------  NOT NEEDED HERE !!!?
+
+			previous_image = image.toString();
+		}	else {
+			// it should never happen
+			System.out.println("INTERNAL ERROR in token manager, IN_MULTI_LINE_TAGGED_COMMENT *)");
+		}
+			
+//System.out.println("<C-MLTC1>: Tagged multi-line comment ended - depth: " + comment_nesting_depth + ", tag: " + current_tag + ", tagged_object: " + tagged_object + ", image: " + image.toString() + ", comment: " + current_comment);
+
+		
+//		if (comment_nesting_depth >= 0) {
+//System.out.println("<C-MLTC0>: Tagged multi-line comment ended - before POP");
+//			current_tag = (String)tag_stack.pop();
+//			tagged_object = (jsdai.lang.EEntity)object_stack.pop();
+//			current_image = (String)image_stack.pop();
+//System.out.println("<C-MLTC2>: Tagged multi-line comment ended - POPPED - tag: " + current_tag + ", tagged_object: " + tagged_object + ", image: " + current_image + ", comment: " + current_comment + " -> " +current_state.intValue());
+//		} else {
+//System.out.println("<C-MLTC3>: ENDED - NO POP - depth: " + comment_nesting_depth + " -> DEFAULT");
+//		}
+
+//	  System.out.println("<TAGGED *)> exiting, state stack: " + state_stack + ", current state: " + current_state);
+
+		if (comment_nesting_depth == 0 ) {
+			image.delete(0,image.length());
+		}
+		SwitchTo(comment_nesting_depth == 0 ? DEFAULT : current_state.intValue()) ; 
+	} 
+}
+
+
+<IN_MULTI_LINE_TAGGED_COMMENT>
+MORE :
+{
+	< ~[] >
+}
+
+
+<IN_MULTI_LINE_COMMENT>
+MORE :  // instead of SKIP
+{  
+	"(**" { 
+					comment_nesting_depth += 1; 
+					if (Support.parser_pass == 5) {
+//System.out.println("<MULTI (**> entering, state stack: " + state_stack);
+//System.out.println("<MULTI>: (** encountered, image: " + image.toString());
+						  tag_stack.push(current_tag);
+						  object_stack.push(tagged_object);
+						  image_stack.push(current_image);
+						  current_state = new Integer(IN_DOCUMENT_COMMENT_5);
+						  state_stack.push(current_state);
+							index_stack.push(new Integer(image.length()));
+		
+//System.out.println("<C-MLC>: in multi-line comment, document comment encountered, depth: " + comment_nesting_depth + " -> IN_DOCUMENT_COMMENT_5");
+					    previous_image = image.toString();
+//System.out.println("<MULTI (**> exiting, state stack: " + state_stack + ", current state: " + current_state);
+							SwitchTo(IN_DOCUMENT_COMMENT_5);
+					} else {
+//System.out.println("<C-MLC>: in multi-line comment, pass: " + Support.parser_pass + ", document comment encountered, depth: " + comment_nesting_depth + " -> IN_DOCUMENT_COMMENT");
+						  current_state = new Integer(IN_MULTI_LINE_COMMENT);
+						  state_stack.push(current_state);
+							SwitchTo(IN_DOCUMENT_COMMENT);
+					}
+					
+				} 
+|
+	"(*\""  {
+						comment_nesting_depth += 1;
+						if (Support.parser_pass == 5) {
+//System.out.println("<MULTI (*\"> entering, state stack: " + state_stack);
+//System.out.println("<MULTI>: (*\" encountered, image: " + image.toString());
+ 
+						  tag_stack.push(current_tag);
+						  object_stack.push(tagged_object);
+						  image_stack.push(current_image);
+						  current_state = new Integer(IN_MULTI_LINE_COMMENT_TAG);
+						  state_stack.push(current_state);
+
+//						  current_state = new Integer(IN_MULTI_LINE_COMMENT);
+//						  state_stack.push(current_state);
+							index_stack.push(new Integer(image.length()));
+//System.out.println("<C-MLC>: in multi-line comment, multi-line comment TAG encountered, depth: " + comment_nesting_depth + " -> IN_MULTI_LINE_COMMENT_TAG");
+					    previous_image = image.toString();
+
+//System.out.println("<MULTI (*\"> exiting, state stack: " + state_stack + ", current state: " + current_state);
+
+							SwitchTo(IN_MULTI_LINE_COMMENT_TAG);
+						} else {
+//System.out.println("<C-MLC>: in multi-line comment, pass: " + Support.parser_pass + ", multi-line comment TAG encountered, depth: " + comment_nesting_depth + " -> IN_MULTI_LINE_COMMENT_TAG");
+						  current_state = new Integer(IN_MULTI_LINE_COMMENT);
+						  state_stack.push(current_state);
+							SwitchTo(IN_MULTI_LINE_COMMENT); // not really needed
+						}
+					}			
+|
+	"(*" 
+	{ 
+		comment_nesting_depth += 1; 
+		if (Support.parser_pass == 5) {
+//System.out.println("<MULTI (*> entering, state stack: " + state_stack);
+//System.out.println("<MULTI>: (* encountered, image: " + image.toString());
+			tag_stack.push("");
+			object_stack.push(tagged_object);
+			image_stack.push(image.toString());
+			index_stack.push(new Integer(image.length()));
+		  current_state = new Integer(IN_MULTI_LINE_COMMENT);
+			state_stack.push(new Integer(IN_MULTI_LINE_COMMENT));
+
+  	  previous_image = image.toString();
+
+//System.out.println("<MULTI (*> exiting, state stack: " + state_stack + ", current state: " + current_state);
+	
+
+//System.out.println("<C-MLC>: in multi-line comment, a multi-line comment encountered, depth: " + comment_nesting_depth + " -> remains IN_MULTI_LINE_COMMENT");
+		} else {
+//System.out.println("<C-MLC>: in multi-line comment, pass: " + Support.parser_pass + ", a multi-line comment encountered, depth: " + comment_nesting_depth + " -> remains IN_MULTI_LINE_COMMENT");
+		  current_state = new Integer(IN_MULTI_LINE_COMMENT);
+		  state_stack.push(current_state);
+		}
+	} 
+}
+
+
+<IN_MULTI_LINE_COMMENT>
+MORE : // was SKIP
+{  
+	"*)" 
+	{ 
+		// here we don't know if there is an outer tagged comment, therefore  we cannot just to stay in IN_MULTI_LINE_COMMENT blindly
+		// therefore it seems we need to use stack even for non-tagged multi-line comments (in pass 5)
+		comment_nesting_depth -= 1;
+		if (Support.parser_pass == 5) {
+//System.out.println("<MULTI *)> entering, state stack: " + state_stack);
+//System.out.println("<MULTI>: *) encountered, image: " + image.toString());
+//System.out.println("<C-MLC1>: multi-line comment ended - tag(not used): " + current_tag + ", tagged_object(not used): " + tagged_object + ", image: " + image.toString());
+			if (comment_nesting_depth == 0) {
+//System.out.println("<C-MLC0>: multi-line comment ended - NO POP - current_tag: " + current_tag + ", tagged_object: " + tagged_object + ", image: " + image.toString() + ", state: " + current_state.intValue() );
+					if (comment_nesting_depth == 0 ) {
+						image.delete(0,image.length());
+					}
+					SwitchTo(DEFAULT);
+			} else {
+//System.out.println("<C-MLC0>: multi-line comment ended - before POP - depth: " + comment_nesting_depth + ", current_tag: " + current_tag + ", tagged_object: " + tagged_object + ", image: " + image.toString() + ", state: " + current_state.intValue() );
+//				current_state = (Integer)state_stack.pop();
+				state_stack.pop();
+				current_state = (Integer)state_stack.peek();
+				current_tag = (String)tag_stack.pop();
+				tagged_object = (jsdai.lang.EEntity)object_stack.pop();
+				current_image = (String)image_stack.pop();
+				index_stack.pop();
+//System.out.println("<C-MLC2>: multi-line comment ended - popped: tag: " + current_tag + ", tagged_object: " + tagged_object + ", image: " + current_image + " -> " + current_state.intValue());
+				SwitchTo(current_state.intValue());
+			}
+	    previous_image = image.toString();
+
+//System.out.println("<MULTI *)> exiting, state stack: " + state_stack + ", current state: " + current_state);
+		} else {
+//System.out.println("<C-MLC0>: multi-line comment ended, pass: " + Support.parser_pass + " - tag(not used): " + current_tag + ", tagged_object(not used): " + tagged_object + ", image: " + image.toString());
+//System.out.println("comment_nesting_depth: " + comment_nesting_depth);
+			if (comment_nesting_depth > 0) {
+				current_state = (Integer)state_stack.pop();
+			}
+			if (comment_nesting_depth == 0 ) {
+				image.delete(0,image.length());
+//System.out.println("image: " + image.toString());
+			}
+			SwitchTo(comment_nesting_depth == 0 ? DEFAULT : IN_MULTI_LINE_COMMENT) ; 
+		}
+		 
+	} 
+}
+
 
 <IN_DOCUMENT_COMMENT>
 MORE :
@@ -2405,8 +3291,14 @@ MORE :
 	< ~[] >
 }
 
-<IN_MULTI_LINE_COMMENT>
+<IN_DOCUMENT_COMMENT_5>
 MORE :
+{
+	< ~[] >
+}
+
+<IN_MULTI_LINE_COMMENT>
+MORE : // was SKIP
 {
 	< ~[] >
 }
@@ -2615,12 +3507,12 @@ TOKEN : /* Keywords */
 
 TOKEN : /* ISO 10303-11:A.1.3 Lexical elements */
 {	
-< BINARY_LITERAL : "%" (<BIT>)+ >                                                      /* ISO 10303-11:A.1.3.136 */
-| < ENCODED_STRING_LITERAL : "\"" (<ENCODED_CHARACTER>)+ "\"" >                          /* ISO 10303-11:A.1.3.137 */
-| < INTEGER_LITERAL : <DIGITS> >                                                         /* ISO 10303-11:A.1.3.138 */
-| < REAL_LITERAL : <DIGITS> "." (<DIGITS>)? (["e", "E"] (<SIGN>)? <DIGITS>)? >           /* ISO 10303-11:A.1.3.139 */
-| < SIMPLE_ID: <LETTER> (<LETTER> | <DIGIT> | "_" | "$")* >                                    /* ISO 10303-11:A.1.3.140 */
-| < SIMPLE_STRING_LITERAL : "\'" (("\'" "\'") | <NOT_QUOTE> | " " )* "\'">      /*  also \o ISO 10303-11:A.1.3.141 */                                              /* ISO 10303-11:A.1.3.141 */
+< BINARY_LITERAL : "%" (<BIT>)+ >                                               { matchedToken.image = image.toString(); } /* ISO 10303-11:A.1.3.136 */
+| < ENCODED_STRING_LITERAL : "\"" (<ENCODED_CHARACTER>)+ "\"" >                 { matchedToken.image = image.toString(); } /* ISO 10303-11:A.1.3.137 */
+| < INTEGER_LITERAL : <DIGITS> >                                                { matchedToken.image = image.toString(); } /* ISO 10303-11:A.1.3.138 */
+| < REAL_LITERAL : <DIGITS> "." (<DIGITS>)? (["e", "E"] (<SIGN>)? <DIGITS>)? >  { matchedToken.image = image.toString(); } /* ISO 10303-11:A.1.3.139 */
+| < SIMPLE_ID: <LETTER> (<LETTER> | <DIGIT> | "_" | "$")* >                     { matchedToken.image = image.toString(); } /* ISO 10303-11:A.1.3.140 */
+| < SIMPLE_STRING_LITERAL : "\'" (("\'" "\'") | <NOT_QUOTE> | " " )* "\'">      { matchedToken.image = image.toString(); } /*  also \o ISO 10303-11:A.1.3.141 */                                              /* ISO 10303-11:A.1.3.141 */
 }
 
 
@@ -5946,6 +6838,7 @@ String EntityId() :
 {
 	t = <SIMPLE_ID>
 	{
+//System.out.println("EntityId token: " + t.image.toString());
 		if (flag_oc) {
 			return (t.image.replace('$', '+'));
 		} else {
@@ -31356,7 +32249,15 @@ JAVACODE
 		if (parser_pass == pass) {
 			if (st != null) {
 				if (st.kind == DOCUMENT_COMMENT) {
-					str = st.image.substring(3, st.image.length()-2);
+					// because of the nested tagged remark implementation, if document_comment is in a complex combination of nested comments, some garbage may be returned
+					// let's try to use a bit safer implementation:
+					//str = st.image.substring(3, st.image.length()-2);
+					int ind = st.image.lastIndexOf("(**");
+					if (ind < 0) {
+						str = st.image.substring(3, st.image.length()-2); // probably this case is not needed
+					} else {
+						str = st.image.substring(ind+3, st.image.length()-2);
+					}
 				}
 			}
 		}
@@ -31479,6 +32380,7 @@ JAVACODE
 	}
 
 JAVACODE
+
 
 	void createDocumentationEntity2(jsdai.lang.EEntity target, Token a_token) throws jsdai.lang.SdaiException {
 		if (parser_pass != 1) return;

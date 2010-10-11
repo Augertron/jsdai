@@ -58,12 +58,12 @@ public class AttributePanel extends JPanel {
 	JButton bMinus = new JButton(new ImageIcon(getClass().getResource("images/minus_t.gif")));
 	JButton bPlius = new JButton(new ImageIcon(getClass().getResource("images/plius_t.gif")));
 	JButton bCreate = new JButton(new ImageIcon(getClass().getResource("images/create_t.gif")));
-	
+
 	private boolean redeclaring;
 
 	/** Holds value of property derived. */
 	private boolean derived;
-	
+
 
 	public AttributePanel(EAttribute attribute) throws SdaiException {
 		setLayout(new BorderLayout());
@@ -218,21 +218,21 @@ public class AttributePanel extends JPanel {
 	public EAttribute getAttribute() {
 		return attribute;
 	}
-    
+
 	public void setInstance(EEntity instance) throws SdaiException {
 		this.instance = instance;
 //        SdaiModel owning_model = instance.findEntityInstanceSdaiModel();
-        
+
 //        dataDomain = new ASdaiModel();
 //        dataDomain.addByIndex(1, owning_model, null);
-        
+
 		EDefined_type dts[] = new EDefined_type[10];
 		int test_res = -1;
 		try {
 			if (type <= MIXED) {
 				test_res = instance.testAttribute(attribute, dts);
 			}
-		} catch (SdaiException ex) { 
+		} catch (SdaiException ex) {
 			int errorId = ex.getErrorId();
 			if (errorId == SdaiException.FN_NAVL || errorId == SdaiException.AT_NVLD) {
 				test_res = -1;
@@ -256,7 +256,8 @@ public class AttributePanel extends JPanel {
 			}
 			case LIMITED : {
 			    if (test_res > 0) {
-		    		comboValue.setSelectedIndex(SimpleOperations.getAttributeInt(instance, attribute)-1);
+			    	int selIndex = SimpleOperations.getAttributeInt(instance, attribute)-1;
+		    		comboValue.setSelectedIndex(selIndex > 0 && selIndex < comboValue.getModel().getSize() ? selIndex : -1);
 	    		} else if (test_res == 0) {
 					comboValue.setSelectedIndex(-1);
 				} else {
@@ -492,21 +493,21 @@ public class AttributePanel extends JPanel {
 	public boolean isRedeclaring() {
 		return redeclaring;
 	}
-	
+
 	/** Setter for property redeclaring.
 	 * @param redeclaring New value of property redeclaring.
 	 */
 	public void setRedeclared(boolean redeclaring) {
 		this.redeclaring = redeclaring;
 	}
-	
+
 	/** Getter for property derived.
 	 * @return Value of property derived.
 	 */
 	public boolean isDerived() {
 		return derived;
 	}
-	
+
 	ActionListener pliusListener = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 			try {
@@ -536,24 +537,24 @@ public class AttributePanel extends JPanel {
 			} catch (SdaiException ex) { ; }
 		}
 	};
-    
+
 	private static class EEntity_definition_list_item {
 		EEntity_definition ed;
 		public boolean equals(Object obj) {
 			EEntity_definition_list_item rh = (EEntity_definition_list_item) obj;
 			return ed.equals(rh.ed);
 		}
-		
+
 		public String toString() {
 			try {
 				return ed.getName(null).toUpperCase();
 			} catch (SdaiException ex) {
 				ex.printStackTrace();
 			}
-			
+
 			return null;
 		}
-		
+
 		public EEntity_definition getDefinition() {
 			return ed;
 		}
@@ -609,7 +610,7 @@ public class AttributePanel extends JPanel {
 				}
 				AEntity_definition result = new AEntity_definition();
 		        int childCount = CEntity_definition.usedinSupertypes(null, entDefinition, dataDomain, result);
-		        
+
 		        for (int j = 1; j <= childCount; j++) {
 		            EEntity_definition def = result.getByIndex(j);
 					edList = getEntity_definition_list(Collections.singletonList(def), dataDomain, edList);
@@ -627,21 +628,21 @@ public class AttributePanel extends JPanel {
 		Frame frame = topParent instanceof Frame ? (Frame)topParent : null;
     	GetEntityDefinitionDialog selectEntityDefDlg = new GetEntityDefinitionDialog(frame, true, possibleTypes);
 		WindowCenterer.showCentered(topParent, selectEntityDefDlg);
-		
+
 		int selIndex = selectEntityDefDlg.getSelIndex();
 		if (selIndex >= 0) {
 			return ((EEntity_definition_list_item) possibleTypes.get(selIndex)).getDefinition();
 		}
-		
+
 		return null;
 	}
-    
+
 	/*
 	 * Method is used by this class and AggregateBean
 	 */
     static ASdaiModel getDataDomain(SdaiModel owning_model) throws SdaiException {
         ASdaiModel rv = new ASdaiModel();
-        
+
         SdaiSession session = SdaiSession.getSession();
         ESchema_definition schemaDef = owning_model.getUnderlyingSchema();
         SdaiRepository systemRepo = session.getSystemRepository();
@@ -667,7 +668,7 @@ public class AttributePanel extends JPanel {
 	                    EEntity_definition selectedEntity = getEntityDefinitionDialog(AttributePanel.this, availableTypes);
 						if (selectedEntity != null) {
 							EEntity instance = owning_model.createEntityInstance(selectedEntity);
-	
+
 							if (SimpleOperations.canSetForThisDomain(SdaiSession.getSession().getSdaiContext(),
 																	 instance.getInstanceType(), domain) && (textValue != null)) {
 								textValue.setEEntity(instance);
@@ -675,8 +676,8 @@ public class AttributePanel extends JPanel {
 						}
             		}
                 }
-			} catch (SdaiException ex) { 
-                ex.printStackTrace(); 
+			} catch (SdaiException ex) {
+                ex.printStackTrace();
             }
 		}
 	};

@@ -117,4 +117,35 @@ public abstract class AttributeDefinition extends CEntity implements EAttribute 
 		return str;
 	}
 
+
+	boolean search_attribute(CEntity_definition def_for_value) throws SdaiException {
+		DataType attr_type = null;
+		SelectType sel_type = null;
+		if (attr_tp == AttributeDefinition.EXPLICIT) {
+			attr_type = (DataType)((CExplicit_attribute)this).getDomain(null);
+		} else if (attr_tp == AttributeDefinition.DERIVED) {
+			return false;
+		} else {
+			String base = SdaiSession.line_separator + AdditionalMessages.SE_ERDD;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		DataType type = attr_type;
+		while (type.express_type == DataType.DEFINED_TYPE) {
+			DataType underlying_type = (DataType)((CDefined_type)type).getDomain(null);
+			if (underlying_type.express_type >= DataType.SELECT && underlying_type.express_type <= DataType.ENT_EXT_EXT_SELECT) {
+				sel_type = (SelectType)underlying_type;
+				break;
+			} else if (underlying_type.express_type == DataType.DEFINED_TYPE) {
+				type = underlying_type;
+			} else {
+				break;
+			}
+		}
+		if (sel_type == null) {
+			return attr_type.search_entity(def_for_value);
+		} else {
+			return sel_type.search_entity_select(def_for_value);
+		}
+	}
+
 }

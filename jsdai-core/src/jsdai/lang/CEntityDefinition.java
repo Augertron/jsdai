@@ -27,18 +27,18 @@ import jsdai.dictionary.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-/** It is a supertype of the class <code>CEntity_definition</code> contained in the 
- * <code>jsdai.dictionary</code> package. This class is designed primarily 
- * to hold some non-public data fields and a number of non-public methods 
- * mainly used for processing of values of these fields and for creation of the 
- * data dictionary during opening of the session. Also, the public methods 
- * {@link EntityDefinition#isSubtypeOf isSubtypeOf} and 
+/** It is a supertype of the class <code>CEntity_definition</code> contained in the
+ * <code>jsdai.dictionary</code> package. This class is designed primarily
+ * to hold some non-public data fields and a number of non-public methods
+ * mainly used for processing of values of these fields and for creation of the
+ * data dictionary during opening of the session. Also, the public methods
+ * {@link EntityDefinition#isSubtypeOf isSubtypeOf} and
  * {@link EntityDefinition#isDomainEquivalentWith isDomainEquivalentWith} defined in
  * "ISO 10303-22: Product data representation and exchange: Standard data access interface"
- * and additional public methods 
- * {@link EntityDefinition#getExplicit_attributes getExplicit_attributes} and 
- * {@link EntityDefinition#testExplicit_attributes testExplicit_attributes}, 
- * which are not a part of the standard, are implemented here. 
+ * and additional public methods
+ * {@link EntityDefinition#getExplicit_attributes getExplicit_attributes} and
+ * {@link EntityDefinition#testExplicit_attributes testExplicit_attributes},
+ * which are not a part of the standard, are implemented here.
  */
 public abstract class CEntityDefinition extends DataType implements EEntity_definition {
 
@@ -100,7 +100,7 @@ public abstract class CEntityDefinition extends DataType implements EEntity_defi
 	boolean used_for_roles;
 //	boolean del_supertype;
 
-	// listing of all explicit attributes 0..x as they where generate in the 
+	// listing of all explicit attributes 0..x as they where generate in the
 	// early binding entity classes.
 	// the dimension of these aggregates is the no. of explicit attributs.
 	// needs to be set during setEarlyBinding()
@@ -214,7 +214,7 @@ public abstract class CEntityDefinition extends DataType implements EEntity_defi
 			return IsInSupertypeList((CEntity_definition)this, (CEntity_definition)compType);
 //			return IsInSubtypesList(this, (CEntityDefinition)compType); // sometimes this implementation is faster
 //if (b1 != b2) {
-//System.out.println("CEntityDefinition *** differ for this: " + ((CEntity_definition)this).getName(null) + 
+//System.out.println("CEntityDefinition *** differ for this: " + ((CEntity_definition)this).getName(null) +
 //"   and compType: " + ((CEntity_definition)compType).getName(null));
 //}
 //return b1;
@@ -235,7 +235,7 @@ public abstract class CEntityDefinition extends DataType implements EEntity_defi
 		}
 		int sub_index = def.index;
 		if (sub_index < 0) {
-			throw new SdaiException(SdaiException.SY_ERR, "Entity not found in the table: " + 
+			throw new SdaiException(SdaiException.SY_ERR, "Entity not found in the table: " +
 				((CEntity_definition)def).getName(null) + " (used in model: " + owning_model.name + ")");
 		}
 		if (sub_index == super_index) {
@@ -337,7 +337,7 @@ public abstract class CEntityDefinition extends DataType implements EEntity_defi
 		try {
 			return SdaiClassLoaderProvider.getDefault().getClassLoader().loadClass(s);
 		} catch (ClassNotFoundException e) {
-			throw new SdaiException(SdaiException.SY_ERR, 
+			throw new SdaiException(SdaiException.SY_ERR,
 				"Early binding entity-class class not found: " + s);
 		}
 	}
@@ -352,7 +352,7 @@ public abstract class CEntityDefinition extends DataType implements EEntity_defi
 		try {
 			return Class.forName(s, true, SdaiClassLoaderProvider.getDefault().getClassLoader());
 		} catch (ClassNotFoundException e) {
-			throw new SdaiException(SdaiException.SY_ERR, 
+			throw new SdaiException(SdaiException.SY_ERR,
 				"Early binding entity-class class not found: " + s);
 		}
 	}
@@ -366,12 +366,12 @@ public abstract class CEntityDefinition extends DataType implements EEntity_defi
 		try {
 			return Class.forName(s, true, SdaiClassLoaderProvider.getDefault().getClassLoader());
 		} catch (ClassNotFoundException e) {
-			throw new SdaiException(SdaiException.SY_ERR, 
+			throw new SdaiException(SdaiException.SY_ERR,
 				"Early binding entity-aggregate class not found: " + s);
 		}
 	}
 
-	static Class getEntityNestedAggregate(SchemaDefinition schemaDef, String entity, int level) 
+	static Class getEntityNestedAggregate(SchemaDefinition schemaDef, String entity, int level)
 			throws SdaiException {
 		SdaiModel model = schemaDef.owning_model;
 		SSuper sup = model.schemaData.super_inst;
@@ -386,7 +386,7 @@ if (SdaiSession.debug2) System.out.println(" In EntityDefinition s = " + s);
 		try {
 			return SdaiClassLoaderProvider.getDefault().getClassLoader().loadClass(s);
 		} catch (ClassNotFoundException e) {
-			throw new SdaiException(SdaiException.SY_ERR, 
+			throw new SdaiException(SdaiException.SY_ERR,
 				"Early binding entity-aggregate class not found: " + s);
 		}
 	}
@@ -421,7 +421,7 @@ if (SdaiSession.debug2) System.out.println(" In EntityDefinition s = " + s);
 			entityNestedAggregate = new Class[MAX_LEVEL_OF_NESTING];
 		}
 		if (level > entityNestedAggregate.length) {
-			throw new SdaiException(SdaiException.SY_ERR, 
+			throw new SdaiException(SdaiException.SY_ERR,
 				"Aggregates of nesting level " + level + " are not supported");
 		}
 		int ind = level - 1;
@@ -431,7 +431,7 @@ if (SdaiSession.debug2) System.out.println(" In EntityDefinition s = " + s);
 		return entityNestedAggregate[ind];
 	}
 
-	private void setEarlyBinding1(EEntity_definition entity, AEntity_definition result) 
+	private void setEarlyBinding1(EEntity_definition entity, AEntity_definition result)
 			throws SdaiException {
 // process all supertypes recursively
 		if (!(result.isMember(entity))) {
@@ -474,7 +474,7 @@ if (SdaiSession.debug2) System.out.println(" In EntityDefinition s = " + s);
 		AEntity_definition result = new AEntity_definition();
 		setEarlyBinding1(this, result);
 /*int lnn = result.getMemberCount();
-System.out.println("  &&&&& entity: " + getName(null) + "   count = " + lnn + 
+System.out.println("  &&&&& entity: " + getName(null) + "   count = " + lnn +
 "  complex?: " + getComplex(null));
 boolean rep = false;
 for (int j = 1; j <= lnn; j++) {
@@ -554,7 +554,7 @@ if (rep) System.out.println("  ????? REPETITION");*/
 //			partialEntityTypes[i] = (CEntity_definition)result.getByIndex(internalMappingIndexing[i] + 1);
 		}
 		noOfPartialEntityTypes = res_length;
-/*System.out.println("  CEntityDefinition partial entities for entity: " + getName(null) + 
+/*System.out.println("  CEntityDefinition partial entities for entity: " + getName(null) +
 "   count = " + result.myLength);
 for (int j = 0; j < partialEntityTypes.length; j++) {
 System.out.print("  P: " + partialEntityTypes[j].getName(null));
@@ -566,7 +566,7 @@ System.out.println();*/
 
 /** The method prepares information of the explicit attributes of this entity in a convenient form.
   This information is used, in particular, in attribute access methods.
-  This method is invoked during its initialization (static) by 
+  This method is invoked during its initialization (static) by
   every entity class CXxx/definition = initEntityDefinition(...)  -> setEarlyBinding(...)
 */
 	final void setEarlyBinding(SdaiModel model) throws SdaiException {
@@ -675,9 +675,9 @@ System.out.println();*/
 			} else {
 				iter.next();
 /*if (iter.myElement == null) {
-System.out.println(" CEntityDefinition iter.myAggregate: " + 
-iter.myAggregate.getClass().getName() + 
-"  result.myLength: " + result.getMemberCount() + 
+System.out.println(" CEntityDefinition iter.myAggregate: " +
+iter.myAggregate.getClass().getName() +
+"  result.myLength: " + result.getMemberCount() +
 "   result: " + result.getClass().getName());
 System.out.println(" CEntityDefinition this entity: " + ((CEntity_definition)this).getName(null));
 CEntity_definition eee = (CEntity_definition)result.getByIndex(j + 1);
@@ -708,46 +708,46 @@ System.out.println(" CEntityDefinition eee: " + eee.getName(null) + "  j = " + j
 					index = sch_data_compl.findEntityExtentIndex(entity);
 					if (index < 0) {
 						error_mod = sch_data_compl.model;
-						throw new SdaiException(SdaiException.SY_ERR, "Entity not found in the table: " + 
+						throw new SdaiException(SdaiException.SY_ERR, "Entity not found in the table: " +
 							entity.getName(null) + " (used in model: " + error_mod.name + ")");
 					}
 					if_cl = sch_data_compl.getEntityInterfaceByIndex(index);
 					index = sch_data.findEntityExtentIndex(this);
 					if (index < 0) {
 						error_mod = sch_data.model;
-						throw new SdaiException(SdaiException.SY_ERR, "Entity not found in the table: " + 
+						throw new SdaiException(SdaiException.SY_ERR, "Entity not found in the table: " +
 							((CEntity_definition)this).getName(null) + " (used in model: " + error_mod.name + ")");
 					}
 				} else {
 					index = sch_data.findEntityExtentIndex(entity);
 					if (index < 0) {
 						error_mod = sch_data.model;
-						throw new SdaiException(SdaiException.SY_ERR, "Entity not found in the table: " + 
+						throw new SdaiException(SdaiException.SY_ERR, "Entity not found in the table: " +
 							entity.getName(null) + " (used in model: " + error_mod.name + ")");
 					}
 					if_cl = sch_data.getEntityInterfaceByIndex(index);
 				}
-//System.out.println("CEntityDefinition  this entity: " + getName(null) + 
+//System.out.println("CEntityDefinition  this entity: " + getName(null) +
 //"   partial entity: " + entity.getName(null));
 			} else {
 				if (complex == 2 /*true*/) {
 					index = sch_data.findEntityExtentIndex(this);
 					if (index < 0) {
 						error_mod = sch_data.model;
-						throw new SdaiException(SdaiException.SY_ERR, "Entity not found in the table: " + 
+						throw new SdaiException(SdaiException.SY_ERR, "Entity not found in the table: " +
 							((CEntity_definition)this).getName(null) + " (used in model: " + error_mod.name + ")");
 					}
 				} else {
 					index = sch_data.findEntityExtentIndex(entity);
 					if (index < 0) {
 						error_mod = sch_data.model;
-						throw new SdaiException(SdaiException.SY_ERR, "Entity not found in the table: " + 
+						throw new SdaiException(SdaiException.SY_ERR, "Entity not found in the table: " +
 							entity.getName(null) + " (used in model: " + error_mod.name + ")");
 					}
 				}
 			}
 			cl = sch_data.getEntityClassByIndex(index);
-			if (partial_attrs.length > 0 || ((CEntityDefinition)entity).der_attr_exist || 
+			if (partial_attrs.length > 0 || ((CEntityDefinition)entity).der_attr_exist ||
 					((CEntityDefinition)entity).inv_attr_exist) {
 				if (partial_attrs.length > 0 && alternative == 0) {
 					entity.noOfPartialAttributes = 0;
@@ -776,6 +776,20 @@ System.out.println(" CEntityDefinition eee: " + eee.getName(null) + "  j = " + j
 						cl_next = cl_this.getSuperclass();
 						CEntity_definition current_entity = (CEntity_definition)this;
 						while (cl_next != CEntity.class) {
+							while(true) {
+								String cl_next_name = cl_next.getName();
+								int pos = cl_next_name.lastIndexOf(".");
+								if(pos > 0) {
+									cl_next_name = cl_next_name.substring(pos + 1);
+								} else {
+									cl_next_name = null;
+								}
+								if(cl_next_name != null && cl_next_name.length() > 1
+									&& Character.isUpperCase(cl_next_name.charAt(1))) {
+									break;
+								}
+								cl_next = cl_next.getSuperclass();
+							}
 							CEntity_definition super_entity = sch_data.findEntity(cl_next);
 							boolean res = findPartialEntity(current_entity, super_entity, entity);
 							if (res) {
@@ -786,7 +800,7 @@ System.out.println(" CEntityDefinition eee: " + eee.getName(null) + "  j = " + j
 //								} else {
 //									alternative = 1;
 //								}
-//System.out.println("  HOST class: " + cl.getName() + 
+//System.out.println("  HOST class: " + cl.getName() +
 //"  this entity: " + ((CEntity_definition)this).getName(null));
 								found = true;
 //								break;
@@ -806,7 +820,7 @@ System.out.println(" CEntityDefinition eee: " + eee.getName(null) + "  j = " + j
 						if (alternative == 0) {
 							entity.noOfPartialAttributes++;
 						}
-//if (((CEntity_definition)this).getName(null).equals("si_unit")) 
+//if (((CEntity_definition)this).getName(null).equals("si_unit"))
 //System.out.println("CEntityDefinition +++++++++++ i: " + i +
 //"   attrib: " + attrib.getName(null));
 						attributes[position] = partial_attrs[i];
@@ -894,9 +908,9 @@ System.out.println(" CEntityDefinition eee: " + eee.getName(null) + "  j = " + j
 					}
 					attributesDerived[deriv_count] = der_attrs[i];
 					attributesDerivedClass[deriv_count] = cl;
-//if (((CEntity_definition)this).getName(null).equals("generic_footprint_definition_armx")) 
+//if (((CEntity_definition)this).getName(null).equals("generic_footprint_definition_armx"))
 //System.out.println("CEntityDefinition +++++++++++ deriv_count: " + deriv_count +
-//"   attrib: " + der_attrs[i].getName(null) + "   cl: " + cl.getName() + 
+//"   attrib: " + der_attrs[i].getName(null) + "   cl: " + cl.getName() +
 //"  entity: " + ((CEntityDefinition)entity).getName(null));
 					String m_name = GET_METHOD_PREFIX + normalise(der_attrs[i].getName(null));
 					staticFields.param_ed[0] = true_if_cl;
@@ -935,7 +949,7 @@ System.out.println(" CEntityDefinition eee: " + eee.getName(null) + "  j = " + j
 			attributesDerivedMethodName = attributesDerivedMethodName_shr;
 		}
 	}
-	private boolean findPartialEntity(CEntity_definition base_entity, CEntity_definition super_entity, 
+	private boolean findPartialEntity(CEntity_definition base_entity, CEntity_definition super_entity,
 			CEntity_definition target_entity) throws SdaiException {
 		AEntity_definition supertypes = base_entity.getSupertypes(null);
 		for (int j = 1; j <= ((AEntity)supertypes).myLength; j++) {
@@ -1029,7 +1043,7 @@ System.out.println(" CEntityDefinition eee: " + eee.getName(null) + "  j = " + j
 //				EAttribute attrib = partial_attrs.getByIndex(i);
 			for (int i = 0; i < partial_attrs.length; i++) {
 				EAttribute attrib = partial_attrs[i];
-				if ((((AttributeDefinition)attrib).attr_tp == AttributeDefinition.EXPLICIT)  && 
+				if ((((AttributeDefinition)attrib).attr_tp == AttributeDefinition.EXPLICIT)  &&
 						!((CExplicit_attribute)attrib).testRedeclaring(null)) {
 					entity.noOfPartialAttributes++;
 				}
@@ -1072,7 +1086,7 @@ System.out.println(" CEntityDefinition eee: " + eee.getName(null) + "  j = " + j
 		int j = -1;
 //String nnn = ((CEntity_definition)this).getName(null);
 //boolean bbb = false;
-//if (nnn.equals("entity_definition") || nnn.equals("population_dependent_bound") 
+//if (nnn.equals("entity_definition") || nnn.equals("population_dependent_bound")
 //|| nnn.equals("dependent_map_partition")) bbb = true;
 //if (bbb) System.out.println("  CEntityDefinition  entity: " + nnn);
 		while (j < noOfPartialEntityTypes - 1) {
@@ -1476,7 +1490,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 			if (partial_attrs != null) {
 				for (int i = 1; i <= partial_attrs.myLength; i++) {
 					attrib = partial_attrs.getByIndex(i);
-					if (attrib instanceof CExplicit_attribute && 
+					if (attrib instanceof CExplicit_attribute &&
 						!((CExplicit_attribute)attrib).testRedeclaring(null)) {
 //						!checkIfDerived((CExplicit_attribute)attrib)) {
 						count++;
@@ -1518,7 +1532,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 	} */
 
 
-	private void addPartialTypes(AEntity_definition result) 
+	private void addPartialTypes(AEntity_definition result)
 			throws SdaiException {
 		if (!(result.isMember(this))) {
 			for (int i = 0; i < supertypes_count; i++) {
@@ -1645,7 +1659,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 	}
 
 
-	public final AExplicit_attribute getExplicit_attributes(EEntity_definition type) 
+	public final AExplicit_attribute getExplicit_attributes(EEntity_definition type)
 			throws SdaiException {
 //		synchronized (syncObject) {
 		int i;
@@ -1733,7 +1747,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 		StaticFields staticFields = StaticFields.get();
 		if (mod == SdaiSession.baseDictionaryModel) {
 			for (i = 0; i < mod.lengths[SdaiSession.EXPLICIT_ATTRIBUTE]; i++) {
-				CExplicit_attribute ex_attr = 
+				CExplicit_attribute ex_attr =
 					(CExplicit_attribute)mod.instances_sim[SdaiSession.EXPLICIT_ATTRIBUTE][i];
 				edef = (CEntity_definition)ex_attr.getParent(null);
 				if (edef != this || !ex_attr.testOrder(null)) {
@@ -1794,7 +1808,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 		attributesExpl = new CExplicit_attribute[count];
 		if (mod == SdaiSession.baseDictionaryModel) {
 			for (i = 0; i < count; i++) {
-				attributesExpl[i] = 
+				attributesExpl[i] =
 					(CExplicit_attribute)mod.instances_sim[SdaiSession.EXPLICIT_ATTRIBUTE][staticFields.indices[i]];
 				staticFields.indices[i] = attributesExpl[i].getOrder(null);
 			}
@@ -1827,7 +1841,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 		count = 0;
 		if (mod == SdaiSession.baseDictionaryModel) {
 			for (i = 0; i < mod.lengths[SdaiSession.DERIVED_ATTRIBUTE]; i++) {
-				CDerived_attribute der_attr = 
+				CDerived_attribute der_attr =
 					(CDerived_attribute)mod.instances_sim[SdaiSession.DERIVED_ATTRIBUTE][i];
 				edef = (CEntity_definition)der_attr.getParent(null);
 				if (edef != this || !der_attr.testOrder(null)) {
@@ -1844,7 +1858,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 			if (count > 0) {
 				der_attr_exist = true;
 				for (i = 0; i < count; i++) {
-					attributesDeriv[i] = 
+					attributesDeriv[i] =
 						(CDerived_attribute)mod.instances_sim[SdaiSession.DERIVED_ATTRIBUTE][staticFields.indices[i]];
 					staticFields.indices[i] = attributesDeriv[i].getOrder(null);
 				}
@@ -1900,7 +1914,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 		count = 0;
 		if (mod == SdaiSession.baseDictionaryModel) {
 			for (i = 0; i < mod.lengths[SdaiSession.INVERSE_ATTRIBUTE]; i++) {
-				CInverse_attribute inv_attr = 
+				CInverse_attribute inv_attr =
 					(CInverse_attribute)mod.instances_sim[SdaiSession.INVERSE_ATTRIBUTE][i];
 				edef = (CEntity_definition)inv_attr.getParent(null);
 				if (edef != this || !inv_attr.testOrder(null)) {
@@ -1917,7 +1931,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 			if (count > 0) {
 				inv_attr_exist = true;
 				for (i = 0; i < count; i++) {
-					attributesInv[i] = 
+					attributesInv[i] =
 						(CInverse_attribute)mod.instances_sim[SdaiSession.INVERSE_ATTRIBUTE][staticFields.indices[i]];
 					staticFields.indices[i] = attributesInv[i].getOrder(null);
 				}
@@ -1979,7 +1993,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 		if (mod == SdaiSession.baseDictionaryModel) {
 			int count1 = 0, count2 = 0, count3 = 0;
 			for (i = 0; i < mod.lengths[SdaiSession.EXPLICIT_ATTRIBUTE]; i++) {
-				CExplicit_attribute ex_attr = 
+				CExplicit_attribute ex_attr =
 					(CExplicit_attribute)mod.instances_sim[SdaiSession.EXPLICIT_ATTRIBUTE][i];
 				edef = (CEntity_definition)ex_attr.getParent(null);
 				if (edef != this || ex_attr.testOrder(null)) {
@@ -1994,7 +2008,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 			}
 			count1 = count;
 			for (i = 0; i < mod.lengths[SdaiSession.DERIVED_ATTRIBUTE]; i++) {
-				CDerived_attribute der_attr = 
+				CDerived_attribute der_attr =
 					(CDerived_attribute)mod.instances_sim[SdaiSession.DERIVED_ATTRIBUTE][i];
 				edef = (CEntity_definition)der_attr.getParent(null);
 				if (edef != this || der_attr.testOrder(null)) {
@@ -2009,7 +2023,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 			}
 			count2 = count - count1;
 			for (i = 0; i < mod.lengths[SdaiSession.INVERSE_ATTRIBUTE]; i++) {
-				CInverse_attribute inv_attr = 
+				CInverse_attribute inv_attr =
 					(CInverse_attribute)mod.instances_sim[SdaiSession.INVERSE_ATTRIBUTE][i];
 				edef = (CEntity_definition)inv_attr.getParent(null);
 				if (edef != this || inv_attr.testOrder(null)) {
@@ -2026,19 +2040,19 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 			attributesRedecl = new EAttribute[count];
 			if (count1 > 0) {
 				for (i = 0; i < count1; i++) {
-					attributesRedecl[i] = 
+					attributesRedecl[i] =
 						(EAttribute)mod.instances_sim[SdaiSession.EXPLICIT_ATTRIBUTE][staticFields.indices[i]];
 				}
 			}
 			if (count2 > 0) {
 				for (i = count1; i < count1 + count2; i++) {
-					attributesRedecl[i] = 
+					attributesRedecl[i] =
 						(EAttribute)mod.instances_sim[SdaiSession.DERIVED_ATTRIBUTE][staticFields.indices[i]];
 				}
 			}
 			if (count3 > 0) {
 				for (i = count1 + count2; i < count; i++) {
-					attributesRedecl[i] = 
+					attributesRedecl[i] =
 						(EAttribute)mod.instances_sim[SdaiSession.INVERSE_ATTRIBUTE][staticFields.indices[i]];
 				}
 			}
@@ -2098,10 +2112,10 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 
 
 /**
-	Returns entity attribute of this entity definition (including all supertypes) 
-   for a given attribute name. If an attribute with the submitted name is not 
+	Returns entity attribute of this entity definition (including all supertypes)
+   for a given attribute name. If an attribute with the submitted name is not
    found, then <code>null</code> value is returned.
-	This method is invoked in <code>getAttributeDefinition</code> in 
+	This method is invoked in <code>getAttributeDefinition</code> in
    <code>CEntity</code> class.
 */
 	EAttribute extract_attribute(String attributeName) throws SdaiException {
@@ -2163,7 +2177,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 					if (count_of_found > 0) {
 						boolean found = false;
 						EExplicit_attribute expl_attr;
-						if (((AttributeDefinition)at).attr_tp == AttributeDefinition.EXPLICIT && 
+						if (((AttributeDefinition)at).attr_tp == AttributeDefinition.EXPLICIT &&
 							((CExplicit_attribute)at).testRedeclaring(null)) {
 							expl_attr = (EExplicit_attribute)at;
 							while (expl_attr.testRedeclaring(null)) {
@@ -2177,7 +2191,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 						if (found) {
 							at_found = at;
 						} else {
-							if (((AttributeDefinition)at_found).attr_tp == AttributeDefinition.EXPLICIT && 
+							if (((AttributeDefinition)at_found).attr_tp == AttributeDefinition.EXPLICIT &&
 									((CExplicit_attribute)at_found).testRedeclaring(null)) {
 								expl_attr = (EExplicit_attribute)at_found;
 								while (expl_attr.testRedeclaring(null)) {
@@ -2250,18 +2264,18 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 			String ent_name = ((CEntity_definition)this).getName(null);
 			if (session != null && session.logWriterSession != null) {
 				session.printlnSession(AdditionalMessages.DI_ATNF + SdaiSession.line_separator +
-					AdditionalMessages.RD_ENT + ent_name + SdaiSession.line_separator + 
+					AdditionalMessages.RD_ENT + ent_name + SdaiSession.line_separator +
 					AdditionalMessages.RD_ATTR + attributeName);
 			} else {
 				SdaiSession.println(AdditionalMessages.DI_ATNF + SdaiSession.line_separator +
-					AdditionalMessages.RD_ENT + ent_name + SdaiSession.line_separator + 
+					AdditionalMessages.RD_ENT + ent_name + SdaiSession.line_separator +
 					AdditionalMessages.RD_ATTR + attributeName);
 			}
 			SchemaData sch_data = owning_model.schemaData;
 			int indx = sch_data.findEntityExtentIndex(this);
 			if (indx < 0) {
 				SdaiModel error_mod = sch_data.model;
-				throw new SdaiException(SdaiException.SY_ERR, "Entity not found in the table: " + 
+				throw new SdaiException(SdaiException.SY_ERR, "Entity not found in the table: " +
 					ent_name + " (used in model: " + error_mod.name + ")");
 			}
 			Class cl_x = sch_data.getEntityClassByIndex(indx);
@@ -2279,8 +2293,8 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 					if (at_found == null) {
 						at_found = at;
 					} else {
-//System.out.println("CEntityDefinition  DERIVED  def: " + ((CEntity_definition)this).getName(null) + 
-//"   attributeName: " + attributeName + "     at_found: " + at_found.getName(null) + 
+//System.out.println("CEntityDefinition  DERIVED  def: " + ((CEntity_definition)this).getName(null) +
+//"   attributeName: " + attributeName + "     at_found: " + at_found.getName(null) +
 //"     at: " + at.getName(null));
 						if (checkRedeclaredAttribute(at, at_found)) {
 							at_found = at;
@@ -2316,7 +2330,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 			return at_found;
 		} else {
 			return null;
-//System.out.println("CEntityDefinition  ^^^  def: " + ((CEntity_definition)this).getName(null) + 
+//System.out.println("CEntityDefinition  ^^^  def: " + ((CEntity_definition)this).getName(null) +
 //"   attributeName: " + attributeName);
 //			throw new SdaiException(SdaiException.AT_NVLD);
 		}
@@ -2458,7 +2472,7 @@ String base = SdaiSession.line_separator + "Class: " + cl.getName() +
 // currently do nothing
 			}
 		} else if (tp.express_type >= DataType.LIST && tp.express_type <= DataType.AGGREGATE) {
-// currently do nothing 
+// currently do nothing
 		}
 		return def_tp_count;
 	}

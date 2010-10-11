@@ -1334,6 +1334,8 @@ class PhFileReader {
 */
 	private EntityValue [] partial_values;
 
+	private EntityValue [] begin_ent_values;
+
 /**
 	An internal array used to mark (by 1) those objects of the class
 	<code>EntityValue</code> within the array <code>entityValues</code> of
@@ -1371,6 +1373,10 @@ class PhFileReader {
 	private int instance_name_length;
 	int enl_instance_name_length;
 
+	byte req_instance_name [];
+	int req_instance_name_length;
+	boolean inst_is_required;
+
 /**
 	An object of the class <code>Create_instance</code> used to create
 	entity instances whose coding is read from the exchange structure.
@@ -1401,6 +1407,9 @@ class PhFileReader {
 
 	// The set of SdaiModels read from physical file. The set contains SdaiModel objects
 	Set modelSet;
+
+	private boolean aggr_violation;
+	private boolean inst_values_violation;
 
 
 /**
@@ -2149,7 +2158,13 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 				pval.values[index] = new Value();
 			}
 			if (data_section_processing) {
+				aggr_violation = false;
+				pval.values[index].types_count = 0;
 				parameter(pval.values[index]);
+				if (aggr_violation) {
+					pval.values[index].types_count = 1;
+					inst_values_violation = true;
+				}
 			} else {
 				parameter_in_header(pval.values[index]);
 			}
@@ -2179,7 +2194,13 @@ System.out.println("    ^^^^^PhFileReader    third_part = " + diff);*/
 						pval.values[index] = new Value();
 					}
 					if (data_section_processing) {
+						aggr_violation = false;
+						pval.values[index].types_count = 0;
 						parameter(pval.values[index]);
+						if (aggr_violation) {
+							pval.values[index].types_count = 1;
+							inst_values_violation = true;
+						}
 					} else {
 						parameter_in_header(pval.values[index]);
 					}
@@ -2542,7 +2563,13 @@ if (SdaiSession.debug2) System.out.println("partial values index 2 = " + index +
 				if (partial_entity_values.values[0] == null) {
 					partial_entity_values.values[0] = new Value();
 				}
+				aggr_violation = false;
 				parameter(partial_entity_values.values[0]);
+				if (aggr_violation) {
+					partial_entity_values.values[0].check_aggregate(
+						((CEntityDefinition)def).attributes[0], instance_identifier, 
+						take_entity_name_for_exception(), active_session);
+				}
 			} else if (token.type == ENTITY_NAME || token.type == LPAREN) {
 				parameter(null);
 			}
@@ -2598,7 +2625,13 @@ if (SdaiSession.debug2) System.out.println("  entity_values.entityValues[1].coun
 						if (partial_entity_values.values[count_of_partial_values] == null) {
 							partial_entity_values.values[count_of_partial_values] = new Value();
 						}
+						aggr_violation = false;
 						parameter(partial_entity_values.values[count_of_partial_values]);
+						if (aggr_violation) {
+							partial_entity_values.values[count_of_partial_values].check_aggregate(
+								((CEntityDefinition)def).attributes[count_of_values - 1], instance_identifier, 
+								take_entity_name_for_exception(), active_session);
+						}
 					} else if (token.type == ENTITY_NAME || token.type == LPAREN) {
 						parameter(null);
 					}
@@ -2804,6 +2837,13 @@ if (SdaiSession.debug2) System.out.println(" index4 = " + index + "   name = " +
 						if (data_section_processing) {
 							if (value != null) {
 								parameter(value.nested_values[index_in_list]);
+								if (index_in_list > 0) {
+									boolean res = is_non_conforming(value.nested_values[index_in_list - 1], 
+										value.nested_values[index_in_list]);
+									if (res) {
+										aggr_violation = true;
+									}
+								}
 							} else if (token.type == ENTITY_NAME || token.type == LPAREN) {
 								parameter(null);
 							}
@@ -2849,6 +2889,33 @@ if (SdaiSession.debug2) System.out.println(" index4 = " + index + "   name = " +
 			value.length = index_in_list+1;
 		}
 	}
+
+
+	private final boolean is_non_conforming(Value value_prev, Value value_next) throws SdaiException, java.io.IOException {
+		switch (value_prev.tag) {
+			case INTEGER:
+			case REAL:
+				if (value_next.tag == INTEGER || value_next.tag == REAL) {
+					return false;
+				}
+				return true;
+			case LOGICAL:
+			case ENUM:
+			case STRING:
+			case BINARY:
+				if (value_next.tag != value_prev.tag) {
+					return true;
+				}
+				return false;
+			case ENTITY_REFERENCE:
+			case ENTITY_REFERENCE_SPECIAL:
+				if (value_next.tag == ENTITY_REFERENCE || value_next.tag == ENTITY_REFERENCE_SPECIAL) {
+					return false;
+				}
+				return true;
+		}
+		return false;
+  }
 
 
 /**
@@ -3610,12 +3677,28 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 				entity_values.def = def;
 //if (def==null)
 //System.out.println("PhFileReader def is NULL  entity class name: " + created_instance.getClass().getName());
+				int tot_attr_count = 0;
 				for (int i = 0; i < def.noOfPartialEntityTypes; i++) {
 					entity_values.entityValues[i].def = def.partialEntityTypes[i];
 					if (entity_values.entityValues[i].count != def.partialEntityTypes[i].noOfPartialAttributes) {
 						EntityValue.printWarningToLogo(active_session, AdditionalMessages.RD_VADI, instance_identifier);
 					}
+// Below is a new code
+					if (!inst_values_violation) {
+						continue;
+					}
+					for (int j = 0; j < entity_values.entityValues[i].count; j++) {
+						Value val = entity_values.entityValues[i].values[j];
+						if (val.types_count == 0) {
+							continue;
+						}
+						val.check_aggregate(((CEntityDefinition)def).attributes[tot_attr_count + j], instance_identifier, 
+							take_entity_name_for_exception(), active_session);
+						val.types_count = 0;
+					}
+					tot_attr_count += def.partialEntityTypes[i].noOfPartialAttributes;
 				}
+				inst_values_violation = false;
 			}
 			if (token.type != RPAREN) {
 				parsing_exception(token, WRONG_TOKEN, AdditionalMessages.RD_TOKE, token_image[RPAREN]);
@@ -3786,7 +3869,51 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 	void restoreComplexName(int items_count) throws SdaiException {
+		int i, j;
+		int m = items_count;
+		for (i = 0; i < items_count; i++) {
+			boolean missing = true;
+			for (j = 0; j < items_count; j++) {
+				if (complex_name[i] == saved_ent_name[j]) {
+					missing = false;
+					break;
+				}
+			}
+			if (missing) {
+				complex_name[m] = complex_name[i];
+				m++;
+			}
+		}
 		System.arraycopy(saved_ent_name, 0, complex_name, 0, items_count);
+		req_instance_name_length = enl_instance_name_length;
+		if (req_instance_name == null) {
+			if (COMPLEX_ENTITY_NAME_LENGTH >= req_instance_name_length) {
+				req_instance_name = new byte[COMPLEX_ENTITY_NAME_LENGTH];
+			} else {
+				req_instance_name = new byte[req_instance_name_length];
+			}
+		} else if (req_instance_name_length > req_instance_name.length) {
+			int new_length = req_instance_name.length * 2;
+			if (new_length < req_instance_name_length) {
+				new_length = req_instance_name_length;
+			}
+			req_instance_name = new byte[new_length];
+		}
+		inst_is_required = true;
+		for (i = 0; i < req_instance_name_length; i++) {
+			req_instance_name[i] = instance_name[i];
+		}
+		int k = -1;
+		for (i = 0; i < items_count; i++) {
+			for (j = 0; j < complex_name[i].length_of_entity_name; j++) {
+				k++;
+				instance_name[k] = complex_name[i].entity_name[j];
+			}
+			if (i < items_count - 1) {
+				k++;
+				instance_name[k] = (byte)'$';
+			}
+		}
 	}
 
 
@@ -3812,8 +3939,63 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 
 
 	void restore_entity_values(int items_count) throws SdaiException {
-		for (int i = 0; i < items_count; i++) {
+		int i, j, k;
+		if (begin_ent_values == null) {
+			if (items_count <= NAMES_ARRAY_SIZE) {
+				begin_ent_values= new EntityValue[NAMES_ARRAY_SIZE];
+			} else {
+				begin_ent_values = new EntityValue[items_count];
+			}
+		} else if (items_count > begin_ent_values.length) {
+			enlarge_begin_ent_values(items_count);
+		}
+		if (used_ent_values == null) {
+			if (items_count <= NAMES_ARRAY_SIZE) {
+				used_ent_values = new int[NAMES_ARRAY_SIZE];
+			} else {
+				used_ent_values = new int[items_count];
+			}
+		} else if (items_count > used_ent_values.length) {
+			enlarge_used_ent_values(items_count);
+		}
+		for (i = 0; i < items_count; i++) {
+			begin_ent_values[i] = entity_values.entityValues[i];
+			used_ent_values[i] = 0;
+		}
+		for (i = 0; i < items_count; i++) {
 			entity_values.entityValues[i] = partial_values[i];
+		}
+		for (i = 0; i < items_count; i++) {
+			for (j = 0; j < items_count; j++) {
+				if (partial_values[i] == begin_ent_values[j]) {
+					used_ent_values[j] = -1;
+					partial_values[i] = null;
+					break;
+				}
+			}
+		}
+		for (i = 0, k = -1; i < items_count; i++) {
+			if (used_ent_values[i] < 0) {
+				continue;
+			}
+			for (j = k + 1; j < items_count; j++) {
+				if (partial_values[j] != null) {
+					k = j;
+					break;
+				}
+			}
+			used_ent_values[i] = k;
+		}
+		for (i = 0; i < items_count; i++) {
+			if (used_ent_values[i] < 0) {
+				continue;
+			}
+			EntityValue target = partial_values[used_ent_values[i]];
+			for (j = items_count; j < entity_values.entityValues.length; j++) {
+				if (entity_values.entityValues[j] == target) {
+					entity_values.entityValues[j] = begin_ent_values[i];
+				}
+			}
 		}
 	}
 
@@ -4463,6 +4645,15 @@ if (SdaiSession.debug2) print_entity_values(instance_identifier);
 			new_length = demand;
 		}
 		partial_values = new EntityValue[new_length];
+	}
+
+
+	final private void enlarge_begin_ent_values(int demand) {
+		int new_length = begin_ent_values.length * 2;
+		if (new_length < demand) {
+			new_length = demand;
+		}
+		begin_ent_values = new EntityValue[new_length];
 	}
 
 

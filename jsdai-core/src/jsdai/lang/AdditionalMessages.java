@@ -189,6 +189,8 @@ class AdditionalMessages {
 	static final String RD_ATTR = "   Attribute: ";
 	static final String RD_ENT  = "   Entity: ";
 	static final String RD_SENT = "   Single entity data type: ";
+	static final String RD_ENTF = "   Entity name found: ";
+	static final String RD_ENTC = "   Corrected entity name: ";
 	static final String RD_ENTS = "   Substituted by entity: ";
 	static final String RD_IREF = "   Referenced instance: #";
 	static final String RD_INSM = "   Missing instance: #";
@@ -250,6 +252,10 @@ class AdditionalMessages {
 	static final String RD_VLEA = "Error: number of values is less than the number of attributes."; // parameters() in PhFileReader
 	static final String RD_VEXA = "Error: number of values exceeds the number of attributes."; // parameters() in PhFileReader
 	static final String RD_ELEX = "Error: the number of aggregate elements exceeds its upper limit.";
+	static final String RD_IMAG = "Error: illegal member of the aggregate, it is ignored.";
+	static final String RD_MEIN = "   Member's index: ";
+	static final String RD_MEAT = "   Member's actual type: ";
+	static final String RD_MEDT = "   Member's required type: ";
          // Analysing of the strings
 	static final String RD_WRST = "Error: incorrect string."; // analyse_string() in PhFileReader
 	static final String RD_WRIS = "Error: incorrect string, trying to recover."; // analyse_string() in PhFileReader
@@ -418,20 +424,26 @@ class AdditionalMessages {
 /**
 	Prints a warning message to logo file.
 */
-	static void printWarningToLogo(SdaiSession session, String text, long inst_ident, String ent_name, String substitute) 
+	static void printWarningToLogo(SdaiSession session, String text, long inst_ident, String ent_name, 
+		String ent_required, String substitute) 
 			throws SdaiException {
+		String str;
+		if (ent_required == null) {
+			str = AdditionalMessages.RD_ENTS + substitute;
+		} else {
+			str = AdditionalMessages.RD_ENTC + ent_required + SdaiSession.line_separator +
+				AdditionalMessages.RD_ENTS + substitute;
+		}
 		if (session != null && session.logWriterSession != null) {
 			session.printlnSession(text + SdaiSession.line_separator +
 //				AdditionalMessages.RD_PHFI + PhFileReader.phys_file + SdaiSession.line_separator +
 				AdditionalMessages.RD_INST + inst_ident + SdaiSession.line_separator + 
-				AdditionalMessages.RD_ENT + ent_name + SdaiSession.line_separator +
-				AdditionalMessages.RD_ENTS + substitute);
+				AdditionalMessages.RD_ENTF + ent_name + SdaiSession.line_separator + str);
 		} else {
 			SdaiSession.println(text + SdaiSession.line_separator +
 //				AdditionalMessages.RD_PHFI + PhFileReader.phys_file + SdaiSession.line_separator +
 				AdditionalMessages.RD_INST + inst_ident + SdaiSession.line_separator + 
-				AdditionalMessages.RD_ENT + ent_name + SdaiSession.line_separator +
-				AdditionalMessages.RD_ENTS + substitute);
+				AdditionalMessages.RD_ENTF + ent_name + SdaiSession.line_separator + str);
 		}
 	}
 

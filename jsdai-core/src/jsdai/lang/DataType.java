@@ -116,4 +116,63 @@ public abstract class DataType extends CEntity implements EData_type {
 	}
 
 
+	boolean search_entity(CEntity_definition def_for_value) throws SdaiException {
+		if (express_type == ENTITY) {
+			if (def_for_value.isSubtypeOf((CEntity_definition)this)) {
+				return true;
+			} else {
+				return false;
+			}
+		} else if (express_type >= LIST && express_type <= AGGREGATE) {
+			return ((AggregationType)this).search_entity_aggregate(def_for_value);
+		} else if (express_type != DEFINED_TYPE) {
+			return false;
+		}
+		DataType type = this;
+		while (type.express_type == DEFINED_TYPE) 	{
+			type = (DataType)((CDefined_type)type).getDomain(null);
+		}
+		if (type.express_type < SELECT || type.express_type > ENT_EXT_EXT_SELECT) {
+			return type.search_entity(def_for_value);
+		}
+		String base = SdaiSession.line_separator + AdditionalMessages.SE_ERDD;
+		throw new SdaiException(SdaiException.SY_ERR, base);
+	}
+
+
+	final String get_data_type_name() throws SdaiException, java.io.IOException {
+		DataType type = this;
+		while (type.express_type == DEFINED_TYPE) 	{
+			type = (DataType)((CDefined_type)type).getDomain(null);
+		}
+		if (type.express_type >= SELECT && type.express_type <= ENT_EXT_EXT_SELECT) {
+			return "select type";
+		}
+		if (type.express_type >= ENUMERATION && type.express_type <= EXTENDED_EXTENSIBLE_ENUM) {
+			return "enumeration";
+		}
+		if (type.express_type >= LIST && type.express_type <= AGGREGATE) {
+			return "aggregate";
+		}
+		switch (type.express_type) {
+			case INTEGER:
+				return "integer";
+			case REAL:
+			case NUMBER:
+				return "real";
+			case LOGICAL:
+				return "logical";
+			case BOOLEAN:
+				return "boolean";
+			case STRING:
+				return "string";
+			case BINARY:
+				return "binary";
+			case ENTITY:
+				return "entity instance";
+		}
+		return "";
+	}
+
+
 }

@@ -35,7 +35,7 @@ import java.util.*;
 /**
  *
  * @author  Vaidas Nargėlas
- * @version 
+ * @version
  */
 public class EntityAST extends BaseAST implements ParserAST {
 	int ttype = Token.INVALID_TYPE;
@@ -48,14 +48,14 @@ public class EntityAST extends BaseAST implements ParserAST {
 	/** Only used for AIM entities, stores instances of {@link MappingForAttribute}
 	 */
 	public LinkedList attachedAttributeMappings = null;
-	
+
 	public EntityAST() {
 	}
 
 	public EntityAST(Token tok) {
 		initialize(tok);
 	}
-	
+
 	public static EntityAST construct(MappingPathParser parser, List nameList, boolean aim)
 	throws MappingSemanticException, SdaiException {
 		EntityAST newEntity = ((EntityAST)nameList.get(0)).dup();
@@ -71,13 +71,13 @@ public class EntityAST extends BaseAST implements ParserAST {
 	public EntityAST dup() {
 		return new EntityAST(this);
 	}
-	
+
 	public AST dupAttachTree() {
 		AST newAST = dup();
 		newAST.setFirstChild(getFirstChild());
 		return newAST;
 	}
-	
+
 	/** Get the token text for this node */
 	public String getText() {
 		if(declaration != null) {
@@ -100,7 +100,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 	throws SemanticException {
 		setIdentifier(parser, token.getText(), aim);
 	}
-	
+
 	public void setIdentifier(MappingPathParser parser, String name, boolean aim) {
 		if(!setIdentifierInternal(parser, name, aim)) {
 			parser.reportError(new SemanticException("Identifier " + name + " not found",
@@ -114,14 +114,14 @@ public class EntityAST extends BaseAST implements ParserAST {
 			parser.armDeclarations.get(name.toLowerCase()));
 		return declaration != null;
 	}
-	
+
 	/** Get the token type for this node */
 	public int getType() { return ttype; }
 
 	public int getLine() { return line; }
 
 	public void setLine(int line) { this.line = line; }
-	
+
 	public void initialize(int t, String txt) {
 		setType(t);
 		setText(txt);
@@ -139,8 +139,8 @@ public class EntityAST extends BaseAST implements ParserAST {
 	}
 
 	/** Set the token type for this node */
-	public void setType(int ttype_) { 
-		ttype = ttype_; 
+	public void setType(int ttype_) {
+		ttype = ttype_;
 	}
 
 	public boolean isSame(EntityAST other) {
@@ -150,7 +150,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 	public boolean isEqualTo(EntityAST other) {
 		return isSame(other);
 	}
-	
+
 	public boolean isSupertypeOf(EntityAST other) throws SdaiException {
 		if(declaration.type != DictionaryDeclaration.ENTITY
 				|| other.declaration.type != DictionaryDeclaration.ENTITY) return false;
@@ -159,21 +159,42 @@ public class EntityAST extends BaseAST implements ParserAST {
 		return isSupertypeOf(thisEntity, otherEntity);
 	}
 
-	static protected boolean isSupertypeOf(EEntity_definition thisEntity, EEntity_definition otherEntity)
+	protected static boolean isSupertypeOf(EEntity_definition thisEntity, EEntity_definition otherEntity)
+	throws SdaiException {
+		if(thisEntity.getComplex(null)) {
+			AEntity leaves = thisEntity.getGeneric_supertypes(null);
+			SdaiIterator leafIterator = leaves.createIterator();
+			while(leafIterator.next()) {
+				EEntity_definition leaf = (EEntity_definition)leaves.getCurrentMemberObject(leafIterator);
+				if(!isSupertypeOfEntity(leaf, otherEntity)) {
+					return false;
+				}
+			}
+			return true;
+		} else {
+			return isSupertypeOfEntity(thisEntity, otherEntity);
+		}
+	}
+
+	private static boolean isSupertypeOfEntity(EEntity_definition thisEntity, EEntity_definition otherEntity)
 	throws SdaiException {
 		if(otherEntity.testGeneric_supertypes(null)) {
 			AEntity supertypes = otherEntity.getGeneric_supertypes(null);
 			SdaiIterator supertypeIterator = supertypes.createIterator();
 			while(supertypeIterator.next()) {
 				EEntity_definition supertype = (EEntity_definition)supertypes.getCurrentMemberObject(supertypeIterator);
-				if(supertype == thisEntity) return true;
-				if(isSupertypeOf(thisEntity, supertype)) return true;
+				if(supertype == thisEntity) {
+					return true;
+				}
+				if(isSupertypeOfEntity(thisEntity, supertype)) {
+					return true;
+				}
 			}
 		}
 		return false;
 	}
 
-	static private boolean areCompatible(EEntity_definition entityOne, EEntity_definition entityTwo)
+	private static boolean areCompatible(EEntity_definition entityOne, EEntity_definition entityTwo)
 	throws SdaiException {
 		if(entityOne == entityTwo) return true;
 		AEntity entityOneDefinitions;
@@ -205,11 +226,11 @@ public class EntityAST extends BaseAST implements ParserAST {
 		}
 		return false;
 	}
-	
+
 	// --- FIXME ---
 	// This method needs more testing and also doesn't cover cases when
 	// entityOne and entityTwo are also complex entities.
-	static private boolean isCloserThan(EEntity_definition testEntity, EEntity_definition entityOne, 
+	private static boolean isCloserThan(EEntity_definition testEntity, EEntity_definition entityOne,
 	EEntity_definition entityTwo) throws SdaiException {
 		if(entityOne == entityTwo) return false;
 		if(testEntity == entityOne) return true;
@@ -250,7 +271,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 		while(selectionIterator.next()) {
 			ENamed_type selection = selections.getCurrentMember(selectionIterator);
 			if(selection == otherType) return true;
-			if(selection instanceof EDefined_type 
+			if(selection instanceof EDefined_type
 			&& isSelectOf((EDefined_type)selection, otherType)) {
 				return true;
 			}
@@ -272,7 +293,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 		}
 	}
 
-	static private boolean isExtensionOf(EDefined_type thisType, EDefined_type otherType
+	private static boolean isExtensionOf(EDefined_type thisType, EDefined_type otherType
 										 ) throws SdaiException {
 		if(thisType == otherType) {
 			return true;
@@ -289,14 +310,14 @@ public class EntityAST extends BaseAST implements ParserAST {
 	public boolean isEntityDefinition() {
 		return declaration.type == DictionaryDeclaration.ENTITY;
 	}
-	
+
 	public boolean isSimpleType() throws SdaiException {
 		if(declaration.type != DictionaryDeclaration.TYPE) return false;
 		EDefined_type type = (EDefined_type)declaration.definition;
 		return isSimpleType(type);
 	}
-	
-	static private boolean isSimpleType(EDefined_type type) throws SdaiException {
+
+	private static boolean isSimpleType(EDefined_type type) throws SdaiException {
 		EEntity domain = type.getDomain(null);
 		if(domain instanceof ESimple_type || domain instanceof EEnumeration_type
 				|| domain instanceof EAggregation_type) {
@@ -308,14 +329,14 @@ public class EntityAST extends BaseAST implements ParserAST {
 			return false;
 		}
 	}
-	
+
 	public boolean isSelectType() throws SdaiException {
 		if(declaration.type != DictionaryDeclaration.TYPE) return false;
 		EDefined_type type = (EDefined_type)declaration.definition;
 		return isSelectType(type);
 	}
-	
-	static private boolean isSelectType(EDefined_type type) throws SdaiException {
+
+	private static boolean isSelectType(EDefined_type type) throws SdaiException {
 		EEntity domain = type.getDomain(null);
 		if(domain instanceof ESelect_type) return true;
 		if(domain instanceof EDefined_type) return isSelectType((EDefined_type)domain);
@@ -330,11 +351,11 @@ public class EntityAST extends BaseAST implements ParserAST {
 		inPath = other.inPath;
 		exactType = other.exactType;
 	}
-	
+
 	public void setInPath(int inPath) {
 		this.inPath = inPath;
 	}
-	
+
 	public int getInPath() {
 		return inPath;
 	}
@@ -364,7 +385,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 													   SdaiException {
 // 		System.err.println(antlr.FileLineFormatter.getFormatter()
 // 						   .getFormatString(pathWalker.sourceLocator
-// 											.getFilename(), pathWalker.line) + 
+// 											.getFilename(), pathWalker.line) +
 // 						   "processExtAttrMappings entered: " + last);
 		if(last == null) {
 			return;
@@ -383,7 +404,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 // 						System.err.println(antlr.FileLineFormatter.getFormatter()
 // 										   .getFormatString(extAttribMapping.sourceLocator
 // 															.getFilename(),
-// 															extAttribMapping.arm.getLine()) + 
+// 															extAttribMapping.arm.getLine()) +
 // 										   "states: " + extAttribMapping.states);
 						int pathWalkerLine =
 							pathWalker.line >= 0 ? pathWalker.line : pathWalker.sourceLocator.getLine();
@@ -506,7 +527,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 		while(aimEntityIter.hasNext()) {
 			EntityAST aimEntity = (EntityAST)aimEntityIter.next();
 			if(aimEntity.pathState == null) {
-				pathWalker.reportWarning(null, "Warning: Mapping to " + 
+				pathWalker.reportWarning(null, "Warning: Mapping to " +
 										 aimEntity.getText() + " has no entity path");
 			}
 		}
@@ -523,7 +544,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 		}
 	}
 
-	static private void attachAimListAttributeMappings(AttributeAST arm, EntityAST dataType,
+	private static void attachAimListAttributeMappings(AttributeAST arm, EntityAST dataType,
 													   LinkedList aimList, MappingPathWalker pathWalker
 													   ) throws MappingSemanticException,
 																RecognitionException, SdaiException {
@@ -576,7 +597,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 		}
 	}
 
-	static private boolean attachAttributeOneState(AttributeAST arm, EntityAST dataType,
+	private static boolean attachAttributeOneState(AttributeAST arm, EntityAST dataType,
 		LinkedList attributeMappingsForEntities, EntityAST attributeStartEntity,
 		WalkerState state, MappingPathWalker pathWalker)
 	throws MappingSemanticException, RecognitionException, SdaiException {
@@ -609,7 +630,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 		return stateAttached;
 	}
 
-	static private void attachStatesAttributeMappings(AttributeAST arm, EntityAST dataType, 
+	private static void attachStatesAttributeMappings(AttributeAST arm, EntityAST dataType,
 													  LinkedList aimList, LinkedList pathStates,
 													  MappingPathWalker pathWalker
 													  ) throws MappingSemanticException,
@@ -630,12 +651,12 @@ public class EntityAST extends BaseAST implements ParserAST {
 				mappingDataWalker.topType(realState.remaining, realState);
 				EntityAST startEntity = state.getFirst(pathWalker.parser);
 				EntityAST realStartEntity = realState.getFirst(pathWalker.parser);
-				boolean stateAttached = 
+				boolean stateAttached =
 					attachAttributeOneState(arm, dataType, attributeMappingsForEntities,
 											realStartEntity, realState, pathWalker);
 				if(!stateAttached
-				   && startEntity.declaration.definition != realStartEntity.declaration.definition) { 
-					stateAttached = 
+				   && startEntity.declaration.definition != realStartEntity.declaration.definition) {
+					stateAttached =
 						attachAttributeOneState(arm, dataType, attributeMappingsForEntities,
 												startEntity, state, pathWalker);
 					if(!stateAttached) {
@@ -655,7 +676,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 				WalkerState state = WalkerState.next(stateIter);
 				pathWalker.notReported = state.notReported;
 				EntityAST startEntity = state.getFirst(pathWalker.parser);
-				pathWalker.reportError(arm, "Attribute mapping was not attached to entity mappings: " + 
+				pathWalker.reportError(arm, "Attribute mapping was not attached to entity mappings: " +
 									   startEntity.declaration.definition.getName(null));
 			}
 		} finally {
@@ -663,10 +684,10 @@ public class EntityAST extends BaseAST implements ParserAST {
 		}
 		Iterator attributeMappingsIter = attributeMappingsForEntities.iterator();
 		while(attributeMappingsIter.hasNext()) {
-			AttributeMappingsForEntity attributeMappings = 
+			AttributeMappingsForEntity attributeMappings =
 				(AttributeMappingsForEntity)attributeMappingsIter.next();
 			if(attributeMappings.entity.attachedAttributeMappings == null) {
-				attributeMappings.entity.attachedAttributeMappings = 
+				attributeMappings.entity.attachedAttributeMappings =
 					attributeMappings.mappingsForAttributes;
 			} else {
 				attributeMappings.entity.attachedAttributeMappings
@@ -696,7 +717,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 				EEntity constraints = null;
 				if(aimEntity.pathState != null) {
 					constraints =
-						mappingDataWalker.topPathElement(aimEntity.pathState.remaining, 
+						mappingDataWalker.topPathElement(aimEntity.pathState.remaining,
 														 null, aimEntity.pathState);
 				}
 				if(aimEntity.exactType) {
@@ -746,7 +767,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 					.put(aimDefinition.getName(null), entityMappingInstance);
 			}
 			if(pathWalker.sourceLocator instanceof EntityMappingAST) {
-				AEntity_mapping uofInstances = 
+				AEntity_mapping uofInstances =
 					((EntityMappingAST)pathWalker.sourceLocator).getUofInstances();
 				if(uofInstances != null) {
 					uofInstances.addUnordered(entityMappingInstance);
@@ -755,7 +776,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 		}
 	}
 
-	static private EGeneric_attribute_mapping createAttributeMapping(
+	private static EGeneric_attribute_mapping createAttributeMapping(
 		EEntity_mapping  entityMappingInstance, MappingForAttribute mappingForAttribute,
 		MappingDataWalker mappingDataWalker, MappingPathWalker pathWalker)
 	throws MappingSemanticException, RecognitionException, SdaiException {
@@ -776,7 +797,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 			}
 			LinkedList path = mappingForAttribute.getPath(mappingDataWalker);
 			if(path != null) {
-				AAttribute_mapping_path_select pathAggregate = 
+				AAttribute_mapping_path_select pathAggregate =
 					attributeMappingInstance.createPath(null);
 				Iterator pathIter = path.iterator();
 				while(pathIter.hasNext()) {
@@ -788,7 +809,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 							pathAggregate.addByIndex(1, pathElement);
 						} catch(SdaiException e) {
 							if(e.getErrorId() == SdaiException.VT_NVLD) {
-								pathWalker.reportWarning(mappingForAttribute.attribute, 
+								pathWalker.reportWarning(mappingForAttribute.attribute,
 														 "!!!! SdaiException was thrown setting " +
 														 "the path using " + pathElement + " !!!!");
 								//e.printStackTrace(System.err);
@@ -809,7 +830,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 		}
 	}
 
-	static private EGeneric_attribute_mapping createAttributeValueMapping(
+	private static EGeneric_attribute_mapping createAttributeValueMapping(
 		EEntity_mapping  entityMappingInstance, MappingForAttribute mappingForAttribute,
 		MappingDataWalker mappingDataWalker, MappingPathWalker pathWalker)
 	throws MappingSemanticException, RecognitionException, SdaiException {
@@ -885,7 +906,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 					while(otherEntityIter.hasNext()) {
 						EntityAST otherEntity = (EntityAST)otherEntityIter.next();
 						if(entity != otherEntity && otherEntity.declaration != null) {
-							EEntity_definition otherDefinition = 
+							EEntity_definition otherDefinition =
 								(EEntity_definition)otherEntity.declaration.definition;
 							AEntity otherLeaves = null;
 							SdaiIterator otherLeaveIterator = null;
@@ -894,7 +915,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 								otherLeaveIterator = otherLeaves.createIterator();
 							}
 							while(otherLeaveIterator == null || otherLeaveIterator.next()) {
-								EEntity_definition otherLeave = otherLeaveIterator != null 
+								EEntity_definition otherLeave = otherLeaveIterator != null
 									? ((EEntity_definition)
 									   otherLeaves.getCurrentMemberObject(otherLeaveIterator))
 									: otherDefinition;
@@ -920,8 +941,8 @@ public class EntityAST extends BaseAST implements ParserAST {
 		}
 		return complexName;
 	}
-	
-	static private EEntity getInvertedMappingTarget(EEntity path) throws SdaiException {
+
+	private static EEntity getInvertedMappingTarget(EEntity path) throws SdaiException {
 		if(path instanceof EInverse_attribute_constraint) {
 			EEntity invertedAttribute = ((EInverse_attribute_constraint)path).getInverted_attribute(null);
 			return getInvertedMappingTarget(invertedAttribute);
@@ -940,14 +961,14 @@ public class EntityAST extends BaseAST implements ParserAST {
 		}
 	}
 
-	static private EEntity getMappingTargetBaseType(EEntity baseType) throws SdaiException {
+	private static EEntity getMappingTargetBaseType(EEntity baseType) throws SdaiException {
 		if(baseType instanceof EAggregation_type) {
 			return getMappingTargetBaseType(((EAggregation_type)baseType).getElement_type(null));
 		} else {
 			return baseType;
 		}
 	}
-	static private EEntity getMappingTarget(EEntity path) throws SdaiException {
+	private static EEntity getMappingTarget(EEntity path) throws SdaiException {
 		if(path instanceof EAggregate_member_constraint) {
 			EEntity attribute = ((EAggregate_member_constraint)path).getAttribute(null);
 			return getMappingTarget(attribute);
@@ -970,7 +991,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 		} else if(path instanceof EPath_constraint) {
 			EPath_constraint pathConstraint = (EPath_constraint)path;
 			EEntity mappingTarget = getMappingTarget(pathConstraint.getElement2(null));
-			return mappingTarget != null ? 
+			return mappingTarget != null ?
 				mappingTarget : getMappingTarget(pathConstraint.getElement1(null));
 		} else if(path instanceof ESelect_constraint) {
 			ADefined_type definedTypes = ((ESelect_constraint)path).getData_type(null);
@@ -983,7 +1004,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 			if(typeConstraint.testConstraints(null)) {
 				mappingTarget = getMappingTarget(typeConstraint.getConstraints(null));
 			}
-			return mappingTarget != null ? 
+			return mappingTarget != null ?
 				mappingTarget : typeConstraint.getDomain(null);
 		} else if(path instanceof EAttribute) {
 			EAttribute attribute = (EAttribute)path;
@@ -1009,9 +1030,9 @@ public class EntityAST extends BaseAST implements ParserAST {
 			throw new SdaiException(SdaiException.SY_ERR, "Unsupported constraint in a path: " + path);
 		}
 	}
-	
+
 	static public void setAttributeMappingDomains(MappingPathParser parser) throws SdaiException {
-		AAttribute_mapping attributeMappings = 
+		AAttribute_mapping attributeMappings =
 			(AAttribute_mapping)parser.mappingModel.getInstances(EAttribute_mapping.class);
 		SdaiIterator attributeIterator = attributeMappings.createIterator();
 		while(attributeIterator.next()) {
@@ -1025,7 +1046,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 					dataType = dataTypes.getByIndex(dataTypes.getMemberCount());
 				} else {
 					EAttribute armAttribute = attributeMapping.getSource(null);
-					Object attributeDomain = 
+					Object attributeDomain =
 						armAttribute.get_object(armAttribute.getAttributeDefinition("domain"));
 					if(attributeDomain instanceof ENamed_type)
 						dataType = (ENamed_type)attributeDomain;
@@ -1039,27 +1060,27 @@ public class EntityAST extends BaseAST implements ParserAST {
 				if(dataType != null) {
 					DictionaryDeclaration dataTypeDeclaration = (DictionaryDeclaration)
 						parser.armDeclarations.get(dataType.getName(null));
-					if(dataTypeDeclaration != null 
-					   && dataTypeDeclaration.type == DictionaryDeclaration.ENTITY 
+					if(dataTypeDeclaration != null
+					   && dataTypeDeclaration.type == DictionaryDeclaration.ENTITY
 					   && dataTypeDeclaration.entityMappings != null) {
 						EEntity_mapping targetMapping = null;
-						Iterator entityMappingIter = 
+						Iterator entityMappingIter =
 							dataTypeDeclaration.entityMappings.values().iterator();
 						while(entityMappingIter.hasNext()) {
-							EEntity_mapping entityMapping = 
+							EEntity_mapping entityMapping =
 								(EEntity_mapping)entityMappingIter.next();
 							EEntity mappingAimType = entityMapping.getTarget(null);
 							if(mappingAimType == aimDataType
 							|| (mappingAimType instanceof EEntity_definition
 							&& aimDataType instanceof EEntity_definition
-							&& areCompatible((EEntity_definition)aimDataType, 
+							&& areCompatible((EEntity_definition)aimDataType,
 							(EEntity_definition)mappingAimType))) {
 								if(targetMapping != null) {
 									EEntity anotherMappingAimType = targetMapping.getTarget(null);
 									if(aimDataType instanceof EEntity_definition
 									&& mappingAimType instanceof EEntity_definition
 									&& anotherMappingAimType instanceof EEntity_definition
-									&& isCloserThan((EEntity_definition)aimDataType, 
+									&& isCloserThan((EEntity_definition)aimDataType,
 									(EEntity_definition)mappingAimType,
 									(EEntity_definition)anotherMappingAimType)) {
 										targetMapping = entityMapping;
@@ -1079,7 +1100,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 			}
 		}
 	}
-	
+
 	public void createDerivedVariant(LinkedList pathStates, MappingPathWalker pathWalker)
 	throws MappingSemanticException, RecognitionException, SdaiException {
 		MappingDataWalker mappingDataWalker = new MappingDataWalker(pathWalker);
@@ -1087,17 +1108,17 @@ public class EntityAST extends BaseAST implements ParserAST {
 		while(stateIter.hasNext()) {
 			WalkerState state = WalkerState.next(stateIter);
 			if(state.remaining == null) {
-				throw new MappingSemanticException(state.getFirst(pathWalker.parser), 
+				throw new MappingSemanticException(state.getFirst(pathWalker.parser),
 					"Path needs to be specified");
 			}
 			EntityAST relatingAimEntity = state.getFirst(pathWalker.parser);
 			EEntity_mapping relatingMapping = (EEntity_mapping)
-				(declaration.entityMappings != null ? 
+				(declaration.entityMappings != null ?
 				declaration.entityMappings.get(relatingAimEntity.declaration.definition.getName(null)) :
 				null);
 			if(relatingMapping == null) {
-				throw new MappingSemanticException(state.getFirst(pathWalker.parser), 
-					declaration.definition.getName(null) + " has no mapping to " + 
+				throw new MappingSemanticException(state.getFirst(pathWalker.parser),
+					declaration.definition.getName(null) + " has no mapping to " +
 					relatingAimEntity.declaration.definition.getName(null));
 			}
 			mappingDataWalker.topType(state.remaining, state);
@@ -1106,25 +1127,25 @@ public class EntityAST extends BaseAST implements ParserAST {
 			EEntity constraints =
 				mappingDataWalker.topPathElement(state.remaining, path, state);
 // 			if(path.size() == 0) {
-// 				throw new MappingSemanticException(state.getFirst(pathWalker.parser), 
+// 				throw new MappingSemanticException(state.getFirst(pathWalker.parser),
 // 					"Path can not be empty");
 // 			}
 			if(path.size() != 0) {
 				relatedAim = getMappingTarget((EEntity)path.getFirst());
 			}
 			if(!(relatedAim instanceof ENamed_type)) {
-				throw new MappingSemanticException(state.getFirst(pathWalker.parser), 
+				throw new MappingSemanticException(state.getFirst(pathWalker.parser),
 					"Path can not point to " + relatedAim);
 			}
 			ENamed_type relatedAimEntity = (ENamed_type)relatedAim;
 			EEntity_mapping relatedMapping = (EEntity_mapping)
 				declaration.entityMappings.get(relatedAimEntity.getName(null));
 			if(relatedMapping == null) {
-				throw new MappingSemanticException(state.getFirst(pathWalker.parser), 
-					declaration.definition.getName(null) + " has no mapping to " + 
+				throw new MappingSemanticException(state.getFirst(pathWalker.parser),
+					declaration.definition.getName(null) + " has no mapping to " +
 					relatedAimEntity.getName(null));
 			}
-			EDerived_variant_entity_mapping derivedVariantInstance = 
+			EDerived_variant_entity_mapping derivedVariantInstance =
 				(EDerived_variant_entity_mapping)pathWalker.parser.mappingModel
 				.createEntityInstance(EDerived_variant_entity_mapping.class);
 			derivedVariantInstance.setRelating(null, relatingMapping);
@@ -1141,7 +1162,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 			}
 		}
 	}
-	
+
 	public EEntity getDomain() throws SdaiException {
 		if(!(declaration.definition instanceof EDefined_type)) return null;
 		EDefined_type definedType = (EDefined_type)declaration.definition;
@@ -1151,19 +1172,19 @@ public class EntityAST extends BaseAST implements ParserAST {
 	public EEntity getRealDomain() throws SdaiException {
 		return getRealDomain(getDomain());
 	}
-	
+
 	public boolean isDomainValid(EntityAST type) throws SdaiException {
 		return isDomainValid(getDomain(), type.declaration.definition);
 	}
-	
-	static protected EEntity getRealDomain(EEntity domain) throws SdaiException {
+
+	protected static EEntity getRealDomain(EEntity domain) throws SdaiException {
 		if(domain instanceof EAggregation_type)
 			return getRealDomain(((EAggregation_type)domain).getElement_type(null));
 		if(domain instanceof EDefined_type)
 			return getRealDomain(((EDefined_type)domain).getDomain(null));
 		return domain;
 	}
-	
+
 	private boolean isDomainValid(EEntity domain, ENamed_type type) throws SdaiException {
 		if(domain == type) return true;
 		if(domain instanceof EEntity_definition && type instanceof EEntity_definition) {
@@ -1200,7 +1221,7 @@ public class EntityAST extends BaseAST implements ParserAST {
 			return null;
 		}
 	}
-	
+
 	private boolean getPathToElement(EEntity domain, ENamed_type targetType, List selectPath)
 	throws SdaiException {
 		if(domain == targetType) {
@@ -1228,10 +1249,10 @@ public class EntityAST extends BaseAST implements ParserAST {
 				return getPathToElement(definedTypeDomain, targetType, selectPath);
 			}
 		} else if(domain instanceof EAggregation_type) {
-			return getPathToElement(((EAggregation_type)domain).getElement_type(null), 
+			return getPathToElement(((EAggregation_type)domain).getElement_type(null),
 				targetType, selectPath);
 		}
 		return false;
 	}
-	
+
 }

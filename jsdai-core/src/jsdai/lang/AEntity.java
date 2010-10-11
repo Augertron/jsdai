@@ -403,6 +403,7 @@ public class AEntity extends CAggregate {
 			resolveAllConnectors();
 		}
 		Object [] myDataA;
+		CEntity ex_member, new_member;
 		if (myType == null || myType.express_type == DataType.LIST) {
 			index--;
 			if (index < 0 || index >= myLength) {
@@ -414,15 +415,27 @@ public class AEntity extends CAggregate {
 			ListElement element;
 			if (myLength == 1) {
 				if (myType != null) {
-					((CEntity)myData).inverseRemove(owning_instance);
-					((CEntity)value).inverseAdd(owning_instance);
+					ex_member = (CEntity)myData;
+					if (!ex_member.owning_model.optimized) {
+						ex_member.inverseRemove(owning_instance);
+					}
+					new_member = (CEntity)value;
+					if (!new_member.owning_model.optimized) {
+						new_member.inverseAdd(owning_instance);
+					}
 				}
 				myData = value;
 			} else if (myLength == 2) {
 				myDataA = (Object [])myData;
 				if (myType != null) {
-					((CEntity)myDataA[index]).inverseRemove(owning_instance);
-					((CEntity)value).inverseAdd(owning_instance);
+					ex_member = (CEntity)myDataA[index];
+					if (!ex_member.owning_model.optimized) {
+						ex_member.inverseRemove(owning_instance);
+					}
+					new_member = (CEntity)value;
+					if (!new_member.owning_model.optimized) {
+						new_member.inverseAdd(owning_instance);
+					}
 				}
 				myDataA[index] = value;
 			} else {
@@ -436,8 +449,14 @@ public class AEntity extends CAggregate {
 					element = element.next;
 				}
 				if (myType != null) {
-					((CEntity)element.object).inverseRemove(owning_instance);
-					((CEntity)value).inverseAdd(owning_instance);
+					ex_member = (CEntity)element.object;
+					if (!ex_member.owning_model.optimized) {
+						ex_member.inverseRemove(owning_instance);
+					}
+					new_member = (CEntity)value;
+					if (!new_member.owning_model.optimized) {
+						new_member.inverseAdd(owning_instance);
+					}
 				}
 				element.object = value;
 			}
@@ -456,13 +475,25 @@ public class AEntity extends CAggregate {
 				owning_instance.owning_model.repository.session.undoRedoModifyPrepare(owning_instance);
 			}
 			if (myLength == 1) {
-				((CEntity)myData).inverseRemove(owning_instance);
-				((CEntity)value).inverseAdd(owning_instance);
+				ex_member = (CEntity)myData;
+				if (!ex_member.owning_model.optimized) {
+					ex_member.inverseRemove(owning_instance);
+				}
+				new_member = (CEntity)value;
+				if (!new_member.owning_model.optimized) {
+					new_member.inverseAdd(owning_instance);
+				}
 				myData = value;
 			} else {
 				myDataA = (Object [])myData;
-				((CEntity)myDataA[index]).inverseRemove(owning_instance);
-				((CEntity)value).inverseAdd(owning_instance);
+				ex_member = (CEntity)myDataA[index];
+				if (!ex_member.owning_model.optimized) {
+					ex_member.inverseRemove(owning_instance);
+				}
+				new_member = (CEntity)value;
+				if (!new_member.owning_model.optimized) {
+					new_member.inverseAdd(owning_instance);
+				}
 				myDataA[index] = value;
 			}
 		} else {
@@ -551,7 +582,10 @@ public class AEntity extends CAggregate {
 			} else if (myType.shift > -5 && !analyse_select_value_entity(myType.select, value)) {
 				throw new SdaiException(SdaiException.VT_NVLD); 
 			}
-			((CEntity)value).inverseAdd(owning_instance);
+			CEntity new_member = (CEntity)value;
+			if (!new_member.owning_model.optimized) {
+				new_member.inverseAdd(owning_instance);
+			}
 		}
 		Object [] myDataA;
 		ListElement element = null;
@@ -699,6 +733,7 @@ public class AEntity extends CAggregate {
 		if (myLength < 0) {
 			resolveAllConnectors();
 		}
+		CEntity new_member;
 		Object [] myDataA;
 		if (myType == null || myType.express_type == DataType.LIST) {
 			if (myType != null) {
@@ -754,7 +789,10 @@ public class AEntity extends CAggregate {
 			}
 			myLength++;
 			if (myType != null) {
-				((CEntity)value).inverseAdd(owning_instance);
+				new_member = (CEntity)value;
+				if (!new_member.owning_model.optimized) {
+					new_member.inverseAdd(owning_instance);
+				}
 				if (myType.shift != SdaiSession.PRIVATE_AGGR || aggr_owner instanceof SdaiRepository) {
 					owner.modified();
 					fireSdaiEvent(SdaiEvent.MODIFIED, -1, null);
@@ -803,7 +841,10 @@ public class AEntity extends CAggregate {
 				myDataA[myLength] = value;
 			}
 			myLength++;
-			((CEntity)value).inverseAdd(owning_instance);
+			new_member = (CEntity)value;
+			if (!new_member.owning_model.optimized) {
+				new_member.inverseAdd(owning_instance);
+			}
 			if (myType.shift != SdaiSession.PRIVATE_AGGR && owning_model.repository != SdaiSession.systemRepository) {
 				owner.modified();
 				fireSdaiEvent(SdaiEvent.MODIFIED, -1, null);
@@ -873,22 +914,32 @@ public class AEntity extends CAggregate {
 		if (myLength < 0) {
 			resolveAllConnectors();
 		}
+		CEntity ex_member;
 		owning_model.repository.session.undoRedoModifyPrepare(owning_instance);
 		if (myLength == 1) {
 			if (myData == value) {
 				index = 0;
-				((CEntity)myData).inverseRemove(owning_instance);
+				ex_member = (CEntity)myData;
+				if (!ex_member.owning_model.optimized) {
+					ex_member.inverseRemove(owning_instance);
+				}
 				myData = null;
 			}
 		} else if (myLength == 2) {
 			myDataA = (Object [])myData;
 			if (myDataA[0] == value) {
 				index = 0;
-				((CEntity)myDataA[0]).inverseRemove(owning_instance);
+				ex_member = (CEntity)myDataA[0];
+				if (!ex_member.owning_model.optimized) {
+					ex_member.inverseRemove(owning_instance);
+				}
 				myData = myDataA[1];
 			} else if (myDataA[1] == value) {
 				index = 1;
-				((CEntity)myDataA[1]).inverseRemove(owning_instance);
+				ex_member = (CEntity)myDataA[1];
+				if (!ex_member.owning_model.optimized) {
+					ex_member.inverseRemove(owning_instance);
+				}
 				myData = myDataA[0];
 			}
 		} else {
@@ -896,7 +947,10 @@ public class AEntity extends CAggregate {
 			for (int i = 0; i < myLength; i++) {
 				if (myDataA[i] == value) {
 					index = i;
-					((CEntity)myDataA[i]).inverseRemove(owning_instance);
+					ex_member = (CEntity)myDataA[i];
+					if (!ex_member.owning_model.optimized) {
+						ex_member.inverseRemove(owning_instance);
+					}
 					myDataA[i] = myDataA[myLength - 1];
 					myDataA[myLength - 1] = null;
 					break;
@@ -973,6 +1027,7 @@ public class AEntity extends CAggregate {
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 
+		CEntity ex_member, new_member;
 		Object [] myDataA;
 		if (myType == null || myType.express_type == DataType.LIST) {
 			if (it.myElement == null && (it.behind || myLength == 0 || it.myIndex < 0)) {
@@ -983,23 +1038,41 @@ public class AEntity extends CAggregate {
 			}
 			if (myLength == 1) {
 				if (myType != null) {
-					((CEntity)myData).inverseRemove(owning_instance);
-					((CEntity)value).inverseAdd(owning_instance);
+					ex_member = (CEntity)myData;
+					if (!ex_member.owning_model.optimized) {
+						ex_member.inverseRemove(owning_instance);
+					}
+					new_member = (CEntity)value;
+					if (!new_member.owning_model.optimized) {
+						new_member.inverseAdd(owning_instance);
+					}
 				}
 				myData = value;
 				it.myElement = value;
 			} else if (myLength == 2) {
 				myDataA = (Object [])myData;
 				if (myType != null) {
-					((CEntity)myDataA[it.myIndex]).inverseRemove(owning_instance);
-					((CEntity)value).inverseAdd(owning_instance);
+					ex_member = (CEntity)myDataA[it.myIndex];
+					if (!ex_member.owning_model.optimized) {
+						ex_member.inverseRemove(owning_instance);
+					}
+					new_member = (CEntity)value;
+					if (!new_member.owning_model.optimized) {
+						new_member.inverseAdd(owning_instance);
+					}
 				}
 				myDataA[it.myIndex] = value;
 				it.myElement = value;
 			} else {
 				if (myType != null) {
-					((CEntity)((ListElement)it.myElement).object).inverseRemove(owning_instance);
-					((CEntity)value).inverseAdd(owning_instance);
+					ex_member = (CEntity)((ListElement)it.myElement).object;
+					if (!ex_member.owning_model.optimized) {
+						ex_member.inverseRemove(owning_instance);
+					}
+					new_member = (CEntity)value;
+					if (!new_member.owning_model.optimized) {
+						new_member.inverseAdd(owning_instance);
+					}
 				}
 				((ListElement)it.myElement).object = value;
 			}
@@ -1011,13 +1084,25 @@ public class AEntity extends CAggregate {
 				owning_instance.owning_model.repository.session.undoRedoModifyPrepare(owning_instance);
 			}
 			if (myLength == 1) {
-				((CEntity)myData).inverseRemove(owning_instance);
-				((CEntity)value).inverseAdd(owning_instance);
+				ex_member = (CEntity)myData;
+				if (!ex_member.owning_model.optimized) {
+					ex_member.inverseRemove(owning_instance);
+				}
+				new_member = (CEntity)value;
+				if (!new_member.owning_model.optimized) {
+					new_member.inverseAdd(owning_instance);
+				}
 				myData = value;
 			} else {
 				myDataA = (Object [])myData;
-				((CEntity)myDataA[it.myIndex]).inverseRemove(owning_instance);
-				((CEntity)value).inverseAdd(owning_instance);
+				ex_member = (CEntity)myDataA[it.myIndex];
+				if (!ex_member.owning_model.optimized) {
+					ex_member.inverseRemove(owning_instance);
+				}
+				new_member = (CEntity)value;
+				if (!new_member.owning_model.optimized) {
+					new_member.inverseAdd(owning_instance);
+				}
 				myDataA[it.myIndex] = value;
 			}
 		}
@@ -1109,7 +1194,10 @@ public class AEntity extends CAggregate {
 		ListElement element;
 		ListElement new_element;
 		if (myType != null) {
-			((CEntity)value).inverseAdd(owning_instance);
+			CEntity new_member = (CEntity)value;
+			if (!new_member.owning_model.optimized) {
+				new_member.inverseAdd(owning_instance);
+			}
 		}
 		if (myLength == 0) {
 			myData = value;
@@ -1321,7 +1409,10 @@ public class AEntity extends CAggregate {
 		ListElement element;
 		ListElement new_element;
 		if (myType != null) {
-			((CEntity)value).inverseAdd(owning_instance);
+			CEntity new_member = (CEntity)value;
+			if (!new_member.owning_model.optimized) {
+				new_member.inverseAdd(owning_instance);
+			}
 		}
 		if (myLength == 0) {
 			myData = value;

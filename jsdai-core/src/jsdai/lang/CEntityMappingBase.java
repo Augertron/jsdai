@@ -76,15 +76,15 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
 		armSubtypeLevels = null;
 		armSubtypeLevelSize = 0;
     }
-	
+
 	void collectStrongAttributes() throws SdaiException {
 		if(!strongAttributesCollected) {
 			AGeneric_attribute_mapping attributeMappings = new AGeneric_attribute_mapping();
-			CGeneric_attribute_mapping.usedinParent_entity(null, 
+			CGeneric_attribute_mapping.usedinParent_entity(null,
 				(EEntity_mapping)this, null, attributeMappings);
 			SdaiIterator attributeMappingIter = attributeMappings.createIterator();
 			while(attributeMappingIter.next()) {
-				EGeneric_attribute_mapping attributeMapping = 
+				EGeneric_attribute_mapping attributeMapping =
 					attributeMappings.getCurrentMember(attributeMappingIter);
 				if(attributeMapping.getStrong(null)) {
 					if(strongAttributes == null) strongAttributes = new HashMap();
@@ -97,7 +97,7 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
 					oneAttributeList.add(attributeMapping);
 				}
 			}
-			
+
 			strongAttributesCollected = true;
 		}
 	}
@@ -111,7 +111,7 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
 	void findSubtypeMappings(ASdaiModel mappingDomain) throws SdaiException {
 		if(armSubtypeLevels == null) {
 			EEntity_mapping selfInterface = (EEntity_mapping)this;
-			
+
 			armSubtypeLevels = new ArrayList();
 			ListIterator armSubtypeLevelsIter = armSubtypeLevels.listIterator();
 			armSubtypeLevelSize = findSubtypeMappings(selfInterface.getSource(null),
@@ -120,7 +120,7 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
 		}
 	}
 
-	static private int findSubtypeMappings(EEntity_definition armEntity, ASdaiModel mappingDomain,
+	private static int findSubtypeMappings(EEntity_definition armEntity, ASdaiModel mappingDomain,
 										   ListIterator subtypeLevelsIter, SubtypeNode parentNode,
 										   EEntity aimEntity, int nextNodeIndex) throws SdaiException {
 		AEntity_definition armSubtypes = new AEntity_definition();
@@ -139,12 +139,12 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
 			SdaiIterator armSubtypeIter = armSubtypes.createIterator();
 			while(armSubtypeIter.next()) {
 				EEntity_definition armSubtype = armSubtypes.getCurrentMember(armSubtypeIter);
-				
+
 				SubtypeNode newNode = new SubtypeNode(parentNode, nextNodeIndex++);
 				levelSubtypeNodes.add(newNode);
-				nextNodeIndex = findSubtypeMappings(armSubtype, mappingDomain, subtypeLevelsIter, 
+				nextNodeIndex = findSubtypeMappings(armSubtype, mappingDomain, subtypeLevelsIter,
 													newNode, aimEntity, nextNodeIndex);
-				
+
 				if(armSubtype.getInstantiable(null)) {
 					AEntity_mapping oneSubtypeMappings = new AEntity_mapping();
 					CEntity_mapping.usedinSource(null, armSubtype, mappingDomain, oneSubtypeMappings);
@@ -162,20 +162,46 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
 		}
 		return nextNodeIndex;
 	}
-	
+
 	static boolean isMappingEqual(EEntity entity, EEntity testEntity) throws SdaiException {
-		if(entity == testEntity)
+		if(entity == testEntity) {
 			return true;
-		if(!(entity instanceof EEntity_definition && testEntity instanceof EEntity_definition))
+		}
+		if(!(entity instanceof EEntity_definition && testEntity instanceof EEntity_definition)) {
 			return false;
-		EEntity_definition entityDefinition = (EEntity_definition)entity;
-		if(entityDefinition.testSupertypes(null)) {
-			AEntity_definition supertypes = entityDefinition.getSupertypes(null);
+		}
+ 		EEntity_definition entityDefinition = (EEntity_definition)entity;
+ 		EEntity_definition testEntityDefinition = (EEntity_definition)testEntity;
+ 		if(testEntityDefinition.getComplex(null)) {
+			AEntity leaves = testEntityDefinition.getGeneric_supertypes(null);
+			SdaiIterator leafIterator = leaves.createIterator();
+			while(leafIterator.next()) {
+				EEntity_definition leaf = (EEntity_definition)leaves.getCurrentMemberObject(leafIterator);
+				if(!isMappingEqualEntity(entityDefinition, leaf)) {
+					return false;
+				}
+			}
+			return true;
+
+ 		} else {
+ 			return isMappingEqualEntity(entityDefinition, testEntityDefinition);
+ 		}
+
+	}
+	private static boolean isMappingEqualEntity(EEntity_definition entityDefinition,
+			EEntity_definition testEntityDefinition) throws SdaiException {
+		if(entityDefinition == testEntityDefinition) {
+			return true;
+		}
+		if(entityDefinition.testGeneric_supertypes(null)) {
+			AEntity supertypes = entityDefinition.getGeneric_supertypes(null);
 			SdaiIterator supertypesIter = supertypes.createIterator();
 			while(supertypesIter.next()) {
-				EEntity_definition supertype = supertypes.getCurrentMember(supertypesIter);
-				if(isMappingEqual(supertype, testEntity))
+				EEntity_definition supertype =
+					(EEntity_definition) supertypes.getCurrentMemberObject(supertypesIter);
+				if(isMappingEqualEntity(supertype, testEntityDefinition)) {
 					return true;
+				}
 			}
 			return false;
 		} else {
@@ -215,7 +241,7 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
 
 				EEntity_definition source = selfInterface.getSource(null);
 				EEntity_definition target = (EEntity_definition)selfInterface.getTarget(null);
-			
+
 				ASdaiModel workingModels = mappingContext.context.working_modelAggr;
 				MatcherInstances attributeStartInstances =
 					mappingContext.newAllInstances(MatcherInstances.STATUS_PATH_FORWARD);
@@ -223,7 +249,7 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
 					mappingContext.newAllInstances(MatcherInstances.STATUS_FORWARD);
 
 				if(selfInterface.testConstraints(null)) {
-					outInstances = 
+					outInstances =
 						((MappingConstraintMatcher)selfInterface.getConstraints(null))
 						.findForward(mappingContext, entityStartInstances, true)
 						.extractType(mappingContext, target);
@@ -247,7 +273,7 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
 								List oneAttributeList = (List)strongAttrIter.next();
 								Iterator oneAttrIter = oneAttributeList.iterator();
 								if(oneAttrIter.hasNext()) {
-									MatcherInstances strongInstances = 
+									MatcherInstances strongInstances =
 										((MappingConstraintMatcher)oneAttrIter.next())
 										.findPathForward(mappingContext,
 												attributeStartInstances, true);
@@ -272,7 +298,7 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
 					boolean oldPreprocessInstances = mappingContext.preprocessInstances;
 					mappingContext.preprocessInstances = true;
 					AAttribute_mapping userAttrMappings = new AAttribute_mapping();
-					MatcherInstances strongUserInstances = 
+					MatcherInstances strongUserInstances =
 						findAllUsers(selfInterface, mappingContext, attributeStartInstances,
 									 entityStartInstances, target, userAttrMappings, null);
 					mappingContext.preprocessInstances = oldPreprocessInstances;
@@ -334,7 +360,7 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
 				return outInstances;
 			}
 		} catch(SdaiException e) {
-			SdaiException wrapper = 
+			SdaiException wrapper =
 				new SdaiException(e.getErrorId(), e, ((EEntity)this).getPersistentLabel());
 			wrapper.initCause(e);
 			throw wrapper;
@@ -356,7 +382,7 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
      */
     public MatcherInstances findBackward(MappingContext mappingContext,
     		MatcherInstances instances, boolean decCacheUseCnt) throws SdaiException {
-		throw new SdaiException(SdaiException.FN_NAVL, 
+		throw new SdaiException(SdaiException.FN_NAVL,
 								"This constraint can not be called as part of backward references");
 	}
 
@@ -365,7 +391,7 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
      */
     public MatcherInstances findPathForward(MappingContext mappingContext,
     		MatcherInstances instances, boolean decCacheUseCnt) throws SdaiException {
-		throw new SdaiException(SdaiException.FN_NAVL, 
+		throw new SdaiException(SdaiException.FN_NAVL,
 								"This constraint can not be called as part of path forward references");
 	}
 
@@ -373,7 +399,7 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
      * @since 4.1.0
      */
     public EEntity[] findDependentInstances() throws SdaiException {
-		throw new SdaiException(SdaiException.FN_NAVL, 
+		throw new SdaiException(SdaiException.FN_NAVL,
 				"This constraint can not be called as part of path forward references: " +
 				this);
     }
@@ -383,12 +409,12 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
      */
     public MatcherInstances findPathBackward(MappingContext mappingContext,
     		MatcherInstances instances, boolean decCacheUseCnt) throws SdaiException {
-		throw new SdaiException(SdaiException.FN_NAVL, 
+		throw new SdaiException(SdaiException.FN_NAVL,
 				"This constraint can not be called as part of path backward references");
 	}
 
-	static private MatcherInstances
-		findAllUsers(EEntity_mapping entityMapping, MappingContext mappingContext, 
+    private static MatcherInstances
+		findAllUsers(EEntity_mapping entityMapping, MappingContext mappingContext,
 					 MatcherInstances attributeStartInstances, MatcherInstances entityStartInstances,
 					 EEntity_definition target, AAttribute_mapping userAttrMappings,
 					 MatcherInstances strongUserInstances) throws SdaiException {
@@ -506,12 +532,12 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
 
 	/** Subtypes node class */
 	static final class SubtypeNode {
-		
+
 		public final SubtypeNode parent;
 		/** List of EEntity_mappings */
 		public final List mappings;
 		public final int index;
-		
+
 		private SubtypeNode(SubtypeNode parent, int index) {
 			this.mappings = new ArrayList();
 			this.parent = parent;
@@ -519,7 +545,7 @@ public abstract class CEntityMappingBase extends CEntity implements MappingConst
 		}
 
 		public String toString() {
-			return "(parent: " + parent + ", mappings: " + mappings + ", index: " + index + ")@" + 
+			return "(parent: " + parent + ", mappings: " + mappings + ", index: " + index + ")@" +
 				System.identityHashCode(this) + "\n";
 		}
 	}

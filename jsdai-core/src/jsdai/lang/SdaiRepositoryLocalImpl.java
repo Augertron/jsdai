@@ -1290,7 +1290,7 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 					models.myData[index] = models.myData[j];
 					index++;
 				} else {
-					mod.deleteSdaiModelWork(false, false, false);
+					mod.deleteSdaiModelWork(false, false, false, currently_aborting);
 					mod.resolveInConnectors(true);
 					mod.repository = null;
 					models.myData[j] = null;
@@ -1591,7 +1591,7 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 					models.myData[ind] = models.myData[j];
 					ind++;
 				} else {
-					mod.deleteSdaiModelWork(false, false, false);
+					mod.deleteSdaiModelWork(false, false, false, currently_aborting);
 					mod.resolveInConnectors(true);
 					mod.repository = null;
 					models.myData[j] = null;
@@ -1638,7 +1638,9 @@ class SdaiRepositoryLocalImpl extends SdaiRepository {
 
 	protected void abortingInternal(boolean modif, boolean contents_modified) throws SdaiException {
 		if (committed && (modif || contents_modified || model_deleted || schema_instance_deleted)) {
+			currently_aborting = true;
 			loadRepositoryLocal();
+			currently_aborting = false;
 		}
 		//FIXME: These operations should be perfomed only in the case external data modification
 		//       flag is set. However this flag should be mainained in the right way.

@@ -8,7 +8,6 @@
 //  product_definition_formation_with_specified_source entity instances
 
 import jsdai.lang.*;
-import jsdai.SConfig_control_design.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SApplication_context_schema.*;
 public class Example10 {
@@ -22,7 +21,7 @@ public class Example10 {
 
 		// import a physical file into a new repository
 		SdaiRepository repo = session.importClearTextEncoding(null, argv[0], null);
-	
+
 		// SdaiRepository is already open after importClearTextEncoding
 		// repo.openRepository();
 
@@ -74,7 +73,7 @@ public class Example10 {
 					EProduct_definition_formation formation = (EProduct_definition_formation)formations.getCurrentMember(iter_formations);
 					System.out.println("product user: product_definition_formation instance " + formation.getPersistentLabel());
 					System.out.print("\tID: " + formation.getId(null));
-					System.out.print(", description: " + (formation.testDescription(null) ? formation.getDescription(null) : "$");
+					System.out.print(", description: " + (formation.testDescription(null) ? formation.getDescription(null) : "$"));
 
 					// mention the specified_source if available
 					if (formation.isKindOf(CProduct_definition_formation_with_specified_source.class)) {

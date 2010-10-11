@@ -390,6 +390,8 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 
 	private static final int COMPLEX_INCOMPATIBLES_SIZE = 16;
 
+	private static final int REFS_ARRAY_SIZE = 16;
+
 	private static final String SUFIX_XIM = "_XIM";
 
 /**
@@ -697,6 +699,7 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	boolean bypass;
 	boolean bypass_setAll;
 	boolean closingAll;
+	boolean refresh_in_abort;
 
 /**
 	Has value 'true' if and only if this SdaiModel already is included into
@@ -709,6 +712,7 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	(from the class SchemaData) was already applied.
 */
 	boolean early_binding_linked;
+   boolean early_binding_linking;
 
 /**
 	Has value 'true' if and only if for this SdaiModel method linkEarlyBindingInit
@@ -850,6 +854,8 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	appeared more recently.
 */
 	boolean created;
+
+	boolean optimized = false;
 
 	Object domain;
 
@@ -1369,7 +1375,8 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 	}
 
     protected void removeAssociatedWith(SchemaInstance schInst, boolean initialize) throws SdaiException {
-		associated_with.removeUnorderedRO(this);
+//		associated_with.removeUnorderedRO(this);
+		associated_with.removeUnorderedRO(schInst);
 		modified_outside_contents = true;
 	}
 
@@ -1745,7 +1752,7 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 		if (remote && !committed) {
 			repository.unresolved_mod_count--;
 		}
-		deleteSdaiModelWork(false, true, false);
+		deleteSdaiModelWork(false, true, false, false);
 		resolveInConnectors(true);
 	}
 
@@ -1765,7 +1772,11 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 			}
 			CEntity [] row_of_instances = instances_sim[i];
 			for (int j = 0; j < lengths[i]; j++) {
-				row_of_instances[j].deleteInverseReferences(delete_repo);
+				if (optimized) {
+					row_of_instances[j].unsetInverseReferencesNoInverse(false, false, delete_repo);
+				} else {
+					row_of_instances[j].deleteInverseReferences(delete_repo);
+				}
 			}
 		}
 	}
@@ -1774,13 +1785,14 @@ implements SdaiEventSource, QuerySource, SdaiModelConnector {
 /**
 	Delets all the data within this SdaiModel.
 */
-	void deleteSdaiModelWork(boolean make_virtual, boolean remove, boolean delete_or_close_repo) throws SdaiException {
+	void deleteSdaiModelWork(boolean make_virtual, boolean remove, boolean delete_or_close_repo, 
+			boolean aborting) throws SdaiException {
 if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: " + name);
 		if ((mode & MODE_MODE_MASK) != NO_ACCESS) {
 			if (delete_or_close_repo) {
 				deleteContentsUnset();
 			} else {
-				deleteContents(make_virtual);
+				deleteContents(make_virtual, aborting);
 			}
 		}
 
@@ -2509,7 +2521,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 		}
 		exists = true;
 		boolean saved_modified = modified;
-		deleteContents(true);
+		deleteContents(true, false);
 		modified = saved_modified;
 		repository.session.active_models.removeUnorderedRO(this);
 		if (Implementation.build >= 249 && inst_deleted_permanently) {
@@ -2563,7 +2575,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 		exists = true;
 		boolean saved_modified = modified;
 //closingAll=true;
-		deleteContents(true);
+		deleteContents(true, false);
 //closingAll=false;
 		modified = saved_modified;
 		repository.session.active_models.removeUnorderedRO(this);
@@ -2593,7 +2605,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 		}
 		exists = true;
 		boolean saved_modified = modified;
-		deleteContents(true);
+		deleteContents(true, false);
 		modified = saved_modified;
 		repository.session.active_models.removeUnorderedRO(this);
 		if (Implementation.build >= 249 && inst_deleted_permanently) {
@@ -2822,7 +2834,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 	Deletes all instances contained in this SdaiModel.
 	Also removes all outcoming connectors (but not incoming ones).
 */
-	void deleteContents(boolean replace_by_connector) throws SdaiException {
+	void deleteContents(boolean replace_by_connector, boolean aborting) throws SdaiException {
 		int i, j;
 		Connector con = outConnectors;
 		while (con != null) {
@@ -2838,10 +2850,15 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 				}
 				row_of_instances = instances_sim[i];
 				for (j = 0; j < lengths[i]; j++) {
-					row_of_instances[j].unsetInverseReferences(replace_by_connector);
+					if (optimized) {
+						row_of_instances[j].unsetInverseReferencesNoInverse(true, replace_by_connector, false);
+					} else {
+						row_of_instances[j].unsetInverseReferences(replace_by_connector, aborting);
+					}
 				}
 			}
 
+			refresh_in_abort = aborting;
 			for (i = 0; i < instances_sim.length; i++) {
 				if (instances_sim[i] == null || lengths[i] == 0) {
 					continue;
@@ -2868,6 +2885,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
                 //sim_status[i] = (short)((sim_status[number_of_entities] & ~SIM_LOADED_MASK) | SIM_LOADED_COMPLETE);
 				lengths[i] = 0;
 			}
+			refresh_in_abort = false;
 			invalidate_quick_find();
 		}
 		if (folders != null) {
@@ -3086,7 +3104,11 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 				}
 				older.instance_position |= CEntity.INS_MASK;
 				modified = true;
-				older.setModifiedFlag();
+				if (older_owner.optimized) {
+					older.setModifiedFlagNoInverse();
+				} else {
+					older.setModifiedFlag();
+				}
 			}
 			return older;
 		}
@@ -3095,7 +3117,12 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 		if (staticFields.entity_values == null) {
 			staticFields.entity_values = new ComplexEntityValue();
 		}
-		Value val_message = older.checkInverseReferences(new_def);
+		Value val_message;
+		if (older_owner.optimized) {
+			val_message = older.checkInverseReferencesNoInverse(new_def);
+		} else {
+			val_message = older.checkInverseReferences(new_def);
+		}
 //boolean is_subtp = new_def.isSubtypeOf(old_def);
 //System.out.println("SdaiModel    is_subtp = " + is_subtp + "   val_message: " + val_message);
 		if (!new_def.isSubtypeOf(old_def) && val_message != null) {
@@ -3135,6 +3162,7 @@ SdaiSession.line_separator + "   New instance definition: " + new_def);
 		}
 		prepareAll(staticFields.entity_values, old_def);
 		older.getAll(staticFields.entity_values);
+//print_entity_values(staticFields.entity_values, 161);
 		if (xim) {
 			staticFields.entity_values.xim_special_substitute_instance = false;
 		}
@@ -3195,7 +3223,7 @@ SdaiSession.line_separator + "   New instance definition: " + new_def);
 //if (older.instance_identifier == 349)
 //print_entity_values(entity_values, 349);
 //if (older.instance_identifier == 349) {
-//System.out.println("SdaiModel *********** BEFORE older inverse: #" + older.instance_identifier + 
+//System.out.println("SdaiModel *********** BEFORE older inverse: #" + older.instance_identifier +
 //"  its type: " + older.getInstanceType().getName(null));
 //older.printInverses();
 //CEntity inst314 = (CEntity)repository.getSessionIdentifier("#314");
@@ -3214,15 +3242,19 @@ SdaiSession.line_separator + "   New instance definition: " + new_def);
 		substitute.instance_identifier = ident;
 		substitute.instance_position = CEntity.INS_MASK | substitute.instance_position; //--VV-- Instance state tracking --
 //if (older.instance_identifier == 349) {
-//System.out.println("SdaiModel *********** AAAAA older inverse: #" + older.instance_identifier + 
+//System.out.println("SdaiModel *********** AAAAA older inverse: #" + older.instance_identifier +
 //"  its type: " + older.getInstanceType().getName(null));
 //older.printInverses();
 //CEntity inst314a = (CEntity)repository.getSessionIdentifier("#314");
 //System.out.println("SdaiModel *********** AAAAA  #314");inst314a.printInverses();}
 		older_owner.substitute_operation = true;
-		older.changeInverseReferences(older, substitute, false, false, false);
+		if (older_owner.optimized) {
+			older.changeInverseReferencesNoInverse(older, substitute, false);
+		} else {
+			older.changeInverseReferences(older, substitute, false, false);
+		}
 //if (older.instance_identifier == 349) {
-//System.out.println("SdaiModel *********** BBBBB older inverse: #" + older.instance_identifier + 
+//System.out.println("SdaiModel *********** BBBBB older inverse: #" + older.instance_identifier +
 //"  its type: " + older.getInstanceType().getName(null));
 //older.printInverses();
 //CEntity inst314b = (CEntity)repository.getSessionIdentifier("#314");
@@ -3232,11 +3264,11 @@ SdaiSession.line_separator + "   New instance definition: " + new_def);
 		older.deleteApplicationInstance();
 		older_owner.substitute_operation = false;
 //if (older.instance_identifier == 349) {
-//System.out.println("SdaiModel *********** CCCCC older inverse: #" + older.instance_identifier + 
+//System.out.println("SdaiModel *********** CCCCC older inverse: #" + older.instance_identifier +
 //"  its type: " + older.getInstanceType().getName(null));older.printInverses();
 //CEntity inst314c = (CEntity)repository.getSessionIdentifier("#314");
 //System.out.println("SdaiModel *********** CCCCC  #314");inst314c.printInverses();
-//System.out.println("SdaiModel *********** CCCCC substitute inverse: #" + substitute.instance_identifier + 
+//System.out.println("SdaiModel *********** CCCCC substitute inverse: #" + substitute.instance_identifier +
 //"  its type: " + substitute.getInstanceType().getName(null));substitute.printInverses();}
 		older_owner.undo_delete = 0;
 		older_owner.inst_deleted = saved_value;
@@ -3446,7 +3478,11 @@ SdaiSession.line_separator + "   New instance definition: " + new_def);
 			}
 			older.instance_position |= CEntity.INS_MASK;
 			modified = true;
-			older.setModifiedFlag();
+			if (older_owner.optimized) {
+				older.setModifiedFlagNoInverse();
+			} else {
+				older.setModifiedFlag();
+			}
 		}
 		return older;
 //		} // syncObject
@@ -4269,7 +4305,7 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 					int typeIndex;
 					if(tryToFindInstance) {
 						typeIndex = typeIdToIndex(type_id, mode_to_start);
-						index = find_instance(0, lengths[typeIndex] - 1, typeIndex, inst_id);
+						index = typeIndex >= 0 ? find_instance(0, lengths[typeIndex] - 1, typeIndex, inst_id) : -1;
 					} else {
 						index = -1;
 						typeIndex = 0;
@@ -4323,6 +4359,12 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 			deleteInstances(true);
 
 		    if(mode_to_start == READ_ONLY) {
+			    if(entities.length < populated_types) {
+			    	entities = new CEntity_definition[populated_types];
+					prepareInstancesSim(populated_types + 1, false);
+					instances_sim[populated_types] = emptyArray;
+					lengths[populated_types] = 0;
+			    }
 		        cnt = 0;
 		    	for (int i = 0; i < complex_entity_count; i++) {
 		    		if(type_len[i] > 0) {
@@ -4920,11 +4962,19 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 				for (j = 0; j < lengths[i]; j++) {
 					instance = row_of_instances[j];
 					if (instance.instance_identifier > 0) {
-						instance.unsetInverseReferences(replace_by_connector);
+						if (optimized) {
+							instance.unsetInverseReferencesNoInverse(true, replace_by_connector, false);
+						} else {
+							instance.unsetInverseReferences(replace_by_connector, false);
+						}
 					} else {
 						instance.instance_identifier = -instance.instance_identifier;
-						instance.unsetInverseReferences(true/*replace_by_connector*/);
-						instance.inverseList = null; // LK?: what is about connectors, maybe we require that this is already null
+						if (optimized) {
+							instance.unsetInverseReferencesNoInverse(true, true, false);
+						} else {
+							instance.unsetInverseReferences(true/*replace_by_connector*/, false);
+							instance.inverseList = null; // LK?: what is about connectors, maybe we require that this is already null
+						}
 						instance.instance_identifier = -instance.instance_identifier;
 					}
 				}
@@ -4978,7 +5028,11 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 						for (int j = 0; j < lengths[i]; j++) {
 							CEntity instance = row_of_instances[j];
 							if (instance.instance_identifier > 0) {
-								instance.unsetInverseReferences(true/*replace_by_connector*/);
+								if (optimized) {
+									instance.unsetInverseReferencesNoInverse(true, true, false);
+								} else {
+									instance.unsetInverseReferences(true/*replace_by_connector*/, false);
+								}
 								bypass_setAll = true;
 								try {
 									instance.setAll(null);
@@ -4991,8 +5045,12 @@ if (SdaiSession.debug2) System.out.println("    index: " + j + "  supertype: " +
 								instance.fireSdaiEvent(SdaiEvent.INVALID, -1, null);
 							} else {
 								instance.instance_identifier = -instance.instance_identifier;
-								instance.unsetInverseReferences(true/*replace_by_connector*/);
-								instance.inverseList = null; // LK?: what is about connectors, maybe we require that this is already null
+								if (optimized) {
+									instance.unsetInverseReferencesNoInverse(true, true, false);
+								} else {
+									instance.unsetInverseReferences(true/*replace_by_connector*/, false);
+									instance.inverseList = null; // LK?: what is about connectors, maybe we require that this is already null
+								}
 							}
 						}
 						instances_sim[i] = new CEntity[newLen];
@@ -6196,9 +6254,13 @@ if (SdaiSession.debug2) System.out.println("  instance ident = " + app_inst.inst
 //if (repository != SdaiSession.systemRepository)
 //System.out.println("SdaiModel *** i: " + i + "  entity: " + edef.getName(null));
 				staticFields.current_instance_identifier = app_inst.instance_identifier;
+//long time1 = System.currentTimeMillis();
 				load_instance(entity_values, stream, app_inst, edef, n_entities_from_file, def_types_count, 2,
 					spec_type_index, mod_small, streamUtf);
 				app_inst.setAll(entity_values);
+//long time2 = System.currentTimeMillis();
+//long time_diff = time2-time1;
+//if (SdaiModelLocalImpl.sum_time) time_load_inst+=time_diff;
 				staticFields.current_instance_identifier = -1;
 //System.out.println("SdaiModel ++++++   instance: " + edef.getName(null) +
 //"   ident = " + app_inst.instance_identifier +
@@ -6963,7 +7025,7 @@ if (SdaiSession.debug) System.out.println(" ^^^^^ last byte = " + (char)bt);
 	private void replaceByReference(Connector con, boolean unset, boolean aborting) throws SdaiException {
 		CEntity owner = con.owning_instance;
 		CEntity reference = null;
-		if(unset || (aborting && owner.owning_model.modified)) {
+		if (unset || (aborting && owner.owning_model.modified)) {
 			con.disconnect();
 		} else {
 //System.out.println(" SdaiModel   owner: #" + owner.instance_identifier +
@@ -12379,7 +12441,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 	protected void abortingCreated() throws SdaiException {
 		setMode(READ_ONLY);
 		exists = false;
-		deleteSdaiModelWork(false, true, false);
+		deleteSdaiModelWork(false, true, false, false);
 		resolveInConnectors(true);
 	}
 
@@ -12404,6 +12466,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 			con.disconnect();
 			con = outConnectors;
 		}
+//System.out.println("SdaiModel::: after con.disconnect() for model: " + name);System.out.flush();
 		if (instances_sim == null) {
 			return;
 		}
@@ -12417,9 +12480,17 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 			row_of_instances = instances_sim[i];
 			for (j = 0; j < lengths[i]; j++) {
 				instance = row_of_instances[j];
-				instance.unsetInverseReferences(true);
+				if (optimized) {
+					instance.unsetInverseReferencesNoInverse(true, true, false);
+				} else {
+//System.out.println("SdaiModel  ::: unset for instance: #" + instance.instance_identifier);System.out.flush();
+					instance.unsetInverseReferences(true, true);
+//System.out.println("SdaiModel  ::: unset finished for instance: #" + instance.instance_identifier);System.out.flush();
+				}
 			}
 		}
+//System.out.println("SdaiModel::: after unsetInverseReferences for model: " + name);System.out.flush();
+		refresh_in_abort = true;
 		for (i = 0; i < instances_sim.length; i++) {
 			if (instances_sim[i] == null || lengths[i] <= 0) {
 				continue;
@@ -12436,6 +12507,8 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 				instance.inverseList = null;
 			}
 		}
+		refresh_in_abort = false;
+//System.out.println("SdaiModel::: after setAll() for model: " + name);System.out.flush();
 		deleting = false;
 	}
 
@@ -12540,7 +12613,11 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 			ur_f.seek(f_pointer);
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
-		substitute.changeInverseReferences(substitute, older, false, false, false);
+		if (optimized) {
+			substitute.changeInverseReferencesNoInverse(substitute, older, false);
+		} else {
+			substitute.changeInverseReferences(substitute, older, false, false);
+		}
 		older.inverseList = substitute.inverseList;
 		System.arraycopy(instances_sim[pop_index], inst_index+1, instances_sim[pop_index],
 			inst_index, instances_sim[pop_index].length-inst_index-1);
@@ -12607,7 +12684,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		verify_model_RW(ur_f, f_pointer, true);
 		CEntity instance;
 		CEntity[] pop_instances_sim = instances_sim[pop_index];
-		if (inst_index < lengths[pop_index] && pop_instances_sim[inst_index] != null && 
+		if (inst_index < lengths[pop_index] && pop_instances_sim[inst_index] != null &&
 				pop_instances_sim[inst_index].instance_identifier == inst_id) {
 			instance = pop_instances_sim[inst_index];
 		} else {
@@ -12644,7 +12721,11 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 			throw new SdaiException(SdaiException.SY_ERR);
 		}
 		repository.removeEntityExternalData(inst, true, false);
-		inst.changeInverseReferences(inst, null, false, false, false);
+		if (optimized) {
+			inst.changeInverseReferencesNoInverse(inst, null, false);
+		} else {
+			inst.changeInverseReferences(inst, null, false, false);
+		}
 		System.arraycopy(instances_sim[pop_index], inst_index+1, instances_sim[pop_index],
 			inst_index, instances_sim[pop_index].length-inst_index-1);
 		lengths[pop_index]--;
@@ -12740,7 +12821,11 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 		if (repository != old_mod.repository) {
 			old_mod.inst_deleted = true;
 		}
-		older.changeInverseReferences(older, substitute, false, false, false);
+		if (old_mod.optimized) {
+			older.changeInverseReferencesNoInverse(older, substitute, false);
+		} else {
+			older.changeInverseReferences(older, substitute, false, false);
+		}
 		substitute.inverseList = older.inverseList;
 		insertEntityInstance_undo(substitute, new_pop_index, new_inst_index);
 
@@ -12818,6 +12903,263 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 			throw new SdaiException(SdaiException.MX_NRW, this);
 		}
 	}
+
+
+/**
+ * Enables a mode in which each instance of the current model is
+ * constructed as CEntity object without an inverse list, that is,
+ * without the list containing all entity instances referencing the
+ * instance of interest. This way, less computer memory resources
+ * are required. In this mode, however, the run times of some methods, like
+ * {@link CEntity#findEntityInstanceUsers findEntityInstanceUsers},
+ * may become longer.
+ * The mode is enabled if the value of the method's parameter is "true".
+ * By default, the mode is disabled.
+ * Once enabled, the model stays in this special mode during
+ * all its lifetime within the session. 
+ * The optimization flag represented by the method's parameter is not
+ * persistent in the sense that it is not stored neither in an exchange 
+ * structure (part21 file) nor in a binary file in the special repositories-directory. 
+ * This method is applicable only to models whose access is not started.
+ * If this is not the case, then either SdaiException MX_RO or
+ * SdaiException MX_RW is thrown.
+ * Applying the method to a model from "System Repository" results
+ * in SdaiException FN_NAVL.
+ * <p> This method is an extension of JSDAI, which is
+ * not a part of the standard.
+ * @param enable_mode the flag to enable a special mode of the model.
+ * @throws SdaiException MO_NEXS, SDAI-model does not exist.
+ * @throws SdaiException MX_RO, SDAI-model access read-only.
+ * @throws SdaiException MX_RW, SDAI-model access read-write.
+ * @throws SdaiException RP_NOPN, repository is not open.
+ * @throws SdaiException FN_NAVL, function not available.
+ * @see #isOptimized
+ */
+	public void setOptimized(boolean enable_mode) throws SdaiException {
+		if (!enable_mode || optimized) {
+			return;
+		}
+		if (repository == null) {
+			throw new SdaiException(SdaiException.MO_NEXS);
+		}
+		if (repository == SdaiSession.systemRepository) {
+			throw new SdaiException(SdaiException.FN_NAVL);
+		}
+		if (!repository.active) {
+			throw new SdaiException(SdaiException.RP_NOPN, repository);
+		}
+		if ((mode & MODE_MODE_MASK) == READ_ONLY) {
+			throw new SdaiException(SdaiException.MX_RO, this);
+		}
+		if ((mode & MODE_MODE_MASK) == READ_WRITE) {
+			throw new SdaiException(SdaiException.MX_RW, this);
+		}
+		optimized = true;
+	}
+
+
+/**
+ * Informs if this model is in the mode in which each of its instances
+ * is constructed as CEntity object without an inverse
+ * list, that is, without the list containing all entity instances
+ * referencing the instance of interest.
+ * The method is not applicable to models from "System Repository".
+ * An attempt to apply it to such a model results in SdaiException FN_NAVL.
+ * <p> This method is an extension of JSDAI, which is
+ * not a part of the standard.
+ * @return <code>true</code> if this model is in the special mode, and
+ * <code>false</code> otherwise.
+ * @throws SdaiException MO_NEXS, SDAI-model does not exist.
+ * @throws SdaiException RP_NOPN, repository is not open.
+ * @throws SdaiException FN_NAVL, function not available.
+ * @see #setOptimized
+ */
+	public boolean isOptimized() throws SdaiException {
+		if (repository == null) {
+			throw new SdaiException(SdaiException.MO_NEXS);
+		}
+		if (repository == SdaiSession.systemRepository) {
+			throw new SdaiException(SdaiException.FN_NAVL);
+		}
+		if (!repository.active) {
+			throw new SdaiException(SdaiException.RP_NOPN, repository);
+		}
+		return optimized;
+	}
+
+
+	void scanEntityInstances(CEntity used, CEntityDefinition entityDef, int ent_index,
+			int attr_index, AEntity result) throws SdaiException {
+		if (entityDef.fieldOwners[attr_index] == null) {
+			return;
+		}
+		SSuper ssuper = entityDef.fieldOwners[attr_index].ssuper;
+		Object o;
+		if ((mode & MODE_MODE_MASK) == READ_ONLY) {
+ 			ent_index = find_entityRO(entityDef);
+ 			if (ent_index < 0) {
+				return;
+			}
+		}
+		for (int j = 0; j < lengths[ent_index]; j++) {
+			CEntity inst = instances_sim[ent_index][j];
+			try {
+				o = ssuper.getObject(inst, entityDef.attributeFields[attr_index]);
+			} catch (java.lang.IllegalAccessException ex) {
+				throw new SdaiException(SdaiException.SY_ERR);
+			}
+			if (o == used) {
+				if (result.myType == null || result.myType.express_type == DataType.LIST) {
+					result.addAtTheEnd(inst, null);
+				} else {
+					result.setForNonList(inst, result.myLength, null, null);
+				}
+			} else if (o instanceof CAggregate) {
+				((CAggregate)o).usedin(used, inst, result);
+			}
+		}
+	}
+
+
+	void scanForUsers(StaticFields staticFields, CEntity used, CEntityDefinition entityDef, int ent_index,
+			AEntity result) throws SdaiException {
+		if ((mode & MODE_MODE_MASK) == READ_ONLY) {
+ 			ent_index = find_entityRO(entityDef);
+ 			if (ent_index < 0) {
+				return;
+			}
+		}
+		for (int j = 0; j < lengths[ent_index]; j++) {
+			CEntity inst = instances_sim[ent_index][j];
+			inst.search_for_user(staticFields, used, entityDef, result);
+		}
+	}
+
+
+	void scanForRefChange(StaticFields staticFields, CEntity old, CEntity newer, int ent_index,
+			CEntityDefinition entityDef, boolean save4undo) throws SdaiException {
+		if ((mode & MODE_MODE_MASK) == READ_ONLY) {
+ 			ent_index = find_entityRO(entityDef);
+ 			if (ent_index < 0) {
+				return;
+			}
+		}
+		for (int j = 0; j < lengths[ent_index]; j++) {
+			CEntity inst = instances_sim[ent_index][j];
+			if (inst == old && substitute_operation) {
+				continue;
+			}
+			inst.search_for_ref_change(staticFields, old, newer, entityDef, save4undo);
+		}
+	}
+
+
+	void scanToSetModifiedFlag(StaticFields staticFields, CEntity target, int ent_index,
+			CEntityDefinition entityDef) throws SdaiException {
+		if ((mode & MODE_MODE_MASK) == READ_ONLY) {
+ 			ent_index = find_entityRO(entityDef);
+ 			if (ent_index < 0) {
+				return;
+			}
+		}
+		for (int j = 0; j < lengths[ent_index]; j++) {
+			CEntity inst = instances_sim[ent_index][j];
+			inst.if_referencing_mark_as_modified(staticFields, target, entityDef);
+		}
+	}
+
+
+	void scanForUnset(StaticFields staticFields, CEntity target, int ent_index,
+			CEntityDefinition entityDef, boolean replace_by_connector) throws SdaiException {
+		if ((mode & MODE_MODE_MASK) == READ_ONLY) {
+ 			ent_index = find_entityRO(entityDef);
+ 			if (ent_index < 0) {
+				return;
+			}
+		}
+		for (int j = 0; j < lengths[ent_index]; j++) {
+			CEntity inst = instances_sim[ent_index][j];
+			inst.search_for_unset(staticFields, target, entityDef, replace_by_connector);
+		}
+	}
+
+
+	Value scanForCheck(StaticFields staticFields, CEntity target, int ent_index,
+			CEntityDefinition entityDef, CEntity_definition new_def) throws SdaiException {
+		if ((mode & MODE_MODE_MASK) == READ_ONLY) {
+ 			ent_index = find_entityRO(entityDef);
+ 			if (ent_index < 0) {
+				return null;
+			}
+		}
+		for (int j = 0; j < lengths[ent_index]; j++) {
+			CEntity inst = instances_sim[ent_index][j];
+			Value val = inst.search_for_check(staticFields, target, entityDef, new_def);
+			if (val != null) {
+				return val;
+			}
+		}
+		return null;
+	}
+
+
+	void scanForRefMove(StaticFields staticFields, CEntity old, CEntity newer, int ent_index,
+			CEntityDefinition entityDef, boolean save4undo) throws SdaiException {
+		if ((mode & MODE_MODE_MASK) == READ_ONLY) {
+ 			ent_index = find_entityRO(entityDef);
+ 			if (ent_index < 0) {
+				return;
+			}
+		}
+		for (int j = 0; j < lengths[ent_index]; j++) {
+			CEntity inst = instances_sim[ent_index][j];
+			inst.search_for_ref_move(staticFields, old, newer, entityDef, save4undo);
+		}
+	}
+
+
+	CEntity [] scanForRoles(StaticFields staticFields, CEntity role_value, int ent_index,
+			CEntityDefinition entityDef, AAttribute result, ASdaiModel modelDomain,
+			ListElement l_el, int f_index, CEntity [] ref_instances, int [] res, int ref_inst_count) throws SdaiException {
+		if ((mode & MODE_MODE_MASK) == READ_ONLY) {
+ 			ent_index = find_entityRO(entityDef);
+ 			if (ent_index < 0) {
+ 				res[0] = f_index;
+				res[1] = ref_inst_count;
+				return ref_instances;
+			}
+		}
+		for (int j = 0; j < lengths[ent_index]; j++) {
+			CEntity inst = instances_sim[ent_index][j];
+			if (!inst.search_if_referenced(staticFields, role_value, entityDef)) {
+				continue;
+			}
+			if ((inst.instance_position & CEntity.POS_MASK) != CEntity.POS_MASK) {
+				f_index = inst.findInstanceRoles2(role_value, entityDef, result, modelDomain, l_el, f_index);
+				inst.instance_position = (inst.instance_position & CEntity.FLG_MASK) | CEntity.POS_MASK;
+				if (ref_instances == null) {
+					ref_instances = new CEntity[REFS_ARRAY_SIZE];
+				} else if (ref_inst_count >= ref_instances.length) {
+					enlarge_refs_array(ref_instances);
+				}
+				ref_instances[ref_inst_count] = inst;
+				ref_inst_count++;
+			}
+		}
+		res[0] = f_index;
+		res[1] = ref_inst_count;
+		return ref_instances;
+	}
+
+
+	private void enlarge_refs_array(CEntity [] ref_instances) {
+		int old_length = ref_instances.length;
+		int new_length = old_length * 2;
+		CEntity new_refs [] = new CEntity[new_length];
+		System.arraycopy(ref_instances, 0, new_refs, 0, old_length);
+		ref_instances = new_refs;
+	}
+
 
 
 /**
@@ -13074,9 +13416,9 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 			CEntity [] row_of_instances = instances_sim[i];
 			for (int j = 0; j < lengths[i]; j++) {
 				if (row_of_instances[j].owning_model == null) {
-					String base = SdaiSession.line_separator + "Invalid entity instance was found!" + 
-					SdaiSession.line_separator + "   Model: " + name + 
-					SdaiSession.line_separator + "   Instance id: #" + row_of_instances[j].instance_identifier + 
+					String base = SdaiSession.line_separator + "Invalid entity instance was found!" +
+					SdaiSession.line_separator + "   Model: " + name +
+					SdaiSession.line_separator + "   Instance id: #" + row_of_instances[j].instance_identifier +
 					SdaiSession.line_separator + text;
 					throw new SdaiException(SdaiException.SY_ERR, base);
 				}
@@ -13138,7 +13480,7 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 			boolean deletedExternalData) throws SdaiException {
 		repository.removeLoadedEntityExternalData(instance, deletedExternalData);
 	}
-	
+
 	// SdaiModelConnector implementation
 
 	/**

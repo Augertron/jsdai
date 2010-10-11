@@ -37,7 +37,6 @@ import jsdai.query.SdaiModelRef;
  * Applications shall use EEntity instead.
  */
 public abstract class CEntity extends InverseEntity implements EEntity, SdaiEventSource {
-
 /**
 	Identifier of the entity instance represented by this class.
 */
@@ -1391,7 +1390,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		if (attr != null) {
 			return attr;
 		} else {
-			throw new SdaiException(SdaiException.AT_NDEF);
+			throw new SdaiException(SdaiException.AT_NVLD);
 		}
 //		} // syncObject
 	}
@@ -1527,6 +1526,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		if (result.myType != null) {
 			throw new SdaiException(SdaiException.AI_NVLD, result);
 		}
+		if (owning_model.optimized) {
+			findEntityInstanceUsersNoInverse(modelDomain, result);
+			return;
+		}
 		EEntity_definition definition = getInstanceType();
 		if(modelDomain == null) {
 			owning_model.provideInstancesForUsersIfNeeded(definition, null, false);
@@ -1601,6 +1604,265 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	}
 
 
+	private void findEntityInstanceUsersNoInverse(ASdaiModel modelDomain, AEntity result) 
+			throws SdaiException {
+		int i, j;
+		SdaiModel model;
+		CEntityDefinition entityDef;
+
+		StaticFields staticFields = StaticFields.get();
+		staticFields.context_schema = owning_model.underlying_schema;
+		CEntity_definition this_def = (CEntity_definition)getInstanceType();
+		ASdaiModel act_models = owning_model.repository.session.active_models;
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			if (modelDomain == null || modelDomain.myLength == 0) {
+				if (modelDomain == null && owning_model != model) {
+					continue;
+				}
+			} else {
+				if (staticFields.it == null) {
+					staticFields.it = modelDomain.createIterator();
+				} else {
+					modelDomain.attachIterator(staticFields.it);
+				}
+				boolean ignore_model = true;
+				while (staticFields.it.next()) {
+					if (modelDomain.getCurrentMemberObject(staticFields.it) == model) {
+						ignore_model = false;
+						break;
+					}
+				}
+				if (ignore_model) {
+					continue;
+				}
+			}
+			SchemaData sch_data = model.underlying_schema.owning_model.schemaData;
+			if (sch_data.involved == 0) {
+				continue;
+			}
+			if (sch_data.involved > 0) {
+				for (j = 0; j < sch_data.involved; j++) {
+					entityDef = sch_data.entities[sch_data.aux[j]];
+					model.scanForUsers(staticFields, this, entityDef, sch_data.aux[j], result);
+				}
+				continue;
+			}
+			sch_data.involved = 0;
+			for (j = 0; j < sch_data.noOfEntityDataTypes; j++) {
+				entityDef = sch_data.entities[j];
+				CExplicit_attribute [] attributes = entityDef.attributes;
+				if (attributes == null) {
+					continue;
+				}
+				boolean found = false;
+				for (int k = 0; k < attributes.length; k++) {
+					if (entityDef.fieldOwners[k] == null) {
+						continue;
+					}
+					found = ((AttributeDefinition)attributes[k]).search_attribute(this_def);
+					if (found) {
+						break;
+					}
+				}
+//System.out.println("CEntity  checked entity: " + ((CEntity_definition)entityDef).getName(null) + "  found: " + found);
+				if (found) {
+					if (staticFields.entity_values == null) {
+						staticFields.entity_values = new ComplexEntityValue();
+					}
+					sch_data.aux[sch_data.involved] = j;
+					sch_data.involved++;
+					model.scanForUsers(staticFields, this, entityDef, j, result);
+				}
+			}
+		}
+
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			model.underlying_schema.owning_model.schemaData.involved = -1;
+		}
+		staticFields.context_schema = null;
+	}
+
+
+	void search_for_user(StaticFields staticFields, CEntity target, CEntityDefinition def, AEntity users)
+			throws SdaiException {
+		owning_model.prepareAll(staticFields.entity_values, (CEntity_definition)def);
+		getAll(staticFields.entity_values);
+		for (int i = 0; i < def.noOfPartialEntityTypes; i++) {
+			EntityValue ent_val = staticFields.entity_values.entityValues[i];
+			for (int j = 0; j < ent_val.count; j++) {
+				ent_val.values[j].find_user(this, target, users);
+			}
+		}
+	}
+
+
+	void search_for_ref_change(StaticFields staticFields, CEntity old, CEntity newer, 
+			CEntityDefinition def, boolean save4undo) throws SdaiException {
+
+		owning_model.prepareAll(staticFields.entity_values2, (CEntity_definition)def);
+		getAll(staticFields.entity_values2);
+		boolean found = false;
+		for (int i = 0; i < def.noOfPartialEntityTypes; i++) {
+			EntityValue ent_val = staticFields.entity_values2.entityValues[i];
+			for (int j = 0; j < ent_val.count; j++) {
+				found = ent_val.values[j].user_exists(old);
+				if (found) {
+					break;
+				}
+			}
+			if (found) {
+				break;
+			}
+		}
+		if (found) {
+			if (save4undo) {
+				owning_model.repository.session.undoRedoModifyPrepare(this);
+			}
+			if (owning_model != null && owning_model.mode == SdaiModel.READ_ONLY) {
+				String base = SdaiSession.line_separator + AdditionalMessages.EI_ROMD + 
+				SdaiSession.line_separator + AdditionalMessages.RD_MODL + owning_model.name + 
+				SdaiSession.line_separator + AdditionalMessages.RD_INST + instance_identifier;
+				throw new SdaiException(SdaiException.MX_NRW, base);
+			}
+			changeReferences(old, newer);
+			modified();
+		}
+	}
+
+
+	void if_referencing_mark_as_modified(StaticFields staticFields, CEntity target, 
+			CEntityDefinition def) throws SdaiException {
+		owning_model.prepareAll(staticFields.entity_values, (CEntity_definition)def);
+		getAll(staticFields.entity_values);
+		for (int i = 0; i < def.noOfPartialEntityTypes; i++) {
+			EntityValue ent_val = staticFields.entity_values.entityValues[i];
+			for (int j = 0; j < ent_val.count; j++) {
+				if (ent_val.values[j].user_exists(target)) {
+					modified();
+					return;
+				}
+			}
+		}
+	}
+
+
+	void search_for_unset(StaticFields staticFields, CEntity target, 
+			CEntityDefinition def, boolean replace_by_connector) throws SdaiException {
+		
+		owning_model.prepareAll(staticFields.entity_values, (CEntity_definition)def);
+		getAll(staticFields.entity_values);
+		boolean found = false;
+		for (int i = 0; i < def.noOfPartialEntityTypes; i++) {
+			EntityValue ent_val = staticFields.entity_values.entityValues[i];
+			for (int j = 0; j < ent_val.count; j++) {
+				found = ent_val.values[j].user_exists(target);
+				if (found) {
+					break;
+				}
+			}
+			if (found) {
+				break;
+			}
+		}
+		if (found) {
+			if (replace_by_connector) {
+				SdaiModel.Connector con = owning_model.newConnector(target.owning_model, 
+					((CEntityDefinition)target.getInstanceType()).getCorrectName(), 
+					target.instance_identifier, this);
+				changeReferences(target, con);
+			} else {
+				changeReferences(target, null);
+			}
+		}
+	}
+
+
+	Value search_for_check(StaticFields staticFields, CEntity target, 
+			CEntityDefinition owner_def, CEntity_definition new_def) throws SdaiException {
+		owning_model.prepareAll(staticFields.entity_values, (CEntity_definition)owner_def);
+		getAll(staticFields.entity_values);
+		for (int i = 0; i < owner_def.noOfPartialEntityTypes; i++) {
+			EntityValue ent_val = staticFields.entity_values.entityValues[i];
+			if (ent_val == null) {
+				continue;
+			}
+			CEntity_definition p_def = ent_val.def;
+			CExplicit_attribute[] expl_attrs = ((CEntityDefinition)p_def).takeExplicit_attributes();
+			for (int j = 0; j < p_def.noOfPartialAttributes; j++) {
+				Value val = ent_val.values[j];
+				Value res = val.examine_value(this, target, new_def, (DataType)expl_attrs[j].getDomain(null), expl_attrs[j]);
+				if (res != null) {
+					return res;
+				} 
+			}
+		}
+		return null;
+	}
+
+
+	void search_for_ref_move(StaticFields staticFields, CEntity old, CEntity newer, 
+			CEntityDefinition def, boolean save4undo) throws SdaiException {
+		
+		owning_model.prepareAll(staticFields.entity_values, (CEntity_definition)def);
+		getAll(staticFields.entity_values);
+		boolean found = false;
+		for (int i = 0; i < def.noOfPartialEntityTypes; i++) {
+			EntityValue ent_val = staticFields.entity_values.entityValues[i];
+			for (int j = 0; j < ent_val.count; j++) {
+				found = ent_val.values[j].user_exists(old);
+				if (found) {
+					break;
+				}
+			}
+			if (found) {
+				break;
+			}
+		}
+		if (found) {
+			if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
+				throw new SdaiException(SdaiException.MX_NRW, owning_model);
+			}
+			if (save4undo) {
+				owning_model.repository.session.undoRedoModifyPrepare(this);
+			}
+			old.instance_identifier = -old.instance_identifier;
+			newer.instance_identifier = -newer.instance_identifier;
+			changeReferences(old, newer);
+			newer.instance_identifier = -newer.instance_identifier;
+			if (old.instance_identifier<0) {
+				old.instance_identifier = -old.instance_identifier;
+			}
+		}
+	}
+
+
+	boolean search_if_referenced(StaticFields staticFields, CEntity role_value, 
+			CEntityDefinition def) throws SdaiException {
+		
+		owning_model.prepareAll(staticFields.entity_values, (CEntity_definition)def);
+		getAll(staticFields.entity_values);
+		boolean found = false;
+		for (int i = 0; i < def.noOfPartialEntityTypes; i++) {
+			EntityValue ent_val = staticFields.entity_values.entityValues[i];
+			for (int j = 0; j < ent_val.count; j++) {
+				found = ent_val.values[j].user_exists(role_value);
+				if (found) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+
 	public void findEntityInstanceUsedin(EAttribute role,
 			ASdaiModel modelDomain, AEntity result) throws SdaiException {
 //		synchronized (syncObject) {
@@ -1615,6 +1877,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		}
 		if (result.myType != null) {
 			throw new SdaiException(SdaiException.AI_NVLD, result);
+		}
+		if (owning_model.optimized) {
+			findEntityInstanceUsedinNoInverse(role, modelDomain, result);
+			return;
 		}
 		provideInstancesInsideUsedin(role, modelDomain);
 		Object o = inverseList;
@@ -1654,6 +1920,132 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	}
 
 
+	private void findEntityInstanceUsedinNoInverse(EAttribute role,
+			ASdaiModel modelDomain, AEntity result) throws SdaiException {
+		int i, j, k;
+		SdaiModel model;
+		CEntityDefinition entityDef;
+		int [] aux2;
+
+		ASdaiModel act_models = owning_model.repository.session.active_models;
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			if (modelDomain == null || modelDomain.myLength == 0) {
+				if (modelDomain == null && owning_model != model) {
+					continue;
+				}
+			} else {
+				StaticFields staticFields = StaticFields.get();
+				if (staticFields.it == null) {
+					staticFields.it = modelDomain.createIterator();
+				} else {
+					modelDomain.attachIterator(staticFields.it);
+				}
+				boolean ignore_model = true;
+				while (staticFields.it.next()) {
+					if (modelDomain.getCurrentMemberObject(staticFields.it) == model) {
+						ignore_model = false;
+						break;
+					}
+				}
+				if (ignore_model) {
+					continue;
+				}
+			}
+			SchemaData sch_data = model.underlying_schema.owning_model.schemaData;
+			if (sch_data.involved == 0) {
+				continue;
+			}
+			if (sch_data.involved > 0) {
+				for (j = 0; j < sch_data.involved; j++) {
+					entityDef = sch_data.entities[sch_data.aux[j]];
+					model.scanEntityInstances(this, entityDef, sch_data.aux[j], sch_data.aux2[j], result);
+				}
+				continue;
+			}
+			sch_data.involved = 0;
+			CEntityDefinition attr_owner = null;
+			if (((AttributeDefinition)role).attr_tp == AttributeDefinition.EXPLICIT) {
+				attr_owner = (CEntityDefinition)((CExplicit_attribute)role).getParent_entity(null);
+			} else {
+				continue;
+			}
+			int index = sch_data.find_entity(0, sch_data.noOfEntityDataTypes - 1, attr_owner);
+			if (index < 0) {
+				continue;
+			}
+			int subtypes [] = sch_data.schema.getSubtypes(index);
+			int subt_ind;
+			aux2 = sch_data.getAuxiliaryArray();
+			for (j = -1; j < subtypes.length; j++) {
+				if (j < 0) {
+					subt_ind = index;
+				} else {
+					subt_ind = subtypes[j];
+				}
+				entityDef = sch_data.entities[subt_ind];
+				CExplicit_attribute [] attributes = entityDef.attributes;
+				if (attributes == null) {
+					continue;
+				}
+				boolean found = false;
+				for (k = 0; k < attributes.length; k++) {
+					if (attributes[k] == role) {
+						found = true;
+						break;
+					}
+				}
+				if (found) {
+					sch_data.aux[sch_data.involved] = subt_ind;
+					aux2[sch_data.involved] = k;
+					sch_data.involved++;
+					model.scanEntityInstances(this, entityDef, subt_ind, k, result);
+					continue;
+				}
+				for (int m = 0; m < entityDef.noOfPartialEntityTypes; m++) {
+					CEntityDefinition entity;
+					if (entityDef.complex == 2) {
+						entity = entityDef.partialEntityTypes[m];
+					} else {
+						entity = entityDef.partialEntityTypes[entityDef.externalMappingIndexing[m]];
+					}
+					boolean processed = false;
+					for (k = 0; k < entity.attributesRedecl.length; k++) {
+						EAttribute attrib = entity.attributesRedecl[k];
+						if (attrib != role) {
+							continue;
+						}
+						processed = true;
+						int attr_index = GetHeadAttribute(entityDef, (CExplicit_attribute)attrib);
+						if (attr_index < 0) {
+							break;
+						}
+						sch_data.aux[sch_data.involved] = subt_ind;
+						aux2[sch_data.involved] = attr_index;
+						sch_data.involved++;
+						model.scanEntityInstances(this, entityDef, subt_ind, attr_index, result);
+						break;
+					}
+					if (processed) {
+						break;
+					}
+				}
+			}
+		}
+
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			model.underlying_schema.owning_model.schemaData.involved = -1;
+		}
+	}
+
+
 	public int getAttributeValueBound(EAttribute attribute) throws SdaiException {
 		throw new SdaiException(SdaiException.FN_NAVL);
 	}
@@ -1671,51 +2063,46 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		if (((AEntity)result).myType != null) {
 			throw new SdaiException(SdaiException.AI_NVLD, result);
 		}
-		CEntity inst;
-		CEntityDefinition entityDef;
-		Inverse inv;
 		ListElement l_el = new ListElement(null);
-		int f_index = -1;
-		Object o = inverseList;
-		while (o != null) {
-			if (o instanceof Inverse) {
-				inv = (Inverse) o;
-				inst = (CEntity)inv.value;
-				//if (inst.instance_position >= 0) {
-                if ((inst.instance_position & POS_MASK) != POS_MASK) {  //--VV--
-					entityDef = (CEntityDefinition)inst.getInstanceType();
-//					if (!entityDef.used_for_roles) {
+		int f_index;
+		if (owning_model.optimized) {
+			f_index = findInstanceRolesNoInverse(modelDomain, result, l_el);
+		} else {
+			f_index = -1;
+			CEntity inst;
+			CEntityDefinition entityDef;
+			Inverse inv;
+			Object o = inverseList;
+			while (o != null) {
+				if (o instanceof Inverse) {
+					inv = (Inverse) o;
+					inst = (CEntity)inv.value;
+					if ((inst.instance_position & POS_MASK) != POS_MASK) {  //--VV--
+						entityDef = (CEntityDefinition)inst.getInstanceType();
 						f_index = inst.findInstanceRoles2(this, entityDef, result, modelDomain, l_el, f_index);
-//						entityDef.used_for_roles = true;
-//					}
-					//inst.instance_position = -1;
-                    inst.instance_position = (inst.instance_position & FLG_MASK) | POS_MASK;    //--VV--
-				}
-				o = inv.next;
-			} else {
-				inst = (CEntity)o;
-				//if (inst.instance_position >= 0) {
-                if ((inst.instance_position & POS_MASK) != POS_MASK) {  //--VV--
-					entityDef = (CEntityDefinition)inst.getInstanceType();
-//					if (!entityDef.used_for_roles) {
+						inst.instance_position = (inst.instance_position & FLG_MASK) | POS_MASK;    //--VV--
+					}
+					o = inv.next;
+				} else {
+					inst = (CEntity)o;
+					if ((inst.instance_position & POS_MASK) != POS_MASK) {  //--VV--
+						entityDef = (CEntityDefinition)inst.getInstanceType();
 						f_index = inst.findInstanceRoles2(this, entityDef, result, modelDomain, l_el, f_index);
-//					}
+					}
+					o = null;
 				}
-				o = null;
 			}
-		}
-		o = inverseList;
-		while (o != null) {
-			if (o instanceof Inverse) {
-				inv = (Inverse) o;
-				inst = (CEntity)inv.value;
+			o = inverseList;
+			while (o != null) {
+				if (o instanceof Inverse) {
+					inv = (Inverse) o;
+					inst = (CEntity)inv.value;
 				//inst.instance_position = 0;
-                inst.instance_position = inst.instance_position & FLG_MASK; //--VV--
-//				entityDef = (CEntityDefinition)inst.getInstanceType();
-//				entityDef.used_for_roles = false;
-				o = inv.next;
-			} else {
-				o = null;
+					inst.instance_position = inst.instance_position & FLG_MASK; //--VV--
+					o = inv.next;
+				} else {
+					o = null;
+				}
 			}
 		}
 		if (f_index < 0) {
@@ -1768,6 +2155,107 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	}
 
 
+	private int findInstanceRolesNoInverse(ASdaiModel modelDomain, AAttribute result, ListElement l_el)
+			throws SdaiException {
+		int i, j;
+		SdaiModel model;
+		CEntityDefinition entityDef;
+		CEntity [] ref_instances = null;
+		int ref_inst_count = 0;
+
+		int [] param = new int[2];
+		int f_index = -1;
+		StaticFields staticFields = StaticFields.get();
+		staticFields.context_schema = owning_model.underlying_schema;
+		CEntity_definition this_def = (CEntity_definition)getInstanceType();
+		ASdaiModel act_models = owning_model.repository.session.active_models;
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			if (modelDomain == null || modelDomain.myLength == 0) {
+				if (modelDomain == null && owning_model != model) {
+					continue;
+				}
+			} else {
+				if (staticFields.it == null) {
+					staticFields.it = modelDomain.createIterator();
+				} else {
+					modelDomain.attachIterator(staticFields.it);
+				}
+				boolean ignore_model = true;
+				while (staticFields.it.next()) {
+					if (modelDomain.getCurrentMemberObject(staticFields.it) == model) {
+						ignore_model = false;
+						break;
+					}
+				}
+				if (ignore_model) {
+					continue;
+				}
+			}
+			SchemaData sch_data = model.underlying_schema.owning_model.schemaData;
+			if (sch_data.involved == 0) {
+				continue;
+			}
+			if (sch_data.involved > 0) {
+				for (j = 0; j < sch_data.involved; j++) {
+					entityDef = sch_data.entities[sch_data.aux[j]];
+					ref_instances = model.scanForRoles(staticFields, this, sch_data.aux[j], entityDef, result, 
+						modelDomain, l_el, f_index, ref_instances, param, ref_inst_count);
+					f_index = param[0];
+					ref_inst_count = param[1];
+				}
+				continue;
+			}
+			sch_data.involved = 0;
+			for (j = 0; j < sch_data.noOfEntityDataTypes; j++) {
+				entityDef = sch_data.entities[j];
+				CExplicit_attribute [] attributes = entityDef.attributes;
+				if (attributes == null) {
+					continue;
+				}
+				boolean found = false;
+				for (int k = 0; k < attributes.length; k++) {
+					if (entityDef.fieldOwners[k] == null) {
+						continue;
+					}
+					found = ((AttributeDefinition)attributes[k]).search_attribute(this_def);
+					if (found) {
+						break;
+					}
+				}
+				if (found) {
+					if (staticFields.entity_values == null) {
+						staticFields.entity_values = new ComplexEntityValue();
+					}
+					sch_data.aux[sch_data.involved] = j;
+					sch_data.involved++;
+					ref_instances = model.scanForRoles(staticFields, this, j, entityDef, result, 
+						modelDomain, l_el, f_index, ref_instances, param, ref_inst_count);
+					f_index = param[0];
+					ref_inst_count = param[1];
+				}
+			}
+		}
+
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			model.underlying_schema.owning_model.schemaData.involved = -1;
+		}
+		staticFields.context_schema = null;
+
+		for (i = 0; i < ref_inst_count; i++) {
+			ref_instances[i].instance_position = ref_instances[i].instance_position & FLG_MASK;
+		}
+		return f_index;
+	}
+
+
 /**
 	Searches for attributes by which the submitted instance references the
 	current instance provided the owning model of the submitted instance
@@ -1775,7 +2263,7 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	or coincides with the owning model of this instance (if the set is empty).
 	This method is invoked in <code>findInstanceRoles</code>.
 */
-	private int findInstanceRoles2(CEntity referenced, CEntityDefinition edef,
+	int findInstanceRoles2(CEntity referenced, CEntityDefinition edef,
 			AAttribute result, ASdaiModel domain, ListElement l_el, int f_index) throws SdaiException {
 		SdaiModel model = referenced.owning_model;
 		if (domain == null) {
@@ -1956,7 +2444,11 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		if (session.undo_redo_file != null && owning_model.undo_delete >= 0) {
 			save4undo = true;
 		}
-		changeInverseReferences(this, null, false, false, save4undo);
+		if (owning_model.optimized) {
+			changeInverseReferencesNoInverse(this, null, save4undo);
+		} else {
+			changeInverseReferences(this, null, false, save4undo);
+		}
 
 		CEntity_definition edef = (CEntity_definition)getInstanceType();
 		SchemaData sch_data = owning_model.underlying_schema.modelDictionary.schemaData;
@@ -2139,7 +2631,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 						return;
 					}
 					if (old_value instanceof CEntity) {
-						removeFromInverseList((CEntity)old_value);
+						CEntity old_ref = (CEntity)old_value;
+						if (!old_ref.owning_model.optimized) {
+							removeFromInverseList(old_ref);
+						}
 					} else if (old_value instanceof CAggregate) {
 						((CAggregate)old_value).unsetAllByRef(this);
 					}
@@ -2163,7 +2658,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 						throw new SdaiException(SdaiException.SY_ERR, ex);
 					}
 					if (value instanceof CEntity) {
-						addToInverseList((CEntity)value);
+						CEntity ref = (CEntity)value;
+						if (!ref.owning_model.optimized) {
+							addToInverseList(ref);
+						}
 					}
 					modified();
 					return;
@@ -2259,7 +2757,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 						}
 						Object old_value_obj = ssuper.getObject(this, field);
 						if (old_value_obj instanceof CEntity) {
-							removeFromInverseList((CEntity)old_value_obj);
+							CEntity old_ref = (CEntity)old_value_obj;
+							if (!old_ref.owning_model.optimized) {
+								removeFromInverseList(old_ref);
+							}
 						} else if (old_value_obj instanceof CAggregate) {
 							((CAggregate)old_value_obj).unsetAllByRef(this);
 						}
@@ -2376,7 +2877,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 						}
 						Object old_value_obj = ssuper.getObject(this, field);
 						if (old_value_obj instanceof CEntity) {
-							removeFromInverseList((CEntity)old_value_obj);
+							CEntity old_ref = (CEntity)old_value_obj;
+							if (!old_ref.owning_model.optimized) {
+								removeFromInverseList(old_ref);
+							}
 						} else if (old_value_obj instanceof CAggregate) {
 							((CAggregate)old_value_obj).unsetAllByRef(this);
 						}
@@ -2465,7 +2969,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 						}
 						Object old_value_obj = ssuper.getObject(this, field);
 						if (old_value_obj instanceof CEntity) {
-							removeFromInverseList((CEntity)old_value_obj);
+							CEntity old_ref = (CEntity)old_value_obj;
+							if (!old_ref.owning_model.optimized) {
+								removeFromInverseList(old_ref);
+							}
 						} else if (old_value_obj instanceof CAggregate) {
 							((CAggregate)old_value_obj).unsetAllByRef(this);
 						}
@@ -2548,7 +3055,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 							old_value_obj = ssuper.getObject(this, field);
 							if (old_value_obj != null) {
 								if (old_value_obj instanceof CEntity) {
-									removeFromInverseList((CEntity)old_value_obj);
+									CEntity old_ref = (CEntity)old_value_obj;
+									if (!old_ref.owning_model.optimized) {
+										removeFromInverseList(old_ref);
+									}
 								} else if (old_value_obj instanceof CAggregate) {
 									((CAggregate)old_value_obj).unsetAllByRef(this);
 								}
@@ -2671,7 +3181,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 					throw new SdaiException(SdaiException.SY_ERR, ex);
 				}
 				if (old_value instanceof CEntity) {
-					removeFromInverseList((CEntity)old_value);
+					CEntity old_ref = (CEntity)old_value;
+					if (!old_ref.owning_model.optimized) {
+						removeFromInverseList(old_ref);
+					}
 				} else if (old_value instanceof CAggregate) {
 					((CAggregate)old_value).unsetAllByRef(this);
 				}
@@ -6188,6 +6701,9 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 //		if (result.myType != null) {
 //			throw new SdaiException(SdaiException.AI_NVLD, result);
 //		}
+		if (owning_model.optimized) {
+			return makeUsedinNoInverse(referent_def, role, modelDomain, result);
+		}
 		provideInstancesInsideUsedin(role, modelDomain);
 		if (((AttributeDefinition)role).attr_tp == AttributeDefinition.EXPLICIT) {
 			EExplicit_attribute userAttribute = (EExplicit_attribute)role;
@@ -6300,6 +6816,129 @@ if (SdaiSession.debug2) System.out.println(" ******* result.myLength = " + resul
 		return result.myLength - number;
 //		} // syncObject
 	}
+
+
+	private int makeUsedinNoInverse(EEntity_definition referent_def, EAttribute role,
+			ASdaiModel modelDomain, AEntity result) throws SdaiException {
+		int i, j, k;
+		SdaiModel model;
+		CEntityDefinition entityDef;
+		int [] aux2;
+
+		int number = result.myLength;
+		ASdaiModel act_models = owning_model.repository.session.active_models;
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			if (modelDomain == null || modelDomain.myLength == 0) {
+				if (modelDomain == null && owning_model != model) {
+					continue;
+				}
+			} else {
+				StaticFields staticFields = StaticFields.get();
+				if (staticFields.it == null) {
+					staticFields.it = modelDomain.createIterator();
+				} else {
+					modelDomain.attachIterator(staticFields.it);
+				}
+				boolean ignore_model = true;
+				while (staticFields.it.next()) {
+					if (modelDomain.getCurrentMemberObject(staticFields.it) == model) {
+						ignore_model = false;
+						break;
+					}
+				}
+				if (ignore_model) {
+					continue;
+				}
+			}
+			SchemaData sch_data = model.underlying_schema.owning_model.schemaData;
+			if (sch_data.involved == 0) {
+				continue;
+			}
+			if (sch_data.involved > 0) {
+				for (j = 0; j < sch_data.involved; j++) {
+					entityDef = sch_data.entities[sch_data.aux[j]];
+					model.scanEntityInstances(this, entityDef, sch_data.aux[j], sch_data.aux2[j], result);
+				}
+				continue;
+			}
+			sch_data.involved = 0;
+			int index = sch_data.find_entity(0, sch_data.noOfEntityDataTypes - 1, (CEntityDefinition)referent_def);
+			if (index < 0) {
+				continue;
+			}
+			int subtypes [] = sch_data.schema.getSubtypes(index);
+			int subt_ind;
+			aux2 = sch_data.getAuxiliaryArray();
+			for (j = -1; j < subtypes.length; j++) {
+				if (j < 0) {
+					subt_ind = index;
+				} else {
+					subt_ind = subtypes[j];
+				}
+				entityDef = sch_data.entities[subt_ind];
+				CExplicit_attribute [] attributes = entityDef.attributes;
+				if (attributes == null) {
+					continue;
+				}
+				boolean found = false;
+				for (k = 0; k < attributes.length; k++) {
+					if (attributes[k] == role) {
+						found = true;
+						break;
+					}
+				}
+				if (found) {
+					sch_data.aux[sch_data.involved] = subt_ind;
+					aux2[sch_data.involved] = k;
+					sch_data.involved++;
+					model.scanEntityInstances(this, entityDef, subt_ind, k, result);
+					continue;
+				}
+				for (int m = 0; m < entityDef.noOfPartialEntityTypes; m++) {
+					CEntityDefinition entity;
+					if (entityDef.complex == 2) {
+						entity = entityDef.partialEntityTypes[m];
+					} else {
+						entity = entityDef.partialEntityTypes[entityDef.externalMappingIndexing[m]];
+					}
+					boolean processed = false;
+					for (k = 0; k < entity.attributesRedecl.length; k++) {
+						EAttribute attrib = entity.attributesRedecl[k];
+						if (attrib != role) {
+							continue;
+						}
+						processed = true;
+						int attr_index = GetHeadAttribute(entityDef, (CExplicit_attribute)attrib);
+						if (attr_index < 0) {
+							break;
+						}
+						sch_data.aux[sch_data.involved] = subt_ind;
+						aux2[sch_data.involved] = attr_index;
+						sch_data.involved++;
+						model.scanEntityInstances(this, entityDef, subt_ind, attr_index, result);
+						break;
+					}
+					if (processed) {
+						break;
+					}
+				}
+			}
+		}
+
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			model.underlying_schema.owning_model.schemaData.involved = -1;
+		}
+		return result.myLength - number;
+	}
+
 
 	private void provideInstancesInsideUsedin(EAttribute role,
 											 ASdaiModel modelDomain) throws SdaiException {
@@ -7501,11 +8140,15 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 		if (value == null) {
 			throw new SdaiException(SdaiException.VA_NSET);
 		}
-		if (((CEntity)value).owning_model == null) {
-			throw new SdaiException(SdaiException.EI_NVLD, (CEntity)value);
+		CEntity ref = (CEntity)value;
+		if (ref.owning_model == null) {
+			throw new SdaiException(SdaiException.EI_NVLD, ref);
 		}
 		if (old_value instanceof CEntity) {
-			removeFromInverseList((CEntity)old_value);
+			CEntity old_ref = (CEntity)old_value;
+			if (!old_ref.owning_model.optimized) {
+				removeFromInverseList(old_ref);
+			}
 		}
 /*try {
 if (instance_identifier == 8693) {
@@ -7530,7 +8173,9 @@ if (((CEntity)value).instance_identifier == 8693) throw new SdaiException(SdaiEx
 } catch (SdaiException ex) {
 ex.printStackTrace();
 }*/
-		addToInverseList((CEntity)value);
+		if (!ref.owning_model.optimized) {
+			addToInverseList(ref);
+		}
 		owning_model.repository.session.undoRedoModifyPrepare(this);
 		modified();
 		return value;
@@ -7882,7 +8527,10 @@ if (instance_identifier == 49) System.out.println("CEntity  XXXXXXX  this: " + t
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
 		if (old_value instanceof CEntity) {
-			removeFromInverseList((CEntity)old_value);
+			CEntity old_ref = (CEntity)old_value;
+			if (!old_ref.owning_model.optimized) {
+				removeFromInverseList(old_ref);
+			}
 		} else if (old_value instanceof CAggregate) {
 			((CAggregate)old_value).unsetAllByRef(this);
 		}
@@ -7936,7 +8584,10 @@ else System.out.println("   myType is POSITIVE");
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
 		if (attr_v instanceof CEntity) {
-			removeFromInverseList((CEntity)attr_v);
+			CEntity old_ref = (CEntity)attr_v;
+			if (!old_ref.owning_model.optimized) {
+				removeFromInverseList(old_ref);
+			}
 		} else if (attr_v instanceof CAggregate) {
 			((CAggregate)attr_v).unsetAllByRef(this);
 		}
@@ -8133,7 +8784,10 @@ else System.out.println("   myType is POSITIVE");
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
 		if (old_value instanceof CEntity) {
-			removeFromInverseList((CEntity)old_value);
+			CEntity old_ref = (CEntity)old_value;
+			if (!old_ref.owning_model.optimized) {
+				removeFromInverseList(old_ref);
+			}
 		} else if (old_value instanceof CAggregate) {
 			((CAggregate)old_value).unsetAllByRef(this);
 		}
@@ -8192,7 +8846,10 @@ else System.out.println("   myType is POSITIVE");
 				throw new SdaiException(SdaiException.SY_ERR);
 			}
 			if (old_value instanceof CEntity) {
-				removeFromInverseList((CEntity)old_value);
+				CEntity old_ref = (CEntity)old_value;
+				if (!old_ref.owning_model.optimized) {
+					removeFromInverseList(old_ref);
+				}
 			} else if (old_value instanceof CAggregate) {
 				((CAggregate)old_value).unsetAllByRef(this);
 			}
@@ -8223,7 +8880,10 @@ else System.out.println("   myType is POSITIVE");
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
 		if (old_value instanceof CEntity) {
-			removeFromInverseList((CEntity)old_value);
+			CEntity old_ref = (CEntity)old_value;
+			if (!old_ref.owning_model.optimized) {
+				removeFromInverseList(old_ref);
+			}
 		} else if (old_value instanceof CAggregate) {
 			((CAggregate)old_value).unsetAllByRef(this);
 		}
@@ -8354,7 +9014,10 @@ else System.out.println("   myType is POSITIVE");
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
 		if (old_value instanceof CEntity) {
-			removeFromInverseList((CEntity)old_value);
+			CEntity old_ref = (CEntity)old_value;
+			if (!old_ref.owning_model.optimized) {
+				removeFromInverseList(old_ref);
+			}
 		} else if (old_value instanceof CAggregate) {
 			((CAggregate)old_value).unsetAllByRef(this);
 		}
@@ -8537,10 +9200,11 @@ else System.out.println("   myType is POSITIVE");
 		}
 		if (old_value instanceof CEntity) {
 			CEntity to_ent = (CEntity)old_value;
-			if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+			if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+				!(owning_model.refresh_in_abort && to_ent.owning_model.modified) && !to_ent.owning_model.optimized) {
 /*System.out.println("CEntity:  old_value: #" + to_ent.instance_identifier);
 System.out.println("CEntity:  this instance being unset: #" + instance_identifier);*/
-				removeFromInverseList(to_ent);
+						removeFromInverseList(to_ent);
 			}
 		} else if (old_value instanceof SdaiModel.Connector) {
 //System.out.println("CEntity:  owning_instance: #" + instance_identifier);
@@ -8594,7 +9258,9 @@ System.out.println("CEntity:  this instance being unset: #" + instance_identifie
 		if (old_value instanceof CEntity) {
 			CEntity to_ent = (CEntity)old_value;
 			if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
-				removeFromInverseList(to_ent);
+				if (!to_ent.owning_model.optimized) {
+					removeFromInverseList(to_ent);
+				}
 			}
 		} else if (old_value instanceof SdaiModel.Connector) {
 			((SdaiModel.Connector)old_value).disconnect();
@@ -9280,7 +9946,10 @@ System.out.println("CEntity:  this instance being unset: #" + instance_identifie
 			throw new SdaiException(SdaiException.SY_ERR, ex);
 		}
 		if (old_value instanceof CEntity) {
-			removeFromInverseList((CEntity)old_value);
+			CEntity old_ref = (CEntity)old_value;
+			if (!old_ref.owning_model.optimized) {
+				removeFromInverseList(old_ref);
+			}
 		} else if (old_value instanceof CAggregate) {
 			((CAggregate)old_value).unsetAllByRef(this);
 		}
@@ -10423,7 +11092,11 @@ System.out.println("CEntity:  this instance being unset: #" + instance_identifie
 		if (session.undo_redo_file != null) {
 			save4undo = true;
 		}
-		srce.moveReferences(srce, this, save4undo);
+		if (srce.owning_model.optimized) {
+			srce.moveReferencesNoInverse(srce, this, save4undo);
+		} else {
+			srce.moveReferences(srce, this, save4undo);
+		}
 		srce.inverseList = null;
 		return this;
 //		} // syncObject
@@ -10464,7 +11137,12 @@ System.out.println("CEntity:  this instance being unset: #" + instance_identifie
 				ent_val.values[j].check_references(staticFields, null, null, this);
 			}
 		}
-		changeInverseReferences(this, null, false, false, false);
+		if (owning_model.optimized) {
+			changeInverseReferencesNoInverse(this, null, false);
+		} else {
+			changeInverseReferences(this, null, false, false);
+		}
+//owning_model.print_entity_values(staticFields.entity_values, 1106);
 		setAll(staticFields.entity_values);
 		return this;
 //		} // syncObject
@@ -10799,6 +11477,362 @@ System.out.println("CEntity:  this instance being unset: #" + instance_identifie
 		return owning_model.find_instance(0, owning_model.lengths[index] - 1, index, instance_identifier);
 	}
 
+
+	final protected void changeInverseReferencesNoInverse(CEntity old, CEntity newer, 
+			boolean save4undo) throws SdaiException {
+		int i, j;
+		SdaiModel model;
+		CEntityDefinition entityDef;
+
+		StaticFields staticFields = StaticFields.get();
+		staticFields.context_schema = owning_model.underlying_schema;
+		CEntity_definition this_def = (CEntity_definition)getInstanceType();
+		ASdaiModel act_models = owning_model.repository.session.active_models;
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			SchemaData sch_data = model.underlying_schema.owning_model.schemaData;
+			if (sch_data.involved == 0) {
+				continue;
+			}
+			if (sch_data.involved > 0) {
+				for (j = 0; j < sch_data.involved; j++) {
+					entityDef = sch_data.entities[sch_data.aux[j]];
+					model.scanForRefChange(staticFields, old, newer, sch_data.aux[j], entityDef, save4undo);
+				}
+				continue;
+			}
+			sch_data.involved = 0;
+			for (j = 0; j < sch_data.noOfEntityDataTypes; j++) {
+				entityDef = sch_data.entities[j];
+				CExplicit_attribute [] attributes = entityDef.attributes;
+				if (attributes == null) {
+					continue;
+				}
+				boolean found = false;
+				for (int k = 0; k < attributes.length; k++) {
+					if (entityDef.fieldOwners[k] == null) {
+						continue;
+					}
+					found = ((AttributeDefinition)attributes[k]).search_attribute(this_def);
+					if (found) {
+						break;
+					}
+				}
+				if (found) {
+					if (staticFields.entity_values2 == null) {
+						staticFields.entity_values2 = new ComplexEntityValue();
+					}
+					sch_data.aux[sch_data.involved] = j;
+					sch_data.involved++;
+					model.scanForRefChange(staticFields, old, newer, j, entityDef, save4undo);
+				}
+			}
+		}
+
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			model.underlying_schema.owning_model.schemaData.involved = -1;
+		}
+		staticFields.context_schema = null;
+	}
+
+
+	final protected void setModifiedFlagNoInverse() throws SdaiException {
+		int i, j;
+		SdaiModel model;
+		CEntityDefinition entityDef;
+
+		StaticFields staticFields = StaticFields.get();
+		staticFields.context_schema = owning_model.underlying_schema;
+		CEntity_definition this_def = (CEntity_definition)getInstanceType();
+		ASdaiModel act_models = owning_model.repository.session.active_models;
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			SchemaData sch_data = model.underlying_schema.owning_model.schemaData;
+			if (sch_data.involved == 0) {
+				continue;
+			}
+			if (sch_data.involved > 0) {
+				for (j = 0; j < sch_data.involved; j++) {
+					entityDef = sch_data.entities[sch_data.aux[j]];
+					model.scanToSetModifiedFlag(staticFields, this, sch_data.aux[j], entityDef);
+				}
+				continue;
+			}
+			sch_data.involved = 0;
+			for (j = 0; j < sch_data.noOfEntityDataTypes; j++) {
+				entityDef = sch_data.entities[j];
+				CExplicit_attribute [] attributes = entityDef.attributes;
+				if (attributes == null) {
+					continue;
+				}
+				boolean found = false;
+				for (int k = 0; k < attributes.length; k++) {
+					if (entityDef.fieldOwners[k] == null) {
+						continue;
+					}
+					found = ((AttributeDefinition)attributes[k]).search_attribute(this_def);
+					if (found) {
+						break;
+					}
+				}
+				if (found) {
+					if (staticFields.entity_values == null) {
+						staticFields.entity_values = new ComplexEntityValue();
+					}
+					sch_data.aux[sch_data.involved] = j;
+					sch_data.involved++;
+					model.scanToSetModifiedFlag(staticFields, this, j, entityDef);
+				}
+			}
+		}
+
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			model.underlying_schema.owning_model.schemaData.involved = -1;
+		}
+		staticFields.context_schema = null;
+	}
+
+
+	final protected void unsetInverseReferencesNoInverse(boolean unset_if_true_delete_else, 
+			boolean replace_by_connector, boolean delete_repo) throws SdaiException {
+		int i, j;
+		SdaiModel model;
+		CEntityDefinition entityDef;
+
+		StaticFields staticFields = StaticFields.get();
+		staticFields.context_schema = owning_model.underlying_schema;
+		CEntity_definition this_def = (CEntity_definition)getInstanceType();
+		ASdaiModel act_models = owning_model.repository.session.active_models;
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			if (unset_if_true_delete_else) {
+				if (owning_model == model || model.closingAll) {
+					continue;
+				}
+			} else {
+				if (model.repository == owning_model.repository) {
+					continue;
+				}
+			}
+			SchemaData sch_data = model.underlying_schema.owning_model.schemaData;
+			if (sch_data.involved == 0) {
+				continue;
+			}
+			if (sch_data.involved > 0) {
+				for (j = 0; j < sch_data.involved; j++) {
+					entityDef = sch_data.entities[sch_data.aux[j]];
+					if (unset_if_true_delete_else) {
+						model.scanForUnset(staticFields, this, sch_data.aux[j], entityDef, replace_by_connector);
+					} else {
+						model.scanForUnset(staticFields, this, sch_data.aux[j], entityDef, !delete_repo);
+					}
+				}
+				continue;
+			}
+			sch_data.involved = 0;
+			for (j = 0; j < sch_data.noOfEntityDataTypes; j++) {
+				entityDef = sch_data.entities[j];
+				CExplicit_attribute [] attributes = entityDef.attributes;
+				if (attributes == null) {
+					continue;
+				}
+				boolean found = false;
+				for (int k = 0; k < attributes.length; k++) {
+					if (entityDef.fieldOwners[k] == null) {
+						continue;
+					}
+					found = ((AttributeDefinition)attributes[k]).search_attribute(this_def);
+					if (found) {
+						break;
+					}
+				}
+				if (found) {
+					if (staticFields.entity_values == null) {
+						staticFields.entity_values = new ComplexEntityValue();
+					}
+					sch_data.aux[sch_data.involved] = j;
+					sch_data.involved++;
+					if (unset_if_true_delete_else) {
+						model.scanForUnset(staticFields, this, j, entityDef, replace_by_connector);
+					} else {
+						model.scanForUnset(staticFields, this, j, entityDef, !delete_repo);
+					}
+				}
+			}
+		}
+
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			model.underlying_schema.owning_model.schemaData.involved = -1;
+		}
+		staticFields.context_schema = null;
+	}
+
+
+	final protected Value checkInverseReferencesNoInverse(CEntity_definition new_def) throws SdaiException {
+		int i, j;
+		SdaiModel model;
+		CEntityDefinition entityDef;
+		Value val = null;
+
+		StaticFields staticFields = StaticFields.get();
+		staticFields.context_schema = owning_model.underlying_schema;
+		CEntity_definition this_def = (CEntity_definition)getInstanceType();
+		ASdaiModel act_models = owning_model.repository.session.active_models;
+		int m = act_models.myLength;
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			SchemaData sch_data = model.underlying_schema.owning_model.schemaData;
+			if (sch_data.involved == 0) {
+				continue;
+			}
+			if (sch_data.involved > 0) {
+				for (j = 0; j < sch_data.involved; j++) {
+					entityDef = sch_data.entities[sch_data.aux[j]];
+					val = model.scanForCheck(staticFields, this, sch_data.aux[j], entityDef, new_def);
+					if (val != null) {
+						m = i + 1;
+						break;
+					}
+				}
+				if (val != null) {
+					break;
+				}
+				continue;
+			}
+			sch_data.involved = 0;
+			for (j = 0; j < sch_data.noOfEntityDataTypes; j++) {
+				entityDef = sch_data.entities[j];
+				CExplicit_attribute [] attributes = entityDef.attributes;
+				if (attributes == null) {
+					continue;
+				}
+				boolean found = false;
+				for (int k = 0; k < attributes.length; k++) {
+					if (entityDef.fieldOwners[k] == null) {
+						continue;
+					}
+					found = ((AttributeDefinition)attributes[k]).search_attribute(this_def);
+					if (found) {
+						break;
+					}
+				}
+				if (found) {
+					if (staticFields.entity_values == null) {
+						staticFields.entity_values = new ComplexEntityValue();
+					}
+					sch_data.aux[sch_data.involved] = j;
+					sch_data.involved++;
+					val = model.scanForCheck(staticFields, this, j, entityDef, new_def);
+					if (val != null) {
+						m = i + 1;
+						break;
+					}
+				}
+			}
+			if (val != null) {
+				break;
+			}
+		}
+
+		for (i = 0; i < m; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			model.underlying_schema.owning_model.schemaData.involved = -1;
+		}
+		staticFields.context_schema = null;
+		return val;
+	}
+
+
+	final protected void moveReferencesNoInverse(CEntity old, CEntity newer, 
+			boolean save4undo) throws SdaiException {
+		int i, j;
+		SdaiModel model;
+		CEntityDefinition entityDef;
+
+		StaticFields staticFields = StaticFields.get();
+		staticFields.context_schema = owning_model.underlying_schema;
+		CEntity_definition this_def = (CEntity_definition)getInstanceType();
+		ASdaiModel act_models = owning_model.repository.session.active_models;
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			SchemaData sch_data = model.underlying_schema.owning_model.schemaData;
+			if (sch_data.involved == 0) {
+				continue;
+			}
+			if (sch_data.involved > 0) {
+				for (j = 0; j < sch_data.involved; j++) {
+					entityDef = sch_data.entities[sch_data.aux[j]];
+					model.scanForRefMove(staticFields, old, newer, sch_data.aux[j], entityDef, save4undo);
+				}
+				continue;
+			}
+			sch_data.involved = 0;
+			for (j = 0; j < sch_data.noOfEntityDataTypes; j++) {
+				entityDef = sch_data.entities[j];
+				CExplicit_attribute [] attributes = entityDef.attributes;
+				if (attributes == null) {
+					continue;
+				}
+				boolean found = false;
+				for (int k = 0; k < attributes.length; k++) {
+					if (entityDef.fieldOwners[k] == null) {
+						continue;
+					}
+					found = ((AttributeDefinition)attributes[k]).search_attribute(this_def);
+					if (found) {
+						break;
+					}
+				}
+				if (found) {
+					if (staticFields.entity_values == null) {
+						staticFields.entity_values = new ComplexEntityValue();
+					}
+					sch_data.aux[sch_data.involved] = j;
+					sch_data.involved++;
+					model.scanForRefMove(staticFields, old, newer, j, entityDef, save4undo);
+				}
+			}
+		}
+
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			model.underlying_schema.owning_model.schemaData.involved = -1;
+		}
+		staticFields.context_schema = null;
+	}
 
 
 

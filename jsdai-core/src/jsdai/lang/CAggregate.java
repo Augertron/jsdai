@@ -3013,7 +3013,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				}
 			}
 			if (value instanceof CEntity) {
-				((CEntity)value).inverseAdd(owning_instance);
+				CEntity new_member = (CEntity)value;
+				if (!new_member.owning_model.optimized) {
+					new_member.inverseAdd(owning_instance);
+				}
 			}
 		}
 		Object [] myDataA;
@@ -3887,6 +3890,7 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				owning_model.repository.session.undoRedoModifyPrepare(owning_instance);
 			}
 		}
+		CEntity new_member;
 		Object [] myDataA;
 		if (myType == null || myType.express_type == DataType.LIST) {
 			if (myType != null) {
@@ -3975,7 +3979,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			}
 			myLength++;
 			if (myType != null && value instanceof CEntity) {
-				((CEntity)value).inverseAdd(owning_instance);
+				new_member = (CEntity)value;
+				if (!new_member.owning_model.optimized) {
+					new_member.inverseAdd(owning_instance);
+				}
 			}
 			if (myType != null &&  
 					(myType.shift != SdaiSession.PRIVATE_AGGR || getOwner() instanceof SdaiRepository)) {
@@ -4040,7 +4047,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			}
 			myLength++;
 			if (value instanceof CEntity) {
-				((CEntity)value).inverseAdd(owning_instance);
+				new_member = (CEntity)value;
+				if (!new_member.owning_model.optimized) {
+					new_member.inverseAdd(owning_instance);
+				}
 			}
 			if (myType.shift != SdaiSession.PRIVATE_AGGR && owning_model.repository != SdaiSession.systemRepository) {
 				owner.modified();
@@ -4317,11 +4327,11 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 		}
 		Object [] myDataA;
 		owning_model.repository.session.undoRedoModifyPrepare(owning_instance);
+		int ln;
 		if (sel_number <= 0) {
 			if (myLength == 0) {
 				 myData = aggr_member;
 			} else if (myLength == 1) {
-				int ln;
 				if (upper_bound == null) {
 					ln = Integer.MAX_VALUE;
 				} else {
@@ -4346,10 +4356,20 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				myDataA[myLength] = aggr_member;
 			}
 		} else {
-			myDataA = (Object [])myData;
-			if (myLength * 2 >= myDataA.length) {						
-				ensureCapacity(myLength);
+			if (myData == null) {
+				if (upper_bound == null) {
+					ln = Integer.MAX_VALUE;
+				} else {
+					ln = upper_bound.getBound_value(null);
+				}
+				initializeData(ln);
 				myDataA = (Object [])myData;
+			} else {
+				myDataA = (Object [])myData;
+				if (myLength * 2 >= myDataA.length) {						
+					ensureCapacity(myLength);
+					myDataA = (Object [])myData;
+				}
 			}
 			int first_index = myLength * 2;
 			myDataA[first_index] = aggr_member;
@@ -5967,7 +5987,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				}
 			}
 			if (value instanceof CEntity) {
-				((CEntity)value).inverseAdd(owning_instance);
+				CEntity new_member = (CEntity)value;
+				if (!new_member.owning_model.optimized) {
+					new_member.inverseAdd(owning_instance);
+				}
 			}
 		}
 		Object [] myDataA;
@@ -6413,7 +6436,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				}
 			}
 			if (value instanceof CEntity) {
-				((CEntity)value).inverseAdd(owning_instance);
+				CEntity new_member = (CEntity)value;
+				if (!new_member.owning_model.optimized) {
+					new_member.inverseAdd(owning_instance);
+				}
 			}
 		}
 		Object [] myDataA;
@@ -7762,12 +7788,18 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			throws SdaiException {
 		CEntity owning_instance = getOwningInstance();
 		if (current_value instanceof CEntity) {
-			((CEntity)current_value).inverseRemove(owning_instance);
+			CEntity ex_member = (CEntity)current_value;
+			if (!ex_member.owning_model.optimized) {
+				ex_member.inverseRemove(owning_instance);
+			}
 		} else if (current_value instanceof CAggregate) {
 			((CAggregate)current_value).updateInverseListAggregate(owning_instance);
 		}
 		if (new_value instanceof CEntity) {
-			((CEntity)new_value).inverseAdd(owning_instance);
+			CEntity new_member = (CEntity)new_value;
+			if (!new_member.owning_model.optimized) {
+				new_member.inverseAdd(owning_instance);
+			}
 		}
 	}
 
@@ -7775,12 +7807,18 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 	private void updateInverseList(Object current_value, Object new_value, CEntity owning_instance)
 			throws SdaiException {
 		if (current_value instanceof CEntity) {
-			((CEntity)current_value).inverseRemove(owning_instance);
+			CEntity ex_member = (CEntity)current_value;
+			if (!ex_member.owning_model.optimized) {
+				ex_member.inverseRemove(owning_instance);
+			}
 		} else if (current_value instanceof CAggregate) {
 			((CAggregate)current_value).updateInverseListAggregate(owning_instance);
 		}
 		if (new_value instanceof CEntity) {
-			((CEntity)new_value).inverseAdd(owning_instance);
+			CEntity new_member = (CEntity)new_value;
+			if (!new_member.owning_model.optimized) {
+				new_member.inverseAdd(owning_instance);
+			}
 		}
 	}
 
@@ -7809,6 +7847,7 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 		if (myLength == 0) {
 			return;
 		}
+		CEntity ex_member;
 		Object [] myDataA;
 		int i;
 		if (myType == null || myType.express_type == DataType.LIST) {
@@ -7816,7 +7855,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			if (sel_number <= 0) {
 				if (myLength == 1) {
 					if (myData instanceof CEntity) {
-						((CEntity)myData).inverseRemove(owning_instance);
+						ex_member = (CEntity)myData;
+						if (!ex_member.owning_model.optimized) {
+							ex_member.inverseRemove(owning_instance);
+						}
 					} else if (myData instanceof CAggregate) {
 						((CAggregate)myData).updateInverseListAggregate(owning_instance);
 					}
@@ -7824,7 +7866,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					myDataA = (Object [])myData;
 					for (i = 0; i < 2; i++) {
 						if (myDataA[i] instanceof CEntity) {
-							((CEntity)myDataA[i]).inverseRemove(owning_instance);
+							ex_member = (CEntity)myDataA[i];
+							if (!ex_member.owning_model.optimized) {
+								ex_member.inverseRemove(owning_instance);
+							}
 						} else if (myDataA[i] instanceof CAggregate) {
 							((CAggregate)myDataA[i]).updateInverseListAggregate(owning_instance);
 						}
@@ -7838,7 +7883,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					}
 					while (element != null) {
 						if (element.object instanceof CEntity) {
-							((CEntity)element.object).inverseRemove(owning_instance);
+							ex_member = (CEntity)element.object;
+							if (!ex_member.owning_model.optimized) {
+								ex_member.inverseRemove(owning_instance);
+							}
 						} else if (element.object instanceof CAggregate) {
 							((CAggregate)element.object).updateInverseListAggregate(owning_instance);
 						}
@@ -7849,7 +7897,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				if (myLength == 1) {
 					myDataA = (Object [])myData;
 					if (myDataA[0] instanceof CEntity) {
-						((CEntity)myDataA[0]).inverseRemove(owning_instance);
+						ex_member = (CEntity)myDataA[0];
+						if (!ex_member.owning_model.optimized) {
+							ex_member.inverseRemove(owning_instance);
+						}
 					} else if (myDataA[0] instanceof CAggregate) {
 						((CAggregate)myDataA[0]).updateInverseListAggregate(owning_instance);
 					}
@@ -7862,7 +7913,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					}
 					while (element != null) {
 						if (element.object instanceof CEntity) {
-							((CEntity)element.object).inverseRemove(owning_instance);
+							ex_member = (CEntity)element.object;
+							if (!ex_member.owning_model.optimized) {
+								ex_member.inverseRemove(owning_instance);
+							}
 						} else if (element.object instanceof CAggregate) {
 							((CAggregate)element.object).updateInverseListAggregate(owning_instance);
 						}
@@ -7874,7 +7928,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			if (sel_number <= 0) {
 				if (myLength == 1) {
 					if (myData instanceof CEntity) {
-						((CEntity)myData).inverseRemove(owning_instance);
+						ex_member = (CEntity)myData;
+						if (!ex_member.owning_model.optimized) {
+							ex_member.inverseRemove(owning_instance);
+						}
 					} else if (myData instanceof CAggregate) {
 						((CAggregate)myData).updateInverseListAggregate(owning_instance);
 					}
@@ -7882,7 +7939,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					myDataA = (Object [])myData;
 					for (i = 0; i < myLength; i++) {
 						if (myDataA[i] instanceof CEntity) {
-							((CEntity)myDataA[i]).inverseRemove(owning_instance);
+							ex_member = (CEntity)myDataA[i];
+							if (!ex_member.owning_model.optimized) {
+								ex_member.inverseRemove(owning_instance);
+							}
 						} else if (myDataA[i] instanceof CAggregate) {
 							((CAggregate)myDataA[i]).updateInverseListAggregate(owning_instance);
 						}
@@ -7893,7 +7953,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				for (i = 0; i < myLength; i++) {
 					int index = i * 2;
 					if (myDataA[index] instanceof CEntity) {
-						((CEntity)myDataA[index]).inverseRemove(owning_instance);
+						ex_member = (CEntity)myDataA[index];
+						if (!ex_member.owning_model.optimized) {
+							ex_member.inverseRemove(owning_instance);
+						}
 					} else if (myDataA[index] instanceof CAggregate) {
 						((CAggregate)myDataA[index]).updateInverseListAggregate(owning_instance);
 					}
@@ -8095,7 +8158,10 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 */
 	void removeFromInverseList(Object value) throws SdaiException {
 		if (value instanceof CEntity) {
-			((CEntity)value).inverseRemove(getOwningInstance());
+			CEntity ex_member = (CEntity)value;
+			if (!ex_member.owning_model.optimized) {
+				ex_member.inverseRemove(getOwningInstance());
+			}
 		} else if (value instanceof CAggregate) {
 			((CAggregate)value).updateInverseListAggregate();
 		}
@@ -8130,7 +8196,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				if (myLength == 1) {
 					if (myData instanceof CEntity) {
 						to_ent = (CEntity)myData;
-						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+							!to_ent.owning_model.optimized && 
+							!(owning_instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 							to_ent.inverseRemoveAll(owning_instance);
 						}
 					} else if (myData instanceof SdaiModel.Connector) {
@@ -8143,7 +8211,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					for (i = 0; i < 2; i++) {
 						if (myDataA[i] instanceof CEntity) {
 							to_ent = (CEntity)myDataA[i];
-							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+								!to_ent.owning_model.optimized && 
+								!(owning_instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 								to_ent.inverseRemoveAll(owning_instance);
 							}
 						} else if (myDataA[i] instanceof SdaiModel.Connector) {
@@ -8162,7 +8232,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					while (element != null) {
 						if (element.object instanceof CEntity) {
 							to_ent = (CEntity)element.object;
-							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+								!to_ent.owning_model.optimized && 
+								!(owning_instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 								to_ent.inverseRemoveAll(owning_instance);
 							}
 						} else if (element.object instanceof SdaiModel.Connector) {
@@ -8178,7 +8250,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					myDataA = (Object [])myData;
 					if (myDataA[0] instanceof CEntity) {
 						to_ent = (CEntity)myDataA[0];
-						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+							!to_ent.owning_model.optimized && 
+							!(owning_instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 							to_ent.inverseRemoveAll(owning_instance);
 						}
 					} else if (myDataA[0] instanceof SdaiModel.Connector) {
@@ -8196,7 +8270,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					while (element != null) {
 						if (element.object instanceof CEntity) {
 							to_ent = (CEntity)element.object;
-							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+								!to_ent.owning_model.optimized && 
+								!(owning_instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 								to_ent.inverseRemoveAll(owning_instance);
 							}
 						} else if (element.object instanceof SdaiModel.Connector) {
@@ -8213,7 +8289,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				if (myLength == 1) {
 					if (myData instanceof CEntity) {
 						to_ent = (CEntity)myData;
-						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+							!to_ent.owning_model.optimized && 
+							!(owning_instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 							to_ent.inverseRemoveAll(owning_instance);
 						}
 					} else if (myData instanceof SdaiModel.Connector) {
@@ -8226,7 +8304,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					for (i = 0; i < myLength; i++) {
 						if (myDataA[i] instanceof CEntity) {
 							to_ent = (CEntity)myDataA[i];
-							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+								!to_ent.owning_model.optimized && 
+								!(owning_instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 								to_ent.inverseRemoveAll(owning_instance);
 							}
 						} else if (myDataA[i] instanceof SdaiModel.Connector) {
@@ -8242,7 +8322,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					int index = i * 2;
 					if (myDataA[index] instanceof CEntity) {
 						to_ent = (CEntity)myDataA[index];
-						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+							!to_ent.owning_model.optimized && 
+							!(owning_instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 							to_ent.inverseRemoveAll(owning_instance);
 						}
 					} else if (myDataA[index] instanceof SdaiModel.Connector) {
@@ -8287,7 +8369,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				if (myLength == 1) {
 					if (myData instanceof CEntity) {
 						to_ent = (CEntity)myData;
-						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+							!to_ent.owning_model.optimized && 
+							!(instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 							to_ent.inverseRemoveAll(instance);
 						}
 					} else if (myData instanceof SdaiModel.Connector) {
@@ -8300,7 +8384,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					for (i = 0; i < 2; i++) {
 						if (myDataA[i] instanceof CEntity) {
 							to_ent = (CEntity)myDataA[i];
-							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+								!to_ent.owning_model.optimized && 
+								!(instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 								to_ent.inverseRemoveAll(instance);
 							}
 						} else if (myDataA[i] instanceof SdaiModel.Connector) {
@@ -8319,7 +8405,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					while (element != null) {
 						if (element.object instanceof CEntity) {
 							to_ent = (CEntity)element.object;
-							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+								!to_ent.owning_model.optimized && 
+								!(instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 								to_ent.inverseRemoveAll(instance);
 							}
 						} else if (element.object instanceof SdaiModel.Connector) {
@@ -8335,7 +8423,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					myDataA = (Object [])myData;
 					if (myDataA[0] instanceof CEntity) {
 						to_ent = (CEntity)myDataA[0];
-						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+							!to_ent.owning_model.optimized && 
+							!(instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 							to_ent.inverseRemoveAll(instance);
 						}
 					} else if (myDataA[0] instanceof SdaiModel.Connector) {
@@ -8353,7 +8443,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					while (element != null) {
 						if (element.object instanceof CEntity) {
 							to_ent = (CEntity)element.object;
-							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+								!to_ent.owning_model.optimized && 
+								!(instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 								to_ent.inverseRemoveAll(instance);
 							}
 						} else if (element.object instanceof SdaiModel.Connector) {
@@ -8370,7 +8462,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				if (myLength == 1) {
 					if (myData instanceof CEntity) {
 						to_ent = (CEntity)myData;
-						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+							!to_ent.owning_model.optimized && 
+							!(instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 							to_ent.inverseRemoveAll(instance);
 						}
 					} else if (myData instanceof SdaiModel.Connector) {
@@ -8383,7 +8477,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					for (i = 0; i < myLength; i++) {
 						if (myDataA[i] instanceof CEntity) {
 							to_ent = (CEntity)myDataA[i];
-							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+								!to_ent.owning_model.optimized && 
+								!(instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 								to_ent.inverseRemoveAll(instance);
 							}
 						} else if (myDataA[i] instanceof SdaiModel.Connector) {
@@ -8399,7 +8495,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					int index = i * 2;
 					if (myDataA[index] instanceof CEntity) {
 						to_ent = (CEntity)myDataA[index];
-						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
+						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
+							!to_ent.owning_model.optimized && 
+							!(instance.owning_model.refresh_in_abort && to_ent.owning_model.modified)) {
 							to_ent.inverseRemoveAll(instance);
 						}
 					} else if (myDataA[index] instanceof SdaiModel.Connector) {
@@ -8444,7 +8542,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					if (myData instanceof CEntity) {
 						to_ent = (CEntity)myData;
 						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
-							to_ent.inverseRemove(owning_instance);
+							if (!to_ent.owning_model.optimized) {
+								to_ent.inverseRemove(owning_instance);
+							}
 						}
 					} else if (myData instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myData).disconnect();
@@ -8457,7 +8557,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 						if (myDataA[i] instanceof CEntity) {
 							to_ent = (CEntity)myDataA[i];
 							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
-								to_ent.inverseRemove(owning_instance);
+								if (!to_ent.owning_model.optimized) {
+									to_ent.inverseRemove(owning_instance);
+								}
 							}
 						} else if (myDataA[i] instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)myDataA[i]).disconnect();
@@ -8476,7 +8578,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 						if (element.object instanceof CEntity) {
 							to_ent = (CEntity)element.object;
 							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
-								to_ent.inverseRemove(owning_instance);
+								if (!to_ent.owning_model.optimized) {
+									to_ent.inverseRemove(owning_instance);
+								}
 							}
 						} else if (element.object instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)element.object).disconnect();
@@ -8492,7 +8596,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					if (myDataA[0] instanceof CEntity) {
 						to_ent = (CEntity)myDataA[0];
 						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
-							to_ent.inverseRemove(owning_instance);
+							if (!to_ent.owning_model.optimized) {
+								to_ent.inverseRemove(owning_instance);
+							}
 						}
 					} else if (myDataA[0] instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myDataA[0]).disconnect();
@@ -8510,7 +8616,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 						if (element.object instanceof CEntity) {
 							to_ent = (CEntity)element.object;
 							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
-								to_ent.inverseRemove(owning_instance);
+								if (!to_ent.owning_model.optimized) {
+									to_ent.inverseRemove(owning_instance);
+								}
 							}
 						} else if (element.object instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)element.object).disconnect();
@@ -8527,7 +8635,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					if (myData instanceof CEntity) {
 						to_ent = (CEntity)myData;
 						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
-							to_ent.inverseRemove(owning_instance);
+							if (!to_ent.owning_model.optimized) {
+								to_ent.inverseRemove(owning_instance);
+							}
 						}
 					} else if (myData instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myData).disconnect();
@@ -8540,7 +8650,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 						if (myDataA[i] instanceof CEntity) {
 							to_ent = (CEntity)myDataA[i];
 							if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
-								to_ent.inverseRemove(owning_instance);
+								if (!to_ent.owning_model.optimized) {
+									to_ent.inverseRemove(owning_instance);
+								}
 							}
 						} else if (myDataA[i] instanceof SdaiModel.Connector) {
 							((SdaiModel.Connector)myDataA[i]).disconnect();
@@ -8556,7 +8668,9 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 					if (myDataA[index] instanceof CEntity) {
 						to_ent = (CEntity)myDataA[index];
 						if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
-							to_ent.inverseRemove(owning_instance);
+							if (!to_ent.owning_model.optimized) {
+								to_ent.inverseRemove(owning_instance);
+							}
 						}
 					} else if (myDataA[index] instanceof SdaiModel.Connector) {
 						((SdaiModel.Connector)myDataA[index]).disconnect();

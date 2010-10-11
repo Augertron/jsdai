@@ -58,6 +58,8 @@ class SchemaData {
 	DataType [] data_types;
 
 	int aux[];
+	int aux2[];
+	int involved = -1;
 
 	// set by linkEarlyBinding
 	SSuper super_inst;
@@ -815,7 +817,6 @@ time1 = System.currentTimeMillis();
 		int i;
 time2 = System.currentTimeMillis();
 
-
 		setDataType(model, SdaiSession.AGGREGATION_TYPE, DataType.AGGREGATE);
 		setDataType(model, SdaiSession.BINARY_TYPE, DataType.BINARY);
 		setDataType(model, SdaiSession.BOOLEAN_TYPE, DataType.BOOLEAN);
@@ -899,6 +900,7 @@ System.out.println("  entity__: " + entities[i].getCorrectName());}
 
 //		staticFields = StaticFields.get();
 //		staticFields.context_schema = model.underlying_schema;
+      model.early_binding_linking = true;
 		for (int j = 0; j < 10; j++) {
 			CEntity [] sel_types = model.instances_sim[select_refs[j]];
 			for (i = 0; i < model.lengths[select_refs[j]]; i++) {
@@ -1603,6 +1605,14 @@ if (SdaiSession.debug2) System.out.println("  entities[index] ident = " + entiti
 //System.out.println("   Subtype = " + ((CEntity_definition)def).getName(null));
 		}
 		return types_count;
+	}
+
+
+	int [] getAuxiliaryArray() {
+		if (aux2 == null) {
+			aux2 = new int[noOfEntityDataTypes];
+		}
+		return aux2;
 	}
 
 

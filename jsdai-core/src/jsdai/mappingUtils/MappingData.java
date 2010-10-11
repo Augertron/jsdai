@@ -42,7 +42,7 @@ import java.util.regex.Matcher;
  * @version $Revision$
  */
 public class MappingData {
-    
+
     /** Specifies operation we want to perform: import */
     public static final int IMPORT_OPERATION = 1;
     /** Specifies operation we want to perform: export */
@@ -63,25 +63,25 @@ public class MappingData {
     public static final int COLLECT_MISSING_COMPLEX_TYPES_OPERATION = 9;
 
 	private static final int DICTIONARY_MODEL_SUFFIX_LENGTH = "_DICTIONARY_DATA".length();
-    
+
     /** Holds session we are using
-     */    
+     */
     protected SdaiSession sdaiSession;
-    
+
     /** Express Compiler Repository name
-     */    
+     */
     protected static final String repositoryName = "ExpressCompilerRepo";
-    
+
     protected Document configDocument;
-    
+
     protected SdaiRepository expressRepository;
-    
+
     protected SdaiModel expressModel;
-    
+
     protected SdaiModel mappingModel;
 
     protected SdaiModel linksModel;
-    
+
     protected HashMap usedAttributesMap;
 
     protected HashMap usedNamedTypesMap;
@@ -89,7 +89,7 @@ public class MappingData {
     protected HashMap usedSchemaDefinitionsMap;
 
     protected HashMap originalInstancesMap;
-    
+
     /** Creates new MappingData
      * @param sdaiSession The JSDAI session to use
      * @throws SdaiException This exception can be thrown in many cases
@@ -97,12 +97,12 @@ public class MappingData {
     public MappingData(SdaiSession sdaiSession) throws SdaiException {
         this.sdaiSession = sdaiSession;
     }
-    
+
     /** Execution starts here.
      * @param args the command line arguments
-     * @throws ClassNotFoundException 
+     * @throws ClassNotFoundException
      * @throws SdaiException May be thrown in many cases */
-    public static void main(String[] args) 
+    public static void main(String[] args)
     throws SdaiException, ClassNotFoundException, FileNotFoundException, IOException {
         boolean showHelp = false;
 
@@ -113,7 +113,7 @@ public class MappingData {
         String stepFile = null;
 		String trackChangesFile = null;
 		Collection missingSchemaMatchers = null;
-        
+
         if(args.length >= 1) {
             if(args[0].equalsIgnoreCase("import"))
                 operation = IMPORT_OPERATION;
@@ -138,7 +138,7 @@ public class MappingData {
                 return;
             }
             for (int i = 1; i < args.length; i++) {
-                if(args[i].equals("-binary") && 
+                if(args[i].equals("-binary") &&
 					(operation == IMPORT_OPERATION || operation == COPY_OPERATION)) {
                     if(++i == args.length) {
                         showHelp = true;
@@ -211,28 +211,28 @@ public class MappingData {
             showHelp = true;
         if(showHelp) {
             System.out.println("Usage:");
-            System.out.println("  java jsdai.mappingUtils.MappingData {export|import} " + 
+            System.out.println("  java jsdai.mappingUtils.MappingData {export|import} " +
                                "-model <ARM_MAPPING_MODEL> [-file <step_file>] [-binary <dir>]");
-            System.out.println("  java jsdai.mappingUtils.MappingData copy " + 
+            System.out.println("  java jsdai.mappingUtils.MappingData copy " +
                                "-model <ARM_MAPPING_MODEL> -binary <dir>");
-            System.out.println("  java jsdai.mappingUtils.MappingData schema-instance " + 
+            System.out.println("  java jsdai.mappingUtils.MappingData schema-instance " +
                                "-model <ARM_MAPPING_MODEL> [-track track_changes_property_file]");
-            System.out.println("  java jsdai.mappingUtils.MappingData find-derived " + 
+            System.out.println("  java jsdai.mappingUtils.MappingData find-derived " +
                                "-model <ARM_MAPPING_MODEL>");
-            System.out.println("  java jsdai.mappingUtils.MappingData superclass-attribute-mapping " + 
+            System.out.println("  java jsdai.mappingUtils.MappingData superclass-attribute-mapping " +
                                "-model <ARM_MAPPING_MODEL>");
-            System.out.println("  java jsdai.mappingUtils.MappingData find-missing-mappings " + 
+            System.out.println("  java jsdai.mappingUtils.MappingData find-missing-mappings " +
                                "-model <ARM_MAPPING_MODEL> [-for-schemas schema_name_regexp [...]]");
-            System.out.println("  java jsdai.mappingUtils.MappingData compare-mappings " + 
+            System.out.println("  java jsdai.mappingUtils.MappingData compare-mappings " +
                                "-model1 <ARM_MAPPING_MODEL> -model2 <ARM_MAPPING_MODEL>");
             System.out.println("  java jsdai.mappingUtils.MappingData collect-missing-complex-types");
             return;
         }
-        
+
         if(stepFile == null) stepFile = modelName + ".p21";
         SdaiSession sdaiSession = SdaiSession.openSession();
         MappingData mappingData = new MappingData(sdaiSession);
-        
+
         switch(operation) {
             case IMPORT_OPERATION:
                 mappingData.importOperation(modelName, stepFile, binaryDir);
@@ -264,14 +264,14 @@ public class MappingData {
         }
 
     }
-    
+
 	/** Performs export operation.
      *
      * <P><U>Replaces the following attributes:</U>
      * </P>
      * <UL>
      * <LI><B>attribute</B> is used in attribute_mapping_path_select, entity_or_attribute,
-     * aggregate_member_constraint_select, attribute_select, attribute_value_constraint_select, 
+     * aggregate_member_constraint_select, attribute_select, attribute_value_constraint_select,
      * constraint_select, inverse_attribute_constraint_select, path_constraint_select,
      * select_constraint_select, generic_attribute_mapping.source
      * </LI>
@@ -302,7 +302,7 @@ public class MappingData {
      * <I>select_constraint_select</I> is used in select_constraint.attribute
      * </LI>
      * <LI>
-     * <B>entity_definition</B> is used in entity_or_attribute, 
+     * <B>entity_definition</B> is used in entity_or_attribute,
      * entity_mapping.source, entity_constraint.domain
      * </LI>
      * <LI>
@@ -402,25 +402,25 @@ public class MappingData {
         System.out.println(" Performing export operation");
         System.out.println("  Model " + modelName);
         System.out.println("  Step file " + (new File(stepFile)).getAbsolutePath());
-        
+
         SdaiTransaction transaction = sdaiSession.startTransactionReadWriteAccess();
         expressRepository = findRepository(repositoryName);
         expressRepository.openRepository();
         expressModel = findModel(expressRepository, modelName);
         expressModel.startReadOnlyAccess();
-        
+
         SdaiRepository exportRepository = sdaiSession.createRepository("", null);
         exportRepository.openRepository();
         mappingModel = exportRepository.createSdaiModel(modelName, expressModel.getUnderlyingSchema());
         mappingModel.startReadWriteAccess();
-        
+
         System.out.println(" Copying instances...");
         AEntity allInstances = expressModel.getInstances();
         mappingModel.copyInstances(allInstances);
-        
+
         linksModel = exportRepository.createSdaiModel("Links", SExtended_dictionary_schema.class);
         linksModel.startReadWriteAccess();
-        
+
         System.out.println(" Unlinking external references...");
         scanExportLinks();
 
@@ -436,20 +436,20 @@ public class MappingData {
         //transaction.endTransactionAccessCommit();
         System.out.println(" Export operation completed successfully");
     }
-        
+
     public void scanExportLinks() throws SdaiException, ClassNotFoundException {
         getConfiguration();
-        
+
         usedAttributesMap = new HashMap();
         usedNamedTypesMap = new HashMap();
         usedSchemaDefinitionsMap = new HashMap();
-        
+
         Element mappingSchemaEl = configDocument.getDocumentElement();
         for(org.w3c.dom.Node configurationNode = mappingSchemaEl.getFirstChild();
         configurationNode != null; configurationNode = configurationNode.getNextSibling()) {
             if(!(configurationNode instanceof Element)) continue;
             Element mappingEntityEl = (Element)configurationNode;
-            
+
             String entityName = mappingEntityEl.getAttribute("name");
             AEntity entities =
                 mappingModel.getInstances(Class.forName("jsdai.SMapping_schema.E" +
@@ -457,18 +457,18 @@ public class MappingData {
             SdaiIterator entityIterator = entities.createIterator();
             while(entityIterator.next()) {
                 EEntity entity = entities.getCurrentMemberEntity(entityIterator);
-                
+
                 for(org.w3c.dom.Node attributeNode = mappingEntityEl.getFirstChild();
                 attributeNode != null; attributeNode = attributeNode.getNextSibling()) {
                     if(!(attributeNode instanceof Element)) continue;
                     Element attributeEl = (Element)attributeNode;
-                    
+
                     ArrayList dicEntityList = new ArrayList();
                     for(org.w3c.dom.Node dicEntityNode = attributeEl.getFirstChild();
                     dicEntityNode != null; dicEntityNode = dicEntityNode.getNextSibling()) {
                         if(!(dicEntityNode instanceof Element)) continue;
                         Element dicEntityEl = (Element)dicEntityNode;
-                        dicEntityList.add(Class.forName("jsdai.SExtended_dictionary_schema.E" + 
+                        dicEntityList.add(Class.forName("jsdai.SExtended_dictionary_schema.E" +
                                           capitalizeString(dicEntityEl.getAttribute("name"))));
                     }
                     unlinkLinks(entity, attributeEl.getAttribute("name"), dicEntityList);
@@ -488,11 +488,11 @@ public class MappingData {
 		}
         jsdai.dictionary.EDefined_type selectPath[] = new jsdai.dictionary.EDefined_type[20];
         if(entity.testAttribute(attribute, selectPath) == 1/*Object*/) {
-            
+
             Object attributeObject = entity.get_object(attribute);
             if(attributeObject instanceof EEntity) {
                 EEntity attributeEntity = (EEntity)attributeObject;
-                EEntity newEntity = 
+                EEntity newEntity =
                     findLinkReplacement(attributeEntity, dicEntityList);
                 if(newEntity != null) {
                     entity.set(attribute, newEntity, selectPath);
@@ -509,7 +509,7 @@ public class MappingData {
                     }
                 }
             }
-                
+
         }
     }
 
@@ -521,53 +521,53 @@ public class MappingData {
             if(dictionaryEntity.isKindOf(dicEntityClass)) {
                 if(dicEntityClass.equals(EAttribute.class)) {
                     EAttribute dictionaryAttribute = (EAttribute)dictionaryEntity;
-                    String compoundName = 
+                    String compoundName =
                         dictionaryAttribute.findEntityInstanceSdaiModel().getName() + "." +
                         dictionaryAttribute.getParent(null).getName(null) + "." +
                         dictionaryAttribute.getName(null);
                     EAttribute newAttribute = (EAttribute)usedAttributesMap.get(compoundName);
                     if(newAttribute == null) {
-                        newAttribute = 
+                        newAttribute =
                             (EAttribute)linksModel.createEntityInstance(EExplicit_attribute.class);
                         newAttribute.setName(null, compoundName);
                         usedAttributesMap.put(compoundName, newAttribute);
                     }
                     return newAttribute;
-                    
+
                 } else if(dicEntityClass.equals(ENamed_type.class) ||
                           dicEntityClass.equals(EEntity_definition.class) ||
                           dicEntityClass.equals(EDefined_type.class)) {
                     ENamed_type dictionaryNamedType = (ENamed_type)dictionaryEntity;
-                    String compoundName = 
+                    String compoundName =
                         dictionaryNamedType.findEntityInstanceSdaiModel().getName() + "." +
                         dictionaryNamedType.getName(null);
                     ENamed_type newNamedType = (ENamed_type)usedNamedTypesMap.get(compoundName);
                     if(newNamedType == null) {
-                        newNamedType = 
+                        newNamedType =
                             (ENamed_type)linksModel.createEntityInstance
-                                (dictionaryNamedType instanceof EDefined_type ? 
+                                (dictionaryNamedType instanceof EDefined_type ?
                                 EDefined_type.class : EEntity_definition.class);
                         newNamedType.setName(null, compoundName);
                         usedNamedTypesMap.put(compoundName, newNamedType);
                     }
                     return newNamedType;
-                    
+
                 } else if(dicEntityClass.equals(ESchema_definition.class)) {
-                    ESchema_definition dictionarySchemDefinition = 
+                    ESchema_definition dictionarySchemDefinition =
                         (ESchema_definition)dictionaryEntity;
-                    String compoundName = 
+                    String compoundName =
                         dictionarySchemDefinition.findEntityInstanceSdaiModel().getName() + "." +
                         dictionarySchemDefinition.getName(null);
-                    ESchema_definition newSchemDefinition = 
+                    ESchema_definition newSchemDefinition =
                         (ESchema_definition)usedSchemaDefinitionsMap.get(compoundName);
                     if(newSchemDefinition == null) {
-                        newSchemDefinition = 
+                        newSchemDefinition =
                             (ESchema_definition)linksModel.createEntityInstance(ESchema_definition.class);
                         newSchemDefinition.setName(null, compoundName);
                         usedSchemaDefinitionsMap.put(compoundName, newSchemDefinition);
                     }
                     return newSchemDefinition;
-                    
+
                 } else {
                     System.out.println("Unsupported type: " + dicEntityClass);
                 }
@@ -579,52 +579,52 @@ public class MappingData {
     /** Performs import operation
      * @param modelName Mapping data model name
      * @throws SdaiException Can be thrown in many cases
-     */    
+     */
     public void importOperation(String modelName, String stepFile, String binaryDir)
     throws SdaiException, ClassNotFoundException, FileNotFoundException, IOException {
         System.out.println(" Performing import operation");
         System.out.println("  Model " + modelName);
         System.out.println("  Step file " + (new File(stepFile)).getAbsolutePath());
-        
+
         SdaiTransaction transaction = sdaiSession.startTransactionReadWriteAccess();
         expressRepository = findRepository(repositoryName);
         expressRepository.openRepository();
-        
-        SdaiRepository importRepository = 
+
+        SdaiRepository importRepository =
             sdaiSession.importClearTextEncoding("", stepFile, null);
 
         mappingModel = findModel(importRepository, modelName);
         mappingModel.reduceSdaiModelToRO();
         linksModel = findModel(importRepository, "Links");
         linksModel.reduceSdaiModelToRO();
-        
+
         expressModel = testAndFindModel(expressRepository, modelName);
         if(expressModel != null) expressModel.deleteSdaiModel();
         expressModel = expressRepository.createSdaiModel(modelName, mappingModel.getUnderlyingSchema());
         expressModel.startReadWriteAccess();
-        
+
         System.out.println(" Copying instances...");
         AEntity allInstances = mappingModel.getInstances();
         expressModel.copyInstances(allInstances);
 
         System.out.println(" Linking external references...");
         scanImportLinks();
-        
+
         transaction.endTransactionAccessCommit();
         if(binaryDir != null) {
             System.out.println(" Copying binary file...");
 
-            File fromFile = new File(expressRepository.getLocation(), 
+            File fromFile = new File(expressRepository.getLocation(),
                                      expressModel.getId());
             (new File(binaryDir)).mkdirs();
             File toFile = new File(binaryDir, modelName);
 
             System.out.println("  From " + fromFile.getAbsolutePath());
             System.out.println("  To " + toFile.getAbsolutePath());
-            
-			FileInputStream in = 
+
+			FileInputStream in =
                 new FileInputStream(fromFile);
-			FileOutputStream out = 
+			FileOutputStream out =
                 new FileOutputStream(toFile);
 
 			byte[] buffer = new byte[8 * 1024];
@@ -642,10 +642,10 @@ public class MappingData {
         expressRepository.closeRepository();
         System.out.println(" Import operation completed successfully");
     }
-    
+
     public void scanImportLinks() throws SdaiException, ClassNotFoundException {
         getConfiguration();
-        
+
         fillOriginalMaps();
 
         Element mappingSchemaEl = configDocument.getDocumentElement();
@@ -653,7 +653,7 @@ public class MappingData {
         configurationNode != null; configurationNode = configurationNode.getNextSibling()) {
             if(!(configurationNode instanceof Element)) continue;
             Element mappingEntityEl = (Element)configurationNode;
-            
+
             String entityName = mappingEntityEl.getAttribute("name");
             AEntity entities =
                 expressModel.getInstances(Class.forName("jsdai.SMapping_schema.E" +
@@ -661,25 +661,25 @@ public class MappingData {
             SdaiIterator entityIterator = entities.createIterator();
             while(entityIterator.next()) {
                 EEntity entity = entities.getCurrentMemberEntity(entityIterator);
-                
+
                 for(org.w3c.dom.Node attributeNode = mappingEntityEl.getFirstChild();
                 attributeNode != null; attributeNode = attributeNode.getNextSibling()) {
                     if(!(attributeNode instanceof Element)) continue;
                     Element attributeEl = (Element)attributeNode;
-                    
+
                     relinkLinks(entity, attributeEl.getAttribute("name"));
                 }
             }
         }
     }
-    
+
     public void fillOriginalMaps() throws SdaiException {
         originalInstancesMap = new HashMap();
         HashMap modelMap = new HashMap();
 
         AEntity instances;
         SdaiIterator instanceIterator;
-        
+
         instances = linksModel.getInstances();
         instanceIterator = instances.createIterator();
         while(instanceIterator.next()) {
@@ -687,13 +687,13 @@ public class MappingData {
             String name = (String)
                 linkInstance.get_object(linkInstance.getAttributeDefinition("name"));
             HashMap modelInstanceData = findModelInstanceData(modelMap, name);
-            EEntity expressInstance = 
+            EEntity expressInstance =
                 (EEntity)modelInstanceData.get(name);
             originalInstancesMap.put(linkInstance.getPersistentLabel(), expressInstance);
         }
 
     }
-    
+
     public HashMap findModelInstanceData(HashMap modelMap, String compoundLinkName)
     throws SdaiException {
         String modelName = compoundLinkName.substring(0, compoundLinkName.indexOf('.'));
@@ -702,14 +702,14 @@ public class MappingData {
             SdaiModel model = findModel(expressRepository, modelName);
             if(model.getMode() == SdaiModel.NO_ACCESS) model.startReadOnlyAccess();
             modelInstanceData = new HashMap();
-            
+
             AEntity instances;
             SdaiIterator instanceIterator;
-            
+
             instances = model.getInstances(EAttribute.class);
             instanceIterator = instances.createIterator();
             while(instanceIterator.next()) {
-                EAttribute instance = 
+                EAttribute instance =
                     (EAttribute)instances.getCurrentMemberEntity(instanceIterator);
                 String compoundName =
                     instance.findEntityInstanceSdaiModel().getName() + "." +
@@ -721,7 +721,7 @@ public class MappingData {
             instances = model.getInstances(ENamed_type.class);
             instanceIterator = instances.createIterator();
             while(instanceIterator.next()) {
-                ENamed_type instance = 
+                ENamed_type instance =
                     (ENamed_type)instances.getCurrentMemberEntity(instanceIterator);
                 String compoundName =
                     instance.findEntityInstanceSdaiModel().getName() + "." +
@@ -732,14 +732,14 @@ public class MappingData {
             instances = model.getInstances(ESchema_definition.class);
             instanceIterator = instances.createIterator();
             while(instanceIterator.next()) {
-                ESchema_definition instance = 
+                ESchema_definition instance =
                     (ESchema_definition)instances.getCurrentMemberEntity(instanceIterator);
                 String compoundName =
                     instance.findEntityInstanceSdaiModel().getName() + "." +
                     instance.getName(null);
                 modelInstanceData.put(compoundName, instance);
             }
-            
+
             modelMap.put(modelName, modelInstanceData);
         }
 
@@ -752,7 +752,7 @@ public class MappingData {
             entity.getAttributeDefinition(attributeName);
         jsdai.dictionary.EDefined_type selectPath[] = new jsdai.dictionary.EDefined_type[20];
         if(entity.testAttribute(attribute, selectPath) == 1/*Object*/) {
-            
+
             Object attributeObject = entity.get_object(attribute);
             if(attributeObject instanceof EEntity) {
                 EEntity attributeEntity = (EEntity)attributeObject;
@@ -778,7 +778,7 @@ public class MappingData {
                     }
                 }
             }
-                
+
         }
     }
 
@@ -786,31 +786,31 @@ public class MappingData {
 	throws SdaiException, FileNotFoundException, IOException {
 		System.out.println(" Performing copy operation");
 		System.out.println("  Model " + modelName);
-		
+
 		SdaiTransaction transaction = sdaiSession.startTransactionReadOnlyAccess();
 		expressRepository = findRepository(repositoryName);
 		expressRepository.openRepository();
-		
+
 		expressModel = findModel(expressRepository, modelName);
 		expressModel.startReadOnlyAccess();
-		
+
 		URL fromURL = expressModel.getLocationURL();
 		(new File(binaryDir)).mkdirs();
 		File toFile = new File(binaryDir, modelName);
-		
+
 		System.out.println("  From " + fromURL);
 		System.out.println("  To " + toFile.getAbsolutePath());
-		
+
 		InputStream in = fromURL.openStream();
 		FileOutputStream out = new FileOutputStream(toFile);
-		
+
 		byte[] buffer = new byte[8 * 1024];
 		int count = 0;
 		do {
 			out.write(buffer, 0, count);
 			count = in.read(buffer, 0, buffer.length);
 		} while (count != -1);
-		
+
 		in.close();
 		out.close();
 		transaction.commit();
@@ -823,7 +823,7 @@ public class MappingData {
     throws SdaiException {
        System.out.println(" Finding derived attributes");
        System.out.println("  Model " + modelName);
-       
+
        SdaiTransaction transaction = sdaiSession.startTransactionReadWriteAccess();
        expressRepository = findRepository(repositoryName);
        expressRepository.openRepository();
@@ -844,12 +844,12 @@ public class MappingData {
 
 		   SdaiIterator referencedInstanceIter = referencedInstances.createIterator();
 		   while(referencedInstanceIter.next()) {
-			   EEntity referencedInstance = 
+			   EEntity referencedInstance =
 					   referencedInstances.getCurrentMemberEntity(referencedInstanceIter);
 			   if(referencedInstance instanceof EDerived_attribute) {
 				   String refInstModelName = referencedInstance.findEntityInstanceSdaiModel().getName();
-				   System.out.println("  " + referencedInstance + " in " + 
-									  refInstModelName.substring(0, refInstModelName.length() - 
+				   System.out.println("  " + referencedInstance + " in " +
+									  refInstModelName.substring(0, refInstModelName.length() -
 																 "_DICTIONARY_DATA".length()) +
 									  " is referenced by " + instance);
 				   referencedCount++;
@@ -860,12 +860,12 @@ public class MappingData {
        expressRepository.closeRepository();
        System.out.println(" Found: " + referencedCount + " derived attributes");
     }
-    
+
     public void createSchemaInstanceOperation(String modelName, String trackChangesFile)
     throws SdaiException {
         System.out.println(" Creating schema instance");
         System.out.println("  Name " + modelName);
-        
+
         SdaiTransaction transaction = sdaiSession.startTransactionReadWriteAccess();
         expressRepository = findRepository(repositoryName);
         expressRepository.openRepository();
@@ -874,7 +874,7 @@ public class MappingData {
 		}
         expressModel = findModel(expressRepository, modelName);
         expressModel.startReadOnlyAccess();
-        
+
         String mappingSchemaInstanceName = modelName.toLowerCase();
         SchemaInstance mappingSchemaInstance;
         mappingSchemaInstance = expressRepository.findSchemaInstance(mappingSchemaInstanceName);
@@ -884,13 +884,13 @@ public class MappingData {
             (ESchema_mapping)expressModel.getInstances(ESchema_mapping.class).getByIndexEntity(1);
         String armSchemaName = schemaMapping.getSource(null).getName(null);
         String armSchemaInstanceName = armSchemaName.toLowerCase();
-        SchemaInstance armSchemaInstance = 
+        SchemaInstance armSchemaInstance =
             findSchemaInstance(expressRepository, armSchemaInstanceName);
         String aimSchemaName = schemaMapping.getTarget(null).getName(null);
         String aimSchemaInstanceName = aimSchemaName.toLowerCase();
-        SchemaInstance aimSchemaInstance = 
+        SchemaInstance aimSchemaInstance =
             findSchemaInstance(expressRepository, aimSchemaInstanceName);
-        mappingSchemaInstance = 
+        mappingSchemaInstance =
             expressRepository.createSchemaInstance(mappingSchemaInstanceName, jsdai.mapping.SMapping.class);
         mappingSchemaInstance.addSdaiModel(expressModel);
         ASdaiModel armModels = armSchemaInstance.getAssociatedModels();
@@ -916,12 +916,12 @@ public class MappingData {
         transaction.endTransactionAccessCommit();
         System.out.println(" Schema instance created successfully");
     }
-    
+
     public void checkSuperclassAttributeMappingsOperation(String modelName)
     throws SdaiException {
         System.out.println(" Checking and fixing superclass attribute mappings");
         System.out.println("  Name " + modelName);
-        
+
         SdaiTransaction transaction = sdaiSession.startTransactionReadWriteAccess();
         expressRepository = findRepository(repositoryName);
         expressRepository.openRepository();
@@ -934,13 +934,18 @@ public class MappingData {
         SdaiIterator entityMappingIterator = entityMappings.createIterator();
         while(entityMappingIterator.next()) {
             EEntity_mapping entityMapping = entityMappings.getCurrentMember(entityMappingIterator);
+            EEntity_definition armEntity = entityMapping.getSource(null);
 			HashSet aimSupertypes = new HashSet();
 			collectSupertypes(entityMapping.getTarget(null), aimSupertypes);
 			HashSet mappedAttributes = new HashSet();
 			collectRedeclaredDerivedAttributeMappings(mappedAttributes,
 					entityMapping, mappingDomain, aimSupertypes);
-			checkAndFixSuperclassAttributeMappings(entityMapping, mappedAttributes, 
-				entityMapping, mappingDomain, aimSupertypes);
+			checkSupertypeAttributeMappings(null, mappedAttributes, armEntity,
+					mappingDomain, aimSupertypes, 1);
+			checkAndFixSuperclassAttributeMappings(entityMapping, mappedAttributes,
+					entityMapping, mappingDomain, aimSupertypes);
+			checkSupertypeAttributeMappings(entityMapping, mappedAttributes, armEntity,
+					mappingDomain, aimSupertypes, 2);
 		}
 
         transaction.endTransactionAccessCommit();
@@ -948,7 +953,7 @@ public class MappingData {
         expressRepository.closeRepository();
         System.out.println(" Superclass attribute mappings checked and fixed successfully");
     }
-	
+
 	void collectRedeclaredDerivedAttributeMappings(HashSet mappedAttributes,
 			EEntity_mapping startMapping, ASdaiModel mappingDomain,
 			HashSet aimSupertypes) throws SdaiException {
@@ -980,25 +985,21 @@ public class MappingData {
 				}
 			}
 		}
-		checkSupertypeAttributeMappings(null, mappedAttributes, startArmEntity, 
-				mappingDomain, aimSupertypes, 1);
 	}
 
 	void checkAndFixSuperclassAttributeMappings(EEntity_mapping fixMapping, HashSet mappedAttributes,
 			EEntity_mapping startMapping, ASdaiModel mappingDomain, HashSet aimSupertypes)
 	throws SdaiException {
-		EEntity_definition startArmEntity = startMapping.getSource(null);
-		
 		AGeneric_attribute_mapping attributeMappings = new AGeneric_attribute_mapping();
-		CGeneric_attribute_mapping.usedinParent_entity(null, startMapping, 
+		CGeneric_attribute_mapping.usedinParent_entity(null, startMapping,
 														mappingDomain, attributeMappings);
 		SdaiIterator attributeMappingsIter = attributeMappings.createIterator();
 		HashSet newMappedAttributes = new HashSet();
 		while (attributeMappingsIter.next()) {
-			 EGeneric_attribute_mapping attributeMapping = 
+			 EGeneric_attribute_mapping attributeMapping =
 				attributeMappings.getCurrentMember(attributeMappingsIter);
 			 EAttribute attribute = attributeMapping.getSource(null);
-			 if(attribute instanceof EExplicit_attribute) { 
+			 if(attribute instanceof EExplicit_attribute) {
 				 EExplicit_attribute explicitAttribute = (EExplicit_attribute)attribute;
 				 while(explicitAttribute.testRedeclaring(null)) {
 					 explicitAttribute = explicitAttribute.getRedeclaring(null);
@@ -1017,8 +1018,6 @@ public class MappingData {
 			 newMappedAttributes.add(attributeName);
 		}
 		mappedAttributes.addAll(newMappedAttributes);
-		checkSupertypeAttributeMappings(fixMapping, mappedAttributes, startArmEntity, 
-			mappingDomain, aimSupertypes, 2);
 	}
 
 	void checkSupertypeAttributeMappings(EEntity_mapping fixMapping, HashSet mappedAttributes,
@@ -1034,7 +1033,7 @@ public class MappingData {
 				List supertypeMappingList = new ArrayList();
 				SdaiIterator mappingsIter = supertypeMappings.createIterator();
 				while (mappingsIter.next()) {
-					EEntity_mapping supertypeMapping = 
+					EEntity_mapping supertypeMapping =
 						supertypeMappings.getCurrentMember(mappingsIter);
 					supertypeMappingList.add(supertypeMapping);
 				}
@@ -1064,7 +1063,21 @@ public class MappingData {
 				while(listIter.hasNext()) {
 					EEntity_mapping supertypeMapping = (EEntity_mapping)listIter.next();
 					EEntity supertypeTarget = supertypeMapping.getTarget(null);
-					if(aimSupertypes.contains(supertypeTarget.getPersistentLabel())) {
+					boolean isAimSupertype = aimSupertypes.contains(supertypeTarget.getPersistentLabel());
+					if(!isAimSupertype && supertypeTarget instanceof EEntity_definition
+							&& ((EEntity_definition) supertypeTarget).getComplex(null)) {
+						isAimSupertype = true;
+						AEntity leaves = ((EEntity_definition) supertypeTarget).getGeneric_supertypes(null);
+						SdaiIterator leafIterator = leaves.createIterator();
+						while(leafIterator.next()) {
+							EEntity_definition leaf = (EEntity_definition)leaves.getCurrentMemberObject(leafIterator);
+							if(!aimSupertypes.contains(leaf.getPersistentLabel())) {
+								isAimSupertype = false;
+								break;
+							}
+						}
+					}
+					if(isAimSupertype) {
 						switch (callMethodSwitch) {
 						case 1:
 							collectRedeclaredDerivedAttributeMappings(mappedAttributes,
@@ -1078,10 +1091,9 @@ public class MappingData {
 						}
 					}
 				}
-			} else {
-				checkSupertypeAttributeMappings(fixMapping, mappedAttributes, supertype,
-					mappingDomain, aimSupertypes, callMethodSwitch);
 			}
+			checkSupertypeAttributeMappings(fixMapping, mappedAttributes, supertype,
+					mappingDomain, aimSupertypes, callMethodSwitch);
 		}
 	}
 
@@ -1097,17 +1109,39 @@ public class MappingData {
 			}
 		}
 	}
-    
-	static protected boolean 
+
+	protected static boolean
 	isSupertypeOf(EEntity_definition thisEntity, EEntity_definition otherEntity)
+	throws SdaiException {
+		if(thisEntity.getComplex(null)) {
+			AEntity leaves = thisEntity.getGeneric_supertypes(null);
+			SdaiIterator leafIterator = leaves.createIterator();
+			while(leafIterator.next()) {
+				EEntity_definition leaf = (EEntity_definition)leaves.getCurrentMemberObject(leafIterator);
+				if(!isSupertypeOfEntity(leaf, otherEntity)) {
+					return false;
+				}
+			}
+			return true;
+		} else {
+			return isSupertypeOfEntity(thisEntity, otherEntity);
+		}
+	}
+
+	private static boolean
+	isSupertypeOfEntity(EEntity_definition thisEntity, EEntity_definition otherEntity)
 	throws SdaiException {
 		if(otherEntity.testGeneric_supertypes(null)) {
 			AEntity supertypes = otherEntity.getGeneric_supertypes(null);
 			SdaiIterator supertypeIterator = supertypes.createIterator();
 			while(supertypeIterator.next()) {
 				EEntity_definition supertype = (EEntity_definition)supertypes.getCurrentMemberObject(supertypeIterator);
-				if(supertype == thisEntity) return true;
-				if(isSupertypeOf(thisEntity, supertype)) return true;
+				if(supertype == thisEntity) {
+					return true;
+				}
+				if(isSupertypeOfEntity(thisEntity, supertype)) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -1126,7 +1160,7 @@ public class MappingData {
         System.out.println("  Name " + modelName);
 		int missingEntityMapCount = 0;
 		int missingAttributeMapCount = 0;
-        
+
         SdaiTransaction transaction = sdaiSession.startTransactionReadOnlyAccess();
         expressRepository = findRepository(repositoryName);
         expressRepository.openRepository();
@@ -1156,7 +1190,7 @@ public class MappingData {
 						if(entityAttr instanceof EExplicit_attribute
 						   && !((EExplicit_attribute)entityAttr).testRedeclaring(null)) {
 							AGeneric_attribute_mapping attrMaps = new AGeneric_attribute_mapping();
-							CGeneric_attribute_mapping.usedinSource(null, entityAttr, 
+							CGeneric_attribute_mapping.usedinSource(null, entityAttr,
 																	mappingDomain, attrMaps);
 							if(attrMaps.getMemberCount() == 0) {
 								System.out.println("  Mapping missing for attribute: " +
@@ -1198,7 +1232,7 @@ public class MappingData {
         System.out.println("  Name1 " + modelName1);
         System.out.println("  Name2 " + modelName2);
 		System.out.println();
-        
+
         SdaiTransaction transaction = sdaiSession.startTransactionReadOnlyAccess();
         expressRepository = findRepository(repositoryName);
         expressRepository.openRepository();
@@ -1309,9 +1343,9 @@ public class MappingData {
 				   attMapping2 instanceof EAttribute_mapping) {
 					EAttribute_mapping attAttMapping1 = (EAttribute_mapping)attMapping1;
 					EAttribute_mapping attAttMapping2 = (EAttribute_mapping)attMapping2;
-					EEntity domain1 = attAttMapping1.testDomain(null) ? 
+					EEntity domain1 = attAttMapping1.testDomain(null) ?
 						attAttMapping1.getDomain(null) : attAttMapping1;
-					EEntity domain2 = attAttMapping2.testDomain(null) ? 
+					EEntity domain2 = attAttMapping2.testDomain(null) ?
 						attAttMapping2.getDomain(null) : attAttMapping2;
 					if(domain1.getInstanceType() != domain2.getInstanceType()) {
 						printMessageHeader(entMessage);
@@ -1343,12 +1377,12 @@ public class MappingData {
 		SdaiIterator attMappIter = attMappings.createIterator();
 		while(attMappIter.next()) {
 			EGeneric_attribute_mapping attMapping = attMappings.getCurrentMember(attMappIter);
-			
+
 			//FIXME: key name should be able to handle cases when there are two attribute
 			//alternatives for the same attribute with the same data type but different constraints.
 			//This is pretty complicated because I don't know how to match alternatives like this
 			//in two mappings
-			String mappName = attMapping.getSource(null).getName(null) + 
+			String mappName = attMapping.getSource(null).getName(null) +
 				(attMapping.testData_type(null) ? " " + attMapping.getData_type(null) : "");
 			mappingMap.put(mappName, attMapping);
 		}
@@ -1385,7 +1419,7 @@ public class MappingData {
 			EAttribute_value_constraint avc1 = (EAttribute_value_constraint)constraint1;
 			EAttribute_value_constraint avc2 = (EAttribute_value_constraint)constraint2;
 			compareOneConstraint(avc1.getAttribute(null), avc2.getAttribute(null), message1, message2);
-			if(!(constraint1 instanceof ENon_optional_constraint) 
+			if(!(constraint1 instanceof ENon_optional_constraint)
 			&& !avc1.get_object(avc1.getAttributeDefinition("constraint_value"))
 			   .equals(avc2.get_object(avc1.getAttributeDefinition("constraint_value")))) {
 				printMessageHeader(message1);
@@ -1468,7 +1502,7 @@ public class MappingData {
 				}
 			if(tc1.testConstraints(null) == tc2.testConstraints(null)) {
 				if(tc1.testConstraints(null)) {
-					compareOneConstraint(tc1.getConstraints(null), tc2.getConstraints(null), 
+					compareOneConstraint(tc1.getConstraints(null), tc2.getConstraints(null),
 										 message1, message2);
 				}
 			} else {
@@ -1507,12 +1541,12 @@ public class MappingData {
 		} else if(constraint1 instanceof ENegation_constraint) {
 			ENegation_constraint ic1 = (ENegation_constraint)constraint1;
 			ENegation_constraint ic2 = (ENegation_constraint)constraint2;
-			compareOneConstraint(ic1.getConstraints(null), ic2.getConstraints(null), 
+			compareOneConstraint(ic1.getConstraints(null), ic2.getConstraints(null),
 								 message1, message2);
 		} else if(constraint1 instanceof EEnd_of_path_constraint) {
 			EEnd_of_path_constraint eopc1 = (EEnd_of_path_constraint)constraint1;
 			EEnd_of_path_constraint eopc2 = (EEnd_of_path_constraint)constraint2;
-			compareOneConstraint(eopc1.getConstraints(null), eopc2.getConstraints(null), 
+			compareOneConstraint(eopc1.getConstraints(null), eopc2.getConstraints(null),
 								 message1, message2);
 		} else if(constraint1 instanceof EAttribute) {
 			if(constraint1 != constraint2) {
@@ -1529,7 +1563,7 @@ public class MappingData {
 
     public void collectMissingComplexTypesOperation() throws SdaiException {
         System.out.println(" Collecting missing complex types");
-        
+
         SdaiTransaction transaction = sdaiSession.startTransactionReadOnlyAccess();
         expressRepository = findRepository(repositoryName);
         expressRepository.openRepository();
@@ -1553,7 +1587,7 @@ public class MappingData {
 		ESchema_mapping schemaMapping =
 			(ESchema_mapping) mappingModel.getInstances(ESchema_mapping.class).getByIndexEntity(1);
 		SdaiModel targetModel = schemaMapping.getTarget(null).findEntityInstanceSdaiModel();
-		final Map tEntitiesToCplxEntities = getEntitiesToCplxEntities(targetModel); 
+		final Map tEntitiesToCplxEntities = getEntitiesToCplxEntities(targetModel);
 		SdaiModel sourceModel = schemaMapping.getSource(null).findEntityInstanceSdaiModel();
 		final Map sEntitiesToCplxEntities = getEntitiesToCplxEntities(sourceModel);
 		Map missingCplxTypes = new HashMap();
@@ -1630,7 +1664,7 @@ public class MappingData {
 //										" from " + tCplxEntity.getName(null));
 							}
 						}
-					}					
+					}
 				}
 			}
 		}
@@ -1638,7 +1672,7 @@ public class MappingData {
 
 	private Map getEntitiesToCplxEntities(SdaiModel dictModel) throws SdaiException {
 		Map entitiesToCplxEntities = new HashMap();
-		AEntity_declaration declarations = 
+		AEntity_declaration declarations =
 			(AEntity_declaration) dictModel.getInstances(EEntity_declaration.class);
 		for(SdaiIterator i = declarations.createIterator(); i.next(); ) {
 			EEntity_declaration declaration = declarations.getCurrentMember(i);
@@ -1703,7 +1737,7 @@ public class MappingData {
      * @throws SdaiException Exception RP_NAVL in thrown if repository with this name is not found.
      * Other exceptions can be thrown as well.
      * @return Repostitory which was found
-     */    
+     */
     public SdaiRepository findRepository(String findRepName) throws SdaiException {
         ASdaiRepository repositories = sdaiSession.getKnownServers();
         SdaiIterator repIterator = repositories.createIterator();
@@ -1713,7 +1747,7 @@ public class MappingData {
             if(repositoryName.equals(findRepName))
                 return repository;
         }
-        throw new SdaiException(SdaiException.RP_NAVL, sdaiSession, 
+        throw new SdaiException(SdaiException.RP_NAVL, sdaiSession,
                                 "Repository not found: " + findRepName);
     }
 
@@ -1723,11 +1757,11 @@ public class MappingData {
      * @throws SdaiException Exception MO_NVLD in thrown if model with this name is not found.
      * Other exceptions can be thrown as well.
      * @return Model which was found
-     */    
+     */
     public SdaiModel findModel(SdaiRepository repository, String findModelName) throws SdaiException {
         SdaiModel model = testAndFindModel(repository, findModelName);
         if(model != null) return model;
-        throw new SdaiException(SdaiException.MO_NVLD, repository, 
+        throw new SdaiException(SdaiException.MO_NVLD, repository,
                                 "Model not found: " + findModelName);
     }
 
@@ -1743,12 +1777,12 @@ public class MappingData {
         }
         return null;
     }
-    
+
     public SchemaInstance findSchemaInstance(SdaiRepository repository, String findInstanceName)
     throws SdaiException {
         SchemaInstance schemaInstance = repository.findSchemaInstance(findInstanceName);
         if(schemaInstance != null) return schemaInstance;
-        throw new SdaiException(SdaiException.SI_NEXS, repository, 
+        throw new SdaiException(SdaiException.SI_NEXS, repository,
                                 "Schema instance not found: " + findInstanceName);
     }
 
@@ -1789,9 +1823,9 @@ public class MappingData {
            ioe.printStackTrace();
         }
     }
-    
+
     public String capitalizeString(String string) {
         return string.substring(0, 1).toUpperCase() + string.substring(1);
     }
-    
+
 }

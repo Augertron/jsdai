@@ -48,7 +48,7 @@ public class CMappingNegation_constraint extends CConstraint
 	implements MappingConstraintMatcher {
 
 	protected CMappingNegation_constraint() { }
-	
+
 	/**
      * @since 4.1.0
      */
@@ -75,7 +75,7 @@ public class CMappingNegation_constraint extends CConstraint
      */
 	public MatcherInstances findBackward(MappingContext mappingContext,
 			MatcherInstances instances, boolean decCacheUseCnt) throws SdaiException {
-		throw new SdaiException(SdaiException.FN_NAVL, 
+		throw new SdaiException(SdaiException.FN_NAVL,
 								"This constraint can not be called as part of backward references: " +
 								this);
 	}
@@ -85,7 +85,7 @@ public class CMappingNegation_constraint extends CConstraint
      */
 	public MatcherInstances findPathForward(MappingContext mappingContext,
 			MatcherInstances instances, boolean decCacheUseCnt) throws SdaiException {
-		throw new SdaiException(SdaiException.FN_NAVL, 
+		throw new SdaiException(SdaiException.FN_NAVL,
 								"This constraint can not be called as part of path forward references: " +
 								this);
 	}
@@ -103,7 +103,7 @@ public class CMappingNegation_constraint extends CConstraint
      */
 	public MatcherInstances findPathBackward(MappingContext mappingContext,
 			MatcherInstances instances, boolean decCacheUseCnt) throws SdaiException {
-		throw new SdaiException(SdaiException.FN_NAVL, 
+		throw new SdaiException(SdaiException.FN_NAVL,
 								"This constraint can not be called as part of path backward references: " +
 								this);
 	}
@@ -125,9 +125,11 @@ public class CMappingNegation_constraint extends CConstraint
 		}
 
 		protected MatcherInstances dup(Map instances, int status, boolean dupAttributePath) {
+			if(instances != null) {
+				return super.dup(instances, status, dupAttributePath);
+			}
 			NegationInstances newMatcherInstances =
-				new NegationInstances(mappingContext,
-									  instances != null ? instances : this.instances, status);
+				new NegationInstances(mappingContext, this.instances, status);
 			return newMatcherInstances;
 		}
 
@@ -146,7 +148,7 @@ public class CMappingNegation_constraint extends CConstraint
 				if(otherNegation) {
 					newInstances.putAll(instances);
 					newInstances.putAll(other.instances);
-					return dup(newInstances, status);
+					return new NegationInstances(mappingContext, newInstances, status);
 				} else {
 					Map otherInstances = other.getInstanceMap();
 					for(Iterator i = otherInstances.entrySet().iterator(); i.hasNext(); ) {

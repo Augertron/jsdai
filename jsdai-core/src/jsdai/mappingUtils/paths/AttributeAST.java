@@ -35,14 +35,14 @@ import java.util.*;
 /**
  *
  * @author  Vaidas Nargėlas
- * @version 
+ * @version
  */
 public class AttributeAST extends EntityAST {
-	
+
 	EAttribute attribute;
 	// This field is not propagated with dup()
 	int constraintLevelInRemaining;
-	
+
 	/** Creates new AttributeAST */
     public AttributeAST() {
     	constraintLevelInRemaining = -1;
@@ -72,11 +72,11 @@ public class AttributeAST extends EntityAST {
 		if(declaration != null && declaration.type == DictionaryDeclaration.ENTITY) {
 			attribute = (EAttribute)declaration.attributes.get(id.getText().toLowerCase());
 			if(attribute == null)
-				parser.reportError(new SemanticException("Attribute " + entity.getText() + 
+				parser.reportError(new SemanticException("Attribute " + entity.getText() +
 									"." + id.getText() + " not found",
 									parser.getFilename(), id.getLine()));
 		} else if((entityText = entity.getText()).length() > 0) {
-			parser.reportError(new SemanticException(entityText + " should be an entity for attrivute " +
+			parser.reportError(new SemanticException(entityText + " should be an entity for attribute " +
 													 id.getText(), parser.getFilename(), id.getLine()));
 		} else {
 			parser.reportError(new SemanticException("Attribute " + id.getText() +
@@ -165,17 +165,17 @@ public class AttributeAST extends EntityAST {
 		return null;
 	}
 
-	
+
 	protected AttributeAST(AttributeAST other) {
 		super(other);
 		attribute = other.attribute;
 		constraintLevelInRemaining = -1;
 	}
-	
+
 	public EntityAST dup() {
 		return new AttributeAST(this);
 	}
-	
+
 	public boolean isSameAttribute(AttributeAST other) {
 		return attribute == other.attribute;
 	}
@@ -184,5 +184,5 @@ public class AttributeAST extends EntityAST {
 		return other instanceof AttributeAST ? isSameAttribute((AttributeAST)other) :  false;
 	}
 
-	
+
 }

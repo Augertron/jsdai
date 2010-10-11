@@ -107,7 +107,7 @@ public interface MappingConstraintMatcher {
 	/**
 	 * Finds dependent instances when the constraint is used in a path
 	 * for a forward direction. It is meant for mapping operations internal use.
-	 * 
+	 *
 	 * @return The dependent instances
 	 * @exception SdaiException if an error occurs during method execution or
 	 *                          in underlying JSDAI operations
@@ -202,11 +202,11 @@ public interface MappingConstraintMatcher {
 		}
 
 		protected final MatcherInstances dup() {
-			return dup(instances, status, true);
+			return dup(null, status, true);
 		}
 
 		protected final MatcherInstances dup(boolean dupAttributePath) {
-			return dup(instances, status, dupAttributePath);
+			return dup(null, status, dupAttributePath);
 		}
 
 		protected MatcherInstances intersect(MatcherInstances other) throws SdaiException {
@@ -443,7 +443,7 @@ public interface MappingConstraintMatcher {
 									newKeys.add(instance);
 									newValue.add((status & STATUS_PATH_MASK) != 0 ?
 											instance : NON_PATH_VALUE);
-								}								
+								}
 							}
 							Map newInstances = new ImmutableArrayMap(newKeys, newValue);
 							return new MatcherInstances(newInstances, status);
@@ -556,7 +556,7 @@ public interface MappingConstraintMatcher {
 		}
 
 		/**
-		 * Compares this matcher instances to other matcher instances. 
+		 * Compares this matcher instances to other matcher instances.
 		 *
 		 * @param obj an object to compare
 		 * @return true if object to compare to is <code>MatcherInstances</code> and
@@ -668,8 +668,8 @@ public interface MappingConstraintMatcher {
 						SdaiIterator pathAggIter = pathAggregate.createIterator();
 						while(pathAggIter.next()) {
 							pathAggregate.testCurrentMember(pathAggIter, selectPath);
-							pathValue = 
-								followAttributePath(pathAggregate.getCurrentMemberObject(pathAggIter), 
+							pathValue =
+								followAttributePath(pathAggregate.getCurrentMemberObject(pathAggIter),
 													pathPosition - 1, selectPath);
 							if(pathValue instanceof EEntity) {
 								pathValues.add(pathValue);
@@ -689,7 +689,7 @@ public interface MappingConstraintMatcher {
 					ADefined_type dataType = getAttributeDataTypeAt(pathPosition);
 					SdaiIterator dataTypeIter = dataType.createIterator();
 					int selPathIdx = 0;
-					for(; selectPath[selPathIdx] != null && dataTypeIter.next(); 
+					for(; selectPath[selPathIdx] != null && dataTypeIter.next();
 						selPathIdx++) {
 						EDefined_type dataTypeElem = dataType.getCurrentMember(dataTypeIter);
 						if(dataTypeElem != selectPath[selPathIdx]) {
@@ -856,7 +856,7 @@ public interface MappingConstraintMatcher {
 			public void remove() {
 				throw new UnsupportedOperationException();
 			}
-			
+
 		}
 	}
 
@@ -1213,7 +1213,7 @@ public interface MappingConstraintMatcher {
 				throw new UnsupportedOperationException();
 			}
 		}
-		
+
 		static private class FixedValueEntry implements Entry {
 			final Object origKey;
 			final Object fixedValue;
@@ -1241,7 +1241,7 @@ public interface MappingConstraintMatcher {
 				}
 
 				Entry e = (Entry)o;
-				return 
+				return
 					(origKey == null ? e.getKey() == null : origKey.equals(e.getKey())) &&
 					(fixedValue == null ? e.getValue() == null : fixedValue.equals(e.getValue()));
 			}

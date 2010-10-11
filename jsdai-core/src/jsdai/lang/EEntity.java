@@ -405,6 +405,7 @@ public interface EEntity extends SdaiEventSource {
  * @return instance of the entity describing entity attribute.
  * @throws SdaiException EI_NEXS, entity instance does not exist.
  * @throws SdaiException AT_NDEF, attribute not defined.
+ * @throws SdaiException AT_NVLD, attribute invalid.
  * @throws SdaiException SY_ERR, underlying system error.
  * @see #get_object get_object
  * @see #get_int get_int

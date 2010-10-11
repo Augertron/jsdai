@@ -713,6 +713,7 @@ public final class SdaiTransaction extends SdaiCommon {
 	}
 
 	private void abortAction(boolean endTransaction) throws SdaiException {
+
 //		if (owning_session == null || owning_session.session == null) {
 		if (owning_session == null || !owning_session.opened) {
 			throw new SdaiException(SdaiException.SS_NOPN);
@@ -763,6 +764,7 @@ public final class SdaiTransaction extends SdaiCommon {
 						contents_modified = true;
 					}
 				}
+
 if (SdaiSession.debug) System.out.println("SdaiTransaction (((+++))) before loadContentsLocal  rep: " + 
 rep.name + 
 "   schemas count = " + rep.schemas.myLength +
@@ -770,7 +772,6 @@ rep.name +
 "    rep.modified: " + rep.modified);
 
 				rep.aborting(contents_modified);
-
 				int count_of_models = rep.models.myLength;
 				int deleted = 0;
 				for (i = 0; i < count_of_models; i++) {

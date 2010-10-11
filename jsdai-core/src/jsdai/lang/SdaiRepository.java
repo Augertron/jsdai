@@ -513,6 +513,8 @@ public abstract class SdaiRepository extends SdaiCommon implements SdaiEventSour
 
 	boolean importing;
 
+	boolean currently_aborting;
+
 /**
 	The name of the directory in which the binary files attributed to this
 	repository are stored. For example, "r15".
@@ -2146,12 +2148,12 @@ System.out.println("  SdaiRepository   its count: " + cc);
 			}
 			model.exists = true;
 			if (session.session_closing) {
-				model.deleteSdaiModelWork(false, false, true);
+				model.deleteSdaiModelWork(false, false, true, false);
 			} else {
 				boolean saved_modified = model.modified;
 //System.out.println("SdaiRepository !!!!! model: " + model.name);
 //start = System.currentTimeMillis();
-				model.deleteSdaiModelWork(true, true, true);
+				model.deleteSdaiModelWork(true, true, true, false);
 //end = System.currentTimeMillis();
 //cumulat += (end-start);
 //System.out.println("Cumulative time +++: "+cumulat/1000.0 +" sec");
@@ -5572,7 +5574,7 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
 	}
 
 	protected void deleteSdaiModelInReopen(SdaiModel model) throws SdaiException {
-		model.deleteSdaiModelWork(false, true, false);
+		model.deleteSdaiModelWork(false, true, false, false);
 	}
 
 	protected void deleteSchemaInstanceInReopen(SchemaInstance sch) throws SdaiException {
