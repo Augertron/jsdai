@@ -45,6 +45,10 @@ public class EGDefined extends AbstractEGBox implements IDefined_type {
 
 	private static int DEFINED_TYPE_COUNTING = 1;
 
+	// RR
+	protected boolean fRestricted = false;
+	private boolean showRestricted = true;
+
 	public EGDefined(PropertySharing prop) {
 		super(prop);
 		simpleSchema.lineStyle = selectedSchema.lineStyle = ColorSchema.DASHED_LINE;
@@ -62,6 +66,40 @@ public class EGDefined extends AbstractEGBox implements IDefined_type {
 		setLocation(location);
 		setName(name);
 	}
+
+	public EGDefined(PropertySharing prop, String name, Point location, boolean fRestricted) {
+		this(prop);
+		setLocation(location);
+		setName(name);
+		setRestricted(fRestricted);
+	}
+
+
+
+
+	// RR - when the defined type is restricted by a where clause
+	public boolean isRestricted() {
+		return fRestricted;
+	}
+
+	// RR
+	public void setRestricted(boolean fRestricted) {
+		this.fRestricted = fRestricted;
+		validDict = false;
+		wrapper.setText(getText());
+		fireLabelChanged();
+	}
+
+	// RR
+	public String getText() {
+		String text = super.getText();
+		if (isRestricted())
+			text = showRestricted ? "*" + text : text; // defined type, restricted by a where clause
+		
+		return text;
+		
+	}
+
 
 	public void updateModel(SdaiModel modelDict, SdaiModel modelEG)	throws SdaiException {
 		if ((modelDict != null) && !validDict) {

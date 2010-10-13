@@ -78,6 +78,8 @@ public class EditorContainer extends Composite implements ISelectionChangedListe
 		layout = new StackLayout();
 		this.setLayout(layout);
 		this.sdaiEditor = sdaiEditor;
+
+	
 	}
 	
 	/**

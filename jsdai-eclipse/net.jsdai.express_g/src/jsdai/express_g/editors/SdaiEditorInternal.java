@@ -91,6 +91,7 @@ public class SdaiEditorInternal extends MultiPageEditorPart implements IPageChan
 	 * @see org.eclipse.ui.ISaveablePart#doSave(org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	public void doSave(IProgressMonitor monitor) {
+//System.out.println("<SdaiEditorInternal> doSave-0");
 		for (int i = 0; i < getPageCount(); i++) {
 			IEditorPart editor = getEditor(i);
 			if ((editor != null) && (editor.isDirty())) {

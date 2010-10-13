@@ -24,6 +24,7 @@
 package jsdai.express_g.exp2.ui.command;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
@@ -66,9 +67,12 @@ import jsdai.SExtended_dictionary_schema.AAttribute;
 import jsdai.SExtended_dictionary_schema.AEntity_definition;
 import jsdai.SExtended_dictionary_schema.AEntity_or_view_definition;
 import jsdai.SExtended_dictionary_schema.AEntity_or_view_or_subtype_expression;
+import jsdai.SExtended_dictionary_schema.AGlobal_rule;
 import jsdai.SExtended_dictionary_schema.AInterfaced_declaration;
 import jsdai.SExtended_dictionary_schema.AInverse_attribute;
 import jsdai.SExtended_dictionary_schema.ANamed_type;
+import jsdai.SExtended_dictionary_schema.AUniqueness_rule;
+import jsdai.SExtended_dictionary_schema.AWhere_rule;
 import jsdai.SExtended_dictionary_schema.CAttribute;
 import jsdai.SExtended_dictionary_schema.CInverse_attribute;
 import jsdai.SExtended_dictionary_schema.EAggregation_type;
@@ -119,10 +123,12 @@ import jsdai.SExtended_dictionary_schema.ESimple_type;
 import jsdai.SExtended_dictionary_schema.EString_type;
 import jsdai.SExtended_dictionary_schema.ESub_supertype_constraint;
 import jsdai.SExtended_dictionary_schema.ESubtype_expression;
+import jsdai.SExtended_dictionary_schema.EUniqueness_rule;
 import jsdai.SExtended_dictionary_schema.EUse_from_specification;
 import jsdai.SExtended_dictionary_schema.EUsed_declaration;
 import jsdai.SExtended_dictionary_schema.EVariable_size_aggregation_type;
 import jsdai.express_g.SdaieditPlugin;
+import jsdai.express_g.editors.SdaiEditor;
 import jsdai.express_g.exp2.AbstractDraw;
 import jsdai.express_g.exp2.EGToolKit;
 import jsdai.express_g.exp2.Paging;
@@ -154,11 +160,13 @@ import jsdai.express_g.exp2.eg.Wire;
 import jsdai.express_g.exp2.ui.PropertySharing;
 import jsdai.express_g.exp2.ui.VisualPage;
 import jsdai.lang.AEntity;
+import jsdai.lang.ASdaiModel;
 import jsdai.lang.A_string;
 import jsdai.lang.EEntity;
 import jsdai.lang.SdaiException;
 import jsdai.lang.SdaiIterator;
 import jsdai.lang.SdaiModel;
+import jsdai.lang.SdaiRepository;
 
 /**
  * <p>
@@ -180,6 +188,8 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 	 */
 	private HashSet tempSet = new HashSet();
 
+	public boolean flag_mark_constrained_if_where_clause = true;
+	
 	protected void setTemp(EEntity entity, Object data) {
 		entity.setTemp(EENTITY_KEY, data);
 		tempSet.add(entity);
@@ -260,9 +270,10 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 							redeclaring = red_ent.getName(null);
 					}
 					if ((parent != null) && (child != null)) {
+						boolean fRestricted = isAttrRestricted(entity);
 						object = new EGRelationSimple(prop, name, parent, child,
 								EGRelationSimple.TYPE_AGREGATION, ent
-										.getOptional_flag(null), false, redeclaring);
+										.getOptional_flag(null), false, redeclaring, fRestricted); // RR - fRestricted
 						((SDAIdicSchema) object).setDefinition(entity);
 						prop.handler().drawableAddR((AbstractDraw) object);
 					} else {
@@ -406,9 +417,10 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 					redeclaring = ((EAttribute) red_ent).getName(null);
 			}
 			if ((parent != null) && (child != null)) {
+				boolean fRestricted = isAttrRestricted(entity);
 				object = new EGRelationSimple(prop, name, parent, child,
 						EGRelationSimple.TYPE_AGREGATION, false, true,
-						redeclaring);
+						redeclaring, fRestricted); // RR - fRestricted
 				((SDAIdicSchema) object).setDefinition(entity);
 				if (agregate != null)
 					((EGRelationSimple) object).setAgregate(agregate);
@@ -423,6 +435,40 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 		}
 		if (!(object instanceof EGRelationSimple)) object = null;
 		return (EGRelationSimple) object;
+	}
+
+	// RR - checks if the attribute is constrained by UNIQUE clause and by WHERE clause
+	boolean isAttrRestricted(EAttribute attr) throws SdaiException {
+		// two parts - 1. UNIQUE clause, 2. - WHERE clause
+		// find parent entity, find its UNIQUE clause, check if this attribute is included
+		EEntity_or_view_definition parent_eov = attr.getParent(null);
+		EEntity_definition parent_entity = null;
+		if (parent_eov instanceof EEntity_definition) {
+			parent_entity = (EEntity_definition) parent_eov;
+		}
+		if (parent_entity == null) return false;
+		
+		// check if constrained by UNIQUE clause
+		AUniqueness_rule uniqueness_rules = parent_entity.getUniqueness_rules(null,null);
+    SdaiIterator iter_ur = uniqueness_rules.createIterator();
+   	while (iter_ur.next()) {
+	    EUniqueness_rule ur_inst = (EUniqueness_rule)uniqueness_rules.getCurrentMemberObject(iter_ur);
+      AAttribute attributes = ur_inst.getAttributes(null);
+      SdaiIterator iter_attr = attributes.createIterator();
+      while (iter_attr.next()) {
+      	EAttribute attr_inst = (EAttribute)attributes.getCurrentMemberObject(iter_attr);
+      	if (attr_inst == attr) return true;
+      }      
+		}
+		
+		// check if constrained by WHERE clause
+	  // this is more complicated - need to find the string with the expression and search for the attribute name there, it seems	
+	
+	  // TODO
+	 
+	
+	  // and finally:
+	  return false;
 	}
 
 	protected EGRelationSimple createEG(EExplicit_attribute entity)
@@ -456,9 +502,10 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 					redeclaring = red_ent.getName(null);
 			}
 			if ((parent != null) && (child != null)) {
+				boolean fRestricted = isAttrRestricted(entity);
 				object = new EGRelationSimple(prop, name, parent, child,
 						EGRelationSimple.TYPE_AGREGATION, entity
-								.getOptional_flag(null), false, redeclaring);
+								.getOptional_flag(null), false, redeclaring, fRestricted);  // RR - fRestricted
 				((SDAIdicSchema) object).setDefinition(entity);
 				if (agregate != null)
 					((EGRelationSimple) object).setAgregate(agregate);
@@ -729,6 +776,27 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 		return (AbstractEGObject) object;
 	}
 
+	// RR - to mark entities, restricted by global rules
+	boolean isRestricted(EEntity_definition entity) throws SdaiException {
+		ASdaiModel domain = entity.findEntityInstanceSdaiModel().getRepository().getSchemas().getAssociatedModels();
+		AGlobal_rule global_rules = entity.getGlobal_rules(null, domain); // may need to work on domain
+//System.out.println("global_rules: " + global_rules.getMemberCount());
+		if (global_rules.getMemberCount() > 0) return true;
+		//else return false;
+		
+		IPreferenceStore prefs = SdaieditPlugin.getDefault().getPreferenceStore();
+		boolean use_asterisk = prefs.getBoolean(SdaiEditor.USE_ASTERISK_FOR_ENTITY);
+		flag_mark_constrained_if_where_clause = !use_asterisk;
+		if (flag_mark_constrained_if_where_clause) {
+		
+	  // do the same if local WHERE clause is present in the entity, to be switched by a flag
+
+			AWhere_rule where_rules = entity.getWhere_rules(null, null);	// here domain perhaps not needed, as inside the same entity and so inside the same schema
+    	if (where_rules.getMemberCount() > 0) return true;
+		}
+	  return false;
+	}
+
 	// Create Entity
 	protected EGEntity createEG(EEntity_definition entity) throws SdaiException {
 		Object object = getTemp(entity);
@@ -740,6 +808,7 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 				boolean independent = false;
 				boolean instantiable = false;
 				boolean fAbstract = false;
+				boolean fRestricted = isRestricted(entity); // RR
 				if (entity.testIndependent(null))
 					independent = entity.getIndependent(null);
 				if (entity.testInstantiable(null))
@@ -750,7 +819,7 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 				Point location = new Point(0, 0);
 
 				object = new EGEntity(prop, entity.getName(null), location,
-						complex, independent, instantiable, fAbstract);
+						complex, independent, instantiable, fAbstract, fRestricted); // RR - added fRestricted
 				((SDAIdicSchema) object).setDefinition(entity);
 				setTemp(entity, object);
 
@@ -1009,6 +1078,13 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 		return (EGConstraint) object;
 	}
 
+	// RR
+	boolean isDTRestricted(EDefined_type dt) throws SdaiException {
+		AWhere_rule wr = dt.getWhere_rules(null,null);
+		if (wr.getMemberCount() > 0) return true;
+		else return false;
+	}
+
 	protected AbstractEGBox createEG(EDefined_type entity) throws SdaiException {
 		Object object = getTemp(entity);
 		if (!(object instanceof AbstractEGBox)) {
@@ -1023,7 +1099,8 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 					// sel.setDefinition(entity);
 				}
 			} else {
-				object = new EGDefined(prop, entity.getName(null), location);
+				boolean fRestricted = isDTRestricted(entity);
+				object = new EGDefined(prop, entity.getName(null), location, fRestricted); // RR - added fRestricted
 				((SDAIdicSchema) object).setDefinition(entity);
 
 				setTemp(entity, object);

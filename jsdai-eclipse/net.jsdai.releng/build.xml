@@ -48,11 +48,23 @@
 	<property name="workspace.dir" value="${stage.dir}/workspace"/>
 	<property name="workspace.loc" location="${workspace.dir}"/>
 	<property name="output.loc" location="${stage.loc}/output"/>
+	<property name="pack200dir.loc" location="${user.home}/bin/packcmd"/>
 	<property name="log.level" value="INFO"/>
 	<property name="stage.header.line" value="===================="/>
 	<property name="target.ws" value="gtk"/>
 	<property name="target.os" value="linux"/>
 	<property name="target.arch" value="x86"/>
+
+	<pathconvert property="equinox.launcher.jar">
+		<first count="1">
+			<sort>
+				<fileset dir="${buckminster.loc}/plugins" includes="**/org.eclipse.equinox.launcher_*.jar"/>
+				<reverse xmlns="antlib:org.apache.tools.ant.types.resources.comparators">
+					<date/>
+				</reverse>
+			</sort>
+		</first>
+	</pathconvert>
 
 	<macrodef name="buckminster">
 		<attribute name="command" default="--scriptfile"/>
@@ -60,7 +72,7 @@
 		<element name="vmargs" optional="true"/>
 		<element name="args" optional="true"/>
 		<sequential>
-	    	<java dir="${buckminster.loc}" jar="${buckminster.loc}/startup.jar" fork="true" output="${stage.loc}/build.log" append="true" failonerror="@{failonerror}">
+	    	<java dir="${buckminster.loc}" jar="${equinox.launcher.jar}" fork="true" output="${stage.loc}/build.log" append="true" failonerror="@{failonerror}">
 	    		<jvmarg value="-Xmx256M"/>
                 <sysproperty key="cvsMethod" value="${cvsMethod}"/>
                 <sysproperty key="cvsUser" value="${cvsUser}"/>
@@ -83,20 +95,45 @@
         <delete dir="${stage.loc}"/>
     </target>
 
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: -check.target.platform                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="-check.target.platform">
+    	<condition property="unzip.target.platform">
+    		<and>
+    			<matches string="${target.platform.loc}" pattern="\.zip$" casesensitive="false"/>
+    			<isfileselected file="${target.platform.loc}">
+    				<type type="file"/>
+				</isfileselected>
+    		</and>
+    	</condition>
+    </target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: -unzip.target.platform                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="-unzip.target.platform" if="unzip.target.platform" depends="-check.target.platform">
+    	<mkdir dir="${stage.loc}/targetPlatform"/>
+    	<unzip src="${target.platform.loc}" dest="${stage.loc}/targetPlatform" overwrite="true"/>
+    	<pathconvert property="target.platform.dir.loc">
+    		<first count="1">
+				<dirset dir="${stage.loc}/targetPlatform">
+					<include name="**"/>
+					<depth min="0" max="0"/>
+				</dirset>
+			</first>
+		</pathconvert>
+    </target>
+
 	<!-- ================================= 
           target: resolve.projects
          ================================= -->
-    <target name="resolve.projects" description="--> Resolve projects">
+    <target name="resolve.projects" description="--> Resolve projects" depends="-unzip.target.platform">
+    	<property name="target.platform.dir.loc" location="${target.platform.loc}"/>
     	<mkdir dir="${stage.loc}"/>
-    	<property name="org.eclipse.core.runtime.settings"
-    		location="${workspace.loc}/.metadata/.plugins/org.eclipse.core.runtime/.settings"/>
-    	<mkdir dir="${org.eclipse.core.runtime.settings}"/>
-    	<echo file="${org.eclipse.core.runtime.settings}/org.eclipse.buckminster.runtime.prefs"
->eclipse.preferences.version=1
-maxParallelMaterializationJobs=1
-</echo>
     	<echo file="${stage.loc}/resolve.bmscript"
->setpref complianceLevel=1.4 targetWS=${target.ws} targetOS=${target.os} targetArch=${target.arch} targetPlatformPath=${target.platform.loc}
+>setpref complianceLevel=1.4 targetWS=${target.ws} targetOS=${target.os} targetArch=${target.arch} targetPlatformPath=${target.platform.dir.loc}
+setpref maxParallelMaterializations=1 maxParallelResolutions=1 connectionRetryCount=5 connectionRetryDelay=10
 resolve -B ${stage.loc}/${topProject}.bom -N ${cquery.loc}/${topProject}.cquery
 </echo>
 		<echo file="${stage.loc}/build.log" message="${stage.header.line} invoke resolve.bmscript ${stage.header.line}${line.separator}"/>
@@ -133,6 +170,8 @@ build
     	<propertyfile file="${buckminster.properties}">
     		<entry key="qualifier.replacement.*" value="generator:lastModified"/>
     		<entry key="buckminster.output.root" value="${output.loc}"/>
+    		<entry key="cbi.include.source" value="false"/>
+    		<entry key="site.pack200" value="true"/>
     	</propertyfile>
 
     	<echo file="${stage.loc}/build.log" message="${stage.header.line} invoke createproduct.bmscript${stage.header.line}${line.separator}" append="true"/>
@@ -140,63 +179,15 @@ build
     		<args>
         		<arg value="-P"/>
         		<arg file="${buckminster.properties}"/>
-        		<arg value="${topProject}#build.site.dir"/>
+        		<arg value="${topProject}#site.full.p2.zip"/>
     		</args>
     	</buckminster>
-    </target>
-
-    <!-- ================================= 
-          target: site.optimizer
-         ================================= -->
-    <target name="site.optimizer" description="--> Perform site optimization and create .pack.gz files">
-    	<move file="${output.loc}/site/plugins" tofile="${output.loc}/site/plugins-jars"/>
-    	<echo file="${stage.loc}/build.log" message="${stage.header.line} invoke siteOptimizer ${stage.header.line}${line.separator}" append="true"/>
-    	<java dir="${buckminster.loc}" jar="${buckminster.loc}/startup.jar" fork="true" output="${stage.loc}/build.log" append="true" failonerror="true">
-    		<sysproperty key="org.eclipse.update.jarprocessor.pack200" value="${buckminster.loc}/packcmd"/>
-    		<arg value="-application"/>
-    		<arg value="org.eclipse.update.core.siteOptimizer"/>
-    		<arg value="-verbose"/>
-    		<arg value="-jarProcessor"/>
-    		<arg value="-processAll"/>
-    		<arg value="-pack"/>
-    		<arg value="-outputDir"/>
-    		<arg path="${output.loc}/site/plugins"/>
-    		<arg path="${output.loc}/site/plugins-jars"/>
-    	</java>
-		<copy todir="${output.loc}/site/plugins-jars" overwrite="true">
-			<fileset dir="${output.loc}/site/plugins">
-				<include name="*.jar"/>
-			</fileset>
-		</copy>
-    	<delete>
-    		<fileset dir="${output.loc}/site/plugins">
-    			<include name="*.pack.gz"/>
-    			<size value="0"/>
-    		</fileset>
-    	</delete>
-    </target>
-
-	<!-- ================================= 
-          target: update.archivedsite
-         ================================= -->
-    <target name="update.archivedsite" description="--> Update archived site with .pack.gz files">
-    	<echo file="${stage.loc}/build.log" message="${stage.header.line} update archived site with .pack.gz files ${stage.header.line}${line.separator}" append="true"/>
-    	<pathconvert property="archivedsite.zip">
-    		<path>
-    			<fileset dir="${output.loc}/archivedsite">
-    				<include name="${archivedSitePrefix}-*.zip"/>
-    			</fileset>
-    		</path>
-    	</pathconvert>
-    	<zip destfile="${archivedsite.zip}" update="true" basedir="${output.loc}/site">
-    		<include name="plugins/*.pack.gz"/>
-    	</zip>
     </target>
 
 	<!-- ================================= 
           target: integration.build
          ================================= -->
-    <target name="integration.build" depends="resolve.projects, materialize.projects, perform.actions, site.optimizer, update.archivedsite" description="--> Do complete integration build"/>
+    <target name="integration.build" depends="resolve.projects, materialize.projects, perform.actions" description="--> Do complete integration build"/>
 
     <!-- ================================= 
           target: clean.and.build

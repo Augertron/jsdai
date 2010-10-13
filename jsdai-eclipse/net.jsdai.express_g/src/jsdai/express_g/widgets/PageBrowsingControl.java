@@ -23,11 +23,14 @@
 
 package jsdai.express_g.widgets;
 
+import jsdai.express_g.editors.ExpressGEditor;
 import jsdai.express_g.editors.IPageControl;
 import jsdai.express_g.editors.PageHandlingContextMenu;
 import jsdai.express_g.exp2.EGToolKit;
+import jsdai.express_g.exp2.Paging;
 import jsdai.express_g.exp2.ui.PropertySharing;
 import jsdai.express_g.exp2.ui.VisualPage;
+import jsdai.express_g.exp2.ui.command.UpdateCommand;
 import jsdai.express_g.exp2.ui.event.PageChangeEvent;
 import jsdai.express_g.exp2.ui.event.PageListener;
 
@@ -116,7 +119,7 @@ public class PageBrowsingControl extends Composite {
 //							Text text = (Text)editor.getEditor();
 							if (e.character == SWT.ESC) { // cancel editing
 								disposeEditor(false);
-							} else if (e.character == '\r') { // cancel editing
+							} else if (e.character == '\r') { // accept changes (RR)
 								disposeEditor(true);
 							} 
 						}
@@ -166,6 +169,35 @@ public class PageBrowsingControl extends Composite {
 				item.setText(EDITABLECOLUMN, name);
 				VisualPage vp = (VisualPage)item.getData();
 				vp.setName(name);
+				pageChanged();	// RR - attempting to update page numbers immediately - ok working in Info Editor when switching between @ and non-@
+				// ExpressGEditer 
+//System.out.println("<disposeEditor> prop: " + prop);
+				prop.getExpressGEditor().updateTabNames();  // RR - updates page numbers at the bottom, working ok when switching between @ and non-@
+//				prop.getExpressGEditor().updateModifiedStatus();
+				//prop.getExpressGEditor().reInitEditor(); // RR - creates empty pages
+//				prop.setModified(true);
+
+//					application.handler().startCommand(new UpdateCommand(ExpressGEditor.this));
+					prop.handler().startCommand(new UpdateCommand((ExpressGEditor)prop.getExpressGEditor()));
+
+
+				// another attempt
+/*
+				for (int i = 1; i <= prop.handler().getMaxPage(); i++) {
+					//prop.handler().update(i);
+	  			// maybe not everything needs to be inside the loop
+//	  	    EGToolKit.PageRef.changePage(prop, prop.handler().drawable(i), Paging.INVISIBLE_PAGE);
+	  	    EGToolKit.PageRef.changePage(prop, prop.handler().drawable(i), Paging.ANY_PAGE);
+					prop.handler().update(i);
+	  	    //EGToolKit.PageRef.changePage(prop, prop.handler().drawable(i), i);
+//  	  	  prop.handler().update(prop.handler().getPage());
+	
+		    	prop.handler().update(prop.handler().getPage());
+  	  	}
+  		  prop.handler().repaint(true);
+*/	
+				// end of another attempt
+				
 			}
 			text.dispose();
 		}
@@ -218,6 +250,7 @@ public class PageBrowsingControl extends Composite {
 				item.setText(0, EGToolKit.renumberInTab(prop, i));
 				item.setText(1, vp.getName());
 				item.setData(vp);
+//System.out.println("<pageChanged> i: " + i + ", number: " + EGToolKit.renumberInTab(prop, i) + ", name: " + vp.getName());
 			}
 			table.setSelection(prop.handler().getPage() - 1);
 		}

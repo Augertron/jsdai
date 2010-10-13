@@ -35,6 +35,7 @@ import jsdai.express_g.editors.outline.IInternalPartListener;
 import jsdai.express_g.editors.outline.IInternalPartProvider;
 import jsdai.express_g.editors.outline.SdaiEditorOutline;
 import jsdai.express_g.perspectives.PerspectiveFactory;
+import jsdai.express_g.util.xml.IsoDbTools;
 import jsdai.lang.ASdaiModel;
 import jsdai.lang.SdaiException;
 import jsdai.lang.SdaiIterator;
@@ -90,6 +91,7 @@ public class SdaiEditor extends EditorPart implements IInternalPartProvider {
 	public static final String READWRITE_EXD = "not_readonly_dictionary_data";
 	public static final String HIDE_READWRITE = "show_not_readonly_dictionary_data";
 	
+	public static final String USE_ASTERISK_FOR_ENTITY = "prefix_entity_name_with_asterisk_if_where_rule"; // RR
 	/**
 	 * list of listener lists
 	 */
@@ -104,10 +106,12 @@ public class SdaiEditor extends EditorPart implements IInternalPartProvider {
 	}
 	
 	private void saveInternalEditors(IProgressMonitor monitor) {
+//System.out.println("<SdaiEditor> TRYING TO SAVE-0>");
 		Iterator iter = container.getInternalEditors().iterator();
 		while (iter.hasNext()) {
 			SdaiEditorInternal editor = (SdaiEditorInternal)iter.next();
 			if (editor.isDirty()) try {
+//System.out.println("<TRYING TO SAVE>");
 				editor.doSave(monitor);
 			} catch (Throwable t) {
 				SdaieditPlugin.log(t);
@@ -170,7 +174,21 @@ public class SdaiEditor extends EditorPart implements IInternalPartProvider {
 			public void run(IProgressMonitor progressMonitor) {
 				FileDialog dialog = new FileDialog(getSite().getShell(), SWT.SAVE);
 				dialog.setFilterExtensions(new String[]{"*.exg", "*.exd"});
-				dialog.setFileName(repositoryHandler.getRepoPath().removeFileExtension().toOSString());
+//System.out.println("Dialog file name: " + repositoryHandler.getRepoPath().removeFileExtension().toOSString());
+// G:\eclipse-rcp-Galileo-SR1\runtime-EclipseApplication\test_exg\test_exg
+
+				
+//System.out.println("folder: " + repositoryHandler.getRepoPath().removeFileExtension().removeLastSegments(1).toOSString());
+//System.out.println("file: " + repositoryHandler.getRepoPath().removeFileExtension().lastSegment());
+	
+				dialog.setFilterPath(repositoryHandler.getRepoPath().removeFileExtension().removeLastSegments(1).toOSString());
+				dialog.setFileName(repositoryHandler.getRepoPath().removeFileExtension().lastSegment());
+				//dialog.setFileName(repositoryHandler.getRepoPath().removeFileExtension().toOSString()); // this is the name of the file, extension not needed (under windows, anyway)
+//				dialog.setFilterPath("G:\\KUKU3\\LALA");
+//				dialog.setFileName("bebe");  
+				//dialog.setFileName("G:\\KUKU3\\LALA\\bebe");  
+				//dialog.setFileName("G:\\KUKU\\bebe");  // this is working correctly
+				//dialog.setFileName("G:\\KUKU\\BEBE.exg");
 				String path = dialog.open();
 				progressMonitor.beginTask("Saving file", IProgressMonitor.UNKNOWN);
 				if (path != null) {
@@ -356,6 +374,8 @@ public class SdaiEditor extends EditorPart implements IInternalPartProvider {
 	 * @see org.eclipse.ui.IWorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
 	 */
 	public void createPartControl(Composite parent) {
+		IsoDbTools.initIsoDb();
+//System.out.println("INIT EDITOR");
 		container = new EditorContainer(parent, SWT.NONE, this);
 		container.init(); 
 		if (repositoryHandler != null) {

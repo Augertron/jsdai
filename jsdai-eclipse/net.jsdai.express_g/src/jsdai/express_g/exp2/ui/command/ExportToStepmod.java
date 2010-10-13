@@ -21,6 +21,7 @@
  * See also http://www.jsdai.net/
  */
 
+
 package jsdai.express_g.exp2.ui.command;
 
 import java.io.File;
@@ -96,10 +97,11 @@ public class ExportToStepmod extends AbstractCommand {
 	public ExportToStepmod(CommandInvoker invoker) {
 		super(invoker);
 	}
-	
+	                                                                                                                                                                                                                                                                        
 	public void setDirectory(String directory) {
 		file = new File(directory);
 		file.mkdirs();
+//System.out.println("<EXPORTING A DIAGRAM OR DIAGRAMS>");
 	}
 	
 	protected void createPage(Point startat, GC gc, PrintStream ps, int pgNr) {
@@ -120,6 +122,8 @@ public class ExportToStepmod extends AbstractCommand {
 			}
 		}
 	}
+	
+
 	
 	protected void createPage(String fileName, int i) throws Exception {
 		VisualPage vp = prop.handler().getVisualPage(i);
@@ -166,10 +170,34 @@ public class ExportToStepmod extends AbstractCommand {
    else
 		ps.println("<?xml-stylesheet type=\"text/xsl\" href=\"../../../xsl/res_doc/imgfile.xsl\"?>");
 		ps.println("<!DOCTYPE imgfile.content SYSTEM \"../../../dtd/text.ent\">");
-   if (flag_arm_mim)
+	if (flag_arm_mim)
 		ps.println("<imgfile.content module=\"" + schema_name + "\" file=\"" + fileName + ".xml\">");
-	else	
-		ps.println("<imgfile.content module=\"visual_presentation\" file=\"" + fileName + ".xml\">");
+	else {	
+
+// RR 2009-11-17
+// as proposed by Lothar in bug 3453, but also a warning is needed
+//		ps.println("<imgfile.content module=\"visual_presentation\" file=\"" + fileName + ".xml\">");
+		//HashMap hm_iso_ids = IsoDbTools.getIsoIds();
+		HashMap hm_part_names = IsoDbTools.getPartNames();
+    String part_name = null;
+		if (hm_part_names != null) {
+			part_name = (String)hm_part_names.get(schema_name);
+			if (part_name == null) {
+				part_name = "";
+			}
+		} else {
+			part_name = "";
+		}
+		//ps.println("<imgfile.content module=\"\" file=\"" + fileName + ".xml\">");
+		ps.println("<imgfile.content module=\"" + part_name + "\" file=\"" + fileName + ".xml\">");
+    // System.out.println("WARNING - fill the module attribute with the part name in file " + fileName);
+		if (part_name.equals("")) {
+			if (stream == null) {
+				stream = CommonPlugin.getDefault().getConsole();
+			}
+			stream.println("WARNING - fill the module attribute with the part name in the file " + fileName + ".xml");
+		}
+	}
 		ps.println("<img src=\"" + fileName + ".gif\">");
 		// create single page GIF and XML:
 		createPage(startat, gcTmp, ps, i);
@@ -487,7 +515,7 @@ for (int i = 0; i < 256; i++) {
 //			System.out.println("<>xml: " + xml_path);
 
 
-			String iso_number = null;
+			String iso_id = null;
 			  
 			  
 		  
@@ -518,13 +546,15 @@ for (int i = 0; i < 256; i++) {
           	}
 
 						String schema_name = sd0.getName(null).toLowerCase();
-						IsoDbTools.readIsoNumbersOfSchemas(iso_db_path);						
-						HashMap hm_iso_numbers = IsoDbTools.getIsoNumbers();
+						// IsoDbTools.readIsoNumbersOfSchemas(iso_db_path, stream);						
+						//IsoDbTools.readIsoIdsAndPartNamesOfSchemas(iso_db_path, stream);						
+						HashMap hm_iso_ids = IsoDbTools.getIsoIds();
+						//HashMap hm_part_names = IsoDbTools.getPartNames();
 						
-						if (hm_iso_numbers != null) {
-							iso_number = (String)hm_iso_numbers.get(schema_name);
-							if (iso_number == null) {
-								iso_number = "";
+						if (hm_iso_ids != null) {
+							iso_id = (String)hm_iso_ids.get(schema_name);
+							if (iso_id == null) {
+								iso_id = "";
 								warning_messages += "WARNING! Schema " + schema_name + " not found in document_reference.txt\n";
 								//stream.println("WARNING! Schema " + schema_name + " not found in document_reference.txt");
 							} else {
@@ -532,7 +562,7 @@ for (int i = 0; i < 256; i++) {
 							}
 							
 						} else {
-							stream.println("WARNING! document_reference.txt not found in the project, empty references will be generated");
+							// stream.println("WARNING! document_reference.txt not found in the project, empty references will be generated");
 						}
 						
 						//if (iso_number.equals("")) {
@@ -541,7 +571,7 @@ for (int i = 0; i < 256; i++) {
 
 
 
-            ExpressXmlConverter.convertModel(model0, session0, repo0, work0, xml_path, iso_number, false);
+            ExpressXmlConverter.convertModel(model0, session0, repo0, work0, xml_path, iso_id, false);
 
             if (fProject != null) {
             	IPAdder.addIPsForSchema(schema_name, xml_path, informal_propositions, stream);

@@ -160,6 +160,9 @@ if (getName().equalsIgnoreCase("documented_element_select")) {
   public String getText() {
     String text = super.getText();
     if ((type & TYPE_EXTENSIBLE) != 0) text = "(EX) " + text;
+ 		
+ 		if ((type & TYPE_ENTITY) != 0) text = "*" + text;
+ 		// text = "BEBE";
     return text;
   }
 

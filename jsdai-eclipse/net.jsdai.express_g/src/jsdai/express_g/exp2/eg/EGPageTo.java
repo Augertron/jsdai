@@ -66,6 +66,7 @@ public class EGPageTo extends EGPage {
     if (referenced != null)
     	text = EGToolKit.convertPageNrToString(referenced.getPage()) + ", " + getRefCount() + " " + text;
     return text;
+    //return "X4";
   }
 
   public int getRefCount() {

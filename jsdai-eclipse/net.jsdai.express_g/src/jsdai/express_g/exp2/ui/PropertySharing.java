@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Rectangle;
 
+import jsdai.express_g.editors.IExpressGEditor;
 import jsdai.express_g.editors.RepositoryHandler;
 import jsdai.express_g.exp2.Named;
 import jsdai.express_g.exp2.ui.UINaming;
@@ -237,8 +238,14 @@ public interface PropertySharing extends UINaming, Named {
 
   	public void setPageRenumber(int page);
   	public int getPageRenumber();
-  	public int getPageRenumber(int page);
-  	public int getMaxPageRenumber(int page);
+  	public int getPageRenumber(int page); // RR
+  	public int getPageRenumberV(int page); // RR
+  	public int getMaxPageRenumber(int page); // RR
+  	public int getMaxPageRenumberV(int page); // RR
+    public boolean hierarchyOn(); // RR
+    public boolean hierarchyOnV();  // RR
+    public boolean refreshHierarchyFlag();  // RR - probably will not be needed
+	public IExpressGEditor getExpressGEditor(); // RR
   	
   	/**
   	 * storing last used visibility of simple types

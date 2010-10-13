@@ -52,6 +52,10 @@ public class EGEntity extends AbstractEGBox {
 	protected boolean fAbstract = false;
 	
 	private boolean showABS = true;
+	
+	// RR
+	protected boolean fRestricted = false;
+	private boolean showRestricted = true;
 
 	public EGEntity(PropertySharing prop) {
 		super(prop);
@@ -60,6 +64,7 @@ public class EGEntity extends AbstractEGBox {
 		//    setSize(size);
 		setName("Entity_" + (ENTITY_COUNTING++));
 		textInset = 7;
+//		System.out.println("CONSTRUCTOR 1");
 	}
 
 	public EGEntity(PropertySharing prop, String name, Rectangle bounds,
@@ -71,6 +76,7 @@ public class EGEntity extends AbstractEGBox {
 		setIndependent(independent);
 		setInstantiable(instantiable);
 		setAbstract(fAbstract);
+//		System.out.println("CONSTRUCTOR 2");
 	}
 
 	public EGEntity(PropertySharing prop, String name, Point location,
@@ -82,8 +88,21 @@ public class EGEntity extends AbstractEGBox {
 		setIndependent(independent);
 		setInstantiable(instantiable);
 		setAbstract(fAbstract);
+//		System.out.println("CONSTRUCTOR 3");
 	}
 
+	public EGEntity(PropertySharing prop, String name, Point location,
+			boolean complex, boolean independent, boolean instantiable, boolean fAbstract, boolean fRestricted) {
+		this(prop);
+		setLocation(location);
+		setName(name);
+		setComplex(complex);
+		setIndependent(independent);
+		setInstantiable(instantiable);
+		setAbstract(fAbstract);
+		setRestricted(fRestricted);
+//		System.out.println("CONSTRUCTOR 3");
+	}
 	public void updateModel(SdaiModel modelDict, SdaiModel modelEG)	throws SdaiException {
 		if ((modelDict != null) && !validDict) {
 			EEntity_definition entity = null;
@@ -135,7 +154,7 @@ public class EGEntity extends AbstractEGBox {
 	public boolean isInstantiable() {
 		return instantiable;
 	}
-
+	
 	public void setInstantiable(boolean instantiable) {
 		this.instantiable = instantiable;
 		validDict = false;
@@ -154,6 +173,19 @@ public class EGEntity extends AbstractEGBox {
 		fireLabelChanged();
 	}
 
+	// RR - when the entity is restricted by a global rule, not sure if a public method will be needed, at this point just for conformity
+	public boolean isRestricted() {
+		return fRestricted;
+	}
+	// RR
+	public void setRestricted(boolean fRestricted) {
+		this.fRestricted = fRestricted;
+		validDict = false;
+		wrapper.setText(getText());
+		fireLabelChanged();
+	}
+
+	
 	public Selectable selectAsFirst(int type) {
 		return this;
 	}
@@ -187,6 +219,11 @@ public class EGEntity extends AbstractEGBox {
 			text = showABS ? "(AE) " + text : text; // abstract entity 
 		else if (!isInstantiable())
 			text = showABS ? "(ABS) " + text : text; // abstract supertype
+
+		// RR
+		if (isRestricted())
+			text = showRestricted ? "*" + text : text; // entity, restricted by a global rule 
+		
 		return text;
 		
 	}

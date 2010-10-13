@@ -26,23 +26,26 @@
 
 <cs:cspecExtension
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:com="http://www.eclipse. rg/buckminster/Common-1.0"
+    xmlns:com="http://www.eclipse.org/buckminster/Common-1.0"
     xmlns:cs="http://www.eclipse.org/buckminster/CSpec-1.0">
-    <cs:dependencies>
-    	<cs:dependency name="jsdai_tools.jar#B2010-09-24_11-41-53"/>
-    </cs:dependencies>
-
     <cs:actions>
-        <cs:public name="buckminster.prebind" actor="ant">
+        <cs:public name="site.full.p2.zip" actor="ant">
             <cs:actorProperties>
                 <cs:property key="buildFileId" value="buckminster.pdetasks"/>
-                <cs:property key="targets" value="copy.group"/>
+                <cs:property key="targets" value="create.site.zip"/>
             </cs:actorProperties>
-            <cs:prerequisites alias="action.requirements">
-                <cs:attribute component="jsdai_tools.jar#B2010-09-24_11-41-53" name="java.binaries"/>
+            <cs:prerequisites>
+                <cs:attribute name="manifest" alias="manifest"/>
+                <cs:attribute name="site.full.p2.zip.requirements" alias="action.requirements"/>
             </cs:prerequisites>
-            <cs:products alias="action.output" upToDatePolicy="MAPPER" base="${buckminster.home}"/>
+            <cs:products alias="action.output" base="${buckminster.output.root}/archivedsite/" fileCount="1" upToDatePolicy="COUNT"/>
         </cs:public>
     </cs:actions>
-
+    
+    <cs:groups>
+        <cs:private name="site.full.p2.zip.requirements">
+            <cs:attribute name="site.p2"/>
+            <cs:attribute name="jar.contents"/>
+        </cs:private>
+    </cs:groups>
 </cs:cspecExtension>

@@ -85,6 +85,11 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
   protected Agregate inverse = null;
   
 	protected TextWrapper wrapper = null;
+
+	// RR
+	protected boolean fRestricted = false;
+	private boolean showRestricted = true;
+
   
   protected Point[] pline = new Point[]{
       new Point(0, 0),
@@ -183,6 +188,12 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
   public EGRelationSimple(PropertySharing prop, String name, AbstractEGBox parent, AbstractEGBox child, int type, boolean optional, boolean derive, String redeclaring) {
     this(prop, parent, child, type, optional, derive, redeclaring);
     setName(name);
+  }
+  // RR
+  public EGRelationSimple(PropertySharing prop, String name, AbstractEGBox parent, AbstractEGBox child, int type, boolean optional, boolean derive, String redeclaring, boolean fRestricted) {
+    this(prop, parent, child, type, optional, derive, redeclaring);
+    setName(name);
+		setRestricted(fRestricted);
   }
 
   public EGRelationSimple(PropertySharing prop, EGRelationTree relation) {
@@ -873,6 +884,22 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
     return getChild().canBeInvisible() && getParent().canBeInvisible();
   }
   
+
+	// RR - when the defined type is restricted by a where clause
+	public boolean isRestricted() {
+		return fRestricted;
+	}
+
+	// RR
+	public void setRestricted(boolean fRestricted) {
+		this.fRestricted = fRestricted;
+		validDict = false;
+		wrapper.setText(getText());
+		fireLabelChanged();
+	}
+
+
+
   /**
    * @return Returns the redeclaring.
    */
@@ -938,6 +965,10 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
 			}
 	        text += inverse.getText();
 		}
+    // RR
+		if (isRestricted())
+			text = showRestricted ? "*" + text : text; // attribute, restricted by UNIQUE clause or by WHERE clause
+
 		return text;
 	}
   	

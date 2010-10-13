@@ -76,6 +76,11 @@ public class Application implements PropertySharing, StatusListener, CommandInvo
 	private EGPageFooter pageFooter;
 	private IExpressGEditor editorPart;
 	
+	//RR
+	public IExpressGEditor getExpressGEditor() {
+		return editorPart;
+	}
+	
 	/**
 	 * 
 	 */
@@ -530,15 +535,164 @@ public class Application implements PropertySharing, StatusListener, CommandInvo
   		return pageRenumber;
   	}
 
+  	/*
+  		 based on VisualPage, not on the dictionary data
+  	*/
+  	public int getPageRenumberV(int page) {
+  		int recalculated_page = recalculatedPageV(page);
+//System.out.println("IN <getPageRenumberV> page: " + page + ", recalculated page: " + recalculated_page);
+//  		Throwable thr = new Throwable();
+//  		thr.printStackTrace();
+  		return (page-recalculated_page);
+  	}
+
   	public int getPageRenumber(int page) {
   		int recalculated_page = recalculatedPage(page);
   		//return pageRenumber;
 //System.out.println("<###> old: " + page + ", new: " + recalculated_page);
+//System.out.println("IN <getPageRenumber> page: " + page + ", recalculated page: " + recalculated_page);
   		return (page-recalculated_page);
   	}
 
+	/*
+		will inform other parts of express-g if the current diagram is using special symbols in the names to establish a hierarchy.
+		If not - the old implementation may be used in other parts of express-g, no need to complicate things.
+	*/
+
+	public boolean refreshHierarchyFlag() {
+		return false;
+	}
+
+
+	/*
+		this method based on VisualPage, not on the dictionary data
+	*/
+	public boolean hierarchyOnV() {
+
+		for (int i = 1; i <= handler().getMaxPage(); i++) {
+			String page_name = handler().getVisualPage(i).getName();
+			if (page_name.startsWith("@")) {
+				// hierarchy is on
+				return true;
+			} else {
+			}							
+		} // for
+		return false;
+	}
+	
+	
+	public boolean hierarchyOn() {
+
+		String model_name = null;
+		SdaiModel model = null;
+		RepositoryHandler rh = null;
+		SdaiRepository rp = null;
+		try {
+			model_name = getNameEG();
+			if (model_name != null) {
+				model_name = model_name.toUpperCase() + "_EXPRESS_G_DATA";
+				rh = getRepositoryHandler();
+				if (rh != null) {
+					rp = rh.getRepository();
+					if (rp != null) {
+						model = rp.findSdaiModel(model_name);
+					} else {
+						// System.out.println("<SETTING PAGE RENUMBER - Repository is NULL>: " + model_name);      
+					}
+				} else {
+					// System.out.println("<SETTING PAGE RENUMBER - RepositoryHandler is NULL>: " + model_name);      
+				}
+			} else {
+				// System.out.println("<SETTING PAGE RENUMBER - model name is NULL>");      
+			}
+			// model = getRepositoryHandler().getRepository().findSdaiModel(model_name);
+			if (model != null) {
+				APage pages = (APage)model.getInstances(EPage.class);
+				SdaiIterator i_pages = pages.createIterator();
+				boolean was_last = false;
+				int current_page_nr = 0;
+				int page_count = 0;
+				int total_count = 0;
+				for (int i = pages.getMemberCount(); i > 0; i--) {
+	  			EPage a_page = (EPage)pages.getByIndex(i);
+					String page_name = "";
+					if (a_page.testComment(null)) {
+						page_name = a_page.getComment(null);
+					}
+//System.out.println("<--->hierarchyOn - page name: " + page_name);
+					if (page_name.startsWith("@")) {
+						// hierarchy is on
+						return true;
+					} else {
+					}							
+				} // for
+ 				return false;
+			} else { // model null
+				return false; // hm, should not happen
+			}
+		} catch (SdaiException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false; // we assume that the new hierarchical implementation is working only with correct data
+		}
+
+    	
+	} // method
+
+    /*
+    	this implementation is based on VisualPage and not on the dictionary data,
+    	therefore should work without re-opening of the exg file.
+    	
+    */
+		int recalculatedPageV(int page) {
+			boolean was_last = false;
+	  	int current_page_nr = 0;
+	  	int page_count = 0;
+	  	int total_count = 0;
+			
+//System.out.println("<Application-recalculatedPageV> page: " + page + ", handler().getMaxPage(): " + handler().getMaxPage());
+			for (int i = 1; i <= handler().getMaxPage(); i++) {
+				String page_name = handler().getVisualPage(i).getName();
+  			int page_number = -1;
+
+	  		page_number = handler().getVisualPage(i).getPage();
+//System.out.println("<Application-recalculatedPageV> page_number: " + page_number + ", page_name: " + page_name);
+				if (page_name.startsWith("@")) {
+					// the last page - the next page will be 1
+					total_count++;
+					if (was_last) {
+						page_count = 1;
+					} else {
+						if (page_number > 0)
+							page_count++;
+					}							
+					was_last = true;
+				} else {
+					total_count++;
+					if (was_last) {
+						page_count = 1;
+					} else {
+						if (page_number > 0)
+							page_count++;
+					}
+					was_last = false;
+				}
+				if (page == page_number) {
+//System.out.println("<RE-CALCULATING> RETURN IN LOOP: " + page_count);
+					return page_count;
+				}
+			} // for
+//System.out.println("<RE-CALCULATING> RETURN AFTER LOOP: " + page_count);
+  		if (page == 0) {  
+  			// Visual pages start from 1 and their number is 1 less than pages in the dictionary where also 0 page is present
+  			return 0;
+  		}
+  		return page_count; 
+		}
+
+
   	/*
-		here we attempt to correct the page number - sechama and entity level diagram pages numbered separately
+		here we attempt to correct the page number - schema and entity level diagram pages numbered separately
 		we we'll try this approach: the last page of a level has @ in its name, let's say, it starts with @
 		so, the next page will have number 1, etc.
   	*/
@@ -578,6 +732,7 @@ public class Application implements PropertySharing, StatusListener, CommandInvo
 	  			int page_count = 0;
 	  			int total_count = 0;
 //System.out.println("<RE-CALCULATING> nr of pages: " + pages.getMemberCount());
+//System.out.println("<Application-recalculatedPage> page: " + page + ", pages.getMemberCount(): " + pages.getMemberCount());
 	  			for (int i = pages.getMemberCount(); i > 0; i--) {
 //	  			while (i_pages.next()) {
 //		  			EPage a_page = (EPage)pages.getCurrentMember(i_pages);
@@ -591,6 +746,7 @@ public class Application implements PropertySharing, StatusListener, CommandInvo
 		  			if (a_page.testPage_number(null)) {
 			  			page_number = a_page.getPage_number(null);
 		  			}
+//System.out.println("<Application-recalculatedPage> page_number: " + page_number + ", page_name: " + page_name);
 						if (page_name.startsWith("@")) {
 							// the last page - the next page will be 1
 							total_count++;
@@ -643,7 +799,62 @@ public class Application implements PropertySharing, StatusListener, CommandInvo
   		return recalculated_page;
   	}
 
+  	public int getMaxPageRenumberV(int page) {
+  		int recalculated_page = recalculatedMaxPageV(page);
+  		return recalculated_page;
+  	}
 
+		/*
+			 this implementation is based on VisualPage as opposed to the dictionary data
+		*/
+  	int recalculatedMaxPageV(int page) {
+			boolean was_last = false;
+	  	int current_page_nr = 0;
+	  	int page_count = 0;
+	  	int total_count = 0;
+
+			for (int i = 1; i <= handler().getMaxPage(); i++) {
+				String page_name = handler().getVisualPage(i).getName();
+  			int page_number = -1;
+
+	  		page_number = handler().getVisualPage(i).getPage();
+
+				if (page_name.startsWith("@")) {
+					// the last page - the next page will be 1
+					total_count++;
+					if (was_last) {
+						page_count = 1;
+					} else {
+						if (page_number > 0)
+							page_count++;
+					}							
+					was_last = true;
+					if (page <= page_number) {
+						return page_count;
+					}
+				} else {
+					total_count++;
+					if (was_last) {
+						page_count = 1;
+					} else {
+						if (page_number > 0)
+							page_count++;
+					}
+					was_last = false;
+				}
+				if (page == page_number) {
+				}
+
+			} // for
+  		// Visual pages start from 1 and their number is 1 less than pages in the dictionary where also 0 page is present
+			// do we need similar correction here as in renumberV() ?
+  		//if (page == 0) {  
+  		//	return 0;
+  		//}
+			return page_count; 
+
+		}
+  	
   	/*
 		here we attempt to calculate the max page number - sechama and entity level diagram pages numbered separately
 		we we'll try this approach: the last page of a level has @ in its name, let's say, it starts with @

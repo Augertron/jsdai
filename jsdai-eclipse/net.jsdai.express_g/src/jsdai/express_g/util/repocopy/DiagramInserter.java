@@ -23,14 +23,10 @@
 
 package jsdai.express_g.util.repocopy;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.ui.console.MessageConsoleStream;
 
 import jsdai.SExpress_g_schema.AGraphics_diagram;
 import jsdai.SExpress_g_schema.APage_reference_to;
@@ -53,19 +49,15 @@ import jsdai.SExpress_g_schema.ESchema_relation_placement;
 import jsdai.SExpress_g_schema.ESelect_relation_placement;
 import jsdai.SExpress_g_schema.ESupertype_placement;
 import jsdai.SExpress_g_schema.SExpress_g_schema;
-import jsdai.SExtended_dictionary_schema.ADeclaration;
 import jsdai.SExtended_dictionary_schema.EAttribute;
 import jsdai.SExtended_dictionary_schema.EData_type;
-import jsdai.SExtended_dictionary_schema.EDeclaration;
 import jsdai.SExtended_dictionary_schema.EDefined_type;
 import jsdai.SExtended_dictionary_schema.ESchema_definition;
 import jsdai.SExtended_dictionary_schema.ESelect_type;
 import jsdai.SExtended_dictionary_schema.ESub_supertype_constraint;
-import jsdai.common.CommonPlugin;
 import jsdai.express_g.SdaieditPlugin;
 import jsdai.lang.AEntity;
 import jsdai.lang.ASdaiModel;
-import jsdai.lang.CEntity;
 import jsdai.lang.EEntity;
 import jsdai.lang.SdaiException;
 import jsdai.lang.SdaiIterator;
@@ -77,35 +69,26 @@ import jsdai.lang.SdaiRepository;
  *
  *	applies layout from oldLayout repository to newDictionary repository data
  */
-public class RepositoryMerger extends Action implements Runnable, IRunnableWithProgress {
-	private SdaiRepository repoEG;
-	private SdaiRepository repoDict;
+public class DiagramInserter extends Action implements Runnable, IRunnableWithProgress {
+	private SdaiRepository repoTarget;
+	private SdaiRepository repoSource;
+	private String diagramName;
 	
 	private InstanceMap instanceMap;
 
 	private boolean canceled = false;
 
-  MessageConsoleStream stream;
-
-
-	boolean flag_print_debug = false;
-
-
-	public RepositoryMerger(SdaiRepository newDictionary, SdaiRepository oldLayout) throws SdaiException {
-		repoDict = newDictionary;
-		repoEG = oldLayout;
-		instanceMap = new InstanceMap(repoDict);
-		if (!repoDict.isActive()) repoDict.openRepository();
-		if (!repoEG.isActive()) repoEG.openRepository();
+	public DiagramInserter(SdaiRepository sourceEXG, SdaiRepository targetEXG, String diagram_name) throws SdaiException {
+		repoSource = sourceEXG;
+		repoTarget = targetEXG;
+		diagramName = diagram_name.toUpperCase() + "_EXPRESS_G_DATA";
+		
+//		instanceMap = new InstanceMap(repoSource);
+		instanceMap = new InstanceMap(repoTarget);
+		if (!repoSource.isActive()) repoSource.openRepository();
+		if (!repoTarget.isActive()) repoTarget.openRepository();
 	}
 	// move entity and all references in entity
-	
-	void printDebug(Object msg) {
-		if (flag_print_debug) {
-			System.out.println("<DEBUG> " + msg);
-		}
-	}
-	
 	
 	protected ESelect_relation_placement moveEG(SdaiModel model, ESelect_relation_placement place) {
 		if (testModel(model, place)) return place;
@@ -262,13 +245,11 @@ if (   place.getRepresented_object(null).getName(null) == "datum_reference"
 			EEntity represented = null;
 			if (place.testRepresented_object(null))	{
 				EEntity old_represented = place.getRepresented_object(null);
-				if (old_represented.findEntityInstanceSdaiModel().getUnderlyingSchemaString().equalsIgnoreCase("EXPRESS_G_SCHEMA")) {
+				if (old_represented.findEntityInstanceSdaiModel().getUnderlyingSchemaString().equalsIgnoreCase("EXPRESS_G_SCHEMA"))
 					represented = moveEGselect(model, old_represented);
-//					System.out.println("finding old represented: " + represented + ", old represented: " + old_represented);
-				}else {
+				else
 					represented = instanceMap.get(old_represented);
-//					System.out.println("represented from instanceMap: " + represented + ", old represented: " + old_represented + ", schema: " + old_represented.findEntityInstanceSdaiModel().getUnderlyingSchemaString());
-				}	
+					
 /*				if (old_represented instanceof EPage)
 					represented = moveEG(model, (EPage)placeNew.getPresented_on(null));
 				else
@@ -305,31 +286,20 @@ if (   place.getRepresented_object(null).getName(null) == "datum_reference"
 	}
 	
 	protected EPage_relation moveEG(SdaiModel model, EPage_relation place) {
-		printDebug("<###> moveEG-page_relation: " + place);
 		if (testModel(model, place)) return place;
 		EPage_relation relNew = null;
 		try {
 			EEntity child = null;
 			if (place.testChild(null)) child = instanceMap.get(place.getChild(null));
-			printDebug("moveEG-page_relation - place.getChild: " + place.getChild(null));
-			printDebug("moveEG-page_relation - instanceMap: " + instanceMap);
-
 			if (child != null) {
 				relNew = (EPage_relation)moveEG(model, (ERelation_placement)place); // call super
 				if (relNew.testParent(null)) {
-				    if (relNew.getParent(null) instanceof EPage_reference_bundle) {
-				    	printDebug("moveEG-page_relation - page_reference_bundle, relNew: " + relNew + ", parent: " + relNew.getParent(null));
+				    if (relNew.getParent(null) instanceof EPage_reference_bundle) 
 				        moveEG(model, (EPage_reference_bundle)relNew.getParent(null));
-				    } else if (relNew.getParent(null) instanceof EPage_reference_from) {
-				    	printDebug("moveEG-page_relation - page_reference_from, relNew: " + relNew + ", parent: " + relNew.getParent(null));
-				      	moveEG(model, (EPage_reference_from)relNew.getParent(null));
-						}
-				} else {
-					printDebug("moveEG-page_relation - parent is NULL");
+				    else if (relNew.getParent(null) instanceof EPage_reference_from) 
+				        moveEG(model, (EPage_reference_from)relNew.getParent(null));
 				}
 				relNew.setChild(null, child);
-			} else {
-				printDebug("moveEG-page_relation - child is NULL");
 			}
 		} catch (SdaiException sex) {
 			SdaieditPlugin.log(sex);
@@ -525,266 +495,145 @@ if (   place.getRepresented_object(null).getName(null) == "datum_reference"
 	 * @param modelEG
 	 * @return
 	 */
-	protected SdaiModel copyEGData(SdaiModel modelEG, IProgressMonitor progress, String taskName, StringBuffer message) throws SdaiException {
-System.out.println("<0>model: " + modelEG.getName());
-printDebug("<1>: " + modelEG.getInstances(EPage_reference_bundle.class));
-
-
+	protected SdaiModel copyEGData(SdaiModel modelSource, IProgressMonitor progress, String taskName, StringBuffer message) throws SdaiException {
 //		SdaieditPlugin.console("copying");
 		int countOld = 0;
 		int countNew = 0;
 
-		stream = CommonPlugin.getDefault().getConsole();
-
+//System.out.println("<01>");
 		
 //		System.out.println("copying");
-		SdaiModel modelNew = repoDict.createSdaiModel(modelEG.getName(), SExpress_g_schema.class);
-		modelNew.startReadWriteAccess();
+
+ 
+
+//String target_model_name = "EG_THIRD_MY_DIAGRAM_EXPRESS_G_DATA";
+		String target_model_name = modelSource.getName();
+
+		deleteTargetModelIfPresent(target_model_name);
+//		SdaiModel modelTarget = repoTarget.createSdaiModel(modelSource.getName(), SExpress_g_schema.class);
+		SdaiModel modelTarget = repoTarget.createSdaiModel(target_model_name, SExpress_g_schema.class);
+		modelTarget.startReadWriteAccess();
 		AEntity list;
 	    IndependentSdaiIterator it = new IndependentSdaiIterator();
 
 	    EGraphics_diagram diagram = null;
-	    list = modelEG.getInstances(EGraphics_diagram.class);
+	    list = modelSource.getInstances(EGraphics_diagram.class);
 	    it.setEntities(list);
 	    if (it.hasNext()) {
 	    	diagram = (EGraphics_diagram)it.next();  // old
-printDebug("diagram: " + diagram);
-	    	if (diagram.testComment(null)) {
+	    	if (diagram.testComment(null)) 
 	    		message.append(diagram.getComment(null));
-//System.out.println("<>prev diagram: " + diagram + ", comment: " + diagram.getComment(null));
-	    	}else {
+	    	else
 	    		message.append("name missing!");
-//System.out.println("<>prev diagram: " + diagram + ", comment: _NAME_MISSING_");
-				}
-	    	diagram = moveEG(modelNew, diagram);
+	    	diagram = moveEG(modelTarget, diagram);
 	    }
-//System.out.println("<>new diagram: " + diagram);
-printDebug("<2>: " + modelEG.getInstances(EPage_reference_bundle.class));
+
+//System.out.println("Diagram: " + diagram);
+
 	    if (diagram != null) {
-
-System.out.println("<<((SINGLE_LOADING))>>: " + !diagram.testDic_schema(null));
-		    //instanceMap.SINGLE_LOADING = !diagram.testDic_schema(null);  // original
-	
-					// experimenting  - true - diagram correctly drawn after import, false - also drawn - hm?
-					instanceMap.SINGLE_LOADING = false;
-
+		    instanceMap.SINGLE_LOADING = !diagram.testDic_schema(null);
 //System.out.println("SINGLE MODE:" + instanceMap.SINGLE_LOADING);		    
-printDebug("<3>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    if (progress != null) progress.subTask(taskName + " [0%]");
-		    list = modelEG.getInstances(EPage_reference_to.class);
+		    list = modelSource.getInstances(EPage_reference_to.class);
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
-//System.out.println("<01> countOld: " + countOld);
-//		    	if (moveEG(modelNew, (EPage_reference_to)it.next()) != null) countNew++;
-					EPage_reference_to itnext = (EPage_reference_to)it.next();
-		    	if (moveEG(modelNew, itnext) != null) {
-		    		countNew++;
-		    	} else {
-		    		message.append("\nplacing failed: " + itnext);
-		    	}
+		    	if (moveEG(modelTarget, (EPage_reference_to)it.next()) != null) countNew++;
 		    }
-printDebug("<4>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    if (progress != null) progress.subTask(taskName + " [3%]");
-		    list = modelEG.getInstances(EPage_reference_from.class);
+		    list = modelSource.getInstances(EPage_reference_from.class);
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
-//System.out.println("<02> countOld: " + countOld);
-//		    	if (moveEG(modelNew, (EPage_reference_from)it.next()) != null) countNew++;
-					EPage_reference_from itnext = (EPage_reference_from)it.next();
-		    	if (moveEG(modelNew, itnext) != null) {
-		    		countNew++;
-		    	} else {
-		    		message.append("\nplacing failed: " + itnext);
-		    	}	
+		    	if (moveEG(modelTarget, (EPage_reference_from)it.next()) != null) countNew++;
 		    }
-printDebug("<5>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    if (progress != null) progress.subTask(taskName + " [30%]");
-		    list = modelEG.getInstances(EData_type_placement.class);
+		    list = modelSource.getInstances(EData_type_placement.class);
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
-//System.out.println("<03> countOld: " + countOld);
-//		    	if (moveEG(modelNew, (EData_type_placement)it.next()) != null) countNew++;
-					EData_type_placement itnext = (EData_type_placement)it.next();
-		    	if (moveEG(modelNew, itnext) != null) {
-		    		countNew++;
-//						System.out.println("placing OK: " + itnext);
-		    	} else {
-		    		message.append("\nplacing failed: " + itnext);
-//						System.out.println("placing FAILED: " + itnext);
-		    	}	
+		    	if (moveEG(modelTarget, (EData_type_placement)it.next()) != null) countNew++;
 		    }
-printDebug("<6>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    if (progress != null) progress.subTask(taskName + " [40%]");
-		    list = modelEG.getInstances(ESchema_relation_placement.class);
+		    list = modelSource.getInstances(ESchema_relation_placement.class);
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
-//System.out.println("<04> countOld: " + countOld);
-//		    	if (moveEG(modelNew, (ESchema_relation_placement)it.next()) != null) countNew++;
-					ESchema_relation_placement itnext = (ESchema_relation_placement)it.next();
-		    	if (moveEG(modelNew, itnext) != null) {
-		    		countNew++;
-		    	} else {
-		    		message.append("\nplacing failed: " + itnext);
-		    	}	
+		    	if (moveEG(modelTarget, (ESchema_relation_placement)it.next()) != null) countNew++;
 		    }
-printDebug("<7>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    if (progress != null) progress.subTask(taskName + " [45%]");
-		    list = modelEG.getInstances(EAttribute_placement.class);
+		    list = modelSource.getInstances(EAttribute_placement.class);
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
-//System.out.println("<05> countOld: " + countOld);
-//		    	if (moveEG(modelNew, (EAttribute_placement)it.next()) != null) countNew++;
-					EAttribute_placement itnext = (EAttribute_placement)it.next();
-		    	if (moveEG(modelNew, itnext) != null) {
-		    		countNew++;
-		    	} else {
-		    		message.append("\nplacing failed: " + itnext);
-		    	}	
+		    	if (moveEG(modelTarget, (EAttribute_placement)it.next()) != null) countNew++;
 		    }
-printDebug("<8>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    if (progress != null) progress.subTask(taskName + " [60%]");
-		    list = modelEG.getInstances(EDefined_relation_placement.class);
+		    list = modelSource.getInstances(EDefined_relation_placement.class);
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
-//System.out.println("<06> countOld: " + countOld);
-//		    	if (moveEG(modelNew, (EDefined_relation_placement)it.next()) != null) countNew++;
-					EDefined_relation_placement itnext = (EDefined_relation_placement)it.next();
-		    	if (moveEG(modelNew, itnext) != null) {
-		    		countNew++;
-		    	} else {
-		    		message.append("\nplacing failed: " + itnext);
-		    	}	
+		    	if (moveEG(modelTarget, (EDefined_relation_placement)it.next()) != null) countNew++;
 		    }
-printDebug("<9>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    if (progress != null) progress.subTask(taskName + " [65%]");
-		    list = modelEG.getInstances(ESelect_relation_placement.class);
+		    list = modelSource.getInstances(ESelect_relation_placement.class);
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
-//System.out.println("<07> countOld: " + countOld);
-//		    	if (moveEG(modelNew, (ESelect_relation_placement)it.next()) != null) countNew++;
-					ESelect_relation_placement itnext = (ESelect_relation_placement)it.next();
-		    	if (moveEG(modelNew, itnext) != null) {
-		    		countNew++;
-		    	} else {
-		    		message.append("\nplacing failed: " + itnext);
-		    	}
+		    	if (moveEG(modelTarget, (ESelect_relation_placement)it.next()) != null) countNew++;
 		    }
-printDebug("<10>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    if (progress != null) progress.subTask(taskName + " [70%]");
-		    list = modelEG.getInstances(ESupertype_placement.class);
+		    list = modelSource.getInstances(ESupertype_placement.class);
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
-//System.out.println("<08> countOld: " + countOld);
-//		    	if (moveEG(modelNew, (ESupertype_placement)it.next()) != null) countNew++;
-					ESupertype_placement itnext = (ESupertype_placement)it.next();
-		    	if (moveEG(modelNew, itnext) != null) {
-		    		countNew++;
-		    	} else {
-		    		message.append("\nplacing failed: " + itnext);
-		    	}
+		    	if (moveEG(modelTarget, (ESupertype_placement)it.next()) != null) countNew++;
 		    }
-printDebug("<11>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    if (progress != null) progress.subTask(taskName + " [77%]");
-		    list = modelEG.getInstances(EConstraint_relation_placement.class);
+		    list = modelSource.getInstances(EConstraint_relation_placement.class);
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
-//System.out.println("<09> countOld: " + countOld);
-//		    	if (moveEG(modelNew, (EConstraint_relation_placement)it.next()) != null) countNew++;
-					EConstraint_relation_placement itnext = (EConstraint_relation_placement)it.next();
-		    	if (moveEG(modelNew, itnext) != null) {
-		    		countNew++;
-		    	} else {
-		    		message.append("\nplacing failed: " + itnext);
-		    	}	
+		    	if (moveEG(modelTarget, (EConstraint_relation_placement)it.next()) != null) countNew++;
 		    }
-printDebug("<12>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    if (progress != null) progress.subTask(taskName + " [80%]");
-		    list = modelEG.getInstances(EPage_relation.class);
+		    list = modelSource.getInstances(EPage_relation.class);
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
-//System.out.println("<10> countOld: " + countOld);
-//		    	if (moveEG(modelNew, (EPage_relation)it.next()) != null) countNew++;
-					EPage_relation itnext = (EPage_relation)it.next();
-printDebug("page_relation: " + itnext);
-		    	if (moveEG(modelNew, itnext) != null) {
-		    		countNew++;
-		    	} else {
-		    		message.append("\nplacing failed: " + itnext);
-		    	}	
-printDebug("<12->>: " + modelEG.getInstances(EPage_reference_bundle.class));
+		    	if (moveEG(modelTarget, (EPage_relation)it.next()) != null) countNew++;
 		    }
-printDebug("<13>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    if (progress != null) progress.subTask(taskName + " [82%]");
-		    list = modelEG.getInstances(ERelation_bundle.class);
+		    list = modelSource.getInstances(ERelation_bundle.class);
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
-//System.out.println("<11> countOld: " + countOld);
-//		    	if (moveEG(modelNew, (ERelation_bundle)it.next()) != null) countNew++;
-					ERelation_bundle itnext = (ERelation_bundle)it.next();
-		    	if (moveEG(modelNew, itnext) != null) {
-		    		countNew++;
-		    	} else {
-		    		message.append("\nplacing failed: " + itnext);
-		    	}	
+		    	if (moveEG(modelTarget, (ERelation_bundle)it.next()) != null) countNew++;
 		    }
-printDebug("<14>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    if (progress != null) progress.subTask(taskName + " [85%]");
-
-printDebug(modelEG.getInstances(EPage_reference_bundle.class));
-
-		    list = modelEG.getInstances(EPage_reference_bundle.class);
-printDebug("<X> count: " + list.getMemberCount());
+		    list = modelSource.getInstances(EPage_reference_bundle.class);
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
-//System.out.println("<12> countOld: " + countOld);
-//		    	if (moveEG(modelNew, (EPage_reference_bundle)it.next()) != null) countNew++;
-					EPage_reference_bundle itnext = (EPage_reference_bundle)it.next();
-printDebug("<12B> instance: " + itnext);
-		    	if (moveEG(modelNew, itnext) != null) {
-		    		countNew++;
-		    	} else {
-		    		message.append("\nplacing failed: " + itnext);
-		    	}
+		    	if (moveEG(modelTarget, (EPage_reference_bundle)it.next()) != null) countNew++;
 		    } 
-printDebug("<15>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    if (progress != null) progress.subTask(taskName + " [97%]");
-		    list = modelEG.getInstances(EProperty.class);
+		    list = modelSource.getInstances(EProperty.class);
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
-//System.out.println("<13> countOld: " + countOld);
-//		    	if (moveEG(modelNew, (EProperty)it.next()) != null) countNew++;
-					EProperty itnext = (EProperty)it.next();
-		    	if (moveEG(modelNew, itnext) != null) {
-		    		countNew++;
-		    	} else {
-		    		message.append("\nplacing failed: " + itnext);
-		    	}	
+		    	if (moveEG(modelTarget, (EProperty)it.next()) != null) countNew++;
 		    }
-printDebug("<16>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    if (progress != null) progress.subTask(taskName + " [100%]");
-//		    message.append("\t - updated (" + countNew + " of " + countOld + ")");
-		    message.append("\n\t - updated (" + countNew + " of " + countOld + ")");
+		    message.append("\t - updated (" + countNew + " of " + countOld + ")");
 	    } else {
-	    	modelNew.deleteSdaiModel();
-	    	modelNew = null;
+	    	modelTarget.deleteSdaiModel();
+	    	modelTarget = null;
 //	    	SdaieditPlugin.console("associated dictionary model not found - skipping");
 	    	message.append(" - deleted (associated schema missing)");
 //			System.out.println("associated dictionary model not found - skipping");
 	    }
-	    return modelNew;
+	    return modelTarget;
 	}
 	
 	
@@ -799,23 +648,20 @@ printDebug("<16>: " + modelEG.getInstances(EPage_reference_bundle.class));
 	 * @see java.lang.Runnable#run()
 	 */
 	public void run(IProgressMonitor progress) {
-		int modelOld = 0;
+
+//System.out.println("<INSERTER-RUN-01> ");
+
+		int modelOld = 1;
 		int modelNew = 0;
 		
-		SdaieditPlugin.console("\n\nMERGING DATA:");
+		SdaieditPlugin.console("\n\nInserting a Diagram:");
 //	    System.out.println("\n\nMERGING REPOSITORY:");
  		try {
-//try {
-//	repoEG.exportClearTextEncoding(new FileOutputStream("G:\\_BUGS\\ap_old.step"));
-//} catch (FileNotFoundException e) {
-	// TODO Auto-generated catch block
-//	e.printStackTrace();
-//} 			
-//		  repoEG.exportClearTextEncoding("G:\\_BUGS\\repoEGstarting.pf"); - exception
+//repoEG.exportClearTextEncoding(new FileOutputStream("/home/monte/eclipse/runtime-workspace/test2/ap_old.step")); 			
  			
-			ASdaiModel models = repoEG.getModels();
+			ASdaiModel models = repoSource.getModels();
 			int totalWork = models.getMemberCount();
-		    if (progress != null) progress.beginTask("merging repository...", totalWork);
+		    if (progress != null) progress.beginTask("inserting diagram...", totalWork);
 
 /*/ 			
 			SdaiIterator msit0 = models.createIterator();
@@ -846,22 +692,27 @@ printDebug("<16>: " + modelEG.getInstances(EPage_reference_bundle.class));
 //			long freeMemory0 = freeMemory;
 //			long totalMemory = runtime.totalMemory();
 			
-flag_print_debug = false;
 
 			while (msit.next() && !canceled) {
 			    worked++;
 				SdaiModel model = models.getCurrentMember(msit);
+
+//System.out.println("<INSERTER-RUN-02> model: " + model.getName());
+//System.out.println("<INSERTER-RUN-02> underlying schema: " + model.getUnderlyingSchemaString());
+
 			    
 				if (model.getUnderlyingSchemaString().equalsIgnoreCase("EXPRESS_G_SCHEMA")) {
-					modelOld++;
+					// modelOld++;
+					
+					             
+					// diagramName = "EG_FIRST_MY_DIAGRAM_EXPRESS_G_DATA";
 					
 					
-if (model.getName().equalsIgnoreCase("FAILUREMODEEFFECTSCAUSESANALYSISSCHEMA_COMPLETE_SHORT_LAYOUT_EXPRESS_G_DATA")) {
-	flag_print_debug = true;
-} else {
-	flag_print_debug = false;
-}
-				
+					
+					if (!model.getName().equalsIgnoreCase(diagramName)) continue;
+
+//System.out.println("<INSERTER-RUN-03> NEEDED SOURCE MODEL FOUND: " + model.getName());
+
 					
 					StringBuffer message = new StringBuffer();
 					try {
@@ -869,12 +720,9 @@ if (model.getName().equalsIgnoreCase("FAILUREMODEEFFECTSCAUSESANALYSISSCHEMA_COM
 //						SdaieditPlugin.console("MODEL (" + worked + "/" + totalWork + "): " + model);
 //						System.out.println("MODEL (" + worked + "/" + totalWork + "): " + model);
 						if (model.getMode() == SdaiModel.NO_ACCESS) model.startReadWriteAccess();
-					    
-//						if (model.getName().equalsIgnoreCase("EXPRESSCOMPILERREPO_PARTIAL_SHORT_LAYOUT_EXPRESS_G_DATA")) {
-//							continue;
-//						}
+
+					    AGraphics_diagram list = (AGraphics_diagram)model.getInstances(EGraphics_diagram.class);
 						
-						AGraphics_diagram list = (AGraphics_diagram)model.getInstances(EGraphics_diagram.class);
 						String taskName = null;
 					    SdaiIterator it = list.createIterator();
 					    if (it.next()) {
@@ -886,6 +734,8 @@ if (model.getName().equalsIgnoreCase("FAILUREMODEEFFECTSCAUSESANALYSISSCHEMA_COM
 					    	progress.subTask(taskName);
 					    }
 						if (copyEGData(model, progress, taskName, message) != null) modelNew++;
+//						boolean result = copyEGData(model, progress, taskName, message) != null);
+            break;
 
 // DEBUG memory usage						
 /*System.out.println("MEMORY: free=" + runtime.freeMemory() + " max=" + runtime.maxMemory() + " total=" + runtime.totalMemory());						
@@ -932,50 +782,20 @@ System.out.println("RESET MEMORY");
 				} else {
 //						SdaieditPlugin.log("skipping");
 //						System.out.println("skipping");
-
-//RR - let's put here some debugging printing -----------------
-/*
-					if (model.getUnderlyingSchemaString().equalsIgnoreCase("EXTENDED_DICTIONARY_SCHEMA")) {
-						if (model.getMode() == SdaiModel.NO_ACCESS) model.startReadWriteAccess();
-					  ADeclaration declarations = (ADeclaration)model.getInstances(EDeclaration.class);
-					  SdaiIterator it_decl = declarations.createIterator();
-					  while(it_decl.next()) {
-				      EDeclaration decl = declarations.getCurrentMember(it_decl);
-				      if (!decl.testDefinition(null)) {
-				      	System.out.println("DEFINITION IS UNSET!!!: " + decl);
-				      } else {
-				      	Object def_obj = decl.getDefinition(null);
-				      	if (!(def_obj instanceof CEntity)) {
-					      	System.out.println("DEFINITION IS of INVALID TYPE: " + def_obj + ", declaration: " + decl);
-				      	} else {
-					      	System.out.println("OK - definition: " + def_obj + ", declaration: " + decl);
-				      	
-				      	}
-				      }
-  	
-					  }
-
-					} else {
-						// what else could be?
-					}
-
-*/				
-
-//RR - end of debugging stuff --------------------------
 				}
 			}
 		    if (progress != null) progress.done();
 		    if (progress != null && progress.isCanceled()) {
-				SdaieditPlugin.console("\nEND OF MERGING\nCanceled by user");
+					SdaieditPlugin.console("\nEND OF Diagram Insertion\nCanceled by user");
 		    } else {
-				SdaieditPlugin.console("\nEND OF MERGING\nUpdated " + modelNew + " of " + modelOld + " diagrams");
+					SdaieditPlugin.console("\nEND OF Diagram Insertion\nUpdated " + modelNew + " of " + modelOld + " diagrams");
 		    }
 		    
 //repoDict.exportClearTextEncoding(new FileOutputStream("/home/monte/eclipse/runtime-workspace/test2/ap_new.step")); 			
 		} catch (SdaiException sex) {
 			SdaieditPlugin.log(sex);
 		    if (progress != null) progress.setCanceled(true);
-		    SdaieditPlugin.console("DATA MERGING FAILED:\n" + sex.toString());
+		    SdaieditPlugin.console("DIAGRAM INSERTION FAILED:\n" + sex.toString());
 		} 
 //catch (IOException e) { e.printStackTrace();}
 //		System.out.println("\nEND OF REPOSITORY MERGING\n");
@@ -991,4 +811,86 @@ System.out.println("RESET MEMORY");
     	instanceMap = null;
 		super.finalize();
 	}
+
+
+
+  boolean deleteTargetModelIfPresent(String target_model_name) throws SdaiException {
+        boolean result = false;
+		ASdaiModel models = repoTarget.getModels();
+		SdaiIterator msit = models.createIterator();
+		while (msit.next()) {
+			SdaiModel model = models.getCurrentMember(msit);
+			if (model.getUnderlyingSchemaString().equalsIgnoreCase("EXPRESS_G_SCHEMA")) {
+				if (model.getName().equalsIgnoreCase(target_model_name)) {
+					// delete this model
+					model.deleteSdaiModel();
+					result = true;
+					break;
+				} // if
+			} // if
+		} // while
+		return result;
+  }
+
+
+/*
+  void DeleteDiagram() {
+
+					RepositoryHandler rh = handler;
+					ModelHandler mhEG = handler.getModelHandler(modelName);
+					System.out.println("<ID>model handler : " + mhEG);
+
+          // let's try to delete the diagram
+          
+					String schemaName = null;
+					try {
+						ESchema_definition schemaDef = mhEG.getSchema_definition();
+						if (schemaDef != null)
+							schemaName = schemaDef.getName(null);
+					} catch (SdaiException sex) {
+						SdaieditPlugin.log(sex);
+						SdaieditPlugin.console(sex.toString());
+					}
+					RepositoryChanger changerR = null;
+					RepositoryChanger changerW = new RepositoryChanger(new String[]{mhEG.getName()}, "Deleting diagram");
+					String msg = null;
+					if (schemaName != null) {
+						changerR = new RepositoryChanger(new String[]{schemaName}, "Deleting diagram");
+						msg = rh.startROChanger(changerR);
+					}
+
+
+					if (msg != null) {
+						// MessageDialog.openWarning(getShell(), "Delete Diagram Action", msg);
+						MessageDialog.openWarning(null, "Delete Diagram Action", msg);
+					} else {
+						msg = rh.startRWChanger(changerW);
+						if (msg != null) {
+							// MessageDialog.openWarning(getShell(), "Delete Diagram Action", msg);
+							MessageDialog.openWarning(null, "Delete Diagram Action", msg);
+						} else {
+							rh.deleteModel(mhEG.getName());
+							try {
+								rh.update();
+							} catch (SdaiException sex) {
+								SdaieditPlugin.log(sex);
+								SdaieditPlugin.console(sex.toString());
+							}
+//							refresh();
+//							if (schemaName == null)
+//								selectInView(rh);
+//							else
+//								selectInView(rh.getModelHandler(schemaName));
+						}
+						changerW.done();
+						rh.endRWChanger(changerW);
+					}
+					if (changerR != null) {
+						changerR.done();
+						rh.endROChanger(changerR);
+					}
+
+	} // deleteDiagram
+*/
+
 }

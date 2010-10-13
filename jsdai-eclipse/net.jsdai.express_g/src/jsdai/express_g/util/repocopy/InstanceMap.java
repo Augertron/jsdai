@@ -70,7 +70,7 @@ public class InstanceMap {
 	protected SdaiRepository repoNew;
 	
 	/**
-	 * if true loads to Map only classes of requered type
+	 * if true loads to Map only classes of required type
 	 */
 	public boolean SINGLE_LOADING = false;
 	private Class requered_class = null;
@@ -118,10 +118,12 @@ public class InstanceMap {
 	 */
 	public EEntity get(EEntity oldent) {
 		EEntity newent = getTemp(oldent);
+//System.out.println("<01>InstanceMap-GET - oldent: " + oldent + ", newent: " + newent);
 		if (newent == null) try {
 			requered_class = oldent.getClass();
 			Object key = getKey(oldent);
 			newent = getMapped(oldent.findEntityInstanceSdaiModel().getName(), key);
+//System.out.println("<01>InstanceMap-GET - key: " + key + ", newent: " + newent);
 			if (newent != null) {
 				setTemp(oldent, newent);
 			}
@@ -282,7 +284,7 @@ public class InstanceMap {
 	}
 	
 	/**
-	 * entities are splitted to maps depending on model
+	 * entities are split into maps depending on model
 	 */
 	protected Map modelLinks = new Hashtable(); 
 	
@@ -294,18 +296,23 @@ public class InstanceMap {
 	 */
 	protected EEntity getMapped(String modelName, Object key) {
 		Map modelMap = (Map)modelLinks.get(modelName);
+//System.out.println("<1>getMapped - modelMap: " + modelMap);
 		if (modelMap == null) {
 			modelMap = parseModel(modelName);
+//System.out.println("<2>getMapped - modelMap: " + modelMap);
 			if (modelMap != null) modelLinks.put(modelName, modelMap);
 		}
 		EEntity entity = null;
 		if (modelMap != null) {
 			entity = (EEntity)modelMap.get(key);
+//System.out.println("<3>getMapped - entity: " + entity);
 			if (SINGLE_LOADING && entity == null) {
 				modelMap = parseModel(modelName);
+//System.out.println("<4>getMapped - modelMap: " + modelMap);
 				if (modelMap != null) {
 					modelLinks.put(modelName, modelMap);
 					entity = (EEntity)modelMap.get(key);
+//System.out.println("<5>getMapped - entity: " + entity);
 				}
 			}
 		} 

@@ -23,10 +23,12 @@
 
 package jsdai.express_g.wizards;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import jsdai.common.CommonPlugin;
 import jsdai.express_g.SdaieditPlugin;
 import jsdai.express_g.editors.ExpressGEditor;
 import jsdai.express_g.editors.ModelHandler;
@@ -34,11 +36,14 @@ import jsdai.express_g.editors.RepositoryChanger;
 import jsdai.express_g.editors.RepositoryHandler;
 import jsdai.express_g.editors.SdaiEditor;
 import jsdai.express_g.editors.outline.SdaiEditorOutline;
+import jsdai.express_g.exp2.ui.Application;
 import jsdai.express_g.exp2.ui.PropertySharing;
 import jsdai.express_g.exp2.ui.command.Command;
 import jsdai.express_g.exp2.ui.command.CommandInvoker;
 import jsdai.express_g.exp2.ui.command.ExportToStepmod;
+import jsdai.express_g.util.xml.IsoDbTools;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -48,6 +53,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -55,6 +61,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 /**
@@ -97,6 +105,25 @@ public class ExportStepmod extends Wizard implements IExportWizard {
 			} else {
 				fStepmod = false;
 			}
+
+			// let's add here initialization of iso_db:
+			ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getSelection();
+			IProject fProject = null;
+			if (selection instanceof IStructuredSelection) {
+				Object obj = ((IStructuredSelection)selection).getFirstElement();
+				if (obj instanceof IResource) {
+					fProject = ((IResource)obj).getProject();
+				} else {
+					// System.out.println("selection element is NOT a resource: " + obj);
+				}
+			}
+			if (fProject != null) {
+				String iso_db_path = fProject.getLocation().toOSString() + File.separator + "document_reference.txt";
+				MessageConsoleStream stream = CommonPlugin.getDefault().getConsole();
+				IsoDbTools.readIsoIdsAndPartNamesOfSchemas(iso_db_path, stream);						
+			}
+
+			
 			if (page.isExportSingle()) {
 				RepositoryHandler handler = editor.getRepositoryHandler();
 				RepositoryChanger changer = new RepositoryChanger(handler.getModels(), "Exporting Stepmod");
@@ -239,6 +266,10 @@ public class ExportStepmod extends Wizard implements IExportWizard {
 		}
 
 		public void run(IProgressMonitor progress) {
+//System.out.println("<>prop: " + prop);
+      if (prop instanceof Application) {
+//      	System.out.println("is modified at the start?: " + ((Application)prop).isModified());
+      }
 			progress.beginTask("Exporting to Stepmod \t" + prop.getName(), IProgressMonitor.UNKNOWN);
 			prop.status().setProgressMonitor(progress);
 			if (file != null) {
@@ -250,6 +281,14 @@ public class ExportStepmod extends Wizard implements IExportWizard {
 			}
 			progress.done();
 			prop.status().setProgressMonitor(null);
+
+      if (prop instanceof Application) {
+//      	System.out.println("is modified? at the end?: " + ((Application)prop).isModified());
+      	if (!((Application)prop).isModified()) {
+      		((Application)prop).setModified(false); 
+      	}
+      }
+
 		}
 		
 		public boolean niceDone() {

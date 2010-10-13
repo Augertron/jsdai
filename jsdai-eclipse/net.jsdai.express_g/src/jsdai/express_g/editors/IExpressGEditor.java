@@ -35,4 +35,6 @@ public interface IExpressGEditor {
 	public void updateModifiedStatus();
 	
 	public void updateTabNames();
+	
+	public void reInitEditor(); // RR
 }

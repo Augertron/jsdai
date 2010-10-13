@@ -23,17 +23,18 @@
 
 package jsdai.express_g.wizards;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
+import jsdai.SExtended_dictionary_schema.ESchema_definition;
 import jsdai.express_g.SdaieditPlugin;
+import jsdai.express_g.editors.ModelHandler;
+import jsdai.express_g.editors.RepositoryChanger;
 import jsdai.express_g.editors.RepositoryHandler;
 import jsdai.express_g.editors.SdaiEditor;
 import jsdai.express_g.util.repocopy.RepoCopy;
 import jsdai.lang.SdaiException;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -52,23 +53,22 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.help.WorkbenchHelp;
-import org.eclipse.ui.part.FileEditorInput;
 
 /**
  * @author Mantas Balnys
  *
  */
-public class ImportRepository extends Wizard implements IImportWizard {
+public class ImportDiagram extends Wizard implements IImportWizard {
 	private SdaiEditor editor = null;
 	private IWorkbenchPage workbenchPage = null;
 	private Object selected = null;
 	
-	private RepoCopyFileSelectionPage page = null;
+	private DiagramImportFileSelectionPage page = null;
 
 	/**
 	 * 
 	 */
-	public ImportRepository() {
+	public ImportDiagram() {
 		super();
 		IDialogSettings workbenchSettings = SdaieditPlugin.getDefault().getDialogSettings();
 		IDialogSettings section = workbenchSettings.getSection("RepositoryFileWizard");//$NON-NLS-1$
@@ -84,15 +84,15 @@ public class ImportRepository extends Wizard implements IImportWizard {
 		super.addPages();
 
 		if (editor != null) {
-			page = new RepoCopyFileSelectionPage(editor.getRepositoryHandler().getRepoPath().removeLastSegments(1),
-					"Select Express repository file", "File:", "Select SDAI File", RepoCopyFileSelectionPage.DIALOG_FILE, 
-					SWT.OPEN | SWT.SINGLE, new String[]{"*.exd", "*.exg", "*.sdai"}, false);
-			page.setTitle("Select JSDAI Express dictionary (*.exd) file");
+			page = new DiagramImportFileSelectionPage(editor.getRepositoryHandler().getRepoPath().removeLastSegments(1),
+					"Select an Express-G file to import the diagram from", "File:", "Select Express-G File", RepoCopyFileSelectionPage.DIALOG_FILE, 
+					SWT.OPEN | SWT.SINGLE, new String[]{"*.exg"}, false);
+			page.setTitle("Select JSDAI Express-G data (*.exg) file");
 //				page.setDescription("Select JSDAI Express dictionary (*.exd) file");
 			addPage(page);
 		} else {
 			WizardInfoPage wp = new WizardInfoPage("Error", "");//"This wizard can be started only on opened Express-G file (*.exg)");
-			wp.setTitle("Import Express Data");
+			wp.setTitle("Import Express-G Data");
 			wp.setDescription("This wizard can be started only on opened Express-G file (*.exg)");
 			addPage(wp);
 		}
@@ -110,7 +110,7 @@ public class ImportRepository extends Wizard implements IImportWizard {
 		if (!editor.isDirty()) {
 			RepositoryHandler handler = editor.getRepositoryHandler();
 			try {
-				Runnable runnable = new Runnable(handler, page.getFileName());
+				Runnable runnable = new Runnable(handler, page.getFileName(), page.getDiagramName());
 				getContainer().run(true, true, runnable); // TODO calcelable
 				ok = runnable.niceDone();
 				if (ok) {
@@ -155,7 +155,7 @@ public class ImportRepository extends Wizard implements IImportWizard {
 				t.printStackTrace();
 			}
 		} else {
-			MessageDialog.openWarning(editor.getSite().getShell(), "JSDAI Express Dictionary data Import", "Operation aborted by user");
+			MessageDialog.openWarning(editor.getSite().getShell(), "JSDAI Express-G Diagram Import", "Operation aborted by user");
 		}
 		return ok;
 	}
@@ -163,27 +163,65 @@ public class ImportRepository extends Wizard implements IImportWizard {
 	private static class Runnable implements IRunnableWithProgress {
 		private RepositoryHandler handler;
 		private String file;
+		private String diagram_name;
 		private boolean ok = true;
 		
 		/**
 		 * @param handler
 		 * @param file
 		 */
-		public Runnable(RepositoryHandler handler, String file) {
+		public Runnable(RepositoryHandler handler, String file, String diagram_name) {
 			this.handler = handler;
 			this.file = file;
+			this.diagram_name = diagram_name;
 		}
 
 		public void run(IProgressMonitor progress) {
-			progress.beginTask("Importing External repository", IProgressMonitor.UNKNOWN);
+			progress.beginTask("Importing a diagram from an external exg file", IProgressMonitor.UNKNOWN);
 			if (file != null) {
-				try {
-					RepoCopy.synchronizedRepoCopy(handler, file, progress);
-				} catch (SdaiException e) {
-					SdaieditPlugin.log(e);
-					ok = false;
-					SdaieditPlugin.console(e.toString());
-				}
+				//try {
+					// RepoCopy.synchronizedRepoCopy(handler, file, progress);
+				  
+				  // here we need to delete the old diagram and copy the new one from an external exg file
+				  // let's try to delete it here locally
+				  // we need: modelHandler to delete the diagram
+					
+					// print all models
+					/*
+					String [] str_models = handler.getModels();
+					System.out.println("<ID>models:");
+					for (int irr = 0; irr < str_models.length; irr++) {
+						System.out.println("model: " + str_models[irr]);
+					}
+					*/
+					
+//					String  modelName = "eg_first_my_diagram";
+					String  modelName = diagram_name;
+
+					RepositoryHandler rh = handler;
+					ModelHandler mhEG = handler.getModelHandler(modelName);
+		
+		      
+          // now, try adding a different one from an exg file
+  
+          //String source_exg_path = page.getFileName();
+          // System.out.println("EXG to import from: " + file + ", diagram: " + modelName);        
+
+					try {
+						RepoCopy.synchronizedRepoCopyForInsertingDiagram(rh, file, modelName, progress);
+					} catch (SdaiException e) {
+		          		SdaieditPlugin.log(e);
+						ok = false;
+						SdaieditPlugin.console(e.toString());
+						e.printStackTrace();
+					}
+          
+
+				//} catch (SdaiException e) {
+          		//	SdaieditPlugin.log(e);
+				//	ok = false;
+				//	SdaieditPlugin.console(e.toString());
+				//}
 			} else {
 				ok = false;
 			}
@@ -206,7 +244,7 @@ public class ImportRepository extends Wizard implements IImportWizard {
 			editor = (SdaiEditor)part;
 
 		}
-		setWindowTitle("Importing JSDAI Express dictionary data"); //$NON-NLS-1$
+		setWindowTitle("Importing a JSDAI Express-G diagram"); //$NON-NLS-1$
 		setNeedsProgressMonitor(true);
 	}
 
@@ -225,54 +263,17 @@ public class ImportRepository extends Wizard implements IImportWizard {
 			page.setEnabledDict(false);
 			page.setEnabledEG(false);
 
-			WorkbenchHelp.setHelp(page.getControl(), SdaieditPlugin.ID_SDAIEDIT + ".ImportRepositoryContextId");
+			WorkbenchHelp.setHelp(page.getControl(), SdaieditPlugin.ID_SDAIEDIT + ".ImportDiagramContextId");
 
-
-// old implementation - initializes to selected exg, exd or sdai file or, if different - to the last previously selected exg/exd/sdai 
-/*	
 			if (selected instanceof IFile) {
 				IFile file = (IFile)selected;
 				String fext = file.getFileExtension();
-				if (fext.equalsIgnoreCase("exd") || fext.equalsIgnoreCase("exg") || 
-						fext.equalsIgnoreCase("sdai")) {
+//				if (fext.equalsIgnoreCase("exd") || fext.equalsIgnoreCase("exg") || 
+//						fext.equalsIgnoreCase("sdai")) {
+				if (fext.equalsIgnoreCase("exg")) {
 					page.setSourceName(file.getLocation().toOSString());
 				}
-				
-
 			}
-*/
-			// new implementation - always initializes to exd file with the name = project name
-			// still, perhaps no need to require selection - just get the project from the opened exg file in express-g editor
-/*
-			String initial_path = "failed to calculate exd file";
-			if (selected instanceof IResource) {
-				IProject fProject = ((IResource)selected).getProject();
-				if (fProject != null) {
-//					String initial_path = file.getLocation().toOSString();
-					// initial_path = file.getLocation().toOSString();
-					initial_path = fProject.getLocation().toOSString() + File.separator  + fProject.getName() + ".exd";
-				} else {
-				}
-			} else { 
-			}
-			page.setSourceName(initial_path);
-*/
-
-			// even newer implementation - this one does not depend on something selected so Import can be invoked from the main menu, etc.
-			// System.out.println("editor: " + editor + ", input: " + editor.getEditorInput());
-			IFile input_file = ((FileEditorInput)editor.getEditorInput()).getFile();
-			IProject fProject = input_file.getProject();
-			String initial_path = fProject.getLocation().toOSString();
-
-			if (initial_path.endsWith("\\") || initial_path.endsWith("/")) {
-				initial_path += fProject.getName() + ".exd";
-			} else {
-				initial_path +=  File.separator + fProject.getName() + ".exd";
-			}
-
-			page.setSourceName(initial_path);
-		
 		}
 	}
 }
-

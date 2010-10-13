@@ -94,13 +94,32 @@ public class RuntimePlugin extends Plugin {
 //			throw new RuntimeException(e);
 		}
 	}
- 
+
 
 	public String getLibraryVersionsAsString() throws IOException {
+		return getLibraryVersionsAsString(null);
+	}
+
+	/**
+	 * @since  4.1.500
+	 */
+	public String getLibraryVersionsAsString(Properties additionalProperties) throws IOException {
+		if(additionalProperties == null) {
+			additionalProperties = new Properties();
+		}
+		getLibraryVersionsAsProperties(additionalProperties);
+		ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
+		additionalProperties.store(outBytes, LIBRARY_VERSIONS_COMMENT);
+		return outBytes.toString("iso-8859-1"); //$NON-NLS-1$
+	}
+
+	/**
+	 * @since  4.1.500
+	 */
+	public void getLibraryVersionsAsProperties(Properties libVerProps) {
 		IExtension[] libExtensions =
 			Platform.getExtensionRegistry().getExtensionPoint(
 					RuntimePlugin.PLUGIN_ID, "libraries").getExtensions();
-		Properties libVerProps = new Properties();
 		for (int i = 0; i < libExtensions.length; i++) {
 			IExtension libExtension = libExtensions[i];
 			if(libExtension.isValid()) {
@@ -110,9 +129,6 @@ public class RuntimePlugin extends Plugin {
 				libVerProps.setProperty(libId, libVersion);
 			}
 		}
-		ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
-		libVerProps.store(outBytes, LIBRARY_VERSIONS_COMMENT);
-		return outBytes.toString("iso-8859-1"); //$NON-NLS-1$
 	}
 
 	public static Properties libraryVersionsToProperties(String versionString) throws IOException {

@@ -104,6 +104,7 @@ public class ExpressGEditor extends EditorPart implements IExpressGEditor, Comma
 	 * @see org.eclipse.ui.ISaveablePart#doSave(org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	public void doSave(IProgressMonitor monitor) {
+//System.out.println("<ExpressGEditor> doSave");
 		if ((application != null) && !application.isDisposed() && 
 				application.handler().startCommand(new SaveRepository(this))) {
 			application.getSelectionHandler().setSelected(this, SelectCommand.EMPTY_SELECTION);
@@ -123,6 +124,7 @@ public class ExpressGEditor extends EditorPart implements IExpressGEditor, Comma
 	 * @see org.eclipse.ui.IEditorPart#init(org.eclipse.ui.IEditorSite, org.eclipse.ui.IEditorInput)
 	 */
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
+//System.out.println("<init(ExpressGEditor>");
 		if (input instanceof RepositoryHandlerInput) {
 			setSite(site);
 			setInput(input);
@@ -244,7 +246,10 @@ public class ExpressGEditor extends EditorPart implements IExpressGEditor, Comma
 	 * @see jsdai.express_g.editors.IMultiEditorPageChangeListener#multiEditorPageChanged(int)
 	 */
 	public void initEditor() {
+//System.out.println("<initEditor>");
 		if ((application == null) && (input != null)) { // Open diagram if not yet opened
+//System.out.println("<ExpressGEditor> diagram NOT YET opened");		
+
 			BusyIndicator.showWhile(null, new Runnable() {
 				public void run() {
 					ModelHandler mh = input.getModelHandler();
@@ -336,9 +341,123 @@ public class ExpressGEditor extends EditorPart implements IExpressGEditor, Comma
 					}
 				}
 			});
+		} else {
+//System.out.println("<ExpressGEditor> diagram already opened");		
 		}
 	}
+
+// RR experiment
+
+// this is a radical approach
+
+	public void reInitEditor() {
+//System.out.println("<reInitEditor>");
+    if (application != null) application = null;
+		if ((application == null) && (input != null)) { // Open diagram if not yet opened
+//System.out.println("<ExpressGEditor> diagram NOT YET opened");		
+
+			BusyIndicator.showWhile(null, new Runnable() {
+				public void run() {
+					ModelHandler mh = input.getModelHandler();
+//					RepositoryHandler rh = mh.getRepositoryHandler();
+					try { 
+						ESchema_definition schemaDef = mh.getSchema_definition();
+						String schemaName = null;
+//System.out.println("<<A>> schemaDef: " + schemaDef + ", model handler: " + mh + ", input: " + input);
+						if (schemaDef != null) 
+							schemaName = schemaDef.getName(null); 
+//						ModelHandler mhs = rh.getModelHandler(schemaName);
+
+						// instantiate application
+						application = new Application(ExpressGEditor.this);
+						application.handler().addPageListener(new PageListener() {
+							
+							/* (non-Javadoc)
+							 * @see jsdai.express_g.exp2.ui.event.PageListener#pageChanged(jsdai.express_g.exp2.ui.event.PageChangeEvent)
+							 */
+							public void pageChanged(PageChangeEvent e) {
+								while (tabs.getItemCount() < application.handler().getMaxPage() + 2) {
+									int pg = tabs.getItemCount() - 1;
+									CTabItemSingleControl prev = tabs.getItem(pg);
+									prev.setText(EGToolKit.renumberInTab(application, pg));
+//									prev.setText(String.valueOf(tabs.getItemCount() - 1));
+									CTabItemSingleControl item = new CTabItemSingleControl(tabs, SWT.NONE);
+									item.setControl(scroll);
+									item.setText("+");
+								}
+								while (tabs.getItemCount() > application.handler().getMaxPage() + 2) {
+									CTabItemSingleControl item = tabs.getItem(tabs.getItemCount() - 1);
+									item.dispose();
+									CTabItemSingleControl prev = tabs.getItem(tabs.getItemCount() - 1);
+									prev.setText("+");
+								}
+								
+								tabs.setSelection(e.getNewPage());
+								pageName.setText(" " + application.handler().getCurrentPage().getName());
+							}
+						});
+						application.setRepositoryHandler(input.getRepositoryHandler());
+						panel.setProperties(application);
+						getSite().setSelectionProvider(new ExpressGSelectionProvider(application));
+
+						// finish with GUI
+						try {
+							SdaiModel model = mh.getModel();
+							new Label(infoPage, SWT.NONE).setText("NAME:     " + mh.getName());
+							new Label(infoPage, SWT.NONE).setText("MODIFIED: " + model.getChangeDate());
+							PageBrowsingControl pageBrowser = new PageBrowsingControl(infoPage, SWT.NONE);
+							pageBrowser.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
+							pageBrowser.setProperties(application);
+						} catch (SdaiException sex) {
+							new Label(infoPage, SWT.NONE).setText("ERROR: " + sex.getMessage());
+						}
+
+						
+						// drag'n'drop actions
+						layoutCommand = new LayoutCommand(ExpressGEditor.this);
+						DropTarget drop = new DropTarget(panel, DND.DROP_MOVE);
+						drop.setTransfer(new Transfer[]{LocalSelectionTransfer.getInstance()});
+						drop.addDropListener(ExpressGEditor.this);
+						
+						// starting application
+//System.out.println("<<A>>Setting schema name: " + schemaName);
+						application.setName(schemaName);
+						application.setNameEG(mh.getName());
+						
+						application.handler().startCommand(new OpenRepository(ExpressGEditor.this));
+						application.handler().setPage(1);
+//						tabs.setSelection(0);
+						// update page references
+						application.handler().startCommand(new UpdateCommand(ExpressGEditor.this));
+						if (input.isReadonly()) {
+							int emode = application.getEditMode();
+							if ((emode & PropertySharing.MODE_EDIT) != 0)
+								application.setEditMode(emode - PropertySharing.MODE_EDIT);
+						} else {
+							application.setEditMode(application.getEditMode() | PropertySharing.MODE_EDIT);
+						}
+						application.setModified(false);
+						
+						updateTabNames();
+						// add context menu
+						new PageHandlingContextMenu(tabs, application);
+					} catch (SdaiException sex) {
+						SdaieditPlugin.log(sex);
+						SdaieditPlugin.console(sex.toString());
+					}
+				}
+			});
+		} else {
+//System.out.println("<ExpressGEditor> diagram already opened");		
+		}
+	}
+
+
+// RR experiment - end
+
+
 	
+	// this is at the bottom, except 1st (Info) and last (+): Info here ... here +
 	public void updateTabNames() {
 		CTabItemSingleControl[] items = tabs.getItems();
 		for (int i = 1; i < items.length - 1; i++) {
@@ -357,6 +476,7 @@ public class ExpressGEditor extends EditorPart implements IExpressGEditor, Comma
 	 * @see jsdai.express_g.editors.IExpressGEditor#updateModifiedStatus()
 	 */
 	public void updateModifiedStatus() {
+//System.out.println("<<>>setting editor to DIRTY");
 		this.firePropertyChange(PROP_DIRTY);
 	}
 	
@@ -427,8 +547,10 @@ public class ExpressGEditor extends EditorPart implements IExpressGEditor, Comma
 	 * @see jsdai.express_g.editors.outline.IInternalPartListener#internalPartChanged(org.eclipse.ui.IWorkbenchPart)
 	 */
 	public void internalPartChanged(IWorkbenchPart part) {
+//System.out.println("<internalPartChanged>");
 		if (part == this) {
 //System.out.println("<0XO><04>part: " + part);
+//System.out.println("<internalPartChanged>- initEditor");
 			initEditor();
 		}	
 		else

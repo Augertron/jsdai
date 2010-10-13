@@ -836,6 +836,56 @@ public class ExpressXmlConverter {
   }
 
 
+/*
+
+	BUG #3634
+
+  need to change
+  
+  from:
+
+		<unique.attribute attribute="in_set" entity-ref="area_in_set"/>  
+  
+  to:
+
+		<unique.attribute attribute="SELF\area_in_set.in_set"/>
+
+IMPLEMENTED.
+
+TEST:
+
+previous:
+
+      <entity name="drawing_sheet_revision_usage" supertypes="area_in_set">
+         <explicit name="sheet_number">
+            <typename name="identifier"/>
+         </explicit>
+         <unique label="UR1">
+            <unique.attribute attribute="sheet_number"/>
+            <unique.attribute attribute="in_set" entity-ref="area_in_set"/>
+         </unique>
+         <where expression="('DRAWING_DEFINITION_SCHEMA.DRAWING_SHEET_REVISION' IN &#10;                  TYPEOF(SELF\area_in_set.area)) &#10;              AND&#10;              ('DRAWING_DEFINITION_SCHEMA.DRAWING_REVISION' &#10;               IN TYPEOF (SELF\area_in_set.in_set))" label="WR1"/>
+      </entity>
+
+
+now:
+
+      <entity name="drawing_sheet_revision_usage" supertypes="area_in_set">
+         <explicit name="sheet_number">
+            <typename name="identifier"/>
+         </explicit>
+         <unique label="UR1">
+            <unique.attribute attribute="sheet_number"/>
+            <unique.attribute attribute="SELF\area_in_set.in_set"/>
+         </unique>
+         <where expression="('DRAWING_DEFINITION_SCHEMA.DRAWING_SHEET_REVISION' IN &#10;                  TYPEOF(SELF\area_in_set.area)) &#10;              AND&#10;              ('DRAWING_DEFINITION_SCHEMA.DRAWING_REVISION' &#10;               IN TYPEOF (SELF\area_in_set.in_set))" label="WR1"/>
+      </entity>
+
+
+
+
+*/
+
   private static SdaiIterator convertUniquenessRules(AUniqueness_rule u_rules, EUniqueness_rule [] un_rules, 
       SdaiIterator iter_auxil, Element parent, Document doc) throws SdaiException {
     int i;
@@ -887,6 +937,9 @@ public class ExpressXmlConverter {
           Element attrib_elem = doc.createElement("unique.attribute");
           u_rule_elem.appendChild(attrib_elem);
           EEntity_definition parent_def = attrib.getParent_entity(null);
+
+// old implementation ---------------------------------------------
+/*
           if (parent_def != def) {
             atr = doc.createAttribute("entity-ref");
             atr.setValue(getCorrectedName(parent_def));
@@ -895,6 +948,18 @@ public class ExpressXmlConverter {
           atr = doc.createAttribute("attribute");
           atr.setValue(attrib.getName(null));
           attrib_elem.setAttributeNode(atr);
+*/
+// end of old implementation ---------------------------------------------
+          if (parent_def != def) {
+	          atr = doc.createAttribute("attribute");
+  	        atr.setValue("SELF\\" + getCorrectedName(parent_def) + "." + attrib.getName(null));
+    	      attrib_elem.setAttributeNode(atr);
+          } else {
+	          atr = doc.createAttribute("attribute");
+  	        atr.setValue(attrib.getName(null));
+    	      attrib_elem.setAttributeNode(atr);
+          }
+
         }
       }
     }

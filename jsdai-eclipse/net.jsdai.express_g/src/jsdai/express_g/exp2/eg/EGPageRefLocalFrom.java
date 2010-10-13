@@ -170,6 +170,7 @@ public class EGPageRefLocalFrom extends EGPageRefLocal {
 
 		text = text1 + text2 + text3;
 		return text;
+		//return "X2";
 	}
 	
 	public void addLinkedRef(EGPageRefLocalTo linked) {

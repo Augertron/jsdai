@@ -52,6 +52,8 @@ public class EGEAppearance extends FieldEditorPreferencePage implements
 	 */
 	protected void createFieldEditors() {
 		addField(new BooleanFieldEditor(SdaiEditor.HIDE_AUTO_PERSPECTIVE, "Do not offer to switch perspective when Express-G editor starts", getFieldEditorParent()));
+		// RR - perhaps not the best place, but for now better than nothing
+		addField(new BooleanFieldEditor(SdaiEditor.USE_ASTERISK_FOR_ENTITY, "Do not prefix entity names with * to indicate the presence of WHERE rules", getFieldEditorParent()));
 // TODO		addField(new BooleanFieldEditor(SdaiEditor.HIDE_READWRITE, "Do not offer to select Edit or Layout mode", getFieldEditorParent()));
 // TODO		addField(new BooleanFieldEditor(SdaiEditor.READWRITE_EXD, "Always use Edit mode, not Layout (does not apply for opened editors)", getFieldEditorParent()));
 	}

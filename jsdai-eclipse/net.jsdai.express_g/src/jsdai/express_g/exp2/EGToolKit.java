@@ -84,8 +84,28 @@ public class EGToolKit {
 	 * @param page current page
 	 * @return
 	 */
-	public static String renumberInTab(PropertySharing prop, int page) {
+	public static String renumberInTab_old(PropertySharing prop, int page) {
 		return String.valueOf(EGToolKit.renumber(prop, page)) + (page > prop.getPageRenumber() ? "" : "S");
+	}
+
+	public static String renumberInTab(PropertySharing prop, int page) {
+		//prop.refreshHierarchyFlag(); // the refreshing is currently necessary, but possibly will be moved elsewhere (or will become unnecessary) in the future
+		if (prop.hierarchyOnV()) {
+			// here we can fine-tune the hierarchical implementation
+			return String.valueOf(EGToolKit.renumber(prop, page)) + (page > prop.getPageRenumberV(page) ? "" : "S");
+		} else {
+			return String.valueOf(EGToolKit.renumber(prop, page)) + (page > prop.getPageRenumber() ? "" : "S");
+		}
+	}
+
+	public static String renumberInTab_nonV(PropertySharing prop, int page) {
+		//prop.refreshHierarchyFlag(); // the refreshing is currently necessary, but possibly will be moved elsewhere (or will become unnecessary) in the future
+		if (prop.hierarchyOnV()) {
+			// here we can fine-tune the hierarchical implementation
+			return String.valueOf(EGToolKit.renumber(prop, page)) + (page > prop.getPageRenumber(page) ? "" : "S");
+		} else {
+			return String.valueOf(EGToolKit.renumber(prop, page)) + (page > prop.getPageRenumber() ? "" : "S");
+		}
 	}
 
 	/**
@@ -97,7 +117,6 @@ public class EGToolKit {
 	 * @return
 	 */
 	public static int renumberMaxPage_old(PropertySharing prop, int current_page) {
-//		int page_ren = prop.getMaxPageRenumber(current_page);
 		int page_ren = prop.getPageRenumber();
 		int page_max = prop.handler().getMaxPage();
 		if (current_page > page_ren) 
@@ -105,16 +124,40 @@ public class EGToolKit {
 		else
 			return Math.min(page_ren, page_max);
 	}
-	public static int renumberMaxPage(PropertySharing prop, int current_page) {
+	public static int renumberMaxPage_new(PropertySharing prop, int current_page) {
 		int page_ren = prop.getMaxPageRenumber(current_page);
-//		int page_ren = prop.getPageRenumber();
-		// int page_max = prop.handler().getMaxPage();
-		//if (current_page > page_ren) 
-			//return page_max - page_ren;
-		//else
-			//return Math.min(page_ren, page_max);
 		return page_ren;
 	}
+
+  // this method should work with both flat and hierarchical page numbering
+	public static int renumberMaxPage(PropertySharing prop, int current_page) {
+		if (prop.hierarchyOnV()) { 
+			int page_ren = prop.getMaxPageRenumberV(current_page);
+			return page_ren;
+		} else {
+			int page_ren = prop.getPageRenumber();
+			int page_max = prop.handler().getMaxPage();
+			if (current_page > page_ren) 
+				return page_max - page_ren;
+			else
+				return Math.min(page_ren, page_max);
+		}
+	}
+
+	public static int renumberMaxPage_nonV(PropertySharing prop, int current_page) {
+		if (prop.hierarchyOn()) { 
+			int page_ren = prop.getMaxPageRenumber(current_page);
+			return page_ren;
+		} else {
+			int page_ren = prop.getPageRenumber();
+			int page_max = prop.handler().getMaxPage();
+			if (current_page > page_ren) 
+				return page_max - page_ren;
+			else
+				return Math.min(page_ren, page_max);
+		}
+	}
+
 	
 	/**
 	 * special method to count visible page number (not real) after renumbering of pages
@@ -124,16 +167,34 @@ public class EGToolKit {
 	 * @return
 	 */
 	public static int renumber(PropertySharing prop, int page_number) {
+		int page_ren;
+		if (prop.hierarchyOnV()) { 
+			page_ren = prop.getPageRenumberV(page_number);
+		} else {
+			page_ren = prop.getPageRenumber();
+		}
+//System.out.println("<IN renumber> page_number: " + page_number + ", page_ren: " + page_ren);
+		if (page_number > page_ren) 
+			return page_number - page_ren;
+		else
+			return page_number;
+	}
 
-//  	int page_ren = prop.getPageRenumber();
-  	int page_ren = prop.getPageRenumber(page_number);
+	public static int renumber_nonV(PropertySharing prop, int page_number) {
+		int page_ren;
+		if (prop.hierarchyOn()) { 
+			page_ren = prop.getPageRenumber(page_number);
+		} else {
+			page_ren = prop.getPageRenumber();
+		}
+//System.out.println("<IN renumber> page_number: " + page_number + ", page_ren: " + page_ren);
 		if (page_number > page_ren) 
 			return page_number - page_ren;
 		else
 			return page_number;
 	}
 	
-	
+
 	/**
 	 * calls update() method for all items in collection
 	 * @param items collection of Updateable items
@@ -238,6 +299,7 @@ public class EGToolKit {
 		String[] pages = new String[size];
 		for (int i = 1; i <= prop.handler().getMaxPage(); i++) {
 			pages[i - 1] = prop.handler().getVisualPage(i).getName();
+//System.out.println("<###-0> resolvePageNames - name["+(i-1)+"]: " + pages[i-1]); 
 		}
 		if (allowNewPage) {
 			pages[size - 1] = "<new page>";
@@ -650,8 +712,11 @@ public class EGToolKit {
 	 */
 	public static String convertPageNrToString(int pgNr) {
 		String page;
-		if (pgNr == Paging.INVISIBLE_PAGE)
+		if (pgNr == Paging.INVISIBLE_PAGE) {
 			page = "N";
+//  		Throwable thr = new Throwable();
+//  		thr.printStackTrace();
+		}
 		else if (pgNr == Paging.ANY_PAGE)
 			page = "A";
 		else

@@ -57,11 +57,16 @@ public class EGPageRefLocalTo extends EGPageRefLocal {
 		String text = "";
 		if (referenced == null) 
 			text += -1; 
-		else 
+		else {
 			text += EGToolKit.convertPageNrToString(EGToolKit.renumber(prop(), referenced.getPage())); 
+//System.out.print("<EGPageRefLocalTo> referenced.getPage(): " + referenced.getPage() + ", EGToolKit.renumber(prop(), referenced.getPage()): " + EGToolKit.renumber(prop(), referenced.getPage()) + ", text: " + text);
+		}
 		text += ", " + getReferencedID() + " ";
 		if (referenced == null) text += "<null>"; else text += referenced.getName();
-	    return text;
+//System.out.println(", text: " + text);
+	     return text;
+	    //return "X3";
+		  // this one - new VisualPage based implementation gives 1 instead of N (N=0)
 	}
 	
 	/* (non-Javadoc)
