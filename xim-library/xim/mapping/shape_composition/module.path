@@ -34,6 +34,29 @@ end_mapping_constraints;
 
 end_entity_mapping;
 
+entity_mapping Composite_shape_aspect_armx(Composite_shape_aspect_armx, composite_shape_aspect);
+
+mapping_constraints;
+!{composite_shape_aspect <=
+shape_aspect <-
+shape_aspect_relationship.relating_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'composing'}}
+
+end_mapping_constraints;
+
+attribute_mapping elements(elements, $PATH, Shape_aspect);
+	composite_shape_aspect <=
+	shape_aspect <-
+	shape_aspect_relationship.relating_shape_aspect
+	shape_aspect_relationship
+	shape_aspect_relationship.related_shape_aspect ->
+	shape_aspect
+end_attribute_mapping;
+
+end_entity_mapping;
+
 entity_mapping Composite_shape_element(Composite_shape_element, composite_shape_aspect);
 
 mapping_constraints;
@@ -76,7 +99,7 @@ shape_aspect_relationship.name = 'composing'}
 
 end_mapping_constraints;
 
-attribute_mapping relating(relating, $PATH, Composite_shape_element);
+attribute_mapping relating_shape_aspect(relating_shape_aspect, $PATH, Composite_shape_element);
 shape_aspect_relationship
 shape_aspect_relationship.relating_shape_aspect ->
 shape_aspect =>
@@ -103,10 +126,14 @@ end_entity_mapping;
 entity_mapping Shape_element_locating_relationship(Shape_element_locating_relationship, dimensional_location);
 
 mapping_constraints;
-(!{shape_aspect_relationship.name = 'linear distance'})
+!{shape_aspect_relationship.name = 'linear distance'}
+!{dimensional_location => angular_location}
+!{dimensional_location => dimensional_location_with_path}
+!{dimensional_location => directed_dimensional_location}
+!{dimensional_location => statistical_dimensional_location}
 end_mapping_constraints;
 
-attribute_mapping located_shape_element(located_shape_element, $PATH, Shape_element);
+attribute_mapping located_shape_element(located_shape_element, $PATH, shape_aspect);
 dimensional_location <=
 shape_aspect_relationship
 shape_aspect_relationship.related_shape_aspect ->
@@ -114,7 +141,7 @@ shape_aspect
 
 end_attribute_mapping;
 
-attribute_mapping locating_shape_element(locating_shape_element, $PATH, Shape_element);
+attribute_mapping locating_shape_element(locating_shape_element, $PATH, shape_aspect);
 dimensional_location <=
 shape_aspect_relationship
 shape_aspect_relationship.relating_shape_aspect ->
@@ -123,4 +150,43 @@ shape_aspect
 end_attribute_mapping;
 
 end_entity_mapping;
+
+entity_mapping All_over_shape_aspect(All_over_shape_aspect, shape_aspect);
+
+mapping_constraints;
+	{shape_aspect.description = 'all over'}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping All_around_shape_aspect(All_around_shape_aspect, composite_shape_aspect);
+
+mapping_constraints;
+	composite_shape_aspect <=
+	shape_aspect
+	{shape_aspect.description = 'all around'}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Composite_group_shape_aspect_armx(Composite_group_shape_aspect_armx, composite_shape_aspect);
+
+mapping_constraints;
+	composite_shape_aspect <=
+	shape_aspect
+	{shape_aspect.description = 'group'}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Composite_unit_shape_aspect_armx(Composite_unit_shape_aspect_armx, composite_shape_aspect);
+
+mapping_constraints;
+	composite_shape_aspect <=
+	shape_aspect
+	{shape_aspect.description = 'unit'}
+end_mapping_constraints;
+
+end_entity_mapping;
+
 (*end_schema_mapping;*)

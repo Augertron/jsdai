@@ -41,13 +41,18 @@ USE FROM Shape_property_assignment_xim;    -- ISO/TS 10303-1032
 
 USE FROM Value_with_unit_xim;    -- ISO/TS 10303-1054
 
+USE FROM Dimension_tolerance_xim(Associated_shape_element);
+
+USE FROM Shape_composition_xim(Composite_shape_aspect_armx);
+
 USE FROM shape_tolerance_schema(
 	geometric_tolerance,
 	geometric_tolerance_with_datum_reference,
 	geometric_tolerance_relationship,
 	projected_zone_definition,
 	tolerance_zone,
-	tolerance_zone_definition);
+	tolerance_zone_definition,
+	tolerance_zone_form);
 	
 USE FROM shape_aspect_definition_schema(
     common_datum,
@@ -74,36 +79,51 @@ USE FROM aic_geometric_tolerances(
   total_runout_tolerance);
 
 USE FROM Geometric_tolerance_mim;
- 
+
+TYPE tolerance_zone_type = ENUMERATION OF
+	(cylindrical,
+	spherical,
+	parallelepiped,
+	conical,
+	non_uniform);
+END_TYPE;
+
+ENTITY Axis_placement_shape_element
+  SUBTYPE OF (Associated_shape_element);
+  SELF\item_identified_representation_usage.identified_item : axis2_placement;
+END_ENTITY;
+
 ENTITY Angularity_tolerance_armx
-  (* CONNOTATIONAL *) SUBTYPE OF (angularity_tolerance, Geometric_tolerance_armx);
-  SELF\Geometric_tolerance_with_datum_reference.datum_system RENAMED reference_datum : SET[1:2] OF Datum_reference;
+  (* CONNOTATIONAL *) SUBTYPE OF (angularity_tolerance, Geometric_tolerance_with_datum_reference_xim);
+  SELF\Geometric_tolerance_with_datum_reference_xim.reference_datum : SET[1:2] OF Datum_reference_armx;
 END_ENTITY;
 
 ENTITY Circular_runout_tolerance_armx
-  (* CONNOTATIONAL *) SUBTYPE OF (circular_runout_tolerance, Geometric_tolerance_armx);
-  angle : OPTIONAL REAL;
-  SELF\Geometric_tolerance_with_datum_reference.datum_system RENAMED reference_datum : SET[1:2] OF Datum_reference;
+  (* CONNOTATIONAL *) SUBTYPE OF (circular_runout_tolerance, Geometric_tolerance_with_datum_reference_xim);
+(** Need to remodel this area  
+  angle : OPTIONAL REAL; *)
+  SELF\Geometric_tolerance_with_datum_reference_xim.reference_datum : SET[1:2] OF Datum_reference_armx;
 END_ENTITY;
 
 ENTITY Coaxiality_tolerance_armx
-  (* CONNOTATIONAL *) SUBTYPE OF (coaxiality_tolerance, Geometric_tolerance_armx);
-  SELF\Geometric_tolerance_with_datum_reference.datum_system RENAMED reference_datum : SET[1:2] OF Datum_reference;
+  (* CONNOTATIONAL *) SUBTYPE OF (coaxiality_tolerance, Geometric_tolerance_with_datum_reference_xim);
+  SELF\Geometric_tolerance_with_datum_reference_xim.reference_datum : SET[1:2] OF Datum_reference_armx;
 END_ENTITY;
 
 ENTITY Common_datum_armx
-  (* CONNOTATIONAL *) SUBTYPE OF (common_datum);
-  made_up_by : SET[2:?] OF Single_datum;
-DERIVE
-  SELF\shape_aspect.product_definitional : LOGICAL := ?;
-  SELF\shape_aspect.description : text := ?;
-  SELF\datum.identification : identifier := ?;
-  SELF\shape_aspect.name : label := ?;
+  SUBTYPE OF (common_datum, Composite_shape_aspect_armx);
+    SELF\composite_shape_aspect_armx.elements : SET[2:2] OF Single_datum;
 END_ENTITY;
 
 ENTITY Concentricity_tolerance_armx
-  (* CONNOTATIONAL *) SUBTYPE OF (concentricity_tolerance, Geometric_tolerance_armx);
-  SELF\Geometric_tolerance_with_datum_reference.datum_system RENAMED reference_datum : SET[1:2] OF Datum_reference;
+  (* CONNOTATIONAL *) SUBTYPE OF (concentricity_tolerance, Geometric_tolerance_with_datum_reference_xim);
+  SELF\Geometric_tolerance_with_datum_reference_xim.reference_datum : SET[1:2] OF Datum_reference_armx;
+END_ENTITY;
+
+ENTITY Contacting_feature
+  SUBTYPE OF (Associated_shape_element);   
+INVERSE
+  contacts : SET[1:?] OF Contact FOR derived_from;
 END_ENTITY;
 
 ENTITY Cylindricity_tolerance_armx
@@ -111,100 +131,106 @@ ENTITY Cylindricity_tolerance_armx
 END_ENTITY;
 
 ENTITY Datum_defined_by_derived_shape
-  (* CONNOTATIONAL *) SUBTYPE OF (Derived_geometry, Single_datum);
+  ABSTRACT SUPERTYPE
+  (* CONNOTATIONAL *) SUBTYPE OF (Derived_shape_element, Single_datum);
 END_ENTITY;
 
 ENTITY Datum_defined_by_feature
   (* CONNOTATIONAL *) SUBTYPE OF (Single_datum);
-  defined_by : Datum_feature_shape_element_xim;
+  defined_by : datum_feature;
 END_ENTITY;
 
-(* GL - artificial entity in order to workarround problem stated in SC-4 issue #2555)
-(* Likely many complexes has to be made Datum_feature_shape_element_xim+subtype_of_shape_element *)
-ENTITY Datum_feature_shape_element_xim
-  SUBTYPE OF (Shape_element, datum_feature);
+ENTITY Datum_reference_armx
+  (* CONNOTATIONAL *) SUBTYPE OF (referenced_modified_datum);
+  modification : OPTIONAL limit_condition;
+  DERIVE
+    SELF\referenced_modified_datum.modifier : limit_condition :=?;
 END_ENTITY;
 
 ENTITY Datum_defined_by_targets
    (* CONNOTATIONAL *) SUBTYPE OF (Single_datum);
   defined_by : SET[1:?] OF Datum_target;
-  SELF\Shape_aspect.description RENAMED rule_description : STRING;
+  SELF\shape_aspect.description RENAMED rule_description : STRING;
 END_ENTITY;
 
 ENTITY Flatness_tolerance_armx
   (* CONNOTATIONAL *) SUBTYPE OF (flatness_tolerance, Geometric_tolerance_armx);
 END_ENTITY;
 
-(**	
-* modification : OPTIONAL limit_condition; - not available on XIM. If someone wants to have this value - he has to make a complex with Modified_geometric_tolerance 
-* segment_size : OPTIONAL Measure_with_unit; - not available on XIM. If someone wants to have this value - he has to make a complex with geometric_tolerance_with_defined_unit.
-*)
 ENTITY Geometric_tolerance_armx
-  ABSTRACT SUPERTYPE OF (ONEOF (Angularity_tolerance_armx,
-                                Circular_runout_tolerance_armx,
-                                Coaxiality_tolerance_armx,
-                                Concentricity_tolerance_armx,
+  ABSTRACT SUPERTYPE OF (ONEOF (Geometric_tolerance_with_datum_reference_xim,
                                 Cylindricity_tolerance_armx,
                                 Flatness_tolerance_armx,
-                                Line_profile_tolerance_armx,
-                                Parallelism_tolerance_armx,
-                                Perpendicularity_tolerance_armx,
-                                Position_tolerance_armx,
                                 Roundness_tolerance_armx,
-                                Straightness_tolerance_armx,
-                                Surface_profile_tolerance_armx,
-                                Symmetry_tolerance_armx,
-                                Total_runout_tolerance_armx))
-	(* CONNOTATIONAL *) SUBTYPE OF (geometric_tolerance);                                
-  SELF\geometric_tolerance.toleranced_shape_aspect RENAMED applied_to : Shape_element;
+                                Straightness_tolerance_armx))
+	(* CONNOTATIONAL *) SUBTYPE OF (geometric_tolerance_with_defined_unit, modified_geometric_tolerance, Tolerance_zone_armx);
+(* Take from MIM - geometric_tolerance
+  name : OPTIONAL STRING; *)
+  modification : OPTIONAL limit_condition;
+  segment_size : OPTIONAL measure_with_unit;
+  SELF\geometric_tolerance.toleranced_shape_aspect RENAMED applied_to : shape_aspect;
   significant_digits : OPTIONAL INTEGER;
   value_determination : OPTIONAL STRING;
   SELF\geometric_tolerance.description RENAMED qualifying_note : OPTIONAL STRING;
   SELF\geometric_tolerance.magnitude RENAMED tolerance_value : length_measure_with_unit;
+  composer : OPTIONAL Geometric_tolerance_armx;
+  DERIVE
+    SELF\geometric_tolerance_with_defined_unit.unit_size : measure_with_unit :=?;
+    SELF\modified_geometric_tolerance.modifier : limit_condition :=?;
+    SELF\tolerance_zone.defining_tolerance : SET [1:1] OF Geometric_tolerance_armx := ?;
+    SELF\shape_aspect.of_shape : product_definition_shape := applied_to.of_shape;
 WHERE
   WR1: (NOT('SHAPE_TOLERANCE_SCHEMA.geometric_tolerance_with_defined_unit' IN TYPEOF(SELF)) OR ('Geometric_tolerance_xim.LENGTH_MEASURE' IN TYPEOF(SELF\Geometric_tolerance_with_defined_unit.unit_size.value_component)));
   WR2: (NOT (EXISTS(magnitude))) OR ('Geometric_tolerance_xim.LENGTH_MEASURE' IN TYPEOF(magnitude.value_component));
   WR3: (NOT (EXISTS(significant_digits))) OR (significant_digits > 0);
 END_ENTITY;
 
+ENTITY Geometric_tolerance_with_datum_reference_xim
+  ABSTRACT SUPERTYPE OF (ONEOF (Angularity_tolerance_armx,
+                                Circular_runout_tolerance_armx,
+                                Coaxiality_tolerance_armx,
+                                Concentricity_tolerance_armx,
+                                Line_profile_tolerance_armx,
+                                Parallelism_tolerance_armx,
+                                Perpendicularity_tolerance_armx, 
+                                Position_tolerance_armx, 
+                                Surface_profile_tolerance_armx,
+                                Symmetry_tolerance_armx,
+                                Total_runout_tolerance_armx))
+  SUBTYPE OF (Geometric_tolerance_armx, geometric_tolerance_with_datum_reference);
+    SELF\geometric_tolerance_with_datum_reference.datum_system RENAMED reference_datum : OPTIONAL SET[1:3] OF Datum_reference_armx;
+END_ENTITY;
+
 ENTITY Line_profile_tolerance_armx
-	(* CONNOTATIONAL *) SUBTYPE OF (line_profile_tolerance, Geometric_tolerance_armx);
-  affected_plane : OPTIONAL axis2_placement;
-  reference_datum : OPTIONAL SET[1:3] OF Datum_reference; (** Originally it is mandatory SET[1:3] **)
+	(* CONNOTATIONAL *) SUBTYPE OF (line_profile_tolerance, Geometric_tolerance_with_datum_reference_xim);
+  SELF\Geometric_tolerance_with_datum_reference_xim.reference_datum : OPTIONAL SET[1:3] OF Datum_reference_armx; (** Originally it is mandatory SET[0:3] **)
 END_ENTITY;
 
 ENTITY Parallelism_tolerance_armx
-  (* CONNOTATIONAL *) SUBTYPE OF (parallelism_tolerance, Geometric_tolerance_armx);
-  affected_plane : OPTIONAL axis2_placement;
-  SELF\Geometric_tolerance_with_datum_reference.datum_system RENAMED reference_datum : SET[1:2] OF Datum_reference;
+  (* CONNOTATIONAL *) SUBTYPE OF (parallelism_tolerance, Geometric_tolerance_with_datum_reference_xim);
+  SELF\Geometric_tolerance_with_datum_reference_xim.reference_datum : SET[1:2] OF Datum_reference_armx;
 END_ENTITY;
 
 ENTITY Perpendicularity_tolerance_armx
-  (* CONNOTATIONAL *) SUBTYPE OF (perpendicularity_tolerance, Geometric_tolerance_armx);
-  affected_plane : OPTIONAL axis2_placement;
-  SELF\Geometric_tolerance_with_datum_reference.datum_system RENAMED reference_datum : SET[1:3] OF Datum_reference;
+  (* CONNOTATIONAL *) SUBTYPE OF (perpendicularity_tolerance, Geometric_tolerance_with_datum_reference_xim);
+  SELF\Geometric_tolerance_with_datum_reference_xim.reference_datum : SET[1:3] OF Datum_reference_armx;
 END_ENTITY;
 
 ENTITY Placed_target
   ABSTRACT SUPERTYPE OF (ONEOF (Target_circle,
+  								Target_circular_curve,
                                 Target_point,
                                 Target_rectangle,
                                 Target_straight_line))
-  (* CONNOTATIONAL *) SUBTYPE OF (placed_datum_target_feature);
-  defined_in : geometric_representation_context;
-  parameter_reference : axis2_placement;
+  (* CONNOTATIONAL *) SUBTYPE OF (Axis_placement_shape_element, placed_datum_target_feature);
+  SELF\item_identified_representation_usage.identified_item : axis2_placement;
 DERIVE
-  SELF\shape_aspect.of_shape : product_definition_shape := ?;
-  SELF\shape_aspect.product_definitional : LOGICAL := ?;
-  SELF\shape_aspect.description : text := ?;
-  SELF\datum_target.target_id : identifier := ?;
-  SELF\shape_aspect.name : label := ?;
+  defined_in : geometric_representation_context := SELF\item_identified_representation_usage.used_representation.context_of_items;
 END_ENTITY;
 
 ENTITY Position_tolerance_armx
-  (* CONNOTATIONAL *) SUBTYPE OF (position_tolerance, Geometric_tolerance_armx);
-  affected_plane : OPTIONAL axis2_placement;
-  reference_datum : OPTIONAL SET[1:3] OF Datum_reference; (** Originally it is mandatory SET[1:3] **)
+  (* CONNOTATIONAL *) SUBTYPE OF (position_tolerance, Geometric_tolerance_with_datum_reference_xim);
+  SELF\Geometric_tolerance_with_datum_reference_xim.reference_datum : OPTIONAL SET[1:3] OF Datum_reference_armx; (** Originally it is mandatory SET[0:3] **)
 END_ENTITY;
 
 ENTITY Roundness_tolerance_armx
@@ -212,66 +238,113 @@ ENTITY Roundness_tolerance_armx
 END_ENTITY;
 
 ENTITY Single_datum
+  ABSTRACT SUPERTYPE OF (ONEOF (Datum_defined_by_feature, Datum_defined_by_derived_shape, Datum_defined_by_targets))
   (* CONNOTATIONAL *) SUBTYPE OF (datum);
-  SELF\datum.identification RENAMED datum_name : STRING;
-  modification : OPTIONAL limit_condition;
-DERIVE
-  SELF\shape_aspect.description : text := ?;
-  SELF\shape_aspect.product_definitional : LOGICAL := ?;
-  SELF\shape_aspect.name : label := ?;
 END_ENTITY;
 
 ENTITY Straightness_tolerance_armx
   (* CONNOTATIONAL *) SUBTYPE OF (straightness_tolerance, Geometric_tolerance_armx);
-  affected_plane : OPTIONAL axis2_placement;
 END_ENTITY;
 
 ENTITY Surface_profile_tolerance_armx
-  (* CONNOTATIONAL *) SUBTYPE OF (surface_profile_tolerance, Geometric_tolerance_armx);
-  reference_datum : OPTIONAL SET[1:3] OF Datum_reference; (** Originally it is mandatory SET[1:3] **)
+  (* CONNOTATIONAL *) SUBTYPE OF (surface_profile_tolerance, Geometric_tolerance_with_datum_reference_xim);
+  SELF\Geometric_tolerance_with_datum_reference_xim.reference_datum : OPTIONAL SET[1:3] OF Datum_reference_armx; (** Originally it is mandatory SET[0:3] **)
 END_ENTITY;
 
 ENTITY Symmetry_tolerance_armx
-  (* CONNOTATIONAL *) SUBTYPE OF (symmetry_tolerance, Geometric_tolerance_armx);
-  affected_plane : OPTIONAL axis2_placement;
-  SELF\Geometric_tolerance_with_datum_reference.datum_system RENAMED reference_datum : SET[1:3] OF Datum_reference;
+  (* CONNOTATIONAL *) SUBTYPE OF (symmetry_tolerance, Geometric_tolerance_with_datum_reference_xim);
+  SELF\Geometric_tolerance_with_datum_reference_xim.reference_datum : SET[1:3] OF Datum_reference_armx;
 END_ENTITY;
 
 -- SEDS
 ENTITY Target_area
-  SUBTYPE OF (Datum_target);
+  SUBTYPE OF (datum_target);
 DERIVE
-  SELF\shape_aspect.of_shape : product_definition_shape := ?;
-  SELF\shape_aspect.description : text := ?;
-  SELF\shape_aspect.product_definitional : LOGICAL := ?;
-  SELF\datum_target.target_id : identifier := ?;
-  SELF\shape_aspect.name : label := ?;
+  SELF\shape_aspect.description : text := 'area';
+WHERE
+  (** If Target_area is used with a complex Associated_shape_element, its geometry must be of surface or advanced_face type *) 
+    WR1: NOT('DIMENSION_TOLERANCE_XIM.ASSOCIATED_SHAPE_ELEMENT' IN TYPEOF(SELF)) OR
+    ('GEOMETRY_SCHEMA.SURFACE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+    ('AIC_TOPOLOGICALLY_BOUNDED_SURFACE.ADVANCED_FACE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item));
 END_ENTITY;
 
 ENTITY Target_circle
   (* CONNOTATIONAL *) SUBTYPE OF (Placed_target);
-  diameter : measure_representation_item;
+  diameter : length_measure_with_unit;
+  DERIVE
+  	SELF\shape_aspect.description : text := 'circle';
 END_ENTITY;
 
+ENTITY Target_circular_curve
+  SUBTYPE OF (Placed_target);
+    diameter : length_measure_with_unit;
+  DERIVE
+  	SELF\shape_aspect.description : text := 'circular curve';
+END_ENTITY;
+
+ENTITY Target_curve
+  SUBTYPE OF (datum_target);
+DERIVE
+  SELF\shape_aspect.description : text := 'curve';
+WHERE
+  (** If Target_curve is used with a complex Associated_shape_element, its geometry must be of curve or edge_curve type *) 
+    WR1: NOT('DIMENSION_TOLERANCE_XIM.ASSOCIATED_SHAPE_ELEMENT' IN TYPEOF(SELF)) OR
+    ('GEOMETRY_SCHEMA.CURVE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+    ('TOPOLOGY_SCHEMA.EDGE_CURVE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item));
+END_ENTITY;
 
 ENTITY Target_point
   (* CONNOTATIONAL *) SUBTYPE OF (Placed_target);
+  DERIVE
+  	SELF\shape_aspect.description : text := 'point';
 END_ENTITY;
 
 ENTITY Target_rectangle
   (* CONNOTATIONAL *) SUBTYPE OF (Placed_target);
-  target_length : measure_representation_item;
-  target_width : measure_representation_item;
+  target_length : length_measure_with_unit;
+  target_width : length_measure_with_unit;
+  DERIVE
+  	SELF\shape_aspect.description : text := 'rectangle';
 END_ENTITY;
 
 ENTITY Target_straight_line
    (* CONNOTATIONAL *) SUBTYPE OF (Placed_target);
+   	target_length : length_measure_with_unit;
+	DERIVE
+  		SELF\shape_aspect.description : text := 'line';
 END_ENTITY;
 
 ENTITY Total_runout_tolerance_armx
-  (* CONNOTATIONAL *) SUBTYPE OF (total_runout_tolerance, Geometric_tolerance_armx);
-  angle : REAL;
-  SELF\Geometric_tolerance_with_datum_reference.datum_system RENAMED reference_datum : SET[1:2] OF Datum_reference;
+  (* CONNOTATIONAL *) SUBTYPE OF (total_runout_tolerance, Geometric_tolerance_with_datum_reference_xim);
+(** Need to remodel this area  
+  angle : REAL; *)
+  SELF\Geometric_tolerance_with_datum_reference_xim.reference_datum : SET[1:2] OF Datum_reference_armx;
+END_ENTITY;
+
+ENTITY Geometric_tolerance_relationship__precedence
+	SUBTYPE OF (geometric_tolerance_relationship);
+DERIVE
+	SELF\geometric_tolerance_relationship.name : label := 'precedence';
+END_ENTITY;
+
+ENTITY Geometric_tolerance_relationship__simultaneity
+	SUBTYPE OF (geometric_tolerance_relationship);
+DERIVE
+	SELF\geometric_tolerance_relationship.name : label := 'simultaneity';
+END_ENTITY;
+
+ENTITY Tolerance_zone_armx
+  ABSTRACT SUPERTYPE
+  SUBTYPE OF (tolerance_zone);
+    affected_plane : OPTIONAL Axis_placement_shape_element;
+    model_coordinate_system : OPTIONAL Axis_placement_shape_element;
+    form_type : OPTIONAL tolerance_zone_type; 
+  DERIVE
+    SELF\tolerance_zone.form : tolerance_zone_form := ?;
+    SELF\shape_aspect.name : label :=?; 
+    SELF\shape_aspect.description: text := ?;
+    SELF\shape_aspect.of_shape: product_definition_shape := ?;
+    SELF\shape_aspect.product_definitional: LOGICAL := FALSE;    
 END_ENTITY;
 
 END_SCHEMA;  -- Geometric_tolerance_xim

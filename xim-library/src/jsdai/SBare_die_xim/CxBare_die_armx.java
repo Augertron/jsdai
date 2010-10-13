@@ -43,29 +43,11 @@ import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_property_representation_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
 import jsdai.SRepresentation_schema.*;
-import jsdai.SShape_property_assignment_xim.*;
 
 public class CxBare_die_armx
 		extends
 		CBare_die_armx implements EMappedXIMEntity {
 
-	// Product_view_definition
-	/// methods for attribute: name_x, base type: STRING
-/*	public boolean testName_x(EProduct_view_definition type) throws SdaiException {
-		return test_string(a4);
-	}
-	public String getName_x(EProduct_view_definition type) throws SdaiException {
-		return get_string(a4);
-	}*/
-	public void setName_x(EProduct_view_definition type, String value) throws SdaiException {
-		a4 = set_string(value);
-	}
-	public void unsetName_x(EProduct_view_definition type) throws SdaiException {
-		a4 = unset_string();
-	}
-	public static jsdai.dictionary.EAttribute attributeName_x(EProduct_view_definition type) throws SdaiException {
-		return a4$;
-	}
 	
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(EProduct_definition type) throws SdaiException {
@@ -101,19 +83,19 @@ public class CxBare_die_armx
 	// Taken from Physical_unit - Property_definition
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
-		return test_string(a4);
+		return test_string(a6);
 	}
 	public String getName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
-		return get_string(a4);
+		return get_string(a6);
 	}*/
 	public void setName(jsdai.SProduct_property_definition_schema.EProperty_definition type, String value) throws SdaiException {
-		a4 = set_string(value);
+		a6 = set_string(value);
 	}
 	public void unsetName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
-		a4 = unset_string();
+		a6 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
-		return a4$;
+		return a6$;
 	}
 	// ENDOF Taken from Physical_unit - Property_definition
 	
@@ -141,7 +123,7 @@ public class CxBare_die_armx
 			setAdditional_contexts(context, this);
 
 			// From Item_shape
-			setId_x(context, this);
+//			setId_x(context, this);
 
 			// SETTING DERIVED
 			// setDefinition(null, this);
@@ -162,7 +144,7 @@ public class CxBare_die_armx
 			// Clean ARM specific attributes
 			unsetAdditional_characterization(null);
 			unsetAdditional_contexts(null);
-			unsetId_x(null);
+//			unsetId_x(null);
 						
 			unsetLeast_material_condition_centroid_location(null);
 			unsetMaximum_height_above_seating_plane(null);
@@ -183,7 +165,7 @@ public class CxBare_die_armx
 			unsetAdditional_characterization(context, this);
 
 			//id_x
-			unsetId_x(context, this);
+//			unsetId_x(context, this);
 			
 			// unsetDefinition(null);
 			
@@ -288,12 +270,12 @@ public class CxBare_die_armx
 	}
 
 	//********** "design_discipline_item_definition" attributes
-	public static void setId_x(SdaiContext context,
-			EItem_shape armEntity) throws SdaiException {
+/* Removed from XIM - see bug #3610	
+	public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
 		//unset old values
 		CxItem_shape.setId_x(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes data for name attribute.
 	 * 
@@ -303,11 +285,11 @@ public class CxBare_die_armx
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	public static void unsetId_x(SdaiContext context,
-			EItem_shape armEntity) throws SdaiException {
+/* Removed from XIM - see bug #3610	
+	public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.unsetId_x(context, armEntity);	
 	}
-
+*/
 
 	/**
 	 * Sets/creates data for additional_context attribute.

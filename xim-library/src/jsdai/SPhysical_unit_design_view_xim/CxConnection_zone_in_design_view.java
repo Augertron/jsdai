@@ -33,7 +33,6 @@ import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SFeature_and_connection_zone_xim.CxConnection_zone;
 import jsdai.SProduct_property_definition_schema.*;
-import jsdai.SShape_property_assignment_xim.EShape_element;
 
 
 public class CxConnection_zone_in_design_view extends CConnection_zone_in_design_view implements EMappedXIMEntity
@@ -46,7 +45,7 @@ public class CxConnection_zone_in_design_view extends CConnection_zone_in_design
 	}
 	public String getElement_name(EShape_element type) throws SdaiException {
 		return getName((jsdai.SProduct_property_definition_schema.EShape_aspect)null);
-	}*/
+	}
 	public void setElement_name(EShape_element type, String value) throws SdaiException {
 		setName((jsdai.SProduct_property_definition_schema.EShape_aspect)null, value);
 	}
@@ -55,7 +54,7 @@ public class CxConnection_zone_in_design_view extends CConnection_zone_in_design
 	}
 	public static jsdai.dictionary.EAttribute attributeElement_name(EShape_element type) throws SdaiException {
 		return attributeName((jsdai.SProduct_property_definition_schema.EShape_aspect)null);
-	}
+	}*/
 	
 	// From CShape_aspect.java
 	/// methods for attribute: name, base type: STRING

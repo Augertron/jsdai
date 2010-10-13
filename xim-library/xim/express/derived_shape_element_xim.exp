@@ -36,30 +36,211 @@ USE FROM Shape_property_assignment_xim;    -- ISO/TS 10303-1032
 
 USE FROM Value_with_unit_xim;    -- ISO/TS 10303-1054
 
+REFERENCE FROM Geometric_tolerance_xim(Datum_defined_by_derived_shape);
+
 USE FROM shape_aspect_definition_schema(
-	derived_shape_aspect,
-	parallel_offset);
+	apex,  -- name conflict
+	centre_of_symmetry, -- name conflict
+	derived_shape_aspect, -- no name conflict
+	extension, -- no name conflict
+	geometric_alignment, -- name conflict
+	geometric_intersection, -- name conflict
+	parallel_offset,
+	perpendicular_to,
+	shape_aspect_deriving_relationship, -- no name conflict	
+	tangent -- no name conflict
+	);
 
-ENTITY Derived_geometry
-  (* CONNOTATIONAL *)SUBTYPE OF (derived_shape_aspect);
-  derived_from : SET[1:?] OF Shape_element;
-  geometry : constructive_element_select;
-  SELF\Shape_aspect.description RENAMED role : STRING;
-DERIVE
-  SELF\shape_aspect.of_shape : product_definition_shape := ?;
-  SELF\shape_aspect.product_definitional : LOGICAL := ?;
-  SELF\shape_aspect.name : label := ?;
-END_ENTITY;
+	ENTITY Apex_armx
+		(* CONNOTATIONAL *) SUBTYPE OF (Derived_shape_element, apex);
+	  WHERE
+	  (** If Apex_armx is used with a complex Associated_shape_element, its geometry must be of cartesian_point type *) 
+	    WR1: NOT('DIMENSION_TOLERANCE_XIM.ASSOCIATED_SHAPE_ELEMENT' IN TYPEOF(SELF)) OR
+	    ('GEOMETRY_SCHEMA.POINT' IN TYPEOF(SELF\item_identified_representation_usage.identified_item));
+	END_ENTITY;
 
-ENTITY Derived_shape_element
-  (* CONNOTATIONAL *)SUBTYPE OF (derived_shape_aspect, Shape_element);
-  derived_from : SET[1:?] OF Shape_element;
-  SELF\Shape_aspect.description RENAMED role : STRING;
-END_ENTITY;
+	ENTITY Centre_axis
+    	(* CONNOTATIONAL *) SUBTYPE OF (Centre_of_symmetry_armx);
+    	DERIVE
+      		SELF\shape_aspect.description : text := 'axis';
+	  WHERE
+	  (** If Centre_axis is used with a complex Associated_shape_element, its geometry must be of line type *) 
+	    WR1: NOT('DIMENSION_TOLERANCE_XIM.ASSOCIATED_SHAPE_ELEMENT' IN TYPEOF(SELF)) OR
+	    ('GEOMETRY_SCHEMA.LINE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item));
+  	END_ENTITY;
 
-ENTITY Offset_shape_element
-  (* CONNOTATIONAL *) SUBTYPE OF (Derived_shape_element, parallel_offset);
-END_ENTITY;
+  	ENTITY Centre_plane
+    	(* CONNOTATIONAL *) SUBTYPE OF (Centre_of_symmetry_armx);
+    	DERIVE
+      		SELF\shape_aspect.description : text := 'plane';
+	  WHERE
+	  (** If Centre_plane is used with a complex Associated_shape_element, its geometry must be of plane type *) 
+	    WR1: NOT('DIMENSION_TOLERANCE_XIM.ASSOCIATED_SHAPE_ELEMENT' IN TYPEOF(SELF)) OR
+	    ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item));
+  	END_ENTITY;
 
+  	ENTITY Centre_point
+    	(* CONNOTATIONAL *) SUBTYPE OF (Centre_of_symmetry_armx);
+    	DERIVE
+  	    	SELF\shape_aspect.description : text := 'point';
+	  WHERE
+	  (** If Centre_point is used with a complex Associated_shape_element, its geometry must be of point type *) 
+	    WR1: NOT('DIMENSION_TOLERANCE_XIM.ASSOCIATED_SHAPE_ELEMENT' IN TYPEOF(SELF)) OR
+	    ('GEOMETRY_SCHEMA.POINT' IN TYPEOF(SELF\item_identified_representation_usage.identified_item));
+  	END_ENTITY;
+
+	ENTITY Centre_of_symmetry_armx
+    	SUPERTYPE OF (ONEOF (Centre_axis,
+ 			Centre_plane,
+ 			Centre_point))
+    	(* CONNOTATIONAL *) SUBTYPE OF (Derived_shape_element, centre_of_symmetry);
+	END_ENTITY;
+
+	ENTITY Contact
+  		SUBTYPE OF (Derived_shape_element);
+		DERIVE
+  			SELF\shape_aspect.name : label := 'contact';
+	END_ENTITY;
+
+	ENTITY Derived_shape_element
+  		ABSTRACT SUPERTYPE OF (ONEOF (
+    		Apex_armx,
+    		Centre_of_symmetry_armx,
+    		Extension_armx,
+			General_derived_shape_element,    
+    		Geometric_alignment_armx,
+    		Geometric_intersection_armx,
+    		Parallel_offset_armx,
+    		Perpendicular_to_armx,
+    		Tangent_armx))
+		SUBTYPE OF (derived_shape_aspect);    	
+  			derived_from : SET[1:?] OF shape_aspect;
+	END_ENTITY;
+
+	ENTITY Extension_armx
+    	(* CONNOTATIONAL *) SUBTYPE OF (Derived_shape_element, extension);
+	  WHERE
+	  (** If Extension_armx is used with a complex Associated_shape_element, its geometry must be of surface or curve type *) 
+	    WR1: NOT('DIMENSION_TOLERANCE_XIM.ASSOCIATED_SHAPE_ELEMENT' IN TYPEOF(SELF)) OR
+	    ('GEOMETRY_SCHEMA.SURFACE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	    ('GEOMETRY_SCHEMA.CURVE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item));
+  	END_ENTITY;
+
+	ENTITY General_derived_shape_element
+	  SUBTYPE OF (Derived_shape_element);
+		SELF\shape_aspect.description RENAMED role : STRING;
+	  WHERE
+	  (** If General_derived_shape_element is used with a complex Associated_shape_element, its geometry must be of surface, curve or cartesian_point type *) 
+	    WR1: NOT('DIMENSION_TOLERANCE_XIM.ASSOCIATED_SHAPE_ELEMENT' IN TYPEOF(SELF)) OR
+	    ('GEOMETRY_SCHEMA.SURFACE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	    ('GEOMETRY_SCHEMA.CURVE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	    ('GEOMETRY_SCHEMA.CARTESIAN_POINT' IN TYPEOF(SELF\item_identified_representation_usage.identified_item));
+	END_ENTITY;
+
+ 	ENTITY Geometric_alignment_armx
+    	(* CONNOTATIONAL *) SUBTYPE OF (Derived_shape_element, geometric_alignment);
+	  WHERE
+	  (** If Geometric_alignment_armx is used with a complex Associated_shape_element, its geometry must be of surface, line or plane type *) 
+	    WR1: NOT('DIMENSION_TOLERANCE_XIM.ASSOCIATED_SHAPE_ELEMENT' IN TYPEOF(SELF)) OR
+	    ('GEOMETRY_SCHEMA.LINE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	    ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item));
+	END_ENTITY;
+
+	ENTITY Geometric_intersection_armx
+    	(* CONNOTATIONAL *) SUBTYPE OF (Derived_shape_element, geometric_intersection);
+	  WHERE
+	  (** If Geometric_intersection_armx is used with a complex Associated_shape_element, its geometry must be of surface, curve or cartesian_point type *) 
+	    WR1: NOT('DIMENSION_TOLERANCE_XIM.ASSOCIATED_SHAPE_ELEMENT' IN TYPEOF(SELF)) OR
+	    ('GEOMETRY_SCHEMA.CURVE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	    ('GEOMETRY_SCHEMA.CARTESIAN_POINT' IN TYPEOF(SELF\item_identified_representation_usage.identified_item));
+  	END_ENTITY;
+
+	ENTITY Parallel_offset_armx
+		(* CONNOTATIONAL *) SUBTYPE OF (Derived_shape_element, parallel_offset);
+	  WHERE
+	  (** If Parallel_offset_armx is used with a complex Associated_shape_element, its geometry must be of surface or curve type *) 
+	    WR1: NOT('DIMENSION_TOLERANCE_XIM.ASSOCIATED_SHAPE_ELEMENT' IN TYPEOF(SELF)) OR
+	    ('GEOMETRY_SCHEMA.SURFACE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	    ('GEOMETRY_SCHEMA.CURVE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item));
+	END_ENTITY;
+
+	ENTITY Perpendicular_to_armx
+		(* CONNOTATIONAL *) SUBTYPE OF (Derived_shape_element, perpendicular_to);
+	  WHERE
+	  (** If Perpendicular_to_armx is used with a complex Associated_shape_element, its geometry must be of surface, line or plane type *) 
+	    WR1: NOT('DIMENSION_TOLERANCE_XIM.ASSOCIATED_SHAPE_ELEMENT' IN TYPEOF(SELF)) OR
+	    ('GEOMETRY_SCHEMA.LINE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	    ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item));
+	END_ENTITY;
+
+	ENTITY Tangent_plane
+    	(* CONNOTATIONAL *) SUBTYPE OF (Tangent_armx);
+   	  DERIVE
+   		SELF\shape_aspect.description : text := 'plane';
+	  WHERE
+	  (** If Tangent_plane is used with a complex Associated_shape_element, its geometry must be of surface, line or plane type *) 
+	    WR1: NOT('DIMENSION_TOLERANCE_XIM.ASSOCIATED_SHAPE_ELEMENT' IN TYPEOF(SELF)) OR
+	    ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item));
+  	END_ENTITY;
+
+  	ENTITY Tangent_armx
+   	  SUPERTYPE OF (Tangent_plane)
+    	(* CONNOTATIONAL *) SUBTYPE OF (Derived_shape_element, tangent);
+	  WHERE
+	  (** If Tangent_armx is used with a complex Associated_shape_element, its geometry must be of surface, line or plane type *) 
+	    WR1: NOT('DIMENSION_TOLERANCE_XIM.ASSOCIATED_SHAPE_ELEMENT' IN TYPEOF(SELF)) OR
+	    ('GEOMETRY_SCHEMA.LINE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item)) OR
+	    ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(SELF\item_identified_representation_usage.identified_item));
+	END_ENTITY;
+	
+ (** Result of http://bugzilla.lksoft.lt/show_bug.cgi?id=3610#c6 *)
+  ENTITY Datum_defined_by_apex
+    SUBTYPE OF (Apex_armx, Datum_defined_by_derived_shape);
+  END_ENTITY;
+
+  ENTITY Datum_defined_by_centre_of_symmetry
+    SUBTYPE OF (Centre_of_symmetry_armx, Datum_defined_by_derived_shape);
+  END_ENTITY;
+
+  ENTITY Datum_defined_by_extension
+    SUBTYPE OF (Datum_defined_by_derived_shape, Extension_armx);
+  END_ENTITY;
+
+  ENTITY Datum_defined_by_geometric_alignment
+    SUBTYPE OF (Datum_defined_by_derived_shape, Geometric_alignment_armx);
+  END_ENTITY;
+
+  ENTITY Datum_defined_by_geometric_intersection
+    SUBTYPE OF (Datum_defined_by_derived_shape, Geometric_intersection_armx);
+  END_ENTITY;
+
+  ENTITY Datum_defined_by_parallel_offset
+    SUBTYPE OF (Datum_defined_by_derived_shape, Parallel_offset_armx);
+  END_ENTITY;
+
+  ENTITY Datum_defined_by_perpendicular_to
+    SUBTYPE OF (Datum_defined_by_derived_shape, Perpendicular_to_armx);
+  END_ENTITY;
+
+  ENTITY Datum_defined_by_tangent
+    SUBTYPE OF (Datum_defined_by_derived_shape, Tangent_armx);
+  END_ENTITY;
+
+  ENTITY Datum_defined_by_centre_axis
+    SUBTYPE OF (Centre_axis, Datum_defined_by_centre_of_symmetry);
+  END_ENTITY;
+
+  ENTITY Datum_defined_by_centre_plane
+    SUBTYPE OF (Centre_plane, Datum_defined_by_centre_of_symmetry);
+  END_ENTITY;
+
+  ENTITY Datum_defined_by_centre_point
+    SUBTYPE OF (Centre_point, Datum_defined_by_centre_of_symmetry);
+  END_ENTITY;
+
+  ENTITY Datum_defined_by_general_derived_shape_element
+    SUBTYPE OF (Datum_defined_by_derived_shape, General_derived_shape_element);
+  END_ENTITY;
+    
 END_SCHEMA;  -- Derived_shape_element_xim
 

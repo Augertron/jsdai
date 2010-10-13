@@ -1,22 +1,23 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N5695 - ISO/TS 10303-1695 Layered interconnect module 2d design - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N4032
+   ISO TC184/SC4/WG12 N6429 - ISO/TS 10303-1695 Layered interconnect module 2d design - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N5695
 *)
 SCHEMA Layered_interconnect_module_2d_design_arm;
 
 USE FROM Layered_interconnect_module_design_arm;	-- ISO/TS 10303-1698
 
+  TYPE lim2dd_sf_shape_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON limd_sf_shape_select WITH 
+    (Primitive_2d);
+  END_TYPE; 
+
+  TYPE lim2dd_stratum_shape_model_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON limd_stratum_shape_model_select WITH 
+    (Stratum_planar_shape_model);
+  END_TYPE; 
+
   ENTITY Located_2d_inter_stratum_extent
     SUBTYPE OF (Inter_stratum_extent);
       location : Cartesian_point;
-  END_ENTITY;
-
-  ENTITY Stratum_feature_planar_shape_model
-    SUBTYPE OF (Single_area_csg_2d_model);
-      shape_characterized_component : Stratum_feature;
-    WHERE
-      WR1 : NOT EXISTS(SELF\Representation.description);
   END_ENTITY;
 
   ENTITY Stratum_interconnect_module_planar_position;
@@ -29,9 +30,10 @@ USE FROM Layered_interconnect_module_design_arm;	-- ISO/TS 10303-1698
   END_ENTITY;
 
   ENTITY Stratum_planar_shape_model
-    SUBTYPE OF (Planar_projected_shape_model);
+    SUBTYPE OF (Csg_2d_model);
       shape_characterized_component : Stratum;
-    UNIQUE
+      SELF\Representation.items : SET[1:?] OF Primitive_2d;
+   UNIQUE
       UR1 : shape_characterized_component;
     WHERE
       WR1 : NOT EXISTS(SELF\Representation.description);

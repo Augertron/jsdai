@@ -23,14 +23,31 @@
 
 (*schema_mapping extended_geometric_tolerance(Extended_geometric_tolerance_arm, Extended_geometric_tolerance_mim);*)
 
-(* Remove stuff which will likely be remodelled
-entity_mapping Apex_armx(Apex_armx, apex);
+entity_mapping Edge_segment_vertex_armx(Edge_segment_vertex_armx, [derived_shape_aspect][edge_segment_vertex]);
 
 mapping_constraints;
-
+edge_segment_vertex <=
+datum <=
+shape_aspect
 end_mapping_constraints;
 
 end_entity_mapping;
+
+entity_mapping Datum_axis(Datum_axis, [datum][derived_shape_aspect]);
+
+mapping_constraints;
+datum <=
+shape_aspect
+{shape_aspect
+shape_aspect.description = 'axis'}
+!{shape_aspect =>
+derived_shape_aspect =>
+centre_of_symmetry}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+(* Remove stuff which will likely be remodelled
 
 entity_mapping Boundary_size_characteristic(Boundary_size_characteristic, representation);
 
@@ -67,49 +84,6 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Centre_axis(Centre_axis, centre_of_symmetry);
-
-mapping_constraints;
-{centre_of_symmetry <=
-derived_shape_aspect <=
-shape_aspect
-shape_aspect.description = 'axis'}
-
-end_mapping_constraints;
-
-end_entity_mapping;
-
-entity_mapping Centre_of_symmetry_armx(Centre_of_symmetry_armx, centre_of_symmetry);
-
-mapping_constraints;
-
-end_mapping_constraints;
-
-end_entity_mapping;
-
-entity_mapping Centre_plane(Centre_plane, centre_of_symmetry);
-
-mapping_constraints;
-{centre_of_symmetry <=
-derived_shape_aspect <=
-shape_aspect
-shape_aspect.description = 'plane'}
-
-end_mapping_constraints;
-
-end_entity_mapping;
-
-entity_mapping Centre_point(Centre_point, centre_of_symmetry);
-
-mapping_constraints;
-{centre_of_symmetry <=
-derived_shape_aspect <=
-shape_aspect
-shape_aspect.description = 'point'}
-
-end_mapping_constraints;
-
-end_entity_mapping;
 
 entity_mapping Composite_linear_profile_refinement_tolerance(Composite_linear_profile_refinement_tolerance, linear_profile_tolerance);
 
@@ -209,7 +183,7 @@ shape_aspect.description = 'conical'}
 end_mapping_constraints;
 
 end_entity_mapping;
-
+*)
 entity_mapping Conical_tolerance_zone_boundary_and_surface_relationship(Conical_tolerance_zone_boundary_and_surface_relationship, shape_aspect_relationship);
 
 mapping_constraints;
@@ -235,7 +209,7 @@ shape_aspect
 
 end_attribute_mapping;
 
-attribute_mapping terminating_surface_datum(terminating_surface_datum, $PATH, Shape_element);
+attribute_mapping terminating_surface_datum(terminating_surface_datum, $PATH, shape_aspect);
 shape_aspect_relationship
 shape_aspect_relationship.related_shape_aspect ->
 shape_aspect
@@ -266,7 +240,7 @@ end_attribute_mapping;
 
 
 end_entity_mapping;
-
+(*
 entity_mapping Conical_tolerance_zone_boundary_diametrical_size_characteristic(Conical_tolerance_zone_boundary_diametrical_size_characteristic, property_definition);
 
 mapping_constraints;
@@ -315,18 +289,6 @@ tolerance_zone <=
 shape_aspect
 {shape_aspect
 shape_aspect.description = 'conical'}}
-
-end_mapping_constraints;
-
-end_entity_mapping;
-
-entity_mapping Datum_axis(Datum_axis, datum);
-
-mapping_constraints;
-datum <=
-shape_aspect
-{shape_aspect
-shape_aspect.description = 'axis'}
 
 end_mapping_constraints;
 
@@ -539,7 +501,7 @@ property_definition.description = 'direction element'}
 end_attribute_mapping;
 
 end_entity_mapping;
-
+*)
 entity_mapping Datum_difference_armx(Datum_difference_armx, datum_difference);
 
 mapping_constraints;
@@ -605,7 +567,7 @@ datum_difference
 end_attribute_mapping;
 
 end_entity_mapping;
-*)
+
 entity_mapping Datum_plane(Datum_plane, datum);
 
 mapping_constraints;
@@ -613,34 +575,31 @@ datum <=
 shape_aspect
 {shape_aspect
 shape_aspect.description = 'plane'}
-
+!{shape_aspect =>
+derived_shape_aspect =>
+centre_of_symmetry}
 end_mapping_constraints;
 
 end_entity_mapping;
-(* Remove stuff which will likely be remodelled
-entity_mapping Datum_point(Datum_point, datum);
+
+entity_mapping Datum_point(Datum_point, [datum][derived_shape_aspect]);
 
 mapping_constraints;
 datum <=
 shape_aspect
 {shape_aspect
 shape_aspect.description = 'point'}
-
+!{shape_aspect =>
+derived_shape_aspect =>
+centre_of_symmetry}
 end_mapping_constraints;
 
 end_entity_mapping;
-*)
+
 entity_mapping Datum_shape_element(Datum_shape_element, [/SUPERTYPE(Datum)/][/SUPERTYPE(Non_feature_shape_element)/]);
 
 end_entity_mapping;
 
-entity_mapping Derived_non_feature_shape_element(Derived_non_feature_shape_element, derived_shape_aspect);
-
-mapping_constraints;
-
-end_mapping_constraints;
-
-end_entity_mapping;
 (* Remove stuff which will likely be remodelled
 entity_mapping Diametrical_boundary_size_characteristic(Diametrical_boundary_size_characteristic, representation);
 
@@ -701,7 +660,7 @@ dimensional_characteristic
 end_attribute_mapping;
 
 end_entity_mapping;
-
+*)
 entity_mapping Dimension_related_positional_boundary(Dimension_related_positional_boundary, positional_boundary);
 
 mapping_constraints;
@@ -737,7 +696,7 @@ shape_aspect
 
 end_attribute_mapping;
 
-attribute_mapping constrained_physical_feature(constrained_physical_feature, $PATH, Shape_element);
+attribute_mapping constrained_physical_feature(constrained_physical_feature, $PATH, shape_aspect);
 positional_boundary <=
 				shape_aspect <-
 				shape_aspect_relationship.relating_shape_aspect
@@ -761,7 +720,7 @@ attribute_mapping constrained_physical_feature_datum(constrained_physical_featur
 end_attribute_mapping;
 
 end_entity_mapping;
-
+(*
 entity_mapping Dimension_related_positional_boundary_definition(Dimension_related_positional_boundary_definition, property_definition);
 
 mapping_constraints;
@@ -932,7 +891,7 @@ centre_of_symmetry
 
 end_attribute_mapping;
 
-attribute_mapping end_shape_element(end_shape_element, $PATH, Shape_element);
+attribute_mapping end_shape_element(end_shape_element, $PATH, shape_aspect);
 derived_shape_aspect <=
 shape_aspect <-
 shape_aspect_relationship.relating_shape_aspect
@@ -946,7 +905,7 @@ shape_aspect
 
 end_attribute_mapping;
 
-attribute_mapping start_shape_element(start_shape_element, $PATH, Shape_element);
+attribute_mapping start_shape_element(start_shape_element, $PATH, shape_aspect);
 derived_shape_aspect <=
 shape_aspect <-
 shape_aspect_relationship.relating_shape_aspect
@@ -1038,19 +997,6 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Edge_segment_vertex_armx(Edge_segment_vertex_armx, edge_segment_vertex);
-
-mapping_constraints;
-edge_segment_vertex <=
-datum <=
-shape_aspect
-{shape_aspect
-shape_aspect.name = 'single datum'}
-
-end_mapping_constraints;
-
-end_entity_mapping;
-
 entity_mapping External_source_identification(External_source_identification, applied_external_identification_assignment)
 extended;
 
@@ -1085,22 +1031,6 @@ measure_representation_item <=
 measure_with_unit
 
 end_attribute_mapping;
-
-end_entity_mapping;
-
-entity_mapping Geometric_alignment_armx(Geometric_alignment_armx, geometric_alignment);
-
-mapping_constraints;
-
-end_mapping_constraints;
-
-end_entity_mapping;
-
-entity_mapping Geometric_intersection_armx(Geometric_intersection_armx, geometric_intersection);
-
-mapping_constraints;
-
-end_mapping_constraints;
 
 end_entity_mapping;
 
@@ -1142,7 +1072,7 @@ attribute_mapping applied_material_condition_property_name(applied_material_cond
 end_attribute_mapping;
 
 end_entity_mapping;
-
+*)
 entity_mapping Limit_dimension_representation(Limit_dimension_representation, shape_dimension_representation);
 
 mapping_constraints;
@@ -1191,13 +1121,6 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Linear_extension(Linear_extension, extension);
-
-mapping_constraints;
-
-end_mapping_constraints;
-
-end_entity_mapping;
 
 entity_mapping Maximum_dimension_representation(Maximum_dimension_representation, shape_dimension_representation);
 
@@ -1288,7 +1211,7 @@ shape_aspect_relationship.name = 'parallel'}
 end_mapping_constraints;
 
 end_entity_mapping;
-*)
+
 entity_mapping Perpendicular_shape_element_relationship(Perpendicular_shape_element_relationship, shape_aspect_relationship);
 
 mapping_constraints;
@@ -1602,7 +1525,7 @@ property_definition.description = 'positional boundary offset'}
 end_attribute_mapping;
 
 end_entity_mapping;
-
+*)
 entity_mapping Projected_zone_and_base_relationship(Projected_zone_and_base_relationship, projected_zone_definition);
 
 mapping_constraints;
@@ -1616,7 +1539,7 @@ shape_aspect
 
 end_attribute_mapping;
 
-attribute_mapping base_physical_feature(base_physical_feature, $PATH, Shape_element);
+attribute_mapping base_physical_feature(base_physical_feature, $PATH, shape_aspect);
 projected_zone_definition
 				projected_zone_definition.projection_end ->
 				shape_aspect
@@ -1632,7 +1555,7 @@ tolerance_zone
 end_attribute_mapping;
 
 end_entity_mapping;
-
+(*
 entity_mapping Projected_zone_height_characteristic(Projected_zone_height_characteristic, projected_zone_definition);
 
 mapping_constraints;
@@ -1828,22 +1751,6 @@ end_mapping_constraints;
 
 end_entity_mapping;
 *)
-entity_mapping Shape_element_deriving_relationship(Shape_element_deriving_relationship, shape_aspect_deriving_relationship);
-
-mapping_constraints;
-
-end_mapping_constraints;
-
-attribute_mapping relating(relating, $PATH, Derived_non_feature_shape_element);
-shape_aspect_deriving_relationship <=
-shape_aspect_relationship
-shape_aspect_relationship.relating_shape_aspect ->
-shape_aspect =>
-derived_shape_aspect
-
-end_attribute_mapping;
-
-end_entity_mapping;
 (* Remove stuff which will likely be remodelled
 entity_mapping Simultaneous_geometric_tolerance_requirement(Simultaneous_geometric_tolerance_requirement, geometric_tolerance_group);
 
@@ -1989,26 +1896,6 @@ geometric_tolerance =>
 physical_unit_geometric_tolerance
 
 end_attribute_mapping;
-
-end_entity_mapping;
-
-entity_mapping Tangent_plane(Tangent_plane, tangent);
-
-mapping_constraints;
-{tangent <=
-derived_shape_aspect <=
-shape_aspect
-shape_aspect.description = 'plane'}
-
-end_mapping_constraints;
-
-end_entity_mapping;
-
-entity_mapping Tangent_shape_element(Tangent_shape_element, tangent);
-
-mapping_constraints;
-
-end_mapping_constraints;
 
 end_entity_mapping;
 
@@ -2360,7 +2247,7 @@ length_measure_with_unit
 end_attribute_mapping;
 
 end_entity_mapping;
-
+*)
 entity_mapping True_profile(True_profile, property_definition);
 
 mapping_constraints;
@@ -2404,7 +2291,7 @@ shape_aspect
 
 end_attribute_mapping;
 
-attribute_mapping profiled_surface(profiled_surface, $PATH, Shape_element);
+attribute_mapping profiled_surface(profiled_surface, $PATH, shape_aspect);
 property_definition
 					property_definition.definition ->
 					characterized_definition
@@ -2459,7 +2346,7 @@ property_definition <-
 end_attribute_mapping;
 
 end_entity_mapping;
-
+(*
 entity_mapping User_defined_dimension_qualifier(User_defined_dimension_qualifier, measure_qualification);
 
 mapping_constraints;

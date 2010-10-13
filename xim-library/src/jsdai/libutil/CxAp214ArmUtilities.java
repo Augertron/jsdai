@@ -43,7 +43,6 @@ import jsdai.SIda_step_schema_xim.*;
 import jsdai.SIdentification_assignment_mim.*;
 import jsdai.SItem_definition_structure_xim.*;
 import jsdai.SRepresentation_schema.*;
-import jsdai.SShape_property_assignment_xim.*;
 import jsdai.SSpecification_control_xim.*;
 import jsdai.SSpecified_product_mim.*;
 import jsdai.SProduct_class_xim.*;
@@ -2585,9 +2584,9 @@ public class CxAp214ArmUtilities {
 				|| instance instanceof EPart_definition_relationship
 				|| instance instanceof EItem_definition_instance_relationship
 				|| instance instanceof EItem_instance_relationship
-				|| instance instanceof EItem_shape
-				|| instance instanceof EShape_element
-				|| instance instanceof EShape_element_relationship
+//				|| instance instanceof EItem_shape
+//				|| instance instanceof EShape_element
+//				|| instance instanceof EShape_element_relationship
 				|| instance instanceof EBreakdown_element_definition
 				|| instance instanceof EDocument_file
 				|| instance instanceof EDocument_representation_type

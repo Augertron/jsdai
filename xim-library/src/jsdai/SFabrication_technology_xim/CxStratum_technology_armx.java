@@ -36,7 +36,6 @@ import jsdai.SFabrication_technology_mim.CStratum_technology;
 import jsdai.SMeasure_schema.*;
 import jsdai.SMixed_complex_types.*;
 import jsdai.SRepresentation_schema.*;
-import jsdai.SShape_property_assignment_xim.CxItem_shape;
 import jsdai.SProduct_property_representation_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 
@@ -66,19 +65,19 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 	// Taken from Characterized_object
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(ECharacterized_object type) throws SdaiException {
-		return test_string(a5);
+		return test_string(a4);
 	}
 	public String getDescription(ECharacterized_object type) throws SdaiException {
-		return get_string(a5);
+		return get_string(a4);
 	}*/
 	public void setDescription(ECharacterized_object type, String value) throws SdaiException {
-		a5 = set_string(value);
+		a4 = set_string(value);
 	}
 	public void unsetDescription(ECharacterized_object type) throws SdaiException {
-		a5 = unset_string();
+		a4 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(ECharacterized_object type) throws SdaiException {
-		return a5$;
+		return a4$;
 	}
 	// ENDOF Taken from Characterized_object	
 	
@@ -192,12 +191,12 @@ public class CxStratum_technology_armx extends CStratum_technology_armx implemen
 	{
 		//CxManaged_design_object.setMappingConstraints(context, armEntity);
 		unsetMappingConstraints(context, armEntity);
-		CxItem_shape.setMappingConstraints(context, armEntity);
+//		CxItem_shape.setMappingConstraints(context, armEntity);
 	}
 
 	public static void unsetMappingConstraints(SdaiContext context, EStratum_technology_armx armEntity) throws SdaiException
 	{
-		CxItem_shape.unsetMappingConstraints(context, armEntity);
+//		CxItem_shape.unsetMappingConstraints(context, armEntity);
 	}
 	
 	

@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N5698 - ISO/TS 10303-1696 Layered interconnect module 3d design - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N4035
+   ISO TC184/SC4/WG12 N6432 - ISO/TS 10303-1696 Layered interconnect module 3d design - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N5698
 *)
 
 SCHEMA Layered_interconnect_module_3d_design_arm;
@@ -11,10 +11,13 @@ SCHEMA Layered_interconnect_module_3d_design_arm;
 
 	REFERENCE FROM Characterizable_object_arm(bag_to_set);  -- ISO/TS 10303-1765
 
-  TYPE stratum_feature_3d_shape_select = SELECT
-    (Stratum_feature_non_planar_2d_shape_model,
-     Stratum_feature_3d_shape_model);
-  END_TYPE;
+  TYPE lim3dd_sf_shape_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON limd_sf_shape_select WITH 
+    (Solid_model);
+  END_TYPE; 
+
+  TYPE lim3dd_stratum_shape_model_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON limd_stratum_shape_model_select WITH 
+    (Stratum_3d_shape_model);
+  END_TYPE; 
 
   ENTITY Located_3d_inter_stratum_extent
     SUBTYPE OF (Inter_stratum_extent);
@@ -30,15 +33,6 @@ SCHEMA Layered_interconnect_module_3d_design_arm;
       WR2 : NOT EXISTS(SELF\Representation.name);
       WR3 : NOT EXISTS(SELF\Representation.description);
       WR4 : SIZEOF(USEDIN(SELF, 'SHAPE_PROPERTY_ASSIGNMENT_ARM.SHAPE_DESCRIPTION_ASSOCIATION.REPRESENTATION'))=0;            
-  END_ENTITY;
-
-  ENTITY Stratum_feature_3d_shape_model
-    SUBTYPE OF (Geometric_model);
-      shape_characterized_component : Stratum_feature;
-    WHERE
-      WR1 : NOT EXISTS(SELF\Representation.name);
-      WR2 : NOT EXISTS(SELF\Representation.description);
-      WR3 : SIZEOF(USEDIN(SELF, 'SHAPE_PROPERTY_ASSIGNMENT_ARM.SHAPE_DESCRIPTION_ASSOCIATION.REPRESENTATION'))=0;      
   END_ENTITY;
 
   ENTITY Stratum_interconnect_module_3d_position;

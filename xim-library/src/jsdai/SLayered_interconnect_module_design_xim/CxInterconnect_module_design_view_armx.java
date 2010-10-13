@@ -37,7 +37,6 @@ import jsdai.SPhysical_unit_design_view_xim.*;
 import jsdai.SProduct_definition_schema.EProduct_definition;
 import jsdai.SProduct_property_definition_schema.EProperty_definition;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.*;
 
 public class CxInterconnect_module_design_view_armx
 		extends
@@ -143,7 +142,7 @@ public class CxInterconnect_module_design_view_armx
 			setAdditional_contexts(context, this);
 
 			// From Item_shape
-			setId_x(context, this);
+//			setId_x(context, this);
 
 			// usage_view
 			setUsage_view(context, this);
@@ -154,7 +153,7 @@ public class CxInterconnect_module_design_view_armx
 			// Clean ARM specific attributes - this is DERIVED to some magic string
 			// unsetAdditional_characterization(null);
 			unsetAdditional_contexts(null);
-			unsetId_x(null);
+//			unsetId_x(null);
 			unsetUsage_view(null);
 	}
 
@@ -170,7 +169,7 @@ public class CxInterconnect_module_design_view_armx
 			// unsetAdditional_characterization(context, this);
 
 			//id_x
-			unsetId_x(context, this);
+//			unsetId_x(context, this);
 			
 			// usage_view
 			unsetUsage_view(context, this);
@@ -226,13 +225,12 @@ public class CxInterconnect_module_design_view_armx
 	}
 
 	//********** "design_discipline_item_definition" attributes
-
-	public static void setId_x(SdaiContext context,
-			EItem_shape armEntity) throws SdaiException {
+/* Removed from XIM - see bug #3610
+	public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
 		//unset old values
 		CxItem_shape.setId_x(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes data for name attribute.
 	 * 
@@ -242,11 +240,11 @@ public class CxInterconnect_module_design_view_armx
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	public static void unsetId_x(SdaiContext context,
-			EItem_shape armEntity) throws SdaiException {
+/* Removed from XIM - see bug #3610	
+	public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.unsetId_x(context, armEntity);	
 	}
-
+*/
 
 	/**
 	 * Sets/creates data for additional_context attribute.

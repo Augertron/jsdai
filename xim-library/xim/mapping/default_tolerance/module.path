@@ -32,28 +32,26 @@ mapping_constraints;
 property_definition_representation.name = 'default setting association'} 
 
 end_mapping_constraints;
-
+(*
 attribute_mapping default_value(default_value, $PATH, default_setting_select);
 property_definition_representation 
-property_definition_representation.definition -> represented_definition 
-represented_definition = property_definition
-property_definition
+property_definition_representation.used_representation -> representation 
 end_attribute_mapping;
 
 attribute_mapping default_value(default_value, $PATH, General_tolerances);
-({property_definition_representation 
-property_definition_representation.name = 'default setting association'}) 
-
+	property_definition_representation 
+	property_definition_representation.used_representation -> representation 
+	{representation.name = 'default tolerances'}
 end_attribute_mapping;
 
-attribute_mapping default_context(default_context, $PATH, Item_shape);
+attribute_mapping default_context(default_context, $PATH, product_definition_shape);
 property_definition_representation 
 property_definition_representation.definition -> represented_definition 
 represented_definition = property_definition 
 property_definition => 
 product_definition_shape
 end_attribute_mapping;
-
+*)
 end_entity_mapping;
 
 entity_mapping General_tolerance_table(General_tolerance_table, default_tolerance_table);
@@ -69,6 +67,15 @@ representation
 representation.name
 end_attribute_mapping;
 
+attribute_mapping cells(cells, representation.items);
+default_tolerance_table <= 
+representation
+representation.items[i] ->
+representation_item =>
+compound_representation_item =>
+default_tolerance_table_cell 
+end_attribute_mapping;
+
 end_entity_mapping;
 
 entity_mapping General_tolerances(General_tolerances, representation);
@@ -82,7 +89,7 @@ representation_context
 end_mapping_constraints;
 
 attribute_mapping table_definition(table_definition, $PATH, general_tolerance_table_select);
-representation representation <- 
+representation <- 
 representation_relationship.rep_2 
 representation_relationship
 {representation_relationship.name = 'general tolerance definition'} 
@@ -118,11 +125,10 @@ mapping_constraints;
 representation_item 
 representation_item.name = 'plus minus tolerance value'}
 end_mapping_constraints;
-
+(* No sense in have it on XIM
 attribute_mapping tolerance_value(tolerance_value, $IDENTICAL_MAPPING, measure_representation_item);
-
 end_attribute_mapping;
-
+*)
 end_entity_mapping;
 
 entity_mapping Significant_number_of_digits(Significant_number_of_digits, measure_representation_item);
@@ -132,7 +138,7 @@ mapping_constraints;
 representation_item 
 representation_item.name = 'significant number of digits'}
 end_mapping_constraints;
-
+(* Do not have mapping as otherwise MIM to XIM conversion would corrupt the type (count_measure) information
 attribute_mapping number_of_digits(number_of_digits, measure_with_unit.value_component);
 measure_representation_item <= 
 measure_with_unit 
@@ -141,7 +147,7 @@ measure_with_unit.value_component
 measure_value 
 measure_value = count_measure}
 end_attribute_mapping;
-
+*)
 end_entity_mapping;
 
 entity_mapping Tolerance_table_cell(Tolerance_table_cell, default_tolerance_table_cell);
@@ -158,20 +164,22 @@ compound_representation_item.item_element ->
 compound_item_definition 
 compound_item_definition = set_representation_item 
 set_representation_item[i] -> representation_item 
+{representation_item.name = 'plus minus tolerance value'}
 representation_item => 
 measure_representation_item
 end_attribute_mapping;
 
 attribute_mapping cell_value(cell_value, $PATH, Upper_lower_toleranced_datum);
-default_tolerance_table_cell <= 
-compound_representation_item 
-compound_representation_item.item_element -> 
-compound_item_definition 
-compound_item_definition = set_representation_item 
-set_representation_item[i] -> representation_item 
-representation_item => 
-measure_representation_item
-
+	default_tolerance_table_cell <= 
+	compound_representation_item 
+	{compound_representation_item.item_element -> 
+	compound_item_definition 
+	compound_item_definition = set_representation_item 
+	set_representation_item[i] -> representation_item 
+	{representation_item 
+	representation_item.name = 'lower tolerance value'}
+	representation_item => 
+	measure_representation_item}
 end_attribute_mapping;
 
 attribute_mapping description(description, $PATH);
@@ -195,6 +203,7 @@ compound_representation_item.item_element ->
 compound_item_definition 
 compound_item_definition = set_representation_item 
 set_representation_item[i] -> representation_item 
+{representation_item.name = 'significant number of digits'}
 representation_item =>
 measure_representation_item
 end_attribute_mapping;
@@ -205,8 +214,9 @@ compound_representation_item
 compound_representation_item.item_element -> 
 compound_item_definition 
 compound_item_definition = set_representation_item 
-set_representation_item[i] -> representation_item representation_item => 
-measure_representation_item
+set_representation_item[i] -> representation_item 
+representation_item => 
+compound_representation_item
 end_attribute_mapping;
 
 attribute_mapping tolerance_class(tolerance_class, representation_item.name);
@@ -215,7 +225,7 @@ compound_representation_item <=
 representation_item 
 representation_item.name
 end_attribute_mapping;
-
+(*
 attribute_mapping tolerance_table(tolerance_table, $PATH, General_tolerance_table);
 default_tolerance_table_cell <= 
 compound_representation_item <= 
@@ -224,64 +234,76 @@ representation_item <-
 representation.items[i] 
 representation => 
 default_tolerance_table
+end_attribute_mapping;*)
+
+end_entity_mapping;
+
+entity_mapping Upper_lower_limit(Upper_lower_limit, compound_representation_item);
+
+mapping_constraints;
+compound_representation_item 
+compound_representation_item.item_element -> 
+compound_item_definition 
+compound_item_definition = set_representation_item 
+end_mapping_constraints;
+
+attribute_mapping upper_limit(upper_limit, $PATH, measure_representation_item);
+compound_representation_item 
+compound_representation_item.item_element -> 
+compound_item_definition 
+compound_item_definition = set_representation_item 
+set_representation_item[i] -> representation_item 
+{representation_item 
+representation_item.name = 'upper limit'}
+representation_item => 
+measure_representation_item
+end_attribute_mapping;
+
+attribute_mapping lower_limit(lower_limit, $PATH, measure_representation_item);
+compound_representation_item 
+compound_representation_item.item_element -> 
+compound_item_definition 
+compound_item_definition = set_representation_item 
+set_representation_item[i] -> representation_item 
+{representation_item 
+representation_item.name = 'lower limit'}
+representation_item => 
+measure_representation_item
 end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Upper_lower_limit(Upper_lower_limit, [measure_representation_item]
-[measure_representation_item]);
+entity_mapping Upper_lower_toleranced_datum(Upper_lower_toleranced_datum, compound_representation_item);
 
 mapping_constraints;
-[{measure_representation_item <= 
-representation_item 
-representation_item.name = 'lower limit'}]
-[{measure_representation_item <= 
-representation_item 
-representation_item.name = 'upper limit'}]
+compound_representation_item 
+compound_representation_item.item_element -> 
+compound_item_definition 
+compound_item_definition = set_representation_item 
 end_mapping_constraints;
 
-attribute_mapping upper_limit(upper_limit, $IDENTICAL_MAPPING, measure_representation_item);
+attribute_mapping lower_tolerance_value(lower_tolerance_value, $PATH, measure_representation_item);
+compound_representation_item 
+compound_representation_item.item_element -> 
+compound_item_definition 
+compound_item_definition = set_representation_item 
+set_representation_item[i] -> representation_item 
+{representation_item 
+representation_item.name = 'lower tolerance value'}
+representation_item => 
 measure_representation_item
-measure_representation_item <= 
-representation_item 
-{representation_item.name = 'upper limit'} 
-
-end_attribute_mapping;
-
-attribute_mapping lower_limit(lower_limit, $IDENTICAL_MAPPING, measure_representation_item);
-measure_representation_item
-measure_representation_item <= 
-representation_item 
-{representation_item.name = 'lower limit'} 
-
-end_attribute_mapping;
-
-end_entity_mapping;
-
-entity_mapping Upper_lower_toleranced_datum(Upper_lower_toleranced_datum, [measure_representation_item]
-[measure_representation_item]);
-
-mapping_constraints;
-[measure_representation_item <= 
-representation_item 
-{representation_item.name = 'lower tolerance value'}]
-[measure_representation_item <= 
-representation_item 
-{representation_item.name = 'upper tolerance value'}]
-end_mapping_constraints;
-
-attribute_mapping lower_tolerance_value(lower_tolerance_value, $IDENTICAL_MAPPING, measure_representation_item);
-measure_representation_item
-measure_representation_item <= 
-representation_item 
-{representation_item.name = 'lower tolerance value'}
 end_attribute_mapping;
 
 attribute_mapping upper_tolerance_value(upper_tolerance_value, $PATH, measure_representation_item);
+compound_representation_item 
+compound_representation_item.item_element -> 
+compound_item_definition 
+compound_item_definition = set_representation_item 
+set_representation_item[i] -> representation_item 
+{representation_item 
+representation_item.name = 'upper tolerance value'}
+representation_item => 
 measure_representation_item
-measure_representation_item <= 
-representation_item 
-{representation_item.name = 'upper tolerance value'} 
 end_attribute_mapping;
 
 end_entity_mapping;

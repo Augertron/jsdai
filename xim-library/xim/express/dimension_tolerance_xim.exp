@@ -27,9 +27,17 @@ by LKSoftWare GmbH for implementation purpose within IDA-STEP(TM)
 *) 
 
 (* Based on ARM *) 
-
+(* Reviewed on 2010-04-14 *)
 
 SCHEMA Dimension_tolerance_xim;
+
+(** Removed as Lothar suggested
+ENTITY Plus_minus_bounds
+  SUBTYPE OF (tolerance_value);
+  significant_digits : OPTIONAL INTEGER;
+  value_determination : OPTIONAL STRING;
+END_ENTITY;
+*)
 
 USE FROM Basic_curve_xim;    
 
@@ -67,152 +75,114 @@ TYPE dimension_tolerance_document_element_select = EXTENSIBLE SELECT BASED_ON do
    (Externally_defined_size_dimension);
 END_TYPE; 
 
-TYPE dimension_value_select = SELECT
-   (Dimension_value_with_limitation, 
-    measure_representation_item, 
-    Tolerance_range, 
-    Value_limit);
+TYPE geometric_dimension = EXTENSIBLE SELECT 
+	(Location_dimension,
+    Size_dimension);
 END_TYPE; 
 
-TYPE element_with_dimension_select = EXTENSIBLE GENERIC_ENTITY SELECT
-   (Shape_element);
-END_TYPE; 
+TYPE radius_type = ENUMERATION OF
+  (centred,
+   adjoining);
+END_TYPE;
 
-TYPE limitation_definition_select = SELECT
-   (Limits_and_fits, 
-    Plus_minus_bounds);
-END_TYPE; 
-
-TYPE placed_element_select = EXTENSIBLE SELECT
-   (constructive_element_select, 
-    Derived_geometry, 
-    element_with_dimension_select);
-END_TYPE; 
+ENTITY Associated_shape_element
+  SUBTYPE OF (geometric_item_specific_usage, shape_aspect);
+  DERIVE
+    SELF\geometric_item_specific_usage.definition : shape_aspect := SELF;
+END_ENTITY;
 
 ENTITY Angular_location_dimension
   (* CONNOTATIONAL *) SUBTYPE OF (angular_location, Location_dimension);
-  orientation : axis2_placement;
+    SELF\Location_dimension.orientation : axis2_placement;
 END_ENTITY;
 
 ENTITY Angular_size_dimension
   (* CONNOTATIONAL *) SUBTYPE OF (angular_size, Size_dimension);
   full : BOOLEAN;
-  major_angle : BOOLEAN;
- (* overlaps with major_angle *)
- DERIVE      
-  SELF\Angular_size.angle_selection : angle_relator :=?;
+  (** Removed as MIM attribute angular_size.angle_selection is semantically richer than
+  major_angle : BOOLEAN; *)
 END_ENTITY;
 
 ENTITY Curved_distance_dimension
   (* CONNOTATIONAL *) SUBTYPE OF (dimensional_location_with_path, Location_dimension);
-  used_path : Measurement_path;
+  WHERE
+    WR1: NOT EXISTS(orientation);	
 END_ENTITY;
 
-ENTITY Curved_size_dimension
-  (* CONNOTATIONAL *) SUBTYPE OF (Size_dimension);
-END_ENTITY;
-
-ENTITY Diameter_size_dimension
-  (* CONNOTATIONAL *) SUBTYPE OF (Size_dimension);
-END_ENTITY;
-
+(** Removed as Lothar suggessted
 ENTITY Dimension_value_with_limitation
-  (* CONNOTATIONAL *) SUBTYPE OF (plus_minus_tolerance);
-  SELF\Plus_minus_tolerance.range RENAMED defined_by : limitation_definition_select;
+  SUBTYPE OF (plus_minus_tolerance);
+  SELF\plus_minus_tolerance.range RENAMED defined_by : limitation_definition_select;
   limited_value : measure_representation_item;
+  -- Overlaps with limited_value 
+  DERIVE
+    SELF\plus_minus_tolerance.toleranced_dimension : dimensional_characteristic :=?;
 END_ENTITY;
+*)
 
 ENTITY Externally_defined_size_dimension
-  (* CONNOTATIONAL *) SUBTYPE OF (externally_defined_dimension_definition, Size_dimension);
-  used_path : OPTIONAL Measurement_path;
-END_ENTITY;
-
-(* This is one of the exceptions - where ARM type has no AIM supertype. This should not be a problem, because ARM type is abstract *)
-(* This is done so, because Geometric_dimension is mapped to 2 alternatives, having no common suitable AIM type *)
-ENTITY Geometric_dimension
-  ABSTRACT SUPERTYPE OF (ONEOF (Location_dimension,
-                                Size_dimension));
-  (* CONNOTATIONAL *)                              
-  id : STRING;
-  dimension_value : dimension_value_select;
-  notes : OPTIONAL SET[1:?] OF STRING; (** Originally it is mandatory SET[0:?] **)
-END_ENTITY;
-
-ENTITY Height_size_dimension
-  (* CONNOTATIONAL *) SUBTYPE OF (Size_dimension);
-  used_path : OPTIONAL Measurement_path;
-END_ENTITY;
-
-ENTITY Length_size_dimension
-  (* CONNOTATIONAL *) SUBTYPE OF (Size_dimension);
-  used_path : OPTIONAL Measurement_path;
+  (* CONNOTATIONAL *) SUBTYPE OF (externally_defined_dimension_definition, dimensional_size_with_path, Size_dimension);
+  	used_path : OPTIONAL shape_aspect;
+  DERIVE
+	SELF\externally_defined_item.item_id : source_item := 'external size dimension'; 
+	SELF\externally_defined_item.source : external_source := ?;
+  	SELF\dimensional_size_with_path.path : shape_aspect :=?; 
 END_ENTITY;
 
 ENTITY Linear_distance_dimension
   (* CONNOTATIONAL *) SUBTYPE OF (Location_dimension);
-  orientation : OPTIONAL axis2_placement;
+  DERIVE
+  	SELF\shape_aspect_relationship.name : label := 'linear distance';
 END_ENTITY;
 
 ENTITY Location_dimension
   ABSTRACT SUPERTYPE OF (ONEOF (Angular_location_dimension,
                                 Curved_distance_dimension,
                                 Linear_distance_dimension))
-  (* CONNOTATIONAL *) SUBTYPE OF (Geometric_dimension, dimensional_location);
+  (* CONNOTATIONAL *) SUBTYPE OF (directed_dimensional_location);
   (* attribute is accessable from supertype
   description	: OPTIONAL STRING; *)
-  directed 																		: OPTIONAL BOOLEAN;
-  origin																			: placed_element_select;
-  target																			: placed_element_select;
-  DERIVE
-    SELF\shape_aspect_relationship.relating_shape_aspect : shape_aspect :=?;
-    SELF\shape_aspect_relationship.related_shape_aspect  : shape_aspect :=?;
-END_ENTITY;
-
-ENTITY Plus_minus_bounds
-  (* CONNOTATIONAL *) SUBTYPE OF (tolerance_value);
-  significant_digits : OPTIONAL INTEGER;
-  value_determination : OPTIONAL STRING;
+  (* From supertype in the ARM - Geometric_dimension *)
+  single_value : OPTIONAL measure_representation_item;
+  lower_range : OPTIONAL measure_representation_item;
+  upper_range : OPTIONAL measure_representation_item;  
+  notes : OPTIONAL SET[1:?] OF STRING; (** Originally it is mandatory SET[0:?] **)
+  (* Its own attributes *)	  
+  	directed 	: BOOLEAN;
+  (* Added as spinout of notes *)
+	theoretical_exact : BOOLEAN;
+	auxiliary         : BOOLEAN;
+	orientation : OPTIONAL axis2_placement;
+  WHERE
+    WR1: EXISTS(single_value) XOR (EXISTS(lower_range) AND EXISTS(upper_range));
+    WR2: NOT EXISTS(theoretical_exact) OR (theoretical_exact = FALSE) OR ('MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT' IN TYPEOF(single_value));
 END_ENTITY;
 
 ENTITY Radial_size_dimension
   (* CONNOTATIONAL *) SUBTYPE OF (Size_dimension);
-  radius_type : STRING;
+  radius_type : radius_type;
+  DERIVE
+  	SELF\dimensional_size.name : label := 'radius';  
 END_ENTITY;
 
 ENTITY Size_dimension
-  ABSTRACT SUPERTYPE OF (ONEOF (Angular_size_dimension,
-                                Curved_size_dimension,
-                                Diameter_size_dimension,
+  SUPERTYPE OF (ONEOF (Angular_size_dimension,
                                 Externally_defined_size_dimension,
-                                Height_size_dimension,
-                                Length_size_dimension,
-                                Radial_size_dimension,
-                                Thickness_size_dimension,
-                                Width_size_dimension))
-  (* CONNOTATIONAL *)SUBTYPE OF (dimensional_size, Geometric_dimension);
-  envelope_principle : OPTIONAL BOOLEAN;
-  SELF\dimensional_size.applies_to RENAMED is_applied_to : element_with_dimension_select;
-END_ENTITY;
-
-ENTITY Thickness_size_dimension
-  (* CONNOTATIONAL *) SUBTYPE OF (Size_dimension);
-  used_path : OPTIONAL Measurement_path;
-END_ENTITY;
-
-ENTITY Tolerance_range
-  (* CONNOTATIONAL *) SUBTYPE OF (shape_dimension_representation);
-  lower_range : measure_representation_item;
-  significant_digits : OPTIONAL INTEGER;
-  upper_range : measure_representation_item;
-DERIVE
-  SELF\representation.items : SET [1:?] OF representation_item := ?;
-  SELF\representation.context_of_items : representation_context := ?;
-  SELF\representation.name : label := ?;
-END_ENTITY;
-
-ENTITY Width_size_dimension
-  (* CONNOTATIONAL *) SUBTYPE OF (Size_dimension);
-  used_path : OPTIONAL Measurement_path;
+                                Radial_size_dimension))
+  (* CONNOTATIONAL *)SUBTYPE OF (dimensional_size);
+  (* From supertype in the ARM - Geometric_dimension *)
+  id : OPTIONAL STRING;
+  single_value : OPTIONAL measure_representation_item;
+  lower_range : OPTIONAL measure_representation_item;
+  upper_range : OPTIONAL measure_representation_item;
+  notes : OPTIONAL SET[1:?] OF STRING; (** Originally it is mandatory SET[0:?] **)
+  (* Its own attributes *)	  
+  envelope_principle : BOOLEAN;
+  theoretical_exact : BOOLEAN;
+  auxiliary         : BOOLEAN;
+  WHERE
+    WR1: EXISTS(single_value) XOR (EXISTS(lower_range) AND EXISTS(upper_range));
+	WR2: NOT EXISTS(theoretical_exact) OR (theoretical_exact = FALSE) OR ('MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT' IN TYPEOF(single_value));    
 END_ENTITY;
 
 END_SCHEMA;  -- Dimension_tolerance_xim

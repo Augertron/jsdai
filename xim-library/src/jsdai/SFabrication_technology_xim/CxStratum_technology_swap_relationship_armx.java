@@ -29,16 +29,11 @@ package jsdai.SFabrication_technology_xim;
 * $$
 */
 
-import jsdai.lang.*;
-import jsdai.libutil.*;
-import jsdai.util.LangUtils;
-import jsdai.SFabrication_technology_mim.CStratum_technology_occurrence_swap_relationship;
 import jsdai.SFabrication_technology_mim.CStratum_technology_swap_relationship;
 import jsdai.SMaterial_property_definition_schema.EProperty_definition_relationship;
-import jsdai.SProduct_property_definition_schema.CProperty_definition;
-import jsdai.SProduct_property_definition_schema.CShape_aspect;
-import jsdai.SProduct_property_definition_schema.EProperty_definition;
-import jsdai.SProduct_property_definition_schema.EShape_aspect;
+import jsdai.lang.SdaiContext;
+import jsdai.lang.SdaiException;
+import jsdai.libutil.EMappedXIMEntity;
 
 public class CxStratum_technology_swap_relationship_armx extends CStratum_technology_swap_relationship_armx implements EMappedXIMEntity
 {

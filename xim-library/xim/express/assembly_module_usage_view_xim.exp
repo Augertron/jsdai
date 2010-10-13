@@ -43,12 +43,12 @@ USE FROM Assembly_module_usage_view_mim;
     SUPERTYPE OF (assembly_module_interface_terminal_armx ANDOR
  Layered_assembly_module_terminal)
     (* CONNOTATIONAL *) SUBTYPE OF (Part_terminal, assembly_module_terminal);
-      SELF\Shape_element.containing_shape(* TEMP-PF! *) : Assembly_module_usage_view_armx;
+      SELF\shape_aspect.of_shape(* TEMP-PF! *) : Assembly_module_usage_view_armx;
       reference_terminal                      : OPTIONAL Packaged_part_interface_terminal;
       related_connector                       : OPTIONAL Next_assembly_usage_occurrence_relationship_armx;
       SELF\Shape_feature.connection_area      : OPTIONAL SET[1:?] OF Connection_zone_in_usage_view;            
     WHERE
-      WR1 : NOT EXISTS(related_connector) OR (SELF\Shape_element.containing_shape = related_connector\Product_occurrence_definition_relationship_armx.related_view);
+      WR1 : NOT EXISTS(related_connector) OR (SELF\shape_aspect.of_shape = related_connector\Product_occurrence_definition_relationship_armx.related_view);
       WR2 : EXISTS(related_connector.reference_designator);
   END_ENTITY;
 
@@ -59,12 +59,12 @@ USE FROM Assembly_module_usage_view_mim;
     DERIVE
       SELF\Product_view_definition.additional_characterization : STRING := 'assembly module';  
     INVERSE
-      access_mechanisms : SET[0:?] OF assembly_module_terminal_armx FOR containing_shape(* TEMP-AD! *);
+      access_mechanisms : SET[0:?] OF assembly_module_terminal_armx FOR of_shape(* TEMP-AD! *);
   END_ENTITY;
 
   ENTITY Layered_assembly_module_terminal
     (* CONNOTATIONAL *) SUBTYPE OF (Assembly_module_terminal_armx);
-      SELF\Shape_element.containing_shape(* TEMP-PF! *) : Layered_assembly_module_usage_view_armx;
+      SELF\shape_aspect.of_shape(* TEMP-PF! *) : Layered_assembly_module_usage_view_armx;
   END_ENTITY;
 
   ENTITY Layered_assembly_module_usage_view_armx

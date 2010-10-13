@@ -1,7 +1,7 @@
 (*
  $Id$
- ISO TC184/SC4/WG12 N5290 - ISO/TS 10303-1311 Associative draughting elements - EXPRESS ARM
- Supersedes ISO TC184/SC4/WG12 N4657
+ ISO TC184/SC4/WG12 N6628 - ISO/TS 10303-1311 Associative draughting elements - EXPRESS ARM
+ Supersedes ISO TC184/SC4/WG12 N5290
 *)
 
 SCHEMA Associative_draughting_elements_arm;
@@ -42,19 +42,9 @@ USE FROM Draughting_element_arm; -- ISO/CD-TS 10303-1310
 
   ENTITY Draughting_model_item_association;
     name            : STRING;
-    definition      : Shape_element;
+    definition      : shape_select;
     identified_item : draughting_model_item_association_select;
     used_model      : Draughting_model;
-    WHERE 
-	  WR1: (NOT('DRAUGHTING_ELEMENT_SPECIALISATIONS_ARM.'+'DATUM_TARGET_CALLOUT' IN TYPEOF(identified_item)) OR
-	       ('GEOMETRIC_TOLERANCE_ARM.'+'DATUM_TARGET' IN TYPEOF(definition)));
-	  WR2: (NOT('DRAUGHTING_ELEMENT_SPECIALISATIONS_ARM.'+'GEOMETRIC_TOLERANCE_CALLOUT' IN TYPEOF(identified_item)) OR
-	       ('GEOMETRIC_TOLERANCE_ARM.'+'GEOMETRIC_TOLERANCE' IN TYPEOF(definition)));
-	  -- WRs capturing callout <- GD&T type for N:1 links and       
-	  WR3: (NOT('DIMENSION_TOLERANCE_ARM.'+'SIZE_DIMENSION' IN TYPEOF(definition)) OR
-	        (('DRAUGHTING_ELEMENT_SPECIALISATIONS_ARM.'+'DIMENSION_CALLOUT' IN TYPEOF(identified_item)) OR
-	        ('DRAUGHTING_ELEMENT_ARM.'+'DIMENSION_CURVE_DIRECTED_CALLOUT' IN TYPEOF(identified_item)) OR
-	        ('DRAUGHTING_ELEMENT_SPECIALISATIONS_ARM.'+'STRUCTURED_DIMENSION_CALLOUT' IN TYPEOF(identified_item))));
   END_ENTITY;
 
 END_SCHEMA;

@@ -113,7 +113,7 @@ descriptive_representation_item.description
 
 end_attribute_mapping;
 
-attribute_mapping hardness_value(hardness_value, $PATH, measure_representation_item);
+attribute_mapping hardness_value(hardness_value, $PATH, representation_item);
 
 	 hardness_representation <=
 representation
@@ -126,7 +126,7 @@ value_range)
 
 end_attribute_mapping;
 
-attribute_mapping depth(depth, $PATH, measure_representation_item);
+attribute_mapping depth(depth, $PATH, representation_item);
 
 	 hardness_representation <=
 representation
@@ -198,7 +198,7 @@ property_definition_representation.used_representation -> representation
 
 end_attribute_mapping;
 
-attribute_mapping described_element(described_element, $PATH, Item_shape);
+attribute_mapping described_element(described_element, $PATH, product_definition_shape);
 
 property_definition_representation
 property_definition_representation.definition ->
@@ -213,7 +213,7 @@ product_definition_shape
 
 end_attribute_mapping;
 
-attribute_mapping described_element(described_element, $PATH, Shape_element);
+attribute_mapping described_element(described_element, $PATH, shape_aspect);
 
 property_definition_representation
 property_definition_representation.definition ->
@@ -330,7 +330,7 @@ end_entity_mapping;
 entity_mapping Tactile_appearance(Tactile_appearance, tactile_appearance_representation
 );
 
-attribute_mapping id(id, id_attribute.attribute_value);
+attribute_mapping id_x(id_x, id_attribute.attribute_value);
 
 tactile_appearance_representation <=
 representation = id_attribute_select
@@ -339,13 +339,13 @@ id_attribute.attribute_value
 
 end_attribute_mapping;
 
-attribute_mapping name(name, representation.name);
+attribute_mapping name_x(name_x, representation.name);
 tactile_appearance_representation <= representation
 representation.name
 
 end_attribute_mapping;
 
-attribute_mapping description(description, representation.description);
+attribute_mapping description_x(description_x, representation.description);
 tactile_appearance_representation <= representation
 representation.description
 
@@ -369,7 +369,7 @@ end_entity_mapping;
 entity_mapping Treatment_result(Treatment_result, representation
 );
 
-attribute_mapping id(id, id_attribute.attribute_value);
+attribute_mapping id_x(id_x, id_attribute.attribute_value);
 
 representation = id_attribute_select
 id_attribute_select <- id_attribute.identified_item
@@ -377,7 +377,7 @@ id_attribute.attribute_value
 
 end_attribute_mapping;
 
-attribute_mapping name(name, representation.description);
+attribute_mapping name_x(name_x, representation.description);
 
 end_attribute_mapping;
 
@@ -401,6 +401,70 @@ representation_item =>
 descriptive_representation_item
 descriptive_representation_item.description
 
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Extended_visual_appearance(Extended_visual_appearance, visual_appearance_representation);
+
+attribute_mapping orientation(orientation, $PATH, plane_angle_measure_with_unit);
+	visual_appearance_representation <=
+	representation
+	representation.items[i] ->
+	representation_item =>
+	measure_representation_item <=
+	measure_with_unit =>
+	plane_angle_measure_with_unit
+end_attribute_mapping;
+
+attribute_mapping opacity(opacity, $PATH, representation_item);
+	visual_appearance_representation <=
+	representation
+	representation.items[i] ->
+	representation_item
+	{representation_item.name = 'opacity'}
+	representation_item =>
+	(measure_representation_item)
+	(compound_representation_item =>
+	value_range)
+end_attribute_mapping;
+
+attribute_mapping opacity(opacity, $PATH, representation_item);
+	visual_appearance_representation <=
+	representation
+	representation.items[i] ->
+	representation_item
+	{representation_item.name = 'opacity'}
+	representation_item =>
+	(measure_representation_item)
+	(compound_representation_item =>
+	value_range)
+end_attribute_mapping;
+
+attribute_mapping refraction_index(refraction_index, $PATH, representation_item);
+	visual_appearance_representation <=
+	representation
+	representation.items[i] ->
+	representation_item
+	{representation_item.name = 'refraction index'}
+	representation_item =>
+	(measure_representation_item)
+	(compound_representation_item =>
+	value_range)
+end_attribute_mapping;
+
+attribute_mapping texture_map(texture_map, $PATH, Digital_file);
+	visual_appearance_representation <=
+	representation <- property_definition_representation.used_representation
+	property_definition_representation.definition -> represented_definition
+	represented_definition = property_definition
+	{property_definition.name = 'texture map'}
+	property_definition.definition -> characterized_definition
+	characterized_definition = characterized_object
+	characterized_object => document_file
+	{document_file <= document
+	document <- document_representation_type.represented_document
+	document_representation_type.name = 'digital'}
 end_attribute_mapping;
 
 end_entity_mapping;
@@ -446,7 +510,7 @@ descriptive_representation_item.description
 
 end_attribute_mapping;
 
-attribute_mapping id(id, id_attribute.attribute_value);
+attribute_mapping id_x(id_x, id_attribute.attribute_value);
 
 visual_appearance_representation <=
 representation = id_attribute_select

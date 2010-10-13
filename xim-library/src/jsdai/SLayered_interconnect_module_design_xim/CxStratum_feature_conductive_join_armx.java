@@ -31,7 +31,6 @@ package jsdai.SLayered_interconnect_module_design_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.SInterconnect_module_connection_routing_mim.*;
 import jsdai.SLayered_interconnect_module_design_mim.CStratum_feature_conductive_join;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_representation_schema.*;

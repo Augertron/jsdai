@@ -36,7 +36,6 @@ import jsdai.SPackage_xim.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.EProperty_definition;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.*;
 
 public class CxAltered_package
    extends CAltered_package implements EMappedXIMEntity{
@@ -143,7 +142,7 @@ public class CxAltered_package
 		setAdditional_contexts(context, this);
 
 		
-		setId_x(context, this);
+//		setId_x(context, this);
       //********** "package" attributes
         //case_style
         // removed since WD28
@@ -217,7 +216,7 @@ public class CxAltered_package
       // CLEAN ARM
 		unsetAdditional_characterization(null);
 		unsetAdditional_contexts(null);
-		unsetId_x(null);
+//		unsetId_x(null);
 		unsetMaximum_body_height_above_seating_plane(null);
       unsetMaximum_body_height_below_seating_plane(null);
       unsetBody_clearance_above_seating_plane(null);
@@ -253,7 +252,7 @@ public class CxAltered_package
 		unsetAdditional_contexts(context, this);
 
 		
-		unsetId_x(context, this);
+//		unsetId_x(context, this);
       //********** "package" attributes
         //case_style
         // removed since WD28
@@ -411,10 +410,11 @@ public class CxAltered_package
     * @param armEntity arm entity.
     * @throws SdaiException
     */
+/* Removed from XIM - see bug #3610   
    public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
       CxItem_shape.setId_x(context, armEntity);
    }
-
+*/
    /**
     * Unsets/deletes data for documentation attribute.
     *
@@ -422,10 +422,11 @@ public class CxAltered_package
     * @param armEntity arm entity.
     * @throws SdaiException
     */
+/* Removed from XIM - see bug #3610   
    public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
    	CxItem_shape.unsetId_x(context, armEntity);
    }
-
+*/
    //********** "physical_unit_usage_view" attributes
 
     //********** "package" attributes

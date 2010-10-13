@@ -1,5 +1,6 @@
 (*
-ISO TC184/SC4/WG12 N4828 - ISO/CD 10303-43 Representation structures - EXPRESS
+ISO TC184/SC4/WG12 N6135 - ISO/IS 10303-43 Representation structures - EXPRESS
+Supersedes ISO TC184/SC4/WG12 N4828
 *) 
 
 SCHEMA representation_schema;
@@ -70,14 +71,13 @@ REFERENCE FROM support_resource_schema
        WR1: acyclic_representation_relationship(SELF,
          [SELF\representation_relationship.rep_2],
          'REPRESENTATION_SCHEMA.'+'REPRESENTATION');
-       WR2: NOT('REPRESENTATION_SCHEMA.'+'DEFINITIONAL_REPRESENTATION_RELATIONSHIP_WITH_SAME_CONTEXT' 
-         IN TYPEOF(SELF)) XOR
-         (SELF\representation_relationship.rep_1.context_of_items :=: 
-          SELF\representation_relationship.rep_2.context_of_items);
   END_ENTITY;  
 
   ENTITY definitional_representation_relationship_with_same_context
     SUBTYPE OF (definitional_representation_relationship);
+     WHERE
+       WR1: SELF\representation_relationship.rep_1.context_of_items :=: 
+            SELF\representation_relationship.rep_2.context_of_items;
   END_ENTITY;  
 
   ENTITY founded_item;
@@ -110,7 +110,7 @@ REFERENCE FROM support_resource_schema
       mapping_source : representation_map;
       mapping_target : representation_item;
     WHERE
-      WR1: acyclic_mapped_representation(using_representations(SELF), [SELF]);
+      WR1: acyclic_mapped_representation(SELF);
   END_ENTITY;
 
   ENTITY parametric_representation_context
@@ -206,55 +206,41 @@ REFERENCE FROM support_resource_schema
   END_ENTITY;
 
   FUNCTION acyclic_mapped_representation
-    (parent_set   : SET OF representation;
-     children_set : SET OF representation_item) : BOOLEAN;
+    (mi : mapped_item) : BOOLEAN;
     LOCAL
-      x,y,u : SET OF representation_item := [];
+      rms : SET OF representation_map;
+      mis : SET OF mapped_item;
+      rs1, rs2 : SET OF representation;
     END_LOCAL;
-    -- Determine the subset of children_set that are mapped_items
-    x := QUERY(z <* children_set | 'REPRESENTATION_SCHEMA.MAPPED_ITEM'
-      IN TYPEOF(z));
-    -- Determine that the subset has elements
-    IF SIZEOF(x) > 0 THEN
-      -- Check each element of the set
-      REPEAT i := 1 TO HIINDEX(x);
-        -- If the selected element maps a representation in the
-        -- parent_set, then return false
-        IF x[i]\mapped_item.mapping_source.mapped_representation
-          IN parent_set THEN
-          RETURN (FALSE);
-        END_IF;
-        -- Recursive check of the items of mapped_representation
-        IF NOT acyclic_mapped_representation
-          (parent_set +
-          x[i]\mapped_item.mapping_source.mapped_representation,
-          x[i]\mapped_item.mapping_source.mapped_representation.items) THEN
-          RETURN (FALSE);
-        END_IF;
-      END_REPEAT;
-    END_IF;
-    -- Determine the subset of children_set that are not
-    -- mapped_items
-    u := children_set - x;
-    -- Determine that the subset has elements
-    IF SIZEOF(u) > 0 THEN
-      -- For each element of the set:
-      REPEAT i := 1 TO HIINDEX(u);
-        -- Determine the set of representation_items referenced
-        y := QUERY(z <* bag_to_set( USEDIN(u[i], '')) |
-             'REPRESENTATION_SCHEMA.REPRESENTATION_ITEM' IN TYPEOF(z));     
-        -- Recursively check for an offending mapped_item
-        -- Return false for any errors encountered
-        IF NOT acyclic_mapped_representation(parent_set, y) THEN
-          RETURN (FALSE);
+ 
+    rs1 := using_representations(mi);
+    rs2 := [];
+    -- loop as long as there are elements in rs1
+    REPEAT WHILE SIZEOF(rs1) > 0; 
+      REPEAT i := 1 TO HIINDEX(rs1);
+        -- Determine the set of representation_map that reference the parent_set
+        rms := bag_to_set(USEDIN(rs1[i], 'REPRESENTATION_SCHEMA.REPRESENTATION_MAP.MAPPED_REPRESENTATION'));
+        IF SIZEOF(rms) > 0 THEN
+          REPEAT j := 1 TO HIINDEX(rms);
+            mis := bag_to_set(USEDIN(rms[i], 'REPRESENTATION_SCHEMA.MAPPED_ITEM.MAPPING_SOURCE'));
+            IF SIZEOF(mis) > 0 THEN
+              REPEAT j := 1 TO HIINDEX(mis);
+                -- check mis members for instance equal with mi. If so then there is a cycle
+                IF mis[i] :=: mi THEN
+                  RETURN (FALSE);
+                END_IF;
+                rs2 := rs2 + using_representations(mis[i]);
+              END_REPEAT;
+            END_IF;
+          END_REPEAT;
         END_IF;
       END_REPEAT;
-    END_IF;
-    -- Return true when all elements are checked and
-    -- no error conditions found
+      rs1 := rs2;
+      rs2 := [];
+    END_REPEAT;
     RETURN (TRUE);
-  END_FUNCTION;
-
+  END_FUNCTION;  
+  
   FUNCTION acyclic_representation_relationship
     (relation : representation_relationship; relatives : SET[1:?] OF representation; specific_relation : STRING) : BOOLEAN; 
     LOCAL

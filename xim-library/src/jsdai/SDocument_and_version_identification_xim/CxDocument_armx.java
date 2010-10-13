@@ -46,9 +46,9 @@ public class CxDocument_armx extends CDocument_armx implements EMappedXIMEntity
 	private boolean testFrame_of_reference2(EProduct type) throws SdaiException {
 		return test_aggregate(a3);
 	}
-	private jsdai.SApplication_context_schema.AProduct_context getFrame_of_reference2(EProduct type) throws SdaiException {
+/*	private jsdai.SApplication_context_schema.AProduct_context getFrame_of_reference2(EProduct type) throws SdaiException {
 		return (jsdai.SApplication_context_schema.AProduct_context)get_aggregate(a3);
-	}
+	}*/
 	public jsdai.SApplication_context_schema.AProduct_context createFrame_of_reference(EProduct type) throws SdaiException {
 		a3 = (jsdai.SApplication_context_schema.AProduct_context)create_aggregate_class(a3, a3$,  jsdai.SApplication_context_schema.AProduct_context.class, 0);
 		return a3;

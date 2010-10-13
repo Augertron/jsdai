@@ -1889,6 +1889,26 @@ public class CxAP210ARMUtilities extends JsdaiLangAccessor{
 	}
 
 	/**
+	 * Sets derived attribute name for any entity passed as a parameter.
+	 * @param context
+	 * @param item
+	 * @param name
+	 * @throws SdaiException
+	 */
+	public static void setDerivedName(SdaiContext context, EEntity item, String name) throws SdaiException {
+		jsdai.SBasic_attribute_schema.EName_attribute description_attribute = null;
+		jsdai.SBasic_attribute_schema.AName_attribute aDescription_attribute = new jsdai.SBasic_attribute_schema.AName_attribute();
+		jsdai.SBasic_attribute_schema.CName_attribute.usedinNamed_item(null, item, context.domain, aDescription_attribute);
+		if (aDescription_attribute.getMemberCount() > 0) {
+			description_attribute = aDescription_attribute.getByIndex(1);
+		} else {
+			description_attribute = (jsdai.SBasic_attribute_schema.EName_attribute) context.working_model.createEntityInstance(jsdai.SBasic_attribute_schema.EName_attribute.class);
+			description_attribute.setNamed_item(null, item);
+		}
+		description_attribute.setAttribute_value(null, name);
+	}
+	
+	/**
 	 * Unsets derived attribute description for any entity passed as a parameter.
 	 * @param context
 	 * @param item
@@ -2012,6 +2032,20 @@ public class CxAP210ARMUtilities extends JsdaiLangAccessor{
 			id_attribute = aId_attribute.getByIndex(1);
 		} else {
 			id_attribute = (jsdai.SBasic_attribute_schema.EId_attribute) context.working_model.createEntityInstance(jsdai.SBasic_attribute_schema.EId_attribute.class);
+			id_attribute.setIdentified_item(null, instance);
+		}
+		id_attribute.setAttribute_value(null, id);
+	}
+
+	public static void setId(EEntity instance, String id) throws SdaiException {
+		jsdai.SBasic_attribute_schema.EId_attribute id_attribute = null;
+		jsdai.SBasic_attribute_schema.AId_attribute aId_attribute = new jsdai.SBasic_attribute_schema.AId_attribute();
+		jsdai.SBasic_attribute_schema.CId_attribute.usedinIdentified_item(null, instance, null, aId_attribute);
+		SdaiModel model = instance.findEntityInstanceSdaiModel();
+		if (aId_attribute.getMemberCount() > 0) {
+			id_attribute = aId_attribute.getByIndex(1);
+		} else {
+			id_attribute = (jsdai.SBasic_attribute_schema.EId_attribute) model.createEntityInstance(jsdai.SBasic_attribute_schema.EId_attribute.class);
 			id_attribute.setIdentified_item(null, instance);
 		}
 		id_attribute.setAttribute_value(null, id);

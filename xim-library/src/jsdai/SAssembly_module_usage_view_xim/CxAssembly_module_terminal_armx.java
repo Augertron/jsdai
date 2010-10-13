@@ -39,7 +39,6 @@ import jsdai.SFunctional_assignment_to_part_xim.CxPart_terminal;
 import jsdai.SPackaged_connector_model_xim.EPackaged_part_interface_terminal;
 import jsdai.SPhysical_unit_usage_view_xim.*;
 import jsdai.SProduct_property_definition_schema.*;
-import jsdai.SProduct_structure_schema.ENext_assembly_usage_occurrence;
 
 public class CxAssembly_module_terminal_armx extends CAssembly_module_terminal_armx implements EMappedXIMEntity{
 

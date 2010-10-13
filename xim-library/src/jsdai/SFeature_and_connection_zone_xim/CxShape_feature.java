@@ -35,7 +35,6 @@ import jsdai.SLayered_interconnect_module_design_mim.EProbe_access_area;
 import jsdai.SLayered_interconnect_simple_template_mim.EDefault_attachment_size_based_land_physical_template;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_definition_schema.*;
-import jsdai.SShape_property_assignment_xim.CxShape_element;
 
 public class CxShape_feature extends CShape_feature implements EMappedXIMEntity
 {
@@ -105,7 +104,8 @@ public class CxShape_feature extends CShape_feature implements EMappedXIMEntity
 	*/
 	public static void setMappingConstraints(SdaiContext context, EShape_feature armEntity) throws SdaiException
 	{
-		CxShape_element.setMappingConstraints(context, armEntity);
+//		CxShape_element.setMappingConstraints(context, armEntity);
+		
 		jsdai.SProduct_property_definition_schema.EShape_aspect aimEntity = armEntity;
 		// aimEntity.setDescription(null, "shape feature");
 		aimEntity.setProduct_definitional(null, ELogical.TRUE);
@@ -149,7 +149,8 @@ public class CxShape_feature extends CShape_feature implements EMappedXIMEntity
 
 	public static void unsetMappingConstraints(SdaiContext context, EShape_feature armEntity) throws SdaiException
 	{
-		CxShape_element.unsetMappingConstraints(context, armEntity);
+//		CxShape_element.unsetMappingConstraints(context, armEntity);
+		
 		jsdai.SProduct_property_definition_schema.EShape_aspect aimEntity = armEntity;
 		// aimEntity.unsetDescription(null);
 		aimEntity.unsetProduct_definitional(null);

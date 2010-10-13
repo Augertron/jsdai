@@ -38,6 +38,11 @@ USE FROM Value_with_unit_extension_xim;
 
 USE FROM surface_conditions_mim;
 
+USE FROM product_property_representation_schema (represented_definition);
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set);
+  
  TYPE measuring_gauge_select = EXTENSIBLE GENERIC_ENTITY SELECT (
    Part_view_definition);
  END_TYPE;
@@ -47,7 +52,7 @@ USE FROM surface_conditions_mim;
   END_TYPE;
 
  TYPE shaped_element_select = SELECT
-      (Shape_element,Item_shape);
+      (shape_aspect,product_definition_shape);
  END_TYPE;
 
  TYPE texture_select = SELECT
@@ -55,26 +60,38 @@ USE FROM surface_conditions_mim;
  END_TYPE;
 
  ENTITY Coating_layer
- SUBTYPE OF (Shape_element);
- INVERSE
-   thickness : SET[0:1] OF Thickness_size_dimension FOR applies_to;
+ SUBTYPE OF (shape_aspect);
+ DERIVE
+   SELF\shape_aspect.name : label := 'coating layer';
+   SELF\shape_aspect.product_definitional : LOGICAL := TRUE;  
+	thickness: SET[0:1] OF Size_dimension :=
+	   bag_to_set((QUERY(sd <* USEDIN (SELF, 'DIMENSION_TOLERANCE_XIM.'+
+	   'SIZE_DIMENSION.APPLIES_TO') | (sd.name = 'thickness'))));
  WHERE
- WR1: SIZEOF(USEDIN(SELF, 'SURFACE_CONDITIONS_XIM.MATERIAL_DESIGNATION.DEFINITIONS'))=1;
+   WR1: SIZEOF(USEDIN(SELF, 'SURFACE_CONDITIONS_XIM.MATERIAL_DESIGNATION.DEFINITIONS'))=1;
  END_ENTITY;
 
  ENTITY Contact_ratio
-  SUBTYPE OF (contact_ratio_representation);
-  ratio_value : measure_representation_item;
-  measuring_gauge : measuring_gauge_select;
+  SUBTYPE OF (contact_ratio_representation, Surface_condition);
+    ratio_value : measure_representation_item;
+    measuring_gauge : measuring_gauge_select;
  END_ENTITY;
 
+  ENTITY Extended_visual_appearance
+    SUBTYPE OF (Visual_appearance);
+      opacity          : OPTIONAL representation_item;
+      orientation      : OPTIONAL plane_angle_measure_with_unit;
+      refraction_index : OPTIONAL representation_item;  
+      texture_map      : Digital_file;  
+  END_ENTITY;
+
  ENTITY Hardness
-  SUBTYPE OF (hardness_representation);
-  measuring_method : STRING;
-  environment_condition : OPTIONAL SET[1:?] OF STRING; (** Originally it is mandatory SET[0:?] **)
-  measuring_position : OPTIONAL STRING;
-  hardness_value : measure_representation_item;
-  depth : OPTIONAL measure_representation_item;
+  SUBTYPE OF (hardness_representation, Surface_condition);
+	measuring_method : STRING;
+  	environment_condition : OPTIONAL SET[1:?] OF STRING; (** Originally it is mandatory SET[0:?] **)
+  	measuring_position : OPTIONAL STRING;
+  	hardness_value : representation_item;
+  	depth : OPTIONAL representation_item;
  END_ENTITY;
 
 (* Removed as a result of 2354 issue from SEDSILLA
@@ -87,13 +104,19 @@ USE FROM surface_conditions_mim;
   ABSTRACT SUPERTYPE OF (ONEOF(Contact_ratio,Hardness,Tactile_appearance,
                          Treatment_result,Visual_appearance,Surface_texture))
   SUBTYPE OF (representation);
-  value_determination : OPTIONAL STRING;
+    value_determination : OPTIONAL STRING;
+  DERIVE
+    SELF\representation.items : SET[1:?] OF representation_item := ?;
+    SELF\representation.context_of_items : representation_context := ?;
+    SELF\representation.name : label := ?;
  END_ENTITY;
 
  ENTITY Surface_condition_association
   SUBTYPE OF (property_definition_representation);
-  SELF\property_definition_representation.used_representation RENAMED describing_surface_condition : representation;
-  described_element : shaped_element_select;
+  	SELF\property_definition_representation.used_representation RENAMED describing_surface_condition : Surface_condition;
+  	described_element : shaped_element_select;
+  DERIVE
+  	SELF\property_definition_representation.definition : represented_definition :=?; 
  END_ENTITY;
 
  ENTITY Surface_texture
@@ -104,47 +127,55 @@ USE FROM surface_conditions_mim;
 
  ENTITY Surface_texture_parameter__measure_representation_item
   SUBTYPE OF (measure_representation_item);
-  SELF\representation_item.name RENAMED parameter_name : label;
-  described_texture : texture_select;
-  -- parameter_index : OPTIONAL INTEGER; *** commented out because of wrong mapping *** SEDS
+  	SELF\representation_item.name RENAMED parameter_name : label;
+  	described_texture : texture_select;
   DERIVE 
   	parameter_value : measure_representation_item := SELF;
  END_ENTITY;
  
  ENTITY Surface_texture_parameter__value_range
   SUBTYPE OF (value_range);
-  SELF\representation_item.name RENAMED parameter_name : label;
-  described_texture : texture_select;
-  -- parameter_index : OPTIONAL INTEGER; *** commented out because of wrong mapping ***  SEDS
+  	SELF\representation_item.name RENAMED parameter_name : label;
+  	described_texture : texture_select;
   DERIVE 
   	parameter_value : measure_representation_item := SELF;
  END_ENTITY;
 
  ENTITY Tactile_appearance
   SUBTYPE OF (Surface_condition, tactile_appearance_representation);
-  	depth : OPTIONAL measure_representation_item; 
+	id_x          : OPTIONAL STRING;
+	name_x        : OPTIONAL STRING;
+	description_x : OPTIONAL STRING;
+	depth         : OPTIONAL measure_representation_item;
+  DERIVE
+  	SELF\representation.id : identifier := id_x; 
+  	SELF\representation.name : label := name_x;
+  	SELF\representation.description : text := description_x;
  END_ENTITY;
 
  ENTITY Treatment_result
   SUBTYPE OF (Surface_condition);
-  (* attribute is accessable from supertype
-  id : OPTIONAL STRING; *)
-  name_x : OPTIONAL STRING;
-  description_x : STRING;
-  purpose : OPTIONAL STRING;
-  (* Overlapps with name_x *)
+	id_x : OPTIONAL STRING;
+  	name_x : OPTIONAL STRING;
+  	description_x : STRING;
+  	purpose : OPTIONAL STRING;
   DERIVE
-   SELF\representation.description :text :=?;
+	SELF\representation.description :text :=name_x;
+   	SELF\representation.id : identifier := id_x;
  END_ENTITY;
 
  ENTITY Visual_appearance
   SUBTYPE OF (Surface_condition, visual_appearance_representation);
-  id_x : OPTIONAL STRING;
-  colour_id : STRING;
-  colour_name : OPTIONAL STRING;
-  lustre : STRING;
-  transparency : OPTIONAL STRING;
-  pattern : OPTIONAL STRING;
+	id_x         : OPTIONAL STRING;
+	colour_id    : STRING;
+	name_x       : OPTIONAL STRING;
+	colour_name  : OPTIONAL STRING;
+	lustre       : STRING;
+	transparency : OPTIONAL STRING;
+	pattern      : OPTIONAL STRING;
+  DERIVE
+   	SELF\representation.id : identifier := id_x;
+	SELF\representation.name : label := name_x;
  END_ENTITY;
 
 END_SCHEMA;

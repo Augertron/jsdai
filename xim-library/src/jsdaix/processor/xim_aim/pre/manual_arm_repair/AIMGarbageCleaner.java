@@ -29,11 +29,13 @@ import jsdai.SManagement_resources_schema.CClassification_role;
 import jsdai.SPerson_organization_schema.COrganization_role;
 import jsdai.SPerson_organization_schema.CPerson_and_organization_role;
 import jsdai.SProduct_property_definition_schema.CCharacterized_object;
+import jsdai.SProduct_property_definition_schema.CProduct_definition_shape;
 import jsdai.SProduct_property_representation_schema.CShape_representation;
+import jsdai.SQualified_measure_schema.CMeasure_qualification;
+import jsdai.SQualified_measure_schema.CPrecision_qualifier;
 import jsdai.SRepresentation_schema.CRepresentation_map;
 import jsdai.SSecurity_classification_schema.CSecurity_classification_level;
 import jsdai.SShape_property_assignment_xim.CContextual_item_shape;
-import jsdai.SShape_property_assignment_xim.CItem_shape;
 import jsdai.dictionary.EEntity_definition;
 import jsdai.lang.AEntity;
 import jsdai.lang.ASdaiModel;
@@ -44,20 +46,20 @@ import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * @author Giedrius
- * 
+ *
  *	Removed AIM instances of provided types, which should not be in XIM file (like shape_aspect_relationship, property_definition etc.)
  */
 public class AIMGarbageCleaner {
 	/**
-	 * 
+	 *
 	 * @param model
 	 * @throws SdaiException
 	 */
 //	private static int countOfDeletions = 0; // TEMP - DEBUG
 //	private static int rmUsersCount = 0;
-	
+
 	public static void run(ASdaiModel models, EEntity_definition[] typesToRemove, Importer importer) throws SdaiException {
-		// long time = System.currentTimeMillis();		
+		// long time = System.currentTimeMillis();
 		// System.out.println(" Remove "+typesToRemove.length);
 		for (int t=0,count=typesToRemove.length; t<count; t++) {
 			EEntity_definition typeToRemove = typesToRemove[t];
@@ -79,17 +81,19 @@ public class AIMGarbageCleaner {
 		removeUnusedEntities(models, CClassification_role.definition, importer);
 		removeUnusedEntities(models, CGeometric_representation_context.definition, importer);
 		removeUnusedEntities(models, CApplication_context.definition, importer);
-		removeUnusedEntities(models, CItem_shape.definition, importer);
+		removeUnusedEntities(models, CProduct_definition_shape.definition, importer);
 		removeUnusedEntities(models, COrganization_role.definition, importer);
 		removeUnusedEntities(models, CCharacterized_object.definition, importer);
 		removeUnusedEntities(models, CContextual_item_shape.definition, importer);
 		removeUnusedEntities(models, CPerson_and_organization_role.definition, importer);
 		removeUnusedEntities(models, CSecurity_classification_level.definition, importer);
+		removeUnusedEntities(models, CMeasure_qualification.definition, importer);
+		removeUnusedEntities(models, CPrecision_qualifier.definition, importer);
 		// System.out.println(" Cleaning AIM F "+(System.currentTimeMillis()-time)/1000+" seconds");
 		removeUnusedEntities(models, CRepresentation_map.definition, importer);
 		// System.out.println(" Cleaning AIM G "+(System.currentTimeMillis()-time)/1000+" seconds");
 		// Special treatment for Classification_role
-		
+
 	}
 
 	/**
@@ -121,7 +125,7 @@ public class AIMGarbageCleaner {
 		AEntity instancesToRemove = models.getExactInstances(typeToRemove);
 		int count = instancesToRemove.getMemberCount();
 		// countOfDeletions += count;
-		
+
 		// System.out.println(typeToRemove.getName(null)+" remove "+instancesToRemove.getMemberCount());
 		while(count > 0){
 			EEntity instanceToRemove = instancesToRemove.getByIndexEntity(count--);
@@ -129,6 +133,6 @@ public class AIMGarbageCleaner {
 			instanceToRemove.deleteApplicationInstance();
 		}
 		// System.out.println(" Deleting "+typeToRemove.getName(null)+" takes "+(System.currentTimeMillis()-time)+" ms "+count2);
-		
+
 	}
 }

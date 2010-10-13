@@ -32,8 +32,6 @@ package jsdai.SShape_composition_xim;
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
 import jsdai.SProduct_property_definition_schema.*;
-import jsdai.SShape_property_assignment_xim.CxShape_element_relationship;
-import jsdai.SShape_property_assignment_xim.EShape_element_relationship;
 
 public class CxShape_element_boundary_relationship extends CShape_element_boundary_relationship implements EMappedXIMEntity{
 
@@ -48,7 +46,7 @@ public class CxShape_element_boundary_relationship extends CShape_element_bounda
 	}
 	public String getRelation_type(EShape_element_relationship type) throws SdaiException {
 		return getName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null);
-	}*/
+	}
 	public void setRelation_type(EShape_element_relationship type, String value) throws SdaiException {
 		setName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null, value);
 	}
@@ -57,7 +55,7 @@ public class CxShape_element_boundary_relationship extends CShape_element_bounda
 	}
 	public static jsdai.dictionary.EAttribute attributeRelation_type(EShape_element_relationship type) throws SdaiException {
 		return attributeName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null);
-	}
+	}*/
 	// Taken from Shape_aspect_relationship
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(EShape_aspect_relationship type) throws SdaiException {
@@ -114,7 +112,7 @@ public class CxShape_element_boundary_relationship extends CShape_element_bounda
 	 */
 	public static void setMappingConstraints(SdaiContext context,
 			EShape_element_boundary_relationship armEntity) throws SdaiException {
-		CxShape_element_relationship.setMappingConstraints(context, armEntity);
+//		CxShape_element_relationship.setMappingConstraints(context, armEntity);
 		armEntity.setName(null, "boundary");
 	}
 
@@ -127,7 +125,7 @@ public class CxShape_element_boundary_relationship extends CShape_element_bounda
 	 */
 	public static void unsetMappingConstraints(SdaiContext context,
 			EShape_element_boundary_relationship armEntity) throws SdaiException {
-		CxShape_element_relationship.unsetMappingConstraints(context, armEntity);
+//		CxShape_element_relationship.unsetMappingConstraints(context, armEntity);
 		armEntity.unsetName(null);
 	}
 	

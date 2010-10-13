@@ -32,7 +32,6 @@ package jsdai.SAssembly_module_with_macro_component_xim;
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
 import jsdai.SAssembly_module_with_macro_component_mim.CAssembly_module_macro_component_join_terminal;
-import jsdai.SAssembly_module_with_subassembly_xim.CxAssembly_module_component_terminal;
 import jsdai.SComponent_feature_xim.*;
 import jsdai.SPhysical_component_feature_xim.CxPhysical_component_terminal_armx;
 import jsdai.SProduct_property_definition_schema.EShape_aspect;

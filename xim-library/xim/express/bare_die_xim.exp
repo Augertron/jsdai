@@ -58,17 +58,17 @@ USE FROM Feature_and_connection_zone_mim;
       maximum_material_condition_centroid_location : OPTIONAL Cartesian_point;
       implemented_function                         : Functional_unit_usage_view;
     INVERSE
-      access_mechanisms : SET[2:?] OF minimally_defined_bare_die_terminal_armx FOR containing_shape(* TEMP-AD! *);
+      access_mechanisms : SET[2:?] OF minimally_defined_bare_die_terminal_armx FOR of_shape(* TEMP-AD! *);
       die_seating_plane : non_feature_shape_element FOR scope;
     UNIQUE
       UR1 : implemented_function;
     WHERE
       WR1 : SIZEOF(QUERY(pf <* USEDIN(SELF,
- 'SHAPE_PROPERTY_ASSIGNMENT_XIM.Shape_element.containing_shape') | ('BARE_DIE_XIM.' + 'BARE_DIE_TOP_SURFACE_ARMX' IN TYPEOF(pf)))) <= 1;
+ 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.SHAPE_ASPECT.OF_SHAPE') | ('BARE_DIE_XIM.' + 'BARE_DIE_TOP_SURFACE_ARMX' IN TYPEOF(pf)))) <= 1;
       WR2 : SIZEOF(QUERY(pf <* USEDIN(SELF,
- 'SHAPE_PROPERTY_ASSIGNMENT_XIM.Shape_element.containing_shape') | ('BARE_DIE_XIM.' + 'BARE_DIE_BOTTOM_SURFACE_ARMX' IN TYPEOF(pf)))) <= 1;
+ 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.SHAPE_ASPECT.OF_SHAPE') | ('BARE_DIE_XIM.' + 'BARE_DIE_BOTTOM_SURFACE_ARMX' IN TYPEOF(pf)))) <= 1;
       WR3 : SIZEOF(QUERY(pf <* USEDIN(SELF,
- 'SHAPE_PROPERTY_ASSIGNMENT_XIM.Shape_element.containing_shape') | ('BARE_DIE_XIM.' + 'BARE_DIE_EDGE_SURFACE_ARMX' IN TYPEOF(pf)))) <= 1;
+ 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.SHAPE_ASPECT.OF_SHAPE') | ('BARE_DIE_XIM.' + 'BARE_DIE_EDGE_SURFACE_ARMX' IN TYPEOF(pf)))) <= 1;
       WR4 : 'NON_FEATURE_SHAPE_ELEMENT_XIM.SEATING_PLANE_ARMX' IN TYPEOF(die_seating_plane);
   END_ENTITY;
 
@@ -83,7 +83,7 @@ USE FROM Feature_and_connection_zone_mim;
       SELF\shape_aspect_relationship.related_shape_aspect RENAMED end_vertex 		: Edge_segment_vertex_armx;
     WHERE
       WR1 : start_vertex :<>: end_vertex;
-      WR2 : SELF\Shape_element.containing_shape :=: composed_surface\Shape_element.containing_shape;
+      WR2 : SELF\shape_aspect.of_shape :=: composed_surface\shape_aspect.of_shape;
   END_ENTITY;
 
   ENTITY Bare_die_edge_surface_armx
@@ -96,7 +96,7 @@ USE FROM Feature_and_connection_zone_mim;
  Bare_die_edge_segment_surface_armx,
  Bare_die_edge_surface_armx))
     (* CONNOTATIONAL *) SUBTYPE OF (Part_mounting_feature_armx, bare_die_surface);
-			SELF\Shape_element.containing_shape(* TEMP-PF! *) : Bare_die_armx;    
+			SELF\shape_aspect.of_shape(* TEMP-PF! *) : Bare_die_armx;    
   END_ENTITY;
 
   ENTITY Bare_die_terminal_armx
@@ -116,8 +116,8 @@ USE FROM Feature_and_connection_zone_mim;
 
   ENTITY Bare_die_terminal_surface_constituent_relationship
     (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_constituent_relationship);
-      SELF\Shape_element_relationship.relating : Bare_die_surface_armx;
-      SELF\Shape_element_relationship.related  : Bare_die_terminal_armx;
+      SELF\shape_aspect_relationship.relating_shape_aspect : Bare_die_surface_armx;
+      SELF\shape_aspect_relationship.related_shape_aspect : Bare_die_terminal_armx;
   END_ENTITY;
 
   ENTITY Bare_die_top_surface_armx
@@ -152,7 +152,7 @@ USE FROM Feature_and_connection_zone_mim;
     SUPERTYPE OF (Guided_wave_bare_die_terminal ANDOR
  Bare_die_terminal_armx)
     (* CONNOTATIONAL *) SUBTYPE OF (Part_terminal, minimally_defined_bare_die_terminal);
-      SELF\Shape_element.containing_shape(* TEMP-PF! *) : Bare_die_armx;
+      SELF\shape_aspect.of_shape(* TEMP-PF! *) : Bare_die_armx;
   END_ENTITY;
 
 END_SCHEMA;

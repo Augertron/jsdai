@@ -350,10 +350,8 @@ public class CxExternal_source_identification extends CExternal_source_identific
 
 	public static void unsetDescription(SdaiContext context, EExternal_source_identification armEntity) throws SdaiException
 	{
-		boolean test = false;
 		if(armEntity instanceof CxExternal_source_identification){
 			CxExternal_source_identification esi = (CxExternal_source_identification)armEntity;
-			test = esi.testRole2(null);
 			EIdentification_role eir = esi.getRole2(null);
 			if(eir != null){
 				eir.unsetDescription(null);

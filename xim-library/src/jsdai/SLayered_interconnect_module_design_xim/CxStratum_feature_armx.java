@@ -37,7 +37,6 @@ import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_property_representation_schema.*;
 import jsdai.SQualified_measure_schema.*;
 import jsdai.SRepresentation_schema.*;
-import jsdai.SShape_property_assignment_xim.CxShape_element;
 
 public class CxStratum_feature_armx extends CStratum_feature_armx implements EMappedXIMEntity{
 
@@ -109,7 +108,7 @@ public class CxStratum_feature_armx extends CStratum_feature_armx implements EMa
 			EStratum_feature_armx armEntity) throws SdaiException {
 		unsetMappingConstraints(context, armEntity);
 
-		CxShape_element.setMappingConstraints(context, armEntity);
+//		CxShape_element.setMappingConstraints(context, armEntity);
 	}
 
 	/**
@@ -121,7 +120,7 @@ public class CxStratum_feature_armx extends CStratum_feature_armx implements EMa
 	 */
 	public static void unsetMappingConstraints(SdaiContext context,
 			EStratum_feature_armx armEntity) throws SdaiException {
-		CxShape_element.unsetMappingConstraints(context, armEntity);
+//		CxShape_element.unsetMappingConstraints(context, armEntity);
 	}
 
 	//********** "stratum_feature" attributes
@@ -252,7 +251,7 @@ public class CxStratum_feature_armx extends CStratum_feature_armx implements EMa
 
 			EProperty_definition_representation property_definition_representation = null;
 			jsdai.SRepresentation_schema.ERepresentation representation = null;
-			boolean found = false;
+//			boolean found = false;
 			for (int j = 1; j <= aPdr.getMemberCount(); j++) {
 				property_definition_representation = aPdr.getByIndex(j);
 				if (property_definition_representation.testUsed_representation(null)) {

@@ -38,7 +38,6 @@ import jsdai.SPart_template_xim.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.*;
 
 public class CxGeneric_footprint_definition_armx extends CGeneric_footprint_definition_armx implements EMappedXIMEntity
 {
@@ -123,7 +122,7 @@ public class CxGeneric_footprint_definition_armx extends CGeneric_footprint_defi
 		//********** "managed_design_object" attributes
 
 		//********** "item_shape" attributes
-		setId_x(context, this);
+//		setId_x(context, this);
 
 		// Clean ARM specific attributes
 		
@@ -141,7 +140,7 @@ public class CxGeneric_footprint_definition_armx extends CGeneric_footprint_defi
 		setLocation(context, this);
 
 		// Clean ARM specific attributes
-		unsetId_x(null);
+//		unsetId_x(null);
 		unsetAdditional_characterization(null);
 		unsetAdditional_contexts(null);
 		unsetPhysical_characteristic(null);
@@ -158,7 +157,7 @@ public class CxGeneric_footprint_definition_armx extends CGeneric_footprint_defi
 		//********** "managed_design_object" attributes
 
 		//********** "item_shape" attributes
-		unsetId_x(context, this);
+//		unsetId_x(context, this);
 
 		//	********** "product_view_definition" attributes
 		//id - goes directly into AIM
@@ -225,10 +224,11 @@ public class CxGeneric_footprint_definition_armx extends CGeneric_footprint_defi
      * @param armEntity arm entity.
      * @throws SdaiException
      */
+/* Removed from XIM - see bug #3610	
     public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
        CxItem_shape.setId_x(context, armEntity);
     }
-
+*/
   /**
    * Unsets/deletes data for Id_x attribute.
    *
@@ -236,10 +236,11 @@ public class CxGeneric_footprint_definition_armx extends CGeneric_footprint_defi
    * @param armEntity arm entity.
    * @throws SdaiException
    */
+/* Removed from XIM - see bug #3610	
     public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
       CxItem_shape.unsetId_x(context, armEntity);
    }
-
+*/
  	//********** "product_view_definition" attributes
     /**
      * Sets/creates data for name_x attribute.

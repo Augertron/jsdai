@@ -120,7 +120,7 @@ stratum
 end_attribute_mapping;
 
 end_entity_mapping;
-
+(*
 entity_mapping Stratum_feature_3d_shape_model(Stratum_feature_3d_shape_model, shape_representation);
 
 mapping_constraints;
@@ -149,7 +149,7 @@ stratum_feature
 end_attribute_mapping;
 
 end_entity_mapping;
-
+*)
 entity_mapping Stratum_interconnect_module_3d_position(Stratum_interconnect_module_3d_position, mapped_item);
 
 mapping_constraints;
@@ -243,4 +243,25 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
+entity_mapping Stratum_feature_usage(Stratum_feature_usage, geometric_item_specific_usage)
+extended;
+
+attribute_mapping identified_item(identified_item, $PATH, solid_model);
+		geometric_item_specific_usage <= 
+		item_identified_representation_usage
+		item_identified_representation_usage.identified_item ->
+		representation_item =>
+		geometric_representation_item =>
+		solid_model
+end_attribute_mapping;
+
+attribute_mapping used_representation(used_representation, $PATH, Stratum_3d_shape_model);
+		geometric_item_specific_usage <= 
+		item_identified_representation_usage
+		item_identified_representation_usage.used_representation ->
+		representation =>
+		shape_representation
+end_attribute_mapping;
+
+end_entity_mapping;
 (*end_schema_mapping;*)

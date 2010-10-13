@@ -31,11 +31,9 @@ package jsdai.SMixed_complex_types;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.SExtended_measure_representation_xim.CxValue_limit;
 import jsdai.SExtended_measure_representation_xim.CxValue_with_tolerances;
 import jsdai.SExtended_measure_representation_xim.EValue_with_tolerances;
 import jsdai.SQualified_measure_schema.AValue_qualifier;
-import jsdai.SQualified_measure_schema.CMeasure_representation_item$qualified_representation_item;
 import jsdai.SQualified_measure_schema.EQualified_representation_item;
 
 public class CxResistance_measure_with_unit$value_with_tolerances extends CResistance_measure_with_unit$value_with_tolerances implements EMappedXIMEntity{

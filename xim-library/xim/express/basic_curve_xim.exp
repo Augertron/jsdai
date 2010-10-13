@@ -57,15 +57,10 @@ SCHEMA Basic_curve_xim;
 	ENTITY Measurement_path
      (* CONNOTATIONAL *) SUBTYPE OF (Representation);	
 	   SELF\representation.context_of_items RENAMED defined_in : Geometric_representation_context;
-	   DERIVE
-	   (* Need to fix this attribute *)
-	     defined_by : Curve := QUERY ( c <* SELF\Representation.items |
-       'GEOMETRY_SCHEMA.' +
-       'CURVE' IN
-       TYPEOF (c));
-
+	   defined_by : curve;
+	 DERIVE
        SELF\representation.items : SET [1:?] OF representation_item := ?;
-       SELF\representation.name : label := ?;
+       SELF\representation.name : label := 'measuring direction';
 	END_ENTITY;
 	
 	

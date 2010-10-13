@@ -31,10 +31,29 @@ package jsdai.SShape_composition_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
+import jsdai.SProduct_property_definition_schema.EShape_aspect_relationship;
 import jsdai.SShape_composition_xim.CxShape_element_constituent_relationship;
 import jsdai.SShape_dimension_schema.CDimensional_location;
 
 public class CxShape_element_locating_relationship extends CShape_element_locating_relationship implements EMappedXIMEntity{
+
+	// Taken from Shape_aspect_relationship
+	/// methods for attribute: name, base type: STRING
+/*	public boolean testName(EShape_aspect_relationship type) throws SdaiException {
+		return test_string(a0);
+	}
+	public String getName(EShape_aspect_relationship type) throws SdaiException {
+		return get_string(a0);
+	}*/
+	public void setName(EShape_aspect_relationship type, String value) throws SdaiException {
+		a0 = set_string(value);
+	}
+	public void unsetName(EShape_aspect_relationship type) throws SdaiException {
+		a0 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EShape_aspect_relationship type) throws SdaiException {
+		return a0$;
+	}
 
 	EEntity getAimInstance(){
 		return this;

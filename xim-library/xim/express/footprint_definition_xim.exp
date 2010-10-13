@@ -169,7 +169,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
       (SELF\Template_location_in_structured_template.assembly,
       'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.TEMPLATE_LOCATION_IN_STRUCTURED_TEMPLATE.ASSEMBLY')); 
       SELF\Template_location_in_structured_template.reference_designation :
-        STRING := reference_feature\Shape_element.element_name;      
+        STRING := reference_feature\shape_aspect.name;      
     WHERE
       WR1: SIZEOF(QUERY( arf <* all_reference_feature | NOT(reference_feature.associated_definition :=: arf.associated_definition))) = 0;
   END_ENTITY;
@@ -257,11 +257,11 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
   FUNCTION fd_get_amodel (input : Product_view_definition) : SET OF shape_representation;
     LOCAL
       gm : SET OF shape_representation := [];
-      is : SET OF Item_shape := [];
+      is : SET OF product_definition_shape := [];
       sda : SET OF Shape_description_association := [];      
     END_LOCAL;
     
-    is := bag_to_set(USEDIN(input,'SHAPE_PROPERTY_ASSIGNMENT_XIM.ITEM_SHAPE.DESCRIBED_ELEMENT'));
+    is := bag_to_set(USEDIN(input,'PRODUCT_PROPERTY_DEFINITION_SCHEMA.PROPERTY_DEFINITION.DEFINITION'));
 
     IF (SIZEOF(is) >= 0) THEN
       REPEAT i := 1 TO HIINDEX(is);

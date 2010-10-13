@@ -35,9 +35,9 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
 USE FROM Shape_feature_mim;
 
   TYPE sf_property_assignment_select = SELECT BASED_ON property_assignment_select WITH 
-    (Shape_element, 
+    (shape_aspect, 
      characterized_object,
-     Item_shape);
+     product_definition_shape);
   END_TYPE; 
 
 ENTITY Shape_feature_definition_armx -- see AP214 for mapping
@@ -47,14 +47,14 @@ ENTITY Shape_feature_definition_armx -- see AP214 for mapping
     DERIVE
       feature_model : SET [1:?] OF shape_representation := get_geometric_model(of_shape); 
     INVERSE
-      of_shape : Item_shape FOR definition;
+      of_shape : property_definition FOR definition;
     WHERE
       WR1: EXISTS(feature_model);
 END_ENTITY;
 
 ENTITY Shape_feature_occurrence  -- see AP214 for mapping
   ABSTRACT SUPERTYPE OF (ONEOF (Instanced_feature_armx, Placed_feature_armx))
-  SUBTYPE OF (Shape_element);
+  SUBTYPE OF (shape_aspect);
 END_ENTITY;
 
 ENTITY Instanced_feature_armx  -- see AP214 for mapping
@@ -66,7 +66,7 @@ ENTITY Placed_feature_armx  -- see AP214 for mapping
    definition : Shape_feature_definition_armx;
 END_ENTITY;
 
- FUNCTION get_geometric_model(input : Item_shape) : SET OF Shape_representation;
+ FUNCTION get_geometric_model(input : product_definition_shape) : SET OF Shape_representation;
  LOCAL
   sda : SET OF Shape_description_association := [];
   gm : SET OF Shape_representation := [];

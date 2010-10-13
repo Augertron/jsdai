@@ -29,21 +29,22 @@ package jsdai.SMixed_complex_types;
 * $$
 */
 
-import jsdai.lang.*;
-import jsdai.libutil.*;
 import jsdai.SFootprint_definition_xim.CxBreakout_footprint_definition_armx;
-import jsdai.SFootprint_definition_xim.CxFootprint_definition_armx;
 import jsdai.SFootprint_definition_xim.EBreakout_footprint_definition_armx;
-import jsdai.SFootprint_definition_xim.EFootprint_definition_armx;
 import jsdai.SLayered_interconnect_complex_template_xim.CxMulti_stratum_structured_template_armx;
 import jsdai.SLayered_interconnect_complex_template_xim.CxStratum_stack_dependent_template_armx;
 import jsdai.SLayered_interconnect_complex_template_xim.EMulti_stratum_structured_template_armx;
 import jsdai.SLayered_interconnect_complex_template_xim.EStratum_stack_dependent_template_armx;
-import jsdai.SPart_template_xim.*;
-import jsdai.SProduct_definition_schema.*;
-import jsdai.SProduct_property_definition_schema.*;
-import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.*;
+import jsdai.SPart_template_xim.CxTemplate_definition;
+import jsdai.SPart_template_xim.ETemplate_definition;
+import jsdai.SProduct_definition_schema.EProduct_definition;
+import jsdai.SProduct_property_definition_schema.EProperty_definition;
+import jsdai.SProduct_view_definition_xim.CxProduct_view_definition;
+import jsdai.SProduct_view_definition_xim.EProduct_view_definition;
+import jsdai.lang.EEntity;
+import jsdai.lang.SdaiContext;
+import jsdai.lang.SdaiException;
+import jsdai.libutil.EMappedXIMEntity;
 
 public class CxBreakout_footprint_definition_armx$stratum_stack_dependent_template_armx extends CBreakout_footprint_definition_armx$stratum_stack_dependent_template_armx implements EMappedXIMEntity
 {
@@ -53,62 +54,62 @@ public class CxBreakout_footprint_definition_armx$stratum_stack_dependent_templa
 	// Taken from Physical_unit - Property_definition
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
-		return test_string(a9);
+		return test_string(a8);
 	}
 	public String getName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
-		return get_string(a9);
+		return get_string(a8);
 	}*/
 	public void setName(jsdai.SProduct_property_definition_schema.EProperty_definition type, String value) throws SdaiException {
-		a9 = set_string(value);
+		a8 = set_string(value);
 	}
 	public void unsetName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
-		a9 = unset_string();
+		a8 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
-		return a9$;
+		return a8$;
 	}
 	// ENDOF Taken from Physical_unit - Property_definition
 
 	// Product_view_definition
 	// From property_definition
 /*	public boolean testDefinition(EProperty_definition type) throws SdaiException {
-		return test_instance(a11);
+		return test_instance(a10);
 	}
 
 	public EEntity getDefinition(EProperty_definition type) throws SdaiException { // case 1
-		a11 = get_instance_select(a11);
-		return (EEntity)a11;
+		a10 = get_instance_select(a10);
+		return (EEntity)a10;
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a11 = set_instanceX(a11, value);
+		a10 = set_instanceX(a10, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
-		a11 = unset_instance(a11);
+		a10 = unset_instance(a10);
 	}
 
 	public static jsdai.dictionary.EAttribute attributeDefinition(EProperty_definition type) throws SdaiException {
-		return a11$;
+		return a10$;
 	}
 	
 	// END OF Property_definition
 
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(EProduct_definition type) throws SdaiException {
-		return test_string(a4);
+		return test_string(a3);
 	}
 	public String getDescription(EProduct_definition type) throws SdaiException {
-		return get_string(a4);
+		return get_string(a3);
 	}*/
 	public void setDescription(EProduct_definition type, String value) throws SdaiException {
-		a4 = set_string(value);
+		a3 = set_string(value);
 	}
 	public void unsetDescription(EProduct_definition type) throws SdaiException {
-		a4 = unset_string();
+		a3 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(EProduct_definition type) throws SdaiException {
-		return a4$;
+		return a3$;
 	}
 
 	// methods for derived attribute: name, base type: STRING
@@ -144,7 +145,7 @@ public class CxBreakout_footprint_definition_armx$stratum_stack_dependent_templa
 		//********** "managed_design_object" attributes
 
 		//********** "item_shape" attributes
-		setId_x(context, this);
+//		setId_x(context, this);
 
 		// Clean ARM specific attributes
 		
@@ -166,7 +167,7 @@ public class CxBreakout_footprint_definition_armx$stratum_stack_dependent_templa
 		setLocation(context, this);
 		
 		// Clean ARM specific attributes
-		unsetId_x(null);
+//		unsetId_x(null);
 		unsetAdditional_characterization(null);
 		unsetAdditional_contexts(null);
 		unsetPhysical_characteristic(null);
@@ -185,7 +186,7 @@ public class CxBreakout_footprint_definition_armx$stratum_stack_dependent_templa
 		//********** "managed_design_object" attributes
 
 		//********** "item_shape" attributes
-		unsetId_x(context, this);
+//		unsetId_x(context, this);
 
 		//	********** "product_view_definition" attributes
 		//id - goes directly into AIM
@@ -259,10 +260,11 @@ public class CxBreakout_footprint_definition_armx$stratum_stack_dependent_templa
      * @param armEntity arm entity.
      * @throws SdaiException
      */
+	/* Removed from XIM - see bug #3610
     public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
        CxItem_shape.setId_x(context, armEntity);
     }
-
+*/
   /**
    * Unsets/deletes data for Id_x attribute.
    *
@@ -270,10 +272,11 @@ public class CxBreakout_footprint_definition_armx$stratum_stack_dependent_templa
    * @param armEntity arm entity.
    * @throws SdaiException
    */
+	/* Removed from XIM - see bug #3610
     public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
       CxItem_shape.unsetId_x(context, armEntity);
    }
-
+*/
  	//********** "product_view_definition" attributes
     /**
      * Sets/creates data for name_x attribute.

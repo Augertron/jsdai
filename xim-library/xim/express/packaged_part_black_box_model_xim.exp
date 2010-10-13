@@ -65,7 +65,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
 		                                          'PART_EXTERNAL_REFERENCE_XIM.PACKAGE_EXTERNAL_REFERENCE'] * TYPEOF(up)) = 0)
 		                                          );
     INVERSE
-      access_mechanisms : SET[0:?] OF packaged_part_terminal_armx FOR containing_shape(* TEMP-AD! *);
+      access_mechanisms : SET[0:?] OF packaged_part_terminal_armx FOR of_shape(* TEMP-AD! *);
     WHERE
       WR1 : NOT (EXISTS(implemented_function) XOR (SIZEOF(access_mechanisms) > 0));
       WR2 : SIZEOF(base_package) = 1;
@@ -80,7 +80,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
   	ABSTRACT SUPERTYPE
     (* CONNOTATIONAL *) SUBTYPE OF (Part_terminal, packaged_part_terminal);
       terminal_of_package                     : SET[1:?] OF Package_terminal_armx;
-      SELF\Shape_element.containing_shape(* TEMP-PF! *) : Packaged_part_armx;
+      SELF\shape_aspect.of_shape(* TEMP-PF! *) : Packaged_part_armx;
     WHERE
       WR1 : disjoint_package_terminals(terminal_of_package);      
       WR2 : NOT EXISTS(SELF\Part_feature.precedent_feature);

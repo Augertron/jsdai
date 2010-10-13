@@ -37,12 +37,13 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
 
   ENTITY Shape_feature
   	ABSTRACT SUPERTYPE
-       (* CONNOTATIONAL *) SUBTYPE OF (Shape_element);
+       (* CONNOTATIONAL *) SUBTYPE OF (shape_aspect);
    		connection_area : OPTIONAL SET[1:?] OF Connection_zone;
     DERIVE
-      surface_conditions : SET OF Surface_condition := facz_get_sc(SELF);			         
+      surface_conditions : SET OF Surface_condition := facz_get_sc(SELF);
+      SELF\shape_aspect.product_definitional : LOGICAL := TRUE;			         
     UNIQUE
-      UR1 : SELF\Shape_aspect.name, SELF\Shape_element.containing_shape;
+      UR1 : SELF\Shape_aspect.name, SELF\shape_aspect.of_shape;
   END_ENTITY;
 
   ENTITY Connection_zone
@@ -50,7 +51,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
   	(* CONNOTATIONAL *) SUBTYPE OF (Shape_feature_occurrence);
   	DERIVE
       surface_conditions : SET OF Surface_condition := 
-	       bag_to_set(USEDIN(SELF\Shape_element, 'SURFACE_CONDITIONS_XIM.SURFACE_CONDITION_ASSOCIATION.DESCRIBED_ELEMENT'));  	
+	       bag_to_set(USEDIN(SELF\shape_aspect, 'SURFACE_CONDITIONS_XIM.SURFACE_CONDITION_ASSOCIATION.DESCRIBED_ELEMENT'));  	
   	  SELF\shape_aspect.description : text := 'connection zone';
     WHERE
       WR1 : SIZEOF(USEDIN(SELF, '')) > 0;

@@ -38,40 +38,40 @@ USE FROM Component_feature_mim;
 
   ENTITY Component_feature_armx
     ABSTRACT SUPERTYPE
-    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element, component_feature);
+    (* CONNOTATIONAL *) SUBTYPE OF (shape_aspect, component_feature);
       definition           : OPTIONAL feature_select;
-      SELF\Shape_element.containing_shape RENAMED associated_component : Assembly_component_armx;
+      SELF\shape_aspect.of_shape RENAMED associated_component : Assembly_component_armx;
     UNIQUE
       UR1 : definition, associated_component;
-      UR2 : SELF\Shape_element.element_name, associated_component;
+      UR2 : SELF\shape_aspect.name, associated_component;
   END_ENTITY;
 
   ENTITY Component_feature_joint_armx
      ABSTRACT SUPERTYPE
-  SUBTYPE OF (Component_feature_relationship_armx, Shape_element);
-    SELF\Shape_element_relationship.relating RENAMED feature_1 : Component_feature_armx;
-    SELF\Shape_element_relationship.related RENAMED feature_2 : Component_feature_armx;
-    SELF\Shape_element.containing_shape RENAMED associated_definition : Item_shape;
+  SUBTYPE OF (Component_feature_relationship_armx, shape_aspect);
+    SELF\shape_aspect_relationship.relating_shape_aspect RENAMED feature_1 : Component_feature_armx;
+    SELF\shape_aspect_relationship.related_shape_aspect RENAMED feature_2  : Component_feature_armx;
+    SELF\shape_aspect.of_shape RENAMED associated_definition : product_definition_shape;
     WHERE
       WR1 : feature_1 <> feature_2;
       WR2 : 'PRODUCT_VIEW_DEFINITION_XIM.PRODUCT_VIEW_DEFINITION' in TYPEOF(associated_definition);
-      WR3 : SELF\Shape_element.containing_shape\Item_shape.described_element = feature_1\Shape_element.containing_shape\Item_shape.described_element;      
+      WR3 : SELF\shape_aspect.of_shape\property_definition.definition = feature_1\shape_aspect.of_shape\property_definition.definition;      
   END_ENTITY;
 
 	-- Possible problem - supertype is of component_feature_relationship type, but Component_feature_make_from_relationship is only make_from_feature_relationship.
   ENTITY Component_feature_make_from_relationship
 		(* CONNOTATIONAL *) SUBTYPE OF (Component_feature_relationship_armx, make_from_feature_relationship);
-      SELF\Shape_element_relationship.relating RENAMED reusable_feature	: Component_feature_armx;
-      SELF\Shape_element_relationship.related RENAMED resultant_feature	: Component_feature_armx;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED reusable_feature	: Component_feature_armx;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED resultant_feature	: Component_feature_armx;
   END_ENTITY;
 
 	-- SEDS
   ENTITY Component_feature_relationship_armx
     SUPERTYPE OF (ONEOF(Component_feature_joint_armx,
       Component_feature_make_from_relationship))
-  	(* CONNOTATIONAL *) SUBTYPE OF (Shape_element_relationship, component_feature_relationship);
-      SELF\Shape_element_relationship.relating : Component_feature_armx;  	
-      SELF\Shape_element_relationship.related  : Component_feature_armx;
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship, component_feature_relationship);
+      SELF\shape_aspect_relationship.relating_shape_aspect : Component_feature_armx;  	
+      SELF\shape_aspect_relationship.related_shape_aspect  : Component_feature_armx;
   END_ENTITY;
 
   ENTITY Component_feature_to_physical_usage_view_assignment

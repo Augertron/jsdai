@@ -60,19 +60,19 @@ public class CxDocumentation_layer_technology extends CDocumentation_layer_techn
 	// Taken from Characterized_object
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(ECharacterized_object type) throws SdaiException {
-		return test_string(a5);
+		return test_string(a4);
 	}
 	public String getDescription(ECharacterized_object type) throws SdaiException {
-		return get_string(a5);
+		return get_string(a4);
 	}*/
 	public void setDescription(ECharacterized_object type, String value) throws SdaiException {
-		a5 = set_string(value);
+		a4 = set_string(value);
 	}
 	public void unsetDescription(ECharacterized_object type) throws SdaiException {
-		a5 = unset_string();
+		a4 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(ECharacterized_object type) throws SdaiException {
-		return a5$;
+		return a4$;
 	}
 	// ENDOF Taken from Characterized_object	
 

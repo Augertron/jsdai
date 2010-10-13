@@ -73,7 +73,7 @@ USE FROM Physical_unit_usage_view_mim;
      WR1: SIZEOF(get_derived_shape_element(SELF\product_definition_relationship.related_product_definition)) > 0;
      WR2: SIZEOF(QUERY(gdrse <* get_derived_shape_element(SELF\product_definition_relationship.related_product_definition) |
              (SIZEOF(QUERY(se <* gdrse.derived_from |
-              SELF\product_definition_relationship.relating_product_definition <> se.containing_shape.described_element
+              SELF\product_definition_relationship.relating_product_definition <> se.of_shape.definition
               )) = 0)
              )) = SIZEOF(get_derived_shape_element(SELF\product_definition_relationship.related_product_definition));
   END_ENTITY;
@@ -81,8 +81,8 @@ USE FROM Physical_unit_usage_view_mim;
   ENTITY Connection_zone_in_usage_view
   	(* CONNOTATIONAL *) SUBTYPE OF (Connection_zone);
   	DERIVE
-  		associated_definition : Part_usage_view := containing_shape.described_element;
-  		SELF\Shape_element.element_name : STRING := '';
+  		associated_definition : Part_usage_view := of_shape.definition;
+  		SELF\shape_aspect.name : STRING := '';
   END_ENTITY; 
 
   ENTITY Connection_zone_map_identification_armx
@@ -104,7 +104,7 @@ USE FROM Physical_unit_usage_view_mim;
 
   ENTITY Part_feature
     (* CONNOTATIONAL *) SUBTYPE OF (Shape_feature);
-      SELF\Shape_element.containing_shape RENAMED associated_definition : Part_usage_view;
+      SELF\shape_aspect.of_shape RENAMED associated_definition : Part_usage_view;
       material_state_change   : OPTIONAL material_state_change_enumeration;
       precedent_feature       : OPTIONAL Part_feature;
     DERIVE
@@ -121,10 +121,10 @@ USE FROM Physical_unit_usage_view_mim;
   END_ENTITY;
 
   ENTITY Part_feature_make_from_relationship
-  	(* CONNOTATIONAL *) SUBTYPE OF (Shape_element_relationship, make_from_part_feature_relationship);
+  	(* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship, make_from_part_feature_relationship);
       associated_make_from : Product_definition_relationship;
-      SELF\Shape_element_relationship.relating RENAMED reusable_feature	: Part_feature;
-      SELF\Shape_element_relationship.related RENAMED resultant_feature	: Part_feature;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED reusable_feature	: Part_feature;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED resultant_feature	: Part_feature;
     UNIQUE
       UR1 : reusable_feature,
  resultant_feature;
@@ -161,7 +161,7 @@ USE FROM Physical_unit_usage_view_mim;
        'SHAPE_PROPERTY_ASSIGNMENT_XIM.SHAPE_DESCRIPTION_ASSOCIATION.REPRESENTATION'))=0) OR
        (SIZEOF(QUERY(sda <* USEDIN(SELF,
        'SHAPE_PROPERTY_ASSIGNMENT_XIM.SHAPE_DESCRIPTION_ASSOCIATION.REPRESENTATION') | 
-       NOT (('SHAPE_PROPERTY_ASSIGNMENT_XIM.' +'ITEM_SHAPE' IN
+       NOT (('PRODUCT_PROPERTY_DEFINITION_SCHEMA.' +'PRODUCT_DEFINITION_SHAPE' IN
        TYPEOF(sda.represented_characteristic)) AND 
        ('PHYSICAL_UNIT_USAGE_VIEW_XIM.' +'PART_FEATURE_TEMPLATE_DEFINITION' IN
        TYPEOF(sda.represented_characteristic.described_element)))
@@ -170,9 +170,10 @@ USE FROM Physical_unit_usage_view_mim;
   END_ENTITY;
 
   ENTITY Part_usage_view
-    (* CONNOTATIONAL *) SUBTYPE OF (Part_view_definition, Item_shape, physical_unit);
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_view_definition, product_definition_shape, physical_unit);
     DERIVE
-    	SELF\Item_shape.described_element : shapeable_item := SELF;
+      SELF\property_definition.name : label := ?;
+      SELF\property_definition.definition : shapeable_item := SELF;
   END_ENTITY;
 
   ENTITY Usage_view_connection_zone_terminal_shape_relationship_armx
@@ -226,11 +227,11 @@ RULE unique_assembly_component_usage FOR (assembly_component_usage);
 
 FUNCTION get_derived_shape_element( input : Part_view_definition) : SET OF Derived_shape_element;
 LOCAL
- is : SET OF Item_shape := bag_to_set(USEDIN(input, 'SHAPE_PROPERTY_ASSIGNMENT_XIM.ITEM_SHAPE.DESCRIBED_ELEMENT'));
- se : SET OF Shape_element := [];
+ is : SET OF product_definition_shape := bag_to_set(USEDIN(input, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.PROPERTY_DEFINITION.DEFINITION'));
+ se : SET OF shape_aspect := [];
 END_LOCAL; 
 REPEAT i := 1 to SIZEOF(is) by 1;
-   se  := se + bag_to_set(USEDIN(is[i], 'SHAPE_PROPERTY_ASSIGNMENT_XIM.SHAPE_ELEMENT.CONTAINING_SHAPE'));
+   se  := se + bag_to_set(USEDIN(is[i], 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.SHAPE_ASPECT.OF_SHAPE'));
 END_REPEAT;  
 
 RETURN(QUERY(dse <* se | 'DERIVED_SHAPE_ELEMENT_XIM.DERIVED_SHAPE_ELEMENT' IN TYPEOF(se)));

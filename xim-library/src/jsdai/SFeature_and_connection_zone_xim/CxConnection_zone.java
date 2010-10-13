@@ -33,7 +33,6 @@ import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_definition_schema.*;
-import jsdai.SShape_property_assignment_xim.CxShape_element;
 
 public class CxConnection_zone extends CConnection_zone implements EMappedXIMEntity
 {
@@ -114,7 +113,8 @@ public class CxConnection_zone extends CConnection_zone implements EMappedXIMEnt
 	*/
 	public static void setMappingConstraints(SdaiContext context, EConnection_zone armEntity) throws SdaiException
 	{
-		CxShape_element.setMappingConstraints(context, armEntity);
+//		CxShape_element.setMappingConstraints(context, armEntity);
+		
 		jsdai.SProduct_property_definition_schema.EShape_aspect aimEntity = armEntity;
 		aimEntity.setDescription(null, "connection zone");
 		// The only way see to set "of_shape" attribute
@@ -147,7 +147,8 @@ public class CxConnection_zone extends CConnection_zone implements EMappedXIMEnt
 
 	public static void unsetMappingConstraints(SdaiContext context, EConnection_zone armEntity) throws SdaiException
 	{
-		CxShape_element.unsetMappingConstraints(context, armEntity);
+//		CxShape_element.unsetMappingConstraints(context, armEntity);
+		
 		jsdai.SProduct_property_definition_schema.EShape_aspect aimEntity = armEntity;
 		aimEntity.unsetDescription(null);
 	}

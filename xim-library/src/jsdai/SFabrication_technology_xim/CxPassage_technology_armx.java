@@ -37,7 +37,6 @@ import jsdai.SFabrication_technology_mim.CPassage_technology;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_property_representation_schema.*;
 import jsdai.SRepresentation_schema.*;
-import jsdai.SShape_property_assignment_xim.CxItem_shape;
 
 public class CxPassage_technology_armx extends CPassage_technology_armx implements EMappedXIMEntity
 {
@@ -66,19 +65,19 @@ public class CxPassage_technology_armx extends CPassage_technology_armx implemen
 	// FROM Characterized_object
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(ECharacterized_object type) throws SdaiException {
-		return test_string(a5);
+		return test_string(a4);
 	}
 	public String getDescription(ECharacterized_object type) throws SdaiException {
-		return get_string(a5);
+		return get_string(a4);
 	}*/
 	public void setDescription(ECharacterized_object type, String value) throws SdaiException {
-		a5 = set_string(value);
+		a4 = set_string(value);
 	}
 	public void unsetDescription(ECharacterized_object type) throws SdaiException {
-		a5 = unset_string();
+		a4 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(ECharacterized_object type) throws SdaiException {
-		return a5$;
+		return a4$;
 	}
 	// ENDOF FROM Characterized_object	
 
@@ -233,12 +232,12 @@ public class CxPassage_technology_armx extends CPassage_technology_armx implemen
 	public static void setMappingConstraints(SdaiContext context, EPassage_technology_armx armEntity) throws SdaiException
 	{
 		unsetMappingConstraints(context, armEntity);
-		CxItem_shape.setMappingConstraints(context, armEntity);
+//		CxItem_shape.setMappingConstraints(context, armEntity);
 	}
 
 	public static void unsetMappingConstraints(SdaiContext context, EPassage_technology_armx armEntity) throws SdaiException
 	{
-		CxItem_shape.unsetMappingConstraints(context, armEntity);
+//		CxItem_shape.unsetMappingConstraints(context, armEntity);
 	}
 
    //********** "passage_technology" attributes

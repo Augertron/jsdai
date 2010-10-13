@@ -60,53 +60,53 @@ public class CxLand_with_join_terminal_xim$plated_passage_dependent_land_armx$st
 
 	// From CShape_aspect.java
 	/*	public boolean testOf_shape(EShape_aspect type) throws SdaiException {
-	return test_string(a24);
+	return test_string(a23);
 	}
 	public Object getOf_shape(EShape_aspect type) throws SdaiException {
-		return get_string(a24);
+		return get_string(a23);
 	}*/
 	public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
-		a24 = set_instanceX(a24, value);
+		a23 = set_instanceX(a23, value);
 	}
 	public void unsetOf_shape(EShape_aspect type) throws SdaiException {
-		a24 = unset_instance(a24);
+		a23 = unset_instance(a23);
 	}
 	public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) throws SdaiException {
-		return a24$;
+		return a23$;
 	}
 	
 	/// methods for attribute: product_definitional, base type: LOGICAL
 /*	public boolean testProduct_definitional(EShape_aspect type) throws SdaiException {
-		return test_logical(a25);
+		return test_logical(a24);
 	}
 	public int getProduct_definitional(EShape_aspect type) throws SdaiException {
-		return get_logical(a25);
+		return get_logical(a24);
 	}*/
 	public void setProduct_definitional(EShape_aspect type, int value) throws SdaiException {
-		a25 = set_logical(value);
+		a24 = set_logical(value);
 	}
 	public void unsetProduct_definitional(EShape_aspect type) throws SdaiException {
-		a25 = unset_logical();
+		a24 = unset_logical();
 	}
 	public static jsdai.dictionary.EAttribute attributeProduct_definitional(EShape_aspect type) throws SdaiException {
-		return a25$;
+		return a24$;
 	}
 	
 	/// methods for attribute: product_definitional, base type: LOGICAL
 	/*	public boolean testDescription(EShape_aspect type) throws SdaiException {
-		return test_string(a23);
+		return test_string(a22);
 	}
 	public String getDescription(EShape_aspect type) throws SdaiException {
-		return get_string(a23);
+		return get_string(a22);
 	}*/
 	public void setDescription(EShape_aspect type, String value) throws SdaiException {
-		a23 = set_string(value);
+		a22 = set_string(value);
 	}
 	public void unsetDescription(EShape_aspect type) throws SdaiException {
-		a23 = unset_string();
+		a22 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(EShape_aspect type) throws SdaiException {
-		return a23$;
+		return a22$;
 	}
 	
 	// ENDOF From CShape_aspect.java
@@ -115,103 +115,103 @@ public class CxLand_with_join_terminal_xim$plated_passage_dependent_land_armx$st
 	// Product_view_definition
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(EProduct_definition type) throws SdaiException {
-		return test_string(a9);
+		return test_string(a8);
 	}
 	public String getDescription(EProduct_definition type) throws SdaiException {
-		return get_string(a9);
+		return get_string(a8);
 	}*/
 	public void setDescription(EProduct_definition type, String value) throws SdaiException {
-		a9 = set_string(value);
+		a8 = set_string(value);
 	}
 	public void unsetDescription(EProduct_definition type) throws SdaiException {
-		a9 = unset_string();
+		a8 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(EProduct_definition type) throws SdaiException {
-		return a9$;
+		return a8$;
 	}
 
 	// attribute (current explicit or supertype explicit) : formation, base type: entity product_definition_formation
 /*	public static int usedinFormation(EProduct_definition type, EProduct_definition_formation instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a10$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a9$, domain, result);
 	}
 	public boolean testFormation(EProduct_definition type) throws SdaiException {
-		return test_instance(a10);
+		return test_instance(a9);
 	}
 	public EProduct_definition_formation getFormation(EProduct_definition type) throws SdaiException {
-		a10 = get_instance(a10);
-		return (EProduct_definition_formation)a10;
+		a9 = get_instance(a9);
+		return (EProduct_definition_formation)a9;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a10 = set_instanceX(a10, value);
+		a9 = set_instanceX(a9, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
-		a10 = unset_instance(a10);
+		a9 = unset_instance(a9);
 	}
 	public static jsdai.dictionary.EAttribute attributeFormation(EProduct_definition type) throws SdaiException {
-		return a10$;
+		return a9$;
 	}
 
 	// attribute (current explicit or supertype explicit) : frame_of_reference, base type: entity product_definition_context
 /*	public static int usedinFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a11$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a10$, domain, result);
 	}
 	public boolean testFrame_of_reference(EProduct_definition type) throws SdaiException {
-		return test_instance(a11);
+		return test_instance(a10);
 	}
 	public jsdai.SApplication_context_schema.EProduct_definition_context getFrame_of_reference(EProduct_definition type) throws SdaiException {
-		a11 = get_instance(a11);
+		a10 = get_instance(a10);
 		return (jsdai.SApplication_context_schema.EProduct_definition_context)a10;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a11 = set_instanceX(a11, value);
+		a10 = set_instanceX(a10, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
-		a11 = unset_instance(a11);
+		a10 = unset_instance(a10);
 	}
 	public static jsdai.dictionary.EAttribute attributeFrame_of_reference(EProduct_definition type) throws SdaiException {
-		return a11$;
+		return a10$;
 	}
 	
 	// From CProperty_definition.java
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(EProperty_definition type) throws SdaiException {
-		return test_string(a19);
+		return test_string(a18);
 	}
 	public String getName(EProperty_definition type) throws SdaiException {
-		return get_string(a19);
+		return get_string(a18);
 	}*/
 	public void setName(EProperty_definition type, String value) throws SdaiException {
-		a19 = set_string(value);
+		a18 = set_string(value);
 	}
 	public void unsetName(EProperty_definition type) throws SdaiException {
-		a19 = unset_string();
+		a18 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(EProperty_definition type) throws SdaiException {
 		return a18$;
 	}
 	// -2- methods for SELECT attribute: definition
 /*	public static int usedinDefinition(EProperty_definition type, EEntity instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a21$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a20$, domain, result);
 	}
 	public boolean testDefinition(EProperty_definition type) throws SdaiException {
-		return test_instance(a21);
+		return test_instance(a20);
 	}
 
 	public EEntity getDefinition(EProperty_definition type) throws SdaiException { // case 1
-		a21 = get_instance_select(a21);
-		return (EEntity)a21;
+		a20 = get_instance_select(a20);
+		return (EEntity)a20;
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a21 = set_instanceX(a21, value);
+		a20 = set_instanceX(a20, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
-		a21 = unset_instance(a21);
+		a20 = unset_instance(a20);
 	}
 
 	public static jsdai.dictionary.EAttribute attributeDefinition(EProperty_definition type) throws SdaiException {
-		return a21$;
+		return a20$;
 	}
 	
 	// ENDOF From CProperty_definition.java
@@ -263,7 +263,7 @@ public class CxLand_with_join_terminal_xim$plated_passage_dependent_land_armx$st
 		
 		// Assembly_component
 		//Id
-		setId_x(context, this);
+//		setId_x(context, this);
 		
 		//id - goes directly into AIM
 		
@@ -313,7 +313,7 @@ public class CxLand_with_join_terminal_xim$plated_passage_dependent_land_armx$st
 		
 		// Assembly_component
 		//Id
-		unsetId_x((EAssembly_component_armx)null);
+//		unsetId_x((EAssembly_component_armx)null);
 		
 		//id - goes directly into AIM
 		
@@ -344,7 +344,7 @@ public class CxLand_with_join_terminal_xim$plated_passage_dependent_land_armx$st
 		
 		// Assembly_component
 		//Id
-		unsetId_x(context, this);
+//		unsetId_x(context, this);
 		
 		//id - goes directly into AIM
 		
@@ -400,7 +400,7 @@ public class CxLand_with_join_terminal_xim$plated_passage_dependent_land_armx$st
 		CxLand_with_join_terminal_xim.unsetMappingConstraints(context, armEntity);
 		CxPlated_passage_dependent_land_armx.unsetMappingConstraints(context, armEntity);
 	}
-	
+	/* Removed from XIM - see bug #3610
 	// Assembly_component
 	public static void setId_x(SdaiContext context, EAssembly_component_armx armEntity) throws SdaiException
 	{
@@ -411,7 +411,7 @@ public class CxLand_with_join_terminal_xim$plated_passage_dependent_land_armx$st
 	{
 		CxAssembly_component_armx.unsetId_x(context, armEntity);
 	}
-	
+	*/
 	
 	//additional_context
 	public static void setAdditional_contexts(SdaiContext context, EAssembly_component_armx armEntity) throws SdaiException

@@ -37,7 +37,6 @@ import jsdai.SPhysical_unit_usage_view_mim.CPhysical_unit;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.EProperty_definition;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.*;
 
 public class CxPart_usage_view
 		extends
@@ -147,7 +146,7 @@ public class CxPart_usage_view
 			setAdditional_contexts(context, this);
 
 			// From Item_shape
-			setId_x(context, this);
+//			setId_x(context, this);
 
 			// SETTING DERIVED
 			// setDefinition(null, this);
@@ -155,7 +154,7 @@ public class CxPart_usage_view
 			// Clean ARM specific attributes
 			unsetAdditional_characterization(null);
 			unsetAdditional_contexts(null);
-			unsetId_x(null);
+//			unsetId_x(null);
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
@@ -170,7 +169,7 @@ public class CxPart_usage_view
 			unsetAdditional_characterization(context, this);
 
 			//id_x
-			unsetId_x(context, this);
+//			unsetId_x(context, this);
 			
 			// unsetDefinition(null);
 			
@@ -210,7 +209,6 @@ public class CxPart_usage_view
 			EPart_usage_view armEntity) throws SdaiException {
 		unsetMappingConstraints(context, armEntity);
 		CxPart_view_definition.setMappingConstraints(context, armEntity);
-		CxItem_shape.setMappingConstraints(context, armEntity);
 		CxAP210ARMUtilities.assignPart_definition_type(context, armEntity, "physical design usage");
 		// AIM gap
 		armEntity.setDefinition(null, armEntity);
@@ -226,18 +224,17 @@ public class CxPart_usage_view
 	public static void unsetMappingConstraints(SdaiContext context,
 			EPart_usage_view armEntity) throws SdaiException {
 		CxPart_view_definition.unsetMappingConstraints(context, armEntity);
-		CxItem_shape.unsetMappingConstraints(context, armEntity);
 		CxAP210ARMUtilities.deassignPart_definition_type(context, armEntity, "physical design usage");
 	}
 
 	//********** "design_discipline_item_definition" attributes
-
+	/* Removed from XIM - see bug #3610
 	public static void setId_x(SdaiContext context,
 			EItem_shape armEntity) throws SdaiException {
 		//unset old values
 		CxItem_shape.setId_x(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes data for name attribute.
 	 * 
@@ -247,11 +244,12 @@ public class CxPart_usage_view
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
+	/* Removed from XIM - see bug #3610
 	public static void unsetId_x(SdaiContext context,
 			EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.unsetId_x(context, armEntity);	
 	}
-
+*/
 
 	/**
 	 * Sets/creates data for additional_context attribute.

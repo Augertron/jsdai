@@ -73,20 +73,20 @@ public class CxContextual_item_shape extends CContextual_item_shape implements E
 
 			//********** "design_discipline_item_definition" attributes
 			//Id
-			setId_x(context, this);
+//			setId_x(context, this);
 
 			// Kind of AIM gap
 			setName(null, "");
 			
 			// Clean ARM specific attributes
-			this.unsetId_x(null);
+//			this.unsetId_x(null);
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
 			unsetMappingConstraints(context, this);
 			//********** "design_discipline_item_definition" attributes
 			//id_x
-			unsetId_x(context, this);
+//			unsetId_x(context, this);
 	}
 
 	/**
@@ -106,7 +106,7 @@ public class CxContextual_item_shape extends CContextual_item_shape implements E
 	public static void setMappingConstraints(SdaiContext context,
 			EContextual_item_shape armEntity) throws SdaiException {
 		unsetMappingConstraints(context, armEntity);
-		CxItem_shape.setMappingConstraints(context, armEntity);
+//		CxItem_shape.setMappingConstraints(context, armEntity);
 	}
 
 	/**
@@ -118,7 +118,7 @@ public class CxContextual_item_shape extends CContextual_item_shape implements E
 	 */
 	public static void unsetMappingConstraints(SdaiContext context,
 			EContextual_item_shape armEntity) throws SdaiException {
-		CxItem_shape.unsetMappingConstraints(context, armEntity);
+//		CxItem_shape.unsetMappingConstraints(context, armEntity);
 	}
 
 	//********** "design_discipline_item_definition" attributes
@@ -143,11 +143,11 @@ public class CxContextual_item_shape extends CContextual_item_shape implements E
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	public static void setId_x(SdaiContext context,
-			EItem_shape armEntity) throws SdaiException {
+/* Removed from XIM - see bug #3610	
+	public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.setId_x(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes data for name attribute.
 	 * 
@@ -157,9 +157,9 @@ public class CxContextual_item_shape extends CContextual_item_shape implements E
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	public static void unsetId_x(SdaiContext context,
-			EItem_shape armEntity) throws SdaiException {
+/* Removed from XIM - see bug #3610	
+	public static void unsetId_x(SdaiContext context,EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.unsetId_x(context, armEntity);		
 	}
-
+*/
 }

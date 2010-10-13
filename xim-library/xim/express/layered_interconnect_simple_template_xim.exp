@@ -105,7 +105,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
 
   ENTITY Connection_zone_in_layout_template
   	(* CONNOTATIONAL *) SUBTYPE OF (Connection_zone, Instanced_feature_armx);
-  	SELF\Shape_element.containing_shape : Template_definition;
+  	SELF\shape_aspect.of_shape : Template_definition;
   	connection_zone_category            : OPTIONAL SET[1:?] OF land_connection_zone_class;
   END_ENTITY; 
 
@@ -136,7 +136,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
     (* CONNOTATIONAL *) SUBTYPE OF (Continuous_template_armx, Inter_stratum_feature_template_armx, component_termination_passage_template);
       SELF\Inter_stratum_feature_template_armx.of_passage_technology : Default_component_termination_passage_definition;
     INVERSE
-      access_mechanisms : SET[2:?] OF component_termination_passage_template_terminal FOR containing_shape(* TEMP-AD *);
+      access_mechanisms : SET[2:?] OF component_termination_passage_template_terminal FOR of_shape(* TEMP-AD *);
   END_ENTITY;
 
   ENTITY Component_termination_passage_template_interface_terminal
@@ -156,7 +156,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
     ABSTRACT SUPERTYPE OF (ONEOF (Component_termination_passage_template_interface_terminal,
  Component_termination_passage_template_join_terminal))
     (* CONNOTATIONAL *) SUBTYPE OF (Shape_feature);
-      SELF\Shape_element.containing_shape RENAMED associated_definition : Component_termination_passage_template_armx;
+      SELF\shape_aspect.of_shape RENAMED associated_definition : Component_termination_passage_template_armx;
        SELF\Shape_feature.connection_area                               : OPTIONAL SET[1:?] OF Connection_zone_in_layout_template;
     UNIQUE
       UR1 : SELF\shape_aspect.name,
@@ -167,9 +167,9 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
     (* CONNOTATIONAL *) SUBTYPE OF (Land_physical_template_armx, Shape_feature, default_attachment_size_based_land_physical_template);
     DERIVE
       SELF\Product_view_definition.name_x : STRING := '';
-      SELF\Shape_element.containing_shape : Default_attachment_size_based_land_physical_template_armx := SELF;
-      SELF\Shape_feature.element_name : STRING := '';            
-      SELF\Shape_element.id_x : STRING := SELF\Item_shape.id_x;            
+      SELF\shape_aspect.of_shape : Default_attachment_size_based_land_physical_template_armx := SELF;
+      SELF\Shape_feature.name : STRING := '';            
+      SELF\shape_aspect.id : STRING := SELF\property_definition.id;            
     INVERSE
       interface_access_mechanisms : SET[1:?] OF land_template_interface_terminal FOR associated_definition(* TEMP-AD *);
     WHERE
@@ -362,7 +362,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
 		 Default_attachment_size_based_land_physical_template_armx))
     (* CONNOTATIONAL *) SUBTYPE OF (Stratum_feature_template_armx, land_physical_template);
     INVERSE
-      access_mechanisms                                   : SET[1:?] OF land_template_terminal_armx FOR containing_shape(* TEMP-AD *);
+      access_mechanisms                                   : SET[1:?] OF land_template_terminal_armx FOR of_shape(* TEMP-AD *);
       pre_defined_classification_code                     : SET[0:1] OF External_source_identification FOR items;      
     WHERE
       WR1 : SIZEOF(QUERY(ltjt <* access_mechanisms | ('LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_XIM.LAND_TEMPLATE_JOIN_TERMINAL' IN TYPEOF(ltjt)))) > 0;
@@ -388,7 +388,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
     ABSTRACT SUPERTYPE OF (ONEOF (Land_template_join_terminal,
  Land_template_interface_terminal))
     (* CONNOTATIONAL *) SUBTYPE OF (Shape_feature, land_template_terminal);
-      SELF\Shape_element.containing_shape RENAMED associated_definition : Land_physical_template_armx;
+      SELF\shape_aspect.of_shape RENAMED associated_definition : Land_physical_template_armx;
       SELF\Shape_feature.connection_area                                : OPTIONAL SET[1:?] OF Connection_zone_in_layout_template;      
       terminal_category                                                 : OPTIONAL land_template_terminal_class;
     UNIQUE
@@ -396,9 +396,9 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
  associated_definition;
     WHERE
       WR1 : NOT (EXISTS(SELF\Shape_feature.connection_area)) OR NOT EXISTS(terminal_category);
-      WR2 : NOT EXISTS(SELF\Shape_element.description);
+      WR2 : NOT EXISTS(SELF\shape_aspect.description);
       WR3 : SIZEOF(QUERY(ca <* connection_area |
-            NOT(associated_definition = ca\Connection_zone_in_layout_template.containing_shape)
+            NOT(associated_definition = ca\Connection_zone_in_layout_template.of_shape)
             )) = 0;
   END_ENTITY;
 
@@ -467,12 +467,12 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
     (* CONNOTATIONAL *) SUBTYPE OF (Continuous_template_armx, Inter_stratum_feature_template_armx, via_template);
       SELF\Inter_stratum_feature_template_armx.of_passage_technology : Default_via_definition;
     INVERSE
-      access_mechanisms : SET[0:?] OF via_template_terminal FOR containing_shape(* TEMP-AD *);
+      access_mechanisms : SET[0:?] OF via_template_terminal FOR of_shape(* TEMP-AD *);
   END_ENTITY;
 
   ENTITY Via_template_terminal
     (* CONNOTATIONAL *) SUBTYPE OF (Shape_feature);
-      SELF\Shape_element.containing_shape RENAMED associated_definition : Via_template_armx;
+      SELF\shape_aspect.of_shape RENAMED associated_definition : Via_template_armx;
       disallowed_inter_stratum_extent                                   : OPTIONAL SET[1:?] OF Stratum_technology_occurrence_link_armx;
       SELF\Shape_feature.connection_area                                : OPTIONAL SET[1:?] OF Connection_zone_in_layout_template;      
     DERIVE

@@ -31,8 +31,6 @@ package jsdai.SGeneric_product_occurrence_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.*;
-import jsdai.util.LangUtils;
-import jsdai.SApplication_context_schema.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
 

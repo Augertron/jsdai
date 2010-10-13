@@ -37,7 +37,6 @@ import jsdai.SPhysical_unit_usage_view_xim.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.EProperty_definition;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.*;
 
 public class CxPackaged_part_armx
 		extends
@@ -143,7 +142,7 @@ public class CxPackaged_part_armx
 			setAdditional_contexts(context, this);
 
 			// From Item_shape
-			setId_x(context, this);
+//			setId_x(context, this);
 
 			// SETTING DERIVED
 			// setDefinition(null, this);
@@ -157,7 +156,7 @@ public class CxPackaged_part_armx
 			// Clean ARM specific attributes
 			unsetAdditional_characterization(null);
 			unsetAdditional_contexts(null);
-			unsetId_x(null);
+//			unsetId_x(null);
 			
 		   unsetUsed_package(null);
 	      unsetImplemented_function(null);
@@ -176,7 +175,7 @@ public class CxPackaged_part_armx
 			unsetAdditional_characterization(context, this);
 
 			//id_x
-			unsetId_x(context, this);
+//			unsetId_x(context, this);
 			
 			// unsetDefinition(null);
 
@@ -232,12 +231,13 @@ public class CxPackaged_part_armx
 	}
 
 	//********** "design_discipline_item_definition" attributes
+	/* Removed from XIM - see bug #3610
 	public static void setId_x(SdaiContext context,
 			EItem_shape armEntity) throws SdaiException {
 		//unset old values
 		CxItem_shape.setId_x(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes data for name attribute.
 	 * 
@@ -247,11 +247,12 @@ public class CxPackaged_part_armx
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
+	/* Removed from XIM - see bug #3610	
 	public static void unsetId_x(SdaiContext context,
 			EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.unsetId_x(context, armEntity);	
 	}
-
+*/
 
 	/**
 	 * Sets/creates data for additional_context attribute.

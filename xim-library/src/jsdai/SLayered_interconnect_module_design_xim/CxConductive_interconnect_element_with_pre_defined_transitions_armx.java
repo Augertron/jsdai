@@ -33,7 +33,6 @@ import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SConstructive_solid_geometry_2d_xim.EPath_area_with_parameters_armx;
 import jsdai.SGeneric_product_occurrence_xim.*;
-import jsdai.SGeometry_schema.CGeometric_representation_context;
 import jsdai.SGeometry_schema.EGeometric_representation_context;
 import jsdai.SLayered_interconnect_module_design_mim.*;
 import jsdai.SProduct_definition_schema.*;
@@ -45,7 +44,6 @@ import jsdai.SProduct_view_definition_xim.*;
 import jsdai.SRepresentation_schema.ARepresentation;
 import jsdai.SRepresentation_schema.CRepresentation;
 import jsdai.SRepresentation_schema.ERepresentation;
-import jsdai.SShape_property_assignment_xim.*;
 
 public class CxConductive_interconnect_element_with_pre_defined_transitions_armx
 		extends
@@ -61,82 +59,82 @@ public class CxConductive_interconnect_element_with_pre_defined_transitions_armx
 	// Taken from IIRU
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(EItem_identified_representation_usage type) throws SdaiException {
-		return test_string(a18);
+		return test_string(a17);
 	}
 	public String getName(EItem_identified_representation_usage type) throws SdaiException {
-		return get_string(a18);
+		return get_string(a17);
 	}*/
 	public void setName(EItem_identified_representation_usage type, String value) throws SdaiException {
-		a18 = set_string(value);
+		a17 = set_string(value);
 	}
 	public void unsetName(EItem_identified_representation_usage type) throws SdaiException {
-		a18 = unset_string();
+		a17 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(EItem_identified_representation_usage type) throws SdaiException {
-		return a18$;
+		return a17$;
 	}
 	
 	// attribute (current explicit or supertype explicit) : used_representation, base type: entity representation
 /*	public static int usedinUsed_representation(EItem_identified_representation_usage type, jsdai.SRepresentation_schema.ERepresentation instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a21$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a20$, domain, result);
 	}
 	public boolean testUsed_representation(EItem_identified_representation_usage type) throws SdaiException {
-		return test_instance(a21);
+		return test_instance(a20);
 	}*/
 	public jsdai.SRepresentation_schema.ERepresentation getUsed_representation(EItem_identified_representation_usage type) throws SdaiException {
-		return (jsdai.SRepresentation_schema.ERepresentation)get_instance(a21);
+		return (jsdai.SRepresentation_schema.ERepresentation)get_instance(a20);
 	}
 	public void setUsed_representation(EItem_identified_representation_usage type, jsdai.SRepresentation_schema.ERepresentation value) throws SdaiException {
-		a21 = set_instanceX(a21, value);
+		a20 = set_instanceX(a20, value);
 	}
 	public void unsetUsed_representation(EItem_identified_representation_usage type) throws SdaiException {
-		a21 = unset_instance(a21);
+		a20 = unset_instance(a20);
 	}
 	public static jsdai.dictionary.EAttribute attributeUsed_representation(EItem_identified_representation_usage type) throws SdaiException {
-		return a21$;
+		return a20$;
 	}
 	
 	// ENDOF from IIRU
 	
 	// Taken from PDR
 	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
-		a11 = set_string(value);
+		a10 = set_string(value);
 	}
 	public void unsetId(EProduct_definition_relationship type) throws SdaiException {
-		a11 = unset_string();
+		a10 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
-		return a11$;
+		return a10$;
 	}
 
 	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
-		a12 = set_string(value);
+		a11 = set_string(value);
 	}
 	public void unsetName(EProduct_definition_relationship type) throws SdaiException {
-		a12 = unset_string();
+		a11 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
-		return a12$;
+		return a11$;
 	}
 	
 	// attribute (current explicit or supertype explicit) : relating_product_definition, base type: entity product_definition
 /*	public static int usedinRelating_product_definition(EProduct_definition_relationship type, EProduct_definition instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a14$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a13$, domain, result);
 	}
 	public boolean testRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		return test_instance(a14);
+		return test_instance(a13);
 	}
 	public EProduct_definition getRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		return (EProduct_definition)get_instance(a14);
+		return (EProduct_definition)get_instance(a13);
 	}*/
 	public void setRelating_product_definition(EProduct_definition_relationship type, EProduct_definition value) throws SdaiException {
-		a14 = set_instanceX(a14, value);
+		a13 = set_instanceX(a13, value);
 	}
 	public void unsetRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		a14 = unset_instance(a14);
+		a13 = unset_instance(a13);
 	}
 /*	public static jsdai.dictionary.EAttribute attributeRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		return a14$;
+		return a13$;
 	}*/
 	// ENDOF taken from PDR
 
@@ -279,7 +277,7 @@ public class CxConductive_interconnect_element_with_pre_defined_transitions_armx
 
 			//********** "design_discipline_item_definition" attributes
 			//Id
-			setId_x(context, this);
+//			setId_x(context, this);
 			
 			//id - goes directly into AIM
 			
@@ -307,7 +305,7 @@ public class CxConductive_interconnect_element_with_pre_defined_transitions_armx
 			
 			
 			unsetDerived_from(null);
-			unsetId_x(null);
+//			unsetId_x(null);
 			unsetImplementation_or_resident_stratum(null);
 
 			// centreline_shape 
@@ -332,7 +330,7 @@ public class CxConductive_interconnect_element_with_pre_defined_transitions_armx
 
 			unsetDerived_from(context, this);
 			
-			unsetId_x(context, this);
+//			unsetId_x(context, this);
 			
 			// composed_conductor 
 			unsetImplementation_or_resident_stratum(context, this);
@@ -473,11 +471,11 @@ public class CxConductive_interconnect_element_with_pre_defined_transitions_armx
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	public static void setId_x(SdaiContext context,
-			EItem_shape armEntity) throws SdaiException {
+/* Removed from XIM - see bug #3610	
+	public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.setId_x(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes data for Quantity_criterion attribute.
 	 * 
@@ -487,11 +485,11 @@ public class CxConductive_interconnect_element_with_pre_defined_transitions_armx
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	public static void unsetId_x(SdaiContext context,
-			EItem_shape armEntity) throws SdaiException {
+/* Removed from XIM - see bug #3610	
+	public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.unsetId_x(context, armEntity);		
 	}
-
+*/
    //********** "conductive_interconnect_element" attributes
 
    /**

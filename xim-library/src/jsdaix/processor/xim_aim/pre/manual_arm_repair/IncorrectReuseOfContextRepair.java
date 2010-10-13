@@ -24,6 +24,10 @@
 package jsdaix.processor.xim_aim.pre.manual_arm_repair;
 
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 import jsdai.SGeometry_schema.AGeometric_representation_context;
 import jsdai.SGeometry_schema.CGeometric_representation_context;
 import jsdai.SGeometry_schema.EGeometric_representation_context;
@@ -48,9 +52,9 @@ import jsdaix.processor.xim_aim.pre.Importer;
  * See also bug #3299 in bugzilla.
  */
 public final class IncorrectReuseOfContextRepair {
-	
+
 	private IncorrectReuseOfContextRepair() { }
-	
+
 	public static void run(ASdaiModel models, Importer importer)
 		throws SdaiException {
 		// 1) Determine the situation - analyze each geometric_context and collect all the shape_reps pointing to it
@@ -61,37 +65,37 @@ public final class IncorrectReuseOfContextRepair {
 				EGeometric_representation_context egrc = agrc.getCurrentMember(j);
 				ARepresentation ar = new ARepresentation();
 				CRepresentation.usedinContext_of_items(null, egrc, models, ar);
+				Set reps = new HashSet();
+				// collect all shape_reps
 				for (SdaiIterator k = ar.createIterator(); k.next();) {
-					ERepresentation er1 = ar.getCurrentMember(k);
-					for (SdaiIterator l = ar.createIterator(); l.next();) {
-						ERepresentation er2 = ar.getCurrentMember(l);
-						// 2) Check pairwise
-						makeNewContextIfNeeded(er1, er2, models, importer);
-					}
+					reps.add(ar.getCurrentMember(k));
+				}
+				for (Iterator iter = reps.iterator();iter.hasNext();) {
+					// 2) Check rep1 against the set - if there is at least one linked by rep_rel - we will change context of it
+					makeNewContextIfNeeded((ERepresentation)iter.next(), reps, models, importer);
 				}
 			}
 		}
 	}
 
-	private static void makeNewContextIfNeeded(ERepresentation er1,
-			ERepresentation er2, ASdaiModel models, Importer importer)throws SdaiException {
-		if(er1 == er2){
-			return;
-		}
-		// Check if there is some path between those 2 reps 
-		if(isPathWithTransformation(er1, er2, models, importer)){
+	private static boolean makeNewContextIfNeeded(ERepresentation er1,
+			Set reps, ASdaiModel models, Importer importer)throws SdaiException {
+		// Check if there is some path between those 2 reps
+		if(isPathWithTransformation(er1, reps, models, importer)){
 			ERepresentation_context erc = er1.getContext_of_items(null);
 			ERepresentation_context erc2 = (ERepresentation_context)erc.copyApplicationInstance(erc.findEntityInstanceSdaiModel());
 			er1.setContext_of_items(null, erc2);
-			importer.logMessage(" Changing context for shape "+er1+" as it is reusing the same context as "+er2+" while beeing related to it with transformation ");
+			importer.logMessage(" Changing context for shape "+er1+" as it is reusing the same context as another rep while beeing related to it with transformation ");
+			return true;
 		}
+		return false;
 	}
-	
-	private static boolean isPathWithTransformation(ERepresentation er1, ERepresentation er2, ASdaiModel models, Importer importer) throws SdaiException{
+
+	private static boolean isPathWithTransformation(ERepresentation er1, Set reps, ASdaiModel models, Importer importer) throws SdaiException{
 		ARepresentation_relationship arr = new ARepresentation_relationship();
 		CRepresentation_relationship.usedinRep_1(null, er1, models, arr);
-		boolean transformationFound = false;
 		for (SdaiIterator i = arr.createIterator(); i.next();) {
+			boolean transformationFound = false;
 			ERepresentation_relationship err = arr.getCurrentMember(i);
 			if(err instanceof ERepresentation_relationship_with_transformation){
 				transformationFound = true;
@@ -99,25 +103,25 @@ public final class IncorrectReuseOfContextRepair {
 
       /*
 				RR: VA_NSET exception on some older stp files, let's avoid it by catching exceptions and/or checking if the attribute value is null
-				it is not possible to use test() method for all cases instead, because some attirbutes are redeclared as derived, 
+				it is not possible to use test() method for all cases instead, because some attirbutes are redeclared as derived,
 				and absence of java inheritance does not allow to check with attributeRep_2() method if it is explicit without handling each subtype separately
 				so catching exception is the simplest approach
 				if null - this attribute was redeclared as derived - no need to report
 				if VA_NSET exception - this is a mandatory explicit attribute with indeterminate value - reported
 				if any other exception - reported (not occured so far and not expected to occur)
 			*/
-			
-			try {	
-		
+
+			try {
+
 				ERepresentation erx = err.getRep_2(null);
 
 			  if (erx != null) {
-			
-					if(erx == er2){
+
+					if(reps.contains(erx)){
 						return transformationFound;
 					}
 					// Go recursively deeper
-					if(isPathWithTransformation(erx, er2, models, importer)){
+					if(isPathWithTransformation(erx, reps, models, importer)){
 						return true;
 					}
 				} else {
@@ -126,76 +130,15 @@ public final class IncorrectReuseOfContextRepair {
 				}
 			} catch (Exception e) {
         String e_message = e.getMessage();
-        if (e_message.contains("VA_NSET")) {	
+        if (e_message.contains("VA_NSET")) {
 					importer.errorMessage(" Mandatory attribute Rep2 is unset for " + err);
 				} else {
 					importer.errorMessage(" ERROR - Exception " + e_message + " occured while reading attribute Rep_2  for instance: " + err);
-				}	
+				}
 			}
 		}
 		// If there is no path - return false
 		return false;
 	}
 
-	private static boolean isPathWithTransformation_backup(ERepresentation er1, ERepresentation er2, ASdaiModel models, Importer importer) throws SdaiException{
-		ARepresentation_relationship arr = new ARepresentation_relationship();
-		CRepresentation_relationship.usedinRep_1(null, er1, models, arr);
-		boolean transformationFound = false;
-		for (SdaiIterator i = arr.createIterator(); i.next();) {
-			ERepresentation_relationship err = arr.getCurrentMember(i);
-			if(err instanceof ERepresentation_relationship_with_transformation){
-				transformationFound = true;
-			}
-
-			importer.errorMessage("RR - processing instance: " + err);
-			// RR: VA_NSET exception on some older stp files, let's avoid it by using test() - print an error message instead
-//			if (((jsdai.SRepresentation_schema.CRepresentation_relationship)err).attributeRep_2(null) instanceof jsdai.SExtended_dictionary_schema.EExplicit_attribute) {
-			if (err instanceof CRepresentation_relationship) {
-				importer.errorMessage("RR - instance of CRepresentation_relationship ");
-				if (((CRepresentation_relationship)err).attributeRep_2(null) instanceof jsdai.dictionary.EExplicit_attribute) {
-					importer.errorMessage("RR - explicit attribute");
-					if (err.testRep_2(null)) {
-						importer.errorMessage("RR - attribute is set - OK");
-						ERepresentation erx = err.getRep_2(null);
-						if(erx == er2){
-							return transformationFound;
-						}
-						// Go recursively deeper
-						if(isPathWithTransformation(erx, er2, models, importer)){
-							return true;
-						}
-		      } else {
-						importer.errorMessage("Mandatory attribute Rep2 is unset for " + err);
-    		  }
-				} else { // RR - not explicit, so leave as it was
-					importer.errorMessage("RR - NOT explicit attribute");
-	
-					ERepresentation erx = err.getRep_2(null);
-					if(erx == er2){
-						return transformationFound;
-					}
-					// Go recursively deeper
-					if(isPathWithTransformation(erx, er2, models, importer)){
-						return true;
-					}
-				}
-  	  } else {
-				importer.errorMessage("RR - NOT an instance of CRepresentation_relationship: " + err);
-		
-				ERepresentation erx = err.getRep_2(null);
-				if(erx == er2){
-					return transformationFound;
-				}
-				// Go recursively deeper
-				if(isPathWithTransformation(erx, er2, models, importer)){
-					return true;
-				}
-    	}
-
-		}
-		// If there is no path - return false
-		return false;
-	}
-
-	
 }

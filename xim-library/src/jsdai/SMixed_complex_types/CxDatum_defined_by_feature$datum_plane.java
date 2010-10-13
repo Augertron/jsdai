@@ -33,9 +33,7 @@ import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SExtended_geometric_tolerance_xim.CxDatum_plane;
 import jsdai.SGeometric_tolerance_xim.CxDatum_defined_by_feature;
-import jsdai.SGeometric_tolerance_xim.CxSingle_datum;
 import jsdai.SGeometric_tolerance_xim.EDatum_defined_by_feature;
-import jsdai.SGeometric_tolerance_xim.ESingle_datum;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SShape_aspect_definition_schema.CDatum;
 import jsdai.SShape_aspect_definition_schema.EDatum;
@@ -130,11 +128,11 @@ public class CxDatum_defined_by_feature$datum_plane extends CDatum_defined_by_fe
 
 		setMappingConstraints(context, this);
 
-		setModification(context, this);
+//		setModification(context, this);
 		
 		setDefined_by(context, this);
 		// clean ARM
-		unsetModification(null);
+//		unsetModification(null);
 		
 		unsetDefined_by(null);
 	}
@@ -142,7 +140,7 @@ public class CxDatum_defined_by_feature$datum_plane extends CDatum_defined_by_fe
 	public void removeAimData(SdaiContext context) throws SdaiException {
 			unsetMappingConstraints(context, this);
 			
-			unsetModification(context, this);
+//			unsetModification(context, this);
 			
 			setDefined_by(context, this);
 	}
@@ -191,11 +189,12 @@ public class CxDatum_defined_by_feature$datum_plane extends CDatum_defined_by_fe
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
+	/* Removed in Milestone M6 of IDA-STEP	
 	public static void setModification(SdaiContext context,
 		ESingle_datum armEntity) throws SdaiException {
 		CxSingle_datum.setModification(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes mapping constraint data.
 	 * 
@@ -203,11 +202,12 @@ public class CxDatum_defined_by_feature$datum_plane extends CDatum_defined_by_fe
 	 * @param armEntity
 	 * @throws SdaiException
 	 */
+	/* Removed in Milestone M6 of IDA-STEP	
 	public static void unsetModification(SdaiContext context,
 			ESingle_datum armEntity) throws SdaiException {
 		CxSingle_datum.unsetModification(context, armEntity);		
 	}
-
+*/
 	/**
 	 * Sets/creates data for mapping constraints.
 	 * 

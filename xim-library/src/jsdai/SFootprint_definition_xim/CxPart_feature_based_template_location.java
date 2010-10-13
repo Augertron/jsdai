@@ -261,9 +261,9 @@ public class CxPart_feature_based_template_location extends CPart_feature_based_
 			epdr.setName(null, "reference feature");
 			epdr.setDescription(null, "");
 			// SELF\template_location_in_structured_template.reference_designation : STRING :=  reference_feature \ shape_element . element_name ;
-			armEntity.setReference_designation(null, feature.getElement_name(null));
+			armEntity.setReference_designation(null, feature.getName(null));
 			// AIM gap as well as trying to not violate UR on product_definition_usage
-			armEntity.setId(null, feature.getElement_name(null));
+			armEntity.setId(null, feature.getName(null));
 		}
 	}
 

@@ -315,7 +315,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
 		SUPERTYPE OF (ONEOF (Default_via_definition,
  			Default_component_termination_passage_definition,
  			Default_unsupported_passage_definition))
- 			(* CONNOTATIONAL *) SUBTYPE OF (Item_shape, passage_technology);
+ 			(* CONNOTATIONAL *) SUBTYPE OF (product_definition_shape, passage_technology);
       as_finished_deposition_thickness 	: OPTIONAL Length_tolerance_characteristic;
       as_finished_passage_extent       	: OPTIONAL ft_value_select;
       maximum_aspect_ratio            	: OPTIONAL REAL;
@@ -328,7 +328,8 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
       supported_internal_minimum_annular_ring   : OPTIONAL length_measure_with_unit;
       unsupported_minimum_annular_ring          : OPTIONAL length_measure_with_unit;
     DERIVE  
-      SELF\Item_shape.described_element : Passage_technology_armx := SELF;     
+      SELF\property_definition.name : label := ?;    
+      SELF\property_definition.definition : Passage_technology_armx := SELF;     
 	  specification: SET[0:1] OF Document_definition :=
   			get_document_definition(SELF, 'specification', 
   			'SPECIFICATION_DOCUMENT_XIM.PROCESS_SPECIFICATION');
@@ -413,7 +414,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
   ENTITY Stratum_technology_armx
     SUPERTYPE OF (ONEOF (Design_layer_technology,
  Documentation_layer_technology))
- 		(* CONNOTATIONAL *) SUBTYPE OF (Item_shape, stratum_technology);
+ 		(* CONNOTATIONAL *) SUBTYPE OF (product_definition_shape, stratum_technology);
       layer_position                   : layer_position_type;
       stratum_thickness                : Length_tolerance_characteristic;
       minimum_finished_feature_size    : OPTIONAL Length_measure_with_unit;
@@ -422,7 +423,8 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
       maximum_feature_size_requirement : OPTIONAL Length_measure_with_unit;
       minimum_aspect_ratio             : OPTIONAL REAL;      
    DERIVE
-		SELF\Item_shape.described_element : Stratum_technology_armx := SELF;   
+   		SELF\property_definition.name : label := ?;
+		SELF\property_definition.definition : Stratum_technology_armx := SELF;   
 		specification: SET[0:1] OF Document_definition :=
   			get_document_definition(SELF, 'specification', 
   			'SPECIFICATION_DOCUMENT_XIM.PROCESS_SPECIFICATION');
@@ -445,8 +447,8 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
   END_ENTITY;
 
   ENTITY Stratum_surface_technology_armx
-    SUBTYPE OF (Shape_element, stratum_surface_technology);
-    SELF\Shape_element.containing_shape RENAMED associated_technology : Stratum_technology_armx;
+    SUBTYPE OF (shape_aspect, stratum_surface_technology);
+    SELF\shape_aspect.of_shape RENAMED associated_technology : Stratum_technology_armx;
   DERIVE
     surface_specification: SET[0:1] OF Document_definition :=
   	    		get_document_definition(SELF, 'surface specification',  	
@@ -456,6 +458,14 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
           (SIZEOF(get_document_definition(SELF, 'surface specification', 'SPECIFICATION_DOCUMENT_XIM.SURFACE_FINISH_SPECIFICATION')) = 1);
   END_ENTITY;
 
+  ENTITY Stratum_technology_occurrence_feature_constraint_armx
+    SUBTYPE OF (Stratum_technology_occurrence_relationship);
+      difference_distance   : OPTIONAL length_measure_with_unit;    
+      intersection_distance : OPTIONAL length_measure_with_unit;
+    WHERE
+      WR1: EXISTS (difference_distance) XOR EXISTS(intersection_distance);
+  END_ENTITY;
+  
   ENTITY Stratum_technology_mapping_relationship_armx
     SUBTYPE Of (stratum_technology_mapping_relationship);
       SELF\property_definition_relationship.relating_property_definition RENAMED source_stratum_technology   : Footprint_library_stratum_technology_armx;

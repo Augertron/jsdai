@@ -36,7 +36,6 @@ import jsdai.SRepresentation_schema.ARepresentation_item;
 import jsdai.SRepresentation_schema.CCompound_representation_item;
 import jsdai.SRepresentation_schema.ECompound_representation_item;
 import jsdai.SRepresentation_schema.EList_representation_item;
-import jsdai.SRepresentation_schema.ERepresentation_item;
 import jsdai.SRepresentation_schema.ESet_representation_item;
 
 public class CxValue_set extends CValue_set implements EMappedXIMEntity{

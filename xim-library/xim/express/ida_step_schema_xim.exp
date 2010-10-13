@@ -168,7 +168,7 @@ USE FROM area_2d_xim;
 USE FROM manifold_subsurface_xim;
 USE FROM Conductivity_material_aspects_xim;
 USE FROM Generic_material_aspects_xim;
--- USE FROM Default_tolerance_xim;
+USE FROM Default_tolerance_xim;
 USE FROM Constructive_solid_geometry_2d_xim;
 
 USE FROM Failure_mode_effects_causes_analysis_xim;
@@ -739,7 +739,7 @@ END_ENTITY;
    class_system,
    certification,
    Action_method,
-   item_shape,
+   product_definition_shape,
    item_definition_instance_relationship,
    item_instance_relationship,
    Part_definition_relationship,
@@ -780,11 +780,6 @@ END_ENTITY;
 
  TYPE ida_template_definition_select = EXTENSIBLE SELECT BASED_ON template_definition_select WITH  (
    external_model
-  );
- END_TYPE;
-
- TYPE ida_element_with_dimension_select = EXTENSIBLE SELECT BASED_ON element_with_dimension_select WITH (
-   annotation_curve_occurrence
   );
  END_TYPE;
 
@@ -830,7 +825,7 @@ END_ENTITY;
    product_definition_formation_relationship,
    process_plan_relationship,
    design_constraint_relationship,
-   shape_element_relationship,
+   shape_aspect_relationship,
    replaced_usage_relationship,
    Breakdown_element_usage,
    process_operation_occurrence_relationship
@@ -897,7 +892,7 @@ TYPE ida_classified_element_select = EXTENSIBLE SELECT BASED_ON classified_eleme
    product_occurrence, --item_instance,
    Product_view_definition,
    document_version,
-   shape_element,
+   shape_aspect,
    specification_category,
 --CH   Transition_feature_solid,
    action_directive,
@@ -925,9 +920,9 @@ TYPE ida_classified_element_select = EXTENSIBLE SELECT BASED_ON classified_eleme
    Part_definition_relationship,
    item_definition_instance_relationship,
    item_instance_relationship,
-   item_shape,
-   shape_element,
-   shape_element_relationship,
+   product_definition_shape,
+   shape_aspect,
+   shape_aspect_relationship,
    Breakdown_element_definition,
    file,
    Document_definition,
@@ -1029,8 +1024,8 @@ TYPE ida_classified_element_select = EXTENSIBLE SELECT BASED_ON classified_eleme
    security_classification,
    presentation_area,
    retention_period,
-   shape_element,
-   shape_element_relationship,
+   shape_aspect,
+   shape_aspect_relationship,
    specification
   );
  END_TYPE;
@@ -1242,7 +1237,7 @@ UOF:S8
   operation : process_operation_occurrence;
   SELF\process_product_association.defined_product RENAMED element : process_operation_input_or_output_select;
   placement : OPTIONAL Cartesian_transformation_operator;
-  concerned_shape : SET [0:?] OF shape_element;
+  concerned_shape : SET [0:?] OF shape_aspect;
  END_ENTITY;
 
  ENTITY process_operation_resource_assignment
@@ -1355,16 +1350,6 @@ UOF:S7
   final_status : UNDEFINED_OBJECT;
  END_ENTITY;
 
- ENTITY value_limitation
-  (* CONNOTATIONAL *) SUBTYPE OF (plus_minus_tolerance);
-(*
-UOF:T1
-*)
-  SELF\plus_minus_tolerance.range RENAMED is_defined_by : limitation_definition_select;
-  envelope : OPTIONAL BOOLEAN;
-  limited_value : measure_representation_item;
- END_ENTITY;
-
  ENTITY external_model
   ABSTRACT SUPERTYPE OF (external_picture)
   (* CONNOTATIONAL *) SUBTYPE OF (representation);
@@ -1411,7 +1396,7 @@ UOF:S5
 (*
 UOF:S8
 *)
-  mated_shape : OPTIONAL shape_element_relationship;
+  mated_shape : OPTIONAL shape_aspect_relationship;
   relating : mated_item_association; -- BOTH mapps are WRONG - SEDS
   related : mated_item_association; -- BOTH mapps are WRONG - SEDS
   SELF\product_definition_relationship.related_product_definition RENAMED mating_material : quantified_instance; -- SET can't be implemented, because of mapping SET [0:?] OF quantified_instance;

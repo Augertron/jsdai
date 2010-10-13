@@ -32,8 +32,6 @@ package jsdai.SExtended_geometric_tolerance_xim;
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
 import jsdai.SProduct_property_definition_schema.*;
-import jsdai.SShape_property_assignment_xim.CxShape_element_relationship;
-import jsdai.SShape_property_assignment_xim.EShape_element_relationship;
 
 public class CxPerpendicular_shape_element_relationship extends CPerpendicular_shape_element_relationship implements EMappedXIMEntity{
 
@@ -41,23 +39,6 @@ public class CxPerpendicular_shape_element_relationship extends CPerpendicular_s
 		return this;
 	}
 
-	// FROM CShape_element_relationship.java
-	/// methods for attribute: relation_type, base type: STRING
-/*	public boolean testRelation_type(EShape_element_relationship type) throws SdaiException {
-		return testName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null);
-	}
-	public String getRelation_type(EShape_element_relationship type) throws SdaiException {
-		return getName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null);
-	}*/
-	public void setRelation_type(EShape_element_relationship type, String value) throws SdaiException {
-		setName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null, value);
-	}
-	public void unsetRelation_type(EShape_element_relationship type) throws SdaiException {
-		unsetName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null);
-	}
-	public static jsdai.dictionary.EAttribute attributeRelation_type(EShape_element_relationship type) throws SdaiException {
-		return attributeName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null);
-	}
 	// Taken from Shape_aspect_relationship
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(EShape_aspect_relationship type) throws SdaiException {
@@ -114,7 +95,7 @@ public class CxPerpendicular_shape_element_relationship extends CPerpendicular_s
 	 */
 	public static void setMappingConstraints(SdaiContext context,
 			EPerpendicular_shape_element_relationship armEntity) throws SdaiException {
-		CxShape_element_relationship.setMappingConstraints(context, armEntity);
+//		CxShape_element_relationship.setMappingConstraints(context, armEntity);
 		armEntity.setName(null, "perpendicular");
 	}
 
@@ -127,7 +108,7 @@ public class CxPerpendicular_shape_element_relationship extends CPerpendicular_s
 	 */
 	public static void unsetMappingConstraints(SdaiContext context,
 			EPerpendicular_shape_element_relationship armEntity) throws SdaiException {
-		CxShape_element_relationship.unsetMappingConstraints(context, armEntity);
+//		CxShape_element_relationship.unsetMappingConstraints(context, armEntity);
 		armEntity.unsetName(null);
 	}
 	

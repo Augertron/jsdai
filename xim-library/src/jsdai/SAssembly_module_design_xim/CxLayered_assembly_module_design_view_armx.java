@@ -36,7 +36,6 @@ import jsdai.SPhysical_unit_design_view_xim.*;
 import jsdai.SProduct_definition_schema.EProduct_definition;
 import jsdai.SProduct_property_definition_schema.EProperty_definition;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.*;
 
 public class CxLayered_assembly_module_design_view_armx
 		extends
@@ -46,19 +45,19 @@ public class CxLayered_assembly_module_design_view_armx
 
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(EProduct_definition type) throws SdaiException {
-		return test_string(a5);
+		return test_string(a4);
 	}
 	public String getDescription(EProduct_definition type) throws SdaiException {
-		return get_string(a5);
+		return get_string(a4);
 	}*/
 	public void setDescription(EProduct_definition type, String value) throws SdaiException {
-		a5 = set_string(value);
+		a4 = set_string(value);
 	}
 	public void unsetDescription(EProduct_definition type) throws SdaiException {
-		a5 = unset_string();
+		a4 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(EProduct_definition type) throws SdaiException {
-		return a5$;
+		return a4$;
 	}
 
 	// methods for derived attribute: name, base type: STRING
@@ -147,7 +146,7 @@ public class CxLayered_assembly_module_design_view_armx
 			setAdditional_contexts(context, this);
 
 			// From Item_shape
-			setId_x(context, this);
+//			setId_x(context, this);
 
 			// usage_view
 			setUsage_view(context, this);
@@ -158,7 +157,7 @@ public class CxLayered_assembly_module_design_view_armx
 			// Clean ARM specific attributes - this is DERIVED to some magic string
 			// unsetAdditional_characterization(null);
 			unsetAdditional_contexts(null);
-			unsetId_x(null);
+//			unsetId_x(null);
 			unsetUsage_view(null);
 	}
 
@@ -174,7 +173,7 @@ public class CxLayered_assembly_module_design_view_armx
 			// unsetAdditional_characterization(context, this);
 
 			//id_x
-			unsetId_x(context, this);
+//			unsetId_x(context, this);
 			
 			// usage_view
 			unsetUsage_view(context, this);
@@ -226,7 +225,7 @@ public class CxLayered_assembly_module_design_view_armx
 	}
 
 	//********** "design_discipline_item_definition" attributes
-
+/* Removed from XIM - see bug #3610
 	public static void setId_x(SdaiContext context,
 			EItem_shape armEntity) throws SdaiException {
 		//unset old values
@@ -242,11 +241,11 @@ public class CxLayered_assembly_module_design_view_armx
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	public static void unsetId_x(SdaiContext context,
-			EItem_shape armEntity) throws SdaiException {
+/* Removed from XIM - see bug #3610	
+	public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.unsetId_x(context, armEntity);	
 	}
-
+*/
 
 	/**
 	 * Sets/creates data for additional_context attribute.

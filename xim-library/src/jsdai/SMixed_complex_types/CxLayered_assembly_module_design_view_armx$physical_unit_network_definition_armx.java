@@ -38,8 +38,6 @@ import jsdai.SPhysical_unit_design_view_xim.EPart_design_view;
 import jsdai.SProduct_definition_schema.EProduct_definition;
 import jsdai.SProduct_property_definition_schema.EProperty_definition;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.CxItem_shape;
-import jsdai.SShape_property_assignment_xim.EItem_shape;
 
 public class CxLayered_assembly_module_design_view_armx$physical_unit_network_definition_armx extends
 		CLayered_assembly_module_design_view_armx$physical_unit_network_definition_armx implements EMappedXIMEntity{
@@ -48,19 +46,19 @@ public class CxLayered_assembly_module_design_view_armx$physical_unit_network_de
 
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(EProduct_definition type) throws SdaiException {
-		return test_string(a3);
+		return test_string(a2);
 	}
 	public String getDescription(EProduct_definition type) throws SdaiException {
-		return get_string(a3);
+		return get_string(a2);
 	}*/
 	public void setDescription(EProduct_definition type, String value) throws SdaiException {
-		a3 = set_string(value);
+		a2 = set_string(value);
 	}
 	public void unsetDescription(EProduct_definition type) throws SdaiException {
-		a3 = unset_string();
+		a2 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(EProduct_definition type) throws SdaiException {
-		return a3$;
+		return a2$;
 	}
 
 	// methods for derived attribute: name, base type: STRING
@@ -79,45 +77,45 @@ public class CxLayered_assembly_module_design_view_armx$physical_unit_network_de
 
 	// From property_definition
 /*	public static int usedinDefinition(EProperty_definition type, EEntity instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a10$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a9$, domain, result);
 	}
 	public boolean testDefinition(EProperty_definition type) throws SdaiException {
-		return test_instance(a10);
+		return test_instance(a9);
 	}
 
 	public EEntity getDefinition(EProperty_definition type) throws SdaiException { // case 1
-		a10 = get_instance_select(a10);
-		return (EEntity)a10;
+		a9 = get_instance_select(a9);
+		return (EEntity)a9;
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a10 = set_instanceX(a10, value);
+		a9 = set_instanceX(a9, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
-		a10 = unset_instance(a10);
+		a9 = unset_instance(a9);
 	}
 
 	public static jsdai.dictionary.EAttribute attributeDefinition(EProperty_definition type) throws SdaiException {
-		return a10$;
+		return a9$;
 	}
 
 	// Taken from Physical_unit - Property_definition
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
-		return test_string(a8);
+		return test_string(a7);
 	}
 	public String getName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
-		return get_string(a8);
+		return get_string(a7);
 	}*/
 	public void setName(jsdai.SProduct_property_definition_schema.EProperty_definition type, String value) throws SdaiException {
-		a8 = set_string(value);
+		a7 = set_string(value);
 	}
 	public void unsetName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
-		a8 = unset_string();
+		a7 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(jsdai.SProduct_property_definition_schema.EProperty_definition type) throws SdaiException {
-		return a8$;
+		return a7$;
 	}
 	// ENDOF Taken from Physical_unit - Property_definition
 	
@@ -149,7 +147,7 @@ public class CxLayered_assembly_module_design_view_armx$physical_unit_network_de
 			setAdditional_contexts(context, this);
 
 			// From Item_shape
-			setId_x(context, this);
+//			setId_x(context, this);
 
 			// usage_view
 			setUsage_view(context, this);
@@ -160,7 +158,7 @@ public class CxLayered_assembly_module_design_view_armx$physical_unit_network_de
 			// Clean ARM specific attributes - this is DERIVED to some magic string
 			// unsetAdditional_characterization(null);
 			unsetAdditional_contexts(null);
-			unsetId_x(null);
+//			unsetId_x(null);
 			unsetUsage_view(null);
 	}
 
@@ -176,7 +174,7 @@ public class CxLayered_assembly_module_design_view_armx$physical_unit_network_de
 			// unsetAdditional_characterization(context, this);
 
 			//id_x
-			unsetId_x(context, this);
+//			unsetId_x(context, this);
 			
 			// usage_view
 			unsetUsage_view(context, this);
@@ -228,13 +226,13 @@ public class CxLayered_assembly_module_design_view_armx$physical_unit_network_de
 	}
 
 	//********** "design_discipline_item_definition" attributes
-
+	/* Removed from XIM - see bug #3610
 	public static void setId_x(SdaiContext context,
 			EItem_shape armEntity) throws SdaiException {
 		//unset old values
 		CxItem_shape.setId_x(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes data for name attribute.
 	 * 
@@ -244,11 +242,12 @@ public class CxLayered_assembly_module_design_view_armx$physical_unit_network_de
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
+	/* Removed from XIM - see bug #3610
 	public static void unsetId_x(SdaiContext context,
 			EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.unsetId_x(context, armEntity);	
 	}
-
+*/
 
 	/**
 	 * Sets/creates data for additional_context attribute.

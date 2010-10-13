@@ -36,8 +36,6 @@ import jsdai.SFunctional_usage_view_mim.CFunctional_unit;
 import jsdai.SProduct_definition_schema.EProduct_definition;
 import jsdai.SProduct_property_definition_schema.EProperty_definition;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.CxItem_shape;
-import jsdai.SShape_property_assignment_xim.EItem_shape;
 
 public class CxFunctional_unit_usage_view extends CFunctional_unit_usage_view implements EMappedXIMEntity{
 
@@ -118,7 +116,7 @@ public class CxFunctional_unit_usage_view extends CFunctional_unit_usage_view im
 			//additional_context
 			setAdditional_contexts(context, this);
 
-			setId_x(context, this);
+//			setId_x(context, this);
 			// clean ARM
 			//additional_characterization
 			unsetAdditional_characterization(null);
@@ -126,7 +124,7 @@ public class CxFunctional_unit_usage_view extends CFunctional_unit_usage_view im
 			//additional_context
 			unsetAdditional_contexts(null);
 			
-			unsetId_x(null);
+//			unsetId_x(null);
 
 	}
 
@@ -141,7 +139,7 @@ public class CxFunctional_unit_usage_view extends CFunctional_unit_usage_view im
 			//additional_characterization
 			unsetAdditional_characterization(context, this);
 			
-			unsetId_x(context, this);
+//			unsetId_x(context, this);
 			// this.deleteApplicationInstance();
 	}
 
@@ -281,11 +279,11 @@ public class CxFunctional_unit_usage_view extends CFunctional_unit_usage_view im
 	}
 
 ////Item_shape	
-	public static void setId_x(SdaiContext context,
-			EItem_shape armEntity) throws SdaiException {
+/* Removed from XIM - see bug #3610	
+	public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.setId_x(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes data for name attribute.
 	 * 
@@ -295,9 +293,9 @@ public class CxFunctional_unit_usage_view extends CFunctional_unit_usage_view im
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	public static void unsetId_x(SdaiContext context,
-			EItem_shape armEntity) throws SdaiException {
+/* Removed from XIM - see bug #3610	
+	public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.unsetId_x(context, armEntity);
 	}
-
+*/
 }

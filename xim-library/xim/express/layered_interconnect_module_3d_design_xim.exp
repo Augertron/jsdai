@@ -33,9 +33,14 @@ USE FROM Stratum_non_planar_shape_xim;
 REFERENCE FROM support_resource_schema   -- ISO 10303-41
   (bag_to_set);
 
-  TYPE stratum_feature_3d_shape_select = SELECT
-    (Stratum_feature_non_planar_2d_shape_model,
-     Stratum_feature_3d_shape_model);
+USE FROM geometric_model_schema(solid_model);
+
+  TYPE lim3dd_sf_shape_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON limd_sf_shape_select WITH 
+    (solid_model);
+  END_TYPE; 
+
+  TYPE lim3dd_stratum_shape_model_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON limd_stratum_shape_model_select WITH 
+    (Stratum_3d_shape_model);
   END_TYPE;
 
   ENTITY Located_3d_inter_stratum_extent
@@ -52,15 +57,6 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
     WHERE
       WR1 : NOT ('LAYERED_INTERCONNECT_MODULE_3D_DESIGN_XIM.PLANAR_SHAPE_MODEL' IN TYPEOF(SELF));
       WR2 : SIZEOF(USEDIN(SELF, 'SHAPE_PROPERTY_ASSIGNMENT_XIM.SHAPE_DESCRIPTION_ASSOCIATION.REPRESENTATION'))=0;        
-  END_ENTITY;
-
-  ENTITY Stratum_feature_3d_shape_model
-    (* CONNOTATIONAL *) SUBTYPE OF (Shape_representation);
-      shape_characterized_component : Stratum_feature_armx;
-    DERIVE
-     SELF\Representation.name : label := '3d bound volume shape';
-    WHERE
-     WR1 : SIZEOF(USEDIN(SELF, 'SHAPE_PROPERTY_ASSIGNMENT_XIM.SHAPE_DESCRIPTION_ASSOCIATION.REPRESENTATION'))=0;         
   END_ENTITY;
 
   ENTITY Stratum_interconnect_module_3d_position
@@ -131,7 +127,7 @@ FUNCTION no_3d_location_for_component(comp : Assembly_component_armx) : BOOLEAN;
   END_LOCAL;
   
   REPEAT i := 1 TO SIZEOF(comp.occurrence_contexts);
-    cis := bag_to_set(USEDIN(comp.occurrence_contexts[i],'SHAPE_PROPERTY_ASSIGNMENT_XIM.CONTEXTUAL_ITEM_SHAPE.DESCRIBED_ELEMENT'));
+    cis := bag_to_set(USEDIN(comp.occurrence_contexts[i],'PRODUCT_PROPERTY_DEFINITION_SCHEMA.PROPERTY_DEFINITION.DEFINITION'));
     REPEAT j := 1 TO SIZEOF(cis);
       loc := bag_to_set(USEDIN(cis[j],'CONTEXTUAL_SHAPE_POSITIONING_XIM.CONTEXTUAL_SHAPE_REPRESENTATION.CONTEXTUAL_SHAPE'));
       IF (SIZEOF(loc) > 0) THEN

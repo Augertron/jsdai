@@ -51,43 +51,43 @@ public class CxFiducial_armx$stratum_feature_template_component_armx
 	public static int apFlag = AP21x; // Default is this style  
 	// Taken from PDR
 	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
-		a6 = set_string(value);
+		a5 = set_string(value);
 	}
 	public void unsetId(EProduct_definition_relationship type) throws SdaiException {
-		a6 = unset_string();
+		a5 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
-		return a6$;
+		return a5$;
 	}
 
 	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
-		a7 = set_string(value);
+		a6 = set_string(value);
 	}
 	public void unsetName(EProduct_definition_relationship type) throws SdaiException {
-		a7 = unset_string();
+		a6 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
-		return a7$;
+		return a6$;
 	}
 	
 	// attribute (current explicit or supertype explicit) : relating_product_definition, base type: entity product_definition
 /*	public static int usedinRelating_product_definition(EProduct_definition_relationship type, EProduct_definition instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a9$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a8$, domain, result);
 	}
 	public boolean testRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		return test_instance(a9);
+		return test_instance(a8);
 	}
 	public EProduct_definition getRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		return (EProduct_definition)get_instance(a9);
+		return (EProduct_definition)get_instance(a8);
 	}*/
 	public void setRelating_product_definition(EProduct_definition_relationship type, EProduct_definition value) throws SdaiException {
-		a9 = set_instanceX(a9, value);
+		a8 = set_instanceX(a8, value);
 	}
 	public void unsetRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		a9 = unset_instance(a9);
+		a8 = unset_instance(a8);
 	}
 	public static jsdai.dictionary.EAttribute attributeRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		return a9$;
+		return a8$;
 	}
 	// ENDOF taken from PDR
 	
@@ -95,19 +95,19 @@ public class CxFiducial_armx$stratum_feature_template_component_armx
 
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(EProduct_definition type) throws SdaiException {
-		return test_string(a3);
+		return test_string(a2);
 	}
 	public String getDescription(EProduct_definition type) throws SdaiException {
-		return get_string(a3);
+		return get_string(a2);
 	}*/
 	public void setDescription(EProduct_definition type, String value) throws SdaiException {
-		a3 = set_string(value);
+		a2 = set_string(value);
 	}
 	public void unsetDescription(EProduct_definition type) throws SdaiException {
-		a3 = unset_string();
+		a2 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(EProduct_definition type) throws SdaiException {
-		return a3$;
+		return a2$;
 	}
 
 	// methods for derived attribute: name, base type: STRING
@@ -126,86 +126,86 @@ public class CxFiducial_armx$stratum_feature_template_component_armx
 
 	// attribute (current explicit or supertype explicit) : formation, base type: entity product_definition_formation
 /*	public static int usedinFormation(EProduct_definition type, EProduct_definition_formation instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a4$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a3$, domain, result);
 	}
 	public boolean testFormation(EProduct_definition type) throws SdaiException {
-		return test_instance(a4);
+		return test_instance(a3);
 	}
 	public EProduct_definition_formation getFormation(EProduct_definition type) throws SdaiException {
-		a4 = get_instance(a4);
-		return (EProduct_definition_formation)a4;
+		a3 = get_instance(a3);
+		return (EProduct_definition_formation)a3;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a4 = set_instanceX(a4, value);
+		a3 = set_instanceX(a3, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
-		a4 = unset_instance(a4);
+		a3 = unset_instance(a3);
 	}
 	public static jsdai.dictionary.EAttribute attributeFormation(EProduct_definition type) throws SdaiException {
-		return a4$;
+		return a3$;
 	}
 
 	// attribute (current explicit or supertype explicit) : frame_of_reference, base type: entity product_definition_context
 /*	public static int usedinFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a5$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a4$, domain, result);
 	}
 	public boolean testFrame_of_reference(EProduct_definition type) throws SdaiException {
-		return test_instance(a5);
+		return test_instance(a4);
 	}
 	public jsdai.SApplication_context_schema.EProduct_definition_context getFrame_of_reference(EProduct_definition type) throws SdaiException {
-		a5 = get_instance(a5);
-		return (jsdai.SApplication_context_schema.EProduct_definition_context)a5;
+		a4 = get_instance(a4);
+		return (jsdai.SApplication_context_schema.EProduct_definition_context)a4;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a5 = set_instanceX(a5, value);
+		a4 = set_instanceX(a4, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
-		a5 = unset_instance(a5);
+		a4 = unset_instance(a4);
 	}
 	public static jsdai.dictionary.EAttribute attributeFrame_of_reference(EProduct_definition type) throws SdaiException {
-		return a5$;
+		return a4$;
 	}
 	
 	// From CProperty_definition.java
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(EProperty_definition type) throws SdaiException {
-		return test_string(a13);
+		return test_string(a12);
 	}
 	public String getName(EProperty_definition type) throws SdaiException {
-		return get_string(a13);
+		return get_string(a12);
 	}*/
 	public void setName(EProperty_definition type, String value) throws SdaiException {
-		a13 = set_string(value);
+		a12 = set_string(value);
 	}
 	public void unsetName(EProperty_definition type) throws SdaiException {
-		a13 = unset_string();
+		a12 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(EProperty_definition type) throws SdaiException {
-		return a13$;
+		return a12$;
 	}
 	// -2- methods for SELECT attribute: definition
 /*	public static int usedinDefinition(EProperty_definition type, EEntity instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a15$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a14$, domain, result);
 	}
 	public boolean testDefinition(EProperty_definition type) throws SdaiException {
-		return test_instance(a15);
+		return test_instance(a14);
 	}
 
 	public EEntity getDefinition(EProperty_definition type) throws SdaiException { // case 1
-		a15 = get_instance_select(a15);
-		return (EEntity)a15;
+		a14 = get_instance_select(a14);
+		return (EEntity)a14;
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a15 = set_instanceX(a15, value);
+		a14 = set_instanceX(a14, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
-		a15 = unset_instance(a15);
+		a14 = unset_instance(a14);
 	}
 
 	public static jsdai.dictionary.EAttribute attributeDefinition(EProperty_definition type) throws SdaiException {
-		return a15$;
+		return a14$;
 	}
 	
 	// ENDOF From CProperty_definition.java
@@ -229,7 +229,7 @@ public class CxFiducial_armx$stratum_feature_template_component_armx
 
 			//********** "design_discipline_item_definition" attributes
 			//Id
-			setId_x(context, this);
+//			setId_x(context, this);
 			
 			//id - goes directly into AIM
 			
@@ -255,7 +255,7 @@ public class CxFiducial_armx$stratum_feature_template_component_armx
 			
 			
 			unsetDerived_from(null);
-			unsetId_x(null);
+//			unsetId_x(null);
 
 			// stratum_feature_implementation
 			unsetImplementation_or_resident_stratum(null);
@@ -283,7 +283,7 @@ public class CxFiducial_armx$stratum_feature_template_component_armx
 			
 			unsetDerived_from(context, this);
 			
-			unsetId_x(context, this);			
+//			unsetId_x(context, this);			
 
 			// stratum_feature_implementation
 			unsetImplementation_or_resident_stratum(context, this);
@@ -405,11 +405,11 @@ public class CxFiducial_armx$stratum_feature_template_component_armx
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	public static void setId_x(SdaiContext context,
-			EItem_shape armEntity) throws SdaiException {
+/* Removed from XIM - see bug #3610	
+	public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.setId_x(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes data for Quantity_criterion attribute.
 	 * 
@@ -419,11 +419,11 @@ public class CxFiducial_armx$stratum_feature_template_component_armx
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	public static void unsetId_x(SdaiContext context,
-			EItem_shape armEntity) throws SdaiException {
+/* Removed from XIM - see bug #3610	
+	public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.unsetId_x(context, armEntity);		
 	}
-
+*/
 	//********** "special_symbol_laminate_component" attributes
 
 	/**

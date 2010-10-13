@@ -40,92 +40,92 @@ public class CxTarget_point extends CTarget_point implements EMappedXIMEntity
 	// From CShape_aspect.java
 	// attribute (current explicit or supertype explicit) : of_shape, base type: entity product_definition_shape
 /*	public static int usedinOf_shape(EShape_aspect type, EProduct_definition_shape instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a2$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a7$, domain, result);
 	}
 	public boolean testOf_shape(EShape_aspect type) throws SdaiException {
-		return test_instance(a2);
+		return test_instance(a7);
 	}
 	public EProduct_definition_shape getOf_shape(EShape_aspect type) throws SdaiException {
-		a2 = get_instance(a2);
-		return (EProduct_definition_shape)a2;
+		a7 = get_instance(a7);
+		return (EProduct_definition_shape)a7;
 	}*/
 	public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
-		a2 = set_instanceX(a2, value);
+		a7 = set_instanceX(a7, value);
 	}
 	public void unsetOf_shape(EShape_aspect type) throws SdaiException {
-		a2 = unset_instance(a2);
+		a7 = unset_instance(a7);
 	}
 	public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) throws SdaiException {
-		return a2$;
+		return a7$;
 	}
 	
 	/// methods for attribute: product_definitional, base type: LOGICAL
 /*	public boolean testProduct_definitional(EShape_aspect type) throws SdaiException {
-		return test_logical(a3);
+		return test_logical(a8);
 	}
 	public int getProduct_definitional(EShape_aspect type) throws SdaiException {
-		return get_logical(a3);
+		return get_logical(a8);
 	}*/
 	public void setProduct_definitional(EShape_aspect type, int value) throws SdaiException {
-		a3 = set_logical(value);
+		a8 = set_logical(value);
 	}
 	public void unsetProduct_definitional(EShape_aspect type) throws SdaiException {
-		a3 = unset_logical();
+		a8 = unset_logical();
 	}
 	public static jsdai.dictionary.EAttribute attributeProduct_definitional(EShape_aspect type) throws SdaiException {
-		return a3$;
+		return a8$;
 	}
 
 	/// methods for attribute: name, base type: STRING
 	/*	public boolean testName(EShape_aspect type) throws SdaiException {
-			return test_string(a0);
+			return test_string(a5);
 		}
 		public String getName(EShape_aspect type) throws SdaiException {
-			return get_string(a0);
+			return get_string(a5);
 		}*/
 		public void setName(EShape_aspect type, String value) throws SdaiException {
-			a0 = set_string(value);
+			a5 = set_string(value);
 		}
 		public void unsetName(EShape_aspect type) throws SdaiException {
-			a0 = unset_string();
+			a5 = unset_string();
 		}
 		public static jsdai.dictionary.EAttribute attributeName(EShape_aspect type) throws SdaiException {
-			return a0$;
+			return a5$;
 		}
 		
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(EShape_aspect type) throws SdaiException {
-		return test_string(a1);
+		return test_string(a6);
 	}
 	public String getDescription(EShape_aspect type) throws SdaiException {
-		return get_string(a1);
+		return get_string(a6);
 	}*/
 	public void setDescription(EShape_aspect type, String value) throws SdaiException {
-		a1 = set_string(value);
+		a6 = set_string(value);
 	}
 	public void unsetDescription(EShape_aspect type) throws SdaiException {
-		a1 = unset_string();
+		a6 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(EShape_aspect type) throws SdaiException {
-		return a1$;
+		return a6$;
 	}
 	// ENDOF From CShape_aspect.java
 
 	/// methods for attribute: target_id, base type: STRING
 /*	public boolean testTarget_id(EDatum_target type) throws SdaiException {
-		return test_string(a4);
+		return test_string(a9);
 	}
 	public String getTarget_id(EDatum_target type) throws SdaiException {
-		return get_string(a4);
+		return get_string(a9);
 	}*/
 	public void setTarget_id(EDatum_target type, String value) throws SdaiException {
-		a4 = set_string(value);
+		a9 = set_string(value);
 	}
 	public void unsetTarget_id(EDatum_target type) throws SdaiException {
-		a4 = unset_string();
+		a9 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeTarget_id(EDatum_target type) throws SdaiException {
-		return a4$;
+		return a9$;
 	}
 	public int attributeState = ATTRIBUTES_MODIFIED;	
 
@@ -144,17 +144,17 @@ public class CxTarget_point extends CTarget_point implements EMappedXIMEntity
 		unsetProperty(context, this);
 
 		// defined_in : geometric_representation_context;
-		setDefined_in(context, this);
+//		setDefined_in(context, this);
 		
         // parameter_reference : axis2_placement;
-		setParameter_reference(context, this);
+//		setParameter_reference(context, this);
 		
 		// clean ARM
 		// defined_in : geometric_representation_context;
-		unsetDefined_in(null);
+//		unsetDefined_in(null);
 		
         // parameter_reference : axis2_placement;
-		unsetParameter_reference(null);
+//		unsetParameter_reference(null);
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
@@ -169,6 +169,13 @@ public class CxTarget_point extends CTarget_point implements EMappedXIMEntity
 	 * Sets/creates data for mapping constraints.
 	 * 
 	 * <p>
+	mapping_constraints;
+			placed_datum_target_feature <= 
+			datum_target
+			{datum_target <= 
+			shape_aspect 
+			shape_aspect.description = 'point'}
+	end_mapping_constraints;
 	 * </p>
 	 * 
 	 * @param context
@@ -181,6 +188,7 @@ public class CxTarget_point extends CTarget_point implements EMappedXIMEntity
 			ETarget_point armEntity) throws SdaiException {
 		unsetMappingConstraints(context, armEntity);
 		CxPlaced_target.setMappingConstraints(context, armEntity);
+		armEntity.setDescription((EShape_aspect)null, "point");
 	}
 
 	/**
@@ -193,6 +201,7 @@ public class CxTarget_point extends CTarget_point implements EMappedXIMEntity
 	public static void unsetMappingConstraints(SdaiContext context,
 			EPlaced_target armEntity) throws SdaiException {
 		CxPlaced_target.unsetMappingConstraints(context, armEntity);
+		armEntity.unsetDescription((EShape_aspect)null);
 	}
 
 	/**
@@ -233,10 +242,11 @@ public class CxTarget_point extends CTarget_point implements EMappedXIMEntity
 	 * @throws SdaiException
 	 */
 	// PDTF <- PropD <- PDR -> SRWP -> GRC 
+	/* Removed - issue 3610		
 	public static void setDefined_in(SdaiContext context, EPlaced_target armEntity) throws SdaiException {
 		CxPlaced_target.setDefined_in(context, armEntity);
 	}
-
+*/
 	/**
 	 * Sets/creates data for Parameter_reference attribute.
 	 * 
@@ -277,10 +287,11 @@ public class CxTarget_point extends CTarget_point implements EMappedXIMEntity
 	 * @throws SdaiException
 	 */
 	// PDTF <- PropD <- SDR -> SRWP -> P 
+	/* Removed - issue 3610		
 	public static void setParameter_reference(SdaiContext context, EPlaced_target armEntity) throws SdaiException {
 		CxPlaced_target.setParameter_reference(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes mapping constraint data.
 	 * 

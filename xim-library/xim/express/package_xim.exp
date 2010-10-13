@@ -84,8 +84,8 @@ TYPE interface_plane_or_seating_plane =  SELECT
   ENTITY Connection_zone_in_part_feature_template_definition
   	SUBTYPE OF (Connection_zone);
   	DERIVE
-  		associated_definition : Part_feature_template_definition := containing_shape.described_element;
-  		SELF\Shape_element.element_name : STRING := '';
+  		associated_definition : Part_feature_template_definition := of_shape.definition;
+  		SELF\shape_aspect.name : STRING := '';
   END_ENTITY; 
 
   ENTITY Connection_zone_package_interface_plane_relationship
@@ -141,8 +141,8 @@ TYPE interface_plane_or_seating_plane =  SELECT
       interface_plane                       : SET OF Interface_plane := bag_to_set(QUERY(nfse <* USEDIN(SELF, 'NON_FEATURE_SHAPE_ELEMENT_XIM.NON_FEATURE_SHAPE_ELEMENT.SCOPE')|
                                                 'NON_FEATURE_SHAPE_ELEMENT_XIM.INTERFACE_PLANE' IN TYPEOF(nfse)));      
     INVERSE
-      body                                  : SET[0:1] OF package_body_armx FOR containing_shape(* TEMP-AD! *);
-      package_accesses                      : SET[0:?] OF package_terminal_armx FOR containing_shape(* TEMP-AD! *);
+      body                                  : SET[0:1] OF package_body_armx FOR of_shape(* TEMP-AD! *);
+      package_accesses                      : SET[0:?] OF package_terminal_armx FOR of_shape(* TEMP-AD! *);
       package_polarity_indication           : SET[0:1] OF Polarity_indication_feature FOR associated_definition;
       orientation_feature                   : SET[0:3] OF Package_orientation_feature FOR associated_definition;
     WHERE
@@ -172,7 +172,7 @@ TYPE interface_plane_or_seating_plane =  SELECT
 
   ENTITY Package_body_armx
     (* CONNOTATIONAL *) SUBTYPE OF (Part_feature, package_body);
-      SELF\Shape_element.containing_shape(* TEMP-PF! *) : Package_armx;
+      SELF\shape_aspect.of_shape(* TEMP-PF! *) : Package_armx;
     INVERSE
       body_material : material_designation FOR definitions;
     WHERE
@@ -271,8 +271,8 @@ TYPE interface_plane_or_seating_plane =  SELECT
 
   ENTITY Package_terminal_surface_constituent_relationship
     (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_constituent_relationship);
-      SELF\Shape_element_relationship.relating : Package_body_surface_armx;
-      SELF\Shape_element_relationship.related  : Package_terminal_armx;
+      SELF\shape_aspect_relationship.relating_shape_aspect : Package_body_surface_armx;
+      SELF\shape_aspect_relationship.related_shape_aspect  : Package_terminal_armx;
   END_ENTITY;
 
   ENTITY Polarity_indication_feature

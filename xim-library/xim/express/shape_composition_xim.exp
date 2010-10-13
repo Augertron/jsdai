@@ -40,12 +40,17 @@ USE FROM shape_dimension_schema(dimensional_location);
     (* CONNOTATIONAL *) SUBTYPE OF (Composite_shape_element, composite_group_shape_aspect);
   END_ENTITY;
 
+  ENTITY Composite_shape_aspect_armx
+    SUBTYPE OF (composite_shape_aspect);
+      elements: SET[2:?] OF shape_aspect;
+  END_ENTITY;
+
   ENTITY Composite_shape_element
     ABSTRACT SUPERTYPE OF (ONEOF (Composite_group_shape_element,
  Composite_unit_shape_element))
-    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element, composite_shape_aspect);
+    (* CONNOTATIONAL *) SUBTYPE OF (composite_shape_aspect);
     INVERSE
-      composing_relationships : SET[2:?] OF shape_element_composing_relationship FOR relating;
+      composing_relationships : SET[2:?] OF shape_element_composing_relationship FOR relating_shape_aspect;
   END_ENTITY;
 
   ENTITY Composite_unit_shape_element
@@ -53,35 +58,63 @@ USE FROM shape_dimension_schema(dimensional_location);
   END_ENTITY;
 
   ENTITY Shape_element_boundary_relationship
-    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_relationship);
+    (* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
     DERIVE
-      SELF\Shape_element_relationship.relation_type : STRING := '';
+      SELF\shape_aspect_relationship.name : STRING := '';
   END_ENTITY;
 
   ENTITY Shape_element_composing_relationship
     (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_constituent_relationship);
-      SELF\Shape_element_relationship.relating : Composite_shape_element;
+      SELF\shape_aspect_relationship.relating_shape_aspect : Composite_shape_element;
   END_ENTITY;
 
   ENTITY Shape_element_constituent_relationship
     SUPERTYPE OF (Shape_element_composing_relationship)
-    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_relationship);
+    (* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
     DERIVE
-      SELF\Shape_element_relationship.relation_type : STRING := '';
+      SELF\shape_aspect_relationship.name : STRING := '';
     UNIQUE
-      UR1 : related, relating;
+      UR1 : related_shape_aspect, relating_shape_aspect;
     WHERE
-      WR1 : SELF\Shape_element_relationship.related <> SELF\Shape_element_relationship.relating;
+      WR1 : SELF\shape_aspect_relationship.related_shape_aspect <> SELF\shape_aspect_relationship.relating_shape_aspect;
   END_ENTITY;
 
   ENTITY Shape_element_locating_relationship
 		(* CONNOTATIONAL *) SUBTYPE OF (Shape_element_constituent_relationship, dimensional_location);
-      SELF\Shape_element_relationship.relating RENAMED locating_shape_element	: Shape_element;
-      SELF\Shape_element_relationship.related RENAMED located_shape_element		: Shape_element;
+      SELF\shape_aspect_relationship.relating_shape_aspect RENAMED locating_shape_element	: shape_aspect;
+      SELF\shape_aspect_relationship.related_shape_aspect RENAMED located_shape_element		: shape_aspect;
     UNIQUE
       UR1 : located_shape_element,
  locating_shape_element;
   END_ENTITY;
+
+(** http://bugzilla.lksoft.lt/show_bug.cgi?id=3673 *)
+ENTITY All_over_shape_aspect
+  SUBTYPE OF (shape_aspect);
+DERIVE
+  SELF\shape_aspect.description : text := 'all over';
+UNIQUE
+  u1 : of_shape;
+END_ENTITY;
+
+ENTITY All_around_shape_aspect
+  SUBTYPE OF (Composite_shape_aspect_armx);
+DERIVE
+  SELF\shape_aspect.description : text := 'all around';
+END_ENTITY;
+
+ENTITY Composite_group_shape_aspect_armx
+  SUBTYPE OF (Composite_shape_aspect_armx);
+DERIVE
+  no_of_elements : INTEGER := SIZEOF(elements);
+  SELF\shape_aspect.description : text := 'group';
+END_ENTITY;
+
+ENTITY Composite_unit_shape_aspect_armx
+  SUBTYPE OF (Composite_shape_aspect_armx);
+DERIVE
+  SELF\shape_aspect.description : text := 'unit';
+END_ENTITY;
 
 END_SCHEMA;
 

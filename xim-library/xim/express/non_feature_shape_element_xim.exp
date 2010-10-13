@@ -58,8 +58,10 @@ USE FROM Non_feature_shape_element_mim;
   END_ENTITY;
 
   ENTITY Non_feature_shape_element
-    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element);
-      SELF\Shape_element.containing_shape RENAMED scope : ee_product_definition_with_annotation_elements;
+    (* CONNOTATIONAL *) SUBTYPE OF (shape_aspect);
+      SELF\shape_aspect.of_shape RENAMED scope : ee_product_definition_with_annotation_elements;
+    DERIVE
+      SELF\shape_aspect.product_definitional : LOGICAL := FALSE;
     INVERSE
       element_shape            : SET[0:?] OF non_feature_shape_model FOR associated_element;
       associated_usage_concept : SET[0:?] OF usage_concept_usage_relationship_armx FOR associated_usage;
@@ -67,18 +69,18 @@ USE FROM Non_feature_shape_element_mim;
       UR1 : SELF\Shape_aspect.name, scope;
     WHERE
       WR1 : NOT(SIZEOF(associated_usage_concept) > 0) OR (SIZEOF(element_shape)> 0);
-      WR2 : 'SHAPE_PROPERTY_ASSIGNMENT_XIM.ITEM_SHAPE' IN TYPEOF(scope);      
+      WR2 : 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.PRODUCT_DEFINITION_SHAPE' IN TYPEOF(scope);      
   END_ENTITY;
 
   ENTITY Non_feature_shape_element_relationship
-    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_relationship);
-      SELF\Shape_element_relationship.relating 	: Non_feature_shape_element;    
-      SELF\Shape_element_relationship.related		: Non_feature_shape_element;
+    (* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
+      SELF\shape_aspect_relationship.relating_shape_aspect 	: Non_feature_shape_element;    
+      SELF\shape_aspect_relationship.related_shape_aspect	: Non_feature_shape_element;
     DERIVE
-      SELF\Shape_element_relationship.relation_type : STRING := '';
+      SELF\shape_aspect_relationship.name : STRING := '';
     UNIQUE
-      UR1 : SELF\Shape_element_relationship.related,
- SELF\Shape_element_relationship.relating;
+      UR1 : SELF\shape_aspect_relationship.related_shape_aspect,
+ SELF\shape_aspect_relationship.relating_shape_aspect;
   END_ENTITY;
 
    ENTITY Reference_graphic_registration_mark_armx
@@ -88,13 +90,13 @@ USE FROM Non_feature_shape_element_mim;
   ENTITY Seating_plane_armx
     (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, seating_plane);
    WHERE
-     WR1 : (SELF\Shape_element.element_name = 'seating plane');    
+     WR1 : (SELF\shape_aspect.name = 'seating plane');    
   END_ENTITY;
 
   ENTITY Interface_plane_armx
     SUBTYPE OF (Non_feature_shape_element);
    WHERE
-    WR1 : (SELF\Shape_element.element_name = 'interface plane');
+    WR1 : (SELF\shape_aspect.name = 'interface plane');
   END_ENTITY;
 
   ENTITY Usage_view_level_non_feature_shape_model

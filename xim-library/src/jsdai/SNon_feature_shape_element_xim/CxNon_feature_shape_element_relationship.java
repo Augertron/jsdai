@@ -33,8 +33,6 @@ import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
 import jsdai.SProduct_property_definition_schema.CShape_aspect_relationship;
 import jsdai.SProduct_property_definition_schema.EShape_aspect_relationship;
-import jsdai.SShape_property_assignment_xim.CxShape_element_relationship;
-import jsdai.SShape_property_assignment_xim.EShape_element_relationship;
 
 public class CxNon_feature_shape_element_relationship extends CNon_feature_shape_element_relationship implements EMappedXIMEntity{
 
@@ -49,7 +47,7 @@ public class CxNon_feature_shape_element_relationship extends CNon_feature_shape
 	}
 	public String getRelation_type(EShape_element_relationship type) throws SdaiException {
 		return getName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null);
-	}*/
+	}
 	public void setRelation_type(EShape_element_relationship type, String value) throws SdaiException {
 		setName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null, value);
 	}
@@ -58,7 +56,7 @@ public class CxNon_feature_shape_element_relationship extends CNon_feature_shape
 	}
 	public static jsdai.dictionary.EAttribute attributeRelation_type(EShape_element_relationship type) throws SdaiException {
 		return attributeName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null);
-	}
+	}*/
 	// Taken from Shape_aspect_relationship
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(EShape_aspect_relationship type) throws SdaiException {
@@ -113,7 +111,7 @@ public class CxNon_feature_shape_element_relationship extends CNon_feature_shape
 	 */
 	public static void setMappingConstraints(SdaiContext context,
 			ENon_feature_shape_element_relationship armEntity) throws SdaiException {
-		CxShape_element_relationship.setMappingConstraints(context, armEntity);
+//		CxShape_element_relationship.setMappingConstraints(context, armEntity);
 		armEntity.setName(null, "non feature shape element relationship");
 	}
 
@@ -126,7 +124,7 @@ public class CxNon_feature_shape_element_relationship extends CNon_feature_shape
 	 */
 	public static void unsetMappingConstraints(SdaiContext context,
 			ENon_feature_shape_element_relationship armEntity) throws SdaiException {
-		CxShape_element_relationship.unsetMappingConstraints(context, armEntity);
+//		CxShape_element_relationship.unsetMappingConstraints(context, armEntity);
 		armEntity.unsetName(null);
 	}
 

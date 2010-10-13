@@ -40,15 +40,17 @@ USE FROM Interconnect_module_with_macros_mim;
     (* CONNOTATIONAL *) SUBTYPE OF (Physical_component_armx, Single_instance, interconnect_module_macro_component);
       SELF\Definition_based_product_occurrence.derived_from : Layered_interconnect_module_design_view_armx;
     INVERSE
-      join_access_mechanisms : SET[1:?] OF interconnect_module_macro_component_join_terminal_armx FOR containing_shape(* TEMP-AC! *);
+      join_access_mechanisms : SET[1:?] OF interconnect_module_macro_component_join_terminal_armx FOR of_shape(* TEMP-AC! *);
     WHERE
-      WR1 : SIZEOF(QUERY(immcjt <* join_access_mechanisms | immcjt\Component_feature_armx.definition\Shape_element.containing_shape :<>: SELF\Definition_based_product_occurrence.derived_from\Part_design_view.usage_view)) = 0;
+      WR1 : SIZEOF(QUERY(immcjt <* join_access_mechanisms | immcjt\Component_feature_armx.definition\shape_aspect.of_shape :<>: SELF\Definition_based_product_occurrence.derived_from\Part_design_view.usage_view)) = 0;
   END_ENTITY;
 
   ENTITY Interconnect_module_macro_component_join_terminal_armx
     (* CONNOTATIONAL *) SUBTYPE OF (Physical_component_terminal_armx, interconnect_module_macro_component_join_terminal);
       SELF\Component_feature_armx.definition           : Interconnect_module_macro_terminal_armx;
-      SELF\Shape_element.containing_shape(* TEMP-CF! *) : Interconnect_module_macro_component_armx;
+      SELF\shape_aspect.of_shape(* TEMP-CF! *) : Interconnect_module_macro_component_armx;
+    DERIVE
+      SELF\shape_aspect.product_definitional : LOGICAL := TRUE;
   END_ENTITY;
 
 END_SCHEMA;

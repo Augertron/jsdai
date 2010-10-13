@@ -139,11 +139,6 @@ USE FROM Layered_interconnect_module_design_mim;
 		Stratum_armx));
 	END_SUBTYPE_CONSTRAINT; 
 
-    SUBTYPE_CONSTRAINT limd_stratum_feature_template_component_subtypes FOR Stratum_feature_template_component_armx;   
-	(ONEOF (Area_component_armx,
-            Conductive_interconnect_element_armx));
-	END_SUBTYPE_CONSTRAINT;
-
 	SUBTYPE_CONSTRAINT limd_template_definition_subtypes FOR Template_definition; 
 	    (ONEOF (
            ONEOF(Printed_part_template_armx, Special_symbol_template_armx) ANDOR  Geometric_template_armx, 
@@ -202,6 +197,12 @@ USE FROM Layered_interconnect_module_design_mim;
 	     Stratum_armx);
 	END_TYPE;
 
+  TYPE limd_sf_shape_select = EXTENSIBLE GENERIC_ENTITY SELECT;
+  END_TYPE;
+
+  TYPE limd_stratum_shape_model_select = EXTENSIBLE GENERIC_ENTITY SELECT;
+  END_TYPE;
+  
 	TYPE limd_usage_concept = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON usage_concept WITH 
 		(Component_termination_passage_template_terminal,
 	     Via_template_terminal);
@@ -315,7 +316,7 @@ USE FROM Layered_interconnect_module_design_mim;
       SELF\Component_feature_armx.definition           : Component_termination_passage_template_join_terminal;
       SELF\Component_feature_armx.associated_component(* TEMP-CF *) : Component_termination_passage_armx;
     DERIVE
-      SELF\Shape_element.description : text := 'component termination passage join terminal';
+      SELF\shape_aspect.description : text := 'component termination passage join terminal';
   END_ENTITY;
 
   ENTITY Conductive_filled_area
@@ -407,7 +408,7 @@ USE FROM Layered_interconnect_module_design_mim;
     INVERSE
       join_component : SET [0:?] OF Single_stratum_printed_component_armx FOR stratum_feature_implementation;
     WHERE
-      WR1 : NOT EXISTS(SELF\Shape_element.description);
+      WR1 : NOT EXISTS(SELF\shape_aspect.description);
       WR2 : SIZEOF(implementation_requirement) - SIZEOF(join_component) = 1;
       WR3 : (SIZEOF(join_component) = 0) OR
              (SIZEOF(QUERY(jc <* join_component |
@@ -659,7 +660,7 @@ USE FROM Layered_interconnect_module_design_mim;
 
   ENTITY Interface_access_material_removal_laminate_component_armx
     (* CONNOTATIONAL *) SUBTYPE OF (Material_removal_laminate_component_armx, interface_access_material_removal_laminate_component);
-      accessed_interface : Laminate_component_interface_terminal_armx;
+      SELF\Material_removal_laminate_component_armx.causal_item RENAMED accessed_interface : Laminate_component_interface_terminal_armx;
   END_ENTITY;
 
   ENTITY Interface_access_stratum_feature_template_component_armx
@@ -772,7 +773,7 @@ ENTITY Laminate_component_armx
   ENTITY Layer_stack_region_armx
     SUBTYPE OF (Instanced_feature_armx, layer_stack_region);
       applied_stack                       : SET [1:?] OF Local_linear_stack_armx;
-      SELF\Shape_element.containing_shape : Layered_interconnect_module_design_view_armx;
+      SELF\shape_aspect.of_shape : Layered_interconnect_module_design_view_armx;
     WHERE
       WR1: SIZEOF(SELF\Shape_feature_definition.feature_model) = 1;
       WR2: 'CONSTRUCTIVE_SOLID_GEOMETRY_2D_XIM.SINGLE_BOUNDARY_CSG_2D_SHAPE_REPRENTATION' IN TYPEOF (SELF\Shape_feature_definition.feature_model[1]);            
@@ -802,7 +803,7 @@ ENTITY Laminate_component_armx
     ABSTRACT SUPERTYPE OF (
       ONEOF (Explicitly_located_layer_connection_point,
 		Dependently_located_layer_connection_point))
-    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element, layer_connection_point);
+    (* CONNOTATIONAL *) SUBTYPE OF (layer_connection_point);
       location_2d                                                      : OPTIONAL Cartesian_point;
       location_3d                                                      : OPTIONAL Cartesian_point;
       SELF\shape_aspect.of_shape RENAMED resident_design_layer_stratum : Design_layer_stratum_armx;
@@ -820,7 +821,7 @@ ENTITY Laminate_component_armx
       embedded_physical_component_path : SET[0:?] OF Stratum_embedded_physical_component_join_relationship FOR point_to_be_connected;
       unrouted_join_path         : SET [0:1] OF Unrouted_join_relationship FOR unrouted_lcp;
     UNIQUE
-      UR1 : SELF\Shape_element.element_name, resident_design_layer_stratum;
+      UR1 : SELF\shape_aspect.name, resident_design_layer_stratum;
     WHERE
       WR1 : EXISTS(location_2d) OR EXISTS(location_3d);
       WR2 : NOT (EXISTS(location_2d)) OR ((SIZEOF(location_2d\Cartesian_point.coordinates)) = 2);
@@ -961,9 +962,9 @@ ENTITY Laminate_component_armx
       SELF\Shape_feature.connection_area                    : SET[1:1] OF Connection_zone_in_design_view;
    	  stratum_feature_material_stackup                      : OPTIONAL Stratum_feature_based_derived_pattern_armx;
     DERIVE
-      SELF\Shape_element.containing_shape : Probe_access_area_armx := SELF;
-      SELF\Shape_feature.element_name : STRING := '';            
-      SELF\Shape_element.id_x : STRING := SELF\Item_shape.id_x;                  
+      SELF\shape_aspect.of_shape : Probe_access_area_armx := SELF;
+      SELF\Shape_feature.name : STRING := '';            
+      SELF\shape_aspect.id : STRING := SELF\property_definition.id;                  
     INVERSE
       network : Routed_physical_network FOR probe;
     WHERE
@@ -1003,12 +1004,13 @@ ENTITY Laminate_component_armx
   ENTITY Stratum_armx
     SUPERTYPE OF (ONEOF (Documentation_layer_stratum_armx,
  Design_layer_stratum_armx))
-    (* CONNOTATIONAL *) SUBTYPE OF (Part_view_definition, Item_shape, stratum);
+    (* CONNOTATIONAL *) SUBTYPE OF (Part_view_definition, product_definition_shape, stratum);
       definition_x               : Stratum_technology_occurrence_armx;      
     DERIVE
+     SELF\property_definition.name : label := ?;
      of_average_surface 	: SET[0:1] OF stratum_average_surface := 
         QUERY(tmp <* of_surface | 'LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.STRATUM_AVERAGE_SURFACE' IN TYPEOF(tmp));
-     SELF\Item_shape.described_element : shapeable_item := SELF;
+     SELF\property_definition.definition : shapeable_item := SELF;
      of_product_version : SET [1:?] OF product_definition_formation := 
           bag_to_set(QUERY(pv <* USEDIN(assembly[1].assembly.defined_version.of_product, 'PRODUCT_DEFINITION_SCHEMA.PRODUCT_DEFINITION_FORMATION.OF_PRODUCT') | 
                 (SIZEOF(QUERY( pd <* USEDIN(pv, 'PRODUCT_VIEW_DEFINITION_XIM.PRODUCT_VIEW_DEFINITION.DEFINED_VERSION') |
@@ -1060,9 +1062,11 @@ ENTITY Laminate_component_armx
   ENTITY Stratum_feature_armx
 		SUPERTYPE OF (ONEOF (Conductor,
  			Conductive_filled_area) ANDOR (Fiducial_stratum_feature_armx))    
-		(* CONNOTATIONAL *) SUBTYPE OF (Shape_element, stratum_feature); 			
-      SELF\Shape_element.containing_shape RENAMED resident_stratum : design_or_documentation_stratum;
-      feature_of_size                                              : BOOLEAN;
+		(* CONNOTATIONAL *) SUBTYPE OF (stratum_feature); 			
+      SELF\shape_aspect.of_shape RENAMED resident_stratum : design_or_documentation_stratum;
+      feature_of_size                                     : BOOLEAN;
+    INVERSE
+      shape	: SET[0:?] OF Stratum_feature_usage FOR definition;
     UNIQUE
       UR1 : SELF\Shape_aspect.name,
  resident_stratum;
@@ -1075,6 +1079,16 @@ ENTITY Laminate_component_armx
                   = 0;      
   END_ENTITY;
 
+  ENTITY Stratum_feature_usage
+    SUBTYPE OF(geometric_item_specific_usage);
+      SELF\geometric_item_specific_usage.definition          : Stratum_feature_armx;
+      SELF\geometric_item_specific_usage.identified_item     : limd_sf_shape_select;
+      SELF\geometric_item_specific_usage.used_representation : limd_stratum_shape_model_select;
+    WHERE
+     WR1 : SELF\geometric_item_specific_usage.name = '';
+     WR2 : NOT EXISTS(SELF\geometric_item_specific_usage.description);      
+  END_ENTITY;
+  
   ENTITY Stratum_feature_based_derived_pattern_armx
     SUBTYPE OF(stratum_feature_based_derived_pattern);
       extent                    : Inter_stratum_extent;
@@ -1094,6 +1108,8 @@ ENTITY Laminate_component_armx
   END_ENTITY;
 
   ENTITY Stratum_feature_template_component_armx
+    SUPERTYPE OF (ONEOF (Area_component_armx,
+            Conductive_interconnect_element_armx))
     SUBTYPE OF (Laminate_component_armx, stratum_feature_template_component);
       SELF\Definition_based_product_occurrence.derived_from : stratum_feature_template_or_parametric_template;
       implementation_or_resident_stratum : stratum_feature_or_stratum; 

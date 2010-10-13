@@ -33,11 +33,8 @@ import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SGeometric_tolerance_xim.CSingle_datum;
 import jsdai.SProduct_property_definition_schema.*;
-import jsdai.SShape_aspect_definition_schema.AReferenced_modified_datum;
 import jsdai.SShape_aspect_definition_schema.CDatum;
-import jsdai.SShape_aspect_definition_schema.CReferenced_modified_datum;
 import jsdai.SShape_aspect_definition_schema.EDatum;
-import jsdai.SShape_aspect_definition_schema.EReferenced_modified_datum;
 
 public class CxSingle_datum extends CSingle_datum implements EMappedXIMEntity
 {
@@ -96,6 +93,24 @@ public class CxSingle_datum extends CSingle_datum implements EMappedXIMEntity
 	public static jsdai.dictionary.EAttribute attributeDescription(EShape_aspect type) throws SdaiException {
 		return a1$;
 	}
+	
+	/// methods for attribute: name, base type: STRING
+	/*	public boolean testName(EShape_aspect type) throws SdaiException {
+			return test_string(a0);
+		}
+		public String getName(EShape_aspect type) throws SdaiException {
+			return get_string(a0);
+		}*/
+		public void setName(EShape_aspect type, String value) throws SdaiException {
+			a0 = set_string(value);
+		}
+		public void unsetName(EShape_aspect type) throws SdaiException {
+			a0 = unset_string();
+		}
+		public static jsdai.dictionary.EAttribute attributeName(EShape_aspect type) throws SdaiException {
+			return a0$;
+		}
+	
 	// ENDOF From CShape_aspect.java
 
 	// DATUM
@@ -129,15 +144,15 @@ public class CxSingle_datum extends CSingle_datum implements EMappedXIMEntity
 
 		setMappingConstraints(context, this);
 
-		setModification(context, this);
-		// clean ARM
-		unsetModification(null);
+//		setModification(context, this);
+//		// clean ARM
+//		unsetModification(null);
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
 			unsetMappingConstraints(context, this);
 			
-			unsetModification(context, this);
+//			unsetModification(context, this);
 	}
 
 	/**
@@ -162,6 +177,13 @@ public class CxSingle_datum extends CSingle_datum implements EMappedXIMEntity
 		ESingle_datum armEntity) throws SdaiException {
 		unsetMappingConstraints(context, armEntity);
 
+		// SELF\shape_aspect.product_definitional : LOGICAL := ?;
+		if(!armEntity.testProduct_definitional(null))
+			armEntity.setProduct_definitional(null, ELogical.UNKNOWN);
+		
+		// SELF\shape_aspect.name : label := ?;
+		if(!armEntity.testName(null))
+			armEntity.setName(null, "");
 	}
 
 	/**
@@ -200,6 +222,7 @@ public class CxSingle_datum extends CSingle_datum implements EMappedXIMEntity
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
+	/* Removed in Milestone M6 of IDA-STEP
 	public static void setModification(SdaiContext context,
 		ESingle_datum armEntity) throws SdaiException {
 		unsetModification(context, armEntity);
@@ -211,7 +234,7 @@ public class CxSingle_datum extends CSingle_datum implements EMappedXIMEntity
 			ermd.setModifier(null, modification);
 		}
 	}
-
+*/
 	/**
 	 * Unsets/deletes mapping constraint data.
 	 * 
@@ -219,6 +242,7 @@ public class CxSingle_datum extends CSingle_datum implements EMappedXIMEntity
 	 * @param armEntity
 	 * @throws SdaiException
 	 */
+	/* Removed in Milestone M6 of IDA-STEP	
 	public static void unsetModification(SdaiContext context,
 			ESingle_datum armEntity) throws SdaiException {
 		AReferenced_modified_datum armd = new AReferenced_modified_datum();
@@ -227,5 +251,5 @@ public class CxSingle_datum extends CSingle_datum implements EMappedXIMEntity
 			armd.getByIndex(i).deleteApplicationInstance();
 		}
 	}
-	
+*/	
 }

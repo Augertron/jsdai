@@ -92,14 +92,15 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
   END_ENTITY;
 
   ENTITY Assembly_component_armx
-   (* CONNOTATIONAL *) SUBTYPE OF (Definition_based_product_occurrence, Item_shape, assembly_component);
+   (* CONNOTATIONAL *) SUBTYPE OF (Definition_based_product_occurrence, product_definition_shape, assembly_component);
 	SELF\Definition_based_product_occurrence.derived_from : physical_unit_or_part_template;
     DERIVE
 		assemblies : SET OF Product_view_definition := pudv_get_assemblies(SELF);
 		groups : SET OF Assembly_group_component_armx := pudv_get_groups(SELF);
 		versions : SET OF product_definition_formation := pudv_get_versions(assemblies);
 		product : SET OF Product_armx := pudv_get_products(versions);
-    	SELF\Item_shape.described_element : shapeable_item := SELF;
+    	SELF\property_definition.definition : shapeable_item := SELF;
+    	SELF\property_definition.name : label := ?;
         SELF\product_definition_relationship.id : identifier := SELF\product_definition.id;
     	SELF\product_definition_relationship.name : label := ?;
     	SELF\product_definition_relationship.description : text := ?;
@@ -188,15 +189,16 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
   ENTITY Connection_zone_in_design_view
   	(* CONNOTATIONAL *) SUBTYPE OF (Connection_zone);
   	DERIVE
-  		associated_definition : Part_design_view := containing_shape.described_element;
-  		SELF\Shape_element.element_name : STRING := '';
+  		associated_definition : Part_design_view := of_shape.definition;
+  		SELF\shape_aspect.name : STRING := '';
   END_ENTITY; 
 
   ENTITY Part_design_view
-    (* CONNOTATIONAL *) SUBTYPE OF (Item_shape, Part_view_definition, physical_unit);
+    (* CONNOTATIONAL *) SUBTYPE OF (product_definition_shape, Part_view_definition, physical_unit);
       usage_view : OPTIONAL Part_usage_view;
     DERIVE
-    	SELF\Item_shape.described_element : shapeable_item := SELF;
+      SELF\property_definition.name : label := ?;
+      SELF\property_definition.definition : shapeable_item := SELF;
     WHERE
       WR1 : ('LAYOUT_MACRO_DEFINITION_XIM.LAYOUT_MACRO_DEFINITION_ARMX' IN TYPEOF(SELF)) 
       OR EXISTS(usage_view);

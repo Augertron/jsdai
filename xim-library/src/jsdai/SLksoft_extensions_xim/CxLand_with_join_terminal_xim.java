@@ -46,53 +46,53 @@ public class CxLand_with_join_terminal_xim extends CLand_with_join_terminal_xim 
 	// From CShape_aspect.java
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(EShape_aspect type) throws SdaiException {
-		return test_string(a20);
+		return test_string(a19);
 	}
 	public String getDescription(EShape_aspect type) throws SdaiException {
-		return get_string(a20);
+		return get_string(a19);
 	}*/
 	public void setDescription(EShape_aspect type, String value) throws SdaiException {
-		a20 = set_string(value);
+		a19 = set_string(value);
 	}
 	public void unsetDescription(EShape_aspect type) throws SdaiException {
-		a20 = unset_string();
+		a19 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(EShape_aspect type) throws SdaiException {
-		return a20$;
+		return a19$;
 	}
 
 	/*	public boolean testOf_shape(EShape_aspect type) throws SdaiException {
-	return test_string(a21);
+	return test_string(a20);
 	}
 	public Object getOf_shape(EShape_aspect type) throws SdaiException {
-		return get_string(a21);
+		return get_string(a20);
 	}*/
 	public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
-		a21 = set_instanceX(a21, value);
+		a20 = set_instanceX(a20, value);
 	}
 	public void unsetOf_shape(EShape_aspect type) throws SdaiException {
-		a21 = unset_instance(a21);
+		a20 = unset_instance(a20);
 	}
 	public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) throws SdaiException {
-		return a21$;
+		return a20$;
 	}
 	
 	
 	/// methods for attribute: product_definitional, base type: LOGICAL
 /*	public boolean testProduct_definitional(EShape_aspect type) throws SdaiException {
-		return test_logical(a22);
+		return test_logical(a21);
 	}
 	public int getProduct_definitional(EShape_aspect type) throws SdaiException {
-		return get_logical(a22);
+		return get_logical(a21);
 	}
 	public void setProduct_definitional(EShape_aspect type, int value) throws SdaiException {
-		a22 = set_logical(value);
+		a21 = set_logical(value);
 	} */
 	public void unsetProduct_definitional(EShape_aspect type) throws SdaiException {
-		a22 = unset_logical();
+		a21 = unset_logical();
 	}
 	public static jsdai.dictionary.EAttribute attributeProduct_definitional(EShape_aspect type) throws SdaiException {
-		return a22$;
+		return a21$;
 	}
 	// ENDOF From CShape_aspect.java
 

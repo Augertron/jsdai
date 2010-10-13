@@ -36,7 +36,7 @@ public class CxClosed_path_area_with_parameters extends CClosed_path_area_with_p
 
 	public int attributeState = ATTRIBUTES_MODIFIED;
 	
-	private static Object parametersMap = new Object();
+//	private static Object parametersMap = new Object();
 
 
 	// Taken from Mapped_item

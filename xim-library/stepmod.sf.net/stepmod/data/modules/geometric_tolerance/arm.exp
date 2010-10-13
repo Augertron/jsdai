@@ -1,22 +1,14 @@
 (*
 $Id$
-ISO TC184/SC4/WG12 N2876 - ISO/TS 10303-1051 Geometric tolerance - EXPRESS ARM
-Supersedes ISO TC184/SC4/WG12 N1550
+ISO TC184/SC4/WG12 N6908 - ISO/TS 10303-1051 Geometric tolerance - EXPRESS ARM
+Supersedes ISO TC184/SC4/WG12 N6756
 *) 
 
 
 SCHEMA Geometric_tolerance_arm;
 
 USE FROM Derived_shape_element_arm;    -- ISO/TS 10303-1130
-
-USE FROM Elemental_geometric_shape_arm;    -- ISO/TS 10303-1004
-
 USE FROM Measure_representation_arm;    -- ISO/TS 10303-1118
-
-USE FROM Shape_property_assignment_arm;    -- ISO/TS 10303-1032
-
-USE FROM Value_with_unit_arm;    -- ISO/TS 10303-1054
-
 
 ENTITY Angularity_tolerance
   SUBTYPE OF (Geometric_tolerance);
@@ -48,7 +40,8 @@ ENTITY Cylindricity_tolerance
   SUBTYPE OF (Geometric_tolerance);
 END_ENTITY;
 
-ENTITY Datum;
+ENTITY Datum
+  ABSTRACT SUPERTYPE OF (ONEOF ( Single_datum, Common_datum));
 END_ENTITY;
 
 ENTITY Datum_defined_by_derived_shape
@@ -69,10 +62,14 @@ END_ENTITY;
 ENTITY Datum_reference;
   precedence : INTEGER;
   referenced_datum : Datum;
+  modification : OPTIONAL Tolerance_condition;
 END_ENTITY;
 
-ENTITY Datum_target;
+ENTITY Datum_target
+  ABSTRACT SUPERTYPE OF (ONEOF (Placed_target, Target_area, Target_curve));
   id : STRING;
+INVERSE
+  of_datum : Datum_defined_by_targets FOR defined_by;
 END_ENTITY;
 
 ENTITY Flatness_tolerance
@@ -135,6 +132,7 @@ END_ENTITY;
 
 ENTITY Placed_target
   ABSTRACT SUPERTYPE OF (ONEOF (Target_circle,
+  								Target_circular_curve,
                                 Target_point,
                                 Target_rectangle,
                                 Target_straight_line))
@@ -160,9 +158,9 @@ ENTITY Roundness_tolerance
 END_ENTITY;
 
 ENTITY Single_datum
+  ABSTRACT SUPERTYPE OF (ONEOF (Datum_defined_by_feature, Datum_defined_by_derived_shape, Datum_defined_by_targets))
   SUBTYPE OF (Datum);
   datum_name : STRING;
-  modification : OPTIONAL Tolerance_condition;
 END_ENTITY;
 
 ENTITY Straightness_tolerance
@@ -183,11 +181,22 @@ END_ENTITY;
 
 ENTITY Target_area
   SUBTYPE OF (Datum_target);
+  is_defined_by : Shape_element;
 END_ENTITY;
 
 ENTITY Target_circle
   SUBTYPE OF (Placed_target);
   diameter : Numerical_item_with_unit;
+END_ENTITY;
+
+ENTITY Target_circular_curve
+  SUBTYPE OF (Placed_target);
+  diameter : Numerical_item_with_unit;
+END_ENTITY;
+
+ENTITY Target_curve
+  SUBTYPE OF (Datum_target);
+  is_defined_by : Shape_element;
 END_ENTITY;
 
 ENTITY Target_point

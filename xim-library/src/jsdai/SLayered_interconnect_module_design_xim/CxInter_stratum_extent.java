@@ -34,7 +34,6 @@ import jsdai.SMaterial_property_definition_schema.CProperty_definition_relations
 import jsdai.SMaterial_property_definition_schema.EProperty_definition_relationship;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.AProperty_definition;
-import jsdai.SProduct_property_definition_schema.CProduct_definition_shape;
 import jsdai.SProduct_property_definition_schema.CProperty_definition;
 import jsdai.SProduct_property_definition_schema.EProperty_definition;
 import jsdai.lang.*;

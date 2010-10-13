@@ -67,11 +67,12 @@ USE FROM application_context_schema(product_context);
   END_ENTITY;
 
   ENTITY Template_definition
-    (* CONNOTATIONAL *) SUBTYPE OF (Item_shape, Product_view_definition, part_template_definition);
+    (* CONNOTATIONAL *) SUBTYPE OF (product_definition_shape, Product_view_definition, part_template_definition);
     	SELF\Product_view_definition.defined_version : Template_version;
     	physical_characteristic           : OPTIONAL SET[1:?] OF correlated_or_independent;
     DERIVE	
-    	SELF\Item_shape.described_element : shapeable_item := SELF;      
+    	SELF\property_definition.name : label := ?;
+    	SELF\property_definition.definition : shapeable_item := SELF;      
   END_ENTITY;
   
   ENTITY Template_version

@@ -95,6 +95,8 @@ USE FROM Assembly_module_design_mim;
     (* CONNOTATIONAL *) SUBTYPE OF (Physical_component_terminal_armx);
       SELF\Component_feature_armx.definition           : Bare_die_terminal_armx;
       SELF\Component_feature_armx.associated_component(* TEMP-CF *) : Bare_die_component_armx;
+    DERIVE
+      SELF\shape_aspect.product_definitional : LOGICAL := TRUE;
   END_ENTITY;
 
   ENTITY Component_external_reference
@@ -159,6 +161,8 @@ USE FROM Assembly_module_design_mim;
   ENTITY Movable_packaged_component_join_terminal
     (* CONNOTATIONAL *) SUBTYPE OF (Packaged_component_join_terminal);
       wire_terminal_length      : Length_tolerance_characteristic;
+    DERIVE
+      SELF\shape_aspect.product_definitional : LOGICAL := TRUE;    
     WHERE
       WR1 : SIZEOF(QUERY(pt <* SELF\Component_feature_armx.definition\Packaged_part_terminal_armx.terminal_of_package | NOT('ASSEMBLY_MODULE_DESIGN_xim.WIRE_TERMINAL_ARMX' IN TYPEOF (pt))) = 0);
   END_ENTITY;
@@ -168,7 +172,7 @@ USE FROM Assembly_module_design_mim;
       SELF\Definition_based_product_occurrence.derived_from : Packaged_part_armx;
       selected_package_alternate               							: OPTIONAL Altered_package;
     INVERSE
-      access_mechanism : SET[1:?] OF packaged_component_join_terminal FOR containing_shape(* TEMP-AC! *);
+      access_mechanism : SET[1:?] OF packaged_component_join_terminal FOR of_shape(* TEMP-AC! *);
   END_ENTITY;
 
   ENTITY Packaged_component_join_terminal
@@ -177,6 +181,7 @@ USE FROM Assembly_module_design_mim;
       SELF\Component_feature_armx.associated_component(* TEMP-CF *) : Packaged_component_armx;
     DERIVE
       SELF\shape_aspect.description : text := 'packaged component join terminal';
+      SELF\shape_aspect.product_definitional : LOGICAL := TRUE;
   END_ENTITY;
 
   ENTITY Layered_assembly_module_design_view_armx

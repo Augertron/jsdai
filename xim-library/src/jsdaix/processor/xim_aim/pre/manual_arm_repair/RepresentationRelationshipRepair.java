@@ -23,7 +23,8 @@
 
 package jsdaix.processor.xim_aim.pre.manual_arm_repair;
 
-import jsdai.SAic_advanced_brep.EAdvanced_brep_shape_representation;
+import java.util.ArrayList;
+
 import jsdai.SAic_associative_draughting_elements.EDraughting_model;
 import jsdai.SAssembly_structure_xim.ENext_assembly_usage_occurrence_relationship_armx;
 import jsdai.SConstruction_geometry_mim.AConstructive_geometry_representation_relationship;
@@ -62,15 +63,16 @@ import jsdaix.processor.xim_aim.pre.Importer;
  * This class should implement bug http://bugzilla.lksoft.lt/show_bug.cgi?id=2931.
  */
 public final class RepresentationRelationshipRepair {
-	
+
 	private RepresentationRelationshipRepair() { }
-	
+
 	public static void run(ASdaiModel models, Importer importer)
 		throws SdaiException {
-		
+
 		processCGRR(models, importer);
 		preossSRAndProductStructure(models, importer);
-		
+		removeAuxillaryMappingInstances(models, importer);
+
 		for (SdaiIterator i = models.createIterator(); i.next();) {
 			SdaiModel model = models.getCurrentMember(i);
 			ARepresentation_relationship arr = (ARepresentation_relationship) model.getInstances(CRepresentation_relationship.definition);
@@ -91,14 +93,14 @@ public final class RepresentationRelationshipRepair {
 					EProduct_definition assemblyFromShape = getPDFromShapeStructure(err, rep2);
 					// Need to go more dangerous route as Assembly structure not available
 					if(enauor == null){
-						// When rep1 is pure shape_rep and attached to structure, while rep2 not 
+						// When rep1 is pure shape_rep and attached to structure, while rep2 not
 						if((componentFromShape != null)&&(assemblyFromShape == null)){
 							swap(err, rep1, rep2, importer);
 						}
 						continue;
 					}
-					
-					EProduct_definition component = null; 
+
+					EProduct_definition component = null;
 					EProduct_definition assembly = null;
 					if(enauor.testRelated_view(null)){
 						component = enauor.getRelated_view(null);
@@ -128,13 +130,31 @@ public final class RepresentationRelationshipRepair {
 					// Logic - if Draughting_model is sharing context with Shape_representation
 					// and it is linked via rep_rel with another DM, which is not sharing context
 					// with any SR - the former DM is treated as 'parent' and the latter as 'child'
-					
+
 					if((er1 instanceof EDraughting_model)&&(er2 instanceof EDraughting_model)){
 						boolean isFirstSharing = isSharingContextWithSR(models, er1.getContext_of_items(null));
 						boolean isSecondSharing = isSharingContextWithSR(models, er2.getContext_of_items(null));
 						if((isFirstSharing)&&(!isSecondSharing)){
 							swap(err, er1, er2, importer);
 						}
+					}
+				}
+			}
+		}
+	}
+
+	private static void removeAuxillaryMappingInstances(ASdaiModel models, Importer importer)throws SdaiException {
+		for (SdaiIterator i = models.createIterator(); i.next();) {
+			SdaiModel model = models.getCurrentMember(i);
+			ARepresentation_relationship arr = (ARepresentation_relationship) model.getExactInstances(CRepresentation_relationship.definition);
+			ArrayList names = new ArrayList();
+			names.add("general tolerance definition");
+			for (SdaiIterator j = arr.createIterator(); j.next();) {
+				ERepresentation_relationship err = arr.getCurrentMember(j);
+				if(err.testName(null)){
+					String name = err.getName(null);
+					if(names.contains(name)){
+						err.deleteApplicationInstance();
 					}
 				}
 			}
@@ -189,7 +209,7 @@ public final class RepresentationRelationshipRepair {
 		}
 		return null;
 	}
-	
+
 	private static ENext_assembly_usage_occurrence_relationship_armx getPdr(EShape_representation_relationship eSrr)
 	throws SdaiException {
 		AContext_dependent_shape_representation aCdsr = new AContext_dependent_shape_representation();
@@ -212,7 +232,7 @@ public final class RepresentationRelationshipRepair {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * This class should implement bug http://bugzilla.lksoft.lt/show_bug.cgi?id=3283.
 	 */
@@ -240,7 +260,7 @@ public final class RepresentationRelationshipRepair {
 			}
 		}
 	}
-	
+
 	/**
 	 * This class should implement bug http://bugzilla.lksoft.lt/show_bug.cgi?id=3394.
 	 */
@@ -256,23 +276,28 @@ public final class RepresentationRelationshipRepair {
 					if((!er.isInstanceOf(CShape_representation.class))&&(!er.isInstanceOf(CRepresentation.class))){
 						ARepresentation ar = new ARepresentation();
 						CRepresentation.usedinContext_of_items(null, er.getContext_of_items(null), models, ar);
-						
+
 						ARepresentation_relationship arr1 = new ARepresentation_relationship();
 						CRepresentation_relationship.usedinRep_1(null, er, models, arr1);
 						for(int c=1,cm=ar.getMemberCount(); c<=cm; c++){
 							for(int r=1,rm=arr1.getMemberCount(); r<=rm; r++){
 								ERepresentation_relationship err = arr1.getByIndex(r);
 								ERepresentation erTemp = ar.getByIndex(c);
-								if(err.getRep_2(null) == erTemp){
-									// finally found it
-									if(erTemp.isInstanceOf(CShape_representation.class)){
-										esdr.setUsed_representation(null, erTemp);
-										importer.logMessage(" Changed value for attribute Used_representation for entity "+esdr);
-										continue top;
+								if(err instanceof EPhysical_unit_keepout_shape_allocation_to_stratum_stack_armx){
+									continue;
+								}
+								if(err.testRep_2(null)){
+									if(err.getRep_2(null) == erTemp){
+										// finally found it
+										if(erTemp.isInstanceOf(CShape_representation.class)){
+											esdr.setUsed_representation(null, erTemp);
+											importer.logMessage(" Changed value for attribute Used_representation for entity "+esdr);
+											continue top;
+										}
 									}
 								}
 							}
-						}	
+						}
 						ARepresentation_relationship arr2 = new ARepresentation_relationship();
 						CRepresentation_relationship.usedinRep_2(null, er, models, arr2);
 						for(int c=1,cm=ar.getMemberCount(); c<=cm; c++){
@@ -288,11 +313,11 @@ public final class RepresentationRelationshipRepair {
 									}
 								}
 							}
-						}						
+						}
 					}
 				}
 			}
 		}
 	}
-	
+
 }

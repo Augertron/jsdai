@@ -33,8 +33,6 @@ import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SFabrication_technology_mim.CStratum_technology_occurrence_link;
 import jsdai.SMaterial_property_definition_schema.EProperty_definition_relationship;
-import jsdai.SProduct_property_definition_schema.AProperty_definition;
-import jsdai.SProduct_property_definition_schema.CProperty_definition;
 import jsdai.SProduct_property_definition_schema.EProperty_definition;
 
 public class CxStratum_technology_occurrence_link_armx extends CStratum_technology_occurrence_link_armx implements EMappedXIMEntity

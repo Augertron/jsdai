@@ -60,7 +60,7 @@ end_attribute_mapping;
 
 end_entity_mapping;
 
-
+(*
 entity_mapping Stratum_feature_planar_shape_model(Stratum_feature_planar_shape_model, single_area_csg_2d_shape_representation);
 
 mapping_constraints;
@@ -93,7 +93,7 @@ stratum_feature
 end_attribute_mapping;
 
 end_entity_mapping;
-
+*)
 entity_mapping Stratum_interconnect_module_planar_position(Stratum_interconnect_module_planar_position, mapped_item);
 
 mapping_constraints;
@@ -201,8 +201,16 @@ property_definition_representation.definition ->
 property_definition =>
 product_definition_shape =>
 stratum]}
-
 end_mapping_constraints;
+
+attribute_mapping items(items, $PATH, primitive_2d);
+shape_representation <=
+representation
+representation.items[i] ->
+representation_item => 
+geometric_representation_item =>
+primitive_2d
+end_attribute_mapping;
 
 attribute_mapping shape_characterized_component(shape_characterized_component, $PATH, Stratum_armx);
 shape_representation <=
@@ -213,8 +221,30 @@ property_definition_representation.definition ->
 property_definition =>
 product_definition_shape =>
 stratum
-
 end_attribute_mapping;
 
 end_entity_mapping;
+
+entity_mapping Stratum_feature_usage(Stratum_feature_usage, geometric_item_specific_usage)
+extended;
+
+attribute_mapping identified_item(identified_item, $PATH, primitive_2d);
+		geometric_item_specific_usage <= 
+		item_identified_representation_usage
+		item_identified_representation_usage.identified_item ->
+		representation_item =>
+		geometric_representation_item =>
+		primitive_2d
+end_attribute_mapping;
+
+attribute_mapping used_representation(used_representation, $PATH, Stratum_planar_shape_model);
+		geometric_item_specific_usage <= 
+		item_identified_representation_usage
+		item_identified_representation_usage.used_representation ->
+		representation =>
+		shape_representation
+end_attribute_mapping;
+
+end_entity_mapping;
+
 (*end_schema_mapping;*)

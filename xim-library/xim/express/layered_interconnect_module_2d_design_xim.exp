@@ -29,14 +29,17 @@ SCHEMA Layered_interconnect_module_2d_design_xim;
 
 USE FROM Layered_interconnect_module_design_xim;
 
+  TYPE lim2dd_sf_shape_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON limd_sf_shape_select WITH 
+    (primitive_2d);
+  END_TYPE; 
+
+  TYPE lim2dd_stratum_shape_model_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON limd_stratum_shape_model_select WITH 
+    (Stratum_planar_shape_model);
+  END_TYPE; 
+
   ENTITY Located_2d_inter_stratum_extent
     SUBTYPE OF (Inter_stratum_extent);
       location : cartesian_point;
-  END_ENTITY;
-
-  ENTITY Stratum_feature_planar_shape_model
-    (* CONNOTATIONAL *) SUBTYPE OF (single_area_csg_2d_shape_representation);
-      shape_characterized_component : Stratum_feature_armx;
   END_ENTITY;
 
   ENTITY Stratum_interconnect_module_planar_position
@@ -53,8 +56,9 @@ USE FROM Layered_interconnect_module_design_xim;
   END_ENTITY;
 
   ENTITY Stratum_planar_shape_model
-    (* CONNOTATIONAL *) SUBTYPE OF (Planar_projected_shape_model);
+    (* CONNOTATIONAL *) SUBTYPE OF (csg_2d_shape_representation);
       shape_characterized_component : Stratum_armx;
+      SELF\representation.items : SET[1:?] OF primitive_2d;
     UNIQUE
     	UR1 : shape_characterized_component;
   END_ENTITY;

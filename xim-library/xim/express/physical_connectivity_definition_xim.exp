@@ -66,15 +66,15 @@ USE FROM Physical_connectivity_definition_mim;
 
   ENTITY Physical_connectivity_definition_armx
     SUPERTYPE OF (Physical_connectivity_structure_definition)
-    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element, physical_connectivity_definition);
+    (* CONNOTATIONAL *) SUBTYPE OF (physical_connectivity_definition);
       associated_terminals  : SET[2:?] OF Physical_component_terminal_armx;
-      SELF\Shape_element.containing_shape RENAMED associated_definition : Physical_unit_network_definition_armx;
+      SELF\shape_aspect.of_shape RENAMED associated_definition : Physical_unit_network_definition_armx;
     DERIVE
       SELF\shape_aspect.description : text := ?;
     INVERSE
       domain : SET [0:1] OF Physical_connectivity_definition_domain_armx for associated_definition;
     UNIQUE
-      UR1 : SELF\Shape_element.element_name, associated_definition;
+      UR1 : SELF\shape_aspect.name, associated_definition;
   END_ENTITY;
 
   ENTITY Physical_connectivity_definition_domain_armx
@@ -158,7 +158,7 @@ USE FROM Physical_connectivity_definition_mim;
       scope : Physical_connectivity_structure_definition;
     DERIVE
       SELF\shape_aspect.of_shape : product_definition_shape := ?;
-      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := TRUE;
       SELF\shape_aspect.description : text := ?;
     UNIQUE
       UR1 : name, scope;

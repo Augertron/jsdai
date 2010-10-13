@@ -114,6 +114,7 @@ public class StylingModelRepair {
 
 	// Remove Annotation_occurrences, callouts and place them into associated DMs
 	private static void annotationStuffCleaningRepair(ASdaiModel models, Importer importer)throws SdaiException {
+		long time = System.currentTimeMillis();
 		// Draughting_callouts
 		ADraughting_callout adc = (ADraughting_callout) models.getInstances(CDraughting_callout.definition);
 		for (SdaiIterator it = adc.createIterator(); it.next(); ) {
@@ -121,14 +122,12 @@ public class StylingModelRepair {
 			cleanUpStyledItem(item, models, importer);
 			cleanCallouts(item, models, importer);
 		}
-
 		// Annotation_plane
 		AAnnotation_plane aap = (AAnnotation_plane) models.getInstances(CAnnotation_plane.definition);
 		for (SdaiIterator it = aap.createIterator(); it.next(); ) {
 			EAnnotation_plane item = aap.getCurrentMember(it);
 			cleanUpStyledItem(item, models, importer);
 		}
-
 		// Annotation_occurrences
 		AAnnotation_occurrence items = (AAnnotation_occurrence) models.getExactInstances(CAnnotation_occurrence.definition);
 		for (SdaiIterator it = items.createIterator(); it.next(); ) {

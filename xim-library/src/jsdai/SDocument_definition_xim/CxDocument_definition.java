@@ -37,7 +37,6 @@ import jsdai.SApplication_context_schema.CProduct_definition_context;
 import jsdai.SApplication_context_schema.EProduct_definition_context;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.*;
 
 public class CxDocument_definition extends CDocument_definition implements EMappedXIMEntity
 {
@@ -205,10 +204,11 @@ public class CxDocument_definition extends CDocument_definition implements EMapp
      * @param armEntity arm entity.
      * @throws SdaiException
      */
+/* Removed from XIM - see bug #3610	
     public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
        CxItem_shape.setId_x(context, armEntity);
     }
-
+*/
   /**
    * Unsets/deletes data for Id_x attribute.
    *
@@ -216,10 +216,11 @@ public class CxDocument_definition extends CDocument_definition implements EMapp
    * @param armEntity arm entity.
    * @throws SdaiException
    */
+/* Removed from XIM - see bug #3610	
     public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
       CxItem_shape.unsetId_x(context, armEntity);
    }
-
+*/
  	//********** "product_view_definition" attributes
     /**
      * Sets/creates data for name_x attribute.

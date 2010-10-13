@@ -33,7 +33,6 @@ package jsdai.SLayered_interconnect_module_design_xim;
 import jsdai.SPart_view_definition_xim.*;
 import jsdai.SProduct_definition_schema.EProduct_definition;
 import jsdai.SProduct_property_definition_schema.*;
-import jsdai.SShape_property_assignment_xim.*;
 //import jsdai.SProduct_property_representation_schema.*;
 import jsdai.SFabrication_technology_xim.EStratum_technology_occurrence_armx;
 import jsdai.SLayered_interconnect_module_design_mim.CStratum;
@@ -147,7 +146,7 @@ public class CxStratum_armx extends CStratum_armx implements EMappedXIMEntity
 		// setAdditional_contexts(context, this);
 
 		// Id_x
-		setId_x(context, this);
+//		setId_x(context, this);
 		
 		//********** "stratum" attributes
 
@@ -159,7 +158,7 @@ public class CxStratum_armx extends CStratum_armx implements EMappedXIMEntity
 		// unsetAdditional_contexts(null);
 		unsetDefinition_x(null);
 		
-		unsetId_x(null);
+//		unsetId_x(null);
 	}
 
 	/* (non-Javadoc)
@@ -180,7 +179,7 @@ public class CxStratum_armx extends CStratum_armx implements EMappedXIMEntity
 		unsetAdditional_contexts(context, this);
 
 		// Id_x
-		unsetId_x(context, this);
+//		unsetId_x(context, this);
 		
 		//********** "stratum" attributes
 
@@ -208,7 +207,7 @@ public class CxStratum_armx extends CStratum_armx implements EMappedXIMEntity
 	public static void setMappingConstraints(SdaiContext context, EStratum_armx armEntity) throws SdaiException
 	{
 		CxPart_view_definition.setMappingConstraints(context, armEntity);
-		CxItem_shape.setMappingConstraints(context, armEntity);
+//		CxItem_shape.setMappingConstraints(context, armEntity);
 		// CxAP210ARMUtilities.setProduct_definitionName(context, armEntity, "generic stratum");
 		// AIM gap
 		armEntity.setDefinition(null, armEntity);
@@ -217,7 +216,7 @@ public class CxStratum_armx extends CStratum_armx implements EMappedXIMEntity
 	public static void unsetMappingConstraints(SdaiContext context, EStratum_armx armEntity) throws SdaiException
 	{
 		CxPart_view_definition.unsetMappingConstraints(context, armEntity);
-		CxItem_shape.unsetMappingConstraints(context, armEntity);
+//		CxItem_shape.unsetMappingConstraints(context, armEntity);
 		// CxAP210ARMUtilities.setProduct_definitionName(context, armEntity, "");
 	}
 	
@@ -255,10 +254,11 @@ public class CxStratum_armx extends CStratum_armx implements EMappedXIMEntity
     * @param armEntity arm entity.
     * @throws SdaiException
     */
+/* Removed from XIM - see bug #3610	
    public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
    	CxItem_shape.setId_x(context, armEntity);
    }
-
+*/
  /**
   * Unsets/deletes data for id_x attribute.
   *
@@ -266,10 +266,11 @@ public class CxStratum_armx extends CStratum_armx implements EMappedXIMEntity
   * @param armEntity arm entity.
   * @throws SdaiException
   */
+/* Removed from XIM - see bug #3610	
  public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
  	CxItem_shape.unsetId_x(context, armEntity);
  }
-	
+*/
 
 	// Stratum
 

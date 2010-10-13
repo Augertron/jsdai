@@ -32,7 +32,6 @@ package jsdai.SComponent_feature_xim;
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
 import jsdai.SComponent_feature_mim.CComponent_feature_relationship;
-import jsdai.SShape_property_assignment_xim.CxShape_element_relationship;
 
 public class CxComponent_feature_relationship_armx extends CComponent_feature_relationship_armx implements EMappedXIMEntity{
 
@@ -75,7 +74,7 @@ public class CxComponent_feature_relationship_armx extends CComponent_feature_re
 	 */
 	public static void setMappingConstraints(SdaiContext context,
 			EComponent_feature_relationship_armx armEntity) throws SdaiException {
-		CxShape_element_relationship.setMappingConstraints(context, armEntity);
+//		CxShape_element_relationship.setMappingConstraints(context, armEntity);
 	}
 
 	/**
@@ -87,7 +86,7 @@ public class CxComponent_feature_relationship_armx extends CComponent_feature_re
 	 */
 	public static void unsetMappingConstraints(SdaiContext context,
 			EComponent_feature_relationship_armx armEntity) throws SdaiException {
-		CxShape_element_relationship.unsetMappingConstraints(context, armEntity);
+//		CxShape_element_relationship.unsetMappingConstraints(context, armEntity);
 	}
 
 }

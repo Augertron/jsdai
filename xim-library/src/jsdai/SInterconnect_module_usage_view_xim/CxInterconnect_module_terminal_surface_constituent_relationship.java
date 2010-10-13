@@ -33,7 +33,6 @@ import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SShape_composition_xim.CxShape_element_constituent_relationship;
-import jsdai.SShape_property_assignment_xim.EShape_element_relationship;
 
 public class CxInterconnect_module_terminal_surface_constituent_relationship extends CInterconnect_module_terminal_surface_constituent_relationship implements EMappedXIMEntity{
 
@@ -41,23 +40,6 @@ public class CxInterconnect_module_terminal_surface_constituent_relationship ext
 		return this;
 	}
 
-	// FROM CShape_element_relationship.java
-	/// methods for attribute: relation_type, base type: STRING
-/*	public boolean testRelation_type(EShape_element_relationship type) throws SdaiException {
-		return testName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null);
-	}
-	public String getRelation_type(EShape_element_relationship type) throws SdaiException {
-		return getName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null);
-	}*/
-	public void setRelation_type(EShape_element_relationship type, String value) throws SdaiException {
-		setName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null, value);
-	}
-	public void unsetRelation_type(EShape_element_relationship type) throws SdaiException {
-		unsetName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null);
-	}
-	public static jsdai.dictionary.EAttribute attributeRelation_type(EShape_element_relationship type) throws SdaiException {
-		return attributeName((jsdai.SProduct_property_definition_schema.EShape_aspect_relationship)null);
-	}
 	// Taken from Shape_aspect_relationship
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(EShape_aspect_relationship type) throws SdaiException {

@@ -33,8 +33,6 @@ import jsdai.lang.*;
 import jsdai.libutil.*;
 import jsdai.SLayered_interconnect_module_design_mim.CFootprint_occurrence_product_definition_relationship;
 // import jsdai.SAp210_electronic_assembly_interconnect_and_packaging_design_xim.CFootprint_occurrence_product_definition_relationship$next_assembly_usage_occurrence;
-import jsdai.SProduct_definition_schema.EProduct_definition_relationship;
-import jsdai.SProduct_structure_schema.*;
 
 
 public class CxFootprint_occurrence_sub_assembly_relationship extends CFootprint_occurrence_sub_assembly_relationship implements EMappedXIMEntity

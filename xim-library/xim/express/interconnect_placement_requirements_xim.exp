@@ -175,7 +175,6 @@ USE FROM Interconnect_placement_requirements_mim;
 
 	SUBTYPE_CONSTRAINT ipr_non_feature_shape_element_subtypes FOR Non_feature_shape_element; 
 	    (ONEOF (
-	     Derived_non_feature_shape_element,
 		 Directed_axis,
 		 Positional_boundary_armx,
 		 Positional_boundary_member_armx,
@@ -208,10 +207,10 @@ USE FROM Interconnect_placement_requirements_mim;
     DERIVE
       SELF\shape_aspect.description : text := 'interconnect module constraint region';
     INVERSE
-      precedent_version_constraint_region : SET[0:1] OF non_feature_shape_element_relationship FOR related;
+      precedent_version_constraint_region : SET[0:1] OF non_feature_shape_element_relationship FOR related_shape_aspect;
       requirement : SET[1:1] OF requirement_assignment_armx FOR assigned_to;
     WHERE
-      WR1 : NOT (SIZEOF(precedent_version_constraint_region) = 1) OR ('INTERCONNECT_PLACEMENT_REQUIREMENTS_XIM.INTERCONNECT_MODULE_CONSTRAINT_REGION' IN TYPEOF(precedent_version_constraint_region[1]\Non_feature_shape_element_relationship.relating));
+      WR1 : NOT (SIZEOF(precedent_version_constraint_region) = 1) OR ('INTERCONNECT_PLACEMENT_REQUIREMENTS_XIM.INTERCONNECT_MODULE_CONSTRAINT_REGION' IN TYPEOF(precedent_version_constraint_region[1]\Non_feature_shape_element_relationship.relating_shape_aspect));
       WR2 : valid_non_conformant_design_object_context(non_conformant_interconnect_module_design_object, scope);      
   END_ENTITY;
 
@@ -223,11 +222,11 @@ USE FROM Interconnect_placement_requirements_mim;
       design_specific_purpose                          : STRING; 
       constrained_stratum                              : SET[1:?] OF Stratum;
     INVERSE
-      precedent_version_constraint_region : SET[0:1] OF non_feature_shape_element_relationship FOR related;
+      precedent_version_constraint_region : SET[0:1] OF non_feature_shape_element_relationship FOR related_shape_aspect;
       requirement : SET[1:1] OF requirement_assignment_armx FOR assigned_to;
     WHERE
-      WR1 : NOT (SIZEOF(precedent_version_constraint_region) = 1) OR ('INTERCONNECT_PLACEMENT_REQUIREMENTS_XIM.STRATUM_CONSTRAINT_REGION' IN TYPEOF(precedent_version_constraint_region[1]\Non_feature_shape_element_relationship.relating));
-      WR2 : NOT EXISTS(SELF\Shape_element.description);
+      WR1 : NOT (SIZEOF(precedent_version_constraint_region) = 1) OR ('INTERCONNECT_PLACEMENT_REQUIREMENTS_XIM.STRATUM_CONSTRAINT_REGION' IN TYPEOF(precedent_version_constraint_region[1]\Non_feature_shape_element_relationship.relating_shape_aspect));
+      WR2 : NOT EXISTS(SELF\shape_aspect.description);
       WR3 : valid_non_conformant_stratum_context(non_conformant_stratum, scope);
   END_ENTITY;
   

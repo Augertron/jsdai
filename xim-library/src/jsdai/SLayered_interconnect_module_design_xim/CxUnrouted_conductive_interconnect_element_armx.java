@@ -36,7 +36,6 @@ import jsdai.SLayered_interconnect_module_design_mim.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.*;
 
 public class CxUnrouted_conductive_interconnect_element_armx 
 		extends
@@ -51,43 +50,43 @@ public class CxUnrouted_conductive_interconnect_element_armx
 
 	// Taken from PDR
 	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
-		a11 = set_string(value);
+		a10 = set_string(value);
 	}
 	public void unsetId(EProduct_definition_relationship type) throws SdaiException {
-		a11 = unset_string();
+		a10 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
-		return a11$;
+		return a10$;
 	}
 
 	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
-		a12 = set_string(value);
+		a11 = set_string(value);
 	}
 	public void unsetName(EProduct_definition_relationship type) throws SdaiException {
-		a12 = unset_string();
+		a11 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
-		return a12$;
+		return a11$;
 	}
 	
 	// attribute (current explicit or supertype explicit) : relating_product_definition, base type: entity product_definition
 /*	public static int usedinRelating_product_definition(EProduct_definition_relationship type, EProduct_definition instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a14$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a13$, domain, result);
 	}
 	public boolean testRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		return test_instance(a14);
+		return test_instance(a13);
 	}
 	public EProduct_definition getRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		return (EProduct_definition)get_instance(a14);
+		return (EProduct_definition)get_instance(a13);
 	}*/
 	public void setRelating_product_definition(EProduct_definition_relationship type, EProduct_definition value) throws SdaiException {
-		a14 = set_instanceX(a14, value);
+		a13 = set_instanceX(a13, value);
 	}
 	public void unsetRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		a14 = unset_instance(a14);
+		a13 = unset_instance(a13);
 	}
 	public static jsdai.dictionary.EAttribute attributeRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		return a14$;
+		return a13$;
 	}
 	// ENDOF taken from PDR
 
@@ -228,7 +227,7 @@ public class CxUnrouted_conductive_interconnect_element_armx
 
 			//********** "design_discipline_item_definition" attributes
 			//Id
-			setId_x(context, this);
+//			setId_x(context, this);
 			
 			//id - goes directly into AIM
 			
@@ -249,7 +248,7 @@ public class CxUnrouted_conductive_interconnect_element_armx
 			
 			
 			unsetDerived_from(null);
-			unsetId_x(null);
+//			unsetId_x(null);
 			unsetImplementation_or_resident_stratum(null);
 
 	}
@@ -271,7 +270,7 @@ public class CxUnrouted_conductive_interconnect_element_armx
 			
 			unsetDerived_from(context, this);
 			
-			unsetId_x(context, this);
+//			unsetId_x(context, this);
 			
 			// composed_conductor 
 			unsetImplementation_or_resident_stratum(context, this);
@@ -385,11 +384,11 @@ public class CxUnrouted_conductive_interconnect_element_armx
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	public static void setId_x(SdaiContext context,
-			EItem_shape armEntity) throws SdaiException {
+/* Removed from XIM - see bug #3610	
+	public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.setId_x(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes data for Quantity_criterion attribute.
 	 * 
@@ -399,11 +398,11 @@ public class CxUnrouted_conductive_interconnect_element_armx
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	public static void unsetId_x(SdaiContext context,
-			EItem_shape armEntity) throws SdaiException {
+/* Removed from XIM - see bug #3610	
+	public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.unsetId_x(context, armEntity);		
 	}
-
+*/
    //********** "conductive_interconnect_element" attributes
 
    /**

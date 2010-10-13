@@ -532,7 +532,7 @@ laminate_component_feature
 
 end_attribute_mapping;
 
-attribute_mapping associated_element(associated_element, $PATH, Conductive_interconnect_element_with_pre_defined_transitions_armx);
+attribute_mapping associated_element(associated_element, $PATH, Conductive_interconnect_element_armx);
 conductive_interconnect_element_terminal_link <=
 shape_aspect
 shape_aspect.of_shape ->
@@ -540,9 +540,7 @@ product_definition_shape =>
 assembly_component =>
 laminate_component =>
 stratum_feature_template_component =>
-conductive_interconnect_element =>
-conductive_interconnect_element_with_pre_defined_transitions
-
+conductive_interconnect_element
 
 end_attribute_mapping;
 
@@ -1904,7 +1902,7 @@ placement
 
 end_attribute_mapping;
 
-attribute_mapping associating_design_view(associating_design_view, $PATH, Part_design_view);
+attribute_mapping associating_design_view(associating_design_view, $PATH, Layered_interconnect_module_design_view_armx);
  representation_relationship_with_transformation <=
 representation_relationship
 representation_relationship.rep_1 ->
@@ -1918,7 +1916,9 @@ shape_definition_representation}
 property_definition_representation.definition ->
 property_definition =>
 product_definition_shape =>
-physical_unit
+physical_unit =>
+interconnect_module_design_view =>
+layered_interconnect_module_design_view
 
 end_attribute_mapping;
 
@@ -2225,7 +2225,7 @@ internal_probe_access_area
 
 end_attribute_mapping;
 
-attribute_mapping inter_stratum_feature(inter_stratum_feature, $PATH, Plated_passage_armx);
+attribute_mapping inter_stratum_feature(inter_stratum_feature, $PATH, Via_armx);
 product_definition_relationship
 product_definition_relationship.related_product_definition ->
 product_definition =>
@@ -2234,7 +2234,8 @@ assembly_component =>
 laminate_component =>
 inter_stratum_feature =>
 plated_inter_stratum_feature =>
-plated_passage
+plated_passage =>
+via
 
 end_attribute_mapping;
 
@@ -2869,7 +2870,7 @@ stratum_sub_stack =>
 local_linear_stack
 end_attribute_mapping;
 
-attribute_mapping containing_shape(containing_shape, $PATH, Layered_interconnect_module_design_view_armx);
+attribute_mapping of_shape(of_shape, $PATH, Layered_interconnect_module_design_view_armx);
 shape_aspect
 shape_aspect.of_shape ->
 product_definition_shape =>
@@ -2901,6 +2902,32 @@ component_definition <=
 product_definition
 
 end_mapping_constraints;
+
+attribute_mapping causal_item(causal_item, , limd_restriction_basis_item);
+(material_removal_laminate_component <=
+laminate_component <=
+assembly_component <=
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'causal item'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect)
+(material_removal_laminate_component <=
+laminate_component <=
+assembly_component <=
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'causal item'}
+product_definition_relationship.relating_product_definition ->
+product_definition)
+end_attribute_mapping;
 
 attribute_mapping causal_item(causal_item, , stratum_concept);
 
@@ -4226,6 +4253,32 @@ product_definition
 
 end_mapping_constraints;
 
+attribute_mapping causal_item(causal_item, , limd_restriction_basis_item);
+(stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=
+product_definition_shape <-
+shape_aspect.of_shape
+shape_aspect <-
+shape_aspect_relationship.related_shape_aspect
+shape_aspect_relationship
+{shape_aspect_relationship
+shape_aspect_relationship.name = 'causal item'}
+shape_aspect_relationship.relating_shape_aspect ->
+shape_aspect)
+(stratum_feature_template_component <=
+laminate_component <=
+assembly_component <=
+component_definition <=
+product_definition <-
+product_definition_relationship.related_product_definition
+product_definition_relationship
+{product_definition_relationship
+product_definition_relationship.name = 'causal item'}
+product_definition_relationship.relating_product_definition ->
+product_definition)
+end_attribute_mapping;
+
 attribute_mapping causal_item(causal_item, , stratum_concept);
 
 (stratum_feature_template_component <=
@@ -5251,4 +5304,71 @@ end_mapping_constraints;
 
 end_entity_mapping;
 
+entity_mapping Junction_vertex_allocation(Junction_vertex_allocation, shape_aspect_relationship)
+extended;
+
+attribute_mapping implementation_point(implementation_point, $PATH, Inter_stratum_join_relationship);
+		shape_aspect_relationship
+		shape_aspect_relationship.related_shape_aspect ->
+		{shape_aspect
+		shape_aspect.name = 'inter stratum join'}
+		shape_aspect =>
+		join_shape_aspect
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Stratum_feature_usage(Stratum_feature_usage, geometric_item_specific_usage);
+
+mapping_constraints;
+		{geometric_item_specific_usage <= 
+		item_identified_representation_usage
+		item_identified_representation_usage.definition ->
+		represented_definition = shape_aspect
+		shape_aspect =>
+		stratum_feature}
+end_mapping_constraints;
+
+attribute_mapping definition(definition, $PATH, Stratum_feature_armx);
+		geometric_item_specific_usage <= 
+		item_identified_representation_usage
+		item_identified_representation_usage.definition ->
+		represented_definition = shape_aspect
+		shape_aspect =>
+		stratum_feature
+end_attribute_mapping;
+					
+attribute_mapping identified_item(identified_item, $PATH, limd_sf_shape_select);
+		geometric_item_specific_usage <= 
+		item_identified_representation_usage
+		item_identified_representation_usage.identified_item ->
+		representation_item =>
+		geometric_representation_item
+end_attribute_mapping;
+
+attribute_mapping used_representation(used_representation, $PATH, limd_stratum_shape_model_select);
+		geometric_item_specific_usage <= 
+		item_identified_representation_usage
+		item_identified_representation_usage.used_representation ->
+		representation =>
+		shape_representation
+end_attribute_mapping;
+
+attribute_mapping used_representation(used_representation, $PATH, External_geometric_model);
+		geometric_item_specific_usage <= 
+		item_identified_representation_usage
+		item_identified_representation_usage.used_representation ->
+		representation =>
+		shape_representation
+end_attribute_mapping;
+
+attribute_mapping used_representation(used_representation, $PATH, Shape_representation);
+		geometric_item_specific_usage <= 
+		item_identified_representation_usage
+		item_identified_representation_usage.used_representation ->
+		representation =>
+		shape_representation
+end_attribute_mapping;
+
+end_entity_mapping;
 (*end_schema_mapping;*)

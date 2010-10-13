@@ -38,7 +38,6 @@ import jsdai.SPhysical_unit_usage_view_xim.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.EProperty_definition;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.*;
 
 public class CxPart_design_view
 		extends
@@ -48,19 +47,19 @@ public class CxPart_design_view
 
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(EProduct_definition type) throws SdaiException {
-		return test_string(a5);
+		return test_string(a4);
 	}
 	public String getDescription(EProduct_definition type) throws SdaiException {
-		return get_string(a5);
+		return get_string(a4);
 	}*/
 	public void setDescription(EProduct_definition type, String value) throws SdaiException {
-		a5 = set_string(value);
+		a4 = set_string(value);
 	}
 	public void unsetDescription(EProduct_definition type) throws SdaiException {
-		a5 = unset_string();
+		a4 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(EProduct_definition type) throws SdaiException {
-		return a5$;
+		return a4$;
 	}
 
 	// From property_definition
@@ -130,7 +129,7 @@ public class CxPart_design_view
 			//additional_context
 			setAdditional_contexts(context, this);
 			// From Item_shape
-			setId_x(context, this);
+//			setId_x(context, this);
 			// usage_view
 			setUsage_view(context, this);
 			// SETTING DERIVED
@@ -139,7 +138,7 @@ public class CxPart_design_view
 			// Clean ARM specific attributes
 			unsetAdditional_characterization(null);
 			unsetAdditional_contexts(null);
-			unsetId_x(null);
+//			unsetId_x(null);
 			unsetUsage_view(null);
 	}
 
@@ -155,7 +154,7 @@ public class CxPart_design_view
 			unsetAdditional_characterization(context, this);
 
 			//id_x
-			unsetId_x(context, this);
+//			unsetId_x(context, this);
 			
 			// usage_view
 			unsetUsage_view(context, this);
@@ -191,7 +190,7 @@ public class CxPart_design_view
 			EPart_design_view armEntity) throws SdaiException {
 		unsetMappingConstraints(context, armEntity);
 		CxPart_view_definition.setMappingConstraints(context, armEntity);
-		CxItem_shape.setMappingConstraints(context, armEntity);
+//		CxItem_shape.setMappingConstraints(context, armEntity);
 		CxAP210ARMUtilities.assignPart_definition_type(context, armEntity, "physical design");		// AIM gap
 		armEntity.setDefinition(null, armEntity);
 	}
@@ -206,17 +205,18 @@ public class CxPart_design_view
 	public static void unsetMappingConstraints(SdaiContext context,
 			EPart_design_view armEntity) throws SdaiException {
 		CxPart_view_definition.unsetMappingConstraints(context, armEntity);
-		CxItem_shape.unsetMappingConstraints(context, armEntity);
+//		CxItem_shape.unsetMappingConstraints(context, armEntity);
 		CxAP210ARMUtilities.deassignPart_definition_type(context, armEntity, "physical design");
 	}
 
 	//********** "design_discipline_item_definition" attributes
+	/* Removed from XIM - see bug #3610
 	public static void setId_x(SdaiContext context,
 			EItem_shape armEntity) throws SdaiException {
 		//unset old values
 		CxItem_shape.setId_x(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes data for name attribute.
 	 * 
@@ -226,11 +226,12 @@ public class CxPart_design_view
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
+	/* Removed from XIM - see bug #3610
 	public static void unsetId_x(SdaiContext context,
 			EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.unsetId_x(context, armEntity);	
 	}
-
+*/
 
 	/**
 	 * Sets/creates data for additional_context attribute.

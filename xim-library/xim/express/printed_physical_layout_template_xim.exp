@@ -121,10 +121,10 @@ END_SUBTYPE_CONSTRAINT;
     INVERSE
       SELF\Printed_part_template_armx.access_mechanisms : SET[1:?] OF Printed_part_cross_section_template_terminal_armx FOR associated_definition;
     WHERE
-      WR1 : SIZEOF(QUERY(hml <* horizontal_material_link | NOT (hml.precedent_material\Shape_element.element_name IN ['right']))) = 0;
-      WR2 : SIZEOF(QUERY(hml <* horizontal_material_link | NOT (hml.subsequent_material\Shape_element.element_name IN ['left']))) = 0;
-      WR3 : SIZEOF(QUERY(hml <* vertical_material_link | NOT (hml.precedent_material\Shape_element.element_name IN ['bottom']))) = 0;
-      WR4 : SIZEOF(QUERY(hml <* vertical_material_link | NOT (hml.precedent_material\Shape_element.element_name IN ['top']))) = 0;
+      WR1 : SIZEOF(QUERY(hml <* horizontal_material_link | NOT (hml.precedent_material\shape_aspect.name IN ['right']))) = 0;
+      WR2 : SIZEOF(QUERY(hml <* horizontal_material_link | NOT (hml.subsequent_material\shape_aspect.name IN ['left']))) = 0;
+      WR3 : SIZEOF(QUERY(hml <* vertical_material_link | NOT (hml.precedent_material\shape_aspect.name IN ['bottom']))) = 0;
+      WR4 : SIZEOF(QUERY(hml <* vertical_material_link | NOT (hml.precedent_material\shape_aspect.name IN ['top']))) = 0;
       WR5 : SIZEOF(QUERY(hml <* horizontal_material_link |
               (SIZEOF(QUERY(vml <* vertical_material_link |
                           (vml :=: hml)
@@ -157,13 +157,13 @@ END_SUBTYPE_CONSTRAINT;
       WR6 : NOT (EXISTS(material_to_right_of_terminal) AND EXISTS(material_to_bottom_of_terminal)) OR (material_to_right_of_terminal :<>: material_to_bottom_of_terminal);
       WR7 : NOT (EXISTS(material_to_top_of_terminal) AND EXISTS(material_to_bottom_of_terminal)) OR (material_to_top_of_terminal :<>: material_to_bottom_of_terminal);
       WR8 : NOT EXISTS(material_to_left_of_terminal) OR  
-                      (material_to_left_of_terminal\Printed_part_template_material_link.precedent_material\Shape_element.element_name = 'right');
+                      (material_to_left_of_terminal\Printed_part_template_material_link.precedent_material\shape_aspect.name = 'right');
       WR9 : NOT EXISTS(material_to_right_of_terminal) OR
-                      (material_to_right_of_terminal\Printed_part_template_material_link.subsequent_material\Shape_element.element_name = 'left');
+                      (material_to_right_of_terminal\Printed_part_template_material_link.subsequent_material\shape_aspect.name = 'left');
      WR10 : NOT EXISTS(material_to_bottom_of_terminal) OR
-                      (material_to_bottom_of_terminal\Printed_part_template_material_link.subsequent_material\Shape_element.element_name = 'top');
+                      (material_to_bottom_of_terminal\Printed_part_template_material_link.subsequent_material\shape_aspect.name = 'top');
      WR11 : NOT EXISTS(material_to_top_of_terminal) OR
-                      (material_to_top_of_terminal\Printed_part_template_material_link.precedent_material\Shape_element.element_name = 'bottom');      
+                      (material_to_top_of_terminal\Printed_part_template_material_link.precedent_material\shape_aspect.name = 'bottom');      
   END_ENTITY;
 
   ENTITY Printed_part_template_armx
@@ -172,7 +172,7 @@ END_SUBTYPE_CONSTRAINT;
       SUBTYPE OF (Template_definition, printed_part_template);
          implemented_function : OPTIONAL Functional_unit_usage_view;
       INVERSE
-        access_mechanisms : SET [1:?] OF Printed_part_template_terminal_armx FOR containing_shape;
+        access_mechanisms : SET [1:?] OF Printed_part_template_terminal_armx FOR of_shape;
       WHERE
         WR1 : NOT EXISTS(SELF\Product_view_definition.name);
   END_ENTITY;
@@ -209,9 +209,11 @@ END_SUBTYPE_CONSTRAINT;
   END_ENTITY;
 
   ENTITY Printed_part_template_material_armx
-  	(* CONNOTATIONAL *) SUBTYPE OF (printed_part_template_material, Item_shape); -- Item_shape added in order to be able to implement inverse "boundary".
+  	(* CONNOTATIONAL *) SUBTYPE OF (printed_part_template_material, product_definition_shape); -- Item_shape added in order to be able to implement inverse "boundary".
       width             : OPTIONAL Length_tolerance_characteristic;
       required_material : Stratum_technology_armx;
+    DERIVE
+      SELF\property_definition.name : label := ?;    
     INVERSE 
       boundary : SET[0:4] OF template_material_cross_section_boundary_armx FOR associated_definition(* TEMP-AD *);
     WHERE
@@ -241,8 +243,8 @@ END_SUBTYPE_CONSTRAINT;
       WR1 : precedent_material :<>: subsequent_material;
       WR2 : precedent_material\Shape_aspect.name IN ['bottom', 'right'];
       WR3 : subsequent_material\Shape_aspect.name IN ['top', 'left'];
-      WR4 : NOT((precedent_material\Shape_element.element_name IN ['bottom']) XOR (subsequent_material\Shape_element.element_name IN ['top']));
-      WR5 : NOT((precedent_material\Shape_element.element_name IN ['right']) XOR (subsequent_material\Shape_element.element_name IN ['left']));      
+      WR4 : NOT((precedent_material\shape_aspect.name IN ['bottom']) XOR (subsequent_material\shape_aspect.name IN ['top']));
+      WR5 : NOT((precedent_material\shape_aspect.name IN ['right']) XOR (subsequent_material\shape_aspect.name IN ['left']));      
       WR6 : acyclic_printed_part_template_material_link(SELF,
         [subsequent_material], 
         'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.PRINTED_PART_TEMPLATE_MATERIAL_LINK_ARMX');
@@ -252,7 +254,7 @@ END_SUBTYPE_CONSTRAINT;
      ABSTRACT SUPERTYPE OF (((ONEOF (Printed_part_template_join_terminal, Printed_part_template_interface_terminal))
       ANDOR (Printed_part_cross_section_template_terminal_armx)) ANDOR Structured_printed_part_template_terminal_armx)
     (* CONNOTATIONAL *) SUBTYPE OF (Shape_feature, printed_part_template_terminal);
-      SELF\Shape_element.containing_shape RENAMED associated_definition	: Printed_part_template_armx;
+      SELF\shape_aspect.of_shape RENAMED associated_definition	: Printed_part_template_armx;
       connection_zone_category	                                        : printed_part_template_terminal_class;
       SELF\Shape_feature.connection_area                                : OPTIONAL SET[1:?] OF Connection_zone_in_layout_template;
       SELF\Shape_aspect.name		                                    : STRING; --ee_name;

@@ -30,7 +30,6 @@ import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SRequirement_view_definition_xim.CxRequirement_view_definition;
 import jsdai.SAssembly_component_placement_requirements_mim.CGroup_product_definition;
-import jsdai.SAssembly_physical_requirement_allocation_xim.AComponent_or_feature;
 import jsdai.SComponent_feature_xim.EComponent_feature_armx;
 
 /**

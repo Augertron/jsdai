@@ -35,7 +35,6 @@ import jsdai.util.LangUtils;
 import jsdai.SPhysical_unit_usage_view_mim.CMake_from_part_feature_relationship;
 import jsdai.SProduct_definition_schema.EProduct_definition_relationship;
 import jsdai.SProduct_property_definition_schema.*;
-import jsdai.SShape_property_assignment_xim.CxShape_element_relationship;
 
 public class CxPart_feature_make_from_relationship extends CPart_feature_make_from_relationship implements EMappedXIMEntity{
 
@@ -92,7 +91,7 @@ public class CxPart_feature_make_from_relationship extends CPart_feature_make_fr
 	 */
 	public static void setMappingConstraints(SdaiContext context,
 			EPart_feature_make_from_relationship armEntity) throws SdaiException {
-		CxShape_element_relationship.setMappingConstraints(context, armEntity);
+//		CxShape_element_relationship.setMappingConstraints(context, armEntity);
 	}
 
 	/**
@@ -104,7 +103,7 @@ public class CxPart_feature_make_from_relationship extends CPart_feature_make_fr
 	 */
 	public static void unsetMappingConstraints(SdaiContext context,
 			EPart_feature_make_from_relationship armEntity) throws SdaiException {
-		CxShape_element_relationship.unsetMappingConstraints(context, armEntity);
+//		CxShape_element_relationship.unsetMappingConstraints(context, armEntity);
 	}
 
 

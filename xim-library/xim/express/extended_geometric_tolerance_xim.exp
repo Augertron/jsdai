@@ -34,7 +34,7 @@ USE FROM Non_feature_shape_element_xim;	-- ISO/TS 10303-1706
 
 USE FROM Requirement_decomposition_xim;
 
--- USE FROM Default_tolerance_xim;
+USE FROM Default_tolerance_xim;
 
 USE FROM support_resource_schema(label);
 
@@ -55,17 +55,6 @@ USE FROM shape_tolerance_schema(
 	tolerance_zone_form -- taken from AIM
 	);
 
-USE FROM shape_aspect_definition_schema(
-	apex,  -- name conflict
-	centre_of_symmetry, -- name conflict
-	derived_shape_aspect, -- no name conflict
-	extension, -- no name conflict
-	geometric_alignment, -- name conflict
-	geometric_intersection, -- name conflict
-	shape_aspect_deriving_relationship, -- no name conflict	
-	tangent -- no name conflict
-	);
-
 USE FROM shape_dimension_schema(
 		dimensional_characteristic_representation, -- no name conflict
 		shape_dimension_representation -- take fully from AIM
@@ -82,7 +71,7 @@ USE FROM shape_dimension_schema(
 	
 	TYPE physical_feature_or_part_template = 
 		EXTENSIBLE GENERIC_ENTITY SELECT
-		(Shape_element);
+		(shape_aspect);
 	END_TYPE;
 
   TYPE centre_type = ENUMERATION OF
@@ -109,6 +98,12 @@ USE FROM shape_dimension_schema(
 		(Externally_defined_dimension_representation);
 	END_TYPE;
 *)
+
+	TYPE egt_geometric_dimension = EXTENSIBLE SELECT BASED_ON geometric_dimension WITH 
+	   (Statistical_dimensional_location_armx,
+	   Statistical_dimensional_size_armx);
+	END_TYPE; 
+
 	TYPE egt_requirement_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assignment_item WITH 
 	    (Restraint_condition,
 	  	Statistical_dimensional_location_armx,
@@ -118,7 +113,7 @@ USE FROM shape_dimension_schema(
 
   TYPE geometric_or_dimension_select = SELECT
     (Geometric_tolerance_armx,
-     Geometric_dimension);
+     geometric_dimension);
   END_TYPE;
 
   TYPE geometric_tolerance_qualifiers = ENUMERATION OF
@@ -149,7 +144,6 @@ USE FROM shape_dimension_schema(
 
 	SUBTYPE_CONSTRAINT egt_non_feature_shape_element_subtypes FOR Non_feature_shape_element; 
 	    (ONEOF (
-		 Derived_non_feature_shape_element,
 		 Directed_axis,
 		 Positional_boundary_armx,
 		 Positional_boundary_member_armx,
@@ -182,10 +176,6 @@ USE FROM shape_dimension_schema(
      	Func);
 	END_TYPE;
 
-  ENTITY Apex_armx
-    (* CONNOTATIONAL *) SUBTYPE OF (Derived_non_feature_shape_element, apex);
-  END_ENTITY;
-
   ENTITY Boundary_size_characteristic
     ABSTRACT SUPERTYPE OF (ONEOF (Diametrical_boundary_size_characteristic,
  Opposing_boundary_set_size_characteristic))
@@ -196,31 +186,6 @@ USE FROM shape_dimension_schema(
       SELF\representation.items : SET [1:?] OF representation_item := ?;
       SELF\representation.context_of_items : representation_context := ?;
       SELF\representation.name : label := ?;
-  END_ENTITY;
-
-  ENTITY Centre_axis
-    (* CONNOTATIONAL *) SUBTYPE OF (Centre_of_symmetry_armx);
-    DERIVE
-      SELF\shape_aspect.description : text := 'axis';
-  END_ENTITY;
-
-  ENTITY Centre_of_symmetry_armx
-    ABSTRACT SUPERTYPE OF (ONEOF (Centre_axis,
- Centre_plane,
- Centre_point))
-    (* CONNOTATIONAL *) SUBTYPE OF (Derived_non_feature_shape_element, centre_of_symmetry);
-  END_ENTITY;
-
-  ENTITY Centre_plane
-    (* CONNOTATIONAL *) SUBTYPE OF (Centre_of_symmetry_armx);
-    DERIVE
-      SELF\shape_aspect.description : text := 'plane';
-  END_ENTITY;
-
-  ENTITY Centre_point
-    (* CONNOTATIONAL *) SUBTYPE OF (Centre_of_symmetry_armx);
-    DERIVE
-      SELF\shape_aspect.description : text := 'point';
   END_ENTITY;
 
   ENTITY Composite_linear_profile_refinement_tolerance
@@ -365,16 +330,6 @@ USE FROM shape_dimension_schema(
 	    SELF\datum.identification : identifier := ?;
 	END_ENTITY;
 
-  ENTITY Derived_non_feature_shape_element
-    ABSTRACT SUPERTYPE OF (ONEOF (Apex_armx,
- Centre_of_symmetry_armx,
- Linear_extension,
- Geometric_intersection_armx,
- Geometric_alignment_armx,
- Tangent_shape_element))
-    (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, derived_shape_aspect);
-  END_ENTITY; 
-
   ENTITY Diametrical_boundary_size_characteristic
     (* CONNOTATIONAL *) SUBTYPE OF (Boundary_size_characteristic);
       sized_boundary : Tolerance_zone_circular_or_cylindrical_or_spherical_boundary;
@@ -384,7 +339,7 @@ USE FROM shape_dimension_schema(
     ABSTRACT SUPERTYPE OF (ONEOF (Pre_defined_dimension_qualifier,
  User_defined_dimension_qualifier))
  		(* CONNOTATIONAL *) SUBTYPE OF (measure_qualification);
-      qualified_dimensions : SET[1:?] OF Geometric_dimension;
+      qualified_dimensions : SET[1:?] OF geometric_dimension;
     DERIVE
       SELF\measure_qualification.qualifiers : SET [1:?] OF value_qualifier := ?;
       SELF\measure_qualification.qualified_measure : measure_with_unit := ?;
@@ -412,7 +367,7 @@ USE FROM shape_dimension_schema(
 
   ENTITY Dimension_set
   	(* CONNOTATIONAL *) SUBTYPE OF (property_definition);
-      associated_dimensions : SET[1:?] OF Geometric_dimension;
+      associated_dimensions : SET[1:?] OF geometric_dimension;
     DERIVE
       SELF\property_definition.definition : characterized_definition := ?;
       SELF\property_definition.description : text := ?;
@@ -428,8 +383,8 @@ USE FROM shape_dimension_schema(
   ENTITY Directed_axis
     (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, derived_shape_aspect);
       axis_to_be_oriented : Centre_axis;
-      start_shape_element : Shape_element;
-      end_shape_element   : Shape_element;
+      start_shape_element : shape_aspect;
+      end_shape_element   : shape_aspect;
     DERIVE
       SELF\shape_aspect.description : text := 'directed axis';
     UNIQUE
@@ -467,14 +422,6 @@ USE FROM shape_dimension_schema(
       definitions			: SET[1:?] OF External_source_identification FOR items;
   END_ENTITY;
 
-  ENTITY Geometric_alignment_armx
-    (* CONNOTATIONAL *) SUBTYPE OF (Derived_non_feature_shape_element, geometric_alignment);
-  END_ENTITY;
-
-  ENTITY Geometric_intersection_armx
-    (* CONNOTATIONAL *) SUBTYPE OF (Derived_non_feature_shape_element, geometric_intersection);
-  END_ENTITY;
-
   ENTITY Geometric_tolerance_qualifier
     ABSTRACT SUPERTYPE OF (ONEOF (Pre_defined_geometric_tolerance_qualifier,
  User_defined_geometric_tolerance_qualifier))
@@ -489,7 +436,7 @@ USE FROM shape_dimension_schema(
   END_ENTITY;
 
   ENTITY Geometric_tolerance_with_applied_material_condition_property
-    (* CONNOTATIONAL *) SUBTYPE OF (Geometric_tolerance_armx, modified_geometric_tolerance, physical_unit_geometric_tolerance);
+    (* CONNOTATIONAL *) SUBTYPE OF (Geometric_tolerance_armx, physical_unit_geometric_tolerance);
       SELF\modified_geometric_tolerance.modifier RENAMED applied_material_condition_property_name : material_condition_property_names;
   END_ENTITY; 
   
@@ -501,10 +448,6 @@ USE FROM shape_dimension_schema(
       SELF\representation.items : SET [1:?] OF representation_item := ?;
       SELF\representation.context_of_items : representation_context := ?;
       SELF\representation.name : label := ?;
-  END_ENTITY;
-
-  ENTITY Linear_extension
-    (* CONNOTATIONAL *) SUBTYPE OF (Derived_non_feature_shape_element, extension);
   END_ENTITY;
 
   ENTITY Maximum_dimension_representation
@@ -521,15 +464,15 @@ USE FROM shape_dimension_schema(
   END_ENTITY;
 
   ENTITY Parallel_shape_element_relationship
-    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_relationship);
+    (* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
     DERIVE
-      SELF\Shape_element_relationship.relation_type : STRING := '';
+      SELF\shape_aspect_relationship.name : STRING := '';
   END_ENTITY;
 
   ENTITY Perpendicular_shape_element_relationship
-    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_relationship);
+    (* CONNOTATIONAL *) SUBTYPE OF (shape_aspect_relationship);
     DERIVE
-      SELF\Shape_element_relationship.relation_type : STRING := '';
+      SELF\shape_aspect_relationship.name : STRING := '';
   END_ENTITY; 
 
   ENTITY Positional_boundary_armx
@@ -625,7 +568,7 @@ USE FROM shape_dimension_schema(
     INVERSE
       size_characteristic : projected_zone_height_characteristic FOR defined_height_of;
     WHERE
-      WR1: NOT('SHAPE_PROPERTY_ASSIGNMENT_XIM.SHAPE_ELEMENT' IN TYPEOF(base_physical_feature)) OR
+      WR1: NOT('PRODUCT_PROPERTY_DEFINITION_SCHEMA.SHAPE_ASPECT' IN TYPEOF(base_physical_feature)) OR
        (SIZEOF(USEDIN(base_physical_feature,'GEOMETRIC_TOLERANCE_XIM.DATUM_DEFINED_BY_FEATURE.DEFINED_BY'))> 0); 
   END_ENTITY;
 
@@ -690,14 +633,6 @@ USE FROM shape_dimension_schema(
       SELF\property_definition.name : label := ?;
   END_ENTITY;
 
-  ENTITY Shape_element_deriving_relationship
-    (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_relationship, shape_aspect_deriving_relationship);
-      SELF\Shape_element_relationship.relating : Derived_non_feature_shape_element;
-    UNIQUE
-      UR1 : SELF\Shape_element_relationship.related, 
- SELF\Shape_element_relationship.relating;
-  END_ENTITY;
-
   ENTITY Simultaneous_geometric_tolerance_requirement
   	(* CONNOTATIONAL *) SUBTYPE OF (geometric_tolerance_group);
       grouped_geometric_tolerances : SET[2:?] OF Geometric_tolerance_armx;
@@ -721,8 +656,8 @@ USE FROM shape_dimension_schema(
 
 	-- SEDS
   ENTITY Statistical_dimensional_location_armx
-    (* CONNOTATIONAL *) SUBTYPE OF (Geometric_dimension, statistical_dimensional_location);
-      alternate_dimension             : OPTIONAL Geometric_dimension;
+    (* CONNOTATIONAL *) SUBTYPE OF (statistical_dimensional_location);
+      alternate_dimension             : OPTIONAL geometric_dimension;
 	DERIVE
   		statistical_control_requirement: SET[0:?] OF Requirement_view_definition :=
   		get_rvd(SELF, 'statistical control requirement');
@@ -732,8 +667,8 @@ USE FROM shape_dimension_schema(
 
 	-- SEDS	
   ENTITY Statistical_dimensional_size_armx
-    (* CONNOTATIONAL *) SUBTYPE OF (Geometric_dimension, statistical_dimensional_size);
-      alternate_dimension             : OPTIONAL Geometric_dimension;
+    (* CONNOTATIONAL *) SUBTYPE OF (statistical_dimensional_size);
+      alternate_dimension             : OPTIONAL geometric_dimension;
 	DERIVE
   		statistical_control_requirement: SET[0:?] OF Requirement_view_definition :=
   		get_rvd(SELF, 'statistical control requirement');
@@ -749,17 +684,6 @@ USE FROM shape_dimension_schema(
   		get_rvd(SELF, 'statistical control requirement');
 	WHERE
    		WR1 : SIZEOF(statistical_control_requirement) = 1;
-  END_ENTITY;
-
-  ENTITY Tangent_plane
-    (* CONNOTATIONAL *) SUBTYPE OF (Tangent_shape_element);
-    DERIVE
-      SELF\shape_aspect.description : text := 'plane';
-  END_ENTITY;
-
-  ENTITY Tangent_shape_element
-    SUPERTYPE OF (Tangent_plane)
-    (* CONNOTATIONAL *) SUBTYPE OF (Derived_non_feature_shape_element, tangent);
   END_ENTITY;
 
   ENTITY Theoretically_exact_dimension_representation
@@ -896,6 +820,7 @@ USE FROM shape_dimension_schema(
     (* CONNOTATIONAL *) SUBTYPE OF (Non_feature_shape_element, viewing_plane);
     DERIVE
       SELF\shape_aspect.description : text := 'affected plane';
+      SELF\shape_aspect.product_definitional : LOGICAL := FALSE;
     INVERSE
       viewing_plane_specification : viewing_plane_definition FOR defined_viewing_plane;
   END_ENTITY;

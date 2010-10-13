@@ -35,8 +35,6 @@ import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SShape_aspect_definition_schema.CDerived_shape_aspect;
 import jsdai.SShape_aspect_definition_schema.CShape_aspect_deriving_relationship;
 import jsdai.SShape_aspect_definition_schema.EShape_aspect_deriving_relationship;
-import jsdai.SShape_property_assignment_xim.AShape_element;
-import jsdai.SShape_property_assignment_xim.CxShape_element;
 
 public class CxDerived_shape_element extends CDerived_shape_element implements EMappedXIMEntity{
 
@@ -74,8 +72,12 @@ public class CxDerived_shape_element extends CDerived_shape_element implements E
 		
 		setDerived_from(context, this);
 		
+//		setId_x(context, this);
+		
 		// Clean ARM
 		unsetDerived_from(null);
+		
+//		unsetId_x(null);
 
 	}
 
@@ -83,6 +85,8 @@ public class CxDerived_shape_element extends CDerived_shape_element implements E
 			unsetMappingConstraints(context, this);
 
 			unsetDerived_from(context, this);
+			
+//			unsetId_x(context, this);
 			
 	}
 
@@ -121,7 +125,7 @@ public class CxDerived_shape_element extends CDerived_shape_element implements E
 			EDerived_shape_element armEntity) throws SdaiException {
 		unsetMappingConstraints(context, armEntity);
 
-		CxShape_element.setMappingConstraints(context, armEntity);
+//		CxShape_element.setMappingConstraints(context, armEntity);
 	}
 
 	/**
@@ -133,9 +137,38 @@ public class CxDerived_shape_element extends CDerived_shape_element implements E
 	 */
 	public static void unsetMappingConstraints(SdaiContext context,
 			EDerived_shape_element armEntity) throws SdaiException {
-		CxShape_element.unsetMappingConstraints(context, armEntity);
+//		CxShape_element.unsetMappingConstraints(context, armEntity);
 	}
 
+	/**
+	 * Sets/creates data for id_x constraints.
+	 *
+	 * <p>
+	 * </p>
+	 *
+	 * @param context
+	 *            SdaiContext.
+	 * @param armEntity
+	 *            arm entity.
+	 * @throws SdaiException
+	 */
+/* Removed from XIM - see bug #3610	
+	public static void setId_x(SdaiContext context, EShape_element armEntity) throws SdaiException {
+		CxShape_element.setId_x(context, armEntity);
+	}
+*/
+	/**
+	 * Unsets/deletes mapping constraint data.
+	 *
+	 * @param context
+	 * @param armEntity
+	 * @throws SdaiException
+	 */
+/* Removed from XIM - see bug #3610	
+	public static void unsetId_x(SdaiContext context, EShape_element armEntity) throws SdaiException {
+		CxShape_element.unsetId_x(context, armEntity);
+	}
+*/	
 	//********** "component_feature" attributes
 
 	/**
@@ -164,7 +197,7 @@ public class CxDerived_shape_element extends CDerived_shape_element implements E
 
 		if (armEntity.testDerived_from(null))
 		{
-			AShape_element armDefinitions = (AShape_element) armEntity.getDerived_from(null);
+			AShape_aspect armDefinitions = (AShape_aspect) armEntity.getDerived_from(null);
 			for(SdaiIterator iter = armDefinitions.createIterator(); iter.next();){
 				// SA (template)
 				// System.err.println(" ARM "+armDefinition);
@@ -173,8 +206,8 @@ public class CxDerived_shape_element extends CDerived_shape_element implements E
 					context.working_model.createEntityInstance(CShape_aspect_deriving_relationship.definition);
 			   relationship.setName(null, "");
 				// SA <- SAR -> SA
-				relationship.setRelated_shape_aspect(null, armEntity);
-				relationship.setRelating_shape_aspect(null, armDefinitions.getCurrentMember(iter));
+				relationship.setRelating_shape_aspect(null, armEntity);
+				relationship.setRelated_shape_aspect(null, armDefinitions.getCurrentMember(iter));
 			}
 		}
 	}
@@ -190,7 +223,7 @@ public class CxDerived_shape_element extends CDerived_shape_element implements E
 	public static void unsetDerived_from(SdaiContext context, EDerived_shape_element armEntity) throws SdaiException
 	{
 		AShape_aspect_relationship relationships = new AShape_aspect_relationship();
-		CShape_aspect_relationship.usedinRelated_shape_aspect(null,
+		CShape_aspect_relationship.usedinRelating_shape_aspect(null,
 			armEntity, context.domain, relationships);
 		for(int i=1;i<=relationships.getMemberCount();){
 			EShape_aspect_relationship relationship = relationships.getByIndex(i);

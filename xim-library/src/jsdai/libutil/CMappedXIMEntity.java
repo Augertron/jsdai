@@ -392,10 +392,24 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 			Aggregate aggregate = createAttrOrAggr(ximInstance, attrOrAggr, selectTypes, attrValue == null);
 			if(aggregate != null) {
 				EAggregation_type aggregationType = (EAggregation_type)domain;
-				assignMappedValue(ximInstance, mappingContext, aggregate, aggregationType.getElement_type(null),
-								  attrValue, selectTypes, selectPos, genAttMapping, dataType);
+				if(attrValue instanceof Collection) {
+					Iterator collectionIter = ((Collection)attrValue).iterator();
+					boolean aggResult = false;
+					while(collectionIter.hasNext()) {
+						Object aggValue = collectionIter.next();
+						if(assignMappedValue(ximInstance, mappingContext, aggregate,
+								aggregationType.getElement_type(null), aggValue,
+								selectTypes, selectPos, genAttMapping, dataType)) {
+							aggResult = true;
+						}
+					}
+					return aggResult;
+				} else {
+					return assignMappedValue(ximInstance, mappingContext, aggregate,
+							aggregationType.getElement_type(null), attrValue,
+							selectTypes, selectPos, genAttMapping, dataType);
+				}
 			}
-			return false;
 		} else if(domain instanceof EDefined_type) {
 			EEntity newDomain = domain;
 			do {

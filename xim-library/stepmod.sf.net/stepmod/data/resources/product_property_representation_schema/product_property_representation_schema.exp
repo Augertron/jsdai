@@ -19,7 +19,12 @@ SCHEMA product_property_representation_schema;
   REFERENCE FROM product_property_definition_schema (characterized_definition, general_property, product_definition_shape, property_definition, shape_aspect, shape_aspect_relationship);
   REFERENCE FROM representation_schema (representation, representation_item, representation_relationship, using_representations);
   REFERENCE FROM support_resource_schema (bag_to_set, label, text);
-  TYPE represented_definition = SELECT (general_property, property_definition, property_definition_relationship, shape_aspect, shape_aspect_relationship);
+  USE FROM shape_tolerance_schema(geometric_tolerance);
+  USE FROM shape_dimension_schema(dimensional_size);
+  
+  TYPE represented_definition = SELECT (general_property, property_definition, property_definition_relationship, shape_aspect, shape_aspect_relationship,
+  geometric_tolerance,    -- added anew as work-around
+  dimensional_size );     -- added anew as work-around
   END_TYPE;
 
   ENTITY context_dependent_shape_representation;

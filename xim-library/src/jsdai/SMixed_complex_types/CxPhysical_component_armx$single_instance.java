@@ -37,7 +37,6 @@ import jsdai.SPhysical_unit_design_view_xim.CxPhysical_component_armx;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.*;
 
 public class CxPhysical_component_armx$single_instance
 		extends
@@ -52,43 +51,43 @@ public class CxPhysical_component_armx$single_instance
 
 	// Taken from PDR
 	public void setId(EProduct_definition_relationship type, String value) throws SdaiException {
-		a6 = set_string(value);
+		a5 = set_string(value);
 	}
 	public void unsetId(EProduct_definition_relationship type) throws SdaiException {
-		a6 = unset_string();
+		a5 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeId(EProduct_definition_relationship type) throws SdaiException {
-		return a6$;
+		return a5$;
 	}
 
 	public void setName(EProduct_definition_relationship type, String value) throws SdaiException {
-		a7 = set_string(value);
+		a6 = set_string(value);
 	}
 	public void unsetName(EProduct_definition_relationship type) throws SdaiException {
-		a7 = unset_string();
+		a6 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(EProduct_definition_relationship type) throws SdaiException {
-		return a7$;
+		return a6$;
 	}
 	
 	// attribute (current explicit or supertype explicit) : relating_product_definition, base type: entity product_definition
 /*	public static int usedinRelating_product_definition(EProduct_definition_relationship type, EProduct_definition instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a12$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a8$, domain, result);
 	}
 	public boolean testRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		return test_instance(a12);
+		return test_instance(a8);
 	}
 	public EProduct_definition getRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		return (EProduct_definition)get_instance(a12);
+		return (EProduct_definition)get_instance(a8);
 	}*/
 	public void setRelating_product_definition(EProduct_definition_relationship type, EProduct_definition value) throws SdaiException {
-		a9 = set_instanceX(a9, value);
+		a8 = set_instanceX(a8, value);
 	}
 	public void unsetRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		a9 = unset_instance(a9);
+		a8 = unset_instance(a8);
 	}
 	public static jsdai.dictionary.EAttribute attributeRelating_product_definition(EProduct_definition_relationship type) throws SdaiException {
-		return a9$;
+		return a8$;
 	}
 	// ENDOF taken from PDR
 
@@ -96,19 +95,19 @@ public class CxPhysical_component_armx$single_instance
 
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(EProduct_definition type) throws SdaiException {
-		return test_string(a6);
+		return test_string(a2);
 	}
 	public String getDescription(EProduct_definition type) throws SdaiException {
-		return get_string(a6);
+		return get_string(a2);
 	}*/
 	public void setDescription(EProduct_definition type, String value) throws SdaiException {
-		a3 = set_string(value);
+		a2 = set_string(value);
 	}
 	public void unsetDescription(EProduct_definition type) throws SdaiException {
-		a3 = unset_string();
+		a2 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(EProduct_definition type) throws SdaiException {
-		return a3$;
+		return a2$;
 	}
 
 	// methods for derived attribute: name, base type: STRING
@@ -137,52 +136,52 @@ public class CxPhysical_component_armx$single_instance
 		return (EProduct_definition_formation)a7;
 	}*/
 	public void setFormation(EProduct_definition type, EProduct_definition_formation value) throws SdaiException {
-		a4 = set_instanceX(a4, value);
+		a3 = set_instanceX(a3, value);
 	}
 	public void unsetFormation(EProduct_definition type) throws SdaiException {
-		a4 = unset_instance(a4);
+		a3 = unset_instance(a3);
 	}
 	public static jsdai.dictionary.EAttribute attributeFormation(EProduct_definition type) throws SdaiException {
-		return a4$;
+		return a3$;
 	}
 
 	// attribute (current explicit or supertype explicit) : frame_of_reference, base type: entity product_definition_context
 /*	public static int usedinFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a8$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a4$, domain, result);
 	}
 	public boolean testFrame_of_reference(EProduct_definition type) throws SdaiException {
-		return test_instance(a8);
+		return test_instance(a4);
 	}
 	public jsdai.SApplication_context_schema.EProduct_definition_context getFrame_of_reference(EProduct_definition type) throws SdaiException {
-		a8 = get_instance(a8);
-		return (jsdai.SApplication_context_schema.EProduct_definition_context)a3;
+		a4 = get_instance(a4);
+		return (jsdai.SApplication_context_schema.EProduct_definition_context)a4;
 	}*/
 	public void setFrame_of_reference(EProduct_definition type, jsdai.SApplication_context_schema.EProduct_definition_context value) throws SdaiException {
-		a5 = set_instanceX(a5, value);
+		a4 = set_instanceX(a4, value);
 	}
 	public void unsetFrame_of_reference(EProduct_definition type) throws SdaiException {
-		a5 = unset_instance(a5);
+		a4 = unset_instance(a4);
 	}
 	public static jsdai.dictionary.EAttribute attributeFrame_of_reference(EProduct_definition type) throws SdaiException {
-		return a5$;
+		return a4$;
 	}
 	
 	// From CProperty_definition.java
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(EProperty_definition type) throws SdaiException {
-		return test_string(a16);
+		return test_string(a12);
 	}
 	public String getName(EProperty_definition type) throws SdaiException {
-		return get_string(a16);
+		return get_string(a12);
 	}*/
 	public void setName(EProperty_definition type, String value) throws SdaiException {
-		a13 = set_string(value);
+		a12 = set_string(value);
 	}
 	public void unsetName(EProperty_definition type) throws SdaiException {
-		a13 = unset_string();
+		a12 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(EProperty_definition type) throws SdaiException {
-		return a13$;
+		return a12$;
 	}
 	// -2- methods for SELECT attribute: definition
 /*	public static int usedinDefinition(EProperty_definition type, EEntity instance, ASdaiModel domain, AEntity result) throws SdaiException {
@@ -198,38 +197,20 @@ public class CxPhysical_component_armx$single_instance
 	}
 */
 	public void setDefinition(EProperty_definition type, EEntity value) throws SdaiException { // case 1
-		a15 = set_instanceX(a15, value);
+		a14 = set_instanceX(a14, value);
 	}
 
 	public void unsetDefinition(EProperty_definition type) throws SdaiException {
-		a15 = unset_instance(a15);
+		a14 = unset_instance(a14);
 	}
 
 	public static jsdai.dictionary.EAttribute attributeDefinition(EProperty_definition type) throws SdaiException {
-		return a15$;
+		return a14$;
 	}
 	
 	// ENDOF From CProperty_definition.java
 	
-	// Taken from Shape_element
-	/// methods for attribute: id_x, base type: STRING
-/*	public boolean testId_x(EShape_element type) throws SdaiException {
-		return test_string(a23);
-	}
-	public String getId_x(EShape_element type) throws SdaiException {
-		return get_string(a23);
-	}*/
-	public void setId_x(EItem_shape type, String value) throws SdaiException {
-		a1 = set_string(value);
-	}
-	public void unsetId_x(EItem_shape type) throws SdaiException {
-		a1 = unset_string();
-	}
-	public static jsdai.dictionary.EAttribute attributeId_x(EItem_shape type) throws SdaiException {
-		return a1$;
-	}
-	
-	
+
 	
 	public int attributeState = ATTRIBUTES_MODIFIED;	
 
@@ -249,7 +230,7 @@ public class CxPhysical_component_armx$single_instance
 
 			//********** "design_discipline_item_definition" attributes
 			//Id
-			setId_x(context, (EItem_shape)this);
+//			setId_x(context, (EItem_shape)this);
 			
 			//id - goes directly into AIM
 			
@@ -267,7 +248,7 @@ public class CxPhysical_component_armx$single_instance
 			unsetAdditional_contexts(null);
 			
 			unsetDerived_from(null);
-			unsetId_x(null);
+//			unsetId_x(null);
 
 	}
 
@@ -288,7 +269,7 @@ public class CxPhysical_component_armx$single_instance
 
 			unsetDerived_from(context, this);
 			
-			unsetId_x(context, this);
+//			unsetId_x(context, this);
 	}
 
 	//		************************************* AUTOMOTIVE_DESIGN
@@ -401,11 +382,12 @@ public class CxPhysical_component_armx$single_instance
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
+	/* Removed from XIM - see bug #3610
 	public static void setId_x(SdaiContext context,
 			EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.setId_x(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes data for Quantity_criterion attribute.
 	 * 
@@ -415,11 +397,12 @@ public class CxPhysical_component_armx$single_instance
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
+	/* Removed from XIM - see bug #3610
 	public static void unsetId_x(SdaiContext context,
 			EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.unsetId_x(context, armEntity);		
 	}
-
+*/
 	/**
 	 * Sets/creates data for id_x attribute.
 	 * @param context
@@ -428,11 +411,12 @@ public class CxPhysical_component_armx$single_instance
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
+	/* Removed from XIM - see bug #3610
 	public static void setId_x(SdaiContext context,
 			EShape_element armEntity) throws SdaiException {
 		CxShape_element.setId_x(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes data for Quantity_criterion attribute.
 	 * 
@@ -442,8 +426,10 @@ public class CxPhysical_component_armx$single_instance
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
+	/* Removed from XIM - see bug #3610
 	public static void unsetId_x(SdaiContext context,
 			EShape_element armEntity) throws SdaiException {
 		CxShape_element.unsetId_x(context, armEntity);		
 	}
+	*/
 }

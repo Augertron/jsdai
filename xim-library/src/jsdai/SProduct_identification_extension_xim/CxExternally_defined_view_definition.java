@@ -34,7 +34,6 @@ import jsdai.libutil.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_identification_extension_mim.CExternally_defined_product_definition;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.*;
 
 public class CxExternally_defined_view_definition extends CExternally_defined_view_definition implements EMappedXIMEntity
 {
@@ -164,10 +163,11 @@ public class CxExternally_defined_view_definition extends CExternally_defined_vi
      * @param armEntity arm entity.
      * @throws SdaiException
      */
+	/* Removed from XIM - see bug #3610
     public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
        CxItem_shape.setId_x(context, armEntity);
     }
-
+*/
   /**
    * Unsets/deletes data for Id_x attribute.
    *
@@ -175,10 +175,11 @@ public class CxExternally_defined_view_definition extends CExternally_defined_vi
    * @param armEntity arm entity.
    * @throws SdaiException
    */
+	/* Removed from XIM - see bug #3610
     public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
       CxItem_shape.unsetId_x(context, armEntity);
    }
-
+*/
  	//********** "product_view_definition" attributes
     /**
      * Sets/creates data for name_x attribute.

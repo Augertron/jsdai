@@ -33,7 +33,6 @@ import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
 import jsdai.SComponent_feature_mim.CComponent_feature;
 import jsdai.SProduct_property_definition_schema.*;
-import jsdai.SShape_property_assignment_xim.CxShape_element;
 
 public class CxComponent_feature_armx extends CComponent_feature_armx implements EMappedXIMEntity{
 
@@ -103,7 +102,7 @@ public class CxComponent_feature_armx extends CComponent_feature_armx implements
 			EComponent_feature_armx armEntity) throws SdaiException {
 		unsetMappingConstraints(context, armEntity);
 
-		CxShape_element.setMappingConstraints(context, armEntity);
+//		CxShape_element.setMappingConstraints(context, armEntity);
 	}
 
 	/**
@@ -115,7 +114,7 @@ public class CxComponent_feature_armx extends CComponent_feature_armx implements
 	 */
 	public static void unsetMappingConstraints(SdaiContext context,
 			EComponent_feature_armx armEntity) throws SdaiException {
-		CxShape_element.unsetMappingConstraints(context, armEntity);
+//		CxShape_element.unsetMappingConstraints(context, armEntity);
 	}
 
 	//********** "component_feature" attributes

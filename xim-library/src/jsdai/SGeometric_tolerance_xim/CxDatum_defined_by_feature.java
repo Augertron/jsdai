@@ -34,7 +34,7 @@ import jsdai.libutil.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SShape_aspect_definition_schema.CDatum;
 import jsdai.SShape_aspect_definition_schema.EDatum;
-import jsdai.SShape_property_assignment_xim.EShape_element;
+import jsdai.SShape_aspect_definition_schema.EDatum_feature;
 
 public class CxDatum_defined_by_feature extends CDatum_defined_by_feature implements EMappedXIMEntity
 {
@@ -93,6 +93,23 @@ public class CxDatum_defined_by_feature extends CDatum_defined_by_feature implem
 	public static jsdai.dictionary.EAttribute attributeDescription(EShape_aspect type) throws SdaiException {
 		return a1$;
 	}
+
+	/// methods for attribute: name, base type: STRING
+	/*	public boolean testName(EShape_aspect type) throws SdaiException {
+			return test_string(a0);
+		}
+		public String getName(EShape_aspect type) throws SdaiException {
+			return get_string(a0);
+		}*/
+		public void setName(EShape_aspect type, String value) throws SdaiException {
+			a0 = set_string(value);
+		}
+		public void unsetName(EShape_aspect type) throws SdaiException {
+			a0 = unset_string();
+		}
+		public static jsdai.dictionary.EAttribute attributeName(EShape_aspect type) throws SdaiException {
+			return a0$;
+		}
 	// ENDOF From CShape_aspect.java
 
 	// DATUM
@@ -126,11 +143,11 @@ public class CxDatum_defined_by_feature extends CDatum_defined_by_feature implem
 
 		setMappingConstraints(context, this);
 
-		setModification(context, this);
+//		setModification(context, this);
 		
 		setDefined_by(context, this);
 		// clean ARM
-		unsetModification(null);
+//		unsetModification(null);
 		
 		unsetDefined_by(null);
 	}
@@ -138,9 +155,9 @@ public class CxDatum_defined_by_feature extends CDatum_defined_by_feature implem
 	public void removeAimData(SdaiContext context) throws SdaiException {
 			unsetMappingConstraints(context, this);
 			
-			unsetModification(context, this);
+//			unsetModification(context, this);
 			
-			setDefined_by(context, this);
+			unsetDefined_by(context, this);
 	}
 
 	/**
@@ -185,10 +202,11 @@ public class CxDatum_defined_by_feature extends CDatum_defined_by_feature implem
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
+	/* Removed in Milestone M6 of IDA-STEP	
 	public static void setModification(SdaiContext context,
 		ESingle_datum armEntity) throws SdaiException {
 		CxSingle_datum.setModification(context, armEntity);
-	}
+	}*/
 
 	/**
 	 * Unsets/deletes mapping constraint data.
@@ -197,10 +215,11 @@ public class CxDatum_defined_by_feature extends CDatum_defined_by_feature implem
 	 * @param armEntity
 	 * @throws SdaiException
 	 */
+	/* Removed in Milestone M6 of IDA-STEP	
 	public static void unsetModification(SdaiContext context,
 			ESingle_datum armEntity) throws SdaiException {
 		CxSingle_datum.unsetModification(context, armEntity);		
-	}
+	}*/
 
 	/**
 	 * Sets/creates data for mapping constraints.
@@ -229,7 +248,7 @@ public class CxDatum_defined_by_feature extends CDatum_defined_by_feature implem
 		EDatum_defined_by_feature armEntity) throws SdaiException {
 		unsetDefined_by(context, armEntity);
 		if(armEntity.testDefined_by(null)){
-			EShape_element ese = armEntity.getDefined_by(null);
+			EShape_aspect ese = armEntity.getDefined_by(null);
 			EShape_aspect_relationship esar = (EShape_aspect_relationship)
 				context.working_model.createEntityInstance(CShape_aspect_relationship.definition);
 			esar.setRelated_shape_aspect(null, armEntity);
@@ -249,7 +268,10 @@ public class CxDatum_defined_by_feature extends CDatum_defined_by_feature implem
 		AShape_aspect_relationship asar = new AShape_aspect_relationship();
 		CShape_aspect_relationship.usedinRelated_shape_aspect(null, armEntity, context.domain, asar);
 		for(int i=1,count=asar.getMemberCount(); i<=count; i++){
-			asar.getByIndex(i).deleteApplicationInstance();
+			EShape_aspect esa = asar.getByIndex(i).getRelating_shape_aspect(null);
+			if(esa instanceof EDatum_feature){
+				esa.deleteApplicationInstance();
+			}
 		}
 	}
 	

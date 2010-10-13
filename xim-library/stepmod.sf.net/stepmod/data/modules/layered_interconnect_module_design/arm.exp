@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N5701 - ISO/TS 10303-1698 Layered interconnect module design - EXPRESS ARM
-   Supersedes ISO TC184/SC4/WG12 N4041
+   ISO TC184/SC4/WG12 N6435 - ISO/TS 10303-1698 Layered interconnect module design - EXPRESS ARM
+   Supersedes ISO TC184/SC4/WG12 N5701
 *)
 
 SCHEMA Layered_interconnect_module_design_arm;
@@ -119,6 +119,12 @@ REFERENCE FROM Physical_unit_2d_design_view_arm(pu2dv_typeof);  -- ISO/TS 10303-
   TYPE limd_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH 
     (stratum_concept,
      Stratum);
+  END_TYPE;
+
+  TYPE limd_sf_shape_select = EXTENSIBLE GENERIC_ENTITY SELECT;
+  END_TYPE;
+
+  TYPE limd_stratum_shape_model_select = EXTENSIBLE GENERIC_ENTITY SELECT;
   END_TYPE;
 
   TYPE limd_usage_concept = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON usage_concept WITH 
@@ -466,7 +472,7 @@ REFERENCE FROM Physical_unit_2d_design_view_arm(pu2dv_typeof);  -- ISO/TS 10303-
 
   ENTITY Interface_access_material_removal_laminate_component
     SUBTYPE OF (Material_removal_laminate_component);
-      accessed_interface : Laminate_component_interface_terminal;
+      SELF\Material_removal_laminate_component.causal_item RENAMED accessed_interface : Laminate_component_interface_terminal;
   END_ENTITY;
 
   ENTITY Inter_stratum_extent
@@ -1079,6 +1085,8 @@ REFERENCE FROM Physical_unit_2d_design_view_arm(pu2dv_typeof);  -- ISO/TS 10303-
       SELF\Shape_element.containing_shape RENAMED resident_stratum  : design_or_documentation_stratum;
       SELF\Shape_element.element_name                               : STRING;
       feature_of_size                                               : BOOLEAN;
+    INVERSE
+      shape	: SET[0:?] OF Stratum_feature_usage FOR definition;
     UNIQUE
       UR1 : SELF\Shape_element.element_name, resident_stratum;
     WHERE
@@ -1087,7 +1095,17 @@ REFERENCE FROM Physical_unit_2d_design_view_arm(pu2dv_typeof);  -- ISO/TS 10303-
                    AND
                   (get_assemblies(ac) <> get_ims(resident_stratum))
                   ))
-                  = 0;      
+                  = 0;
+  END_ENTITY;
+  
+  ENTITY Stratum_feature_usage
+    SUBTYPE OF(Geometric_item_specific_usage);
+      SELF\Geometric_item_specific_usage.definition      : Stratum_feature;
+      SELF\Geometric_item_specific_usage.identified_item : limd_sf_shape_select;
+      SELF\Geometric_item_specific_usage.used_model      : limd_stratum_shape_model_select;
+    WHERE
+     WR1 : SELF\Geometric_item_specific_usage.name = '';
+     WR2 : NOT EXISTS(SELF\Geometric_item_specific_usage.description);      
   END_ENTITY;
 
   ENTITY Stratum_feature_based_derived_pattern;
@@ -1116,6 +1134,8 @@ REFERENCE FROM Physical_unit_2d_design_view_arm(pu2dv_typeof);  -- ISO/TS 10303-
 	END_ENTITY; 
 
   ENTITY Stratum_feature_template_component
+    SUPERTYPE OF (ONEOF (Area_component,
+            Conductive_interconnect_element))
     SUBTYPE OF (Laminate_component);
       SELF\Definition_based_product_occurrence.derived_from : stratum_feature_template_or_parametric_template;
       implementation_or_resident_stratum : stratum_feature_or_stratum; 
@@ -1291,11 +1311,6 @@ REFERENCE FROM Physical_unit_2d_design_view_arm(pu2dv_typeof);  -- ISO/TS 10303-
             Stratum));
   END_SUBTYPE_CONSTRAINT; 
 	
-  SUBTYPE_CONSTRAINT limd_stratum_feature_template_component_subtypes FOR Stratum_feature_template_component;   
-	(ONEOF (Area_component,
-            Conductive_interconnect_element));
-	END_SUBTYPE_CONSTRAINT;
-
   SUBTYPE_CONSTRAINT limd_template_definition_subtypes FOR Template_definition; 
     (ONEOF (
        ONEOF(Printed_part_template, Special_symbol_template) ANDOR  Geometric_template, 

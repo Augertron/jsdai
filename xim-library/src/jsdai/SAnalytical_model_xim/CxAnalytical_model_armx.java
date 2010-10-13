@@ -34,7 +34,6 @@ import jsdai.libutil.*;
 import jsdai.util.LangUtils;
 import jsdai.SInformation_product_xim.CxInformation_product;
 import jsdai.SProduct_definition_schema.*;
-import jsdai.SSoftware_xim.CxSoftware;
 
 public class CxAnalytical_model_armx extends CAnalytical_model_armx implements EMappedXIMEntity
 {

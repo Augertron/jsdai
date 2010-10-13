@@ -43,8 +43,6 @@ import jsdai.SRepresentation_schema.*;
 import jsdai.SShape_feature_mim.CPlaced_feature;
 import jsdai.SShape_feature_xim.CxPlaced_feature_armx;
 import jsdai.SShape_feature_xim.EPlaced_feature_armx;
-import jsdai.SShape_property_assignment_xim.CxShape_element;
-import jsdai.SShape_property_assignment_xim.EShape_element;
 
 public class CxPart_feature$placed_feature_armx extends CPart_feature$placed_feature_armx implements EMappedXIMEntity{
 
@@ -105,14 +103,14 @@ public class CxPart_feature$placed_feature_armx extends CPart_feature$placed_fea
 		
 		setDefinition(context, this);
 		
-		setId_x(context, this);
+//		setId_x(context, this);
 		// Clean ARM
 		unsetMaterial_state_change(null);
 		unsetPrecedent_feature(null);
 		unsetConnection_area(null);
 		unsetDefinition(null);
 		
-		unsetId_x(null);
+//		unsetId_x(null);
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
@@ -126,7 +124,7 @@ public class CxPart_feature$placed_feature_armx extends CPart_feature$placed_fea
 
 			unsetDefinition(context, this);
 			
-			unsetId_x(context, this);
+//			unsetId_x(context, this);
 	}
 
 	/**
@@ -549,11 +547,12 @@ public class CxPart_feature$placed_feature_armx extends CPart_feature$placed_fea
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
+	/* Removed from XIM - see bug #3610
 	public static void setId_x(SdaiContext context,
 			EShape_element armEntity) throws SdaiException {
 		CxShape_element.setId_x(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes data for definition.
 	 * 
@@ -563,9 +562,10 @@ public class CxPart_feature$placed_feature_armx extends CPart_feature$placed_fea
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
+	/* Removed from XIM - see bug #3610
 	public static void unsetId_x(SdaiContext context,
 			EShape_element armEntity) throws SdaiException {
 		CxShape_element.unsetId_x(context, armEntity);
 	}
-	
+	*/
 }

@@ -79,7 +79,7 @@ USE FROM Functional_assignment_to_part_mim;
       UR1 : name,
  associated_definition;
     WHERE
-      WR1 : SIZEOF(QUERY(ct <* connected_terminals | NOT (associated_definition = ct\Shape_element.containing_shape))) = 0;
+      WR1 : SIZEOF(QUERY(ct <* connected_terminals | NOT (associated_definition = ct\shape_aspect.of_shape))) = 0;
   END_ENTITY;
 
   ENTITY Part_connected_terminals_definition_domain_armx
@@ -134,7 +134,7 @@ END_ENTITY;
       scope : Physical_connectivity_structure_definition;
     DERIVE
       SELF\shape_aspect.of_shape : product_definition_shape := ?;
-      SELF\shape_aspect.product_definitional : LOGICAL := ?;
+      SELF\shape_aspect.product_definitional : LOGICAL := TRUE;
       SELF\shape_aspect.description : text := ?;
     UNIQUE
       UR1 : name, scope;
@@ -142,7 +142,7 @@ END_ENTITY;
 
   ENTITY Part_terminal
     ABSTRACT SUPERTYPE (* CONNOTATIONAL *) SUBTYPE OF (Part_feature);
-      SELF\shape_element.description RENAMED terminal_type : OPTIONAL STRING;    
+      SELF\shape_aspect.description RENAMED terminal_type : OPTIONAL STRING;    
     INVERSE
       connection_requirement         : SET[0:1] OF part_connected_terminals_definition_armx FOR connected_terminals;
       functional_usage_view_terminal : SET[0:1] OF functional_usage_view_to_part_terminal_assignment FOR physical_usage_view_terminal;

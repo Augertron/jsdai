@@ -11,7 +11,7 @@ SCHEMA Ap203_configuration_controlled_3d_design_of_mechanical_parts_and_assembli
 USE FROM Design_product_data_management_xim; -- ISO/CD-TS 10303-1628
 
 -- GD&T REPRESENTATION
--- USE FROM Default_tolerance_xim; -- ISO/TS 10303-1052
+USE FROM Default_tolerance_xim; -- ISO/TS 10303-1052
 USE FROM Dimension_tolerance_xim; -- ISO/TS 10303-1050
 USE FROM Geometric_tolerance_xim; -- ISO/TS 10303-1051
 
@@ -95,12 +95,6 @@ USE FROM Ap203_configuration_controlled_3d_design_of_mechanical_parts_and_assemb
       (Person);
     WHERE
       WR1: SIZEOF(QUERY(p <* Person | SIZEOF(USEDIN(p, 'PERSON_ORGANIZATION_XIM' + '.PERSON_IN_ORGANIZATION.CONCERNED_PERSON')) = 0)) = 0;
-  END_RULE; 
-
-  RULE shape_requires_product_view FOR 
-      (Item_shape);
-    WHERE
-      WR1: SIZEOF(QUERY(is <* Item_shape | NOT ('PRODUCT_VIEW_DEFINITION_XIM' + '.PRODUCT_VIEW_DEFINITION' IN TYPEOF(is.described_element)))) = 0;
   END_RULE; 
 
 END_SCHEMA;

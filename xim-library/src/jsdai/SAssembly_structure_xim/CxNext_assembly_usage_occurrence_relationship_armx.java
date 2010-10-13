@@ -29,21 +29,20 @@ package jsdai.SAssembly_structure_xim;
 * $$
 */
 
-import jsdai.lang.*;
-import jsdai.libutil.*;
 import jsdai.SGeneric_product_occurrence_xim.EDefinition_based_product_occurrence;
 import jsdai.SGeneric_product_occurrence_xim.EProduct_occurrence;
 import jsdai.SLayered_interconnect_module_design_mim.EStructured_layout_component_sub_assembly_relationship_with_component;
 import jsdai.SLksoft_extensions_xim.EStructured_layout_component_sub_assembly_relationship_with_component_xim;
 import jsdai.SPhysical_unit_design_view_mim.CNext_assembly_usage_occurrence_relationship;
-import jsdai.SPhysical_unit_design_view_mim.EAssembly_component;
 import jsdai.SPhysical_unit_design_view_mim.ENext_assembly_usage_occurrence_relationship;
-import jsdai.SProduct_definition_schema.AProduct_definition_relationship;
-import jsdai.SProduct_definition_schema.CProduct_definition_relationship;
 import jsdai.SProduct_definition_schema.EProduct_definition;
-import jsdai.SProduct_definition_schema.EProduct_definition_relationship;
-import jsdai.SProduct_structure_schema.EAssembly_component_usage;
 import jsdai.SProduct_structure_schema.EProduct_definition_occurrence_relationship;
+import jsdai.lang.EEntity;
+import jsdai.lang.SdaiContext;
+import jsdai.lang.SdaiException;
+import jsdai.lang.SdaiSession;
+import jsdai.libutil.EMappedXIMEntity;
+import jsdai.libutil.XimEntityStandalone;
 
 public class CxNext_assembly_usage_occurrence_relationship_armx extends CNext_assembly_usage_occurrence_relationship_armx implements EMappedXIMEntity, XimEntityStandalone
 {

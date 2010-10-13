@@ -188,7 +188,7 @@ public class CxStructured_layout_component_sub_assembly_relationship_with_compon
 		
 		// Assembly_component
 		//Id
-		setId_x(context, this);
+//		setId_x(context, this);
 		
 		//id - goes directly into AIM
 		
@@ -224,7 +224,7 @@ public class CxStructured_layout_component_sub_assembly_relationship_with_compon
         
 		// Assembly_component
 		//Id
-		unsetId_x(null);
+//		unsetId_x(null);
 		
 		//id - goes directly into AIM
 		
@@ -265,7 +265,7 @@ public class CxStructured_layout_component_sub_assembly_relationship_with_compon
         
 		// Assembly_component
 		//Id
-		unsetId_x(context, this);
+//		unsetId_x(context, this);
 		
 		//id - goes directly into AIM
 		
@@ -295,7 +295,7 @@ public class CxStructured_layout_component_sub_assembly_relationship_with_compon
 		CxStructured_layout_component_sub_assembly_relationship_armx.setMappingConstraints(context, armEntity);
 		CxAssembly_component_armx.setMappingConstraints(context, armEntity);
 		XimEntityStandalone ximInstance = (XimEntityStandalone)armEntity; 
-		EStructured_layout_component_sub_assembly_relationship aimInstance = (EStructured_layout_component_sub_assembly_relationship)
+		// EStructured_layout_component_sub_assembly_relationship aimInstance = (EStructured_layout_component_sub_assembly_relationship)
 			ximInstance.getAimInstance(context);
 		// aimInstance.setRelated_product_definition(null, armEntity);
 	}
@@ -465,7 +465,7 @@ public class CxStructured_layout_component_sub_assembly_relationship_with_compon
 	public void unsetAimInstance(SdaiContext context) throws SdaiException{
 		aimInstance = null;
 	}
-
+	/* Removed from XIM - see bug #3610
 	// Assembly_component
 	public static void setId_x(SdaiContext context, EAssembly_component_armx armEntity) throws SdaiException
 	{
@@ -476,7 +476,7 @@ public class CxStructured_layout_component_sub_assembly_relationship_with_compon
 	{
 		CxAssembly_component_armx.unsetId_x(context, armEntity);
 	}
-	
+	*/
 	
 	//additional_context
 	public static void setAdditional_contexts(SdaiContext context, EAssembly_component_armx armEntity) throws SdaiException

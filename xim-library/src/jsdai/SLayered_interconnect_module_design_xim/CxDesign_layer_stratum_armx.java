@@ -32,8 +32,6 @@ package jsdai.SLayered_interconnect_module_design_xim;
 import jsdai.SPart_view_definition_xim.*;
 import jsdai.SProduct_definition_schema.EProduct_definition;
 import jsdai.SProduct_property_definition_schema.EProperty_definition;
-import jsdai.SShape_property_assignment_xim.CxItem_shape;
-import jsdai.SShape_property_assignment_xim.EItem_shape;
 import jsdai.SLayered_interconnect_module_design_mim.CDesign_layer_stratum;
 import jsdai.lang.*;
 import jsdai.libutil.*;
@@ -131,7 +129,7 @@ public class CxDesign_layer_stratum_armx extends CDesign_layer_stratum_armx impl
 		// setAdditional_contexts(context, this);
 
 		// Id_x
-		setId_x(context, this);
+//		setId_x(context, this);
 		
 		//********** "stratum" attributes
 
@@ -148,7 +146,7 @@ public class CxDesign_layer_stratum_armx extends CDesign_layer_stratum_armx impl
 		unsetPrimary_design_layer_stratum(null);
 
 		// Id_x
-		unsetId_x(null);
+//		unsetId_x(null);
 		
 	}
 
@@ -170,7 +168,7 @@ public class CxDesign_layer_stratum_armx extends CDesign_layer_stratum_armx impl
 		unsetAdditional_contexts(context, this);
 
 		// Id_x
-		unsetId_x(context, this);
+//		unsetId_x(context, this);
 
 		//********** "stratum" attributes
 
@@ -231,10 +229,11 @@ public class CxDesign_layer_stratum_armx extends CDesign_layer_stratum_armx impl
     * @param armEntity arm entity.
     * @throws SdaiException
     */
+/* Removed from XIM - see bug #3610	
    public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
    	CxItem_shape.setId_x(context, armEntity);
    }
-
+*/
  /**
   * Unsets/deletes data for id_x attribute.
   *
@@ -242,10 +241,11 @@ public class CxDesign_layer_stratum_armx extends CDesign_layer_stratum_armx impl
   * @param armEntity arm entity.
   * @throws SdaiException
   */
+/* Removed from XIM - see bug #3610	
  public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
  	CxItem_shape.unsetId_x(context, armEntity);
  }
-	
+*/	
 
 	// Stratum
 

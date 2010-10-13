@@ -690,7 +690,7 @@ public class CxInterconnect_module_constraint_region extends CInterconnect_modul
 			boolean isRepresentationCreated = false;
 
 			jsdai.SRepresentation_schema.ERepresentation suitableRepresentation = null;
-			top: for(int i=1;i<=reps.getMemberCount();i++){
+			for(int i=1;i<=reps.getMemberCount();i++){
 				jsdai.SRepresentation_schema.ERepresentation temp = reps.getByIndex(i);
 				// Exact types only - since all subtypes are intended for geometry - do not "touch" them
 				if(temp.getInstanceType() == jsdai.SRepresentation_schema.CRepresentation.definition){
@@ -1010,7 +1010,7 @@ public class CxInterconnect_module_constraint_region extends CInterconnect_modul
 	    	         group)	                 
 				};
 	         EApplied_group_assignment eaga = (EApplied_group_assignment)
-					LangUtils.createInstanceIfNeeded(context, CApplied_group_assignment.definition, orStructure);
+					LangUtils.createInstanceIfNeeded(context, CApplied_group_assignment.definition, agaStructure);
 				// RA
 				LangUtils.Attribute_and_value_structure[] raStructure =
 				{new LangUtils.Attribute_and_value_structure(

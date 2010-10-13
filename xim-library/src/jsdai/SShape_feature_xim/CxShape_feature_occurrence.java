@@ -32,7 +32,6 @@ package jsdai.SShape_feature_xim;
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
 import jsdai.SProduct_property_definition_schema.*;
-import jsdai.SShape_property_assignment_xim.CxShape_element;
 
 public class CxShape_feature_occurrence extends CShape_feature_occurrence implements EMappedXIMEntity{
 
@@ -95,7 +94,7 @@ public class CxShape_feature_occurrence extends CShape_feature_occurrence implem
 			EShape_feature_occurrence armEntity) throws SdaiException {
 		unsetMappingConstraints(context, armEntity);
 
-		CxShape_element.setMappingConstraints(context, armEntity);
+//		CxShape_element.setMappingConstraints(context, armEntity);
 	}
 
 	/**
@@ -107,7 +106,7 @@ public class CxShape_feature_occurrence extends CShape_feature_occurrence implem
 	 */
 	public static void unsetMappingConstraints(SdaiContext context,
 			EShape_feature_occurrence armEntity) throws SdaiException {
-		CxShape_element.unsetMappingConstraints(context, armEntity);
+//		CxShape_element.unsetMappingConstraints(context, armEntity);
 	}
 
 }

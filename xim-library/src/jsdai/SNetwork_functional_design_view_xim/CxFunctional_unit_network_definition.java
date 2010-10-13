@@ -38,8 +38,6 @@ import jsdai.SFunctional_usage_view_xim.EFunctional_unit_usage_view;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.EProperty_definition;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.CxItem_shape;
-import jsdai.SShape_property_assignment_xim.EItem_shape;
 
 public class CxFunctional_unit_network_definition extends CFunctional_unit_network_definition implements EMappedXIMEntity{
 
@@ -71,19 +69,19 @@ public class CxFunctional_unit_network_definition extends CFunctional_unit_netwo
 	// Product_view_definition
 	/// methods for attribute: name_x, base type: STRING
 /*	public boolean testName_x(EProduct_view_definition type) throws SdaiException {
-		return test_string(a4);
+		return test_string(a1);
 	}
 	public String getName_x(EProduct_view_definition type) throws SdaiException {
-		return get_string(a4);
+		return get_string(a1);
 	}*/
 	public void setName_x(EProduct_view_definition type, String value) throws SdaiException {
-		a4 = set_string(value);
+		a1 = set_string(value);
 	}
 	public void unsetName_x(EProduct_view_definition type) throws SdaiException {
-		a4 = unset_string();
+		a1 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName_x(EProduct_view_definition type) throws SdaiException {
-		return a4$;
+		return a1$;
 	}
 
 	/// methods for attribute: description, base type: STRING
@@ -141,7 +139,7 @@ public class CxFunctional_unit_network_definition extends CFunctional_unit_netwo
 			setUsage_view(context, this);
 
 			
-			setId_x(context, this);
+//			setId_x(context, this);
 			// clean ARM
 			//additional_characterization
 			unsetAdditional_characterization(null);
@@ -152,7 +150,7 @@ public class CxFunctional_unit_network_definition extends CFunctional_unit_netwo
 			// usage_view 
 			unsetUsage_view(null);
 			
-			unsetId_x(null);
+//			unsetId_x(null);
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
@@ -169,7 +167,7 @@ public class CxFunctional_unit_network_definition extends CFunctional_unit_netwo
 			// usage_view 
 			unsetUsage_view(context, this);
 			
-			unsetId_x(context, this);			
+//			unsetId_x(context, this);			
 			// this.deleteApplicationInstance();
 	}
 
@@ -386,11 +384,12 @@ public class CxFunctional_unit_network_definition extends CFunctional_unit_netwo
 	
 
 ////Item_shape	
+	/* Removed from XIM - see bug #3610
 	public static void setId_x(SdaiContext context,
 			EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.setId_x(context, armEntity);
 	}
-
+*/
 	/**
 	 * Unsets/deletes data for name attribute.
 	 * 
@@ -400,9 +399,10 @@ public class CxFunctional_unit_network_definition extends CFunctional_unit_netwo
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
+	/* Removed from XIM - see bug #3610
 	public static void unsetId_x(SdaiContext context,
 			EItem_shape armEntity) throws SdaiException {
 		CxItem_shape.unsetId_x(context, armEntity);
 	}
-	
+	*/
 }

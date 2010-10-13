@@ -37,7 +37,6 @@ import jsdai.SPart_template_xim.*;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.*;
 
 public class CxDefault_attachment_size_based_land_physical_template_armx extends CDefault_attachment_size_based_land_physical_template_armx implements EMappedXIMEntity
 {
@@ -91,19 +90,19 @@ public class CxDefault_attachment_size_based_land_physical_template_armx extends
 
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(EProduct_definition type) throws SdaiException {
-		return test_string(a5);
+		return test_string(a4);
 	}
 	public String getDescription(EProduct_definition type) throws SdaiException {
-		return get_string(a5);
+		return get_string(a4);
 	}*/
 	public void setDescription(EProduct_definition type, String value) throws SdaiException {
-		a5 = set_string(value);
+		a4 = set_string(value);
 	}
 	public void unsetDescription(EProduct_definition type) throws SdaiException {
-		a5 = unset_string();
+		a4 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(EProduct_definition type) throws SdaiException {
-		return a5$;
+		return a4$;
 	}
 
 	// methods for derived attribute: name, base type: STRING
@@ -123,56 +122,56 @@ public class CxDefault_attachment_size_based_land_physical_template_armx extends
 	// From CShape_aspect.java
 	/// methods for attribute: name, base type: STRING
 /*	public boolean testName(EShape_aspect type) throws SdaiException {
-		return test_string(a12);
+		return test_string(a10);
 	}
 	public String getName(EShape_aspect type) throws SdaiException {
-		return get_string(a12);
+		return get_string(a10);
 	}*/
 	public void setName(EShape_aspect type, String value) throws SdaiException {
-		a11 = set_string(value);
+		a10 = set_string(value);
 	}
 	public void unsetName(EShape_aspect type) throws SdaiException {
-		a11 = unset_string();
+		a10 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(EShape_aspect type) throws SdaiException {
-		return a11$;
+		return a10$;
 	}
 	
 	/// methods for attribute: product_definitional, base type: LOGICAL
 /*	public boolean testProduct_definitional(EShape_aspect type) throws SdaiException {
-		return test_logical(a15);
+		return test_logical(a13);
 	}
 	public int getProduct_definitional(EShape_aspect type) throws SdaiException {
-		return get_logical(a15);
+		return get_logical(a13);
 	}*/
 	public void setProduct_definitional(EShape_aspect type, int value) throws SdaiException {
-		a14 = set_logical(value);
+		a13 = set_logical(value);
 	}
 	public void unsetProduct_definitional(EShape_aspect type) throws SdaiException {
-		a14 = unset_logical();
+		a13 = unset_logical();
 	}
 	public static jsdai.dictionary.EAttribute attributeProduct_definitional(EShape_aspect type) throws SdaiException {
-		return a14$;
+		return a13$;
 	}
 	
 	// attribute (current explicit or supertype explicit) : of_shape, base type: entity product_definition_shape
 /*	public static int usedinOf_shape(EShape_aspect type, EProduct_definition_shape instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a14$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a12$, domain, result);
 	}
 	public boolean testOf_shape(EShape_aspect type) throws SdaiException {
-		return test_instance(a14);
+		return test_instance(a12);
 	}
 	public EProduct_definition_shape getOf_shape(EShape_aspect type) throws SdaiException {
-		return (EProduct_definition_shape)get_instance(a14);
+		return (EProduct_definition_shape)get_instance(a12);
 	}*/
 	public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
-		a13 = set_instanceX(a13, value);
+		a12 = set_instanceX(a12, value);
 	}
 	public void unsetOf_shape(EShape_aspect type) throws SdaiException {
-		a13 = unset_instance(a13);
+		a12 = unset_instance(a12);
 	}
 	public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) throws SdaiException {
-		return a13$;
+		return a12$;
 	}
 	// ENDOF From CShape_aspect.java
 	
@@ -196,7 +195,7 @@ public class CxDefault_attachment_size_based_land_physical_template_armx extends
 		//********** "managed_design_object" attributes
 
 		//********** "item_shape" attributes
-		setId_x(context, this);
+//		setId_x(context, this);
 		// It is derived
 		// setId_x(context, (EShape_element)this);
 
@@ -221,7 +220,7 @@ public class CxDefault_attachment_size_based_land_physical_template_armx extends
 		// setMaximum_attachment_region_size(context, this);
 		
 		// Clean ARM specific attributes
-		unsetId_x((EItem_shape)null);
+//		unsetId_x((EItem_shape)null);
         // It is derived
 		// unsetId_x((EShape_element)null);
 		unsetAdditional_characterization(null);
@@ -244,7 +243,7 @@ public class CxDefault_attachment_size_based_land_physical_template_armx extends
 		//********** "managed_design_object" attributes
 
 		//********** "item_shape" attributes
-		unsetId_x(context, this);
+//		unsetId_x(context, this);
         // It is derived
 		// unsetId_x(context, (EShape_element)this);
 
@@ -338,10 +337,11 @@ public class CxDefault_attachment_size_based_land_physical_template_armx extends
      * @param armEntity arm entity.
      * @throws SdaiException
      */
+/* Removed from XIM - see bug #3610
     public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
        CxItem_shape.setId_x(context, armEntity);
     }
-
+*/
   /**
    * Unsets/deletes data for Id_x attribute.
    *
@@ -349,10 +349,11 @@ public class CxDefault_attachment_size_based_land_physical_template_armx extends
    * @param armEntity arm entity.
    * @throws SdaiException
    */
+/* Removed from XIM - see bug #3610	
     public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
       CxItem_shape.unsetId_x(context, armEntity);
    }
-
+*/
     /**
      * Sets/creates data for name_x attribute.
      *

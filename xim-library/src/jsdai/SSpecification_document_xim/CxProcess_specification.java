@@ -35,7 +35,6 @@ import jsdai.SDocument_definition_xim.CxDocument_definition;
 import jsdai.SDocument_definition_xim.EDocument_definition;
 import jsdai.SProduct_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.*;
 import jsdai.SSpecification_document_mim.CSpecification_definition;
 
 public class CxProcess_specification extends CProcess_specification implements EMappedXIMEntity
@@ -46,19 +45,19 @@ public class CxProcess_specification extends CProcess_specification implements E
 	// Product_view_definition
 	/// methods for attribute: name_x, base type: STRING
 /*	public boolean testName_x(EProduct_view_definition type) throws SdaiException {
-		return test_string(a4);
+		return test_string(a1);
 	}
 	public String getName_x(EProduct_view_definition type) throws SdaiException {
-		return get_string(a4);
+		return get_string(a1);
 	}*/
 	public void setName_x(EProduct_view_definition type, String value) throws SdaiException {
-		a4 = set_string(value);
+		a1 = set_string(value);
 	}
 	public void unsetName_x(EProduct_view_definition type) throws SdaiException {
-		a4 = unset_string();
+		a1 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName_x(EProduct_view_definition type) throws SdaiException {
-		return a4$;
+		return a1$;
 	}
 
 	/// methods for attribute: description, base type: STRING
@@ -191,10 +190,11 @@ public class CxProcess_specification extends CProcess_specification implements E
      * @param armEntity arm entity.
      * @throws SdaiException
      */
+	/* Removed from XIM - see bug #3610
     public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
        CxItem_shape.setId_x(context, armEntity);
     }
-
+*/
   /**
    * Unsets/deletes data for Id_x attribute.
    *
@@ -202,10 +202,11 @@ public class CxProcess_specification extends CProcess_specification implements E
    * @param armEntity arm entity.
    * @throws SdaiException
    */
+	/* Removed from XIM - see bug #3610
     public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
       CxItem_shape.unsetId_x(context, armEntity);
    }
-
+*/
  	//********** "product_view_definition" attributes
     /**
      * Sets/creates data for name_x attribute.

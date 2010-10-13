@@ -29,15 +29,18 @@ package jsdai.SFootprint_definition_xim;
 * $$
 */
 
-import jsdai.lang.*;
-import jsdai.libutil.*;
-import jsdai.SFootprint_definition_mim.EGeneric_footprint_definition;
-import jsdai.SLayered_2d_shape_xim.*;
 import jsdai.SLayered_interconnect_complex_template_xim.CxStructured_template_planar_shape_model;
 import jsdai.SPart_template_shape_with_parameters_xim.CxPart_template_shape_model;
-import jsdai.SPhysical_unit_shape_with_parameters_xim.CxPhysical_unit_shape_model;
-import jsdai.SProduct_property_representation_schema.*;
-import jsdai.SRepresentation_schema.*;
+import jsdai.SProduct_property_representation_schema.CShape_representation;
+import jsdai.SProduct_property_representation_schema.EShape_representation;
+import jsdai.SRepresentation_schema.ARepresentation_relationship;
+import jsdai.SRepresentation_schema.CRepresentation_relationship;
+import jsdai.SRepresentation_schema.ERepresentation;
+import jsdai.SRepresentation_schema.ERepresentation_relationship;
+import jsdai.lang.SdaiContext;
+import jsdai.lang.SdaiException;
+import jsdai.libutil.CxAP210ARMUtilities;
+import jsdai.libutil.EMappedXIMEntity;
 
 public class CxBreakout_footprint_definition_shape_model extends CBreakout_footprint_definition_shape_model implements EMappedXIMEntity
 {

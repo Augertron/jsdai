@@ -76,7 +76,7 @@ public class CxApplied_independent_property$material_property_armx extends CAppl
 		setBase_independent_property(context, this);
 		
 		// id_x : OPTIONAL STRING;
-		setId_x(context, this);
+//		setId_x(context, this);
 		
 		// for material_property_armx this has to be set otherwise
 		// representation : OPTIONAL property_value_select;
@@ -85,7 +85,7 @@ public class CxApplied_independent_property$material_property_armx extends CAppl
 		// clean ARM
 		//	base_independent_property
 		unsetBase_independent_property(null);
-		unsetId_x(null);
+//		unsetId_x(null);
 		unsetRepresentation(null);
 		
 	}
@@ -97,7 +97,7 @@ public class CxApplied_independent_property$material_property_armx extends CAppl
 		unsetBase_independent_property(context, this);
 
 		// id_x : OPTIONAL STRING;
-		unsetId_x(context, this);
+//		unsetId_x(context, this);
 		
 		// representation : OPTIONAL property_value_select;
 		// unsetRepresentation(context, this);

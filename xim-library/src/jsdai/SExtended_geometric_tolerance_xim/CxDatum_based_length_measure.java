@@ -29,7 +29,6 @@ package jsdai.SExtended_geometric_tolerance_xim;
 * $Id$
 */
 
-import jsdai.SExtended_geometric_tolerance_mim.*;
 import jsdai.SGeometry_schema.EDirection;
 import jsdai.SMeasure_schema.ELength_measure_with_unit;
 import jsdai.SMixed_complex_types.CLength_measure_with_unit$measure_representation_item;
@@ -315,7 +314,6 @@ public class CxDatum_based_length_measure extends CDatum_based_length_measure im
 		int result = armEntity.testMeasure_orientation(null);
 		
 		if (result != 0){ 
-			jsdai.SRepresentation_schema.ERepresentation aimEntity = armEntity;
 			ERepresentation_item item;
 			// ENUM
 			if(CDatum_based_length_measure.sMeasure_orientationMeasure_orientation == result){

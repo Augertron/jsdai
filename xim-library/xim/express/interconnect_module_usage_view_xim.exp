@@ -113,19 +113,19 @@ USE FROM Interconnect_module_usage_view_mim;
  Interconnect_module_edge_surface,
  Interconnect_module_edge_segment_surface_armx))
     (* CONNOTATIONAL *) SUBTYPE OF (Part_feature);
-      SELF\Shape_element.containing_shape(* TEMP-PF! *) : Layered_interconnect_module_usage_view_armx;
+      SELF\shape_aspect.of_shape(* TEMP-PF! *) : Layered_interconnect_module_usage_view_armx;
   END_ENTITY;
 
   ENTITY Interconnect_module_terminal_armx
     (* CONNOTATIONAL *) SUBTYPE OF (Part_terminal, interconnect_module_terminal);
       SELF\Shape_feature.connection_area                : OPTIONAL SET[1:?] OF Connection_zone_in_usage_view;            
-      SELF\Shape_element.containing_shape(* TEMP-PF! *) : Layered_interconnect_module_usage_view_armx;
+      SELF\shape_aspect.of_shape(* TEMP-PF! *) : Layered_interconnect_module_usage_view_armx;
   END_ENTITY;
 
   ENTITY Interconnect_module_terminal_surface_constituent_relationship
     (* CONNOTATIONAL *) SUBTYPE OF (Shape_element_constituent_relationship);
-      SELF\Shape_element_relationship.relating : Interconnect_module_surface_feature;
-      SELF\Shape_element_relationship.related  : Interconnect_module_terminal_armx;
+      SELF\shape_aspect_relationship.relating_shape_aspect : Interconnect_module_surface_feature;
+      SELF\shape_aspect_relationship.related_shape_aspect  : Interconnect_module_terminal_armx;
   END_ENTITY;
 
   ENTITY Interconnect_module_usage_view_armx
@@ -144,11 +144,11 @@ USE FROM Interconnect_module_usage_view_mim;
       SELF\Product_view_definition.additional_characterization : STRING := 'interconnect module';  
     WHERE
       WR1 : SIZEOF(QUERY(pf <* USEDIN(SELF,
- 'INTERCONNECT_MODULE_USAGE_VIEW_XIM.INTERCONNECT_MODULE_SURFACE_FEATURE.CONTAINING_SHAPE') | ('INTERCONNECT_MODULE_USAGE_VIEW_xim.' + 'INTERCONNECT_MODULE_PRIMARY_SURFACE' IN TYPEOF(pf)))) <= 1;
+ 'INTERCONNECT_MODULE_USAGE_VIEW_XIM.INTERCONNECT_MODULE_SURFACE_FEATURE.OF_SHAPE') | ('INTERCONNECT_MODULE_USAGE_VIEW_xim.' + 'INTERCONNECT_MODULE_PRIMARY_SURFACE' IN TYPEOF(pf)))) <= 1;
       WR2 : SIZEOF(QUERY(pf <* USEDIN(SELF,
- 'INTERCONNECT_MODULE_USAGE_VIEW_XIM.INTERCONNECT_MODULE_SURFACE_FEATURE.CONTAINING_SHAPE') | ('INTERCONNECT_MODULE_USAGE_VIEW_xim.' + 'INTERCONNECT_MODULE_SECONDARY_SURFACE' IN TYPEOF(pf)))) <= 1;
+ 'INTERCONNECT_MODULE_USAGE_VIEW_XIM.INTERCONNECT_MODULE_SURFACE_FEATURE.OF_SHAPE') | ('INTERCONNECT_MODULE_USAGE_VIEW_xim.' + 'INTERCONNECT_MODULE_SECONDARY_SURFACE' IN TYPEOF(pf)))) <= 1;
       WR3 : SIZEOF(QUERY(pf <* USEDIN(SELF,
- 'INTERCONNECT_MODULE_USAGE_VIEW_XIM.INTERCONNECT_MODULE_SURFACE_FEATURE.CONTAINING_SHAPE') | ('INTERCONNECT_MODULE_USAGE_VIEW_xim.' + 'INTERCONNECT_MODULE_EDGE_SURFACE' IN TYPEOF(pf)))) <= 1;
+ 'INTERCONNECT_MODULE_USAGE_VIEW_XIM.INTERCONNECT_MODULE_SURFACE_FEATURE.OF_SHAPE') | ('INTERCONNECT_MODULE_USAGE_VIEW_xim.' + 'INTERCONNECT_MODULE_EDGE_SURFACE' IN TYPEOF(pf)))) <= 1;
    END_ENTITY;
 
   ENTITY Located_interconnect_module_thickness_requirement

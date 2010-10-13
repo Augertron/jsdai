@@ -47,8 +47,22 @@ externally_defined_dimension_definition
 end_attribute_mapping;
 
 end_entity_mapping;
+*)
 
-entity_mapping Angular_location_dimension(Angular_location_dimension, angular_location);
+entity_mapping Associated_shape_element(Associated_shape_element, shape_aspect);
+
+mapping_constraints;
+	shape_aspect
+	represented_definition = shape_aspect
+	represented_definition <-
+	item_identified_representation_usage.definition
+	item_identified_representation_usage =>
+	geometric_item_specific_usage
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Angular_location_dimension(Angular_location_dimension, (angular_location));
 
 attribute_mapping orientation(orientation, $PATH, axis2_placement);
 angular_location <=
@@ -61,18 +75,15 @@ characterized_definition <-
 property_definition.definition
 property_definition <-
 property_definition_representation.definition
-
 property_definition_representation
 property_definition_representation.used_representation ->
 representation
-
 representation.items[i] ->
 {representation_item
 representation_item.name = 'orientation'}
 representation_item =>
 geometric_representation_item =>
 placement =>
-
 (axis2_placement_2d)
 (axis2_placement_3d)
 
@@ -82,8 +93,8 @@ end_entity_mapping;
 
 entity_mapping Angular_size_dimension(Angular_size_dimension, angular_size);
 
-attribute_mapping full(full, (representation_item.name)(representation_item.name));
-((angular_size <= 
+attribute_mapping full(full, representation_item.name);
+angular_size <= 
 dimensional_size
 dimensional_characteristic = dimensional_size
 dimensional_characteristic <- 
@@ -95,29 +106,22 @@ shape_representation <=
 representation  
 representation.items[i]  ->
 representation_item
-{representation_item.name = 'full angle'}))((angular_size <= 
-dimensional_size
-dimensional_characteristic = dimensional_size
-dimensional_characteristic <- 
-dimensional_characteristic_representation.dimension 
-dimensional_characteristic_representation 
-dimensional_characteristic_representation.representation -> 
-shape_dimension_representation <= 
-shape_representation <=  
-representation  
-representation.items[i]  ->
-representation_item
-{representation_item.name = 'half angle'}))
+representation_item.name
+{(representation_item.name = 'full angle')
+(representation_item.name = 'half angle')}
 end_attribute_mapping;
 
+(* Removed - use MIM attribute dirrectly
 attribute_mapping major_angle(major_angle, angular_size.angle_selection);
-
+	(angular_size.angle_selection = .EQUAL. .FALSE.)
+	(angular_size.angle_selection = .SMALL. .FALSE.)
+	(angular_size.angle_selection = .LARGE. .TRUE.)
 end_attribute_mapping;
-
+*)
 end_entity_mapping;
 
 entity_mapping Curved_distance_dimension(Curved_distance_dimension, dimensional_location_with_path);
-
+(* Use MIM instead
 attribute_mapping used_path(used_path, $PATH, Measurement_path);
 dimensional_location_with_path 
 dimensional_location_with_path.path -> 
@@ -134,112 +138,38 @@ property_definition_representation
 property_definition_representation.used_representation -> 
 representation
 end_attribute_mapping;
-
-end_entity_mapping;
-
-entity_mapping Curved_size_dimension(Curved_size_dimension, dimensional_size);
-
-mapping_constraints;
-{dimensional_size
-dimensional_size.name = 'curve length'}
-end_mapping_constraints;
-
-end_entity_mapping;
-
-entity_mapping Diameter_size_dimension(Diameter_size_dimension, dimensional_size);
-
-mapping_constraints;
-{dimensional_size
-dimensional_size.name = 'diameter'}
-end_mapping_constraints;
-
-end_entity_mapping;
 *)
-entity_mapping Dimension_value_with_limitation(Dimension_value_with_limitation, plus_minus_tolerance);
-
-attribute_mapping defined_by(defined_by, $PATH, Limits_and_fits);
-plus_minus_tolerance 
-plus_minus_tolerance.range -> 
-tolerance_method_definition
-tolerance_method_definition = limits_and_fits 
-limits_and_fits
-end_attribute_mapping;
-
-attribute_mapping limited_value(limited_value, ($PATH)($PATH), measure_representation_item);
-((plus_minus_tolerance
-plus_minus_tolerance.toleranced_dimension ->
-dimensional_characteristic
-dimensional_characteristic = dimensional_size
-dimensional_size
-dimensional_characteristic = dimensional_size
-dimensional_characteristic <-
-dimensional_characteristic_representation.dimension
-dimensional_characteristic_representation
-dimensional_characteristic_representation.representation ->
-shape_dimension_representation <=
-shape_representation <=
-representation
-representation.items[i] ->
-representation_item =>
-measure_representation_item))((plus_minus_tolerance
-plus_minus_tolerance.toleranced_dimension ->
-dimensional_characteristic
-dimensional_characteristic = dimensional_location
-dimensional_location
-dimensional_characteristic = dimensional_location
-dimensional_characteristic <-
-dimensional_characteristic_representation.dimension
-dimensional_characteristic_representation
-dimensional_characteristic_representation.representation ->
-shape_dimension_representation <=
-shape_representation <=
-representation
-representation.items[i] ->
-representation_item =>
-measure_representation_item))
-end_attribute_mapping;
-
-attribute_mapping defined_by(defined_by, $PATH, Plus_minus_bounds);
-plus_minus_tolerance 
-plus_minus_tolerance.range -> 
-tolerance_method_definition
-tolerance_method_definition = tolerance_value 
-tolerance_value
-end_attribute_mapping;
-
 end_entity_mapping;
-(* Remove stuff which will likely be remodelled
+
 entity_mapping Externally_defined_size_dimension(Externally_defined_size_dimension, externally_defined_dimension_definition); -- (([externally_defined_dimension_definition][dimensional_size_with_path]))); 
 
 mapping_constraints;
-
-externally_defined_dimension_definition <=
-externally_defined_item
-{ externally_defined_item.item_id -> 
-source_item
-source_item = 'external size dimension'}
-{ externally_defined_item.source -> 
-external_source
-external_source.source_id ->
-source_item
-source_item = 'external size dimension specification' }
-
+	externally_defined_dimension_definition <=
+	externally_defined_item
+	{ externally_defined_item.item_id -> 
+	source_item
+	source_item = 'external size dimension'}
+	{ externally_defined_item.source -> 
+	external_source
+	external_source.source_id ->
+	source_item
+	source_item = 'external size dimension specification' }
 end_mapping_constraints;
-
-attribute_mapping name(name, dimensional_size.name);
-externally_defined_dimension_definition <=
-dimensional_size
-dimensional_size.name
-
+(* Removed - take from MIM directly
+attribute_mapping name_x(name_x, dimensional_size.name);
+	externally_defined_dimension_definition <=
+	dimensional_size
+	dimensional_size.name
 end_attribute_mapping;
-
-attribute_mapping used_path(used_path, $PATH, Measurement_path);
+*)
+attribute_mapping used_path(used_path, $PATH, shape_aspect);
 externally_defined_dimension_definition <=
 dimensional_size =>
 dimensional_size_with_path 
 dimensional_size_with_path.path -> 
 shape_aspect 
 shape_definition = shape_aspect 
+(* Simplify the path
 characterized_definition = shape_definition 
 characterized_definition <- 
 property_definition.definition 
@@ -249,254 +179,46 @@ represented_definition <-
 property_definition_representation.definition 
 property_definition_representation 
 property_definition_representation.used_representation -> 
-representation
+representation *)
 end_attribute_mapping;
 
 end_entity_mapping;
 
-entity_mapping Geometric_dimension(Geometric_dimension, ((dimensional_location)
-)((dimensional_size)));
+entity_mapping Linear_distance_dimension(Linear_distance_dimension, dimensional_location);
 
 mapping_constraints;
-()()
-end_mapping_constraints;
-
-attribute_mapping dimension_value(dimension_value, ($PATH)($PATH), Dimension_value_with_limitation);
-((dimensional_location 
-dimensional_characteristic = dimensional_location
-dimensional_characteristic <-
-plus_minus_tolerance.toleranced_dimension
-plus_minus_tolerance))
-((dimensional_size 
-dimensional_characteristic = dimensional_size
-dimensional_characteristic <-
-plus_minus_tolerance.toleranced_dimension
-plus_minus_tolerance))
-end_attribute_mapping;
-
-attribute_mapping dimension_value(dimension_value, ($PATH)($PATH), measure_representation_item);
-((
--- add more contraints to avoid multiple matched
-!{dimensional_location 
-dimensional_characteristic = dimensional_location
-dimensional_characteristic <-
-plus_minus_tolerance.toleranced_dimension
-plus_minus_tolerance}
-dimensional_location 
-dimensional_characteristic = dimensional_location
-dimensional_characteristic <- 
-dimensional_characteristic_representation.dimension 
-dimensional_characteristic_representation 
-dimensional_characteristic_representation.representation -> 
-shape_dimension_representation <= 
-shape_representation <=  
-representation  
-representation.items[i] -> 
-representation_item => 
-measure_representation_item))
-((
--- GL added
-!{dimensional_size 
-dimensional_characteristic = dimensional_size
-dimensional_characteristic <-
-plus_minus_tolerance.toleranced_dimension
-plus_minus_tolerance}
-dimensional_size 
-dimensional_characteristic = dimensional_size
-dimensional_characteristic <- 
-dimensional_characteristic_representation.dimension 
-dimensional_characteristic_representation 
-dimensional_characteristic_representation.representation -> 
-shape_dimension_representation <= 
-shape_representation <=  
-representation  
-representation.items[i] -> 
-representation_item => 
-measure_representation_item))
-end_attribute_mapping;
-
-attribute_mapping dimension_value(dimension_value, ($PATH)($PATH), Value_limit);
-((dimensional_location 
-dimensional_characteristic = dimensional_location
-dimensional_characteristic <- 
-dimensional_characteristic_representation.dimension 
-dimensional_characteristic_representation 
-dimensional_characteristic_representation.representation -> 
-shape_dimension_representation <= 
-shape_representation <=  
-representation  
-representation.items[i] -> 
-representation_item => 
-measure_representation_item) 
-)((dimensional_size 
-dimensional_characteristic = dimensional_size
-dimensional_characteristic <- 
-dimensional_characteristic_representation.dimension 
-dimensional_characteristic_representation 
-dimensional_characteristic_representation.representation -> 
-shape_dimension_representation <= 
-shape_representation <=  
-representation  
-representation.items[i] -> 
-representation_item => 
-measure_representation_item) 
-)
-end_attribute_mapping;
-
-attribute_mapping dimension_value(dimension_value, ($PATH)($PATH), Tolerance_range);
-((dimensional_location 
-dimensional_characteristic = dimensional_location
-dimensional_characteristic <- 
-dimensional_characteristic_representation.dimension 
-dimensional_characteristic_representation 
-dimensional_characteristic_representation.representation -> 
-shape_dimension_representation) 
-)((dimensional_size 
-dimensional_characteristic = dimensional_size
-dimensional_characteristic <- 
-dimensional_characteristic_representation.dimension 
-dimensional_characteristic_representation 
-dimensional_characteristic_representation.representation -> 
-shape_dimension_representation) 
-)
-end_attribute_mapping;
-
-attribute_mapping id(id, ((shape_aspect_relationship.name))((identification_assignment.assigned_id)));
-((dimensional_location <= 
-shape_aspect_relationship 
-shape_aspect_relationship.name)  
-)((dimensional_size identification_item = dimensional_size 
-identification_item <- 
-applied_identification_assignment.items[i] 
-applied_identification_assignment <= 
-identification_assignment 
-{identification_assignment.role -> 
-identification_role 
-identification_role.name = 'size id'} 
-identification_assignment.assigned_id))
-end_attribute_mapping;
-
-attribute_mapping notes(notes, (descriptive_representation_item.description)(descriptive_representation_item.description));
-((dimensional_location 
-dimensional_characteristic = dimensional_location
-dimensional_characteristic <- 
-dimensional_characteristic_representation.dimension 
-dimensional_characteristic_representation 
-dimensional_characteristic_representation.representation -> 
-shape_dimension_representation <= 
-shape_representation <=  
-representation  
-representation.items[i] -> 
-representation_item 
-{representation_item.name = 'dimensional note'} 
-representation_item => 
-descriptive_representation_item
-{(descriptive_representation_item.description)
-(descriptive_representation_item.description = 'auxiliary')
-(descriptive_representation_item.description = 'theoretical')}) 
-)((dimensional_size 
-dimensional_characteristic = dimensional_size
-dimensional_characteristic <- 
-dimensional_characteristic_representation.dimension 
-dimensional_characteristic_representation 
-dimensional_characteristic_representation.representation -> 
-shape_dimension_representation <= 
-shape_representation <=  
-representation  
-representation.items[i] -> 
-representation_item 
-{representation_item.name = 'dimensional note'} 
-representation_item => 
-descriptive_representation_item
-{( descriptive_representation_item.description)
-(descriptive_representation_item.description = 'auxiliary')
-(descriptive_representation_item.description = 'theoretical')}) 
-)
-end_attribute_mapping;
-
-end_entity_mapping;
-
-entity_mapping Height_size_dimension(Height_size_dimension, ((dimensional_size))((dimensional_size_with_path)));
-
-mapping_constraints;
-({dimensional_size
-dimensional_size.name = 'height'})({dimensional_size_with_path <=
-dimensional_size
-dimensional_size.name = 'height'})
-end_mapping_constraints;
-
-attribute_mapping used_path(used_path, $PATH, Measurement_path);
-dimensional_size_with_path 
-dimensional_size_with_path.path -> 
-shape_aspect 
-shape_definition = shape_aspect 
-characterized_definition = shape_definition 
-characterized_definition <- 
-property_definition.definition 
-property_definition 
-represented_definition = property_definition 
-represented_definition <- 
-property_definition_representation.definition 
-property_definition_representation 
-property_definition_representation.used_representation -> 
-representation
-end_attribute_mapping;
-
-end_entity_mapping;
-
-entity_mapping Length_size_dimension(Length_size_dimension, ((dimensional_size))((dimensional_size_with_path)));
-
-mapping_constraints;
-({dimensional_size
-dimensional_size.name = 'length'})({dimensional_size_with_path <=
-dimensional_size
-dimensional_size.name = 'length'})
-end_mapping_constraints;
-
-attribute_mapping used_path(used_path, $PATH, Measurement_path);
-dimensional_size_with_path 
-dimensional_size_with_path.path -> 
-shape_aspect 
-shape_definition = shape_aspect 
-characterized_definition = shape_definition 
-characterized_definition <- 
-property_definition.definition 
-property_definition 
-represented_definition = property_definition 
-represented_definition <- 
-property_definition_representation.definition 
-property_definition_representation 
-property_definition_representation.used_representation -> 
-representation
-end_attribute_mapping;
-
-end_entity_mapping;
--- Entity with the same name is taken from AIM
-entity_mapping Limits_and_fits(Limits_and_fits, limits_and_fits);
-
-attribute_mapping deviation(deviation, limits_and_fits.form_variance);
-
-end_attribute_mapping;
-
-attribute_mapping fitting_type(fitting_type, limits_and_fits.zone_variance);
-
-end_attribute_mapping;
-
-attribute_mapping grade(grade, limits_and_fits.grade);
-
-end_attribute_mapping;
-
-end_entity_mapping;
-
-entity_mapping Linear_distance_dimension(Linear_distance_dimension, ((dimensional_location))((directed_dimensional_location)));
-
-mapping_constraints;
-((dimensional_location <=
+dimensional_location <=
 shape_aspect_relationship
-{shape_aspect_relationship.name = 'linear distance'}))((directed_dimensional_location <= dimensional_location <=
-shape_aspect_relationship
-{shape_aspect_relationship.name = 'linear distance'}))
+{shape_aspect_relationship.name = 'linear distance'}
 end_mapping_constraints;
+
+(* moved to supertype
+attribute_mapping orientation(orientation, $PATH, axis2_placement);
+dimensional_location <=
+shape_aspect_relationship
+shape_definition = shape_aspect_relationship
+shape_definition
+characterized_definition = shape_definition
+characterized_definition <-
+property_definition.definition
+property_definition <-
+property_definition_representation.definition
+property_definition_representation
+property_definition_representation.used_representation ->
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'orientation'}
+representation_item =>
+geometric_representation_item =>
+placement =>
+(axis2_placement_2d)
+(axis2_placement_3d)
+end_attribute_mapping;
+*)
+end_entity_mapping;
+
+entity_mapping Location_dimension(Location_dimension, dimensional_location);
 
 attribute_mapping orientation(orientation, $PATH, axis2_placement);
 dimensional_location <=
@@ -508,43 +230,225 @@ characterized_definition <-
 property_definition.definition
 property_definition <-
 property_definition_representation.definition
-
 property_definition_representation
 property_definition_representation.used_representation ->
 representation
-
 representation.items[i] ->
 {representation_item
 representation_item.name = 'orientation'}
 representation_item =>
 geometric_representation_item =>
 placement =>
-
 (axis2_placement_2d)
 (axis2_placement_3d)
 
 end_attribute_mapping;
 
-end_entity_mapping;
-
-entity_mapping Location_dimension(Location_dimension, dimensional_location);
-
-
 attribute_mapping directed(directed, $PATH); -- It has to be directed_dimensional_location subtype
-(dimensional_location =>
-directed_dimensional_location .TRUE.)
+({dimensional_location =>
+directed_dimensional_location} .TRUE.)
 (!{dimensional_location =>
 directed_dimensional_location} .FALSE.)
 end_attribute_mapping;
 
-attribute_mapping origin(origin, $PATH, Shape_element);
+attribute_mapping id(id, shape_aspect_relationship.name);
+dimensional_location <=
+shape_aspect_relationship
+shape_aspect_relationship.name
+
+end_attribute_mapping;
+
+(* Taken from Geometric_dimension *)
+attribute_mapping single_value(single_value, $PATH, measure_representation_item);
+-- add more contraints to avoid multiple matched
+(* I don't think we need it anymore
+!{dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <-
+plus_minus_tolerance.toleranced_dimension
+plus_minus_tolerance} *)
+dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item
+!{representation_item => 
+qualified_representation_item}
+!{representation_item
+representation_item.name = 'lower range'}
+!{representation_item
+representation_item.name = 'upper range'}
+representation_item => 
+measure_representation_item
+end_attribute_mapping;
+
+(* Removed alternative
+attribute_mapping single_value(single_value, $PATH, Value_limit);
+-- I don't think we need it anymore
+!{dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <-
+plus_minus_tolerance.toleranced_dimension
+plus_minus_tolerance} --
+dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item
+!{representation_item
+representation_item.name = 'lower range'}
+!{representation_item
+representation_item.name = 'upper range'}
+representation_item => 
+[measure_representation_item]
+[qualified_representation_item]
+end_attribute_mapping;
+*)
+
+attribute_mapping lower_range(lower_range, $PATH, measure_representation_item);
+(* I don't think we need it anymore
+!{dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <-
+plus_minus_tolerance.toleranced_dimension
+plus_minus_tolerance} *)
+dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <=
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'lower range'}
+representation_item =>
+measure_representation_item
+end_attribute_mapping;
+
+attribute_mapping upper_range(upper_range, $PATH, measure_representation_item);
+(* I don't think we need it anymore
+!{dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <-
+plus_minus_tolerance.toleranced_dimension
+plus_minus_tolerance} *)
+dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <=
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'upper range'}
+representation_item =>
+measure_representation_item
+end_attribute_mapping;
+
+(* Removed attribute
+attribute_mapping significant_digits(significant_digits, precision_qualifier.precision_value);
+dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <=
+shape_representation <=
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit <-
+measure_qualification.qualified_measure
+measure_qualification
+measure_qualification.qualifiers[1] ->
+value_qualifier = precision_qualifier
+precision_qualifier
+precision_qualifier.precision_value
+end_attribute_mapping;
+*) 
+
+attribute_mapping notes(notes, descriptive_representation_item.description);
+dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item 
+{representation_item.name = 'dimensional note'} 
+representation_item => 
+descriptive_representation_item.description
+!{(descriptive_representation_item.description = 'theoretical')
+(descriptive_representation_item.description = 'auxiliary')}
+end_attribute_mapping;
+
+attribute_mapping theoretical_exact(theoretical_exact, descriptive_representation_item.description);
+dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item 
+{representation_item.name = 'dimensional note'} 
+representation_item => 
+descriptive_representation_item.description
+{descriptive_representation_item.description = 'theoretical'}
+end_attribute_mapping;
+
+attribute_mapping auxiliary(auxiliary, descriptive_representation_item.description);
+dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item 
+{representation_item.name = 'dimensional note'} 
+representation_item => 
+descriptive_representation_item.description
+{descriptive_representation_item.description = 'auxiliary'}
+end_attribute_mapping;
+
+(* Take MIM attribute instead
+attribute_mapping origin(origin, $PATH, shape_aspect);
 (dimensional_location <= 
 shape_aspect_relationship 
 shape_aspect_relationship.relating_shape_aspect ->
 shape_aspect)
 end_attribute_mapping;
 
-attribute_mapping origin(origin, $PATH, Derived_geometry);
+attribute_mapping origin(origin, $PATH, Derived_shape_element);
 dimensional_location <=
 shape_aspect_relationship
 shape_aspect_relationship.relating_shape_aspect ->
@@ -572,8 +476,6 @@ property_definition_representation.used_representation ->
 representation
 representation.items[i] ->
 representation_item 
-
-
 end_attribute_mapping;
 
 attribute_mapping origin(origin, $PATH, Curve);
@@ -716,14 +618,14 @@ oriented_surface
 )
 end_attribute_mapping;
 
-attribute_mapping target(target, $PATH, Shape_element);
+attribute_mapping target(target, $PATH, shape_aspect);
 dimensional_location <= 
 shape_aspect_relationship 
 shape_aspect_relationship.related_shape_aspect ->
 shape_aspect
 end_attribute_mapping;
 
-attribute_mapping target(target, $PATH, Derived_geometry);
+attribute_mapping target(target, $PATH, Derived_shape_element);
 dimensional_location <=
 shape_aspect_relationship
 shape_aspect_relationship.related_shape_aspect ->
@@ -894,17 +796,610 @@ surface =>
 oriented_surface
 )
 end_attribute_mapping;
+*)
+end_entity_mapping;
 
-attribute_mapping description(description, shape_aspect_relationship.description
-);
-dimensional_location <=
-shape_aspect_relationship
-shape_aspect_relationship.description
+entity_mapping Radial_size_dimension(Radial_size_dimension, dimensional_size);
+
+mapping_constraints;
+{dimensional_size
+dimensional_size.name = 'radius'}
+end_mapping_constraints;
+
+attribute_mapping radius_type(radius_type, (descriptive_representation_item.description)(descriptive_representation_item.description));
+(dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <-
+dimensional_characteristic_representation.dimension
+dimensional_characteristic_representation
+dimensional_characteristic_representation.representation ->
+shape_dimension_representation <=
+shape_representation <=
+representation
+representation.items[i] ->
+representation_item
+{representation_item.name = 'radius type'}
+representation_item =>
+descriptive_representation_item
+{descriptive_representation_item.description = 'centred'})
+(dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <-
+dimensional_characteristic_representation.dimension
+dimensional_characteristic_representation
+dimensional_characteristic_representation.representation ->
+shape_dimension_representation <=
+shape_representation <=
+representation
+representation.items[i] ->
+representation_item
+{representation_item.name = 'radius type'}
+representation_item =>
+descriptive_representation_item
+{descriptive_representation_item.description = 'adjoining'})
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Size_dimension(Size_dimension, dimensional_size);
+
+attribute_mapping envelope_principle(envelope_principle, representation.name);
+	dimensional_size
+	dimensional_characteristic = dimensional_size
+	dimensional_characteristic <-
+	dimensional_characteristic_representation.dimension
+	dimensional_characteristic_representation
+	dimensional_characteristic_representation.representation ->
+	shape_dimension_representation <=
+	shape_representation <=
+	representation
+	representation.name
+	{representation.name = 'envelope tolerance'}
+end_attribute_mapping;
+
+(* Taken from Geometric_dimension *)
+attribute_mapping single_value(single_value, $PATH, measure_representation_item);
+-- add more contraints to avoid multiple matched
+-- GL added
+(* I don't think we need it anymore
+!{dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <-
+plus_minus_tolerance.toleranced_dimension
+plus_minus_tolerance} *)
+dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item 
+!{representation_item
+representation_item.name = 'lower range'}
+!{representation_item
+representation_item.name = 'upper range'}
+!{representation_item => 
+qualified_representation_item}
+representation_item => 
+measure_representation_item
+end_attribute_mapping;
+
+(* removed alternative
+attribute_mapping single_value(single_value, $PATH, Value_limit);
+dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item 
+!{representation_item
+representation_item.name = 'lower range'}
+!{representation_item
+representation_item.name = 'upper range'}
+representation_item => 
+[measure_representation_item]
+[qualified_representation_item]
+end_attribute_mapping;
+*)
+
+attribute_mapping lower_range(lower_range, $PATH, measure_representation_item);
+dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <=
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'lower range'}
+representation_item =>
+measure_representation_item
+end_attribute_mapping;
+
+attribute_mapping upper_range(upper_range, $PATH, measure_representation_item);
+dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <=
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'upper range'}
+representation_item =>
+measure_representation_item
+end_attribute_mapping;
+
+(* removed attribute
+attribute_mapping significant_digits(significant_digits, precision_qualifier.precision_value);
+dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <=
+shape_representation <=
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit <-
+measure_qualification.qualified_measure
+measure_qualification
+measure_qualification.qualifiers[1] ->
+value_qualifier = precision_qualifier
+precision_qualifier
+precision_qualifier.precision_value
+end_attribute_mapping;
+*)
+
+attribute_mapping id(id, identification_assignment.assigned_id);
+dimensional_size identification_item = dimensional_size 
+identification_item <- 
+applied_identification_assignment.items[i] 
+applied_identification_assignment <= 
+identification_assignment 
+{identification_assignment.role -> 
+identification_role 
+identification_role.name = 'size id'} 
+identification_assignment.assigned_id
+end_attribute_mapping;
+
+attribute_mapping notes(notes, descriptive_representation_item.description);
+dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item 
+{representation_item.name = 'dimensional note'} 
+representation_item => 
+descriptive_representation_item
+descriptive_representation_item.description
+!{(descriptive_representation_item.description = 'theoretical')
+(descriptive_representation_item.description = 'auxiliary')}
+end_attribute_mapping;
+
+attribute_mapping theoretical_exact(theoretical_exact, descriptive_representation_item.description);
+dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item 
+{representation_item.name = 'dimensional note'} 
+representation_item => 
+descriptive_representation_item.description
+{descriptive_representation_item.description = 'theoretical'}
+end_attribute_mapping;
+
+attribute_mapping auxiliary(auxiliary, descriptive_representation_item.description);
+dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item 
+{representation_item.name = 'dimensional note'} 
+representation_item => 
+descriptive_representation_item.description
+{descriptive_representation_item.description = 'auxiliary'}
+end_attribute_mapping;
+
+end_entity_mapping;
+
+
+(* Removed ======================================================
+
+entity_mapping Thickness_size_dimension(Thickness_size_dimension, (dimensional_size)(dimensional_size_with_path));
+
+mapping_constraints;
+({dimensional_size
+dimensional_size.name = 'thickness size'})
+((dimensional_size_with_path <= 
+dimensional_size)
+{dimensional_size.name = 'thickness size'})
+end_mapping_constraints;
+
+attribute_mapping used_path(used_path, $PATH, Measurement_path);
+dimensional_size_with_path 
+dimensional_size_with_path.path -> 
+shape_aspect 
+shape_definition = shape_aspect 
+characterized_definition = shape_definition 
+characterized_definition <- 
+property_definition.definition 
+property_definition 
+represented_definition = property_definition 
+represented_definition <- 
+property_definition_representation.definition 
+property_definition_representation 
+property_definition_representation.used_representation -> 
+representation
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Tolerance_range(Tolerance_range, shape_dimension_representation);
+
+attribute_mapping lower_range(lower_range, $PATH, measure_representation_item);
+	shape_dimension_representation <=
+	shape_representation <=
+	representation
+	representation.items[i] ->
+	{representation_item
+	representation_item.name = 'lower range'}
+	representation_item =>
+	measure_representation_item
+end_attribute_mapping;
+
+attribute_mapping significant_digits(significant_digits, precision_qualifier.precision_value);
+
+shape_dimension_representation <=
+shape_representation <=
+representation
+representation.items[i] ->
+representation_item =>
+measure_representation_item <=
+measure_with_unit <-
+measure_qualification.qualified_measure
+measure_qualification
+measure_qualification.qualifiers[1] ->
+value_qualifier = precision_qualifier
+precision_qualifier
+precision_qualifier.precision_value
+end_attribute_mapping;
+
+attribute_mapping upper_range(upper_range, $PATH, measure_representation_item);
+shape_dimension_representation <=
+shape_representation <=
+representation
+representation.items[i] ->
+{representation_item
+representation_item.name = 'upper range'}
+representation_item =>
+measure_representation_item
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Width_size_dimension(Width_size_dimension, ((dimensional_size))((dimensional_size_with_path)));
+
+mapping_constraints;
+({dimensional_size
+dimensional_size.name = 'width'})
+({dimensional_size_with_path <=
+dimensional_size
+dimensional_size.name = 'width'})
+end_mapping_constraints;
+
+attribute_mapping used_path(used_path, $PATH, Measurement_path);
+dimensional_size_with_path 
+dimensional_size_with_path.path -> 
+shape_aspect 
+shape_definition = shape_aspect 
+characterized_definition = shape_definition 
+characterized_definition <- 
+property_definition.definition 
+property_definition 
+represented_definition = property_definition 
+represented_definition <- 
+property_definition_representation.definition 
+property_definition_representation 
+property_definition_representation.used_representation -> 
+representation
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Curved_size_dimension(Curved_size_dimension, dimensional_size);
+
+mapping_constraints;
+	{dimensional_size
+	dimensional_size.name = 'curve length'}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Diameter_size_dimension(Diameter_size_dimension, dimensional_size);
+
+mapping_constraints;
+	{dimensional_size
+	dimensional_size.name = 'diameter'}
+end_mapping_constraints;
+
+end_entity_mapping;
+
+entity_mapping Height_size_dimension(Height_size_dimension, ((dimensional_size))((dimensional_size_with_path)));
+
+mapping_constraints;
+	({dimensional_size
+	dimensional_size.name = 'height'})
+	({dimensional_size_with_path <=
+	dimensional_size
+	dimensional_size.name = 'height'})
+end_mapping_constraints;
+
+attribute_mapping used_path(used_path, $PATH, Measurement_path);
+dimensional_size_with_path 
+dimensional_size_with_path.path -> 
+shape_aspect 
+shape_definition = shape_aspect 
+characterized_definition = shape_definition 
+characterized_definition <- 
+property_definition.definition 
+property_definition 
+represented_definition = property_definition 
+represented_definition <- 
+property_definition_representation.definition 
+property_definition_representation 
+property_definition_representation.used_representation -> 
+representation
+end_attribute_mapping;
+
+end_entity_mapping;
+
+entity_mapping Length_size_dimension(Length_size_dimension, ((dimensional_size))((dimensional_size_with_path)));
+
+mapping_constraints;
+	({dimensional_size
+	dimensional_size.name = 'length'})
+	({dimensional_size_with_path <=
+	dimensional_size
+	dimensional_size.name = 'length'})
+end_mapping_constraints;
+
+attribute_mapping used_path(used_path, $PATH, Measurement_path);
+dimensional_size_with_path 
+dimensional_size_with_path.path -> 
+shape_aspect 
+shape_definition = shape_aspect 
+characterized_definition = shape_definition 
+characterized_definition <- 
+property_definition.definition 
+property_definition 
+represented_definition = property_definition 
+represented_definition <- 
+property_definition_representation.definition 
+property_definition_representation 
+property_definition_representation.used_representation -> 
+representation
+end_attribute_mapping;
+
+end_entity_mapping;
+
+*)
+
+(* We made it select
+entity_mapping Geometric_dimension(Geometric_dimension, ((dimensional_location)
+)((dimensional_size)));
+
+mapping_constraints;
+()()
+end_mapping_constraints;
+
+attribute_mapping dimension_value(dimension_value, ($PATH)($PATH), Dimension_value_with_limitation);
+((dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <-
+plus_minus_tolerance.toleranced_dimension
+plus_minus_tolerance))
+((dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <-
+plus_minus_tolerance.toleranced_dimension
+plus_minus_tolerance))
+end_attribute_mapping;
+
+attribute_mapping dimension_value(dimension_value, ($PATH)($PATH), measure_representation_item);
+((
+-- add more contraints to avoid multiple matched
+!{dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <-
+plus_minus_tolerance.toleranced_dimension
+plus_minus_tolerance}
+dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item => 
+measure_representation_item))
+((
+-- GL added
+!{dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <-
+plus_minus_tolerance.toleranced_dimension
+plus_minus_tolerance}
+dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item => 
+measure_representation_item))
+end_attribute_mapping;
+
+attribute_mapping dimension_value(dimension_value, ($PATH)($PATH), Value_limit);
+((dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item => 
+measure_representation_item) 
+)((dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item => 
+measure_representation_item) 
+)
+end_attribute_mapping;
+
+attribute_mapping dimension_value(dimension_value, ($PATH)($PATH), Tolerance_range);
+((dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation) 
+)((dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation) 
+)
+end_attribute_mapping;
+
+attribute_mapping id(id, ((shape_aspect_relationship.name))((identification_assignment.assigned_id)));
+((dimensional_location <= 
+shape_aspect_relationship 
+shape_aspect_relationship.name)  
+)((dimensional_size identification_item = dimensional_size 
+identification_item <- 
+applied_identification_assignment.items[i] 
+applied_identification_assignment <= 
+identification_assignment 
+{identification_assignment.role -> 
+identification_role 
+identification_role.name = 'size id'} 
+identification_assignment.assigned_id))
+end_attribute_mapping;
+
+attribute_mapping notes(notes, (descriptive_representation_item.description)(descriptive_representation_item.description));
+((dimensional_location 
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item 
+{representation_item.name = 'dimensional note'} 
+representation_item => 
+descriptive_representation_item
+{(descriptive_representation_item.description)
+(descriptive_representation_item.description = 'auxiliary')
+(descriptive_representation_item.description = 'theoretical')}) 
+)((dimensional_size 
+dimensional_characteristic = dimensional_size
+dimensional_characteristic <- 
+dimensional_characteristic_representation.dimension 
+dimensional_characteristic_representation 
+dimensional_characteristic_representation.representation -> 
+shape_dimension_representation <= 
+shape_representation <=  
+representation  
+representation.items[i] -> 
+representation_item 
+{representation_item.name = 'dimensional note'} 
+representation_item => 
+descriptive_representation_item
+{( descriptive_representation_item.description)
+(descriptive_representation_item.description = 'auxiliary')
+(descriptive_representation_item.description = 'theoretical')}) 
+)
+end_attribute_mapping;
+
+end_entity_mapping;
+*)
+(* Entity with the same name is taken from AIM
+entity_mapping Limits_and_fits(Limits_and_fits, limits_and_fits);
+
+attribute_mapping deviation(deviation, limits_and_fits.form_variance);
+
+end_attribute_mapping;
+
+attribute_mapping fitting_type(fitting_type, limits_and_fits.zone_variance);
+
+end_attribute_mapping;
+
+attribute_mapping grade(grade, limits_and_fits.grade);
 
 end_attribute_mapping;
 
 end_entity_mapping;
 *)
+(** Removed as Lothar suggested
 entity_mapping Plus_minus_bounds(Plus_minus_bounds, tolerance_value);
 
 attribute_mapping lower_bound(lower_bound, $PATH, measure_with_unit);
@@ -953,63 +1448,23 @@ type_qualifier.name
 end_attribute_mapping;
 
 end_entity_mapping;
-(* Remove stuff which will likely be remodelled
-entity_mapping Radial_size_dimension(Radial_size_dimension, dimensional_size);
+*)
+(** Removed as Lothar suggested
+entity_mapping Dimension_value_with_limitation(Dimension_value_with_limitation, plus_minus_tolerance);
 
-mapping_constraints;
-{dimensional_size
-dimensional_size.name = 'radius'}
-end_mapping_constraints;
+attribute_mapping defined_by(defined_by, $PATH, Limits_and_fits);
+plus_minus_tolerance 
+plus_minus_tolerance.range -> 
+tolerance_method_definition
+tolerance_method_definition = limits_and_fits 
+limits_and_fits
+end_attribute_mapping;
 
-attribute_mapping radius_type(radius_type, (descriptive_representation_item.description)(descriptive_representation_item.description));
-(dimensional_size 
+attribute_mapping limited_value(limited_value, ($PATH)($PATH), measure_representation_item);
+((plus_minus_tolerance
+plus_minus_tolerance.toleranced_dimension ->
+dimensional_characteristic
 dimensional_characteristic = dimensional_size
-dimensional_characteristic <-
-dimensional_characteristic_representation.dimension
-dimensional_characteristic_representation
-dimensional_characteristic_representation.representation ->
-shape_dimension_representation <=
-shape_representation <=
-representation
-representation.items[i] ->
-representation_item
-{representation_item.name = 'radius type'}
-representation_item =>
-descriptive_representation_item
-{descriptive_representation_item.description = 'centred'})
-(dimensional_size 
-dimensional_characteristic = dimensional_size
-dimensional_characteristic <-
-dimensional_characteristic_representation.dimension
-dimensional_characteristic_representation
-dimensional_characteristic_representation.representation ->
-shape_dimension_representation <=
-shape_representation <=
-representation
-representation.items[i] ->
-representation_item
-{representation_item.name = 'radius type'}
-representation_item =>
-descriptive_representation_item
-{descriptive_representation_item.description = 'adjoining'})
-end_attribute_mapping;
-
-end_entity_mapping;
-
-entity_mapping Size_dimension(Size_dimension, dimensional_size);
-
-attribute_mapping is_applied_to(is_applied_to, dimensional_size.applies_to, element_with_dimension_select);
-dimensional_size 
-dimensional_size.applies_to
-end_attribute_mapping;
-
-attribute_mapping is_applied_to(is_applied_to, $PATH, Shape_element);
-dimensional_size 
-dimensional_size.applies_to ->
-shape_aspect
-end_attribute_mapping;
-
-attribute_mapping envelope_principle(envelope_principle, representation.name);
 dimensional_size
 dimensional_characteristic = dimensional_size
 dimensional_characteristic <-
@@ -1019,110 +1474,36 @@ dimensional_characteristic_representation.representation ->
 shape_dimension_representation <=
 shape_representation <=
 representation
-representation.name
-{representation.name = 'envelope tolerance'}
-
-end_attribute_mapping;
-
-end_entity_mapping;
-
-entity_mapping Thickness_size_dimension(Thickness_size_dimension, (dimensional_size)(dimensional_size_with_path));
-
-mapping_constraints;
-({dimensional_size
-dimensional_size.name = 'thickness size'})((dimensional_size_with_path <= 
-dimensional_size)
-{dimensional_size.name = 'thickness size'})
-end_mapping_constraints;
-
-attribute_mapping used_path(used_path, $PATH, Measurement_path);
-dimensional_size_with_path 
-dimensional_size_with_path.path -> 
-shape_aspect 
-shape_definition = shape_aspect 
-characterized_definition = shape_definition 
-characterized_definition <- 
-property_definition.definition 
-property_definition 
-represented_definition = property_definition 
-represented_definition <- 
-property_definition_representation.definition 
-property_definition_representation 
-property_definition_representation.used_representation -> 
-representation
-end_attribute_mapping;
-
-end_entity_mapping;
-
-entity_mapping Tolerance_range(Tolerance_range, shape_dimension_representation);
-
-attribute_mapping lower_range(lower_range, $PATH, measure_representation_item);
-shape_dimension_representation <=
-shape_representation <=
-representation
 representation.items[i] ->
-{representation_item
-representation_item.name = 'lower range'}
 representation_item =>
-measure_representation_item
-end_attribute_mapping;
-
-attribute_mapping significant_digits(significant_digits, precision_qualifier.precision_value);
-
+measure_representation_item))
+((plus_minus_tolerance
+plus_minus_tolerance.toleranced_dimension ->
+dimensional_characteristic
+dimensional_characteristic = dimensional_location
+dimensional_location
+dimensional_characteristic = dimensional_location
+dimensional_characteristic <-
+dimensional_characteristic_representation.dimension
+dimensional_characteristic_representation
+dimensional_characteristic_representation.representation ->
 shape_dimension_representation <=
 shape_representation <=
 representation
 representation.items[i] ->
 representation_item =>
-measure_representation_item <=
-measure_with_unit <-
-measure_qualification.qualified_measure
-measure_qualification
-measure_qualification.qualifiers[1] ->
-value_qualifier = precision_qualifier
-precision_qualifier
-precision_qualifier.precision_value
+measure_representation_item))
 end_attribute_mapping;
 
-attribute_mapping upper_range(upper_range, $PATH, measure_representation_item);
-shape_dimension_representation <=
-shape_representation <=
-representation
-representation.items[i] ->
-{representation_item
-representation_item.name = 'upper range'}
-representation_item =>
-measure_representation_item
-end_attribute_mapping;
-
-end_entity_mapping;
-
-entity_mapping Width_size_dimension(Width_size_dimension, ((dimensional_size))((dimensional_size_with_path)));
-
-mapping_constraints;
-({dimensional_size
-dimensional_size.name = 'width'})({dimensional_size_with_path <=
-dimensional_size
-dimensional_size.name = 'width'})
-end_mapping_constraints;
-
-attribute_mapping used_path(used_path, $PATH, Measurement_path);
-dimensional_size_with_path 
-dimensional_size_with_path.path -> 
-shape_aspect 
-shape_definition = shape_aspect 
-characterized_definition = shape_definition 
-characterized_definition <- 
-property_definition.definition 
-property_definition 
-represented_definition = property_definition 
-represented_definition <- 
-property_definition_representation.definition 
-property_definition_representation 
-property_definition_representation.used_representation -> 
-representation
+attribute_mapping defined_by(defined_by, $PATH, Plus_minus_bounds);
+plus_minus_tolerance 
+plus_minus_tolerance.range -> 
+tolerance_method_definition
+tolerance_method_definition = tolerance_value 
+tolerance_value
 end_attribute_mapping;
 
 end_entity_mapping;
 *)
+
 (*end_schema_mapping;*)

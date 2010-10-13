@@ -39,7 +39,6 @@ import jsdai.SPrinted_physical_layout_template_mim.CNon_conductive_cross_section
 import jsdai.SProduct_definition_schema.EProduct_definition;
 import jsdai.SProduct_property_definition_schema.*;
 import jsdai.SProduct_view_definition_xim.*;
-import jsdai.SShape_property_assignment_xim.*;
 
 public class CxNon_conductive_cross_section_template_armx extends CNon_conductive_cross_section_template_armx implements EMappedXIMEntity
 {
@@ -93,19 +92,19 @@ public class CxNon_conductive_cross_section_template_armx extends CNon_conductiv
 	
 	/// methods for attribute: description, base type: STRING
 /*	public boolean testDescription(EProduct_definition type) throws SdaiException {
-		return test_string(a5);
+		return test_string(a4);
 	}
 	public String getDescription(EProduct_definition type) throws SdaiException {
-		return get_string(a5);
+		return get_string(a4);
 	}*/
 	public void setDescription(EProduct_definition type, String value) throws SdaiException {
-		a5 = set_string(value);
+		a4 = set_string(value);
 	}
 	public void unsetDescription(EProduct_definition type) throws SdaiException {
-		a5 = unset_string();
+		a4 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(EProduct_definition type) throws SdaiException {
-		return a5$;
+		return a4$;
 	}
 
 	// methods for derived attribute: name, base type: STRING
@@ -141,7 +140,7 @@ public class CxNon_conductive_cross_section_template_armx extends CNon_conductiv
 		//********** "managed_design_object" attributes
 
 		//********** "item_shape" attributes
-		setId_x(context, this);
+//		setId_x(context, this);
 
 		// Clean ARM specific attributes
 		
@@ -160,7 +159,7 @@ public class CxNon_conductive_cross_section_template_armx extends CNon_conductiv
 
 		
 		// Clean ARM specific attributes
-		unsetId_x(null);
+//		unsetId_x(null);
 		unsetAdditional_characterization(null);
 		unsetAdditional_contexts(null);
 		unsetPhysical_characteristic(null);
@@ -181,7 +180,7 @@ public class CxNon_conductive_cross_section_template_armx extends CNon_conductiv
 		//********** "managed_design_object" attributes
 
 		//********** "item_shape" attributes
-		unsetId_x(context, this);
+//		unsetId_x(context, this);
 
 		//	********** "product_view_definition" attributes
 		//id - goes directly into AIM
@@ -234,10 +233,11 @@ public class CxNon_conductive_cross_section_template_armx extends CNon_conductiv
      * @param armEntity arm entity.
      * @throws SdaiException
      */
+	/* Removed from XIM - see bug #3610
     public static void setId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
        CxItem_shape.setId_x(context, armEntity);
     }
-
+*/
   /**
    * Unsets/deletes data for Id_x attribute.
    *
@@ -245,10 +245,11 @@ public class CxNon_conductive_cross_section_template_armx extends CNon_conductiv
    * @param armEntity arm entity.
    * @throws SdaiException
    */
+	/* Removed from XIM - see bug #3610
     public static void unsetId_x(SdaiContext context, EItem_shape armEntity) throws SdaiException {
       CxItem_shape.unsetId_x(context, armEntity);
    }
-
+*/
  	//********** "product_view_definition" attributes
     /**
      * Sets/creates data for name_x attribute.

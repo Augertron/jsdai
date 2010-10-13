@@ -30,15 +30,17 @@ import jsdai.SAction_schema.CAction_method_relationship;
 import jsdai.SApplication_context_schema.CProduct_context;
 import jsdai.SApproval_schema.CApproval_role;
 import jsdai.SBasic_attribute_schema.CDescription_attribute;
-import jsdai.SBasic_attribute_schema.CId_attribute;
 import jsdai.SBasic_attribute_schema.CName_attribute;
 import jsdai.SBasic_attribute_schema.CObject_role;
 import jsdai.SBasic_attribute_schema.CRole_association;
 import jsdai.SDocument_assignment_mim.CDocument_product_equivalence;
 import jsdai.SDocument_schema.CDocument;
 import jsdai.SDocument_schema.CDocument_type;
+import jsdai.SGeometric_tolerance_mim.CShape_representation_with_parameters;
 import jsdai.SGroup_mim.CApplied_group_assignment;
+import jsdai.SIdentification_assignment_mim.CApplied_identification_assignment;
 // import jsdai.SManagement_resources_schema.CClassification_role;
+import jsdai.SManagement_resources_schema.CIdentification_role;
 import jsdai.SManagement_resources_schema.COrganizational_project_role;
 import jsdai.SManagement_resources_schema.CPosition_in_organization_role;
 import jsdai.SMaterial_property_definition_schema.CProperty_definition_relationship;
@@ -49,10 +51,7 @@ import jsdai.SProduct_definition_schema.CProduct_definition_context_association;
 import jsdai.SProduct_definition_schema.CProduct_definition_context_role;
 import jsdai.SProduct_definition_schema.CProduct_definition_relationship;
 import jsdai.SProduct_property_definition_schema.CGeneral_property_association;
-import jsdai.SProduct_property_definition_schema.CProduct_definition_shape;
 import jsdai.SProduct_property_definition_schema.CProperty_definition;
-import jsdai.SProduct_property_definition_schema.CShape_aspect;
-import jsdai.SProduct_property_definition_schema.CShape_aspect_relationship;
 import jsdai.SProduct_property_representation_schema.CProperty_definition_representation;
 import jsdai.SProduct_property_representation_schema.CShape_definition_representation;
 import jsdai.SProduct_structure_schema.CProduct_definition_usage;
@@ -62,7 +61,13 @@ import jsdai.SRepresentation_schema.CParametric_representation_context;
 import jsdai.SRepresentation_schema.CRepresentation_item;
 import jsdai.SRequirement_assignment_mim.CAssigned_requirement;
 import jsdai.SRequirement_assignment_mim.CRequirement_assigned_object;
+import jsdai.SShape_aspect_definition_schema.CShape_aspect_deriving_relationship;
+import jsdai.SShape_dimension_schema.CDimensional_characteristic_representation;
+import jsdai.SShape_dimension_schema.CShape_dimension_representation;
 import jsdai.SShape_parameters_mim.CKeepout_design_object_category;
+import jsdai.SShape_tolerance_schema.CGeometric_tolerance_relationship;
+import jsdai.SShape_tolerance_schema.CTolerance_zone;
+import jsdai.SShape_tolerance_schema.CTolerance_zone_form;
 import jsdai.dictionary.EEntity_definition;
 import jsdai.lang.ASdaiModel;
 import jsdai.lang.SchemaInstance;
@@ -79,6 +84,7 @@ import jsdaix.processor.xim_aim.pre.manual_aim_repair.Item_defined_transformatio
 import jsdaix.processor.xim_aim.pre.manual_aim_repair.ProductCategoryFlattener;
 import jsdaix.processor.xim_aim.pre.manual_aim_repair.RolesRepair;
 import jsdaix.processor.xim_aim.pre.manual_aim_repair.StylingModelRepair;
+import jsdaix.processor.xim_aim.pre.manual_aim_repair.TargetDiameterFixer;
 import jsdaix.processor.xim_aim.pre.manual_aim_repair.ValueRangeFixer;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.AIMGarbageCleaner;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.AP210SpecificGarbageCleaner;
@@ -86,6 +92,7 @@ import jsdaix.processor.xim_aim.pre.manual_arm_repair.AssemblyRepair;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.Closed_curveFixer;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.DefinitionsRepair;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.FakedMappingCleaner;
+import jsdaix.processor.xim_aim.pre.manual_arm_repair.GDTRepair;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.IncorrectReuseOfContextRepair;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.MRIDowngrader;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.PartsRepair;
@@ -100,14 +107,14 @@ import jsdai.util.UtilMonitor;
 
 /**
  * Author Giedrius Liutkus
- * 
+ *
  * Main class for import
  * The import stuff is divided into 3 actions
- * 1. Import MIM data, fix it manually. 
+ * 1. Import MIM data, fix it manually.
  * 2. Run automatic mapping to upgrade input schema to XIM
  * 3. Remove redundant MIM entities
  * 4. Implement manual XIM entities fix.
- *  
+ *
  */
 public class Importer {
 
@@ -123,13 +130,13 @@ public class Importer {
 	 *	Log stream
 	 */
 	protected PrintStream outputLog = null;
-	
+
 	public static final String messagePrefix = "MIM2XIM Healing:";
-	
+
 	SdaiSession session;
-	
+
 	public void logMessage(String message)throws SdaiException{
-		
+
 		if (flag_from_initAsRunnable) {
 			System.out.println(message);
 		} else {
@@ -144,11 +151,12 @@ public class Importer {
 			session.printlnSession(messagePrefix+message);
 		}
 	}
-	
+
 	private final EEntity_definition[] typesToRemove = {
 			// CRepresentation_relationship.definition,
 			CProduct_definition_relationship.definition,
-			CShape_aspect.definition,
+			// After removal of Shape_element this is likely no longer have to be removed
+			// CShape_aspect.definition,
 			CProperty_definition_representation.definition,
 			CProperty_definition_relationship.definition,
 			//water_dispenser CRepresentation_map.definition,
@@ -166,7 +174,8 @@ public class Importer {
 			CGlobal_uncertainty_assigned_context$global_unit_assigned_context$parametric_representation_context.definition,
 			CGlobal_uncertainty_assigned_context$parametric_representation_context.definition,
 			CProduct_definition_usage.definition,
-			CProduct_definition_shape.definition,
+			// After removal of Item_shape this is likely no longer have to be removed
+			// CProduct_definition_shape.definition,
 			// CProduct_definition_context.definition, // Have it here, because we add some constraints in the mapping of product_definition_context and if it is not satisfied - simply we need to ignore it - more information at SEDS-1491.
 			CProduct_definition_context_association.definition,
 			CProduct_context.definition, // No entity in stepmod mapps to this entity.
@@ -181,17 +190,18 @@ public class Importer {
 			CItem_defined_transformation.definition,
 	//IDA		CShape_element.definition,
 	//IDA		CShape_representation.definition,
-			CRole_association.definition,			
+			CRole_association.definition,
 			CObject_role.definition,
 			CApproval_role.definition,
 			CGeneral_property_association.definition,
-			
+
 			// Cpart_view_definition.definition,
-			
+
 			// Types, which are most likely dependent and should be copied only if there are XIM users.
 			// For now - simply not copy them
 			CDescription_attribute.definition,
-			CId_attribute.definition,
+			// After we have id on shape_aspect and product_definition_shape set via derived attributes, we no longer can delete this
+			// CId_attribute.definition,
 			CName_attribute.definition,
 	//				CDescriptive_representation_item.definition,
 			CKeepout_design_object_category.definition,
@@ -200,6 +210,15 @@ public class Importer {
 			CSequential_method.definition,
 			CPosition_in_organization_role.definition,
 			CShape_definition_representation.definition,
+			CShape_aspect_deriving_relationship.definition,
+			CDimensional_characteristic_representation.definition,
+			CShape_dimension_representation.definition,
+			CTolerance_zone_form.definition,
+			CTolerance_zone.definition,
+			CGeometric_tolerance_relationship.definition,
+			CIdentification_role.definition,
+			CShape_representation_with_parameters.definition,
+			CApplied_identification_assignment.definition
 			// CPerson_and_organization_role.definition,
 	};
 
@@ -209,7 +228,7 @@ public class Importer {
 	public void setOutputLog(PrintStream stream) {
 		this.outputLog = stream;
 	}
-	
+
 	public void setLocation(String location) {
 	}
 
@@ -223,7 +242,7 @@ public class Importer {
 	///////////////////////////////////////////////////////////
 	// Stuff basically needed, because this is standalone application
 	///////////////////////////////////////////////////////////
-	
+
 	public static void main(String[] args) throws SdaiException{
 		long time = System.currentTimeMillis();
 		String stepFileName = args[0];
@@ -243,46 +262,41 @@ public class Importer {
 		repo.exportClearTextEncoding(stepFileName+"_");
 		importer.errorMessage(" Overall conversion time is "+(System.currentTimeMillis()-time)/1000+" seconds");
 	}
-	
+
 	public void runImport(SdaiRepository inputRepo) throws SdaiException {
 		if (inputRepo == null) {
 			throw new SdaiException(SdaiException.FN_NAVL, "No source data found!");
 		}
-		
+
 		runImport(inputRepo.getModels());
 	}
-	
+
 	public void runImport(SchemaInstance schema)throws SdaiException{
 		if (schema == null) {
 			throw new SdaiException(SdaiException.FN_NAVL, "No source data found!");
 		}
-		
+
 		runImport(schema.getAssociatedModels());
 	}
-	
+
 	public void runImport(ASdaiModel models)throws SdaiException{
 		if (models == null || models.getMemberCount() == 0) {
 			throw new SdaiException(SdaiException.FN_NAVL, "No source data found!");
 		}
-		
 		SdaiModel model = models.getByIndex(1);
 		SdaiContext context = new SdaiContext(model);
 		context.working_modelAggr = models;
 		context.working_model = null;
 		session = model.getRepository().getSession();
 		session.setSdaiContext(context);
-
 		DocumentRepair.run(models, this);
-		
+
 		// modifications and fixes before automatic mapping
 		AP203SpecificRepair.run(models, this);
-		
 		// this fixer must be ran after AP203SpecificRepair,
 		// because it does not "know" about AP203 specific AOs
 		RolesRepair.run(models, this);
-		
 		ProductCategoryFlattener.run(models, this);
-		
 		// this fixer must be ran after ProductCategoryFlattener,
 		// because some AP203 designs have part category indirectly
 		// assgined to product. Since ProductCategoryFlattener
@@ -290,31 +304,31 @@ public class Importer {
 		// Ap203ProductCategoryRepair does not need to repair anything
 		// in this case.
 		Ap203ProductCategoryRepair.run(models, this);
-		
 		Item_defined_transformationRepair.run(models, this);
 		ValueRangeFixer.run(models, this);
 		StylingModelRepair.run(models, this);
+		TargetDiameterFixer.run(models, this);
 		// automatic mapping launch
 		AutomaticXimPopulationCreator ximPopulationCreator = new AutomaticXimPopulationCreator(context, this);
-		long timePure = System.currentTimeMillis();
+//		long timePure = System.currentTimeMillis();
 		// -> AIMGarbageCleaner.run(models, typesToRemove);
-
 
 		try {
 			SdaiSession.convertMapping(ximPopulationCreator.getMappingContext());
 		} catch(SdaiException ex){
 			ex.printStackTrace();
-			SdaiSession session = model.getRepository().getSession();
+//			SdaiSession session = model.getRepository().getSession();
 			logMessage("--------");
 			logMessage(ex.getMessage());
 			logMessage("--------");
 		} catch (Throwable tt) { //RR - there was a case with class definition not found and I was left completely in the dark without this
 			tt.printStackTrace();
+			throw (SdaiException)new SdaiException(SdaiException.SY_ERR, tt.getMessage()).initCause(tt);
 		}
-		
+		GDTRepair.run(context, models, this);
 		//System.out.println(" Pure mapping operations time is "+(System.currentTimeMillis()-timePure)/1000+" seconds"+inputRepo.getSessionIdentifier("#436"));
 		FakedMappingCleaner.run(models, ximPopulationCreator, this);
-		// For now we do not really need to check the original schema as we are checking 
+		// For now we do not really need to check the original schema as we are checking
 		// for specific patterns, which happens in AP210 schema only anyway
 		AP210SpecificGarbageCleaner.run(models, this);
 		AIMGarbageCleaner.run(models, typesToRemove, this);
@@ -341,7 +355,7 @@ public class Importer {
 		// repoAP210Extended.deleteRepository();
 		// session.closeSession();
 	}
-	
+
 	private SdaiTransaction startTransactionReadWriteAccess(SdaiSession session) throws SdaiException
 	{
 		if(session.testActiveTransaction()){
@@ -354,13 +368,13 @@ public class Importer {
 		} else
 			return session.startTransactionReadWriteAccess();
 	}
-	
+
 
 
   	public static Runnable initAsRunnable(final String sdaireposDirectory, final String[] args, final UtilMonitor monitor) throws jsdai.lang.SdaiException {
   		Properties jsdaiProperties = new Properties();
   		jsdaiProperties.setProperty("repositories", sdaireposDirectory);
-			
+
   		// jsdaiProperties.setProperty("jsdai.SIda_step_schema_xim","AC*;AI*;AP*;ASS*;AU*;B*;C*;D*;E*;F*;G*;H*;IDA_STEP_AIM*;ISO*;IN*;J*;K*;L*;M*;N*;O*;P*;Q*;R*;S*;T*;U*;V*;W*;X*;Y*;Z*;");
 
 	  	jsdaiProperties.setProperty("mapping.schema.IDA_STEP_SCHEMA_XIM","IDA_STEP_SCHEMA_XIM_MAPPING_DATA");
@@ -393,11 +407,11 @@ public class Importer {
 					} catch (Exception eee) {
 
 						System.out.println("Conversion: exception occured: " + eee);
-	
+
 						eee.printStackTrace();
 
         	} finally {
-           
+
 	  				flag_from_initAsRunnable = false;
 
 						pout.flush();
@@ -405,11 +419,11 @@ public class Importer {
 
 						perr.flush();
 						perr.close();
-						
-					}  				
+
+					}
   			}
   		};
   	}
-	
-	
+
+
 }

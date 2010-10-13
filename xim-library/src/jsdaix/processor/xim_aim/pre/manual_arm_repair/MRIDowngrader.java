@@ -24,24 +24,38 @@
 package jsdaix.processor.xim_aim.pre.manual_arm_repair;
 
 
-import jsdai.dictionary.EEntity_definition;
-import jsdai.lang.AEntity;
-import jsdai.lang.ASdaiModel;
-import jsdai.lang.EEntity;
-import jsdai.lang.SdaiException;
+import jsdai.SDefault_tolerance_xim.AUpper_lower_limit;
+import jsdai.SDefault_tolerance_xim.AUpper_lower_toleranced_datum;
+import jsdai.SDefault_tolerance_xim.CUpper_lower_limit;
+import jsdai.SDefault_tolerance_xim.CUpper_lower_toleranced_datum;
+import jsdai.SDimension_tolerance_xim.ALocation_dimension;
+import jsdai.SDimension_tolerance_xim.ASize_dimension;
+import jsdai.SDimension_tolerance_xim.CLocation_dimension;
+import jsdai.SDimension_tolerance_xim.CSize_dimension;
 import jsdai.SDocument_assignment_mim.AApplied_document_reference;
 import jsdai.SDocument_assignment_mim.CApplied_document_reference;
-import jsdai.SExtended_measure_representation_mim.AValue_range;
-import jsdai.SExtended_measure_representation_mim.CValue_range;
 import jsdai.SExtended_measure_representation_xim.AValue_range_armx;
+import jsdai.SExtended_measure_representation_xim.AValue_set;
 import jsdai.SExtended_measure_representation_xim.CValue_range_armx;
+import jsdai.SExtended_measure_representation_xim.CValue_set;
 import jsdai.SFabrication_technology_xim.APassage_technology_armx;
 import jsdai.SFabrication_technology_xim.CPassage_technology_armx;
+import jsdai.SGeometric_tolerance_xim.ATarget_circle;
+import jsdai.SGeometric_tolerance_xim.ATarget_circular_curve;
+import jsdai.SGeometric_tolerance_xim.CTarget_circle;
+import jsdai.SMeasure_schema.CFrequency_measure_with_unit;
 import jsdai.SMeasure_schema.CLength_measure_with_unit;
 import jsdai.SMeasure_schema.CMass_measure_with_unit;
 import jsdai.SMeasure_schema.CMeasure_with_unit;
+import jsdai.SMeasure_schema.CPower_measure_with_unit;
 import jsdai.SMeasure_schema.CVolume_measure_with_unit;
-import jsdai.SMixed_complex_types.*;
+import jsdai.SMeasure_schema.ELength_measure_with_unit;
+import jsdai.SMixed_complex_types.CFrequency_measure_with_unit$measure_representation_item;
+import jsdai.SMixed_complex_types.CLength_measure_with_unit$measure_representation_item;
+import jsdai.SMixed_complex_types.CLength_measure_with_unit$uncertainty_measure_with_unit;
+import jsdai.SMixed_complex_types.CMass_measure_with_unit$measure_representation_item;
+import jsdai.SMixed_complex_types.CMeasure_representation_item$power_measure_with_unit;
+import jsdai.SMixed_complex_types.CMeasure_representation_item$volume_measure_with_unit;
 import jsdai.SPart_template_xim.ATemplate_definition;
 import jsdai.SPart_template_xim.CTemplate_definition;
 import jsdai.SQualified_measure_schema.CMeasure_representation_item;
@@ -54,22 +68,24 @@ import jsdai.SRepresentation_schema.CCompound_representation_item;
 import jsdai.SRepresentation_schema.CGlobal_uncertainty_assigned_context;
 import jsdai.SRepresentation_schema.CRepresentation;
 import jsdai.SRepresentation_schema.CUncertainty_assigned_representation;
-import jsdai.SRepresentation_schema.ERepresentation_item;
 import jsdai.SRepresentation_schema.EUncertainty_measure_with_unit;
 import jsdai.SRequirement_decomposition_xim.APredefined_requirement_view_definition_armx;
 import jsdai.SRequirement_decomposition_xim.CPredefined_requirement_view_definition_armx;
-import jsdai.SMeasure_schema.CFrequency_measure_with_unit;
-import jsdai.SMeasure_schema.CPower_measure_with_unit;
+import jsdai.dictionary.EEntity_definition;
+import jsdai.lang.AEntity;
+import jsdai.lang.ASdaiModel;
+import jsdai.lang.EEntity;
+import jsdai.lang.SdaiException;
 import jsdaix.processor.xim_aim.pre.Importer;
 
 /**
  * @author Giedrius
- * 
+ *
  *	Removed AIM instances of provided types, which should not be in XIM file (like shape_aspect_relationship, property_definition etc.)
  */
 public class MRIDowngrader {
 	/**
-	 * 
+	 *
 	 * @param models
 	 * @throws SdaiException
 	 */
@@ -97,7 +113,7 @@ public class MRIDowngrader {
 				index++;
 				continue;
 			}
-			String message = " Changed "+instanceToRename; 
+			String message = " Changed "+instanceToRename;
 			EEntity instance = instanceToRename.findEntityInstanceSdaiModel().substituteInstance(instanceToRename, CLength_measure_with_unit.definition);
 			importer.logMessage(message+" to "+instance);
 		}
@@ -113,7 +129,7 @@ public class MRIDowngrader {
 		// 7) VMWU+MRI
 		downgradeMRI(models, CMeasure_representation_item$volume_measure_with_unit.definition,
 				CVolume_measure_with_unit.definition, importer);
-		
+
 	}
 
 	/**
@@ -137,33 +153,33 @@ public class MRIDowngrader {
 				index++;
 				continue;
 			}
-			ATemplate_definition atd = new ATemplate_definition(); 			
+			ATemplate_definition atd = new ATemplate_definition();
 			CTemplate_definition.usedinPhysical_characteristic(null, instanceToRename, null, atd);
 			if(atd.getMemberCount() > 0){
 				index++;
 				continue;
 			}
-			AApplied_document_reference adr = new AApplied_document_reference(); 			
+			AApplied_document_reference adr = new AApplied_document_reference();
 			CApplied_document_reference.usedinItems(null, instanceToRename, null, adr);
 			if(adr.getMemberCount() > 0){
 				index++;
 				continue;
 			}
-			
+
 			APassage_technology_armx apt = new APassage_technology_armx();
 			CPassage_technology_armx.usedinAs_finished_passage_extent(null, instanceToRename, null, apt);
 			if(apt.getMemberCount() > 0){
 				index++;
 				continue;
 			}
-			
+
 			ACompound_representation_item acri = new ACompound_representation_item();
 			CCompound_representation_item.usedinItem_element(null, instanceToRename, null, acri);
 			if(acri.getMemberCount() > 0){
 				index++;
 				continue;
 			}
-			
+
 			AValue_range_armx avr = new AValue_range_armx();
 			CValue_range_armx.usedinLower_limit(null, instanceToRename, null, avr);
 			if(avr.getMemberCount() > 0){
@@ -176,7 +192,93 @@ public class MRIDowngrader {
 				index++;
 				continue;
 			}
-			
+
+//			ATolerance_range atr = new ATolerance_range();
+//			CTolerance_range.usedinLower_range(null, instanceToRename, null, atr);
+//			if(atr.getMemberCount() > 0){
+//				index++;
+//				continue;
+//			}
+//			CTolerance_range.usedinUpper_range(null, instanceToRename, null, atr);
+//			if(atr.getMemberCount() > 0){
+//				index++;
+//				continue;
+//			}
+
+			ALocation_dimension ald = new ALocation_dimension();
+			CLocation_dimension.usedinSingle_value(null, instanceToRename, null, ald);
+			if(ald.getMemberCount() > 0){
+				index++;
+				continue;
+			}
+			CLocation_dimension.usedinLower_range(null, instanceToRename, null, ald);
+			if(ald.getMemberCount() > 0){
+				index++;
+				continue;
+			}
+			CLocation_dimension.usedinUpper_range(null, instanceToRename, null, ald);
+			if(ald.getMemberCount() > 0){
+				index++;
+				continue;
+			}
+			ASize_dimension asd = new ASize_dimension();
+			CSize_dimension.usedinSingle_value(null, instanceToRename, null, asd);
+			if(asd.getMemberCount() > 0){
+				index++;
+				continue;
+			}
+			CSize_dimension.usedinLower_range(null, instanceToRename, null, asd);
+			if(asd.getMemberCount() > 0){
+				index++;
+				continue;
+			}
+			CSize_dimension.usedinUpper_range(null, instanceToRename, null, asd);
+			if(asd.getMemberCount() > 0){
+				index++;
+				continue;
+			}
+			AUpper_lower_limit aull = new AUpper_lower_limit();
+			CUpper_lower_limit.usedinLower_limit(null, instanceToRename, null, aull);
+			if(aull.getMemberCount() > 0){
+				index++;
+				continue;
+			}
+			CUpper_lower_limit.usedinUpper_limit(null, instanceToRename, null, aull);
+			if(aull.getMemberCount() > 0){
+				index++;
+				continue;
+			}
+			AUpper_lower_toleranced_datum aultd = new AUpper_lower_toleranced_datum();
+			CUpper_lower_toleranced_datum.usedinLower_tolerance_value(null, instanceToRename, null, aultd);
+			if(aultd.getMemberCount() > 0){
+				index++;
+				continue;
+			}
+			CUpper_lower_toleranced_datum.usedinUpper_tolerance_value(null, instanceToRename, null, aultd);
+			if(aultd.getMemberCount() > 0){
+				index++;
+				continue;
+			}
+			AValue_set avs = new AValue_set();
+			CValue_set.usedinValues(null, instanceToRename, null, avs);
+			if(avs.getMemberCount() > 0){
+				index++;
+				continue;
+			}
+			if(instanceToRename instanceof ELength_measure_with_unit){
+				ATarget_circle atc = new ATarget_circle();
+				CTarget_circle.usedinDiameter(null, (ELength_measure_with_unit)instanceToRename, null, atc);
+				if(atc.getMemberCount() > 0){
+					index++;
+					continue;
+				}
+				ATarget_circular_curve atcc = new ATarget_circular_curve();
+				CTarget_circle.usedinDiameter(null, (ELength_measure_with_unit)instanceToRename, null, atcc);
+				if(atcc.getMemberCount() > 0){
+					index++;
+					continue;
+				}
+			}
 			// System.err.println(" Downgrading "+instanceToRename);
 			String message = " Changed "+instanceToRename;
 			EEntity instance = instanceToRename.findEntityInstanceSdaiModel().substituteInstance(instanceToRename, newType);
