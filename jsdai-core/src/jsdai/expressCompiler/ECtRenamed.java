@@ -1,4 +1,4 @@
- /*`
+ /*
  * $Id$
  *
  * JSDAI(TM), a way to implement STEP, ISO 10303
