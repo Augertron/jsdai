@@ -320,7 +320,7 @@ public class CxTolerance_zone_armx extends CTolerance_zone_armx implements EMapp
 //			if(form == ETolerance_zone_type.UNKOWN){
 //				name = "";
 //			}else{
-				name = ETolerance_zone_type.toString(form).replace("_", " ").toLowerCase();
+				name = ETolerance_zone_type.toString(form).replace('_', ' ').toLowerCase();
 //			}
 			// TZF
 			LangUtils.Attribute_and_value_structure[] tzfStructure = {
