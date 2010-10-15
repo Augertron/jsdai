@@ -129,11 +129,10 @@ public final class IncorrectReuseOfContextRepair {
 					// importer.errorMessage("Mandatory (derived?) attribute Rep_2 is null for " + err);
 				}
 			} catch (Exception e) {
-        String e_message = e.getMessage();
-        if (e_message.contains("VA_NSET")) {
+        if (e instanceof SdaiException && ((SdaiException) e).getErrorId() == SdaiException.VA_NSET) {
 					importer.errorMessage(" Mandatory attribute Rep2 is unset for " + err);
 				} else {
-					importer.errorMessage(" ERROR - Exception " + e_message + " occured while reading attribute Rep_2  for instance: " + err);
+					importer.errorMessage(" ERROR - Exception " + e.getMessage() + " occured while reading attribute Rep_2  for instance: " + err);
 				}
 			}
 		}
