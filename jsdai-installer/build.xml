@@ -64,10 +64,11 @@
         <!-- Directory in which source files are placed -->
         <property name="ia.dir" location="${user.home}/InstallAnywhere"/>
 
-        <property name="jsdai.dir" location="../jsdai-core"/>
+        <property name="top.dir" location=".."/>
+        <property name="jsdai.dir" location="${top.dir}/jsdai-core"/>
         <property name="jsdai.lib.dir" location="${jsdai.dir}/lib"/>
         <property name="jsdai.out.dir" location="${jsdai.dir}/out"/>
-        <property name="xim.dir" location="../xim-library"/>
+        <property name="xim.dir" location="${top.dir}/xim-library"/>
         <property name="xim.out.dir" location="${xim.dir}/out"/>
 
         <!-- Common Java VM parameters -->
@@ -269,6 +270,65 @@ buildId=${buildId}
                 </tokenfilter>
             </filterchain>
         </copy>
+    </target>
+
+    <target name="pack.zips" depends="prepare.dirs">
+    	<property file="${jsdai.dir}/properties"/>
+    	<property file="${xim.dir}/properties"/>
+    	<property name="jsdai.version" 
+    		value="${runtime.version.major}_${runtime.version.middle}_${runtime.version.minor}"/>
+    	<property name="xim.library.version" 
+    		value="${stepmod.version.major}_${stepmod.version.middle}_${stepmod.version.minor}"/>
+    	<zip destfile="${out.dir}/jsdai-core_v${jsdai.version}.zip">
+    		<fileset dir="${top.dir}">
+    			<include name="jsdai-core/lib/**"/>
+    			<include name="jsdai-core/out/**"/>
+	    		<exclude name="**/CVS/**"/>
+    		</fileset>
+    	</zip>
+    	<zip destfile="${out.dir}/jsdai-core-src_v${jsdai.version}.zip">
+    		<fileset dir="${top.dir}">
+    			<include name="jsdai-core/**"/>
+    			<exclude name="jsdai-core/build/**"/>
+    			<exclude name="jsdai-core/out/**"/>
+	    		<exclude name="**/CVS/**"/>
+    		</fileset>
+    	</zip>
+    	<zip destfile="${out.dir}/xim-library_v${xim.library.version}_part1.zip">
+    		<fileset dir="${top.dir}">
+    			<include name="xim-library/out/**"/>
+    			<exclude name="xim-library/out/jsdai_xim_full_api_ref.zip"/>
+	    		<exclude name="**/CVS/**"/>
+    		</fileset>
+    	</zip>
+    	<zip destfile="${out.dir}/xim-library_v${xim.library.version}_part2.zip">
+    		<fileset dir="${top.dir}">
+    			<include name="xim-library/out/jsdai_xim_full_api_ref.zip"/>
+	    		<exclude name="**/CVS/**"/>
+    		</fileset>
+    	</zip>
+    	<zip destfile="${out.dir}/xim-library-src_v${xim.library.version}.zip">
+    		<fileset dir="${top.dir}">
+    			<include name="xim-library/**"/>
+    			<exclude name="xim-library/build/**"/>
+    			<exclude name="xim-library/out/**"/>
+	    		<exclude name="**/CVS/**"/>
+    		</fileset>
+    	</zip>
+    	<zip destfile="${out.dir}/jsdai-installer-src_v${jsdai.version}.zip">
+    		<fileset dir="${top.dir}">
+    			<include name="jsdai-installer/**"/>
+    			<exclude name="jsdai-installer/build/**"/>
+    			<exclude name="jsdai-installer/out/**"/>
+	    		<exclude name="**/CVS/**"/>
+    		</fileset>
+    	</zip>
+    	<zip destfile="${out.dir}/jsdai-eclipse-src_v${jsdai.version}.zip">
+    		<fileset dir="${top.dir}">
+    			<include name="jsdai-eclipse/**"/>
+	    		<exclude name="**/CVS/**"/>
+    		</fileset>
+    	</zip>
     </target>
 
     <target name="build.all" depends="clean, build"
