@@ -25,8 +25,6 @@ package jsdai.common.utils;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import jsdai.util.UtilMonitor;
 

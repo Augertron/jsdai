@@ -684,7 +684,7 @@ public class ExpressCompilerUtils {
 
 
 	/*
-			puth all the java files with paths into the sourcfile 
+			put all the java files with paths into the sourcfile 
 			from java directory - recursively
 			We can use this approach because we now delete java directory before each compilation,
 			so we know that older already compiled packages are not included here
@@ -718,7 +718,11 @@ public class ExpressCompilerUtils {
 			Iterator iter = java_files.iterator();
 			while(iter.hasNext()) {
 				String java_file = (String)iter.next();
+//				String java_file2 = "\"" + java_file.replace('\\','/') + "\"";   
+//				java_file = "\"" + java_file.replace('\\','/') + "\"";   
+				java_file = "\"" + java_file.replace("\\","\\\\") + "\"";   
 				pw.println(java_file);
+//				pw.println(java_file2);
 			}
 
 			pw.flush();

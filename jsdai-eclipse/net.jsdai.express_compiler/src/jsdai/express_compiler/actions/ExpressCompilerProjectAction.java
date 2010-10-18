@@ -1789,6 +1789,9 @@ fCompilerOutput += "Express compilation canceled";
 			javac_source_file_path  += File.separator + "java_files";
 		}
 
+//fCompilerOutput += "java_source_file_path 1: " + javac_source_file_path + "\n";
+//fCompilerOutput += "java_source_file_path: " + javac_source_file_path + "\n";
+
 // fCompilerOutput += "Java compiler - about to make source file\n";    
 
 		ExpressCompilerUtils.makeSourceFile(sourcepath, javac_source_file_path);
@@ -1808,14 +1811,18 @@ fCompilerOutput += "Express compilation canceled";
 //			+ " -classpath " + total_classpath + " -d " + outputdir
 //			+ " " + sourcefiles;
 
-		String commandLine[] = { 
-				"-classpath",
-				total_classpath,
-				"-d",
-				outputdir,
-				"-warn:none",  // disable warnings
-				"@" + javac_source_file_path
-		};
+//fCompilerOutput += "total_classpath: " + total_classpath + "\n";
+//fCompilerOutput += "outputdir: " + outputdir + "\n";
+
+
+
+//java_source_file_path 1: G:\eclipse-rcp-Galileo-SR1\runtime-EclipseApplication\Exp Demo\temp\java_files
+//total_classpath: G:\eclipse-rcp-Galileo-SR1\runtime-EclipseApplication\Exp Demo\temp\classes;G:/eclipse-rcp-Galileo-SR1/W1/net.jsdai.runtime/jsdai_runtime.jar;G:/eclipse-rcp-Galileo-SR1/W1/net.jsdai.ext_dict_lib/SExtended_dictionary_schema.zip
+//outputdir: G:\eclipse-rcp-Galileo-SR1\runtime-EclipseApplication\Exp Demo\temp\classes
+
+//javac -classpath G:\eclipse-rcp-Galileo-SR1\runtime-EclipseApplication\Exp Demo\temp\classes;G:/eclipse-rcp-Galileo-SR1/W1/net.jsdai.runtime/jsdai_runtime.jar;G:/eclipse-rcp-Galileo-SR1/W1/net.jsdai.ext_dict_lib/SExtended_dictionary_schema.zip -d G:\eclipse-rcp-Galileo-SR1\runtime-EclipseApplication\Exp Demo\temp\classes -warn:none @G:\eclipse-rcp-Galileo-SR1\runtime-EclipseApplication\Exp Demo\temp\java_files
+
+
 
 
 		File javac_out_file = new File(javac_out_path);
@@ -1833,6 +1840,26 @@ fCompilerOutput += "Express compilation canceled";
 		// Main.compile(commandLine, outWriter, errWriter);
 
 // fCompilerOutput += "Java compiler class instance created\n";    
+
+ //total_classpath = "\"" + total_classpath + "\"";
+ //fCompilerOutput += "classpath: " + total_classpath + "\n";    
+// classpath: "G:\eclipse-rcp-Galileo-SR1\runtime-EclipseApplication\ExpDemo4\temp\classes;G:/eclipse-rcp-Galileo-SR1/W1/net.jsdai.runtime/jsdai_runtime.jar;G:/eclipse-rcp-Galileo-SR1/W1/net.jsdai.ext_dict_lib/SExtended_dictionary_schema.zip"
+
+//    outputdir = "\"" + outputdir + "\"";
+// No .class file created for file jsdai\SNew_schema4\AVavahaha.class in "G:\eclipse-rcp-Galileo-SR1\runtime-EclipseApplication\ExpDemo4\temp\classes" because of an IOException: Could not create output directory G:\eclipse-rcp-Galileo-SR1\"G:\eclipse-rcp-Galileo-SR1\runtime-EclipseApplication\ExpDemo4\temp\classes"
+// why it is duplicated: G:\eclipse-rcp-Galileo-SR1\"G:\eclipse-rcp-Galileo-SR1\runtime-EclipseApplication\ExpDemo4\temp\classes"
+//    javac_source_file_path = "\"" + javac_source_file_path + "\"";
+
+		String commandLine[] = { 
+				"-classpath",
+				total_classpath,
+				"-d",
+				outputdir,
+				"-warn:none",  
+				"@" + javac_source_file_path
+		};
+
+
  	JavaCompiler jc = new JavaCompiler(commandLine, outWriter, errWriter);
 // fCompilerOutput += "Java compiler thread created\n";    
     Thread jct = new Thread(jc);

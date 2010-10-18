@@ -33,8 +33,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Queue;
-import java.util.concurrent.BlockingQueue;
 
 import jsdai.util.UtilMonitor;
 import jsdai.apache.ApachePlugin;
