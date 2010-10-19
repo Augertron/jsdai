@@ -73,6 +73,7 @@ public class ExpressDoc {
 	static boolean flag_help = false;
 	static boolean bottom_level = false;
 	static boolean flag_go_to_extensible_root = true;
+	static boolean flag_non_incremental = false;
 
 	HashMap hm_iso_numbers;
 	HashMap hm_iso_ids;
@@ -124,6 +125,9 @@ public class ExpressDoc {
 			String title = "No title", location = "";
 			for (int i = 0; i < args.length; i++) {
 				
+				if (args[i].equalsIgnoreCase("-non_incremental")){
+					flag_non_incremental = true;
+				} else
         // this switch is currently disabled, default changed to true; 	
 				if (args[i].equalsIgnoreCase("-original_expressions")){
 					flag_original_expressions = true;
@@ -228,6 +232,16 @@ public class ExpressDoc {
 				System.out.println("-confirm (User is asked to confirm request to generate documentation on each schema)");
 				return;
 			}
+      if (flag_non_incremental) {
+        // delete everything in directory: -output = ge.baseDir
+      	emptyDirectory(ge.baseDir);
+      }
+			// after emptyDirectory() we need to create the directory itself again, but also better create it always if it does not exist already, so that there is no requirement to provide an existing directory.
+			File outdir = new File(ge.baseDir);
+      if (!outdir.exists()) {
+      			outdir.mkdir();
+      }
+      
             if (flag_generate_summary) {
 //			System.out.println("<XD-01>: generating summary");
             	generateSummaryFile();
@@ -7302,13 +7316,15 @@ else flag_debug = false;
 
         //<RR>
 //				printH3(result, "Users");
-				printH3(result, "Users - attributes");
+//				printH3(result, "Users - attributes");
+				printH3(result, "Users: by entity attributes");
 				//printH3(result, "ENTITY Users");  // temp for experimenting
 //RRX printDebug("<DEBUG> before printEntityUsersAttributesX: " + entity);
         used_types = new HashSet(); // not really needed
 				printEntityUsersAttributesX(result, entity, domain, true);
 				// for the implementation of printEntityUsersIdleTypes we might want to collect the information in PrintEntityUsersAttributesX to eliminate types that are used
-				printH3(result, "Users - defined types, not used for attribute types");
+//				printH3(result, "Users - defined types, not used for attribute types");
+				printH3(result, "Users: by defined types, not used by any entity attribute");
 				printEntityUsersIdleTypes(result, entity, domain, true, true, true); // two last booleans - include non-extensible selects, include aggregates, is outer_loop - may be needed or not
 //RRX printDebug("<DEBUG> after printEntityUsersAttributesX: " + entity);
 //			}
@@ -7371,18 +7387,20 @@ else flag_debug = false;
 				EEntity_definition supertype = (EEntity_definition)supertypes.getCurrentMemberObject(it_super);
 //				if (supertype.getTemp() != definition) {
 //					supertype.setTemp(definition);
-					printEntityUsersXX(result, supertype, domain);
+//TEMP					printEntityUsersXX(result, supertype, domain);
 //				}
 			}
 //			result += printEntityUsersX(definition, domain);
 			printHRef(result, getComplexNameOp(definition.getName(null)), getSchemaRefOp(definition, schema));
 			println(result);
 		}
-/*else if (entity instanceof EDefined_type) {
+/*
+		else if (entity instanceof EDefined_type) {
 			EDefined_type defined = (EDefined_type)entity;
 //			result += println(printHRef(getComplexName(defined.getName(null)), getSchemaNameIfDiffer(defined, schema)+getUpper(getComplexName(defined.getName(null)))+".html"));
 			result += printEntityUsersX(defined, domain);
-		}*/
+		}
+*/
 
 		if (entity instanceof EDefined_type) {
 			EEntity ut = ((EDefined_type)entity).getDomain(null);
@@ -12121,6 +12139,27 @@ pw.println("</HTML>");
 
 	}
 
+	static void emptyDirectory(String dir_str) {
+
+			File dir = new File(dir_str);
+	
+	    deleteDir(dir);	
+		
+	}
+	private static boolean deleteDir(File dir) {
+		if (dir.isDirectory()) {
+			String[] children = dir.list();
+				for (int i=0; i<children.length; i++) {
+					boolean success = deleteDir(new File(dir, children[i]));
+					if (!success) {
+						return false;
+					}
+				}
+			}
+    
+        // The directory is now empty so delete it
+       	return dir.delete();
+	}		
 
 
 	static File  createOverviewFrame(String path)  {
