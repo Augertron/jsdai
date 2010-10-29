@@ -90,6 +90,9 @@ public class RepositoryMerger extends Action implements Runnable, IRunnableWithP
 
 	boolean flag_print_debug = false;
 
+  long start_time, finish_time, elapsed_time;
+
+	boolean flag_debug1 = false;
 
 	public RepositoryMerger(SdaiRepository newDictionary, SdaiRepository oldLayout) throws SdaiException {
 		repoDict = newDictionary;
@@ -100,10 +103,27 @@ public class RepositoryMerger extends Action implements Runnable, IRunnableWithP
 	}
 	// move entity and all references in entity
 	
+	void printDebug(StringBuffer message, Object msg) {
+			// System.out.println("<DEBUG> " + msg);
+		if (flag_print_debug) {
+//			System.out.println("<DEBUG> " + msg);
+			//message.append("\n\tDEBUG: " + msg);
+		}
+	}
 	void printDebug(Object msg) {
 		if (flag_print_debug) {
-			System.out.println("<DEBUG> " + msg);
+			// System.out.println("<DEBUG> " + msg);
 		}
+	}
+	void printDebug1(Object msg) {
+		//if (flag_print_debug) {
+	    finish_time = System.currentTimeMillis();
+		  elapsed_time = finish_time - start_time;
+			if (flag_debug1) {
+				System.out.println("<DEBUG> " + msg + ", time: " + elapsed_time);
+	  	}
+	    start_time = System.currentTimeMillis();
+		//}
 	}
 	
 	
@@ -527,7 +547,17 @@ if (   place.getRepresented_object(null).getName(null) == "datum_reference"
 	 */
 	protected SdaiModel copyEGData(SdaiModel modelEG, IProgressMonitor progress, String taskName, StringBuffer message) throws SdaiException {
 System.out.println("<0>model: " + modelEG.getName());
-printDebug("<1>: " + modelEG.getInstances(EPage_reference_bundle.class));
+String model_name = modelEG.getName();
+if (model_name.equals("AP203-PARTIAL_EXPRESS_G_DATA") || 
+	model_name.equals("AP210_ELECTRONIC_ASSEMBLY_INTERCONNECT_AND_PACKAGING_DESIGN_ARM_PARTIAL_LONG_LAYOUT_EXPRESS_G_DATA") || 
+	model_name.equals("EXPRESSCOMPILERREPO_COMPLETE_LAYOUT_EXPRESS_G_DATA") || 
+	model_name.equals("EXPRESSCOMPILERREPO_COMPLETE_SHORT_LAYOUT_EXPRESS_G_DATA")) {
+ flag_debug1 = true;
+} else {
+	flag_debug1 = false;
+}
+
+printDebug(message, "<1>: " + modelEG.getInstances(EPage_reference_bundle.class));
 
 
 //		SdaieditPlugin.console("copying");
@@ -545,10 +575,13 @@ printDebug("<1>: " + modelEG.getInstances(EPage_reference_bundle.class));
 
 	    EGraphics_diagram diagram = null;
 	    list = modelEG.getInstances(EGraphics_diagram.class);
+
+	    start_time = System.currentTimeMillis();
+printDebug1("EGraphics_diagram: " + list.getMemberCount());
 	    it.setEntities(list);
 	    if (it.hasNext()) {
 	    	diagram = (EGraphics_diagram)it.next();  // old
-printDebug("diagram: " + diagram);
+printDebug(message, "diagram: " + diagram);
 	    	if (diagram.testComment(null)) {
 	    		message.append(diagram.getComment(null));
 //System.out.println("<>prev diagram: " + diagram + ", comment: " + diagram.getComment(null));
@@ -559,7 +592,8 @@ printDebug("diagram: " + diagram);
 	    	diagram = moveEG(modelNew, diagram);
 	    }
 //System.out.println("<>new diagram: " + diagram);
-printDebug("<2>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug(message, "<2>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
+//System.out.println("<2>: " + modelEG.getInstances(EPage_reference_bundle.class));
 	    if (diagram != null) {
 
 System.out.println("<<((SINGLE_LOADING))>>: " + !diagram.testDic_schema(null));
@@ -569,9 +603,10 @@ System.out.println("<<((SINGLE_LOADING))>>: " + !diagram.testDic_schema(null));
 					instanceMap.SINGLE_LOADING = false;
 
 //System.out.println("SINGLE MODE:" + instanceMap.SINGLE_LOADING);		    
-printDebug("<3>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug(message, "<3>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
 		    if (progress != null) progress.subTask(taskName + " [0%]");
 		    list = modelEG.getInstances(EPage_reference_to.class);
+printDebug1("EPage_reference_to: " + list.getMemberCount());
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
@@ -584,9 +619,11 @@ printDebug("<3>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    		message.append("\nplacing failed: " + itnext);
 		    	}
 		    }
-printDebug("<4>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug(message, "<4>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
 		    if (progress != null) progress.subTask(taskName + " [3%]");
 		    list = modelEG.getInstances(EPage_reference_from.class);
+printDebug1("EPage_reference_from: " + list.getMemberCount());
+
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
@@ -599,9 +636,10 @@ printDebug("<4>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    		message.append("\nplacing failed: " + itnext);
 		    	}	
 		    }
-printDebug("<5>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug(message, "<5>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
 		    if (progress != null) progress.subTask(taskName + " [30%]");
 		    list = modelEG.getInstances(EData_type_placement.class);
+printDebug1("EData_type_placement: " + list.getMemberCount());
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
@@ -616,9 +654,10 @@ printDebug("<5>: " + modelEG.getInstances(EPage_reference_bundle.class));
 //						System.out.println("placing FAILED: " + itnext);
 		    	}	
 		    }
-printDebug("<6>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug(message, "<6>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
 		    if (progress != null) progress.subTask(taskName + " [40%]");
 		    list = modelEG.getInstances(ESchema_relation_placement.class);
+printDebug1("ESchema_relation_placement: " + list.getMemberCount());
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
@@ -631,9 +670,10 @@ printDebug("<6>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    		message.append("\nplacing failed: " + itnext);
 		    	}	
 		    }
-printDebug("<7>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug(message, "<7>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
 		    if (progress != null) progress.subTask(taskName + " [45%]");
 		    list = modelEG.getInstances(EAttribute_placement.class);
+printDebug1("EAttribute_placement: " + list.getMemberCount());
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
@@ -646,9 +686,10 @@ printDebug("<7>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    		message.append("\nplacing failed: " + itnext);
 		    	}	
 		    }
-printDebug("<8>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug(message, "<8>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
 		    if (progress != null) progress.subTask(taskName + " [60%]");
 		    list = modelEG.getInstances(EDefined_relation_placement.class);
+printDebug1("EDefined_relation_placement: " + list.getMemberCount());
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
@@ -661,9 +702,10 @@ printDebug("<8>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    		message.append("\nplacing failed: " + itnext);
 		    	}	
 		    }
-printDebug("<9>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug(message, "<9>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
 		    if (progress != null) progress.subTask(taskName + " [65%]");
 		    list = modelEG.getInstances(ESelect_relation_placement.class);
+printDebug1("ESelect_relation_placement: " + list.getMemberCount());
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
@@ -676,9 +718,10 @@ printDebug("<9>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    		message.append("\nplacing failed: " + itnext);
 		    	}
 		    }
-printDebug("<10>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug(message, "<10>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
 		    if (progress != null) progress.subTask(taskName + " [70%]");
 		    list = modelEG.getInstances(ESupertype_placement.class);
+printDebug1("ESupertype_placement: " + list.getMemberCount());
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
@@ -691,9 +734,10 @@ printDebug("<10>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    		message.append("\nplacing failed: " + itnext);
 		    	}
 		    }
-printDebug("<11>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug(message, "<11>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
 		    if (progress != null) progress.subTask(taskName + " [77%]");
 		    list = modelEG.getInstances(EConstraint_relation_placement.class);
+printDebug1("EConstraint_relation_placement: " + list.getMemberCount());
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
@@ -706,26 +750,28 @@ printDebug("<11>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    		message.append("\nplacing failed: " + itnext);
 		    	}	
 		    }
-printDebug("<12>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug(message, "<12>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
 		    if (progress != null) progress.subTask(taskName + " [80%]");
 		    list = modelEG.getInstances(EPage_relation.class);
+printDebug1("EPage_relation: " + list.getMemberCount());
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
 //System.out.println("<10> countOld: " + countOld);
 //		    	if (moveEG(modelNew, (EPage_relation)it.next()) != null) countNew++;
 					EPage_relation itnext = (EPage_relation)it.next();
-printDebug("page_relation: " + itnext);
+printDebug(message, "page_relation: " + itnext);
 		    	if (moveEG(modelNew, itnext) != null) {
 		    		countNew++;
 		    	} else {
 		    		message.append("\nplacing failed: " + itnext);
 		    	}	
-printDebug("<12->>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug(message, "<12->>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
 		    }
-printDebug("<13>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug(message, "<13>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
 		    if (progress != null) progress.subTask(taskName + " [82%]");
 		    list = modelEG.getInstances(ERelation_bundle.class);
+printDebug1("ERelation_bundle: " + list.getMemberCount());
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
@@ -738,29 +784,31 @@ printDebug("<13>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    		message.append("\nplacing failed: " + itnext);
 		    	}	
 		    }
-printDebug("<14>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug(message, "<14>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
 		    if (progress != null) progress.subTask(taskName + " [85%]");
 
 printDebug(modelEG.getInstances(EPage_reference_bundle.class));
 
 		    list = modelEG.getInstances(EPage_reference_bundle.class);
-printDebug("<X> count: " + list.getMemberCount());
+printDebug1("EPage_reference_bundle: " + list.getMemberCount());
+printDebug(message, "<X> count: " + list.getMemberCount());
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
 //System.out.println("<12> countOld: " + countOld);
 //		    	if (moveEG(modelNew, (EPage_reference_bundle)it.next()) != null) countNew++;
 					EPage_reference_bundle itnext = (EPage_reference_bundle)it.next();
-printDebug("<12B> instance: " + itnext);
+printDebug(message, "<12B> instance: " + itnext);
 		    	if (moveEG(modelNew, itnext) != null) {
 		    		countNew++;
 		    	} else {
 		    		message.append("\nplacing failed: " + itnext);
 		    	}
 		    } 
-printDebug("<15>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug(message, "<15>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
 		    if (progress != null) progress.subTask(taskName + " [97%]");
 		    list = modelEG.getInstances(EProperty.class);
+printDebug1("EProperty: " + list.getMemberCount());
 		    it.setEntities(list);
 		    while (it.hasNext()) {
 		    	countOld++;
@@ -773,7 +821,9 @@ printDebug("<15>: " + modelEG.getInstances(EPage_reference_bundle.class));
 		    		message.append("\nplacing failed: " + itnext);
 		    	}	
 		    }
-printDebug("<16>: " + modelEG.getInstances(EPage_reference_bundle.class));
+printDebug1("==DONE== ");
+
+printDebug(message, "<16>: " + modelEG.getInstances(EPage_reference_bundle.class).getMemberCount());
 		    if (progress != null) progress.subTask(taskName + " [100%]");
 //		    message.append("\t - updated (" + countNew + " of " + countOld + ")");
 		    message.append("\n\t - updated (" + countNew + " of " + countOld + ")");

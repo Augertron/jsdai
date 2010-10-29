@@ -322,7 +322,9 @@ public class ExpressGEditor extends EditorPart implements IExpressGEditor, Comma
 						application.handler().setPage(1);
 //						tabs.setSelection(0);
 						// update page references
+//System.out.println("<RR-01-update-page-references>-1");
 						application.handler().startCommand(new UpdateCommand(ExpressGEditor.this));
+//System.out.println("<RR-01-update-page-references>-2");
 						if (input.isReadonly()) {
 							int emode = application.getEditMode();
 							if ((emode & PropertySharing.MODE_EDIT) != 0)

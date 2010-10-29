@@ -84,6 +84,7 @@ public class CommandHandler implements Updateable, Paging, PageListener,
 
   protected PropertySharing prop;
 
+
   public CommandHandler(PropertySharing prop) {
     this.prop = prop;
 //    visualPage = new VisualPage[]{};//new VisualPage(prop, 0), new VisualPage(prop, 1)};
@@ -294,9 +295,15 @@ System.out.println(")");
 
   	public void draw(GC g) {
   		long time0 = System.currentTimeMillis();
-  		int entity_count = 0;
+  		int entity_count = 0; 
   		boolean paintFailure = true;
+//  		int paint_failure_count = 0;
   		while (paintFailure) {
+  			  // RR - in the case of a failure, or continuing failures, the count continues to grow and grow including the same objects again and again, 
+  			  // so perhaps better to reset the count to 0 ?
+  			  entity_count = 0;  // RR
+  			  //paint_failure_count++;
+//  			  if (paint_failure_count > 4) break;
   	  		paintFailure = false;
     		Rectangle image = prop.getPainting().getImageBounds();
   			if (image.width > 10 && image.height > 10) { // making sure that image was created succesfully
@@ -332,7 +339,7 @@ System.out.println(")");
   	  	  			}
   	  	  			
   	  	  			if (locationChanged/* && !(item instanceof VisualPage)*/) {
-  	  	  				item.setLocation(new Point(bounds.x, bounds.y));
+    	  	  				item.setLocation(new Point(bounds.x, bounds.y));
   	  	  	  			paintFailure = true;
   	  	  			}
   	  	  			if (sizeChanged) {
@@ -341,6 +348,7 @@ System.out.println(")");
   	  	  			}
   	  	  			
   	  	  			if (!paintFailure) {
+//  	  	  			if ((!paintFailure) || (paint_failure_count > 3)) {
   	  	  				item.draw(g);
   	  	  				entity_count++;
   	  	  			}
@@ -376,18 +384,17 @@ System.out.println(")");
       Iterator iter = drawableIterator(nr);
       while (iter.hasNext()) {
         Updateable item = (Updateable)iter.next();
-        item.update(1);
+        item.update(1); 
       }
       Collection topItems = prop.getPainting().topItems();
       if (topItems != null) {
           iter = topItems.iterator();
           while (iter.hasNext()) {
               Updateable item = (Updateable)iter.next();
-              item.update(1);
+              item.update(1);  
           }
       }
-      
-//    }
+  
   }
 
   public void update() {

@@ -257,23 +257,29 @@ System.err.println("ExportToHtmlAction real excption: " + realException);
 
 //      System.out.println("ISO_DB: " + iso_db_path);
 
+// need to add one more command line switch:  -non_incremental
+
 			String [] args;
 
 			if (true) {  // if not a single schema (how to know if a single schema, and
 							// its name?
 //				args = new String[generateJavaDocPart ? 15  : 16];
-				args = new String[generateJavaDocPart ? 17  : 18];
+//				args = new String[generateJavaDocPart ? 17  : 18];
+			 // after adding -non_incremental
+				args = new String[generateJavaDocPart ? 18  : 19];
 				
 			} else {
 //				args = new String[9];
-				args = new String[11];
+//				args = new String[11];
+			 // after adding -non_incremental
+				args = new String[12];
 				
 			}
 
 			int ii = 0;
 
 
-
+      args[ii++] = "-non_incremental";
 			args[ii++] = "-location";
 //			 args[ii++] = "ExpressCompilerRepo";
 			args[ii++] = repo_location;

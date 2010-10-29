@@ -78,14 +78,14 @@ public class Compiler2 extends Support
 	static String progress;
 	static boolean in_progress = true;
 
-	static final String xc_build     = "484";
-	static final String xc_date      = "2010-07-09";
+	static final String xc_build     = "486";
+	static final String xc_date      = "2010-10-26";
 	static final String xc_version   = "4.3";
 	static final String xc_title     = "JSDAI(TM) Express Compiler";
-	static final String xc_copyright = "Copyright (C) 1998-2009 LKSoftWare GmbH";
+	static final String xc_copyright = "Copyright (C) 1998-2010 LKSoftWare GmbH";
 
 	// old, perhaps updated during builds? If not, remove
-	static String build = "484";
+	static String build = "486";
 	
     final static int WA_UNKNOWN             =  0;
 		final static int WA_ATTRIBUTE_REF       =  1;
@@ -338,6 +338,7 @@ System.out.println("------------------------------");
 			unique_pdb_name = 0;
 			parser_pass = 4;
 			flag_in_redeclaring = false;
+			flag_eof = false;
 //      initializeExpressTypes(repository);
 			parser.AllSchemas();
 		} catch (ParseException e) {
@@ -354,6 +355,7 @@ System.out.println("------------------------------");
 			unique_pdb_name = 0;
 			parser_pass = 5;
 			flag_in_redeclaring = false;
+			flag_eof = false;
 //      initializeExpressTypes(repository);
 			x_result = parser.AllSchemas();
 		} catch (ParseException e) {
@@ -482,6 +484,7 @@ System.out.println("------------------------------");
 		hm_attributes = null;
 		hs_redeclared_attribute_originals = null;
 
+  	flag_eof = false;
   	no_express_amendment = false;
   	flag_implicit_expressions = false;
   	flag_serialize = false;
@@ -1465,6 +1468,15 @@ System.out.println("------------------------------");
 //      initializeExpressTypes(repository);
 	    	pass_start_time = System.currentTimeMillis();
 				parser.AllSchemas();
+				if (flag_eof) {
+					//	System.out.println("WARNING: file contains no express");
+					if (express_files.size() <= 1) {
+						trans.endTransactionAccessAbort();
+  		      session.closeSession();
+						System.out.println("Express Compiler ended");
+						return -4;
+					}
+				}
 				first_parsed_file = false;
 	    	pass_finish_time = System.currentTimeMillis();
     		pass_elapsed_time = pass_finish_time - pass_start_time;
@@ -1904,9 +1916,15 @@ System.out.println("------------------------------");
 	
 	
 		x_data = makeOneRoot(x_all_data);
-				if ((flag_print_nodes) && (expression_instances)) {
- 					x_data.dump("NODE: ");
- 				}	
+		if (x_data == null) { // most likely: all the schemas in the list or in the directory contain no express
+    	trans.endTransactionAccessAbort();
+      session.closeSession();
+			System.out.println("Express Compiler ended");
+      return -4; // do I use those numbers anywhere, if so, check what number is needed here
+		}
+		if ((flag_print_nodes) && (expression_instances)) {
+ 			x_data.dump("NODE: ");
+ 		}	
 		if ((error_count > 0) && (!flag_relax)) {
 			if (error_count == 1) {
 				System.out.println(error_count + " error found in pass 5.");
@@ -2327,12 +2345,12 @@ System.out.println("------------------------------");
   	  file_new = new File(repo_path_new);
     	boolean is_deleted = file_old.delete();
 	    if (!is_deleted) {
-			   System.out.println("<<>><<>>deleting problem");
+			  // System.out.println("<<>><<>>deleting problem");
     	}
 	   	boolean is_renamed_back = file_new.renameTo(file_old);
   	   if (!is_renamed_back) {
     	  // File was not successfully renamed
-			   System.out.println("<<>><<>>renaming back problem");
+			  // System.out.println("<<>><<>>renaming back problem");
   	  }
 		}
  		return 0;
@@ -6055,7 +6073,7 @@ void Declaration() throws jsdai.lang.SdaiException :
 	{
 		printDebug("In Declaration, starting");
 	if (active_scope_extension == null) {
-	System.out.println("Declaration, active_scope_extension = NULL");
+	// System.out.println("Declaration, active_scope_extension = NULL");
 }
 
 	}
@@ -6461,7 +6479,7 @@ void DepSourceParameter(jsdai.lang.EEntity parent) throws jsdai.lang.SdaiExcepti
 			 	sp.setParent(null, (jsdai.SExtended_dictionary_schema.EView_partition)parent);
 			} else {
 				// error
-				System.out.println("<DepSourceParameter> - parent unknown: " + parent);
+				// System.out.println("<DepSourceParameter> - parent unknown: " + parent);
 			} 
 		} else {
 				sp0 = findSource_parameter(source_parameter_name);
@@ -6695,7 +6713,7 @@ try {
 	{
 		active_scope = null;
 if (active_scope_extension == null) {
-	System.out.println("EntityDecl: active_scope_extension = NULL");
+//	System.out.println("EntityDecl: active_scope_extension = NULL");
 }
  		active_scope_string = active_scope_extension.getParent_scope_string();
 	  active_scope_extension = active_scope_extension.getParent();
@@ -7784,12 +7802,12 @@ Object FunctionCall() throws jsdai.lang.SdaiException  :
 					break;
 				case 22: // SIZEOF - 1
 					if (arg_count != 1) {
-System.out.println("argument count: "  + arg_count);
+//System.out.println("argument count: "  + arg_count);
 						error_count++;
 //						printErrorMsg5("function call has wrong number of arguments for built-in function SIZEOF", null, true);
-System.out.println("> argument count: "  + arg_count);
+//System.out.println("> argument count: "  + arg_count);
 						printErrorMsg5("function call has wrong number of arguments for built-in function SIZEOF: " + arg_count, null, true);
-System.out.println(">> argument count: "  + arg_count);
+//System.out.println(">> argument count: "  + arg_count);
 						
 					}
 					break;
@@ -7986,7 +8004,7 @@ jsdai.SExtended_dictionary_schema.EFunction_definition FunctionHead() throws jsd
 					key = constructFunctionKey(name);
 				} else {
 					// probably inner functions on the same level in parallel
-System.out.println("ATTENTION! scope not set: " + fund);
+//System.out.println("ATTENTION! scope not set: " + fund);
 				 key = name.toLowerCase();
 				}
 			  active_scope_extension = new ECtScope(active_scope, fd, active_scope_extension, active_scope_string, name, key);
@@ -9634,7 +9652,7 @@ if (par_type == null) {
 			for (int i = 0; i < variable_ids.size(); i++) {
 				String id = (String)variable_ids.elementAt(i);
 		//		var = new ECtVariable(id, par_type);
-System.out.println("<about to find var, 02, name: " + id); 
+//System.out.println("<about to find var, 02, name: " + id); 
 				var = findVariableX(id);
 				current_scope.addElement(var);
 			}
@@ -9938,7 +9956,7 @@ printDDebug("active_scope in map 2: " + active_scope);
 	{
 		active_scope = null;
 if (active_scope_extension == null) {
-	System.out.println("MapDecl: active_scope_extension = NULL");
+	//System.out.println("MapDecl: active_scope_extension = NULL");
 }
  		active_scope_string = active_scope_extension.getParent_scope_string();
 	  active_scope_extension = active_scope_extension.getParent();
@@ -10758,7 +10776,7 @@ jsdai.SExtended_dictionary_schema.EProcedure_definition ProcedureHead() throws j
 					key = constructProcedureKey(name);
 				} else {
 					// probably inner procedure on the same level in parallel
-System.out.println("ATTENTION! scope not set: " + prod);
+//System.out.println("ATTENTION! scope not set: " + prod);
 					key = name.toLowerCase();
 				}
 			
@@ -12750,7 +12768,7 @@ void SchemaBody(Vector used_vector, Vector referenced_vector) throws jsdai.lang.
 {
 {
 	if (active_scope_extension == null) {
-	System.out.println("SchemaBody: active_scope_extension = NULL");
+	//System.out.println("SchemaBody: active_scope_extension = NULL");
 }
 
 }
@@ -12866,7 +12884,7 @@ jsdai.SExtended_dictionary_schema.EAttribute RedeclaredAttribute(jsdai.SExtended
 				  		// attr.setTemp(new_name.image);
 			  		}
 			  	} else {
-			  		System.out.println("RENAMED - hm, what is it? : " + temp_object);
+			  		// System.out.println("RENAMED - hm, what is it? : " + temp_object);
 				  	attr.setTemp(new_name.image);
 		  	  }
 			  } else {
@@ -13208,7 +13226,8 @@ X_AllSchemas AllSchemas() throws jsdai.lang.SdaiException :
 //	( [ LanguageVersionId() ]( SchemaDecl() | SchemaMapDecl() |  SchemaViewDecl() ) ( ( SchemaDecl() | SchemaMapDecl() | SchemaViewDecl() ) )*)
 	// LanguageVersionId is allowed only before the first schema, but this implementation is more flexible and error-friendly
 
-	  ( AllSchemasInLoop()  ( AllSchemasInLoop() )* ) 
+//	  ( <EOF> {flag_eof = true; return null;} | AllSchemasInLoop()  ( AllSchemasInLoop() )* ) 
+	  ( <EOF> {flag_eof = true; if (parser_pass == 1) printWarningMsg("file contains no express", null, false); return null;} | AllSchemasInLoop()  ( AllSchemasInLoop() )* ) 
 
 
 //	( [<HARD_SEPARATOR>][ LanguageVersionId() ]( SchemaDecl() | SchemaMapDecl() |  SchemaViewDecl() ) 
@@ -16942,7 +16961,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef5(jsdai.SExtended_dicti
 		if (attr_type == -40) {
 			attr_type = 0;
 			to_debug = true;
-			System.out.println("to debug explicit in AttributeRef5 - ed: " + ed + ", ed2: " + ed2 + ", reference: " + reference + ", active_scope: " + active_scope);
+			//System.out.println("to debug explicit in AttributeRef5 - ed: " + ed + ", ed2: " + ed2 + ", reference: " + reference + ", active_scope: " + active_scope);
 		}
 
 
@@ -16956,7 +16975,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef5(jsdai.SExtended_dicti
 		}
 
 		if (to_debug) {
-			System.out.println("debugging AttributeRef5, attribute_name: " + attribute_name);
+			//System.out.println("debugging AttributeRef5, attribute_name: " + attribute_name);
 		}
 //System.out.println("In AttributeRef, starting, ed: " + ed + ", ed2: " + ed2 + ", attr. type: " + attr_type + ", reference: " + reference + ", pass: " + parser_pass);
 //System.out.println("attribute name: " + attribute_name);
@@ -17037,7 +17056,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef5(jsdai.SExtended_dicti
 					attr_key = null;
 				}
 		if (to_debug) {
-			System.out.println("debugging AttributeRef5, attr_key: " + attr_key);
+//			System.out.println("debugging AttributeRef5, attr_key: " + attr_key);
 		}				
 		
 		
@@ -17049,8 +17068,8 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef5(jsdai.SExtended_dicti
 						// printDDebug("######0 in AttributeRef5 name: " + attribute_name + ", entity name: " + ed2.getName(null) + ", attribute type: " + attr_type);
 //System.out.println("@#@# Invoking findAttribute from AttributeRef5, pass = 5, type = 3, name: " + attribute_name + ", ed: " + ed2); 
 					attr = findAttribute(attribute_name, ed2, 0, ed, attr_key); 
-// if (attr == null) {
- //System.out.println("attr_type = 3, name: " + attribute_name + ", ed2: " + ed2 + ", ed: " + ed + ", attr: " + attr + ", key: " + attr_key); 
+//if (attr == null) {
+ //System.out.println("NULL attr_type = 3, name: " + attribute_name + ", ed2: " + ed2 + ", ed: " + ed + ", attr: " + attr + ", key: " + attr_key); 
 //}
 				} 
 				else {	
@@ -17060,10 +17079,13 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef5(jsdai.SExtended_dicti
 //System.out.println("@#@# Invoking findAttribute from AttributeRef5, pass = 5, type != 3, name: " + attribute_name + ", ed: " + ed2); 
 //System.out.println("before findAttirbute: " + attr_type + ", name: " + attribute_name + ", ed2: " + ed2 + ", ed: " + ed + ", key: " + attr_key); 
 					attr = findAttribute(attribute_name, ed2, attr_type_original, ed, attr_key);
+//if (attr == null) {
+//			System.out.println("NULL dAttributeRef5, after findAttribute: attribute_name: " + attribute_name + ", ed2: " + ed2 + ", attr_type: " + attr_type + ", ed: " + ed + ", attr_key: " + attr_key + ", result attr: "  + attr);
+//}
 //					attr = findAttribute(attribute_name, ed2, attr_type, ed, attr_key);
-		if (to_debug) {
-			System.out.println("debugging AttributeRef5, after findAttribute: attribute_name: " + attribute_name + ", ed2: " + ed2 + ", attr_type: " + attr_type + ", ed: " + ed + ", attr_key: " + attr_key + ", result attr: "  + attr);
-		}				
+//		if (to_debug) {
+//			System.out.println("debugging AttributeRef5, after findAttribute: attribute_name: " + attribute_name + ", ed2: " + ed2 + ", attr_type: " + attr_type + ", ed: " + ed + ", attr_key: " + attr_key + ", result attr: "  + attr);
+//		}				
 
 
 // if (attr == null) {
@@ -18306,7 +18328,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeDecl5(jsdai.SExtended_dict
 				attribute_name = attribute_token.image.toLowerCase();
 			}
 		 if (to_debug) {
-		 	System.out.println("attribute name: " + attribute_name);
+		 	//System.out.println("attribute name: " + attribute_name);
 		 }
 		 if (parser_pass == 1) {
 			 if (attr_type == 0) { // explicit
@@ -18358,7 +18380,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeDecl5(jsdai.SExtended_dict
 			 attr_key =  "#" + global_schema_name + "_#" + global_entity_name + "_#_#" + attribute_name.toLowerCase();
 			 attr = findAttribute(attribute_name, ed, attr_type, null, attr_key); // also can check for duplicate attribute names.
 		 	if (to_debug) {
-				System.out.println("findAttribute - attr_key: " + attr_key + ", attribute_name: " + attribute_name + ", ed: " + ed + ", result attr: " + attr);
+				//System.out.println("findAttribute - attr_key: " + attr_key + ", attribute_name: " + attribute_name + ", ed: " + ed + ", result attr: " + attr);
 		 	}			 
 
 
@@ -18426,7 +18448,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier5(jsdai.SExtended
 		if (attr_type == -40) {
 			attr_type = 0;
 			to_debug = true;
-			System.out.println("to debug explicit in AttributeQualifier5 - ed: " + ed + ", ed2: " + ed2 + ", reference: " + reference + ", active_scope: " + active_scope);
+			//System.out.println("to debug explicit in AttributeQualifier5 - ed: " + ed + ", ed2: " + ed2 + ", reference: " + reference + ", active_scope: " + active_scope);
 		}
 
 // System.out.println("@X 10-500 In attribute Qualifier5, starting");
@@ -18458,13 +18480,13 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier5(jsdai.SExtended
 		}
 		if (attr2 == null) {
 			if (to_debug) {
-				System.out.println("attr2 = null in AttributeQualifier5");
+				//System.out.println("attr2 = null in AttributeQualifier5");
 			}
 			printDebug("In AttributeQualifier5, ending with attr2 = NULL");
 			return null;
 		}
 		if (to_debug) {
-			System.out.println("debugging AttributeQualifier5, attr2: " + attr2);
+			//System.out.println("debugging AttributeQualifier5, attr2: " + attr2);
 		}
 		if (parser_pass == 1) {
 		} else
@@ -21043,7 +21065,7 @@ void ExplicitAttr5(jsdai.SExtended_dictionary_schema.EEntity_definition ed) thro
 
 //				printErrorMsg("" + error_attr_name + " - redeclaring attribute in entity  \"" + error_current_name + "\": the attribute not found in the supertype entity \"" + error_supertype_name + "\"", null, true);
 				printDebug("the result from AttributeDecl5 is NULL");
-System.out.println("Attribute-NULL, error_attr_name: " + error_attr_name + ", error_current_name " +  error_current_name + ", error_supertype_name " + error_supertype_name + ", entity: " + ed);
+//System.out.println("Attribute-NULL, error_attr_name: " + error_attr_name + ", error_current_name " +  error_current_name + ", error_supertype_name " + error_supertype_name + ", entity: " + ed);
 				
 			} else {
 				if (!(a instanceof jsdai.SExtended_dictionary_schema.EExplicit_attribute)) {
@@ -21867,7 +21889,7 @@ Object FunctionCall5() throws jsdai.lang.SdaiException #FunctionCall :
 						error_count++;
 //						printErrorMsg5("function call has wrong number of arguments for built-in function SIZEOF", null, true);
 
-System.out.println("5th pass");						
+//System.out.println("5th pass");						
 						printErrorMsg5("function call has wrong number of arguments for built-in function SIZEOF: " + arg_count, null, true);
 						
 					}
@@ -24048,7 +24070,7 @@ void LocalVariable5() throws jsdai.lang.SdaiException #LocalVariable:
 		if (parser_pass == 5) {
 if (par_type == null) {
 	 printDDebug("#123: Parameter5 type = NULL");
-	 System.out.println("#123: Parameter5 type = NULL");
+	 //System.out.println("#123: Parameter5 type = NULL");
 } else {
 	; // printDDebug("#123: Parameter5 type NOT NULL");
 }
@@ -26161,7 +26183,7 @@ jsdai.SExtended_dictionary_schema.EAttribute QualifiedAttribute5(jsdai.SExtended
 		if (attr_type == -40) {
 			attr_type = 0;
 			to_debug = true;
-			System.out.println("to debug QualifiedAttribute5: " + ed);
+			//System.out.println("to debug QualifiedAttribute5: " + ed);
 		}
 
 
@@ -26182,7 +26204,7 @@ jsdai.SExtended_dictionary_schema.EAttribute QualifiedAttribute5(jsdai.SExtended
 		 }
 		 else { // pass 2
 			if (to_debug) {
-				System.out.println("attr2 returned by AttributeQualifier5: " + attr2);
+				//System.out.println("attr2 returned by AttributeQualifier5: " + attr2);
 			}
 		 }
 		 createDocumentationEntity3(attr2, a_token);
@@ -27301,7 +27323,7 @@ jsdai.SExtended_dictionary_schema.EAttribute RedeclaredAttribute5(jsdai.SExtende
 		if (attr_type == -40) {
 			attr_type = 0;
 			to_debug = true;
-			System.out.println("to debug RedeclaredAttribute5: " + ed);
+			//System.out.println("to debug RedeclaredAttribute5: " + ed);
 		}
 
 }
@@ -27457,8 +27479,8 @@ X_AllSchemas AllSchemas5() throws jsdai.lang.SdaiException #AllSchemas:
 try {
 (
 
-	  ( AllSchemasInLoop5()  ( AllSchemasInLoop5() )* ) 
-
+//	  ( AllSchemasInLoop5()  ( AllSchemasInLoop5() )* ) 
+	  ( <EOF> {flag_eof = true; return null;} |  AllSchemasInLoop5()  ( AllSchemasInLoop5() )* ) 
 
 //	SchemaDecl5() SchemaViewDecl5()			
 //	((SchemaDecl5() | SchemaViewDecl5()) (SchemaDecl5() | SchemaViewDecl5())*)			
@@ -29628,7 +29650,7 @@ jsdai.lang.EEntity SubtypeBindingHeader5(jsdai.lang.EEntity parent) throws jsdai
 				partition = (jsdai.lang.EEntity)mp;
 			} else {
 				// error
-System.out.println("PARSER - SubtypeBindingHeader5 - parent type not expected: " + parent);
+//System.out.println("PARSER - SubtypeBindingHeader5 - parent type not expected: " + parent);
 			}
 // we need a node just as for BindingHeader, to properly support multiple partitions 
 			if (expression_instances) {
@@ -34320,7 +34342,7 @@ JAVACODE
 							 return true;
 					 } 
 			}else{
-				  System.out.println("WARNING: data type without name: " + dt);
+				  // System.out.println("WARNING: data type without name: " + dt);
 			}
 		}
 		return false;
@@ -34531,7 +34553,8 @@ void recoverToNextSchema(ParseException e) throws jsdai.lang.SdaiException {
 	for (;;) {
 //	while (getToken(1).kind != EOF) {
 		t0 = getToken(1);
-		if ((t0.kind == SCHEMA) || (t0.kind == SCHEMA_VIEW) || (t0.kind == SCHEMA_MAP)) {
+//		if ((t0.kind == SCHEMA) || (t0.kind == SCHEMA_VIEW) || (t0.kind == SCHEMA_MAP)) {
+		if ((t0.kind == SCHEMA) || (t0.kind == SCHEMA_VIEW) || (t0.kind == SCHEMA_MAP) || (t0.kind == EOF)) {
 			// return immediately so that the parsing can continue from this schema
 			break;
 		} else

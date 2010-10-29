@@ -104,6 +104,8 @@ public class PaintPanel extends Canvas implements IPaintPanel, PaintListener {
 			gc = getLastGraphics();
 			gc.setBackground(ColorSchema.COLOR[ColorSchema.COLOR_LIGHT_GRAY]);
 			gc.fillRectangle(image.getBounds());
+//Throwable thr = new Throwable();
+//thr.printStackTrace();
 			prop.handler().draw(gc);
 		}
 	}
@@ -250,6 +252,8 @@ public class PaintPanel extends Canvas implements IPaintPanel, PaintListener {
 			}
 // ------------			
 			updateSize(true);
+//Throwable thr = new Throwable();
+//thr.printStackTrace();
 			internalRepaint();
 		}
 //		e.gc.setBackground(ColorSchema.COLOR_LIGHT_GRAY);

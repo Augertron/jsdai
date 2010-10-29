@@ -668,5 +668,6 @@ public class EGRelationTree extends AbstractEGRelation {
 
 		if (bounds == null) bounds = new Rectangle(0, 0, 0, 0);
 		setBounds(bounds);
+//System.out.println("Tree-updateBounds - AFTER: " + bounds);
 	}
 }

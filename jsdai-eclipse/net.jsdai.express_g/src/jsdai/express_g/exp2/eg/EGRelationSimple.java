@@ -208,6 +208,9 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
   protected void updateRelationPlacement() {
     AbstractEGBox parent = getParent();
     AbstractEGBox child = getChild();
+
+    // RR - adding additional checks to protect from overcorrection, for this, we will compare corrected values with the image bounds
+    Rectangle image = prop().getPainting().getImageBounds();
     
     pline[0] = parent.getPosition(this, false);
     pline[4] = child.getPosition(this, parent == child);
@@ -215,35 +218,87 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
 //    if (Math.abs(pline[0].x - pline[4].x) <= 1) pline[4].x = pline[0].x;
 //    if (Math.abs(pline[0].y - pline[4].y) <= 1) pline[4].y = pline[0].y;
     
+    
 //    ****************** SNAPPING START ******************************* 
     int dd = pline[0].x - pline[4].x;
-    if (dd != 0 && Math.abs(dd) <= 3) {
+    if (dd != 0 && Math.abs(dd) <= 3) {  // original
     	if (parent.isSelected() && !child.isSelected()) {
-    		pline[0].x -= dd;
+//    		pline[0].x -= dd;  // original location
     		Point location = parent.getLocation();
-    		location.x -= dd;
-    		parent.setLocation(location);
+// correction in draw():
+//    		  	if (bounds.x < image.x)  bounds.x = image.x;
+
+    		// here,  corrected location.x should not be < than image.x, if <, then do not correct at all  /check in draw(): if (bounds.x < image.x)
+    		//  bounds.x -> location.x
+    		// so,    location.x < image.x    - violation, not to have a violation, the opposite:   location.x >= image.x, and we need not to have a violation with dd correction: location.x - dd >= image.x
+    		if (location.x - dd >= image.x) {
+    			location.x -= dd;
+    			parent.setLocation(location);
+    			pline[0].x -= dd;  // wait with correcting this value until we establish if we correct anything - move it down
+				} else {  // TO DISABLE SNAP AT THE OPPOSITE END, REMOVE THIS else
+					// the snap is not possible, but perhaps we can attempt to snap the box at the other end of the wire?
+					// this snap would be done to the opposite direction and clearly no additional check is needed as both boxes must be close to the left edge
+					Point location2 = child.getLocation();
+    			location2.x += dd;
+    			child.setLocation(location2);
+    			pline[4].x += dd;
+				}
     	} else 
        	if (!parent.isSelected() && child.isSelected()) {
-    		pline[4].x += dd;
+//    		pline[4].x += dd; - original location
     		Point location = child.getLocation();
-    		location.x += dd;
-    		child.setLocation(location);
+    		Rectangle boundsr = child.getBounds(); // RR - for this check we need more than location
+    		// here, checking the right edge, violation:   if (boundsr.x + boundsr.width > image.width + image.x)
+    		// no violation: if (boundsr.x + boundsr.width <= image.width + image.x)
+    		// no violation with the snap correction present:  if (boundsr.x + dd + boundsr.width <= image.width + image.x)
+        if (boundsr.x + dd + boundsr.width <= image.width + image.x) {
+    			location.x += dd;
+    			child.setLocation(location);
+    			pline[4].x += dd;
+    		} else { // snap at the other end - TO DISABLE IT, REMOVE THIS else
+					Point location2 = parent.getLocation();
+    			location2.x -= dd;
+    			parent.setLocation(location2);
+    			pline[0].x -= dd; 
+    		}
     	}  
     }
     dd = pline[0].y - pline[4].y;
     if (dd != 0 && Math.abs(dd) <= 2) {
     	if (parent.isSelected() && !child.isSelected()) {
-    		pline[0].y -= dd;
+//    		pline[0].y -= dd;  // original location
     		Point location = parent.getLocation();
-    		location.y -= dd;
-    		parent.setLocation(location);
+				// violation: if (bounds.y < image.y)
+				// no violation: if (location.y >= image.y)
+				// no violation with the snap correction present: if (location.y - dd >= image.y)
+				if (location.y - dd >= image.y) {
+    			location.y -= dd;
+    			parent.setLocation(location);
+    			pline[0].y -= dd;
+    		} else { // SNAPPING AT THE OTHER END - TO DISABLE IT, REMOVE THIS else
+	    		Point location2 = child.getLocation();
+    			location2.y += dd;
+    			child.setLocation(location2);
+    			pline[4].y += dd;
+    		}
     	} else 
        	if (!parent.isSelected() && child.isSelected()) {
-    		pline[4].y += dd;
+//    		pline[4].y += dd; // original location
     		Point location = child.getLocation();
-    		location.y += dd;
-    		child.setLocation(location);
+    		Rectangle boundsr = child.getBounds(); // RR - for this check we need more than location
+    		// checking bottom edge violation: if (bounds.y + bounds.height > image.height + image.y)
+    		// no violation: if (boundsr.y + boundsr.height <= image.height + image.y)
+    		// no violation with the snap correction present: if (boundsr.y  + dd + boundsr.height <= image.height + image.y)
+				if (boundsr.y  + dd + boundsr.height <= image.height + image.y) {
+    			location.y += dd;
+    			child.setLocation(location);
+    			pline[4].y += dd;
+    		} else { // SNAPPING AT THE OTHER END - TO DISABLE IT, REMOVE THIS else
+	    		Point location2 = parent.getLocation();
+    			location2.y -= dd;
+    			parent.setLocation(location2);
+    			pline[0].y -= dd;
+    		}
     	}  
     }
 //  ****************** SNAPPING END ******************************* 

@@ -200,6 +200,7 @@ public class EGToolKit {
 	 * @param items collection of Updateable items
 	 */
 	public static void update(Collection items) {
+//System.out.println("<toolkit-update>");
 		Iterator iter = items.iterator();
 		while (iter.hasNext()) {
 			Object item = iter.next();
@@ -530,8 +531,11 @@ public class EGToolKit {
 	 * @return
 	 */
 	public static double distance(Point p1, Point p2) {
+//  		Throwable thr = new Throwable();
+//  		thr.printStackTrace();
 		int dx = p2.x - p1.x;
 		int dy = p2.y - p1.y;
+//System.out.println("<TOOLKIT-distance: " + dx * dx + dy * dy);	
 		return Math.sqrt(dx * dx + dy * dy);
 	}
 

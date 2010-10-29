@@ -128,6 +128,8 @@ public class Support {
   static boolean flag_implicit_select = false;
 	static boolean flag_original_expressions = false;
 	static boolean flag_really_original_expressions = true;
+  static boolean flag_eof = false;
+
   static Stack scope_stack = new Stack();
   static Vector current_scope;
   static int variable_uid = 0;
@@ -289,17 +291,17 @@ public class Support {
 //System.out.println("recalculated start column: " + start_column0);
 						if (start_column0 < 1) {
 							start_column0 = 1;
- System.out.println("========= file: " + express_file);
- System.out.println("start_line: " + start_line + ", start_culumn: " + start_column + ", end_line: " + end_line + ", end_column: " + end_column);
- System.out.println("line: " + i + ", length: " + s.length());
+ //System.out.println("========= file: " + express_file);
+ //System.out.println("start_line: " + start_line + ", start_culumn: " + start_column + ", end_line: " + end_line + ", end_column: " + end_column);
+ //System.out.println("line: " + i + ", length: " + s.length());
 						}
 						end_column0 = getTABCorrectedColumn(s, end_column);
 //System.out.println("recalculated end column: " + end_column0);
 						if (end_column0 < 0)  {
 							end_column0 = 0;
- System.out.println("========= file: " + express_file);
- System.out.println("start_line: " + start_line + ", start_culumn: " + start_column + ", end_line: " + end_line + ", end_column: " + end_column);
- System.out.println("line: " + i + ", length: " + s.length());
+// System.out.println("========= file: " + express_file);
+// System.out.println("start_line: " + start_line + ", start_culumn: " + start_column + ", end_line: " + end_line + ", end_column: " + end_column);
+// System.out.println("line: " + i + ", length: " + s.length());
 						}
 //System.out.println("corrected end column: " + end_column0);
 						if (end_column0 > s.length()) end_column0 = s.length();
@@ -313,9 +315,9 @@ public class Support {
 						start_column0 = getTABCorrectedColumn(s, start_column);
 						if (start_column0 < 1) {
 							start_column0 = 1;
- System.out.println("========= file: " + express_file);
- System.out.println("start_line: " + start_line + ", start_culumn: " + start_column + ", end_line: " + end_line + ", end_column: " + end_column);
- System.out.println("line: " + i + ", length: " + s.length());
+ //System.out.println("========= file: " + express_file);
+ //System.out.println("start_line: " + start_line + ", start_culumn: " + start_column + ", end_line: " + end_line + ", end_column: " + end_column);
+ //System.out.println("line: " + i + ", length: " + s.length());
 						}
 //System.out.println("<2> string: " + s);
 						s = s.substring(start_column0-1);
@@ -326,9 +328,9 @@ public class Support {
 						end_column0 = getTABCorrectedColumn(s, end_column);
 						if (end_column0 < 0)  {
 							end_column0 = 0;
- System.out.println("end < 0 ========= file: " + express_file);
- System.out.println("start_line: " + start_line + ", start_culumn: " + start_column + ", end_line: " + end_line + ", end_column: " + end_column);
- System.out.println("line: " + i + ", length: " + s.length());
+// System.out.println("end < 0 ========= file: " + express_file);
+// System.out.println("start_line: " + start_line + ", start_culumn: " + start_column + ", end_line: " + end_line + ", end_column: " + end_column);
+// System.out.println("line: " + i + ", length: " + s.length());
 						}
 //System.out.println("corrected end column: " + end_column0);
 						if (end_column0 > s.length()) end_column0 = s.length();
@@ -662,14 +664,17 @@ another solution would be to expant tabs - all tabs in the string
 		if (all_trees == null) return result;
 		if (all_trees.size() < 1) return result;
 		result = (X_AllSchemas)all_trees.elementAt(0);
+		if (result == null) return result;
 		if (all_trees.size() < 2) return result;
 		int main_children_count = result.jjtGetNumChildren();
 		for (int i = 1; i < all_trees.size(); i++) {
 			current = (X_AllSchemas)all_trees.elementAt(i);
-			int children_count = current.jjtGetNumChildren();
-			for (int j = 0; j < children_count; j++) {
-				Node a_child = current.jjtGetChild(j);
-				result.jjtAddChild(a_child, main_children_count++);
+			if (current != null) {
+				int children_count = current.jjtGetNumChildren();
+				for (int j = 0; j < children_count; j++) {
+					Node a_child = current.jjtGetChild(j);
+					result.jjtAddChild(a_child, main_children_count++);
+				}
 			}
 		} 
 		all_trees.clear();
@@ -841,10 +846,15 @@ another solution would be to expant tabs - all tabs in the string
 			if (print_line) {
 				System.out.println(schema_name + line_str + msg);
 			} else {
-				System.out.println("WARNING: " + line_str + msg);
+//				System.out.println("WARNING: " + line_str + msg);
+				System.out.println(schema_name + msg);
 			}
 		} else {
-			System.out.println("WARNING: " + line_str + msg);
+			if (print_line) {
+				System.out.println("WARNING: " + line_str + msg);
+			} else {
+				System.out.println("WARNING: " + msg);
+			}
 		}
 	}
 
@@ -945,7 +955,7 @@ another solution would be to expant tabs - all tabs in the string
 	static void initializeHashMaps(SdaiRepository repo)
                               throws SdaiException {
     if (repo == null) {
-      System.out.println("XC: initializeHashMaps: repository is NULL");
+      //System.out.println("XC: initializeHashMaps: repository is NULL");
 
       return;
     }
@@ -1781,7 +1791,7 @@ aaa$bbbb1 -> aaab1
 
 //    try {
 
-System.out.println("active_scope: " + active_scope);
+//System.out.println("active_scope: " + active_scope);
 		if (!(active_scope instanceof EMap_definition)) {
 			return true;
 		}
@@ -1789,10 +1799,10 @@ System.out.println("active_scope: " + active_scope);
     String token_image;
     token_kind = Compiler2.getToken(1).kind;
     token_image = Compiler2.getToken(1).image;
-    System.out.println("<isDomainRule> token kind: " + token_kind + ", image: " + token_image);
+    //System.out.println("<isDomainRule> token kind: " + token_kind + ", image: " + token_image);
 //		if (token_kind == 108) { // FOR - very dangerous, this number may change
 		if (token_image.equalsIgnoreCase("FOR")) {
-System.out.println("found FOR");
+//System.out.println("found FOR");
 			return false;
 		}
 		return true;
@@ -1850,7 +1860,7 @@ System.out.println("found FOR");
 
 //System.out.println("O-Init-O");
     if (repo == null) {
-      System.out.println("XC: initializeExpressTypes: repository is NULL");
+      //System.out.println("XC: initializeExpressTypes: repository is NULL");
 
       return;
     }
@@ -1880,7 +1890,7 @@ System.out.println("found FOR");
 
             if (!(inst_dt.testName(null))) {
               // in the future, no types should be without names.
-              System.out.println("XP: Data Type without name: " + inst_dt);
+              //System.out.println("XP: Data Type without name: " + inst_dt);
 
               continue;
             }
@@ -1951,7 +1961,7 @@ System.out.println("found FOR");
 
             if (!(inst_dt.testName(null))) {
               // in the future, no types should be without names.
-              System.out.println("XP: Data Type without name: " + inst_dt);
+              //System.out.println("XP: Data Type without name: " + inst_dt);
 
               continue;
             }
@@ -5272,7 +5282,7 @@ etc
 		if (attr_type == -40) {
 			attr_type = 0;
 			to_debug = true;
-			System.out.println("to debug explicit in findAttribute - attribute_name: " + attribute_name + ", ed: " + ed + ", attr_type: " + attr_type + ", edx: " + edx + ", attr_key: " + attr_key);
+			//System.out.println("to debug explicit in findAttribute - attribute_name: " + attribute_name + ", ed: " + ed + ", attr_type: " + attr_type + ", edx: " + edx + ", attr_key: " + attr_key);
 
 
 //System.out.println("attribute: " + attribute_name);
@@ -5296,14 +5306,14 @@ etc
 if (false) {
 //if (true) {
 //if (attribute_name.equals("secondary")) {
-System.out.println("===== hm_attributes START ============: attribute: " + attribute_name + ", ed: " + ed + ", edx: " + edx + ", key: " + attr_key);
+//System.out.println("===== hm_attributes START ============: attribute: " + attribute_name + ", ed: " + ed + ", edx: " + edx + ", key: " + attr_key);
 Set keyset = hm_attributes.keySet();
 Iterator keyset_iterator = keyset.iterator();
 	while (keyset_iterator.hasNext()) {
 		String a_key = (String)keyset_iterator.next();
-		System.out.println("a hashmap key: " + a_key + ", value: " + hm_attributes.get(a_key));
+		//System.out.println("a hashmap key: " + a_key + ", value: " + hm_attributes.get(a_key));
 	}
-System.out.println("\n============================================== hm_attributes END ====\n");
+//System.out.println("\n============================================== hm_attributes END ====\n");
 }
 
 
@@ -5319,7 +5329,7 @@ System.out.println("\n============================================== hm_attribut
 			}
 		}
 		if (to_debug) {
-			System.out.println("debugging findAttribute - not in hm_attributes");
+			//System.out.println("debugging findAttribute - not in hm_attributes");
 		}
 
 
@@ -5355,7 +5365,7 @@ System.out.println("\n============================================== hm_attribut
 //if (attribute_name.equalsIgnoreCase("defined_part_feature")) System.out.println("<findAttribute> 4");
 
 		if (to_debug) {
-			System.out.println("debugging findAttribute - active_scope: " + active_scope);
+			//System.out.println("debugging findAttribute - active_scope: " + active_scope);
 		}
 
 		
@@ -5426,7 +5436,7 @@ System.out.println("\n============================================== hm_attribut
 
 			if (to_debug) {
 				if (ed == inst.getParent_entity(null)) {
-					System.out.println("current attribute - new name: " + instance_name_new + ", attribute: " + inst + ", entity: " + ed);
+					//System.out.println("current attribute - new name: " + instance_name_new + ", attribute: " + inst + ", entity: " + ed);
 				}
 			}
 
@@ -5651,8 +5661,7 @@ System.out.println("\n============================================== hm_attribut
       md = (EEntity) active_scope;
       map_name = ((EMap_definition)md).getName(null);
     } else {
-      System.out.println("findTarget_parameter: " + name + 
-                         ", something wrong here active scope is not map: " + active_scope);
+      // System.out.println("findTarget_parameter: " + name + ", something wrong here active scope is not map: " + active_scope);
 
       return null;
     }
@@ -5720,8 +5729,7 @@ System.out.println("\n============================================== hm_attribut
     if (active_scope instanceof EMap_definition) {
       md = (EEntity) active_scope;
     } else {
-      System.out.println("findTarget_parameter: " + name + 
-                         ", something wrong here active scope is not map: " + active_scope);
+      System.out.println("findTarget_parameter: " + name + ", something wrong here active scope is not map: " + active_scope);
 
       return null;
     }
@@ -6461,7 +6469,7 @@ System.out.println("\n============================================== hm_attribut
 	static int findEnumerationValue(jsdai.SExtended_dictionary_schema.EDefined_type dt, String name) throws jsdai.lang.SdaiException {
 		// here we assume that dt != null
 		if ((dt == null) && (parser_pass == 5)){
-			System.out.println("Enumeration type is null in pass 5: " + name);
+			// System.out.println("Enumeration type is null in pass 5: " + name);
 			return -1;
 		}
 
@@ -6485,14 +6493,14 @@ System.out.println("\n============================================== hm_attribut
       		count++;
         }
 			} else {
-				System.out.println(dt.getName(null) + " is not an enumeration, searching for element: " + name);
+				// System.out.println(dt.getName(null) + " is not an enumeration, searching for element: " + name);
 			}
 
 		} else {
-			System.out.println(" domain of defined type " + dt.getName(null) + " is unset, searching for enumeration element: " + name);
+			// System.out.println(" domain of defined type " + dt.getName(null) + " is unset, searching for enumeration element: " + name);
 		} 			
 
-		System.out.println("Element " + name + " not found in enumeration " + dt.getName(null));
+		// System.out.println("Element " + name + " not found in enumeration " + dt.getName(null));
   	return 0;
   }
 
@@ -13141,7 +13149,7 @@ System.out.println(">01-C<: " + wr);
 				return nullString;
 			}
 		}
-System.out.println("----- We are at least here -------");
+//System.out.println("----- We are at least here -------");
 		while (k < token.length) {
 								iso10646 = true;
 								while (true) {
@@ -13172,7 +13180,7 @@ System.out.println("----- We are at least here -------");
 //											string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k + 7 - i));
 											// string_warning(active_session, AdditionalMessages.RD_WRIS, 
 											//	new String(token.string, 0, k + 8 - i), token, k + 8 - i);
-										  System.out.println("STRING ENCODING - WARNING 12 - RD_WRIS");
+//										  System.out.println("STRING ENCODING - WARNING 12 - RD_WRIS");
 											numb = 0;
 										}
 										code += (mult * numb);
@@ -13202,7 +13210,7 @@ System.out.println("----- We are at least here -------");
 											// should not happen !!!
 										  result += (char)code;
 									}
-									System.out.println("hex value: " + hexString);
+									// System.out.println("hex value: " + hexString);
 									chars[count] = (char)code;
 									count++;
 									k += 8;
@@ -13255,7 +13263,7 @@ System.out.println("----- We are at least here -------");
 				return nullString;
 			}
 		}
-System.out.println("----- We are at least here -------");
+//System.out.println("----- We are at least here -------");
 		while (k < token.length) {
 								iso10646 = true;
 								while (true) {
@@ -13278,7 +13286,7 @@ System.out.println("----- We are at least here -------");
 //											string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k + 7 - i));
 											// string_warning(active_session, AdditionalMessages.RD_WRIS, 
 											//	new String(token.string, 0, k + 8 - i), token, k + 8 - i);
-										  System.out.println("STRING ENCODING - WARNING 12 - RD_WRIS");
+										  // System.out.println("STRING ENCODING - WARNING 12 - RD_WRIS");
 											numb = 0;
 										}
 										code += (mult * numb);
@@ -13332,7 +13340,7 @@ System.out.println("----- We are at least here -------");
 				return nullString;
 			}
 		}
-System.out.println("----- We are at least here -------");
+// System.out.println("----- We are at least here -------");
 		while (k < token.length) {
 			if (token.string[k] == G_BACKSLASH) {
 				k++;
@@ -13348,7 +13356,7 @@ System.out.println("----- We are at least here -------");
 						if (token.string[k] != G_BACKSLASH) {
 //							string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k));
 							// string_warning(active_session, AdditionalMessages.RD_WRIS, new String(token.string, 0, k + 1), token, k + 1);
-							System.out.println("STRING ENCODING - WARNING 01 - RD_WRIS");
+							//System.out.println("STRING ENCODING - WARNING 01 - RD_WRIS");
 						} else {
 							k++;
 						}
@@ -13358,7 +13366,7 @@ System.out.println("----- We are at least here -------");
 							if (code <= 0) {
 //								string_exception(AdditionalMessages.RD_INCH, new String(token.string, 0, k));
 								// string_warning(active_session, AdditionalMessages.RD_INCS, new String(token.string, 0, k + 1), token, k + 1);
-							  System.out.println("STRING ENCODING - WARNING 02 - RD_INCS");
+							  //System.out.println("STRING ENCODING - WARNING 02 - RD_INCS");
 								code = iso8859[to_string][0];
 							}
 						} else {
@@ -13373,7 +13381,7 @@ System.out.println("----- We are at least here -------");
 						if (token.string[k] < 'A' || token.string[k] > 'I') {
 //							string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k));
 							// string_warning(active_session, AdditionalMessages.RD_WRIS, new String(token.string, 0, k + 1), token, k + 1);
-							System.out.println("STRING ENCODING - WARNING 03 - RD_WRIS");
+							//System.out.println("STRING ENCODING - WARNING 03 - RD_WRIS");
 							to_string = 0;
 						} else {
 							to_string = (int)token.string[k] - (int)'A';
@@ -13382,7 +13390,7 @@ System.out.println("----- We are at least here -------");
 						if (token.string[k] != G_BACKSLASH) {
 //							string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k));
 							// string_warning(active_session, AdditionalMessages.RD_WRIS, new String(token.string, 0, k + 1), token, k + 1);
-							System.out.println("STRING ENCODING - WARNING 04 - RD_WRIS");
+							//System.out.println("STRING ENCODING - WARNING 04 - RD_WRIS");
 						} else {
 							k++;
 						}
@@ -13403,7 +13411,7 @@ System.out.println("----- We are at least here -------");
 //										string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k + 2 - i));
 										// string_warning(active_session, AdditionalMessages.RD_WRIS, 
 										// new String(token.string, 0, k + 3 - i), token, k + 3 - i);
-										System.out.println("STRING ENCODING - WARNING 05 - RD_WRIS");
+										//System.out.println("STRING ENCODING - WARNING 05 - RD_WRIS");
 										numb = 0;
 									}
 									code += (mult * numb);
@@ -13419,7 +13427,7 @@ System.out.println("----- We are at least here -------");
 //									string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k));
 									// string_warning(active_session, AdditionalMessages.RD_WRIS, 
 									//	new String(token.string, 0, k + 1), token, k + 1);
-									System.out.println("STRING ENCODING - WARNING 06 - RD_WRIS");
+									//System.out.println("STRING ENCODING - WARNING 06 - RD_WRIS");
 							} else {
 									k++;
 								}
@@ -13429,7 +13437,7 @@ System.out.println("----- We are at least here -------");
 //									string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k));
 									// string_warning(active_session, AdditionalMessages.RD_WRIS, 
 									//	new String(token.string, 0, k), token, k);
-									System.out.println("STRING ENCODING - WARNING 07 - RD_WRIS");
+									//System.out.println("STRING ENCODING - WARNING 07 - RD_WRIS");
 								}
 								break;
 							case TWO:
@@ -13438,7 +13446,7 @@ System.out.println("----- We are at least here -------");
 //									string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k));
 									// string_warning(active_session, AdditionalMessages.RD_WRIS, 
 									//	new String(token.string, 0, k + 1), token, k + 1);
-										System.out.println("STRING ENCODING - WARNING 08 - RD_WRIS");
+										//System.out.println("STRING ENCODING - WARNING 08 - RD_WRIS");
 								} else {
 									k++;
 								}
@@ -13463,7 +13471,7 @@ System.out.println("----- We are at least here -------");
 //											string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k + 3 - i));
 											// string_warning(active_session, AdditionalMessages.RD_WRIS, 
 											//	new String(token.string, 0, k + 4 - i), token, k + 4 - i);
-										 System.out.println("STRING ENCODING - WARNING 09 - RD_WRIS");
+										 //System.out.println("STRING ENCODING - WARNING 09 - RD_WRIS");
 											numb = 0;
 										}
 										code += (mult * numb);
@@ -13477,7 +13485,7 @@ System.out.println("----- We are at least here -------");
 									iso10646 = false;
 									// staticFields = StaticFields.get();
 									// EntityValue.printWarningToLogo(active_session, AdditionalMessages.RD_CDEM, staticFields.current_instance_identifier);
-										System.out.println("STRING ENCODING - WARNING 10 - RD_CDEM");
+										//System.out.println("STRING ENCODING - WARNING 10 - RD_CDEM");
 								}
 								break;
 							case FOUR:
@@ -13486,7 +13494,7 @@ System.out.println("----- We are at least here -------");
 //									string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k));
 									// string_warning(active_session, AdditionalMessages.RD_WRIS, 
 									//	new String(token.string, 0, k + 1), token, k + 1);
-										System.out.println("STRING ENCODING - WARNING 11 - RD_WRIS");
+										//System.out.println("STRING ENCODING - WARNING 11 - RD_WRIS");
 								} else {
 									k++;
 								}
@@ -13511,7 +13519,7 @@ System.out.println("----- We are at least here -------");
 //											string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k + 7 - i));
 											// string_warning(active_session, AdditionalMessages.RD_WRIS, 
 											//	new String(token.string, 0, k + 8 - i), token, k + 8 - i);
-										  System.out.println("STRING ENCODING - WARNING 12 - RD_WRIS");
+										  //System.out.println("STRING ENCODING - WARNING 12 - RD_WRIS");
 											numb = 0;
 										}
 										code += (mult * numb);
@@ -13525,14 +13533,14 @@ System.out.println("----- We are at least here -------");
 									iso10646 = false;
 									// staticFields = StaticFields.get();
 									// EntityValue.printWarningToLogo(active_session, AdditionalMessages.RD_CDEM, staticFields.current_instance_identifier);
-									System.out.println("STRING ENCODING - WARNING 13 - RD_CDEM");
+									//System.out.println("STRING ENCODING - WARNING 13 - RD_CDEM");
 								}
 								break;
 							default:
 //								string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k));
 								// string_warning(active_session, AdditionalMessages.RD_WRIS, 
 								// 	new String(token.string, 0, k + 1), token, k + 1);
-								System.out.println("STRING ENCODING - WARNING 14 - RD_WRIS");
+								//System.out.println("STRING ENCODING - WARNING 14 - RD_WRIS");
 								code = 0;
 								mult = 1;
 								for (i = 0; i < 2; i++) {
@@ -13544,7 +13552,7 @@ System.out.println("----- We are at least here -------");
 									} else {
 										// string_warning(active_session, AdditionalMessages.RD_WRIS, 
 										//	new String(token.string, 0, k + 2 - i), token, k + 2 - i);
-										System.out.println("STRING ENCODING - WARNING 15 - RD_WRIS");
+										//System.out.println("STRING ENCODING - WARNING 15 - RD_WRIS");
 										numb = 0;
 									}
 									code += (mult * numb);
@@ -13557,7 +13565,7 @@ System.out.println("----- We are at least here -------");
 						break;
 					default:
 						// string_warning(active_session, AdditionalMessages.RD_WRIS, new String(token.string, 0, k + 1), token, k + 1);
-						System.out.println("STRING ENCODING - WARNING 16 - RD_WRIS");
+						//System.out.println("STRING ENCODING - WARNING 16 - RD_WRIS");
 //						string_exception(AdditionalMessages.RD_WRST, new String(token.string, 0, k + 1), token);
 						chars[count] = (char)G_BACKSLASH;
 						count++;

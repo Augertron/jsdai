@@ -153,6 +153,7 @@ public abstract class AbstractDraw implements Updateable, Selectable,
   }
   
   public void setLocation(Point location) {
+//System.out.println("in setLocation, bounds.x: " + bounds.x + ", location.x: " + location.x + ", bounds.y: " + bounds.y + ", location.y: " + location.y);
   	if ((bounds.x != location.x) || (bounds.y != location.y)) {
   	    bounds.x = location.x;
   	    bounds.y = location.y;
