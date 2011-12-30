@@ -1,9 +1,8 @@
 (*
- $Id$
- ISO TC184/SC4/WG12 N2175 ISO/CD 10303-110 Document WG12 N2176, 2003/07/09
-   Complete EXPRESS code extracted from WG12 N2175
+   $Id$
+   ISO TC184/SC4/WG12 N5952 - ISO 10303-110 Mesh-based computational fluid dynamics - EXPRESS
+   Supersedes ISO TC184/SC4/WG12 N2176
 *)
-
 
 SCHEMA conditions_schema;
   REFERENCE FROM analysis_schema               -- ISO 10303-53
@@ -18,7 +17,7 @@ SCHEMA conditions_schema;
                   vertex_defined_cell);
   REFERENCE FROM support_resource_schema       -- ISO 10303-41
                  (label,
-                  text);                
+                  text);
 
 TYPE fd_bc_type_compound = EXTENSIBLE ENUMERATION 
      BASED_ON mbna_bc_type_compound WITH
@@ -97,7 +96,7 @@ END_ENTITY;
 
 ENTITY fd_bc_dataset
   SUBTYPE OF (mbna_bc_dataset);
-  (*SELF\mbna_bc_dataset.the_type : fd_bc_type_simple;*)
+  SELF\mbna_bc_dataset.the_type : fd_bc_type_simple;
 END_ENTITY;
 
 ENTITY fd_zone_bc
@@ -116,21 +115,17 @@ ENTITY indexed_points_bc
 END_ENTITY;
 
 ENTITY mbna_bc
+  SUPERTYPE OF(ONEOF(elements_bc,
+        indexed_elements_bc,
+        indexed_points_bc)) 
   SUBTYPE OF (mbna_condition);
   datasets            : SET OF mbna_bc_dataset;
-  family              : SET OF mbna_family;
   gridloc             : mesh_location;
   inward_normal_index : OPTIONAL ijk_minmax;
   inward_normal_list  : OPTIONAL indices_list;
   rstate              : SET OF mbna_reference_state;
   the_type            : mbna_bc_type;
 END_ENTITY;
-
-SUBTYPE_CONSTRAINT sc1_mbna_bc FOR mbna_bc;
-  ONEOF(elements_bc,
-        indexed_elements_bc,
-        indexed_points_bc);
-END_SUBTYPE_CONSTRAINT;
 
 ENTITY mbna_bc_data
   SUBTYPE OF (mbna_condition);
@@ -153,47 +148,30 @@ INVERSE
 END_ENTITY;
 
 ENTITY mbna_bc_dataset
+  SUPERTYPE OF (ONEOF(mbna_Dirichlet_bc_dataset,
+               mbna_Neumann_bc_dataset))
   SUBTYPE OF (mbna_condition);
   gridloc  : mesh_location;
   rstate   : SET OF mbna_reference_state;
   the_type : mbna_bc_type_simple;
 END_ENTITY;
 
-SUBTYPE_CONSTRAINT sc1_mbna_bc_dataset FOR mbna_bc_dataset;
-  ONEOF(mbna_Dirichlet_bc_dataset,
-        mbna_Neumann_bc_dataset);
-END_SUBTYPE_CONSTRAINT;
+
 
 ENTITY mbna_condition
-  SUBTYPE OF (model_state_domain);
-END_ENTITY;
-
-SUBTYPE_CONSTRAINT sc1_mbna_condition FOR mbna_condition;
-  ABSTRACT SUPERTYPE;
-  ONEOF(mbna_zone_bc,
+  ABSTRACT SUPERTYPE OF(ONEOF(
+        mbna_zone_bc,
         mbna_bc,
         mbna_bc_dataset,
         mbna_bc_data,
-        mbna_reference_state,
-        mbna_integral_data);
-END_SUBTYPE_CONSTRAINT;
+        mbna_reference_state))
+   SUBTYPE OF (model_state_domain);
+END_ENTITY;
+
 
 ENTITY mbna_Dirichlet_bc_dataset
   SUBTYPE OF (mbna_bc_dataset);
   data : mbna_bc_data;
-END_ENTITY;
-
-ENTITY mbna_family;
-  description  : text;
-  id           : label;
-  conditions   : SET OF mbna_bc_type;
-  geometry     : SET OF geometry_reference;
-END_ENTITY;
-
-ENTITY mbna_integral_data
-  SUBTYPE OF (mbna_condition);
-INVERSE
-  data : SET OF model_property_distribution FOR domain;
 END_ENTITY;
 
 ENTITY mbna_Neumann_bc_dataset

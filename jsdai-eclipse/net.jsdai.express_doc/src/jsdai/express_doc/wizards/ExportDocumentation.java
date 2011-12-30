@@ -44,10 +44,12 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -72,17 +74,20 @@ public class ExportDocumentation extends Wizard implements IExportWizard {
 	private ExpressDocSettingPage expressDocSettingPage = null;
 
  	static IProject fProject = null;
+	static IResource fDictionaryResource = null;
 	
 	/**
 	 * 
 	 */
 	public ExportDocumentation() {
 		super();
+		/* - we no longer need this - RR (see bug #4149)
 		IDialogSettings workbenchSettings = ExpressDocPlugin.getDefault().getDialogSettings();
 		IDialogSettings section = workbenchSettings.getSection("RepositoryFileWizard");//$NON-NLS-1$
 		if(section == null)
 			section = workbenchSettings.addNewSection("RepositoryFileWizard");//$NON-NLS-1$
 		setDialogSettings(section);
+    */	
 	}
 
 	/*
@@ -93,7 +98,8 @@ public class ExportDocumentation extends Wizard implements IExportWizard {
 	public void addPages() {
 		super.addPages();
 
-		expressDocSettingPage = new ExpressDocSettingPage(ResourcesPlugin.getWorkspace().getRoot().getLocation(), "expressDocExport");
+//		expressDocSettingPage = new ExpressDocSettingPage(ResourcesPlugin.getWorkspace().getRoot().getLocation(), "expressDocExport");
+		expressDocSettingPage = new ExpressDocSettingPage(ResourcesPlugin.getWorkspace().getRoot().getLocation(), "expressDocExport", fProject);
 		expressDocSettingPage.setTitle("Create Express Data documentation");
 //			page_from.setDescription("Select Express Data file to export its contents to html documentation.");
 		addPage(expressDocSettingPage);
@@ -110,7 +116,9 @@ public class ExportDocumentation extends Wizard implements IExportWizard {
 		boolean ok = false;
 		Runnable op =
 			new Runnable(expressDocSettingPage.getDestinationDirectory(),
-					expressDocSettingPage.getSourceFileName(), expressDocSettingPage.isGenerateJavaDocPart());
+					expressDocSettingPage.getSourceFileName(), expressDocSettingPage.isGenerateJavaDocPart(),expressDocSettingPage.isEnableIncremental(),expressDocSettingPage.getDocumentTitle());
+//					expressDocSettingPage.getSourceFileName(), expressDocSettingPage.isGenerateJavaDocPart(),expressDocSettingPage.isEnableIncremental());
+//					expressDocSettingPage.getSourceFileName(), expressDocSettingPage.isGenerateJavaDocPart());
 		try {
 			getContainer().run(true, false, op);
 			ok = op.isOk();
@@ -152,6 +160,7 @@ System.err.println("ExportToHtmlAction real excption: " + realException);
 			ExpressDocPlugin.log(e);				
 		}
 		expressDocSettingPage.saveWidgetValues();
+		expressDocSettingPage.setDefaultDocumentTitle();
 		return ok;
 	}
 	
@@ -201,6 +210,7 @@ System.err.println("ExportToHtmlAction real excption: " + realException);
 							fext.equalsIgnoreCase("sdai")) {
 						if(dictionaryFileName == null) {
 							dictionaryFileName = file.getLocation().toOSString();
+							fDictionaryResource = resource;
 						}
 						continue;
 					}
@@ -216,6 +226,15 @@ System.err.println("ExportToHtmlAction real excption: " + realException);
 		}
 		if(dictionaryFileName != null) {
 			expressDocSettingPage.setSourceFileName(dictionaryFileName);
+			expressDocSettingPage.setDestinationDirectory(dictionaryFileName);
+		}
+		if (fDictionaryResource == null) {
+			fDictionaryResource = fProject;
+		}
+		if (fDictionaryResource != null) {
+			expressDocSettingPage.setDocumentTitle(fDictionaryResource);
+		} else {
+			expressDocSettingPage.setDefaultDocumentTitle();
 		}
 	}
 
@@ -224,22 +243,42 @@ System.err.println("ExportToHtmlAction real excption: " + realException);
 		
 		private String repo_location = null;
 		private String html_destination_path = null;
+		private String flag_generate_java = null;
+		private String flag_enable_incremental = null;
+
 		private boolean generateJavaDocPart;
-		
+		private boolean enableIncremental;		
+		private String documentTitle = null;
 		/**
 		 * @param html_destination_path
 		 * @param repo_location
 		 */
-		public Runnable(String html_destination_path, String repo_location, boolean generateJavaDocPart) {
+//		public Runnable(String html_destination_path, String repo_location, boolean generateJavaDocPart) {
+//		public Runnable(String html_destination_path, String repo_location, boolean generateJavaDocPart, boolean enableIncremental) {
+		public Runnable(String html_destination_path, String repo_location, boolean generateJavaDocPart, boolean enableIncremental, String documentTitle) {
 			this.html_destination_path = html_destination_path;
 			this.repo_location = repo_location;
 			this.generateJavaDocPart = generateJavaDocPart;
+			this.enableIncremental = enableIncremental;
+			this.documentTitle = documentTitle;
+			
+			if (generateJavaDocPart) 
+				this.flag_generate_java = "true";
+			else	
+				this.flag_generate_java = "false";
+				
+		 if (enableIncremental)
+		 		this.flag_enable_incremental = "true";		
+			else
+		 		this.flag_enable_incremental = "false";		
+				
 		}
 
 		public boolean isOk() {
 			return ok;
 		}
-		
+
+	
 		/* (non-Javadoc)
 		 * @see org.eclipse.jface.operation.IRunnableWithProgress#run(org.eclipse.core.runtime.IProgressMonitor)
 		 */
@@ -259,27 +298,91 @@ System.err.println("ExportToHtmlAction real excption: " + realException);
 
 // need to add one more command line switch:  -non_incremental
 
+     if (documentTitle == null) {
+     	 documentTitle = "Express Data";
+     } else
+     if (documentTitle.equals("")) {
+     	 documentTitle = "Express Data";
+     }
+     if (html_destination_path == null) {
+     		html_destination_path = fProject.getLocation().toOSString() + File.separator + "HTML";
+     } else
+     if (html_destination_path.equals("")) {
+     		html_destination_path = fProject.getLocation().toOSString() + File.separator + "HTML";
+     }
+     if (flag_generate_java == null) {
+				flag_generate_java = "false";	
+     } else
+     if (flag_generate_java.equals("")) {
+				flag_generate_java = "false";	
+     }
+     if (flag_enable_incremental == null) {
+				flag_enable_incremental = "false";	
+     } else
+     if (flag_enable_incremental.equals("")) {
+				flag_enable_incremental = "false";	
+     }
+		 
+     
+	 //System.out.println("Will try saving, resource: " + fDictionaryResource + ", title: " + documentTitle);
+	 try {
+
+      /*
+				   the following things currently in the export dialog:
+				   exd file (path)                  - on this we are invoking, so selected, probably no need to save
+				   destination directory           [destinationPath]
+				   the title                       [documentTitle]
+				   flag generate java or not       [flagGenerateJava]
+				   flag enable incremental or not  [flagEnableIncremental]
+      */
+
+		 //fProject.setPersistentProperty(new QualifiedName(ExpressDocPlugin.ID_EXPRESS_DOC,".documentTitle"), documentTitle);
+			fDictionaryResource.setPersistentProperty(new QualifiedName(ExpressDocPlugin.ID_EXPRESS_DOC,".documentTitle"), documentTitle);
+			fDictionaryResource.setPersistentProperty(new QualifiedName(ExpressDocPlugin.ID_EXPRESS_DOC,".destinationPath"), html_destination_path);
+			fDictionaryResource.setPersistentProperty(new QualifiedName(ExpressDocPlugin.ID_EXPRESS_DOC,".flagGenerateJava"), flag_generate_java);
+			fDictionaryResource.setPersistentProperty(new QualifiedName(ExpressDocPlugin.ID_EXPRESS_DOC,".flagEnableIncremental"), flag_enable_incremental);
+		 //System.out.println("DONE");
+	 } catch (CoreException e1) {
+		 System.out.println("PROBLEM");
+		// TODO Auto-generated catch block
+		e1.printStackTrace();
+	}
+
 			String [] args;
+      int argument_number = 17;
 
 			if (true) {  // if not a single schema (how to know if a single schema, and
 							// its name?
 //				args = new String[generateJavaDocPart ? 15  : 16];
 //				args = new String[generateJavaDocPart ? 17  : 18];
 			 // after adding -non_incremental
-				args = new String[generateJavaDocPart ? 18  : 19];
+
+				// also take into account enableIncremental
+
+				if (!enableIncremental) argument_number++;
+				if (!generateJavaDocPart) argument_number++;
+
+//				args = new String[generateJavaDocPart ? 18  : 19];
+				args = new String[argument_number];
+	
 				
 			} else {
 //				args = new String[9];
 //				args = new String[11];
 			 // after adding -non_incremental
-				args = new String[12];
+//				args = new String[12];
+				args = new String[argument_number-6];
 				
 			}
 
 			int ii = 0;
 
+//System.out.println("TITLE: " + documentTitle);
 
-      args[ii++] = "-non_incremental";
+			if (!enableIncremental) {
+	      args[ii++] = "-non_incremental";
+//System.out.println("NON-INCREMENTAL");
+			}
 			args[ii++] = "-location";
 //			 args[ii++] = "ExpressCompilerRepo";
 			args[ii++] = repo_location;
@@ -287,13 +390,13 @@ System.err.println("ExportToHtmlAction real excption: " + realException);
 			args[ii++] = "-output";
 			args[ii++] = html_destination_path;
 			args[ii++] = "-title";
-			args[ii++] = "Express Data"; // TODO project name
+			args[ii++] = documentTitle; //  default - Expresss Data or rather the project name or what?
+//			args[ii++] = "Express Data"; // TODO project name
 			args[ii++] = "-iso_db_path";
 			args[ii++] = iso_db_path;
 			if(!generateJavaDocPart) {
 				args[ii++] = "-noJava";
 			}
-
 			if (true) {
 //			 if (fSchema_name == null) {
 
@@ -320,14 +423,21 @@ System.err.println("ExportToHtmlAction real excption: " + realException);
 
 
 			try {
-				try {
+// ##				try {
 				Properties prop = new Properties();
 				File repoDir = ExpressDocPlugin.getDefault().getStateLocation().append("sdairepos").toFile();
 				if (!repoDir.exists()) repoDir.mkdirs();
 //System.out.println("<>JSDAI-PROPERTIES: " + repoDir.getAbsolutePath());
 				prop.setProperty("repositories", repoDir.getAbsolutePath());
-				SdaiSession.setSessionProperties(prop);
+
+// try without this
+//				SdaiSession.setSessionProperties(prop);
+
+
 //ExpressDocPlugin.log("in run - 03 - after repodir",1);				
+
+/* ##
+
 				} catch (SdaiException sex) {
 //					ExpressDocPlugin.log(,1);
 					System.out.println("problems with ExpressDoc 5, see log: " + sex);
@@ -335,6 +445,8 @@ System.err.println("ExportToHtmlAction real excption: " + realException);
 					ExpressDocPlugin.log("problems with ExpressDoc export 5: " + sex,1);				
 					ExpressDocPlugin.log(sex);				
 				};
+
+## */
 				
 /*
 				File repoDir = ExpressDocPlugin.getDefault().getStateLocation().append("sdairepos").toFile();
@@ -511,7 +623,6 @@ System.err.println("ExportToHtmlAction real excption: " + realException);
 			
 			
 			monitor.done();
-
 		}
 		
 		
@@ -537,6 +648,10 @@ System.err.println("ExportToHtmlAction real excption: " + realException);
 				// ExpressDocPlugin.log(e.toString(),1);				
 				return null;
 		}
+	}
+
+	public static IProject getProject() {
+		return fProject;
 	}
 	
 	

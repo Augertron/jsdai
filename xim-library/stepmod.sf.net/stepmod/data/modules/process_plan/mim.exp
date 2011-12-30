@@ -1,0 +1,120 @@
+(*
+   $Id$
+   N - ISO/CD-TS - 10303- process_plan - EXPRESS MIM*)
+(* UNDER DEVELOPMENT *)
+SCHEMA Process_plan_mim;
+
+USE FROM Activity_method_mim; -- ISO/TS 10303-1049
+USE FROM Product_view_definition_mim; -- ISO/TS 10303-1019
+USE FROM Support_resource_mim; -- ISO/TS 10303-1800
+USE FROM Shape_property_assignment_mim; -- ISO/TS 10303-1032
+USE FROM Part_occurrence_mim; --          ISO/TS 10303-1715
+USE FROM Specification_control_mim; -- ISO/TS 10303-1112
+USE FROM Item_definition_structure_mim; -- ISO/TS 10303-1345
+
+USE FROM action_schema (   -- ISO 10303-41
+   action,
+--   action_method,
+   action_method_relationship,
+   action_resource);
+   
+USE FROM process_property_representation_schema   -- ISO 10303-49
+  (action_property_representation,
+   resource_property_representation);
+
+USE FROM process_property_schema   -- ISO 10303-49
+  (action_property,
+   action_resource_requirement,
+   process_product_association,
+   process_property_association,
+   product_definition_process,
+   property_process,
+   requirement_for_action_resource,
+   resource_property,
+   resource_requirement_type);
+
+ENTITY process_operation
+  SUBTYPE OF (action_method);
+WHERE
+  WR1:  SIZEOF( QUERY( amr <* USEDIN(SELF,'ACTION_SCHEMA.ACTION_METHOD_RELATIONSHIP.' +
+                     'RELATING_METHOD') |
+               NOT('PROCESS_PLAN_MIM.PROCESS_OPERATION' IN
+                   TYPEOF(amr\action_method_relationship.related_method)) OR
+               (SELF :=: amr\action_method_relationship.related_method)
+              )) = 0;	   
+  WR2:  SIZEOF( QUERY( amr <* USEDIN(SELF,'ACTION_SCHEMA.ACTION_METHOD_RELATIONSHIP.' +
+                     'RELATED_METHOD') |
+               NOT('PROCESS_PLAN_MIM.PROCESS_OPERATION' IN
+                   TYPEOF(amr\action_method_relationship.relating_method)) OR
+               (SELF :=: amr\action_method_relationship.relating_method)
+              )) = 0;   
+END_ENTITY;
+
+ENTITY process_plan
+  SUBTYPE OF (action);
+WHERE
+  WR1:  SIZEOF( QUERY( ar <* USEDIN(SELF,'ACTION_SCHEMA.' +
+                      'ACTION_RELATIONSHIP.RELATED_ACTION') |
+               SIZEOF(['PROCESS_PLAN_MIM.PROCESS_PLAN',
+                       'PROCESS_PLAN_MIM.PRODUCT_PROCESS_PLAN'] *
+                       TYPEOF(ar.relating_action)) <> 1
+              )) = 0;
+           
+  WR2:  SIZEOF( QUERY( ar <* USEDIN(SELF,'ACTION_SCHEMA.' +
+                      'ACTION_RELATIONSHIP.RELATING_ACTION') |
+               (SIZEOF(['PROCESS_PLAN_MIM.PROCESS_PLAN',
+                        'PROCESS_PLAN_MIM.PRODUCT_PROCESS_PLAN'] *
+                        TYPEOF(ar.related_action)) = 1) OR
+               ((ar.name = 'process operation occurrence') AND
+                ('PROCESS_PLAN_MIM.PROCESS_OPERATION' IN
+                 TYPEOF(ar.related_action.chosen_method)))
+              )) = 
+             SIZEOF(USEDIN(SELF,'ACTION_SCHEMA.' +
+                    'ACTION_RELATIONSHIP.RELATING_ACTION'));   
+END_ENTITY;
+
+ENTITY product_definition_resource
+  SUBTYPE OF (action_resource,product_definition);
+WHERE
+  WR1:  SIZEOF( USEDIN(SELF,'PROCESS_PROPERTY_SCHEMA.' +
+               'REQUIREMENT_FOR_ACTION_RESOURCE.RESOURCES')
+               ) > 0;
+           
+  WR2:  SELF.frame_of_reference.name IN 
+        ['part_definition','part occurrence','physical occurrence'];
+           
+END_ENTITY;
+
+ENTITY product_process_plan
+  SUBTYPE OF (product_definition_process);
+WHERE
+  WR1:  SIZEOF( QUERY( ar <* USEDIN(SELF,'ACTION_SCHEMA.' +
+                     'ACTION_RELATIONSHIP.RELATED_ACTION') |
+               SIZEOF(['PROCESS_PLAN_MIM.PROCESS_PLAN',
+                       'PROCESS_PLAN_MIM.PRODUCT_PROCESS_PLAN'] *
+                       TYPEOF(ar.relating_action)
+                ) <> 1
+              )) = 0;
+           
+  WR2:  SIZEOF( QUERY( ar <* USEDIN(SELF,'ACTION_SCHEMA.' +
+                      'ACTION_RELATIONSHIP.RELATING_ACTION') |
+               (SIZEOF(['PROCESS_PLAN_MIM.PROCESS_PLAN',
+                        'PROCESS_PLAN_MIM.PRODUCT_PROCESS_PLAN'] *
+                        TYPEOF(ar.related_action)) = 1) OR
+               ((ar.name = 'process operation occurrence') AND
+                ('PROCESS_PLAN_MIM.PROCESS_OPERATION' IN
+                 TYPEOF(ar.related_action.chosen_method)))
+              )) = 
+             SIZEOF(USEDIN(SELF,'ACTION_SCHEMA.' +
+                    'ACTION_RELATIONSHIP.RELATING_ACTION'));   
+  WR3:  SIZEOF( QUERY( ppa <* USEDIN(SELF,'PROCESS_PROPERTY_SCHEMA.' +
+                     'PROCESS_PRODUCT_ASSOCIATION.PROCESS') |
+               (ppa.name <> 'produced output') OR
+               NOT('PROCESS_PLAN_MIM.PRODUCT_DEFINITION' IN
+                   TYPEOF(ppa.defined_product))
+              )) = 0;
+           
+END_ENTITY;
+
+
+END_SCHEMA;

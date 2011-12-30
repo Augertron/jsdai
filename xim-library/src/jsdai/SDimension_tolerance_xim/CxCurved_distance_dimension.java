@@ -28,7 +28,8 @@ package jsdai.SDimension_tolerance_xim;
 * @version $$
 */
 
-import jsdai.SMixed_complex_types.CDimensional_location_with_path$directed_dimensional_location;
+import jsdai.SProduct_property_definition_schema.EShape_aspect_relationship;
+import jsdai.SShape_dimension_schema.CDimensional_location_with_path$directed_dimensional_location;
 import jsdai.SShape_dimension_schema.CDimensional_location_with_path;
 import jsdai.lang.SdaiContext;
 import jsdai.lang.SdaiException;
@@ -37,6 +38,24 @@ import jsdai.libutil.EMappedXIMEntity;
 public class CxCurved_distance_dimension extends CCurved_distance_dimension implements EMappedXIMEntity
 {
 
+	/* Taken from Shape_aspect_relationship */
+	/// methods for attribute: name, base type: STRING
+/*	public boolean testName(EShape_aspect_relationship type) throws SdaiException {
+		return test_string(a0);
+	}
+	public String getName(EShape_aspect_relationship type) throws SdaiException {
+		return get_string(a0);
+	}*/
+	public void setName(EShape_aspect_relationship type, String value) throws SdaiException {
+		a0 = set_string(value);
+	}
+	public void unsetName(EShape_aspect_relationship type) throws SdaiException {
+		a0 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(EShape_aspect_relationship type) throws SdaiException {
+		return a0$;
+	}
+	
 	/* Taken from Shape_aspect_relationship */
 /*	public static int usedinRelating_shape_aspect(EShape_aspect_relationship type, EShape_aspect instance, ASdaiModel domain, AEntity result) throws SdaiException {
 		return ((CEntity)instance).makeUsedin(definition, a2$, domain, result);
@@ -117,6 +136,9 @@ public class CxCurved_distance_dimension extends CCurved_distance_dimension impl
 
 		setMappingConstraints(context, this);
 
+		// id : STRING;
+		setId_x(context, this);
+		
 		// single_value : OPTIONAL measure_representation_item;
 		setSingle_value(context, this);
 
@@ -138,8 +160,13 @@ public class CxCurved_distance_dimension extends CCurved_distance_dimension impl
 		// orientation : OPTIONAL axis2_placement;	
 		setOrientation(context, this);
 
+		// envelope_principle : OPTIONAL BOOLEAN;
+		setEnvelope_principle(context, this);
 		
 		// Unset attributes
+		// id : STRING;
+		unsetId_x(null);
+
 		// single_value : OPTIONAL measure_representation_item;
 		unsetSingle_value(null);
 
@@ -161,10 +188,18 @@ public class CxCurved_distance_dimension extends CCurved_distance_dimension impl
 		// orientation : OPTIONAL axis2_placement;	
 		unsetOrientation(null);
 
+		// envelope_principle : OPTIONAL BOOLEAN;
+		unsetEnvelope_principle(null);
 	}
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
 			unsetMappingConstraints(context, this);
+			
+			// id : STRING;
+			unsetId_x(context, this);
+			
+			// envelope_principle : OPTIONAL BOOLEAN;
+			unsetEnvelope_principle(context, this);
 			
 			// single_value : OPTIONAL measure_representation_item;
 			unsetSingle_value(context, this);
@@ -203,6 +238,7 @@ public class CxCurved_distance_dimension extends CCurved_distance_dimension impl
 	public static void setMappingConstraints(SdaiContext context, ECurved_distance_dimension armEntity) throws SdaiException {
 		unsetMappingConstraints(context, armEntity);
 		CxLocation_dimension.setMappingConstraints(context, armEntity);
+		armEntity.setName(null, "");
 	}
 
 	/**
@@ -411,5 +447,60 @@ public class CxCurved_distance_dimension extends CCurved_distance_dimension impl
 	public static void unsetAuxiliary(SdaiContext context, ELocation_dimension armEntity) throws SdaiException {
 		CxGDTCommon.unsetAuxiliary(context, armEntity);
 	}
+
+	/**
+	 * Sets/creates data for id_x attribute.
+	 * 
+	 * <p>
+	 * 
+	 * </p>
+	 * 
+	 * @param context
+	 *            SdaiContext.
+	 * @param armEntity
+	 *            arm entity.
+	 * @throws SdaiException
+	 */
+	public static void setId_x(SdaiContext context, ELocation_dimension armEntity) throws SdaiException {
+		CxLocation_dimension.setId_x(context, armEntity);
+	}
+
+	/**
+	 * Unsets/deletes data for id_x attribute.
+	 * 
+	 * @param context
+	 * @param armEntity
+	 * @throws SdaiException
+	 */
+	public static void unsetId_x(SdaiContext context, ELocation_dimension armEntity) throws SdaiException {
+		CxLocation_dimension.unsetId_x(context, armEntity);
+	}	
 	
+	/**
+	 * Sets/creates data for envelope_principle attribute.
+	 * 
+	 * <p>
+	 * 
+	 * </p>
+	 * 
+	 * @param context
+	 *            SdaiContext.
+	 * @param armEntity
+	 *            arm entity.
+	 * @throws SdaiException
+	 */
+	public static void setEnvelope_principle(SdaiContext context, ELocation_dimension armEntity) throws SdaiException {
+		CxLocation_dimension.setEnvelope_principle(context, armEntity);
+	}
+
+	/**
+	 * Unsets/deletes data for envelope_principle attribute.
+	 * 
+	 * @param context
+	 * @param armEntity
+	 * @throws SdaiException
+	 */
+	public static void unsetEnvelope_principle(SdaiContext context, ELocation_dimension armEntity) throws SdaiException {
+		CxLocation_dimension.unsetEnvelope_principle(context, armEntity);
+	}	
 }

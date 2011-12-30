@@ -909,28 +909,53 @@ public class LangUtils {
    }
 
    /**
+    * @deprecated 
+    * Use convertEnumerationStringToInt(String, EDefined_type, SdaiContext) instead. 
+    */
+	public static int convertEnumerationStringToInt(String value, EDefined_type definedType) throws SdaiException {
+		return convertEnumerationStringToInt(value, definedType, null);
+	}
+	
+   /**
     * Returns an integer that represents value from enumeration as defined type.
-    * @param value string representation of constrant from enumeration.
+    * @param value string representation of constraint from enumeration.
     * @param type enumeration type where constant is defined
     * @returns integer value that represent specified value. 
 	*          0 if there is no element in enumeration with specified name.
     */
 	public static int convertEnumerationStringToInt(String value,
-													EDefined_type definedType) throws SdaiException {
+													EDefined_type definedType, SdaiContext context) throws SdaiException {
 		// FIXME: enhance to work with selects
-		return convertEnumerationStringToInt(value, (EEnumeration_type)definedType.getDomain(null));
+		return convertEnumerationStringToInt(value, (EEnumeration_type)definedType.getDomain(null), context);
 	}
 
    /**
+    * @deprecated 
+    * Use convertEnumerationStringToInt(String, EEnumeration_type, SdaiContext) instead. 
+    */
+	public static int convertEnumerationStringToInt(String value, EEnumeration_type type) throws SdaiException {
+		return convertEnumerationStringToInt(value, type, null);
+	}
+	
+   /**
     * Returns an integer that represents value from enumeration.
-    * @param value string representation of constrant from enumeration.
+    * @param value string representation of constraint from enumeration.
     * @param type enumeration where constant is defined
     * @returns integer value that represent specified value.
 	*          0 if there is no element in enumeration with specified name.
     */
-   public static int convertEnumerationStringToInt(String value, EEnumeration_type type) throws jsdai.lang.
+   public static int convertEnumerationStringToInt(String value, EEnumeration_type type, SdaiContext context) throws jsdai.lang.
       SdaiException {
-      jsdai.lang.A_string values = type.getElements(null);
+	   jsdai.lang.A_string values;
+	   if(context != null){
+		   if(type instanceof EExtensible_enumeration_type){
+			   values = type.getElements(null, context);
+		   }else{
+			   values = type.getElements(null);
+		   }
+	   }else{
+		   values = type.getElements(null);
+	   }
       jsdai.lang.SdaiIterator i = values.createIterator();
       //String s = constraint.getConstraint_value(null);
       int n = 0;
@@ -1584,7 +1609,7 @@ public class LangUtils {
                ReferencedObject tmp = new ReferencedObject();
                boolean aimEnumString = isEnumString( (EExplicit_attribute) aimAttribute, tmp);
                if (aimEnumString) {
-                  int int_val = convertEnumerationStringToInt( (String) value, (EEnumeration_type) tmp.value);
+                  int int_val = convertEnumerationStringToInt( (String) value, (EEnumeration_type) tmp.value, context);
                   attributesInstance.set(aimAttribute, int_val, types);
                }
                else {

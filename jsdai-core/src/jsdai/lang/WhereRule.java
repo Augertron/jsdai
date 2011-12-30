@@ -104,6 +104,27 @@ public abstract class WhereRule extends CEntity implements EWhere_rule {
 	}
 
 
+	boolean isRuleBypassed(String [] bp_rules_names, int br_count) throws SdaiException {
+		int i;
+		CWhere_rule wrule = (CWhere_rule)this;
+		if (wrule.testLabel(null)) {
+			String wr_name = wrule.getLabel(null);
+			for (i = 0; i < br_count; i++) {
+				if (bp_rules_names[i].equals(wr_name)) {
+					return true;
+				}
+			}
+		} else {
+			for (i = 0; i < br_count; i++) {
+				if (bp_rules_names[i].equals("")) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+
 	private void enlarge_inst_array(int demand) {
 		int new_length = viol_instances.length * 2;
 		if (new_length < demand) {

@@ -2,6 +2,9 @@
 
 SCHEMA configuration_management_schema;
 
+  REFERENCE FROM effectivity_schema (
+    effectivity);
+   
   REFERENCE FROM product_definition_schema
     (product_definition,
      product_definition_formation,
@@ -51,8 +54,8 @@ ENTITY configuration_effectivity
   configuration : configuration_design;
 UNIQUE
   UR1: configuration,
-       usage,
-       id;
+       SELF\product_definition_effectivity.usage,
+       SELF\effectivity.id;
 WHERE
   WR1: 'PRODUCT_STRUCTURE_SCHEMA.PRODUCT_DEFINITION_USAGE' IN
         TYPEOF (SELF\product_definition_effectivity.usage);

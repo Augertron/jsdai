@@ -1,0 +1,2347 @@
+(*
+  $Id$
+ ISO TC184/SC4/WG12 N7298 - ISO 10303-59 Quality of product shape data
+ Supersedes ISO TC184/SC4/WG12 N5088
+*)
+
+SCHEMA shape_data_quality_criteria_schema;
+
+  REFERENCE FROM GEOMETRIC_MODEL_SCHEMA;
+
+  REFERENCE FROM GEOMETRY_SCHEMA;
+
+  REFERENCE FROM MEASURE_SCHEMA;
+
+  REFERENCE FROM PRODUCT_DATA_QUALITY_CRITERIA_SCHEMA;
+
+  REFERENCE FROM PRODUCT_DATA_QUALITY_INSPECTION_RESULT_SCHEMA
+    (data_quality_inspection_result_representation,
+     data_quality_report_measurement_association,
+     data_quality_inspection_report);
+
+  REFERENCE FROM QUALIFIED_MEASURE_SCHEMA
+    (qualified_representation_item,
+     value_qualifier,
+     type_qualifier,
+     measure_representation_item);
+
+  REFERENCE FROM REPRESENTATION_SCHEMA
+    (compound_representation_item,
+     representation,
+     value_representation_item,
+     set_representation_item);
+
+  REFERENCE FROM SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA;
+
+  REFERENCE FROM SUPPORT_RESOURCE_SCHEMA
+    (text,
+     bag_to_set);
+
+  REFERENCE FROM TOPOLOGY_SCHEMA;
+
+  TYPE shape_data_quality_assessment_specification_select = SELECT
+    (shape_data_quality_assessment_by_logical_test,
+     shape_data_quality_assessment_by_numerical_test);
+  END_TYPE; 
+
+  TYPE shape_data_quality_value_limit_type_select = SELECT
+    (shape_data_quality_value_range,
+     shape_data_quality_value_limit);
+  END_TYPE;
+
+  ENTITY shape_data_quality_criteria_representation
+    SUBTYPE OF(data_quality_criteria_representation);
+    WHERE
+      WR1 : SIZEOF( QUERY( q <* SELF\representation.items|
+                               'SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+                               'SHAPE_DATA_QUALITY_CRITERION' IN TYPEOF(q))) > 0;
+  END_ENTITY;
+
+  ENTITY shape_data_quality_criterion
+    SUPERTYPE OF (ONEOF(erroneous_data, inapt_data))
+    SUBTYPE OF(data_quality_criterion, data_quality_measurement_requirement);
+      assessment_specification : shape_data_quality_assessment_specification_select;
+    WHERE
+      WR1 : SIZEOF(USEDIN(SELF,
+            'PRODUCT_DATA_QUALITY_CRITERIA_SCHEMA.'+
+            'DATA_QUALITY_CRITERION_ASSESSMENT_ASSOCIATION.'+
+            'CRITERION'
+            )) = 0;
+      WR2 : SIZEOF(QUERY(i1<*bag_to_set(
+              USEDIN(SELF,
+                    'REPRESENTATION_SCHEMA.'+
+                    'REPRESENTATION_ITEM_RELATIONSHIP.'+
+                    'RELATED_REPRESENTATION_ITEM'))|
+             'PRODUCT_DATA_QUALITY_CRITERIA_SCHEMA.'+
+             'DATA_QUALITY_CRITERION_MEASUREMENT_ASSOCIATION'
+              IN TYPEOF(i1))) = 0;
+      WR3 : SIZEOF(QUERY(i1<*bag_to_set(
+              USEDIN(SELF,
+                    'REPRESENTATION_SCHEMA.'+
+                    'REPRESENTATION_ITEM_RELATIONSHIP.'+
+                    'RELATING_REPRESENTATION_ITEM'))|
+             'PRODUCT_DATA_QUALITY_CRITERIA_SCHEMA.'+
+             'DATA_QUALITY_CRITERION_MEASUREMENT_ASSOCIATION'
+              IN TYPEOF(i1))) = 0;
+  END_ENTITY;
+
+  ENTITY shape_data_quality_assessment_by_numerical_test
+    SUBTYPE OF(data_quality_assessment_specification);
+      threshold : shape_data_quality_value_limit_type_select;
+  END_ENTITY;
+
+  ENTITY shape_data_quality_value_range
+    SUBTYPE OF(compound_representation_item);
+    WHERE
+      WR1 : ('REPRESENTATION_SCHEMA.SET_REPRESENTATION_ITEM'
+               IN TYPEOF (SELF\compound_representation_item.item_element)) AND
+            ((SIZEOF(SELF\compound_representation_item.item_element) = 2) AND 
+            ((SIZEOF(QUERY (i1 <* SELF\compound_representation_item.item_element | 
+              ('QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM' IN TYPEOF(i1)))) = 2)
+             OR (SIZEOF(QUERY (i2 <* SELF\compound_representation_item.item_element | 
+              ('REPRESENTATION_SCHEMA.VALUE_REPRESENTATION_ITEM' IN TYPEOF(i2)))) = 2))) ;
+      WR2 : (SIZEOF(QUERY (i <* SELF\compound_representation_item.item_element
+             | (i.name = 'upper limit'))) = 1)
+            AND (SIZEOF(QUERY (i <* SELF\compound_representation_item.item_element
+             | (i.name = 'lower limit'))) = 1);
+      WR3 : (SIZEOF(QUERY(i1 <* SELF\compound_representation_item.item_element |
+            ('QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM' IN TYPEOF (i1)) AND
+            (SIZEOF (QUERY (i2 <* SELF\compound_representation_item.item_element |
+            ('QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM' IN TYPEOF (i2)) AND
+            (i1 :<>: i2) AND 
+            (i1\measure_with_unit.unit_component :=: i2\measure_with_unit.unit_component))) = 1))) = 2)
+            OR
+            (SIZEOF(QUERY(i1 <* SELF\compound_representation_item.item_element |
+            ('REPRESENTATION_SCHEMA.VALUE_REPRESENTATION_ITEM' IN TYPEOF (i1)) AND
+            (SIZEOF (QUERY (i2 <* SELF\compound_representation_item.item_element |
+            ('REPRESENTATION_SCHEMA.VALUE_REPRESENTATION_ITEM' IN TYPEOF (i2)) AND
+            (i1 :<>: i2) AND 
+            (TYPEOF(i1\value_representation_item.value_component) =
+             TYPEOF(i2\value_representation_item.value_component)))
+            ) = 1))) = 2);
+  END_ENTITY;
+
+  ENTITY shape_data_quality_value_limit
+    ABSTRACT SUPERTYPE OF (ONEOF(shape_data_quality_upper_value_limit, shape_data_quality_lower_value_limit))
+    SUBTYPE OF(measure_representation_item, qualified_representation_item);
+  END_ENTITY;
+
+  ENTITY shape_data_quality_upper_value_limit
+    SUBTYPE OF(shape_data_quality_value_limit);
+    WHERE
+      WR1 : SELF\qualified_representation_item.qualifiers[1].name = 'maximum';
+  END_ENTITY;
+
+  ENTITY shape_data_quality_lower_value_limit
+    SUBTYPE OF(shape_data_quality_value_limit);
+    WHERE
+      WR1 : SELF\qualified_representation_item.qualifiers[1].name = 'minimum';
+  END_ENTITY;
+  
+  ENTITY shape_summary_request_with_representative_value
+    SUBTYPE OF(summary_report_request);
+  END_ENTITY;
+
+  ENTITY shape_data_quality_assessment_by_logical_test
+    SUBTYPE OF(data_quality_assessment_specification);
+  END_ENTITY;
+
+  ENTITY erroneous_data
+    ABSTRACT SUPERTYPE OF (ONEOF(erroneous_topology, erroneous_geometry, erroneous_topology_and_geometry_relationship, erroneous_manifold_solid_brep))
+    SUBTYPE OF(shape_data_quality_criterion);
+  END_ENTITY;
+
+  ENTITY erroneous_topology
+    ABSTRACT SUPERTYPE OF (ONEOF(open_edge_loop, open_closed_shell, inconsistent_adjacent_face_normals, disconnected_face_set))
+    SUBTYPE OF(erroneous_data);
+  END_ENTITY;
+
+  ENTITY open_edge_loop
+    SUBTYPE OF(erroneous_topology);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.EDGE_LOOP']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.ORIENTED_EDGE']);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY open_closed_shell
+    SUBTYPE OF(erroneous_topology);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.CLOSED_SHELL']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.EDGE_CURVE']);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY inconsistent_adjacent_face_normals
+    SUBTYPE OF(erroneous_topology);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'CLOSED_OR_OPEN_SHELL_SELECT']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.EDGE_CURVE']);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY disconnected_face_set
+    SUBTYPE OF(erroneous_topology);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.CONNECTED_FACE_SET']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY erroneous_geometry
+    ABSTRACT SUPERTYPE OF (ONEOF(inconsistent_curve_transition_code, erroneous_b_spline_curve_definition, inconsistent_surface_transition_code, erroneous_b_spline_surface_definition))
+    SUBTYPE OF(erroneous_data);
+  END_ENTITY;
+
+  ENTITY inconsistent_curve_transition_code
+    SUBTYPE OF(erroneous_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+      angle_tolerance                                            : plane_angle_measure;
+      curvature_ratio_tolerance                                  : ratio_measure;
+      distance_tolerance                                         : length_measure;
+      flat_curvature_radius_tolerance                            : length_measure;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.COMPOSITE_CURVE']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'COMPOSITE_CURVE_TRANSITION_LOCATOR']);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY erroneous_b_spline_curve_definition
+    SUBTYPE OF(erroneous_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_CURVE_WITH_KNOTS']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY inconsistent_surface_transition_code
+    SUBTYPE OF(erroneous_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+      angle_tolerance                                            : plane_angle_measure;
+      curvature_ratio_tolerance                                  : ratio_measure;
+      distance_tolerance                                         : length_measure;
+      flat_curvature_radius_tolerance                            : length_measure;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.RECTANGULAR_COMPOSITE_SURFACE']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'RECTANGULAR_COMPOSITE_SURFACE_TRANSITION_LOCATOR']);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY erroneous_b_spline_surface_definition
+    SUBTYPE OF(erroneous_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_SURFACE_WITH_KNOTS']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY erroneous_topology_and_geometry_relationship
+    ABSTRACT SUPERTYPE OF (ONEOF(inconsistent_edge_and_curve_directions, inconsistent_face_and_surface_normals, inconsistent_face_and_closed_shell_normals, intersecting_loops_in_face, wrongly_placed_loop))
+    SUBTYPE OF(erroneous_data);
+  END_ENTITY;
+
+  ENTITY inconsistent_edge_and_curve_directions
+    SUBTYPE OF(erroneous_topology_and_geometry_relationship);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+      distance_tolerance : length_measure; -- ISO 10303-59 error!
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE') 
+            ;
+      WR2 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.EDGE_CURVE'])
+            ;
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY inconsistent_face_and_surface_normals
+    SUBTYPE OF(erroneous_topology_and_geometry_relationship);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.FACE_SURFACE']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY inconsistent_face_and_closed_shell_normals
+    SUBTYPE OF(erroneous_topology_and_geometry_relationship);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.FACE_SURFACE']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY intersecting_loops_in_face
+    SUBTYPE OF(erroneous_topology_and_geometry_relationship);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+      interference_tolerance                                     : length_measure;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.FACE']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_EDGE_CURVE',
+             'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_EDGE_CURVE']);
+      WR4 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY wrongly_placed_loop
+    SUBTYPE OF(erroneous_topology_and_geometry_relationship);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.FACE']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.FACE_BOUND']);
+      WR4 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY erroneous_manifold_solid_brep
+    ABSTRACT SUPERTYPE OF (ONEOF(wrongly_oriented_void, wrongly_placed_void, intersecting_shells_in_solid, solid_with_wrong_number_of_voids))
+    SUBTYPE OF(erroneous_data);
+  END_ENTITY;
+
+  ENTITY wrongly_oriented_void
+    SUBTYPE OF(erroneous_manifold_solid_brep);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE') ;
+      WR2 : validate_inspected_elements_type(SELF,
+            ['GEOMETRIC_MODEL_SCHEMA.BREP_WITH_VOIDS']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.ORIENTED_CLOSED_SHELL']);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY wrongly_placed_void
+    SUBTYPE OF(erroneous_manifold_solid_brep);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE') ;
+      WR2 : validate_inspected_elements_type(SELF,
+            ['GEOMETRIC_MODEL_SCHEMA.BREP_WITH_VOIDS']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.ORIENTED_CLOSED_SHELL']);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY intersecting_shells_in_solid
+    SUBTYPE OF(erroneous_manifold_solid_brep);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+      interference_tolerance                                     : length_measure;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE') ;
+      WR2 : validate_inspected_elements_type(SELF,
+            ['GEOMETRIC_MODEL_SCHEMA.BREP_WITH_VOIDS']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['GEOMETRY_SCHEMA.SURFACE_CURVE']);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY solid_with_wrong_number_of_voids
+    SUBTYPE OF(erroneous_manifold_solid_brep);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE') ;
+      WR2 : validate_inspected_elements_type(SELF,
+            ['GEOMETRIC_MODEL_SCHEMA.BREP_WITH_VOIDS']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY inapt_data
+    ABSTRACT SUPERTYPE OF (ONEOF(inapt_topology, inapt_geometry, inapt_topology_and_geometry_relationship, inapt_manifold_solid_brep))
+    SUBTYPE OF(shape_data_quality_criterion);
+  END_ENTITY;
+
+  ENTITY inapt_topology
+    ABSTRACT SUPERTYPE OF (ONEOF(free_edge, non_manifold_at_edge, non_manifold_at_vertex, over_used_vertex))
+    SUBTYPE OF(inapt_data);
+  END_ENTITY;
+
+  ENTITY free_edge
+    SUBTYPE OF(inapt_topology);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.CONNECTED_FACE_SET']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.EDGE_CURVE']);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+      WR5 : SIZEOF(QUERY(sdqr <* bag_to_set(USEDIN(SELF,
+             'PRODUCT_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'DATA_QUALITY_INSPECTION_RESULT.'+
+             'CRITERION_INSPECTED'))|
+             ('SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+              'SHAPE_DATA_QUALITY_INSPECTION_RESULT'
+              IN TYPEOF(sdqr)) AND
+              (SIZEOF(QUERY(sdqiir <* bag_to_set(USEDIN(sdqr,
+                 'PRODUCT_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+                 'DATA_QUALITY_INSPECTION_REPORT.'+
+                 'INSPECTION_RESULT'))|
+                 ('SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+                  'SHAPE_DATA_QUALITY_INSPECTION_INSTANCE_REPORT'
+                   IN TYPEOF(sdqiir)) AND
+                 (SIZEOF(QUERY(sdqiri <* sdqiir.inspected_instances|
+                          ('TOPOLOGY_SCHEMA.CLOSED_SHELL'
+                   IN TYPEOF(sdqiri.inspected_elements[1])))) = 0)
+               )) = 0)
+            )) = 0;
+ END_ENTITY;
+
+  ENTITY non_manifold_at_edge
+    SUBTYPE OF(inapt_topology);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.CONNECTED_FACE_SET']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.EDGE_CURVE']);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY non_manifold_at_vertex
+    SUBTYPE OF(inapt_topology);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.CONNECTED_FACE_SET']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.VERTEX_POINT']);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY over_used_vertex
+    SUBTYPE OF(inapt_topology);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.COUNT_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.COUNT_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.VERTEX_POINT']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY inapt_geometry
+    ABSTRACT SUPERTYPE OF (ONEOF(nearly_degenerate_geometry, discontinuous_geometry, self_intersecting_geometry, geometry_with_local_near_degeneracy, overlapping_geometry, multiply_defined_geometry, geometry_with_local_irregularity, overcomplex_geometry))
+    SUBTYPE OF(inapt_data);
+  END_ENTITY;
+
+  ENTITY nearly_degenerate_geometry
+    ABSTRACT SUPERTYPE OF (ONEOF(small_area_surface, short_length_curve, entirely_narrow_surface))
+    SUBTYPE OF(inapt_geometry);
+  END_ENTITY;
+
+  ENTITY small_area_surface
+    SUBTYPE OF(nearly_degenerate_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.AREA_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.AREA_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.AREA_MEASURE']);
+  END_ENTITY;
+
+  ENTITY short_length_curve
+    SUBTYPE OF(nearly_degenerate_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.CURVE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY entirely_narrow_surface
+    SUBTYPE OF(nearly_degenerate_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+      width_tolerance                                            : length_measure;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.BOUNDED_SURFACE']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR4 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY discontinuous_geometry
+    ABSTRACT SUPERTYPE OF (ONEOF(g1_discontinuous_curve, g2_discontinuous_curve, g1_discontinuous_surface, g2_discontinuous_surface))
+    SUBTYPE OF(inapt_geometry);
+  END_ENTITY;
+
+  ENTITY g1_discontinuous_curve
+    SUBTYPE OF(discontinuous_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.PLANE_ANGLE_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.PLANE_ANGLE_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_CURVE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'B_SPLINE_CURVE_KNOT_LOCATOR']);
+      WR5 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY g2_discontinuous_curve
+    SUBTYPE OF(discontinuous_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+      assessment_specification_2                                 : shape_data_quality_assessment_by_numerical_test;
+      flat_curvature_radius_tolerance                            : length_measure;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.PLANE_ANGLE_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(assessment_specification_2\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.RATIO_MEASURE'
+            IN value_limit_type(assessment_specification_2\shape_data_quality_assessment_by_numerical_test.threshold)) ;
+      WR3 : validate_measured_data_type(SELF,
+             'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'PLANE_ANGLE_AND_RATIO_PAIR');
+      WR4 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_CURVE']);
+      WR5 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'B_SPLINE_CURVE_KNOT_LOCATOR']);
+      WR6 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY g1_discontinuous_surface
+    SUBTYPE OF(discontinuous_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.PLANE_ANGLE_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold)) ;
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.PLANE_ANGLE_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'B_SPLINE_SURFACE_KNOT_LOCATOR']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.PLANE_ANGLE_MEASURE']);
+  END_ENTITY;
+
+  ENTITY g2_discontinuous_surface
+    SUBTYPE OF(discontinuous_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+      assessment_specification_2                                 : shape_data_quality_assessment_by_numerical_test;
+      flat_curvature_radius_tolerance                            : length_measure;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.PLANE_ANGLE_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(assessment_specification_2\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.RATIO_MEASURE'
+            IN value_limit_type(assessment_specification_2\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR3 : validate_measured_data_type(SELF,
+             'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'PLANE_ANGLE_AND_RATIO_PAIR');
+      WR4 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_SURFACE']);
+      WR5 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'B_SPLINE_SURFACE_KNOT_LOCATOR']);
+      WR6 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.RATIO_MEASURE'])
+            ;
+  END_ENTITY;
+
+  ENTITY self_intersecting_geometry
+    ABSTRACT SUPERTYPE OF (ONEOF(self_intersecting_curve, self_intersecting_surface))
+    SUBTYPE OF(inapt_geometry);
+  END_ENTITY;
+
+  ENTITY self_intersecting_curve
+    SUBTYPE OF(self_intersecting_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+      arc_length_separation_factor                               : REAL;
+      interference_tolerance                                     : length_measure;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.CURVE']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['GEOMETRY_SCHEMA.POINT_ON_CURVE','GEOMETRY_SCHEMA.POINT_ON_CURVE']);
+      WR4 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY self_intersecting_surface
+    SUBTYPE OF(self_intersecting_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+      geodesic_separation_factor                                 : REAL;
+      interference_tolerance                                     : length_measure;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.SURFACE']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['GEOMETRY_SCHEMA.POINT_ON_SURFACE',
+             'GEOMETRY_SCHEMA.POINT_ON_SURFACE']);
+      WR4 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY geometry_with_local_near_degeneracy
+    ABSTRACT SUPERTYPE OF (ONEOF(curve_with_small_curvature_radius, short_length_curve_segment, surface_with_small_curvature_radius, small_area_surface_patch, narrow_surface_patch, indistinct_surface_knots, indistinct_curve_knots, nearly_degenerate_surface_boundary, nearly_degenerate_surface_patch))
+    SUBTYPE OF(inapt_geometry);
+  END_ENTITY;
+
+  ENTITY curve_with_small_curvature_radius
+    SUBTYPE OF(geometry_with_local_near_degeneracy);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.CURVE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['GEOMETRY_SCHEMA.POINT_ON_CURVE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY short_length_curve_segment
+    SUBTYPE OF(geometry_with_local_near_degeneracy);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_CURVE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'B_SPLINE_CURVE_SEGMENT']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY surface_with_small_curvature_radius
+    SUBTYPE OF(geometry_with_local_near_degeneracy);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['GEOMETRY_SCHEMA.POINT_ON_SURFACE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY small_area_surface_patch
+    SUBTYPE OF(geometry_with_local_near_degeneracy);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.AREA_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.AREA_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'B_SPLINE_SURFACE_PATCH']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.AREA_MEASURE']);
+  END_ENTITY;
+
+  ENTITY narrow_surface_patch
+    SUBTYPE OF(geometry_with_local_near_degeneracy);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+      width_tolerance                                            : length_measure;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_SURFACE']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'B_SPLINE_SURFACE_PATCH']);
+      WR4 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY indistinct_surface_knots
+    SUBTYPE OF(geometry_with_local_near_degeneracy);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.PARAMETER_VALUE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.PARAMETER_VALUE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_SURFACE_WITH_KNOTS']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'B_SPLINE_SURFACE_KNOT_LOCATOR']);
+      WR5 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY indistinct_curve_knots
+    SUBTYPE OF(geometry_with_local_near_degeneracy);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.PARAMETER_VALUE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.PARAMETER_VALUE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_CURVE_WITH_KNOTS']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'B_SPLINE_CURVE_KNOT_LOCATOR']);
+      WR5 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY nearly_degenerate_surface_boundary
+    SUBTYPE OF(geometry_with_local_near_degeneracy);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_VALUE_RANGE'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'B_SPLINE_OR_RECTANGULAR_COMPOSITE_SURFACE_SELECT']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'BOUNDARY_CURVE_OF_B_SPLINE_OR_RECTANGULAR_COMPOSITE_SURFACE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY nearly_degenerate_surface_patch
+    SUBTYPE OF(geometry_with_local_near_degeneracy);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_VALUE_RANGE'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'B_SPLINE_SURFACE_PATCH']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY overlapping_geometry
+    ABSTRACT SUPERTYPE OF (ONEOF(partly_overlapping_curves, partly_overlapping_surfaces))
+    SUBTYPE OF(inapt_geometry);
+  END_ENTITY;
+
+  ENTITY partly_overlapping_curves
+    SUBTYPE OF(overlapping_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+      interference_tolerance                                     : length_measure;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.CURVE','GEOMETRY_SCHEMA.CURVE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['GEOMETRY_SCHEMA.TRIMMED_CURVE','GEOMETRY_SCHEMA.TRIMMED_CURVE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY partly_overlapping_surfaces
+    SUBTYPE OF(overlapping_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+      interference_tolerance                                     : length_measure;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.AREA_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.AREA_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.SURFACE','GEOMETRY_SCHEMA.SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['GEOMETRY_SCHEMA.CURVE_BOUNDED_SURFACE',
+             'GEOMETRY_SCHEMA.CURVE_BOUNDED_SURFACE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.AREA_MEASURE']);
+  END_ENTITY;
+
+  ENTITY multiply_defined_geometry
+    ABSTRACT SUPERTYPE OF (ONEOF(multiply_defined_curves, multiply_defined_surfaces, multiply_defined_cartesian_points, multiply_defined_directions, multiply_defined_placements))
+    SUBTYPE OF(inapt_geometry);
+  END_ENTITY;
+
+  ENTITY multiply_defined_curves
+    SUBTYPE OF(multiply_defined_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.CURVE','GEOMETRY_SCHEMA.CURVE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY multiply_defined_surfaces
+    SUBTYPE OF(multiply_defined_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold)) AND
+            ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.SURFACE','GEOMETRY_SCHEMA.SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY multiply_defined_cartesian_points
+    SUBTYPE OF(multiply_defined_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.CARTESIAN_POINT','GEOMETRY_SCHEMA.CARTESIAN_POINT']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY multiply_defined_directions
+    SUBTYPE OF(multiply_defined_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.PLANE_ANGLE_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.PLANE_ANGLE_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.DIRECTION','GEOMETRY_SCHEMA.DIRECTION']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY multiply_defined_placements
+    SUBTYPE OF(multiply_defined_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+      assessment_specification_2                                 : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(assessment_specification_2\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.PLANE_ANGLE_MEASURE'
+            IN value_limit_type(assessment_specification_2\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR3 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+            'PLANE_ANGLE_AND_LENGTH_PAIR');
+      WR4 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.PLACEMENT','GEOMETRY_SCHEMA.PLACEMENT']);
+      WR5 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR6 : validate_accuracy_types(SELF,
+            []);
+      WR7 : SIZEOF(QUERY(sdqr <* bag_to_set(USEDIN(SELF,
+             'PRODUCT_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'DATA_QUALITY_INSPECTION_RESULT.'+
+             'CRITERION_INSPECTED'))|
+             ('SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+              'SHAPE_DATA_QUALITY_INSPECTION_RESULT'
+              IN TYPEOF(sdqr)) AND
+              (SIZEOF(QUERY(sdqiir <* bag_to_set(USEDIN(sdqr,
+                 'PRODUCT_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+                 'DATA_QUALITY_INSPECTION_REPORT.'+
+                 'INSPECTION_RESULT'))|
+                 ('SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+                  'SHAPE_DATA_QUALITY_INSPECTION_INSTANCE_REPORT'
+                   IN TYPEOF(sdqiir)) AND
+                 (SIZEOF(QUERY(sdqiri <* sdqiir.inspected_instances|
+                          (TYPEOF(sdqiri.inspected_elements[1])
+                           <>TYPEOF(sdqiri.inspected_elements[2])))) = 0)
+               )) = 0)
+            )) = 0;
+  END_ENTITY;
+
+  ENTITY geometry_with_local_irregularity
+    ABSTRACT SUPERTYPE OF (ONEOF(extreme_patch_width_variation, zero_surface_normal, abrupt_change_of_surface_normal))
+    SUBTYPE OF(inapt_geometry);
+  END_ENTITY;
+
+  ENTITY extreme_patch_width_variation
+    SUBTYPE OF(geometry_with_local_irregularity);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.RATIO_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.RATIO_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'B_SPLINE_SURFACE_KNOT_LOCATOR']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY zero_surface_normal
+    SUBTYPE OF(geometry_with_local_irregularity);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.PLANE_ANGLE_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.PLANE_ANGLE_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['GEOMETRY_SCHEMA.POINT_ON_SURFACE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.PLANE_ANGLE_MEASURE']);
+  END_ENTITY;
+
+  ENTITY abrupt_change_of_surface_normal
+    SUBTYPE OF(geometry_with_local_irregularity);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+      small_vector_tolerance                                     : length_measure;
+      test_point_distance_tolerance                              : length_measure;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.SURFACE']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['GEOMETRY_SCHEMA.POINT_ON_SURFACE',
+             'GEOMETRY_SCHEMA.POINT_ON_SURFACE']);
+      WR4 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY overcomplex_geometry
+    ABSTRACT SUPERTYPE OF (ONEOF(excessively_high_degree_curve, excessively_high_degree_surface, surface_with_excessive_patches_in_one_direction, curve_with_excessive_segments, high_degree_linear_curve, high_degree_planar_surface, high_degree_conic, high_degree_axi_symmetric_surface))
+    SUBTYPE OF(inapt_geometry);
+  END_ENTITY;
+
+  ENTITY excessively_high_degree_curve
+    SUBTYPE OF(overcomplex_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.COUNT_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.COUNT_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_CURVE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY excessively_high_degree_surface
+    SUBTYPE OF(overcomplex_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.COUNT_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.COUNT_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY surface_with_excessive_patches_in_one_direction
+    SUBTYPE OF(overcomplex_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.COUNT_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.COUNT_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'B_SPLINE_OR_RECTANGULAR_COMPOSITE_SURFACE_SELECT']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY curve_with_excessive_segments
+    SUBTYPE OF(overcomplex_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.COUNT_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.COUNT_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'B_SPLINE_OR_COMPOSITE_CURVE_SELECT']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY high_degree_linear_curve
+    SUBTYPE OF(overcomplex_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+      approximation_tolerance                                    : length_measure;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.COUNT_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.COUNT_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_CURVE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY high_degree_planar_surface
+    SUBTYPE OF(overcomplex_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+      approximation_tolerance                                    : length_measure;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.COUNT_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.COUNT_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY high_degree_conic
+    SUBTYPE OF(overcomplex_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+      approximation_tolerance                                    : length_measure;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.COUNT_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.COUNT_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_CURVE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY high_degree_axi_symmetric_surface
+    SUBTYPE OF(overcomplex_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+      approximation_tolerance                                    : length_measure;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.COUNT_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.COUNT_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRY_SCHEMA.B_SPLINE_SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY inapt_topology_and_geometry_relationship
+    ABSTRACT SUPERTYPE OF (ONEOF(topology_related_to_nearly_degenerate_geometry, geometric_gap_in_topology, non_smooth_geometry_transition_across_edge, topology_related_to_self_intersecting_geometry, steep_geometry_transition_across_edge, topology_related_to_overlapping_geometry, topology_related_to_multiply_defined_geometry, overcomplex_topology_and_geometry_relationship))
+    SUBTYPE OF(inapt_data);
+  END_ENTITY;
+
+  ENTITY topology_related_to_nearly_degenerate_geometry
+    ABSTRACT SUPERTYPE OF (ONEOF(short_length_edge, small_area_face, entirely_narrow_face))
+    SUBTYPE OF(inapt_topology_and_geometry_relationship);
+  END_ENTITY;
+
+  ENTITY short_length_edge
+    SUBTYPE OF(topology_related_to_nearly_degenerate_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+             AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.EDGE_CURVE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY small_area_face
+    SUBTYPE OF(topology_related_to_nearly_degenerate_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.AREA_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.AREA_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.FACE_SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.AREA_MEASURE']);
+  END_ENTITY;
+
+  ENTITY entirely_narrow_face
+    SUBTYPE OF(topology_related_to_nearly_degenerate_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+      width_tolerance                                            : length_measure;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.FACE_SURFACE']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR4 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY geometric_gap_in_topology
+    ABSTRACT SUPERTYPE OF (ONEOF(gap_between_adjacent_edges_in_loop, gap_between_vertex_and_base_surface, gap_between_vertex_and_edge, gap_between_edge_and_base_surface, gap_between_pcurves_related_to_an_edge, gap_between_faces_related_to_an_edge))
+    SUBTYPE OF(inapt_topology_and_geometry_relationship);
+  END_ENTITY;
+
+  ENTITY gap_between_adjacent_edges_in_loop
+    SUBTYPE OF(geometric_gap_in_topology);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.EDGE_LOOP']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.ORIENTED_EDGE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY gap_between_vertex_and_base_surface
+    SUBTYPE OF(geometric_gap_in_topology);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.FACE_SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.VERTEX_POINT',
+             'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_FACE_SURFACE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY gap_between_vertex_and_edge
+    SUBTYPE OF(geometric_gap_in_topology);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.EDGE_CURVE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.VERTEX_POINT',
+             'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_EDGE_CURVE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY gap_between_edge_and_base_surface
+    SUBTYPE OF(geometric_gap_in_topology);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.FACE_SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_EDGE_CURVE',
+             'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_FACE_SURFACE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY gap_between_pcurves_related_to_an_edge
+    SUBTYPE OF(geometric_gap_in_topology);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.CONNECTED_FACE_SET']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['GEOMETRY_SCHEMA.POINT_ON_SURFACE',
+             'GEOMETRY_SCHEMA.POINT_ON_SURFACE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY gap_between_faces_related_to_an_edge
+    SUBTYPE OF(geometric_gap_in_topology);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.CONNECTED_FACE_SET']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_EDGE_CURVE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY non_smooth_geometry_transition_across_edge
+    ABSTRACT SUPERTYPE OF (ONEOF(g1_discontinuity_between_adjacent_faces, g2_discontinuity_between_adjacent_faces))
+    SUBTYPE OF(inapt_topology_and_geometry_relationship);
+  END_ENTITY;
+
+  ENTITY g1_discontinuity_between_adjacent_faces
+    SUBTYPE OF(non_smooth_geometry_transition_across_edge);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.PLANE_ANGLE_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.PLANE_ANGLE_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.CONNECTED_FACE_SET']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_EDGE_CURVE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.PLANE_ANGLE_MEASURE']);
+  END_ENTITY;
+
+  ENTITY g2_discontinuity_between_adjacent_faces
+    SUBTYPE OF(non_smooth_geometry_transition_across_edge);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+      assessment_specification_2                                 : shape_data_quality_assessment_by_numerical_test;
+      flat_curvature_radius_tolerance                            : length_measure;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.PLANE_ANGLE_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(assessment_specification_2\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.RATIO_MEASURE'
+            IN value_limit_type(assessment_specification_2\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR3 : validate_measured_data_type(SELF,
+             'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'PLANE_ANGLE_AND_RATIO_PAIR');
+      WR4 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.CONNECTED_FACE_SET']);
+      WR5 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_EDGE_CURVE']);
+      WR6 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.RATIO_MEASURE']);
+  END_ENTITY;
+
+  ENTITY topology_related_to_self_intersecting_geometry
+    ABSTRACT SUPERTYPE OF (ONEOF(self_intersecting_loop, self_intersecting_shell, intersecting_connected_face_sets))
+    SUBTYPE OF(inapt_topology_and_geometry_relationship);
+  END_ENTITY;
+
+  ENTITY self_intersecting_loop
+    SUBTYPE OF(topology_related_to_self_intersecting_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+      arc_length_distance_factor                                 : REAL;
+      interference_tolerance                                     : length_measure;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.EDGE_LOOP']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_EDGE_CURVE',
+             'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_EDGE_CURVE']);
+      WR4 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY self_intersecting_shell
+    SUBTYPE OF(topology_related_to_self_intersecting_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+      geodesic_separation_factor                                 : REAL;
+      interference_tolerance                                     : length_measure;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.CONNECTED_FACE_SET']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_FACE_SURFACE',
+             'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_FACE_SURFACE']);
+      WR4 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY intersecting_connected_face_sets
+    SUBTYPE OF(topology_related_to_self_intersecting_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+      interference_tolerance                                     : length_measure;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.CONNECTED_FACE_SET',
+             'TOPOLOGY_SCHEMA.CONNECTED_FACE_SET']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_FACE_SURFACE',
+             'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_FACE_SURFACE']);
+      WR4 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY steep_geometry_transition_across_edge
+    ABSTRACT SUPERTYPE OF (ONEOF(steep_angle_between_adjacent_edges, steep_angle_between_adjacent_faces))
+    SUBTYPE OF(inapt_topology_and_geometry_relationship);
+  END_ENTITY;
+
+  ENTITY steep_angle_between_adjacent_edges
+    SUBTYPE OF(steep_geometry_transition_across_edge);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.PLANE_ANGLE_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.PLANE_ANGLE_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.EDGE_LOOP']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.ORIENTED_EDGE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.PLANE_ANGLE_MEASURE']);
+  END_ENTITY;
+
+  ENTITY steep_angle_between_adjacent_faces
+    SUBTYPE OF(steep_geometry_transition_across_edge);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.PLANE_ANGLE_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.PLANE_ANGLE_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.CONNECTED_FACE_SET']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'POINT_ON_EDGE_CURVE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.PLANE_ANGLE_MEASURE']);
+  END_ENTITY;
+
+  ENTITY topology_related_to_overlapping_geometry
+    ABSTRACT SUPERTYPE OF (ONEOF(partly_overlapping_faces, partly_overlapping_edges))
+    SUBTYPE OF(inapt_topology_and_geometry_relationship);
+  END_ENTITY;
+
+  ENTITY partly_overlapping_faces
+    SUBTYPE OF(topology_related_to_overlapping_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+      interference_tolerance                                     : length_measure;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.AREA_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.AREA_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.FACE_SURFACE',
+             'TOPOLOGY_SCHEMA.FACE_SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.SUBFACE','TOPOLOGY_SCHEMA.SUBFACE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.AREA_MEASURE']);
+  END_ENTITY;
+
+  ENTITY partly_overlapping_edges
+    SUBTYPE OF(topology_related_to_overlapping_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+      interference_tolerance                                     : length_measure;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.EDGE_CURVE',
+             'TOPOLOGY_SCHEMA.EDGE_CURVE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.SUBEDGE','TOPOLOGY_SCHEMA.SUBEDGE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY topology_related_to_multiply_defined_geometry
+    ABSTRACT SUPERTYPE OF (ONEOF(multiply_defined_faces, multiply_defined_vertices, multiply_defined_edges))
+    SUBTYPE OF(inapt_topology_and_geometry_relationship);
+  END_ENTITY;
+
+  ENTITY multiply_defined_faces
+    SUBTYPE OF(topology_related_to_multiply_defined_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.FACE_SURFACE',
+             'TOPOLOGY_SCHEMA.FACE_SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY multiply_defined_vertices
+    SUBTYPE OF(topology_related_to_multiply_defined_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold)) AND
+            ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.VERTEX_POINT',
+             'TOPOLOGY_SCHEMA.VERTEX_POINT']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY multiply_defined_edges
+    SUBTYPE OF(topology_related_to_multiply_defined_geometry);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.EDGE_CURVE',
+             'TOPOLOGY_SCHEMA.EDGE_CURVE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY overcomplex_topology_and_geometry_relationship
+    ABSTRACT SUPERTYPE OF (ONEOF(unused_patches, edge_with_excessive_segments, face_surface_with_excessive_patches_in_one_direction))
+    SUBTYPE OF(inapt_topology_and_geometry_relationship);
+  END_ENTITY;
+
+  ENTITY unused_patches
+    SUBTYPE OF(overcomplex_topology_and_geometry_relationship);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+             AND ('MEASURE_SCHEMA.COUNT_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.COUNT_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.FACE_SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+             'B_SPLINE_SURFACE_STRIP']);
+      WR5 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY edge_with_excessive_segments
+    SUBTYPE OF(overcomplex_topology_and_geometry_relationship);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.COUNT_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.COUNT_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.EDGE_CURVE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY face_surface_with_excessive_patches_in_one_direction
+    SUBTYPE OF(overcomplex_topology_and_geometry_relationship);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.COUNT_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.COUNT_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['TOPOLOGY_SCHEMA.FACE_SURFACE']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY inapt_manifold_solid_brep
+    ABSTRACT SUPERTYPE OF (ONEOF(partly_overlapping_solids, small_volume_solid, multiply_defined_solids, entirely_narrow_solid, solid_with_excessive_number_of_voids))
+    SUBTYPE OF(inapt_data);
+  END_ENTITY;
+
+  ENTITY partly_overlapping_solids
+    SUBTYPE OF(inapt_manifold_solid_brep);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+      interference_tolerance                                     : length_measure;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+             AND ('MEASURE_SCHEMA.AREA_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.AREA_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRIC_MODEL_SCHEMA.MANIFOLD_SOLID_BREP',
+             'GEOMETRIC_MODEL_SCHEMA.MANIFOLD_SOLID_BREP']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            ['TOPOLOGY_SCHEMA.SUBFACE','TOPOLOGY_SCHEMA.SUBFACE']);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.AREA_MEASURE']);
+  END_ENTITY;
+
+  ENTITY small_volume_solid
+    SUBTYPE OF(inapt_manifold_solid_brep);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.VOLUME_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.VOLUME_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRIC_MODEL_SCHEMA.MANIFOLD_SOLID_BREP']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.VOLUME_MEASURE']);
+  END_ENTITY;
+
+  ENTITY multiply_defined_solids
+    SUBTYPE OF(inapt_manifold_solid_brep);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_UPPER_VALUE_LIMIT'
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.LENGTH_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.LENGTH_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRIC_MODEL_SCHEMA.MANIFOLD_SOLID_BREP',
+             'GEOMETRIC_MODEL_SCHEMA.MANIFOLD_SOLID_BREP']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY entirely_narrow_solid
+    SUBTYPE OF(inapt_manifold_solid_brep);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_logical_test;
+      width_tolerance                                            : length_measure;
+    WHERE
+      WR1 : validate_measured_data_type(SELF,
+            'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.BOOLEAN_VALUE');
+      WR2 : validate_inspected_elements_type(SELF,
+            ['GEOMETRIC_MODEL_SCHEMA.MANIFOLD_SOLID_BREP']);
+      WR3 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR4 : validate_accuracy_types(SELF,
+            ['MEASURE_SCHEMA.LENGTH_MEASURE']);
+  END_ENTITY;
+
+  ENTITY solid_with_excessive_number_of_voids
+    SUBTYPE OF(inapt_manifold_solid_brep);
+      SELF\shape_data_quality_criterion.assessment_specification : shape_data_quality_assessment_by_numerical_test;
+    WHERE
+      WR1 : ('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.' +
+            'SHAPE_DATA_QUALITY_LOWER_VALUE_LIMIT' 
+            IN TYPEOF(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold))
+            AND ('MEASURE_SCHEMA.COUNT_MEASURE'
+            IN value_limit_type(SELF\shape_data_quality_criterion.assessment_specification\shape_data_quality_assessment_by_numerical_test.threshold));
+      WR2 : validate_measured_data_type(SELF,
+            'MEASURE_SCHEMA.COUNT_MEASURE');
+      WR3 : validate_inspected_elements_type(SELF,
+            ['GEOMETRIC_MODEL_SCHEMA.MANIFOLD_SOLID_BREP']);
+      WR4 : validate_locations_of_extreme_value_type(SELF,
+            []);
+      WR5 : validate_accuracy_types(SELF,
+            []);
+  END_ENTITY;
+
+  ENTITY shape_criteria_representation_with_accuracy
+    SUBTYPE OF(shape_data_quality_criteria_representation);
+      required_general_accuracy : SET [1:?] OF shape_measurement_accuracy;
+  END_ENTITY;
+
+  ENTITY shape_measurement_accuracy;
+      description : text;
+      range       : shape_data_quality_value_limit_type_select;
+  END_ENTITY;
+
+  ENTITY shape_data_quality_criterion_and_accuracy_association;
+      required_specific_accuracy   : shape_measurement_accuracy;
+      shape_data_quality_criterion : shape_data_quality_criterion;
+  END_ENTITY;
+
+
+
+  FUNCTION validate_inspected_elements_type
+    (ei:shape_data_quality_criterion;
+     type_list:BAG OF STRING):LOGICAL;
+     LOCAL
+       sdqir: SET OF
+        SHAPE_DATA_QUALITY_INSPECTION_RESULT:=[];
+       sdir: SET OF
+        SHAPE_DATA_QUALITY_INSPECTION_INSTANCE_REPORT:=[];
+       sdiri: SET OF
+        SHAPE_DATA_QUALITY_INSPECTION_INSTANCE_REPORT_ITEM:=[];
+       t_type_list:BAG OF STRING:=[];
+     END_LOCAL;
+  
+     -- STEP-1
+     -- collect all shape_data_quality_inspection_instance_report_item
+     -- instances associated with the given shape_data_quality_criterion
+     -- via shape_data_quality_inspection_result and
+     -- shape_data_quality_inspection_instance_report
+
+     sdqir := QUERY(q <* bag_to_set(USEDIN(ei,
+                   'PRODUCT_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+                   'DATA_QUALITY_INSPECTION_RESULT.'+
+                   'CRITERION_INSPECTED'))|
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT'
+            IN TYPEOF(q));
+     IF(SIZEOF(sdqir) = 0) THEN
+       RETURN(TRUE);
+     END_IF;
+     REPEAT i:= 1 TO SIZEOF(sdqir);
+       sdir := sdir + QUERY(q <* bag_to_set(USEDIN(sdqir[i],
+                   'PRODUCT_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+                   'DATA_QUALITY_INSPECTION_REPORT.'+
+                   'INSPECTION_RESULT'))|
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+           'SHAPE_DATA_QUALITY_INSPECTION_INSTANCE_REPORT'
+            IN TYPEOF(q));
+     END_REPEAT;
+     IF(SIZEOF(sdir) = 0) THEN
+       RETURN(TRUE);
+     END_IF;
+
+     REPEAT i:= 1 TO SIZEOF(sdir);
+       sdiri := sdiri + QUERY(q <* sdir[i].inspected_instances|
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+           'SHAPE_DATA_QUALITY_INSPECTION_INSTANCE_REPORT_ITEM'
+            IN TYPEOF(q));
+     END_REPEAT;
+
+     -- STEP-2
+     -- check if the types of inspected_elements of the collected
+     -- instances are exactly coincident with the type names in the 
+     -- type list given as an input argument of this function.
+
+     -- If there is no instance_report_item, then return true.
+     IF(SIZEOF(sdiri) = 0) THEN
+       RETURN(TRUE);
+     END_IF;
+  
+     -- When reports exist, then perform the following checking process.
+     REPEAT i:= 1 TO SIZEOF(sdiri);
+       -- If the size of inspected_elements is not equal to the size of
+       -- type_list, then return false.
+       IF(SIZEOF(sdiri[i].inspected_elements) <> 
+          SIZEOF(type_list)) THEN
+         RETURN(FALSE);
+       END_IF;
+       -- check all elements in the type_list 
+       -- for each element of inspected_elements.
+       t_type_list := type_list;
+       REPEAT j:= 1 TO SIZEOF(sdiri[i].inspected_elements);
+         REPEAT k:= 1 TO SIZEOF(t_type_list);
+           IF(t_type_list[k] IN
+              TYPEOF(sdiri[i].inspected_elements[j])) THEN
+            t_type_list := t_type_list - t_type_list[k];
+            ESCAPE;
+           END_IF;
+         END_REPEAT;
+       END_REPEAT;
+       IF(SIZEOF(t_type_list) > 0) THEN
+         RETURN(FALSE);
+       END_IF;
+     END_REPEAT;
+  
+    RETURN(TRUE);
+  END_FUNCTION;
+
+  FUNCTION validate_locations_of_extreme_value_type
+    (ei:shape_data_quality_criterion;
+     type_list:BAG OF STRING):LOGICAL;
+     LOCAL
+       sdqir: SET OF
+        SHAPE_DATA_QUALITY_INSPECTION_RESULT:=[];
+       sdir: SET OF
+        SHAPE_DATA_QUALITY_INSPECTION_INSTANCE_REPORT:=[];
+       sdei: SET OF
+        INSTANCE_REPORT_ITEM_WITH_EXTREME_INSTANCES:=[];
+       t_type_list:BAG OF STRING:=[];
+     END_LOCAL;
+  
+     -- STEP-1
+     -- collect all instance_report_item_with_extreme_instances instances
+     -- associated with the given shape_data_quality_criterion
+     -- via shape_data_quality_inspection_result and
+     -- shape_data_quality_inspection_instance_report.
+
+     sdqir := QUERY(q <* bag_to_set(USEDIN(ei,
+                   'PRODUCT_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+                   'DATA_QUALITY_INSPECTION_RESULT.'+
+                   'CRITERION_INSPECTED'))|
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT'
+            IN TYPEOF(q));
+     IF(SIZEOF(sdqir) = 0) THEN
+       RETURN(TRUE);
+     END_IF;
+     REPEAT i:= 1 TO SIZEOF(sdqir);
+       sdir := sdir + QUERY(q <* bag_to_set(USEDIN(sdqir[i],
+                   'PRODUCT_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+                   'DATA_QUALITY_INSPECTION_REPORT.'+
+                   'INSPECTION_RESULT'))|
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+           'SHAPE_DATA_QUALITY_INSPECTION_INSTANCE_REPORT'
+            IN TYPEOF(q));
+     END_REPEAT;
+     REPEAT i:= 1 TO SIZEOF(sdir);
+       sdei := sdei + QUERY(q <* sdir[i].inspected_instances|
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+           'INSTANCE_REPORT_ITEM_WITH_EXTREME_INSTANCES'
+            IN TYPEOF(q));
+     END_REPEAT;
+  
+     -- STEP-2
+     -- check if the types of locations_of_extreme_value attributes
+     -- of all extreme_instances attributes of the collected instances are 
+     -- exactly coincident with the type names in the type list given as an 
+     -- input argument of this function. 
+
+     -- If there is no instance report, then return true.
+     IF(SIZEOF(sdei) = 0) THEN
+       RETURN(TRUE);
+     END_IF;
+  
+     -- If the type_list is empty and 
+     -- instance_report_item_with_extreme_instances exists, then return false.
+     IF((SIZEOF(type_list) = 0) AND (SIZEOF(sdei) <> 0)) THEN
+       RETURN(FALSE);
+     END_IF;
+  
+     -- When report_items exist, then perform the following checking process.
+     REPEAT i:= 1 TO SIZEOF(sdei);
+       REPEAT j:= 1 TO SIZEOF(sdei[i].extreme_instances);
+         -- If the size of locations_of_extreme_value is not equal to
+         -- the size of type_list, then return false.
+         IF(SIZEOF(sdei[i].extreme_instances[j].
+                           locations_of_extreme_value) <>
+            SIZEOF(type_list)) THEN
+            RETURN(FALSE);
+         END_IF;
+         t_type_list := type_list;
+         -- check all elements of the type_list 
+         --  for each element of locations_of_extreme_value.
+         REPEAT k:= 1 TO SIZEOF(sdei[i].extreme_instances[j]
+                                  .locations_of_extreme_value);
+           REPEAT l:= 1 TO SIZEOF(t_type_list);
+             IF(t_type_list[l] IN
+               TYPEOF(sdei[i].extreme_instances[j].
+                       locations_of_extreme_value[k])) THEN
+               t_type_list := t_type_list - t_type_list[l];
+               ESCAPE;
+             END_IF;
+           END_REPEAT;
+         END_REPEAT;
+         IF(SIZEOF(t_type_list) > 0) THEN
+           RETURN(FALSE);
+         END_IF;
+       END_REPEAT;
+     END_REPEAT;
+  
+     RETURN(TRUE);
+  END_FUNCTION;
+
+  FUNCTION validate_measured_data_type
+    (ei:shape_data_quality_criterion;
+     type_string: STRING):LOGICAL;
+     LOCAL
+       sdqir: SET OF
+        SHAPE_DATA_QUALITY_INSPECTION_RESULT:=[];
+       sdcr: SET OF
+        SHAPE_DATA_QUALITY_INSPECTION_CRITERION_REPORT:=[];
+       sdir: SET OF
+        SHAPE_DATA_QUALITY_INSPECTION_INSTANCE_REPORT:=[];
+       sdii: SET OF
+        SHAPE_DATA_QUALITY_INSPECTION_INSTANCE_REPORT_ITEM:=[];
+       sdei: BAG OF
+        INSTANCE_REPORT_ITEM_WITH_EXTREME_INSTANCES:=[];
+     END_LOCAL;
+  
+     -- STEP-1
+     -- collect all shape_data_quality_inspection_criterion_report instances,
+     -- all shape_data_quality_inspection_instance_report_item instances, and
+     -- instance_report_item_with_extreme_instances instances
+     -- associated with the given shape_data_quality_criterion
+     -- via shape_data_quality_inspection_result.
+  
+     sdqir := QUERY(q <* bag_to_set(USEDIN(ei,
+                   'PRODUCT_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+                   'DATA_QUALITY_INSPECTION_RESULT.'+
+                   'CRITERION_INSPECTED'))|
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT'
+            IN TYPEOF(q));
+     IF(SIZEOF(sdqir) = 0) THEN
+       RETURN(TRUE);
+     END_IF;
+     REPEAT i:= 1 TO SIZEOF(sdqir);
+       sdcr := sdcr + QUERY(q <* bag_to_set(USEDIN(sdqir[i],
+                   'PRODUCT_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+                   'DATA_QUALITY_INSPECTION_REPORT.'+
+                   'INSPECTION_RESULT'))|
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+           'SHAPE_DATA_QUALITY_INSPECTION_CRITERION_REPORT'
+            IN TYPEOF(q));
+     END_REPEAT;
+     REPEAT i:= 1 TO SIZEOF(sdqir);
+       sdir := sdir + QUERY(q <* bag_to_set(USEDIN(sdqir[i],
+                   'PRODUCT_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+                   'DATA_QUALITY_INSPECTION_REPORT.'+
+                   'INSPECTION_RESULT'))|
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+           'SHAPE_DATA_QUALITY_INSPECTION_INSTANCE_REPORT'
+            IN TYPEOF(q));
+     END_REPEAT;
+  
+     -- If there is no report, then return true.
+     IF((SIZEOF(sdcr) = 0) AND (SIZEOF(sdir) = 0)) THEN
+       RETURN(TRUE);
+     END_IF;
+  
+     REPEAT i:= 1 TO SIZEOF(sdir);
+       sdii := sdii + QUERY(q <* sdir[i].inspected_instances|
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+           'SHAPE_DATA_QUALITY_INSPECTION_INSTANCE_REPORT_ITEM'
+            IN TYPEOF(q));
+     END_REPEAT;
+     REPEAT i:= 1 TO SIZEOF(sdir);
+       sdei := sdei + QUERY(q <* sdir[i].inspected_instances|
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+           'INSTANCE_REPORT_ITEM_WITH_EXTREME_INSTANCES'
+            IN TYPEOF(q));
+     END_REPEAT;
+  
+     -- When reports exist, then perform the following checking process.  
+     -- Check representative_measured_value of 
+     -- shape_data_quality_inspection_criterion_report
+     REPEAT i:= 1 TO SIZEOF(sdcr);
+      IF(NOT(type_string IN
+         TYPEOF(sdcr[i].representative_measured_value))) THEN
+         RETURN(FALSE);
+       END_IF;
+     END_REPEAT;
+  
+     -- Check measured_value of shape_data_quality_inspection_
+     -- instance_report_item
+     REPEAT i:= 1 TO SIZEOF(sdii);
+       IF(NOT(type_string IN
+         TYPEOF(sdii[i].measured_value))) THEN
+         RETURN(FALSE);
+       END_IF;
+     END_REPEAT;
+  
+     -- Check measured_value of extreme_instances of
+     -- instance_report_item_with_extreme_instance
+     REPEAT i:= 1 TO SIZEOF(sdei);
+       REPEAT j:= 1 TO SIZEOF(sdei[i].extreme_instances);
+         IF(NOT(type_string IN
+           TYPEOF(sdei[i].extreme_instances[j].measured_value)))
+         THEN
+           RETURN(FALSE);
+         END_IF;
+       END_REPEAT;
+     END_REPEAT;
+  
+     RETURN(TRUE);
+  
+  END_FUNCTION;
+
+  FUNCTION validate_accuracy_types
+    (ei:shape_data_quality_criterion;
+     type_list:BAG OF STRING):LOGICAL;
+     LOCAL
+       sdqca: BAG OF
+        SHAPE_DATA_QUALITY_CRITERION_AND_ACCURACY_ASSOCIATION:=[];
+       sma: BAG OF SHAPE_MEASUREMENT_ACCURACY:=[];
+       sdqir: SET OF
+        SHAPE_DATA_QUALITY_INSPECTION_RESULT:=[];
+       scraa: BAG OF
+        SHAPE_INSPECTION_RESULT_ACCURACY_ASSOCIATION:=[];
+       t_logic:BOOLEAN;
+     END_LOCAL;
+     -- STEP-1
+     -- collect types of range attribute of shape_measurement_accuracy
+     -- referred from shape_data_quality_criterion_and_accuracy_association 
+     -- that refers to given shape_data_quality_criterion.
+     sdqca := USEDIN(ei,
+               'SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.'+
+               'SHAPE_DATA_QUALITY_CRITERION_AND_ACCURACY_ASSOCIATION.'+
+               'SHAPE_DATA_QUALITY_CRITERION');
+     IF(SIZEOF(sdqca) <> 0) THEN
+       REPEAT i:= 1 TO SIZEOF(sdqca);
+         sma := sma + sdqca[i].required_specific_accuracy;
+       END_REPEAT;
+  
+       -- STEP-2
+       -- check whether the collected types include all the type names
+       -- in the type list given as an input argument of this function
+       -- and they do not include any other type names. 
+       IF(SIZEOF(type_list) < SIZEOF(sma)) THEN
+         RETURN(FALSE);
+       END_IF;
+  
+       REPEAT i:= 1 TO SIZEOF(sma);
+         t_logic := FALSE;
+         REPEAT j:= 1 TO SIZEOF(type_list);
+           IF(type_list[j] IN value_limit_type(sma[i].range)) THEN
+             t_logic := TRUE;
+             ESCAPE;
+           END_IF;
+         END_REPEAT;
+         IF(NOT(t_logic)) THEN
+           RETURN(FALSE);
+         END_IF;
+       END_REPEAT;
+    END_IF;
+  
+     -- STEP-3
+     -- collect types of range attribute of shape_measurement_accuracy
+     -- referred from shape_inspection_result_accuracy_association
+     -- that refers to shape_data_quality_inspection_result
+     -- for the given shape_data_quality_criterion.
+     sdqir := QUERY(q <* bag_to_set(USEDIN(ei,
+                   'PRODUCT_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+                   'DATA_QUALITY_INSPECTION_RESULT.'+
+                   'CRITERION_INSPECTED'))|
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+           'SHAPE_DATA_QUALITY_INSPECTION_RESULT'
+            IN TYPEOF(q));
+     IF(SIZEOF(sdqir) = 0) THEN
+       RETURN(TRUE);
+     END_IF;
+  
+     REPEAT i:= 1 TO SIZEOF(sdqir);
+       scraa := USEDIN(sdqir[i],
+               'SHAPE_DATA_QUALITY_INSPECTION_RESULT_SCHEMA.'+
+               'SHAPE_INSPECTION_RESULT_ACCURACY_ASSOCIATION.'+
+               'SHAPE_DATA_QUALITY_RESULT');
+       IF(SIZEOF(scraa) <> 0) THEN
+         sma := [];
+         REPEAT j:= 1 TO SIZEOF(scraa);
+           sma := sma + scraa[j].applied_specific_accuracy;
+         END_REPEAT;
+  
+         -- STEP-4
+         -- check whether the collected types include all the type
+         -- names in the type list given as an input argument of
+         -- this function and they do not include any other type names.
+         IF(SIZEOF(type_list) < SIZEOF(sma)) THEN
+           RETURN(FALSE);
+         END_IF;
+  
+         REPEAT j:= 1 TO SIZEOF(sma);
+           t_logic := FALSE;
+           REPEAT k:= 1 TO SIZEOF(type_list);
+             IF(type_list[k] IN value_limit_type(sma[j].range)) THEN
+               t_logic := TRUE;
+               ESCAPE;
+             END_IF;
+           END_REPEAT;
+           IF(NOT(t_logic)) THEN
+             RETURN(FALSE);
+           END_IF;
+         END_REPEAT;
+       END_IF;
+     END_REPEAT;
+  
+     RETURN(TRUE);
+  END_FUNCTION;
+
+  FUNCTION value_limit_type
+    (iv:shape_data_quality_value_limit_type_select):SET OF STRING;
+    LOCAL
+      retval  : SET OF STRING := [];
+    END_LOCAL;
+    IF(('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.'
+       +'SHAPE_DATA_QUALITY_VALUE_RANGE') IN TYPEOF(iv)) THEN
+      retval := TYPEOF(iv\compound_representation_item.item_element[1].value_component);
+    END_IF;
+    IF(('SHAPE_DATA_QUALITY_CRITERIA_SCHEMA.'
+       +'SHAPE_DATA_QUALITY_VALUE_LIMIT') IN TYPEOF(iv)) THEN
+          IF(('MEASURE_SCHEMA.' + 'MEASURE_WITH_UNIT') IN TYPEOF(iv)) THEN
+             retval := TYPEOF(iv\measure_with_unit.value_component);
+         END_IF;
+    END_IF;
+    RETURN(retval);
+  END_FUNCTION;
+
+END_SCHEMA;

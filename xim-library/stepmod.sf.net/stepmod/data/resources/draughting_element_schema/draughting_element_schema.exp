@@ -1,12 +1,15 @@
 (*
-ISO TC184/SC4/WG12 N4832 - ISO/CD 10303-101 Draughting - EXPRESS
+ISO TC184/SC4/WG12 N6153 - ISO/IS 10303-101 Draughting - EXPRESS
+Supersedes ISO TC184/SC4/WG12 N4832
 *)
 (* This file updated to implement proposal for SEDS #1288  *)
 
 SCHEMA draughting_element_schema;
 
-REFERENCE FROM geometry_schema (geometric_representation_item);
-
+REFERENCE FROM geometry_schema
+    (plane,
+     geometric_representation_item);
+     
 REFERENCE FROM support_resource_schema
     (label,
      text);
@@ -27,18 +30,16 @@ REFERENCE FROM presentation_appearance_schema
 REFERENCE FROM presentation_resource_schema
     (planar_box);
 
-REFERENCE FROM geometry_schema
-    (plane);
-
   TYPE annotation_plane_element = SELECT 
     (draughting_callout, 
      styled_item); 
   END_TYPE;
 
   TYPE draughting_callout_element = SELECT
-    (annotation_text_occurrence, 
+    (annotation_curve_occurrence,
+     annotation_fill_area_occurrence,
      annotation_symbol_occurrence,
-     annotation_curve_occurrence);
+     annotation_text_occurrence);
   END_TYPE;
 
   TYPE dimension_extent_usage = ENUMERATION OF

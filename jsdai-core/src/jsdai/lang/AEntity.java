@@ -387,6 +387,11 @@ public class AEntity extends CAggregate {
 				if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 					throw new SdaiException(SdaiException.MX_NRW, owning_model);
 				}
+				SdaiSession session = owning_model.repository.session;
+				if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+					String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+					throw new SdaiException(SdaiException.SY_ERR, base);
+				}
 				if (myType.select == null) {
 					if (!analyse_value_entity(value)) {
 						throw new SdaiException(SdaiException.VT_NVLD); 
@@ -541,6 +546,11 @@ public class AEntity extends CAggregate {
 					if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 						throw new SdaiException(SdaiException.MX_NRW, owning_model);
 					}
+				}
+				SdaiSession session = owning_model.repository.session;
+				if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+					String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+					throw new SdaiException(SdaiException.SY_ERR, base);
 				}
 			}
 			if (myType.express_type != DataType.LIST) {
@@ -712,6 +722,11 @@ public class AEntity extends CAggregate {
 					if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 						throw new SdaiException(SdaiException.MX_NRW, owning_model);
 					}
+				}
+				SdaiSession session = owning_model.repository.session;
+				if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+					String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+					throw new SdaiException(SdaiException.SY_ERR, base);
 				}
 			}
 			if (myType.express_type == DataType.ARRAY) {
@@ -906,6 +921,11 @@ public class AEntity extends CAggregate {
 		if (myType.express_type == DataType.ARRAY || myType.express_type == DataType.LIST) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		Object [] myDataA;
 		int index = -1;
 		if (myLength == 0) {
@@ -1010,6 +1030,11 @@ public class AEntity extends CAggregate {
 				}
 				if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 					throw new SdaiException(SdaiException.MX_NRW, owning_model);
+				}
+				SdaiSession session = owning_model.repository.session;
+				if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+					String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+					throw new SdaiException(SdaiException.SY_ERR, base);
 				}
 				if (myType.select == null) {
 					if (!analyse_value_entity(value)) {
@@ -1156,6 +1181,11 @@ public class AEntity extends CAggregate {
 				}
 				if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 					throw new SdaiException(SdaiException.MX_NRW, owning_model);
+				}
+				SdaiSession session = owning_model.repository.session;
+				if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+					String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+					throw new SdaiException(SdaiException.SY_ERR, base);
 				}
 				if (myType.select == null) {
 					if (!analyse_value_entity(value)) {
@@ -1368,6 +1398,11 @@ public class AEntity extends CAggregate {
 					if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 						throw new SdaiException(SdaiException.MX_NRW, owning_model);
 					}
+				}
+				SdaiSession session = owning_model.repository.session;
+				if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+					String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+					throw new SdaiException(SdaiException.SY_ERR, base);
 				}
 				if (myType.select == null) {
 					if (!analyse_value_entity(value)) {

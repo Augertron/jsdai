@@ -1,5 +1,6 @@
 (*
-ISO TC184/SC4/WG12 N4830 - ISO/CD 10303-46 Visual presentation - EXPRESS
+ISO TC184/SC4/WG12 N6141 - ISO/IS 10303-46 Visual presentation - EXPRESS
+Supersedes ISO TC184/SC4/WG12 N4830
 *) 
 
 
@@ -55,18 +56,13 @@ REFERENCE FROM presentation_resource_schema
      character_glyph_symbol_stroke,
      colour);
 
-REFERENCE FROM product_property_representation_schema
-    (shape_representation_relationship);
-
-REFERENCE FROM representation_schema
-    (representation_relationship);
-
 REFERENCE FROM representation_schema
     (founded_item,
      mapped_item,
      representation,
      representation_item,
      representation_map,
+     representation_relationship,
      using_representations);
 
 REFERENCE FROM support_resource_schema
@@ -175,7 +171,7 @@ REFERENCE FROM support_resource_schema
      symbol_representation_with_blanking_box);
   END_TYPE;
 
-  TYPE invisibility_context = SELECT 
+  TYPE invisibility_context = EXTENSIBLE GENERIC_ENTITY SELECT 
     (presentation_layer_usage,
      presentation_representation,
      presentation_set);
@@ -372,15 +368,12 @@ REFERENCE FROM support_resource_schema
     SUBTYPE OF(over_riding_styled_item);
       style_context : LIST[1:?] OF style_context_select;
     WHERE
-      WR1: (SIZEOF(QUERY( sc <* SELF.style_context |
-       'REPRESENTATION_SCHEMA.REPRESENTATION_ITEM' IN
-         TYPEOF(sc))) = 1) OR
-        (SIZEOF(QUERY( sc <* SELF.style_context |
-       'REPRESENTATION_SCHEMA.MAPPED_ITEM' IN
-         TYPEOF(sc))) = SIZEOF(style_context)) OR
-         (SIZEOF(QUERY( sc <* SELF.style_context |
-       'PRODUCT_PROPERTY_REPRESENTATION_SCHEMA.SHAPE_REPRESENTATION_RELATIONSHIP' IN
-         TYPEOF(sc))) = SIZEOF(style_context));
+      WR1: 
+(SIZEOF(QUERY(sc <* SELF.style_context | 'REPRESENTATION_SCHEMA.REPRESENTATION_ITEM' IN TYPEOF(sc)))= 1) OR
+(SIZEOF(QUERY(sc <* SELF.style_context |
+     ('REPRESENTATION_SCHEMA.MAPPED_ITEM' IN TYPEOF(sc))
+  OR ('REPRESENTATION_SCHEMA.REPRESENTATION_RELATIONSHIP' IN TYPEOF(sc)) ))
+  = SIZEOF(style_context));     
   END_ENTITY;
 
   ENTITY curve_style
@@ -667,6 +660,9 @@ REFERENCE FROM support_resource_schema
               'PRESENTATION_STYLE_BY_CONTEXT' IN
          TYPEOF(pres_style))
          )) = 0);
+      WR2: NOT ('PRESENTATION_APPEARANCE_SCHEMA.STYLED_ITEM' IN TYPEOF(item));
+      WR3: ('REPRESENTATION_SCHEMA.MAPPED_ITEM' IN TYPEOF(item)) OR
+           ('GEOMETRY_SCHEMA.GEOMETRIC_REPRESENTATION_ITEM' IN TYPEOF(item));               
   END_ENTITY;
 
   ENTITY surface_rendering_properties;

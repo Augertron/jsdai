@@ -72,8 +72,6 @@ ENTITY Product_occurrence_with_quantity
     ABSTRACT SUPERTYPE OF (ONEOF (Quantified_instance, Selected_instance))
   SUBTYPE OF (Product_occurrence);
   occurrence_quantity : OPTIONAL extended_value_with_unit;
-  DERIVE
-    SELF\Product_view_definition.additional_characterization : STRING := 'single instance';
 END_ENTITY;
 
 ENTITY Quantified_instance
@@ -105,8 +103,7 @@ END_ENTITY;
 
 SUBTYPE_CONSTRAINT alternate_product_instance FOR Product_occurrence;
   ONEOF (Single_instance,
-         Quantified_instance,
-         Selected_instance) 
+         Product_occurrence_with_quantity) 
   AND
   ONEOF (Definition_based_product_occurrence,
          Specification_based_product_occurrence);

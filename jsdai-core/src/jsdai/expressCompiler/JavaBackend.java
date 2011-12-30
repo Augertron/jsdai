@@ -2981,11 +2981,11 @@ if (flag_expressions) {
 				if (debug_java) pw.println("\t// attribute name, current: " + attr_name + ", previous: " + redeclared_attr.getName(null) + ", original: " + original_attribute.getName(null));
 
 				if (attr_name.equalsIgnoreCase(original_attribute.getName(null))) {
-		      pw.println("\tpublic Value get" + method_suffix + "(" + original_redeclared_type_name + 
-          	" type, SdaiContext _context) throws " + "SdaiException;");
+		      // temporarily removed -do we need Value methods in interfaces - they are internal methods, and they are not generated for derived (non-redeclaring) attributes anyway - consistency?
+		      pw.println("\tpublic Value get" + method_suffix + "(" + original_redeclared_type_name + " type, SdaiContext _context) throws " + "SdaiException;");
 				} else {
-		      pw.println("\tpublic Value get" + method_suffix + "(" + redeclared_type_name + 
-          	" type, SdaiContext _context) throws " + "SdaiException;");
+		      // temporarily removed -do we need Value methods in interfaces - they are internal methods, and they are not generated for derived (non-redeclaring) attributes anyway - consistency?
+		      pw.println("\tpublic Value get" + method_suffix + "(" + redeclared_type_name + " type, SdaiContext _context) throws " + "SdaiException;");
 				}
 
 // before TEST
@@ -9320,7 +9320,28 @@ pw.println("\t\t// #X# - redeclared_attr: " + redeclared_attr);
 
 //
 
+// old version, probably no longer used
   void generateJavaExplicit2DerivedAttributeDefinedTypeMethods(EAttribute attr, EAttribute redeclared_attr, EDefined_type dt, PrintWriter pw, 
+                                                  String entity_name, String attr_name, 
+                                                  String method_suffix, String owning_entity_name, 
+                                                  String attr_internal_name, 
+                                                  A_string expression_java)
+                                           throws SdaiException {
+
+  generateJavaExplicit2DerivedAttributeDefinedTypeMethods(null, attr, redeclared_attr, dt, pw, 
+                                                  entity_name, attr_name, 
+                                                  method_suffix, owning_entity_name, 
+                                                  attr_internal_name, 
+                                                  expression_java);
+
+
+}
+
+
+
+
+//  void generateJavaExplicit2DerivedAttributeDefinedTypeMethods(EAttribute attr, EAttribute redeclared_attr, EDefined_type dt, PrintWriter pw, 
+  void generateJavaExplicit2DerivedAttributeDefinedTypeMethods(TheAttribute tattr, EAttribute attr, EAttribute redeclared_attr, EDefined_type dt, PrintWriter pw, 
                                                   String entity_name, String attr_name, 
                                                   String method_suffix, String owning_entity_name, 
                                                   String attr_internal_name, 
@@ -9342,7 +9363,7 @@ pw.println("//#X# 00 - attr: " + attr + ", redeclared_attr: " + redeclared_attr)
                                                      attr_name, method_suffix, owning_entity_name, 
                                                      attr_internal_name, expression_java);
     } else if (ut instanceof EDefined_type) {
-      generateJavaExplicit2DerivedAttributeDefinedTypeMethods(attr, redeclared_attr, (EDefined_type) ut, pw, entity_name, 
+      generateJavaExplicit2DerivedAttributeDefinedTypeMethods(tattr, attr, redeclared_attr, (EDefined_type) ut, pw, entity_name, 
                                                  attr_name, method_suffix, owning_entity_name, 
                                                  attr_internal_name, expression_java);
 
@@ -9440,6 +9461,36 @@ pw.println("//#X# 00 - attr: " + attr + ", redeclared_attr: " + redeclared_attr)
       // pw.println("debug: " + select_type);
       pw.println("\t// -1- methods for explicit redeclared as derived SELECT attribute: " + attr_name);
 
+          // bug #4208 fix
+          // making the type either the entity where the original attribute was initially declared, or the last redeclared?
+
+      	 String current_name1 = tattr.attr.getName(null);
+      	 String current_name2 = tattr.consolidated_explicit_to_derived.attr.getName(null);
+
+          pw.println("\t// current_name1: " + current_name1);
+          pw.println("\t// current_name2: " + current_name2);
+
+/*
+          	pw.println("\t //is_original: " + is_original);
+          	pw.println("\t //redeclared_owning_entity_name: " + before_name);
+          	pw.println("\t //redeclared_owning_entity_name, if is_original: " + after_name);
+          	pw.println("\t //current_name: " + tattr.consolidated_explicit_to_derived.attr.getName(null));
+          	pw.println("\t //current_name, if is_original: " + tattr.attr.getName(null));
+           	pw.println("\t //initial attr: " + attr);
+           	pw.println("\t //last_redeclared_by.attr  (last_attr): " + last_attr);
+*/
+			      EEntity_definition owner_entity_x = (EEntity_definition) tattr.attr.getParent_entity(null);
+      			String owner_name_x = owner_entity_x.getName(null);
+      			String owning_entity_name_x = getEntityPackage(owner_entity_x) + "E" + 
+                                  owner_name_x.substring(0, 1).toUpperCase() + 
+                                  owner_name_x.substring(1).toLowerCase();
+
+          String owning_entity_name_used = owning_entity_name;
+          if (current_name1.equals(current_name2)) { // when no RENAMED
+          	owning_entity_name_used = owning_entity_name_x;
+				  }
+
+
       if (select_type > 0) { // includes defined_types
 
         //            paths1.generateConstants(pw, attr_name);
@@ -9466,11 +9517,11 @@ pw.println("//#X# 00 - attr: " + attr + ", redeclared_attr: " + redeclared_attr)
       if (select_type == 0) { // only pure entity selects
 
         //            pw.println("\t\treturn test_select(" + attr_internal_name + ", 1);");
-        pw.println("\tpublic boolean test" + method_suffix + "(" + owning_entity_name + 
+        pw.println("\tpublic boolean test" + method_suffix + "(" + owning_entity_name_used + 
                    " type) throws SdaiException {");
         pw.println("\t\t\tthrow new SdaiException(SdaiException.FN_NAVL);");
       } else {
-        pw.println("\tpublic int test" + method_suffix + "(" + owning_entity_name + 
+        pw.println("\tpublic int test" + method_suffix + "(" + owning_entity_name_used + 
                    " type) throws SdaiException {");
         pw.println("\t\t\tthrow new SdaiException(SdaiException.FN_NAVL);");
       }
@@ -9481,17 +9532,17 @@ pw.println("//#X# 00 - attr: " + attr + ", redeclared_attr: " + redeclared_attr)
 //pw.println("\t// attr: " + attr + ", select type ut: " + ut + ", entity_name: " + entity_name + ", attr_name: " + attr_name + ", select_type: " + select_type + ", owning_entity_name: " + owning_entity_name + 
 //", attr_internal_name: " + attr_internal_name + ", expression_java: " + expression_java + ", sd: " + sd + ", _ed: " + _ed + ", model: " + model);
       paths1.generateGetDerivedMethods(attr, (ESelect_type) ut, pw, entity_name, attr_name, 
-                                       method_suffix, select_type, owning_entity_name, 
+                                       method_suffix, select_type, owning_entity_name_used, 
                                        attr_internal_name, expression_java, flag_expressions, sd, 
                                        _ed, model, this);
 
       pw.println("");
 			// is this method ok?
       paths1.generateSetLaterRedeclaredMethods((ESelect_type) ut, pw, entity_name, attr_name, 
-                                               method_suffix, select_type, owning_entity_name, 
+                                               method_suffix, select_type, owning_entity_name_used, 
                                                attr_internal_name);
       pw.println("");
-      pw.println("\tpublic void unset" + method_suffix + "(" + owning_entity_name + 
+      pw.println("\tpublic void unset" + method_suffix + "(" + owning_entity_name_used + 
                  " type) throws SdaiException {");
       pw.println("\t\t\tthrow new SdaiException(SdaiException.AT_NVLD);");
       pw.println("");
@@ -13261,7 +13312,7 @@ pw.println("// USEDIN-RENAMED-10");
 //                                                             attr_name, method_suffix, 
 //                                                             owning_entity_name, attr_internal_name);
 
-          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
+          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(tattr, attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
                                                              attr_name, method_suffix, 
                                                              redeclared_owning_entity_name, attr_internal_name, expression_java);
         } else if (bt instanceof EEntity_definition) {
@@ -13574,7 +13625,7 @@ System.out.println("//####### tattr.attr: " + tattr.last_redeclared_by.attr);
 //                                                             attr_name, method_suffix, 
 //                                                             owning_entity_name, attr_internal_name);
 
-          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
+          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(tattr, attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
                                                              attr_name, method_suffix, 
                                                              redeclared_owning_entity_name, attr_internal_name, expression_java);
         } else if (bt instanceof EEntity_definition) {
@@ -13940,7 +13991,7 @@ pw.println("\t //<><> owning_entity_name_x: " + owning_entity_name_x);
 //                                                             attr_name, method_suffix, 
 //                                                             owning_entity_name, attr_internal_name);
 
-//          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
+//          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(tattr, attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
 //                                                             attr_name, method_suffix, 
 //                                                             redeclared_owning_entity_name, attr_internal_name, expression_java);
 
@@ -13956,7 +14007,7 @@ pw.println("\t //<><> owning_entity_name_x: " + owning_entity_name_x);
           }
 
 
-          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(last_attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
+          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(tattr, last_attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
                                                              attr_name, method_suffix, 
                                                              redeclared_owning_entity_name, attr_internal_name, expression_java);
 
@@ -14004,8 +14055,20 @@ pw.println("\t //<><> owning_entity_name_x: " + owning_entity_name_x);
                      base_entity_name);
 
 
-					
-          pw.println("\tpublic static int usedin" + method_suffix + "(" + redeclared_owning_entity_name + 
+          // bug #4208 fix
+          // making the type either the entity where the original attribute was initially declared, or the last redeclared?
+
+      	 String current_name1 = tattr.attr.getName(null);
+      	 String current_name2 = tattr.consolidated_explicit_to_derived.attr.getName(null);
+
+          pw.println("\t// current_name1: " + current_name1);
+          pw.println("\t// current_name2: " + current_name2);
+          String type_entity_name = redeclared_owning_entity_name;
+          if (current_name1.equals(current_name2)) { // when no RENAMED
+          	type_entity_name = owning_entity_name_x;
+				  }
+
+          pw.println("\tpublic static int usedin" + method_suffix + "(" + type_entity_name + 
                      " type, " + base_name + 
                      " instance, ASdaiModel domain, AEntity result) throws SdaiException {");
           pw.println("\t\t\t// FN_NAVL - 24 - USEDIN");
@@ -14014,12 +14077,12 @@ pw.println("\t //<><> owning_entity_name_x: " + owning_entity_name_x);
 //                     attr_internal_name + "$, domain, result);");
           pw.println("\t}");
 
-          pw.println("\tpublic boolean test" + method_suffix + "(" + redeclared_owning_entity_name + 
+          pw.println("\tpublic boolean test" + method_suffix + "(" + type_entity_name + 
                      " type) throws " + "SdaiException {");
           pw.println("\t\t\tthrow new SdaiException(SdaiException.FN_NAVL);");
           pw.println("\t}");
 
-          pw.println("\tpublic " + "Value" + " get" + method_suffix + "(" + redeclared_owning_entity_name + 
+          pw.println("\tpublic " + "Value" + " get" + method_suffix + "(" + type_entity_name + 
                      " type, SdaiContext _context) throws " + "SdaiException {");
 
           //               if ((flag_expressions) & (expression_java != null)) {
@@ -14037,7 +14100,7 @@ pw.println("//HOHO invoking expression generation, attr: " + attr + ", sd: " + s
 
 
 
-          pw.println("\tpublic " + base_name + " get" + method_suffix + "(" + redeclared_owning_entity_name + 
+          pw.println("\tpublic " + base_name + " get" + method_suffix + "(" + type_entity_name + 
                      " type) throws " + "SdaiException {");
 
 
@@ -14087,11 +14150,11 @@ pw.println("//HOHO invoking expression generation, attr: " + attr + ", sd: " + s
 
 
         
-          pw.println("\tpublic void set" + method_suffix + "(" + redeclared_owning_entity_name + " type, " + 
+          pw.println("\tpublic void set" + method_suffix + "(" + type_entity_name + " type, " + 
                      base_name + " value) throws SdaiException {");
           pw.println("\t\t\tthrow new SdaiException(SdaiException.AT_NVLD);");
           pw.println("\t}");
-          pw.println("\tpublic void unset" + method_suffix + "(" + redeclared_owning_entity_name + 
+          pw.println("\tpublic void unset" + method_suffix + "(" + type_entity_name + 
                      " type) throws SdaiException {");
           pw.println("\t\t\tthrow new SdaiException(SdaiException.AT_NVLD);");
           pw.println("\t}");
@@ -14099,8 +14162,21 @@ pw.println("//HOHO invoking expression generation, attr: " + attr + ", sd: " + s
 // new end        
         }
 
+          // bug #4208 fix
+          // making the type either the entity where the original attribute was initially declared, or the last redeclared?
+      	 String current_name1b = tattr.attr.getName(null);
+      	 String current_name2b = tattr.consolidated_explicit_to_derived.attr.getName(null);
+
+          String type_entity_name2 = redeclared_owning_entity_name;
+          if (current_name1b.equals(current_name2b)) { // when no RENAMED
+          	type_entity_name2 = owning_entity_name_x;
+				  }
+
+
+
+
         pw.println("\tpublic static jsdai.dictionary.EAttribute attribute" + method_suffix + "(" + 
-                   redeclared_owning_entity_name + " type) throws SdaiException {");
+                   type_entity_name2 + " type) throws SdaiException {");
 //NEW_IMPLEMENTATION
 //        pw.println("\t\treturn d" + (count_derived - 1) + "$;");
 
@@ -14277,7 +14353,7 @@ pw.println("//HOHO invoking expression generation, attr: " + attr + ", sd: " + s
 //                                                             attr_name, method_suffix, 
 //                                                             owning_entity_name, attr_internal_name);
 
-          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
+          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(tattr, attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
                                                              attr_name, method_suffix, 
                                                              redeclared_owning_entity_name, attr_internal_name, expression_java);
         } else if (bt instanceof EEntity_definition) {
@@ -14613,7 +14689,7 @@ pw.println("//HOHO invoking expression generation, attr: " + attr + ", sd: " + s
 //                                                             attr_name, method_suffix, 
 //                                                             owning_entity_name, attr_internal_name);
 
-          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
+          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(tattr, attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
                                                              attr_name, method_suffix, 
                                                              redeclared_owning_entity_name, attr_internal_name, expression_java);
         } else if (bt instanceof EEntity_definition) {
@@ -14919,7 +14995,7 @@ pw.println("//HOHO invoking expression generation, attr: " + attr + ", sd: " + s
 //                                                             attr_name, method_suffix, 
 //                                                             owning_entity_name, attr_internal_name);
 
-          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
+          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(tattr, attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
                                                              attr_name, method_suffix, 
                                                              redeclared_owning_entity_name, attr_internal_name, expression_java);
         } else if (bt instanceof EEntity_definition) {
@@ -15473,7 +15549,7 @@ pw.println("// USEDIN-RENAMED-11");
                                                       attr_internal_name,
  																											xattr, method_suffix_prev, owning_entity_name_prev, package_prev);
 
-//          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
+//          generateJavaExplicit2DerivedAttributeDefinedTypeMethods(tattr, attr, redeclared_attr, (EDefined_type) bt, pw, entity_name, 
 //                                                             attr_name, method_suffix, 
 //                                                             redeclared_owning_entity_name, attr_internal_name, expression_java);
 

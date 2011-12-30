@@ -157,7 +157,7 @@ USE FROM Layered_interconnect_complex_template_mim;
     reference_location : location_stratum_technology_occurrence_or_stratum_technology;    
     SELF\Template_location_in_structured_template.assembly : Multi_stratum_structured_template_armx;
     WHERE
-      WR1: SELF\Stratum_specific_template_location.bound_stratum :<>: reference_location;     
+      WR1: SELF\Stratum_specific_template_location_armx.bound_stratum :<>: reference_location;     
       WR2: SELF <> reference_location;
       WR3: SELF\Template_location_in_structured_template.assembly :=: reference_location.assembly;
       WR4: NOT('FABRICATION_TECHNOLOGY_XIM.STRATUM_TECHNOLOGY_OCCURRENCE_ARMX' IN TYPEOF(reference_location)) OR
@@ -344,7 +344,7 @@ USE FROM Layered_interconnect_complex_template_mim;
         (keepout_shape.shape_characterized_definition\Multi_stratum_structured_template_armx.location
         = template_arrangement.swappable);        
       stack_model : Library_stack_model_armx :=
-        keepout_shape.shape_characterized_definition\Stratum_stack_dependent_template.stack;
+        keepout_shape.shape_characterized_definition\Stratum_stack_dependent_template_armx.stack;
       SELF\property_definition.name : label := ?;
       SELF\characterized_object.name : label := ?;
     UNIQUE
@@ -463,16 +463,16 @@ USE FROM Layered_interconnect_complex_template_mim;
       x : SET OF Library_to_design_stack_model_mapping_armx := [];
   END_LOCAL;
 
-      IF relation. relating_view IN relatives THEN
+      IF relation.relating_product_definition IN relatives THEN
         RETURN (FALSE);
       END_IF;
-        x := QUERY(pd <* bag_to_set(USEDIN(relation. relating_view,
+        x := QUERY(pd <* bag_to_set(USEDIN(relation.relating_product_definition,
           'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.' +
           'LIBRARY_TO_DESIGN_STACK_MODEL_MAPPING_ARMX.' +
           'RELATED_VIEW')) | specific_relation IN TYPEOF(pd));
       REPEAT i := 1 TO HIINDEX(x);
         IF NOT acyclic_library_to_design_stack_model_mapping(x[i], relatives +
-          relation.relating_view, specific_relation) THEN
+          relation.relating_product_definition, specific_relation) THEN
           RETURN (FALSE);
         END_IF;
       END_REPEAT;

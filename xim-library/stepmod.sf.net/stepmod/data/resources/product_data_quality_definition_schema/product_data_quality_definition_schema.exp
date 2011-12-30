@@ -1,0 +1,54 @@
+(*
+  $Id$
+ ISO TC184/SC4/WG12 N7298 - ISO 10303-59 Quality of product shape data
+ Supersedes ISO TC184/SC4/WG12 N5088
+*)
+
+SCHEMA product_data_quality_definition_schema;
+
+  REFERENCE FROM product_data_quality_criteria_schema
+    (data_quality_criteria_representation);
+
+  REFERENCE FROM product_data_quality_inspection_result_schema
+    (data_quality_inspection_result_representation);
+
+  REFERENCE FROM product_definition_schema
+    (product_definition);
+
+  REFERENCE FROM support_resource_schema (text);
+
+  TYPE used_quality_representation_select = SELECT
+    (data_quality_criteria_representation,
+     data_quality_inspection_result_representation);
+  END_TYPE;
+
+  ENTITY data_quality_definition;
+      description : text;
+  END_ENTITY;
+
+  ENTITY data_quality_definition_representation_relationship;
+      description         : text;
+      definition          : data_quality_definition;
+      used_representation : used_quality_representation_select;
+  END_ENTITY;
+
+  ENTITY product_data_and_data_quality_relationship;
+      description  : text;
+      product_data : product_definition;
+      data_quality : data_quality_definition;
+  END_ENTITY;
+
+  ENTITY data_quality_definition_relationship;
+      description                      : text;
+      relating_data_quality_definition : data_quality_definition;
+      related_data_quality_definition  : data_quality_definition;
+  END_ENTITY;
+
+  ENTITY software_for_data_quality_check;
+      description      : text;
+      software_name    : text;
+      software_version : text;
+      data_quality     : data_quality_definition_representation_relationship;
+  END_ENTITY;
+
+END_SCHEMA;

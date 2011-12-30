@@ -377,6 +377,9 @@ if (SdaiSession.debug2) System.out.println("  SIMPLE type  " + count);
 
 	boolean analyse_entity_in_select(CEntity_definition value_type, SdaiContext context) throws SdaiException {
 		boolean res;
+		if (express_type == DataType.ENT_EXT_SELECT) {
+			return true;
+		}
 		AEntity sels = ((ESelect_type)this).getSelections(null, context);
 		if (sels.myLength < 0) {
 			sels.resolveAllConnectors();

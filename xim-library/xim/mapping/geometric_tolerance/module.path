@@ -70,6 +70,13 @@ geometric_tolerance_with_datum_reference.datum_system[i] ->
 datum_reference
 end_attribute_mapping;
 
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_system);
+angularity_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] ->
+datum_system
+end_attribute_mapping;
+
 end_entity_mapping;
 
 entity_mapping Circular_runout_tolerance_armx(Circular_runout_tolerance_armx, circular_runout_tolerance);
@@ -104,6 +111,13 @@ geometric_tolerance_with_datum_reference.datum_system[i] ->
 datum_reference
 end_attribute_mapping;
 
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_system);
+circular_runout_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_system
+end_attribute_mapping;
+
 end_entity_mapping;
 
 entity_mapping Coaxiality_tolerance_armx(Coaxiality_tolerance_armx, coaxiality_tolerance);
@@ -118,6 +132,13 @@ coaxiality_tolerance <=
 geometric_tolerance_with_datum_reference 
 geometric_tolerance_with_datum_reference.datum_system[i] -> 
 datum_reference
+end_attribute_mapping;
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_system);
+coaxiality_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_system
 end_attribute_mapping;
 
 end_entity_mapping;
@@ -148,6 +169,13 @@ concentricity_tolerance <=
 geometric_tolerance_with_datum_reference 
 geometric_tolerance_with_datum_reference.datum_system[i] -> 
 datum_reference
+end_attribute_mapping;
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_system);
+concentricity_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_system
 end_attribute_mapping;
 
 end_entity_mapping;
@@ -229,17 +257,15 @@ attribute_mapping referenced_datum(referenced_datum, $PATH, Datum);
 	datum
 end_attribute_mapping;
 *)
+(*
 attribute_mapping modification(modification, $PATH, limit_condition);
 	datum_reference 
  	datum_reference => 
  	referenced_modified_datum 
 	referenced_modified_datum.modifier ->
 	limit_condition
-	(limit_condition = .MAXIMUM_MATERIAL_CONDITION.)
-	(limit_condition = .LEAST_MATERIAL_CONDITION.)
-	(limit_condition = .REGARDLESS_OF_FEATURE_SIZE.)
 end_attribute_mapping;
-
+*)
 end_entity_mapping;
 (* Take from MIM
 entity_mapping Datum_target(Datum_target, datum_target);
@@ -267,6 +293,12 @@ geometric_tolerance_with_datum_reference.datum_system[i] ->
 datum_reference
 end_attribute_mapping;
 
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_system);
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] ->
+datum_system
+end_attribute_mapping;
+
 end_entity_mapping;
 
 entity_mapping Geometric_tolerance_armx(Geometric_tolerance_armx, geometric_tolerance);
@@ -283,7 +315,7 @@ attribute_mapping affected_plane(affected_plane, $PATH, Axis_placement_shape_ele
 	shape_aspect_relationship.relating_shape_aspect ->
 	shape_aspect
 end_attribute_mapping;
-
+(* Removed from XIM
 attribute_mapping model_coordinate_system(model_coordinate_system, $PATH, Axis_placement_shape_element);
 	geometric_tolerance <-
 	tolerance_zone.defining_tolerance[1]
@@ -295,7 +327,7 @@ attribute_mapping model_coordinate_system(model_coordinate_system, $PATH, Axis_p
 	shape_aspect_relationship.relating_shape_aspect ->
 	shape_aspect
 end_attribute_mapping;
-
+*)
 attribute_mapping form_type(form_type, tolerance_zone_form.name);
 	geometric_tolerance <-
 	tolerance_zone.defining_tolerance[1]
@@ -326,18 +358,35 @@ attribute_mapping composer(composer, $PATH, Geometric_tolerance_armx);
 	geometric_tolerance_relationship.related_geometric_tolerance ->
 	geometric_tolerance
 end_attribute_mapping;
-
-
-attribute_mapping modification(modification, $PATH, limit_condition);
+(*
+attribute_mapping modification(modification, modified_geometric_tolerance.modifier);
 	geometric_tolerance => 
 	modified_geometric_tolerance 
 	modified_geometric_tolerance.modifier ->
-	limit_condition
-	(limit_condition = .MAXIMUM_MATERIAL_CONDITION.)
-	(limit_condition = .LEAST_MATERIAL_CONDITION.)
-	(limit_condition = .REGARDLESS_OF_FEATURE_SIZE.)
+	limit_condition 
 end_attribute_mapping;
 
+attribute_mapping area_unit_type(area_unit_type, geometric_tolerance_with_defined_area_unit.area_type);
+	geometric_tolerance => 
+	geometric_tolerance_with_defined_area_unit 
+	geometric_tolerance_with_defined_area_unit.area_type ->
+	area_unit_type
+end_attribute_mapping; *)
+
+attribute_mapping unequally_disposed_tolerance_zone_displacement(unequally_disposed_tolerance_zone_displacement, $PATH, length_measure_with_unit);
+	geometric_tolerance => 
+	unequally_disposed_geometric_tolerance 
+	unequally_disposed_geometric_tolerance.displacement ->
+	length_measure_with_unit
+end_attribute_mapping;
+(* Enumerations are not supported - has to be dealt directly
+attribute_mapping modification_new(modification_new, geometric_tolerance_with_modifiers.modifiers);
+	geometric_tolerance => 
+	geometric_tolerance_with_modifiers 
+	geometric_tolerance_with_modifiers.modifiers ->
+	geometric_tolerance_modifier
+end_attribute_mapping;
+*)
 attribute_mapping name(name, geometric_tolerance.name);
 
 end_attribute_mapping;
@@ -350,13 +399,13 @@ attribute_mapping segment_size(segment_size, $PATH, measure_with_unit);
 geometric_tolerance => 
 geometric_tolerance_with_defined_unit 
 geometric_tolerance_with_defined_unit.unit_size -> 
-measure_with_unit =>
 length_measure_with_unit
 end_attribute_mapping;
 
 attribute_mapping significant_digits(significant_digits, precision_qualifier.precision_value);
 geometric_tolerance 
-geometric_tolerance.magnitude -> 
+geometric_tolerance.magnitude ->
+length_measure_with_unit <= 
 measure_with_unit <- 
 measure_qualification.qualified_measure 
 measure_qualification 
@@ -370,13 +419,13 @@ end_attribute_mapping;
 attribute_mapping tolerance_value(tolerance_value, $PATH, measure_with_unit);
 geometric_tolerance 
 geometric_tolerance.magnitude -> 
-measure_with_unit =>
 length_measure_with_unit
 end_attribute_mapping;
 
 attribute_mapping value_determination(value_determination, type_qualifier.name);
 geometric_tolerance 
-geometric_tolerance.magnitude -> 
+geometric_tolerance.magnitude ->
+length_measure_with_unit <= 
 measure_with_unit <- 
 measure_qualification.qualified_measure 
 measure_qualification 
@@ -456,12 +505,12 @@ placement =>
 (axis2_placement_3d)
 end_attribute_mapping;
 *)
-attribute_mapping reference_datum(reference_datum, $PATH, Datum_reference_armx);
+attribute_mapping reference_datum(reference_datum, $PATH, datum_system);
 line_profile_tolerance <=
 geometric_tolerance =>
 geometric_tolerance_with_datum_reference 
 geometric_tolerance_with_datum_reference.datum_system[i] -> 
-datum_reference
+datum_system
 end_attribute_mapping;
 
 end_entity_mapping;
@@ -515,6 +564,13 @@ geometric_tolerance_with_datum_reference.datum_system[i] ->
 datum_reference
 end_attribute_mapping;
 
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_system);
+parallelism_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_system
+end_attribute_mapping;
+
 end_entity_mapping;
 
 entity_mapping Perpendicularity_tolerance_armx(Perpendicularity_tolerance_armx, perpendicularity_tolerance);
@@ -564,6 +620,13 @@ perpendicularity_tolerance <=
 geometric_tolerance_with_datum_reference 
 geometric_tolerance_with_datum_reference.datum_system[i] ->
 datum_reference
+end_attribute_mapping;
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_system);
+perpendicularity_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] ->
+datum_system
 end_attribute_mapping;
 
 end_entity_mapping;
@@ -680,6 +743,14 @@ geometric_tolerance_with_datum_reference.datum_system[i] ->
 datum_reference
 end_attribute_mapping;
 
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_system);
+position_tolerance <= 
+geometric_tolerance => 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_system
+end_attribute_mapping;
+
 end_entity_mapping;
 (* projected_zone_definition is taken from AIM instead
 entity_mapping Projection(Projection, projected_zone_definition);
@@ -763,6 +834,14 @@ geometric_tolerance_with_datum_reference.datum_system[i] ->
 datum_reference
 end_attribute_mapping;
 
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_system);
+surface_profile_tolerance <=
+geometric_tolerance =>
+geometric_tolerance_with_datum_reference
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_system
+end_attribute_mapping;
+
 end_entity_mapping;
 
 entity_mapping Symmetry_tolerance_armx(Symmetry_tolerance_armx, symmetry_tolerance);
@@ -810,6 +889,13 @@ symmetry_tolerance <=
 geometric_tolerance_with_datum_reference 
 geometric_tolerance_with_datum_reference.datum_system[i] -> 
 datum_reference
+end_attribute_mapping;
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_system);
+symmetry_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_system
 end_attribute_mapping;
 
 end_entity_mapping;
@@ -1112,6 +1198,13 @@ total_runout_tolerance <=
 geometric_tolerance_with_datum_reference 
 geometric_tolerance_with_datum_reference.datum_system[i] -> 
 datum_reference
+end_attribute_mapping;
+
+attribute_mapping reference_datum(reference_datum, $PATH, Datum_system);
+total_runout_tolerance <= 
+geometric_tolerance_with_datum_reference 
+geometric_tolerance_with_datum_reference.datum_system[i] -> 
+datum_system
 end_attribute_mapping;
 
 end_entity_mapping;

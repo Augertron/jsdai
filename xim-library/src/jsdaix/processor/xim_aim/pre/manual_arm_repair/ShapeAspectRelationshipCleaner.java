@@ -70,16 +70,18 @@ public class ShapeAspectRelationshipCleaner {
 					continue;
 				}
 			}
-			EShape_aspect relating = instanceToClean.getRelating_shape_aspect(null);
-			if(relating instanceof EComposite_shape_aspect){
-				deleteWithMessage(importer, instanceToClean);
-				continue;
-			}
-			EShape_aspect related = instanceToClean.getRelated_shape_aspect(null);
-			if(related instanceof EDatum){
-				if((relating instanceof EDatum_feature)||(relating instanceof EDatum_target)){
+			if(instanceToClean.testRelating_shape_aspect(null)){
+				EShape_aspect relating = instanceToClean.getRelating_shape_aspect(null);
+				if(relating instanceof EComposite_shape_aspect){
 					deleteWithMessage(importer, instanceToClean);
 					continue;
+				}
+				EShape_aspect related = instanceToClean.getRelated_shape_aspect(null);
+				if(related instanceof EDatum){
+					if((relating instanceof EDatum_feature)||(relating instanceof EDatum_target)){
+						deleteWithMessage(importer, instanceToClean);
+						continue;
+					}
 				}
 			}
 			index++;

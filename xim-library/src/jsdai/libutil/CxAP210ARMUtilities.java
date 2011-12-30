@@ -736,9 +736,9 @@ public class CxAP210ARMUtilities extends JsdaiLangAccessor{
 	 * Relates product_definition with shape_asspect in following path:
 	 * product_definition <- property_definition_shape <- shape_aspect <- shape_aspect_relationship -> shape_aspect
 	 * @param context
-	 * @param product_definition product_definition entity to realate with shape_aspect.
+	 * @param product_definition product_definition entity to relate with shape_aspect.
 	 * @param shape_aspectDefinition intermediate shape_aspect definition
-	 * @param aimShape_aspect shape_aspect entity to realate with product_definition.
+	 * @param aimShape_aspect shape_aspect entity to relate with product_definition.
 	 * @param shapeAspectRelationshipName shape aspect relationship name.
 	 * @throws SdaiException
 	 */
@@ -887,7 +887,13 @@ public class CxAP210ARMUtilities extends JsdaiLangAccessor{
 	      LangUtils.createInstanceIfNeeded(context, CProduct_definition_context.definition, pdcStructure);
 	   // Fill AIM gaps
 	   if(!epdc.testFrame_of_reference(null)){
-		   EApplication_context ac = createApplication_context(context, "", true);
+		   AEntity apc = context.working_model.getRepository().getModels().getInstances(CApplication_context.definition);
+		   EApplication_context ac;
+		   if(apc.getMemberCount() > 0){
+			   ac = (EApplication_context)apc.getByIndexEntity(1);
+		   }else{
+			   ac = createApplication_context(context, "", true);			   
+		   }
 		   epdc.setFrame_of_reference(null, ac);
 	   }
 	   if(!epdc.testLife_cycle_stage(null)){
@@ -982,14 +988,21 @@ public class CxAP210ARMUtilities extends JsdaiLangAccessor{
 	public static EApplication_context createApplication_context(SdaiContext context, String apcApplication, boolean apcReuse) throws SdaiException {
 		   EApplication_context application_context = null;
 		   if (apcReuse) {
-			LangUtils.Attribute_and_value_structure[] acsStructure =
-													 {
-														new LangUtils.Attribute_and_value_structure(CApplication_context.attributeApplication(null), apcApplication),
-													};
-			application_context = (EApplication_context) LangUtils.createInstanceIfNeeded(
-																					context,
-																					CApplication_context.definition,
-																					acsStructure);
+			   if(apcApplication.equals("")){
+				   AEntity apc = context.working_model.getRepository().getModels().getInstances(CApplication_context.definition);
+				   if(apc.getMemberCount() > 0){
+					   application_context = (EApplication_context)apc.getByIndexEntity(1);
+				   }else{
+					   LangUtils.Attribute_and_value_structure[] acsStructure =
+						 {
+							new LangUtils.Attribute_and_value_structure(CApplication_context.attributeApplication(null), apcApplication),
+						};
+					   application_context = (EApplication_context) LangUtils.createInstanceIfNeeded(
+														context,
+														CApplication_context.definition,
+														acsStructure);
+				   }
+			   }
 		   } else {
 			 application_context = (EApplication_context) context.working_model.createEntityInstance(EApplication_context.class);
 			 application_context.setApplication(null, apcApplication);
@@ -2061,6 +2074,8 @@ public class CxAP210ARMUtilities extends JsdaiLangAccessor{
 	public static void unsetId(SdaiContext context, EEntity instance) throws SdaiException {
 		jsdai.SBasic_attribute_schema.EId_attribute name_attribute = null;
 		jsdai.SBasic_attribute_schema.AId_attribute aName_attribute = new jsdai.SBasic_attribute_schema.AId_attribute();
+		// ID can be also in the same module, not just in newly created domain
+		jsdai.SBasic_attribute_schema.CId_attribute.usedinIdentified_item(null, instance, null, aName_attribute);
 		jsdai.SBasic_attribute_schema.CId_attribute.usedinIdentified_item(null, instance, context.domain, aName_attribute);
 		int count = aName_attribute.getMemberCount();
 		for(int i=1;i<=count;i++){

@@ -258,6 +258,7 @@ break;
 //		synchronized (syncObject) {
 		Object o = inverseList;
 		CEntity old_inst = (CEntity)old;
+		SdaiSession session;
 //long o_id = old_inst.instance_identifier;
 //System.out.println("!!!!!!!!!!!!!!!!! old instance: " + old_inst);
 //CEntity n_inst = (CEntity)newer;
@@ -277,7 +278,12 @@ break;
 				InverseEntity inst = (InverseEntity) inv.value;
 				if (save4undo) {
 					instance = (CEntity)inst;
-					instance.owning_model.repository.session.undoRedoModifyPrepare(instance);
+					session = instance.owning_model.repository.session;
+					if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+						String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+						throw new SdaiException(SdaiException.SY_ERR, base);
+					}
+					session.undoRedoModifyPrepare(instance);
 				}
 				if (inst != old || allow_self_refs) {
 					if (inst instanceof CEntity) {
@@ -318,7 +324,12 @@ break;
 				InverseEntity inst = (InverseEntity) o;
 				if (save4undo) {
 					instance = (CEntity)inst;
-					instance.owning_model.repository.session.undoRedoModifyPrepare(instance);
+					session = instance.owning_model.repository.session;
+					if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+						String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+						throw new SdaiException(SdaiException.SY_ERR, base);
+					}
+					session.undoRedoModifyPrepare(instance);
 				}
 				if (inst != old || allow_self_refs) {
 					if (inst instanceof CEntity) {
@@ -375,6 +386,7 @@ break;
 		CEntity inst;
 		CEntity old_inst = (CEntity)old;
 		CEntity newer_inst = (CEntity)newer;
+		SdaiSession session;
 		while (o != null) {
 			if (o instanceof Inverse) {
 				Inverse inv = (Inverse) o;
@@ -386,7 +398,12 @@ break;
 					throw new SdaiException(SdaiException.MX_NRW, inst.owning_model);
 				}
 				if (save4undo) {
-					inst.owning_model.repository.session.undoRedoModifyPrepare(inst);
+					session = inst.owning_model.repository.session;
+					if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+						String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+						throw new SdaiException(SdaiException.SY_ERR, base);
+					}
+					session.undoRedoModifyPrepare(inst);
 				}
 				old_inst.instance_identifier = -old_inst.instance_identifier;
 				newer_inst.instance_identifier = -newer_inst.instance_identifier;
@@ -406,6 +423,11 @@ break;
 					throw new SdaiException(SdaiException.MX_NRW, inst.owning_model);
 				}
 				if (save4undo) {
+					session = inst.owning_model.repository.session;
+					if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+						String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+						throw new SdaiException(SdaiException.SY_ERR, base);
+					}
 					inst.owning_model.repository.session.undoRedoModifyPrepare(inst);
 				}
 				old_inst.instance_identifier = -old_inst.instance_identifier;

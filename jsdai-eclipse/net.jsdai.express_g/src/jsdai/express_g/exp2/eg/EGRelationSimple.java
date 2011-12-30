@@ -89,7 +89,8 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
 	// RR
 	protected boolean fRestricted = false;
 	private boolean showRestricted = true;
-
+	private boolean flag_inverted_in_supertype = false;  // the issue could have been handled by parent_of_inverted alone
+	private String parent_of_inverted = null; 
   
   protected Point[] pline = new Point[]{
       new Point(0, 0),
@@ -117,6 +118,7 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
   }
 
   public void setInverse(Agregate inverse) {
+//System.out.println("EGRS - setInverse - 01: " + inverse);  
   	if (this.inverse != inverse) {
   	    this.inverse = inverse;
   	    wrapper.setText(getText());
@@ -124,6 +126,20 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
   		if (prop() != null) prop().setModified(true);
   	}
   }
+
+	// RR version 	
+  public void setInverse(Agregate inverse, boolean flag_inverted_in_supertype, String parent_of_inverted) {
+//System.out.println("EGRS - setInverse - 01: " + inverse);  
+  	this.flag_inverted_in_supertype = flag_inverted_in_supertype;
+		this.parent_of_inverted = parent_of_inverted;
+  	if (this.inverse != inverse) {
+  	    this.inverse = inverse;
+  	    wrapper.setText(getText());
+  		updateBounds();
+  		if (prop() != null) prop().setModified(true);
+  	}
+  }
+
 
   public boolean isDerived() {
     return derived;
@@ -238,10 +254,11 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
 				} else {  // TO DISABLE SNAP AT THE OPPOSITE END, REMOVE THIS else
 					// the snap is not possible, but perhaps we can attempt to snap the box at the other end of the wire?
 					// this snap would be done to the opposite direction and clearly no additional check is needed as both boxes must be close to the left edge
-					Point location2 = child.getLocation();
-    			location2.x += dd;
-    			child.setLocation(location2);
-    			pline[4].x += dd;
+					
+					//DISABLING Point location2 = child.getLocation();
+					//DISABLING location2.x += dd;
+					//DISABLING child.setLocation(location2);
+					//DISABLING pline[4].x += dd;
 				}
     	} else 
        	if (!parent.isSelected() && child.isSelected()) {
@@ -256,10 +273,11 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
     			child.setLocation(location);
     			pline[4].x += dd;
     		} else { // snap at the other end - TO DISABLE IT, REMOVE THIS else
-					Point location2 = parent.getLocation();
-    			location2.x -= dd;
-    			parent.setLocation(location2);
-    			pline[0].x -= dd; 
+
+    			//DISABLING Point location2 = parent.getLocation();
+    			//DISABLING location2.x -= dd;
+    			//DISABLING parent.setLocation(location2);
+    			//DISABLING pline[0].x -= dd; 
     		}
     	}  
     }
@@ -276,10 +294,11 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
     			parent.setLocation(location);
     			pline[0].y -= dd;
     		} else { // SNAPPING AT THE OTHER END - TO DISABLE IT, REMOVE THIS else
-	    		Point location2 = child.getLocation();
-    			location2.y += dd;
-    			child.setLocation(location2);
-    			pline[4].y += dd;
+
+    			//DISABLING Point location2 = child.getLocation();
+    			//DISABLING location2.y += dd;
+    			//DISABLING child.setLocation(location2);
+    			//DISABLING pline[4].y += dd;
     		}
     	} else 
        	if (!parent.isSelected() && child.isSelected()) {
@@ -294,10 +313,11 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
     			child.setLocation(location);
     			pline[4].y += dd;
     		} else { // SNAPPING AT THE OTHER END - TO DISABLE IT, REMOVE THIS else
-	    		Point location2 = parent.getLocation();
-    			location2.y -= dd;
-    			parent.setLocation(location2);
-    			pline[0].y -= dd;
+
+    			//DISABLING Point location2 = parent.getLocation();
+    			//DISABLING location2.y -= dd;
+    			//DISABLING parent.setLocation(location2);
+    			//DISABLING pline[0].y -= dd;
     		}
     	}  
     }
@@ -851,11 +871,14 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
                 setDefinition(ea);
 
                 if (inverse != null) {
+// System.out.println("<EGRS> inverse 01: " + inverse);
                   if (ec instanceof EEntity_definition) {
+// System.out.println("<EGRS> inverse 02: " + ec);
                     EInverse_attribute ia = (EInverse_attribute)modelDict.createEntityInstance(EInverse_attribute.class);
                     ia.setParent(null, (EEntity_or_view_definition)ep);
                     ia.setDomain(null, (EEntity_definition)ec);
                     ia.setInverted_attr(null, ea);
+// System.out.println("<EGRS> inverse 03: " + ea);
                     if (!"".equals(inverse.getName())) ia.setName(null, inverse.getName());
                     if (inverse.getMinBound() != Agregate.BOUND_NONE) {
                       EBound boundMin = (EBound)modelDict.createEntityInstance(EInteger_bound.class);
@@ -1013,12 +1036,41 @@ public class EGRelationSimple extends AbstractEGRelation implements LabelListene
 //		if (isConcreteValuesSet()) text += " = " + getConcreteValue();
 //System.err.println("TEXT:" + isConcreteValuesSet() + " : " + getConcreteValue());		
 		if (inverse != null) {
-			if (!StaticTools.equalStrings(text, "")) text += "\n(INV) ";
-			if (redeclaringInverse != null) {
-				if (redeclaringInverse.equals("") || (redeclaringInverse.equalsIgnoreCase(getInverse().getName()))) text += "(RT) ";
-				else text += "(RT) " + redeclaring + " > ";
+//System.out.println("IN getText <00-A> inverse: " + inverse);
+//System.out.println("IN getText <00>:" + getName());
+//if (agregate != null) System.out.println("IN getText <00-B>:" + agregate.getText());
+//System.out.println("IN getText <01>:" + text);
+// related_shape_aspect 
+			if ((flag_inverted_in_supertype) && (parent_of_inverted != null)) {
+				String text2 = null;
+				if (text.startsWith("(RT)")) {
+					text2 = text.substring(4,text.length());
+					text = "((RT)" + parent_of_inverted + "." + text2 + ")";
+			} else {
+					text2 = text;
+					text = "(" + parent_of_inverted + "." + text2 + ")";
+				}
+//				text = "(" + parent_of_inverted + "." + text2 + ")";
 			}
+			if (!StaticTools.equalStrings(text, "")) text += "\n(INV) ";
+//System.out.println("IN getText <02>:" + text);
+// related_shape_aspect 
+			if (redeclaringInverse != null) {
+//System.out.println("IN getText <03>:" + text);
+				if (redeclaringInverse.equals("") || (redeclaringInverse.equalsIgnoreCase(getInverse().getName()))) {
+					text += "(RT) ";
+//System.out.println("IN getText <04>:" + text);
+				} else {
+					text += "(RT) " + redeclaring + " > ";
+//System.out.println("IN getText <05>:" + text);
+				}
+			}
+//System.out.println("IN getText <06>:" + text);
+// related_shape_aspect 
 	        text += inverse.getText();
+//System.out.println("IN getText <07>:" + text);
+// related_shape_aspect 
+// (INV) basis_relationships S[:]
 		}
     // RR
 		if (isRestricted())

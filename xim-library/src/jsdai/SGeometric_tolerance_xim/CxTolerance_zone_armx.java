@@ -29,6 +29,7 @@ package jsdai.SGeometric_tolerance_xim;
 * $Id$
 */
 
+import jsdai.SDimension_tolerance_xim.EAssociated_shape_element;
 import jsdai.SProduct_property_definition_schema.AShape_aspect_relationship;
 import jsdai.SProduct_property_definition_schema.CShape_aspect_relationship;
 import jsdai.SProduct_property_definition_schema.EProduct_definition_shape;
@@ -48,23 +49,23 @@ public class CxTolerance_zone_armx extends CTolerance_zone_armx implements EMapp
 	// From CShape_aspect.java
 	// attribute (current explicit or supertype explicit) : of_shape, base type: entity product_definition_shape
 /*	public static int usedinOf_shape(EShape_aspect type, EProduct_definition_shape instance, ASdaiModel domain, AEntity result) throws SdaiException {
-		return ((CEntity)instance).makeUsedin(definition, a7$, domain, result);
+		return ((CEntity)instance).makeUsedin(definition, a2$, domain, result);
 	}
 	public boolean testOf_shape(EShape_aspect type) throws SdaiException {
-		return test_instance(a7);
+		return test_instance(a2);
 	}
 	public EProduct_definition_shape getOf_shape(EShape_aspect type) throws SdaiException {
-		a7 = get_instance(a7);
-		return (EProduct_definition_shape)a7;
+		a2 = get_instance(a2);
+		return (EProduct_definition_shape)a2;
 	}*/
 	public void setOf_shape(EShape_aspect type, EProduct_definition_shape value) throws SdaiException {
-		a7 = set_instanceX(a7, value);
+		a2 = set_instanceX(a2, value);
 	}
 	public void unsetOf_shape(EShape_aspect type) throws SdaiException {
-		a7 = unset_instance(a7);
+		a2 = unset_instance(a2);
 	}
 	public static jsdai.dictionary.EAttribute attributeOf_shape(EShape_aspect type) throws SdaiException {
-		return a7$;
+		return a2$;
 	}
 	
 	/// methods for attribute: product_definitional, base type: LOGICAL
@@ -75,13 +76,13 @@ public class CxTolerance_zone_armx extends CTolerance_zone_armx implements EMapp
 		return get_logical(a8);
 	}*/
 	public void setProduct_definitional(EShape_aspect type, int value) throws SdaiException {
-		a8 = set_logical(value);
+		a3 = set_logical(value);
 	}
 	public void unsetProduct_definitional(EShape_aspect type) throws SdaiException {
-		a8 = unset_logical();
+		a3 = unset_logical();
 	}
 	public static jsdai.dictionary.EAttribute attributeProduct_definitional(EShape_aspect type) throws SdaiException {
-		return a8$;
+		return a3$;
 	}
 
 	/// methods for attribute: name, base type: STRING
@@ -92,13 +93,13 @@ public class CxTolerance_zone_armx extends CTolerance_zone_armx implements EMapp
 			return get_string(a5);
 		}*/
 		public void setName(EShape_aspect type, String value) throws SdaiException {
-			a5 = set_string(value);
+			a0 = set_string(value);
 		}
 		public void unsetName(EShape_aspect type) throws SdaiException {
-			a5 = unset_string();
+			a0 = unset_string();
 		}
 		public static jsdai.dictionary.EAttribute attributeName(EShape_aspect type) throws SdaiException {
-			return a5$;
+			return a0$;
 		}
 		
 	/// methods for attribute: description, base type: STRING
@@ -109,13 +110,13 @@ public class CxTolerance_zone_armx extends CTolerance_zone_armx implements EMapp
 		return get_string(a6);
 	}*/
 	public void setDescription(EShape_aspect type, String value) throws SdaiException {
-		a6 = set_string(value);
+		a1 = set_string(value);
 	}
 	public void unsetDescription(EShape_aspect type) throws SdaiException {
-		a6 = unset_string();
+		a1 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(EShape_aspect type) throws SdaiException {
-		return a6$;
+		return a1$;
 	}
 	// ENDOF From CShape_aspect.java
 
@@ -145,7 +146,7 @@ public class CxTolerance_zone_armx extends CTolerance_zone_armx implements EMapp
 		unsetAffected_plane(null);
 		
 	    // model_coordinate_system : OPTIONAL Axis_placement_shape_element;
-		unsetModel_coordinate_system(null);
+//		unsetModel_coordinate_system(null);
 		
 	    // form_type : OPTIONAL tolerance_zone_type; 
 		unsetForm_type(null);		
@@ -225,7 +226,7 @@ public class CxTolerance_zone_armx extends CTolerance_zone_armx implements EMapp
 	public static void setAffected_plane(SdaiContext context, ETolerance_zone_armx armEntity) throws SdaiException {
 		unsetAffected_plane(context, armEntity);
 		if(armEntity.testAffected_plane(null)){
-			EAxis_placement_shape_element eapse = armEntity.getAffected_plane(null);
+			EAssociated_shape_element eapse = armEntity.getAffected_plane(null);
 			EShape_aspect_relationship esar = (EShape_aspect_relationship)
 				context.working_model.createEntityInstance(CShape_aspect_relationship.definition);
 			esar.setRelated_shape_aspect(null, armEntity);
@@ -269,7 +270,7 @@ public class CxTolerance_zone_armx extends CTolerance_zone_armx implements EMapp
 	public static void setModel_coordinate_system(SdaiContext context, ETolerance_zone_armx armEntity) throws SdaiException {
 		unsetModel_coordinate_system(context, armEntity);
 		if(armEntity.testAffected_plane(null)){
-			EAxis_placement_shape_element eapse = armEntity.getAffected_plane(null);
+			EAssociated_shape_element eapse = armEntity.getAffected_plane(null);
 			EShape_aspect_relationship esar = (EShape_aspect_relationship)
 				context.working_model.createEntityInstance(CShape_aspect_relationship.definition);
 			esar.setRelated_shape_aspect(null, armEntity);

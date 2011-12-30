@@ -27,12 +27,22 @@ USE FROM product_property_representation_schema   -- ISO 10303-41
   (item_identified_representation_usage,
   shape_definition_representation); 
 
+TYPE geometric_item_specific_usage_select = SELECT
+ 	(shape_aspect,
+ 	shape_aspect_relationship);
+END_TYPE; 
 
-  ENTITY geometric_item_specific_usage
-    SUBTYPE OF(item_identified_representation_usage);
---      SELF\item_identified_representation_usage.definition          : shape_aspect;
-      SELF\item_identified_representation_usage.used_representation : shape_representation;
-      SELF\item_identified_representation_usage.identified_item     : geometric_representation_item;
-  END_ENTITY;
+TYPE shape_model = EXTENSIBLE GENERIC_ENTITY SELECT
+ 	(shape_representation);
+END_TYPE;
+ 	
+ENTITY geometric_item_specific_usage
+ 	SUBTYPE OF(item_identified_representation_usage);
+ 	SELF\item_identified_representation_usage.definition : geometric_item_specific_usage_select;
+	SELF\item_identified_representation_usage.used_representation : shape_model;
+ 	SELF\item_identified_representation_usage.identified_item : geometric_representation_item;
+ 	UNIQUE
+ 	UR1 : definition;
+END_ENTITY;
 
 END_SCHEMA; 

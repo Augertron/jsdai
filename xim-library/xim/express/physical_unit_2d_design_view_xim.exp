@@ -45,7 +45,7 @@ USE FROM Physical_unit_2d_design_view_mim;
     DERIVE
       equivalent_reference_shape_model : SET [0:1] OF Shape_representation_relationship :=
         bag_to_set(QUERY( gmr <* USEDIN(SELF, 'PRODUCT_PROPERTY_REPRESENTATION_SCHEMA.SHAPE_REPRESENTATION_RELATIONSHIP.REP_2') |
-        (gmr\Representation_relationship.relation_type = 'equivalent reference shape model')));      
+        (gmr\Representation_relationship.name = 'equivalent reference shape model')));      
     WHERE
       WR1 : SIZEOF(equivalent_reference_shape_model) < 2;         
       WR2 : (SIZEOF(USEDIN(SELF,
@@ -61,7 +61,7 @@ USE FROM Physical_unit_2d_design_view_mim;
      SELF\representation_relationship.rep_2 RENAMED assembly_model : Physical_unit_planar_shape_model;  -- CHANGED
      SELF\representation_relationship.rep_1 RENAMED component_model : shape_representation; -- CHANGED
    DERIVE
-     component : Next_assembly_usage_occurrence_relationship_armx := SELF\Contextual_shape_representation.contextual_shape.described_element;   
+     component : Next_assembly_usage_occurrence_relationship_armx := SELF\Contextual_shape_representation.contextual_shape.definition;   
      substrate_location : BOOLEAN := substrate_in_assembly(SELF);
   	 the_context : geometric_representation_context := assembly_model\Shape_representation\Representation.context_of_items;
      SELF\context_dependent_shape_representation.representation_relation : shape_representation_relationship := SELF;   -- NEW

@@ -255,7 +255,7 @@ FUNCTION check_curve_planarity (checked_curve: curve) : BOOLEAN;
   LOCAL
     crv    : curve   := checked_curve;
     i,j    : INTEGER;
-    result : LOGICAL := UNKNOWN;
+    result : BOOLEAN := FALSE;
   END_LOCAL;
 
   -- Determine whether the curve lies on a plane, according to its type
@@ -265,18 +265,18 @@ FUNCTION check_curve_planarity (checked_curve: curve) : BOOLEAN;
   THEN result := TRUE;
   ELSE
     IF (('GEOMETRY_SCHEMA.TRIMMED_CURVE' IN TYPEOF(crv)) 
-      AND check_curve_planarity(crv.basis_curve))
+      AND check_curve_planarity(crv\trimmed_curve.basis_curve))
     THEN result := TRUE;
     ELSE
       IF (('GEOMETRY_SCHEMA.PCURVE' IN TYPEOF(crv)) 
-        AND ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(crv.basis_surface)))
+        AND ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(crv\pcurve.basis_surface)))
       THEN result := TRUE;
       ELSE
         IF ('GEOMETRY_SCHEMA.SURFACE_CURVE' IN TYPEOF(crv)) 
         THEN
         BEGIN
-          REPEAT j := 1 TO HIINDEX(crv.basis_surface);
-            IF ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(crv.basis_surface[j])) 
+          REPEAT j := 1 TO HIINDEX(crv\surface_curve.basis_surface);
+            IF ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(crv\surface_curve.basis_surface[j])) 
             THEN result := TRUE;
             END_IF;
           END_REPEAT;
@@ -305,46 +305,46 @@ FUNCTION get_plane_of_implicit_geometry
   -- name.
 
   IF ('TOPOLOGY_SCHEMA.FACE_SURFACE' IN TYPEOF(sb)) THEN 
-    result := sb.face_geometry;
+    result := sb\face_surface.face_geometry;
   ELSE
     IF ('GEOMETRY_SCHEMA.CURVE_BOUNDED_SURFACE' IN TYPEOF(sb)) THEN
-      result := sb.basis_surface;
+      result := sb\curve_bounded_surface.basis_surface;
     ELSE 
       IF ('SKETCH_SCHEMA.PLANAR_CURVE_SELECT' IN TYPEOF(sb)) THEN
       BEGIN
  
         IF ('GEOMETRY_SCHEMA.CONIC' IN TYPEOF(sb)) 
           THEN result := dummy_gri || surface() || 
-            elementary_surface(sb.position) || plane();
+            elementary_surface(sb\conic.position) || plane();
         END_IF;
 
         IF ('GEOMETRY_SCHEMA.TRIMMED_CURVE' IN TYPEOF(sb)) 
           THEN 
           BEGIN
             result := get_plane_of_implicit_geometry(
-            dummy_gri || positioned_sketch(sb.basis_curve,[]));
+            dummy_gri || positioned_sketch(sb\trimmed_curve.basis_curve,[]));
           END;
         END_IF;
 
         IF ('GEOMETRY_SCHEMA.PCURVE' IN TYPEOF(sb))
-          THEN result := sb.basis_surface;
+          THEN result := sb\pcurve.basis_surface;
         END_IF;
 
         IF ('GEOMETRY_SCHEMA.SURFACE_CURVE' IN TYPEOF(sb)) THEN
         BEGIN
-          IF ((SIZEOF(sb.basis_surface) = 1) -- case of one basis surface 
-            AND ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(sb.basis_surface[1])))
-          THEN result := sb.basis_surface[1];
+          IF ((SIZEOF(sb\surface_curve.basis_surface) = 1) -- case of one basis surface 
+            AND ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(sb\surface_curve.basis_surface[1])))
+          THEN result := sb\surface_curve.basis_surface[1];
           ELSE -- case of two basis surfaces
-            IF (('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(sb.basis_surface[1]))
-              AND ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(sb.basis_surface[2])))
+            IF (('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(sb\surface_curve.basis_surface[1]))
+              AND ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(sb\surface_curve.basis_surface[2])))
             THEN result := ?;
               -- both basis surfaces are planes, their intersection curve 
               -- is a line, and no unique plane is defined
             ELSE -- only one of the two basis surfaces is a plane
-              IF ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(sb.basis_surface[1]))
-              THEN result := sb.basis_surface[1];
-              ELSE result := sb.basis_surface[2];
+              IF ('GEOMETRY_SCHEMA.PLANE' IN TYPEOF(sb\surface_curve.basis_surface[1]))
+              THEN result := sb\surface_curve.basis_surface[1];
+              ELSE result := sb\surface_curve.basis_surface[2];
               END_IF;
             END_IF;
           END_IF;
@@ -360,3 +360,4 @@ FUNCTION get_plane_of_implicit_geometry
 END_FUNCTION;
 
 END_SCHEMA; -- sketch_schema
+

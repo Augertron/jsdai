@@ -1,7 +1,7 @@
 (*
  $Id$
- ISO TC184/SC4/WG12 N5477 - ISO/TS 10303-1103 Product class - EXPRESS MIM
- Supersedes ISO TC184/SC4/WG12 N4926
+ ISO TC184/SC4/WG12 N6256 - ISO/TS 10303-1103 Product class - EXPRESS MIM
+ Supersedes ISO TC184/SC4/WG12 N5477
 *)
 
 SCHEMA Product_class_mim;
@@ -12,32 +12,30 @@ USE FROM Product_concept_identification_mim;
 
 USE FROM Group_mim;
 
+USE FROM basic_attribute_schema (
+  object_role);
+
 USE FROM product_concept_schema(
-	conditional_concept_feature,
-	product_concept_relationship,
-	product_concept_feature,
-	product_concept_feature_association,
-	concept_feature_operator);
+  conditional_concept_feature,
+  product_concept_relationship,
+  product_concept_feature,
+  product_concept_feature_association,
+  concept_feature_operator);
 
 USE FROM product_property_definition_schema(
-	characterized_object);
+  characterized_object);
 
 TYPE category_usage_item = SELECT (product_class);
 END_TYPE;
 
-TYPE id_for_class = EXTENSIBLE SELECT BASED_ON identification_item WITH (
-	product_class, 
-	product_concept_feature);
-END_TYPE;
-
-TYPE version_for_class = SELECT BASED_ON versionable_item WITH (
-	product_class, 
-	product_concept_feature);
+TYPE id_for_class = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH (
+  product_class, 
+  product_concept_feature);
 END_TYPE;
 
 TYPE specification_for_category = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON groupable_item WITH (
-	package_product_concept_feature,
-	product_concept_feature);
+  package_product_concept_feature,
+  product_concept_feature);
 END_TYPE;
 
 ENTITY exclusive_product_concept_feature_category
@@ -48,20 +46,12 @@ ENTITY inclusion_product_concept_feature
 	SUBTYPE OF (conditional_concept_feature);
 	WHERE
 		WR1: NOT ( 'PRODUCT_CLASS_MIM.' + 'PACKAGE_PRODUCT_CONCEPT_FEATURE' IN TYPEOF ( SELF ) ) ;
-		WR2: SIZEOF (QUERY
-									( cfr <* USEDIN 
-											( SELF ,'PRODUCT_CONCEPT_SCHEMA.' + 'CONCEPT_FEATURE_RELATIONSHIP.RELATING_PRODUCT_CONCEPT_FEATURE' ) 
-											| 
-											'PRODUCT_CONCEPT_SCHEMA.'+ 'CONCEPT_FEATURE_RELATIONSHIP_WITH_CONDITION' IN TYPEOF( cfr ) 
-									) 
-								) + 
-				 SIZEOF(QUERY
-				 					( cfr <* USEDIN 
-				 							(SELF , 'PRODUCT_CONCEPT_SCHEMA.' + 'CONCEPT_FEATURE_RELATIONSHIP.RELATED_PRODUCT_CONCEPT_FEATURE' ) 
-				 							| 
-											'PRODUCT_CONCEPT_SCHEMA.' + 'CONCEPT_FEATURE_RELATIONSHIP_WITH_CONDITION' IN TYPEOF(cfr)
-									)
-								)= 0;
+		WR2: SIZEOF (QUERY( cfr <* USEDIN( SELF ,'PRODUCT_CONCEPT_SCHEMA.' + 'CONCEPT_FEATURE_RELATIONSHIP.RELATING_PRODUCT_CONCEPT_FEATURE' ) | 
+						'PRODUCT_CONCEPT_SCHEMA.'+ 'CONCEPT_FEATURE_RELATIONSHIP_WITH_CONDITION' IN TYPEOF( cfr ) 
+			 )) + 
+			 SIZEOF(QUERY( cfr <* USEDIN(SELF , 'PRODUCT_CONCEPT_SCHEMA.' + 'CONCEPT_FEATURE_RELATIONSHIP.RELATED_PRODUCT_CONCEPT_FEATURE' ) | 
+						'PRODUCT_CONCEPT_SCHEMA.' + 'CONCEPT_FEATURE_RELATIONSHIP_WITH_CONDITION' IN TYPEOF(cfr)
+			)) = 0;
 		WR3: SELF.condition.conditional_operator.name = 'implication';
 END_ENTITY;
 
@@ -69,22 +59,12 @@ ENTITY package_product_concept_feature
 	SUBTYPE OF (product_concept_feature);
 WHERE
 	WR1: NOT ( 'PRODUCT_CONCEPT_SCHEMA.' + 'CONDITIONAL_CONCEPT_FEATURE' IN TYPEOF ( SELF ) ) ;
-	WR2: SIZEOF ( QUERY 
-									( 
-										cfr <* USEDIN ( SELF , 'PRODUCT_CONCEPT_SCHEMA.' + 'CONCEPT_FEATURE_RELATIONSHIP.' +'RELATING_PRODUCT_CONCEPT_FEATURE' ) 
-										| 
-										('PRODUCT_CONCEPT_SCHEMA.' + 'CONCEPT_FEATURE_RELATIONSHIP_WITH_CONDITION' IN TYPEOF (cfr ) ) 
-										AND 
-										( SIZEOF ( QUERY 
-																( 
-																	ipcf <* USEDIN ( cfr , 'PRODUCT_CONCEPT_SCHEMA.' + 'CONDITIONAL_CONCEPT_FEATURE.' +	'CONDITION' ) 
-																	| 
-																	'PRODUCT_CLASS_MIM.' + 'INCLUSION_PRODUCT_CONCEPT_FEATURE' IN TYPEOF ( ipcf ) 
-																)
-															)= 1 
-										)
-									)
-							)>0;
+	WR2: SIZEOF ( QUERY ( cfr <* USEDIN ( SELF , 'PRODUCT_CONCEPT_SCHEMA.' + 'CONCEPT_FEATURE_RELATIONSHIP.' +'RELATING_PRODUCT_CONCEPT_FEATURE' ) | 
+		        ('PRODUCT_CONCEPT_SCHEMA.' + 'CONCEPT_FEATURE_RELATIONSHIP_WITH_CONDITION' IN TYPEOF (cfr ) ) AND 
+			    (SIZEOF ( QUERY (ipcf <* USEDIN ( cfr , 'PRODUCT_CONCEPT_SCHEMA.' + 'CONDITIONAL_CONCEPT_FEATURE.' + 'CONDITION' ) | 
+				 'PRODUCT_CLASS_MIM.' + 'INCLUSION_PRODUCT_CONCEPT_FEATURE' IN TYPEOF ( ipcf ) 
+			     )) = 1)
+		)) > 0;
 END_ENTITY;
 					
 ENTITY product_class
@@ -94,28 +74,13 @@ END_ENTITY;
 ENTITY product_concept_feature_category
   SUBTYPE OF (group);
 WHERE
-	WR1 : SIZEOF(QUERY
-									( 
-										aga <* USEDIN( SELF, 'MANAGEMENT_RESOURCES_SCHEMA.' + 'GROUP_ASSIGNMENT.ASSIGNED_GROUP' ) 
-										|
-     								('GROUP_MIM.'+ 'APPLIED_GROUP_ASSIGNMENT' IN TYPEOF(aga)) 
-     								AND
-    								(
-    									( aga.role.name <> 'specification category member' ) 
-    									OR 
-    									( SIZEOF(QUERY 
-    															( 
-    																i <* aga.items 
-    																| 
-    																('PRODUCT_CONCEPT_SCHEMA.'+ 'PRODUCT_CONCEPT_FEATURE' IN TYPEOF ( i ) ) 
-    																AND 
-    																NOT ('PRODUCT_CONCEPT_SCHEMA.'+ 'CONDITIONAL_CONCEPT_FEATURE' IN TYPEOF (i))
-    															)
-    													) <> SIZEOF (aga.items)
-    									)
-    								) 
-       						) 
-       				) =0;
+	WR1 : SIZEOF(QUERY(aga <* USEDIN( SELF, 'MANAGEMENT_RESOURCES_SCHEMA.' + 'GROUP_ASSIGNMENT.ASSIGNED_GROUP' ) |
+           ('GROUP_MIM.'+ 'APPLIED_GROUP_ASSIGNMENT' IN TYPEOF(aga)) AND
+           (( aga\group_assignment.role\object_role.name <> 'specification category member' ) OR 
+            ( SIZEOF(QUERY (i <* aga\applied_group_assignment.items | ('PRODUCT_CONCEPT_SCHEMA.'+ 'PRODUCT_CONCEPT_FEATURE' IN TYPEOF ( i ) ) AND 
+             NOT ('PRODUCT_CONCEPT_SCHEMA.'+ 'CONDITIONAL_CONCEPT_FEATURE' IN TYPEOF (i)))) <> SIZEOF (aga\applied_group_assignment.items)
+              ))
+          )) =0;
 END_ENTITY;
 
 ENTITY product_concept_feature_category_usage
@@ -154,7 +119,7 @@ WR1: SIZEOF ( QUERY ( pcf <* product_concept_feature |
 (SIZEOF(['PRODUCT_CLASS_MIM.' + 'INCLUSION_PRODUCT_CONCEPT_FEATURE',
 'PRODUCT_CONCEPT_SCHEMA.' + 'CONDITIONAL_CONCEPT_FEATURE'] * TYPEOF(pcf)) = 0) AND 
 (SIZEOF ( QUERY ( aga <* USEDIN ( pcf , 'GROUP_MIM.' + 'APPLIED_GROUP_ASSIGNMENT.' + 'ITEMS' ) | 
-( aga.role.name = 'specification category member' ) AND 
+(aga\group_assignment.role\object_role.name = 'specification category member' ) AND 
 ('PRODUCT_CLASS_MIM.' + 'PRODUCT_CONCEPT_FEATURE_CATEGORY' IN TYPEOF ( aga.assigned_group )))) <>1 ) ) ) = 0;
 END_RULE;
 

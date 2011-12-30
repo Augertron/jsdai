@@ -30,10 +30,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import jsdai.dictionary.ADeclaration;
 import jsdai.dictionary.AEntity_definition;
-import jsdai.dictionary.CEntity_declaration;
 import jsdai.dictionary.EEntity_definition;
+import jsdai.dictionary.ESchema_definition;
 import jsdai.lang.AEntity;
 import jsdai.lang.ASdaiModel;
 import jsdai.lang.EEntity;
@@ -52,11 +51,27 @@ public class Utilities {
 	private Utilities() {}
 	
 	public static List findInconsistentEntities(AEntity instances, String schemaName) throws SdaiException {
+		APInstancesProcessor processor = null;
+		if(schemaName.startsWith("automotive_design")){
+			processor = AP214Entities.getInstance();
+		}else if(schemaName.startsWith("ap203")){
+			processor = AP203Entities.getInstance();
+		}else if(schemaName.startsWith("ap242")){
+			processor = AP242Entities.getInstance();
+		}
+
+		if(processor != null){
+			return processor.findInconsistentEntities(instances);
+		}
+		
 		List inconsistentEntities = new ArrayList(); 
 		HashMap testedDefinitions = new HashMap();
 
-		ASdaiModel domain = getSystemDomain(schemaName);
 		
+		SdaiRepository systemRepo = SdaiSession.getSession().getSystemRepository();
+		SdaiModel dictMod = systemRepo.findSdaiModel(String.valueOf(schemaName + "_DICTIONARY_DATA").toUpperCase());
+		dictMod.startReadOnlyAccess();
+		ESchema_definition schema = dictMod.getDefinedSchema();
 		SdaiIterator it = instances.createIterator();
 		while (it.next()) {
 			EEntity instance = instances.getCurrentMemberEntity(it);
@@ -67,8 +82,7 @@ public class Utilities {
 			if (wasConsistent == null) {
 				// still not checked ..
 				// check for availability of eDefinition
-
-				wasConsistent = Boolean.valueOf(isTypeConsistent(domain, eDef));
+				wasConsistent = new Boolean(schema.testEntityDefinition(eDef.getName(null)));
 				testedDefinitions.put(eDef, wasConsistent);
 			}
 
@@ -102,10 +116,10 @@ public class Utilities {
 			throw new IllegalArgumentException();
 		}
 		
-		ASdaiModel domain = getSystemDomain(schemaName);
-		if (domain == null) {
-			throw new IllegalArgumentException();
-		}
+		SdaiRepository systemRepo = SdaiSession.getSession().getSystemRepository();
+		SdaiModel dictMod = systemRepo.findSdaiModel(String.valueOf(schemaName + "_DICTIONARY_DATA").toUpperCase());
+		dictMod.startReadOnlyAccess();
+		ESchema_definition schema = dictMod.getDefinedSchema();
 
 		Set consistentTypes = new HashSet();
 		Set uncheckedTypes = new HashSet();
@@ -115,7 +129,7 @@ public class Utilities {
 			EEntity_definition eDef = (EEntity_definition) iterator.next();
 			iterator.remove();
 
-			if (isTypeConsistent(domain, eDef)) {
+			if (schema.testEntityDefinition(eDef.getName(null))) {
 				if (!eDef.getAbstract_entity(null)) {
 					consistentTypes.add(eDef);
 				}
@@ -133,12 +147,6 @@ public class Utilities {
 		return consistentTypes;
 	}
 
-	private static boolean isTypeConsistent(ASdaiModel domain, EEntity_definition eDef) throws SdaiException {
-		ADeclaration usedBySchema = new ADeclaration();
-		CEntity_declaration.usedinDefinition(null, eDef, domain, usedBySchema);
-		return usedBySchema.getMemberCount() > 0;
-	}
-	
 	private static ASdaiModel getSystemDomain(String schemaName) throws SdaiException {
 
 		ASdaiModel domain = new ASdaiModel();

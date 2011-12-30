@@ -253,6 +253,7 @@ public class CxDatum_defined_by_feature extends CDatum_defined_by_feature implem
 				context.working_model.createEntityInstance(CShape_aspect_relationship.definition);
 			esar.setRelated_shape_aspect(null, armEntity);
 			esar.setRelating_shape_aspect(null, ese);
+			esar.setName(null, "");
 		}
 	}
 

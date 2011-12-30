@@ -91,6 +91,8 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 
 	private static final int VALUE_ARRAY_SIZE = 8;
 
+	private static final int ENTITY_TYPES_ARRAY_SIZE = 4;
+
 	protected static final int FLG_MASK = 0xC0000000;
 	protected static final int POS_MASK = 0x3FFFFFFF;
 	protected static final int INS_MASK = 0x80000000;
@@ -302,6 +304,12 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 						o = null;
 					}
 				}
+				CEntityDefinition [] ent_types = null;
+				CDerived_attribute [] der_attrs = null;
+//				int count = findSubtypesWithDerived(referencing_type, role, ent_types, der_attrs);
+//				if (count > 0) {
+//					appendResult(count, result, domain, ent_types, der_attrs);
+//				}
             //result = examineModelsUsers((CEntityDefinition)referencing_type, role, result, domain);
 				boolean duplicates = attribute.getDuplicates(null);
 				if (!duplicates && result.myLength > 1) {
@@ -328,6 +336,121 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		throw new SdaiException(SdaiException.AT_NVLD, saved_attr,
 			"The supplied attribute is not inverse one for this entity type");
 //		} // syncObject
+	}
+
+
+	int findSubtypesWithDerived(CEntity_definition referencing_type, CExplicit_attribute role, 
+			CEntityDefinition [] ent_types, CDerived_attribute [] der_attrs) throws SdaiException {
+		int count = 0;
+		SchemaData sch_data = owning_model.underlying_schema.modelDictionary.schemaData;
+		int ref_index = sch_data.find_entity(0, sch_data.sNames.length - 1, referencing_type);
+		if (ref_index < 0) {
+			return 0;
+		}
+		int subtypes [] = sch_data.schema.getSubtypes(ref_index);
+		for (int i = 0; i < subtypes.length; i++) {
+			CEntityDefinition edef = sch_data.entities[subtypes[i]];
+			boolean expl_redecl = false;
+			for (int j = 0; j < edef.attributes.length; j++) {
+				if (edef.attributes[j] == role) {
+					if (edef.attributeFields[j] == null) {
+						expl_redecl = true;
+					}
+					break;
+				}
+			}
+			if (expl_redecl) {
+				EAttribute ex_der_attr = edef.getIfDerived(role);
+				if (ex_der_attr != null) {
+					if (ent_types == null) {
+						ent_types = new CEntityDefinition[ENTITY_TYPES_ARRAY_SIZE];
+						der_attrs = new CDerived_attribute[ENTITY_TYPES_ARRAY_SIZE];
+					} else if (count >= ent_types.length) {
+						int new_ln = 2 * ent_types.length;
+						CEntityDefinition new_ent_types [] = new CEntityDefinition[new_ln];
+						System.arraycopy(ent_types, 0, new_ent_types, 0, ent_types.length);
+						ent_types = new_ent_types;
+						CDerived_attribute new_der_attrs [] = new CDerived_attribute[new_ln];
+						System.arraycopy(der_attrs, 0, new_der_attrs, 0, der_attrs.length);
+						der_attrs = new_der_attrs;
+					}
+					ent_types[count] = edef;
+					der_attrs[count] = (CDerived_attribute)ex_der_attr;
+					count++;
+				}
+			}
+		}
+		return count;
+	}
+
+
+	void appendResult(int count, AEntity result, ASdaiModel domain, 
+			CEntityDefinition [] ent_types, CDerived_attribute [] der_attrs) throws SdaiException {
+		ASdaiModel models;
+		if (domain == null) {
+			models = new ASdaiModel(SdaiSession.setType0toN, this);
+			models.addUnorderedRO(owning_model);
+		} else if (domain.myLength == 0) {
+			models = owning_model.repository.session.active_models;
+		} else {
+			models = domain;
+		}
+		StaticFields staticFields = StaticFields.get();
+		if (staticFields.it == null) {
+			staticFields.it = models.createIterator();
+		} else {
+			models.attachIterator(staticFields.it);
+		}
+		while (staticFields.it.next()) {
+			SdaiModel model = (SdaiModel)models.getCurrentMemberObject(staticFields.it);
+			if ((model.mode & SdaiModel.MODE_MODE_MASK) == SdaiModel.NO_ACCESS || model.instances_sim == null) {
+				continue;
+			}
+			SchemaData sch_data = model.underlying_schema.modelDictionary.schemaData;
+			for (int k = 0; k < count; k++) {
+				CEntityDefinition edef = ent_types[k];
+				if (edef.attributesDerived == null) {
+					continue;
+				}
+				int ref_index = sch_data.find_entity(0, sch_data.sNames.length - 1, (CEntity_definition)edef);
+				if (ref_index < 0) {
+					continue;
+				}
+				if (model.instances_sim[ref_index] == null || model.lengths[ref_index] <= 0) {
+					continue;
+				}
+				CDerived_attribute der_attr = der_attrs[k];
+				int attr_index = -1;
+				for (int i = 0; i < edef.attributesDerived.length; i++) {
+					if (edef.attributesDerived[i] == der_attr) {
+						attr_index = i;
+						break;
+					}
+				}
+				CEntity [] row_of_instances = model.instances_sim[ref_index];
+				for (int j = 0; j < model.lengths[ref_index]; j++) {
+					CEntity inst = row_of_instances[j];
+					Object val_object;
+					if (attr_index >= 0) {
+						val_object = inst.get_derived(edef, attr_index);
+					} else {
+						val_object = inst.get_derived_redecl(edef, der_attr);
+					}
+					if (val_object == null || !(val_object instanceof CEntity)) {
+						continue;
+					}
+					CEntity value_ent = (CEntity)val_object;
+					if (value_ent != inst) {
+						continue;
+					}
+					if (result.myType == null || result.myType.express_type == DataType.LIST) {
+						result.addAtTheEnd(inst, null);
+					} else {
+						result.setForNonList(inst, result.myLength, null, null);
+					}
+				} // end j
+			} // end k
+		} // end while
 	}
 
 
@@ -770,6 +893,9 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 				throw new SdaiException(SdaiException.VA_NSET);
 			} else if (val_object instanceof Integer) {
 				value = ((Integer)val_object).intValue();
+			} else if (val_object instanceof Boolean) {
+				String base = SdaiSession.line_separator + AdditionalMessages.EI_NCOM;
+				throw new SdaiException(SdaiException.VT_NVLD, base);
 			} else {
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
@@ -1043,6 +1169,13 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 				throw new SdaiException(SdaiException.VA_NSET);
 			} else if (val_object instanceof Integer) {
 				value = ((Integer)val_object).intValue();
+			} else if (val_object instanceof Boolean) {
+				boolean bval = ((Boolean)val_object).booleanValue();
+				if (bval) {
+					value = 2;
+				} else {
+					value = 1;
+				}
 			} else {
 				throw new SdaiException(SdaiException.VT_NVLD);
 			}
@@ -1562,6 +1695,31 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	}
 
 
+	public final int findEntityInstanceUserCount(ASdaiModel modelDomain)
+			throws SdaiException {
+		if (owning_model == null) {
+			throw new SdaiException(SdaiException.EI_NEXS);
+		}
+		if (owning_model.optimized) {
+			return findEntityInstanceUserCountNoInverse(modelDomain);
+		}
+		int count = 0;
+		StaticFields staticFields = StaticFields.get();
+		Object o = inverseList;
+		while (o != null) {
+			if (o instanceof Inverse) {
+				Inverse inv = (Inverse) o;
+				count = increaseInstanceUserCount(count, (CEntity)inv.value, modelDomain, staticFields);
+				o = inv.next;
+			} else {
+				count = increaseInstanceUserCount(count, (CEntity)o, modelDomain, staticFields);
+				o = null;
+			}
+		}
+		return count;
+	}
+
+
 /**
 	Adds the submitted instance to the resulting set provided its owning
 	model either belongs to the specified set of models (if it is nonempty)
@@ -1601,6 +1759,34 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 				return;
 			}
 		}
+	}
+
+
+	private final int increaseInstanceUserCount(int count, CEntity inst,
+			ASdaiModel domain, StaticFields staticFields) throws SdaiException {
+		SdaiModel model = inst.owning_model;
+		if (domain == null) {
+			if (owning_model == model) {
+					count++;
+			}
+			return count;
+		}
+		if (domain.myLength == 0) {
+			count++;
+			return count;
+		}
+		if (staticFields.it == null) {
+			staticFields.it = domain.createIterator();
+		} else {
+			domain.attachIterator(staticFields.it);
+		}
+		while (staticFields.it.next()) {
+			if (domain.getCurrentMemberObject(staticFields.it) == model) {
+				count++;
+				return count;
+			}
+		}
+		return count;
 	}
 
 
@@ -1691,6 +1877,95 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	}
 
 
+	private int findEntityInstanceUserCountNoInverse(ASdaiModel modelDomain) 
+			throws SdaiException {
+		int i, j;
+		SdaiModel model;
+		CEntityDefinition entityDef;
+		int count = 0;
+
+		StaticFields staticFields = StaticFields.get();
+		staticFields.context_schema = owning_model.underlying_schema;
+		CEntity_definition this_def = (CEntity_definition)getInstanceType();
+		ASdaiModel act_models = owning_model.repository.session.active_models;
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			if (modelDomain == null || modelDomain.myLength == 0) {
+				if (modelDomain == null && owning_model != model) {
+					continue;
+				}
+			} else {
+				if (staticFields.it == null) {
+					staticFields.it = modelDomain.createIterator();
+				} else {
+					modelDomain.attachIterator(staticFields.it);
+				}
+				boolean ignore_model = true;
+				while (staticFields.it.next()) {
+					if (modelDomain.getCurrentMemberObject(staticFields.it) == model) {
+						ignore_model = false;
+						break;
+					}
+				}
+				if (ignore_model) {
+					continue;
+				}
+			}
+			SchemaData sch_data = model.underlying_schema.owning_model.schemaData;
+			if (sch_data.involved == 0) {
+				continue;
+			}
+			if (sch_data.involved > 0) {
+				for (j = 0; j < sch_data.involved; j++) {
+					entityDef = sch_data.entities[sch_data.aux[j]];
+					count = model.scanForUserCount(staticFields, this, entityDef, sch_data.aux[j], count);
+				}
+				continue;
+			}
+			sch_data.involved = 0;
+			for (j = 0; j < sch_data.noOfEntityDataTypes; j++) {
+				entityDef = sch_data.entities[j];
+				CExplicit_attribute [] attributes = entityDef.attributes;
+				if (attributes == null) {
+					continue;
+				}
+				boolean found = false;
+				for (int k = 0; k < attributes.length; k++) {
+					if (entityDef.fieldOwners[k] == null) {
+						continue;
+					}
+					found = ((AttributeDefinition)attributes[k]).search_attribute(this_def);
+					if (found) {
+						break;
+					}
+				}
+//System.out.println("CEntity  checked entity: " + ((CEntity_definition)entityDef).getName(null) + "  found: " + found);
+				if (found) {
+					if (staticFields.entity_values == null) {
+						staticFields.entity_values = new ComplexEntityValue();
+					}
+					sch_data.aux[sch_data.involved] = j;
+					sch_data.involved++;
+					count = model.scanForUserCount(staticFields, this, entityDef, j, count);
+				}
+			}
+		}
+
+		for (i = 0; i < act_models.myLength; i++) {
+			model = (SdaiModel)act_models.myData[i];
+			if (model.repository == SdaiSession.systemRepository) {
+				continue;
+			}
+			model.underlying_schema.owning_model.schemaData.involved = -1;
+		}
+		staticFields.context_schema = null;
+		return count;
+	}
+
+
 	void search_for_user(StaticFields staticFields, CEntity target, CEntityDefinition def, AEntity users)
 			throws SdaiException {
 		owning_model.prepareAll(staticFields.entity_values, (CEntity_definition)def);
@@ -1701,6 +1976,20 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 				ent_val.values[j].find_user(this, target, users);
 			}
 		}
+	}
+
+
+	int search_for_user_count(StaticFields staticFields, CEntity target, CEntityDefinition def, int count)
+			throws SdaiException {
+		owning_model.prepareAll(staticFields.entity_values, (CEntity_definition)def);
+		getAll(staticFields.entity_values);
+		for (int i = 0; i < def.noOfPartialEntityTypes; i++) {
+			EntityValue ent_val = staticFields.entity_values.entityValues[i];
+			for (int j = 0; j < ent_val.count; j++) {
+				count = ent_val.values[j].find_user_count(this, target, count);
+			}
+		}
+		return count;
 	}
 
 
@@ -2410,6 +2699,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		if ((target_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, target_model);
 		}
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		CEntity_definition def = (CEntity_definition)getInstanceType();
 		SchemaData sch_data = target_model.underlying_schema.modelDictionary.schemaData;
 		int index_to_entity = sch_data.find_entity(0, sch_data.noOfEntityDataTypes - 1,
@@ -2439,6 +2732,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		}
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
+		}
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 		boolean save4undo = false;
 		if (session.undo_redo_file != null && owning_model.undo_delete >= 0) {
@@ -2560,8 +2857,8 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		if (session.active_transaction.mode != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.TR_NRW, session.active_transaction);
 		}
-        if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
-            throw new SdaiException(SdaiException.MX_NRW, owning_model);
+		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
+			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
 		if (value == null) {
 			throw new SdaiException(SdaiException.VA_NSET);
@@ -2574,6 +2871,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		}
 		if (value instanceof CEntity && (((CEntity)value).owning_model == null)) {
 			throw new SdaiException(SdaiException.EI_NVLD, (CEntity)value);
+		}
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 		CEntityDefinition edef = (CEntityDefinition)getInstanceType();
 //System.out.println("   CEntity      value type: " + value.getClass().getName());
@@ -2703,6 +3004,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		}
 		if (attribute == null) {
 			throw new SdaiException(SdaiException.AT_NDEF);
+		}
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 		CEntityDefinition edef = (CEntityDefinition)getInstanceType();
 		EAttribute saved_attr = attribute;
@@ -2835,6 +3140,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		if (attribute == null) {
 			throw new SdaiException(SdaiException.AT_NDEF);
 		}
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		CEntityDefinition edef = (CEntityDefinition)getInstanceType();
 		EAttribute saved_attr = attribute;
 		if (((AttributeDefinition)attribute).attr_tp == AttributeDefinition.EXPLICIT &&
@@ -2925,6 +3234,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		}
 		if (attribute == null) {
 			throw new SdaiException(SdaiException.AT_NDEF);
+		}
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 		CEntityDefinition edef = (CEntityDefinition)getInstanceType();
 		EAttribute saved_attr = attribute;
@@ -3030,6 +3343,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		if (((AttributeDefinition)attribute).attr_tp != AttributeDefinition.EXPLICIT) {
 			throw new SdaiException(SdaiException.AT_NVLD, attribute);
 		}
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		CEntityDefinition edef = (CEntityDefinition)getInstanceType();
 		EAttribute saved_attr = attribute;
 		if (((EExplicit_attribute)attribute).testRedeclaring(null)) {
@@ -3131,6 +3448,10 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		}
 		if (((AttributeDefinition)attribute).attr_tp != AttributeDefinition.EXPLICIT) {
 			throw new SdaiException(SdaiException.AT_NVLD, attribute);
+		}
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 		CEntityDefinition edef = (CEntityDefinition)getInstanceType();
 		EAttribute saved_attr = attribute;
@@ -3264,6 +3585,26 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 	}
 
 
+	private boolean isBypassed(EWhere_rule wrule, String [] bp_rules_names, int br_count) throws SdaiException {
+		int i;
+		if (wrule.testLabel(null)) {
+			String wr_name = wrule.getLabel(null);
+			for (i = 0; i < br_count; i++) {
+				if (bp_rules_names[i].equals(wr_name)) {
+					return true;
+				}
+			}
+		} else {
+			for (i = 0; i < br_count; i++) {
+				if (bp_rules_names[i].equals("")) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+
 	public int validateWhereRule(EWhere_rule rule, ASdaiModel domain) throws SdaiException {
 //		synchronized (syncObject) {
 		return validateWhereRule(StaticFields.get(), rule, domain, null);
@@ -3317,8 +3658,15 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 			int check_res;
 
 			rule_class = def.getEntityClass();
+			String [] bp_rules_names = null;                   // added for Bug #2739
+			SchemaData sch_data = def.owning_model.schemaData; // added for Bug #2739
+			SdaiSession ss = owning_model.repository.session;  // added for Bug #2739
 			for (int j = 0; j < def.noOfPartialEntityTypes; j++) {
 				CEntityDefinition part_def = def.partialEntityTypes[j];
+				int br_count = sch_data.getBypassedRulesCount(part_def.index, ss); // added for Bug #2739
+				if (br_count > 0) {                                                // added for Bug #2739
+					bp_rules_names = sch_data.getBypassedRules(part_def.index);      // added for Bug #2739
+				}                                                                  // added for Bug #2739
 				AWhere_rule w_rules = part_def.getWhere_rules(null, null);
 				CWhere_rule [] w_rules_ord = part_def.get_where_rules(w_rules);
 				int ln = ((AEntity)w_rules).myLength;
@@ -3326,6 +3674,9 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 					for (int i = 0; i < ln; i++) {
 //					while(iter.next()) {
 						EWhere_rule wrule = w_rules_ord[i];
+						if (br_count > 0 && ((WhereRule)wrule).isRuleBypassed(bp_rules_names, br_count)) {  // added for Bug #2739
+							continue;                                                                         // added for Bug #2739
+						}                                                                                   // added for Bug #2739
 //if (bl) {
 //time1 = System.currentTimeMillis();
 //if (instance_identifier==1004) Value.prnt=true;
@@ -6463,6 +6814,9 @@ public abstract class CEntity extends InverseEntity implements EEntity, SdaiEven
 		switch(tag) {
 			case PhFileReader.ENTITY_REFERENCE:
 				if (value instanceof CEntity) {
+					if (sel_type.express_type == DataType.ENT_EXT_SELECT) {
+						return value;
+					}
 					CEntity_definition value_type = (CEntity_definition)((CEntity)value).getInstanceType();
 					ss = owning_model.repository.session;
 					if (sel_type.express_type >= DataType.EXTENSIBLE_SELECT && ss.sdai_context == null) {
@@ -7965,7 +8319,12 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 		if (value == Integer.MIN_VALUE) {
 			throw new SdaiException(SdaiException.VA_NSET);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return value;
 //		} // syncObject
@@ -7987,7 +8346,12 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 		if (Double.isNaN(value)) {
 			throw new SdaiException(SdaiException.VA_NSET);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return value;
 //		} // syncObject
@@ -8010,7 +8374,12 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 		if (value == null) {
 			throw new SdaiException(SdaiException.VA_NSET);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return value;
 //		} // syncObject
@@ -8035,7 +8404,12 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 		if (value < 1 || value > 3) {
 			throw new SdaiException(SdaiException.VA_NVLD);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return value;
 //		} // syncObject
@@ -8054,7 +8428,12 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return value?2:1;
 //		} // syncObject
@@ -8076,6 +8455,11 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 		if (value == 0) {
 			throw new SdaiException(SdaiException.VA_NSET);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		DataType domain = (DataType)(CDefined_type)attr.getDomain(null);
 		while (domain.express_type == DataType.DEFINED_TYPE) {
 			domain = (DataType)((CDefined_type)domain).getDomain(null);
@@ -8094,7 +8478,7 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 		if (value > ((CAggregate)elements).myLength || value < 1) {
 			throw new SdaiException(SdaiException.VA_NVLD);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return value;
 //		} // syncObject
@@ -8117,7 +8501,12 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 		if (value == null) {
 			throw new SdaiException(SdaiException.VA_NSET);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return value;
 //		} // syncObject
@@ -8143,6 +8532,11 @@ if (SdaiSession.debug2) System.out.println("  inst ident = " + inst.instance_ide
 		CEntity ref = (CEntity)value;
 		if (ref.owning_model == null) {
 			throw new SdaiException(SdaiException.EI_NVLD, ref);
+		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 		if (old_value instanceof CEntity) {
 			CEntity old_ref = (CEntity)old_value;
@@ -8176,7 +8570,7 @@ ex.printStackTrace();
 		if (!ref.owning_model.optimized) {
 			addToInverseList(ref);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return value;
 	}
@@ -8224,7 +8618,12 @@ if (instance_identifier == 49) System.out.println("CEntity  XXXXXXX  this: " + t
 		if (value == Integer.MIN_VALUE) {
 			throw new SdaiException(SdaiException.VA_NSET);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return new Integer(value);
 //		} // syncObject
@@ -8247,7 +8646,12 @@ if (instance_identifier == 49) System.out.println("CEntity  XXXXXXX  this: " + t
 		if (Double.isNaN(value)) {
 			throw new SdaiException(SdaiException.VA_NSET);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return new Double(value);
 //		} // syncObject
@@ -8273,7 +8677,12 @@ if (instance_identifier == 49) System.out.println("CEntity  XXXXXXX  this: " + t
 		if (value < 1 || value > 3) {
 			throw new SdaiException(SdaiException.VA_NVLD);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return new Integer(value);
 //		} // syncObject
@@ -8293,7 +8702,12 @@ if (instance_identifier == 49) System.out.println("CEntity  XXXXXXX  this: " + t
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return new Integer(value?2:1);
 //		} // syncObject
@@ -8316,6 +8730,11 @@ if (instance_identifier == 49) System.out.println("CEntity  XXXXXXX  this: " + t
 		if (value == 0) {
 			throw new SdaiException(SdaiException.VA_NSET);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		DataType dom = (DataType)attr.getDomain(null);
 		if (dom.express_type != DataType.DEFINED_TYPE) {
 			throw new SdaiException(SdaiException.VA_NVLD);
@@ -8323,7 +8742,7 @@ if (instance_identifier == 49) System.out.println("CEntity  XXXXXXX  this: " + t
 		if (!check_def_type(value, (CDefined_type)dom, false)) {
 			throw new SdaiException(SdaiException.VA_NVLD);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return new Integer(value);
 //		} // syncObject
@@ -8443,7 +8862,12 @@ if (instance_identifier == 49) System.out.println("CEntity  XXXXXXX  this: " + t
 				if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 					throw new SdaiException(SdaiException.MX_NRW, owning_model);
 				}
-				owning_model.repository.session.undoRedoModifyPrepare(this);
+				SdaiSession session = owning_model.repository.session;
+				if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+					String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+					throw new SdaiException(SdaiException.SY_ERR, base);
+				}
+				session.undoRedoModifyPrepare(this);
 				modified();
 				if (((AggregationType)domain).check_aggregation_double()) {
 					return new A_double3((EAggregation_type)domain, this);
@@ -8526,6 +8950,11 @@ if (instance_identifier == 49) System.out.println("CEntity  XXXXXXX  this: " + t
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (old_value instanceof CEntity) {
 			CEntity old_ref = (CEntity)old_value;
 			if (!old_ref.owning_model.optimized) {
@@ -8560,7 +8989,7 @@ if (SdaiSession.debug2) System.out.println("  provided_type = " + provided_type)
 			throw new SdaiException(SdaiException.SY_ERR, ex);
 		}
 		aggr.attach(provided_type, this);
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		session.undoRedoModifyPrepare(this);
 		modified();
 if (SdaiSession.debug2) if (aggr.myType == null) System.out.println("   myType is NULL");
 else System.out.println("   myType is POSITIVE");
@@ -8582,6 +9011,11 @@ else System.out.println("   myType is POSITIVE");
 		}
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
+		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 		if (attr_v instanceof CEntity) {
 			CEntity old_ref = (CEntity)attr_v;
@@ -8614,7 +9048,7 @@ else System.out.println("   myType is POSITIVE");
 			throw new SdaiException(SdaiException.SY_ERR, ex);
 		}
 		aggr.attach(provided_type, this);
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return aggr;
 //		} // syncObject
@@ -8783,6 +9217,11 @@ else System.out.println("   myType is POSITIVE");
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (old_value instanceof CEntity) {
 			CEntity old_ref = (CEntity)old_value;
 			if (!old_ref.owning_model.optimized) {
@@ -8807,7 +9246,7 @@ else System.out.println("   myType is POSITIVE");
 			}
 			provided_type = (AggregationType)((SelectType)domain).types[iSelect - 2];
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return provided_type;
 	}
@@ -8830,6 +9269,11 @@ else System.out.println("   myType is POSITIVE");
 		}
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
+		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 		EAggregation_type provided_type;
 		DataType domain = (DataType)attr.getDomain(null);
@@ -8855,7 +9299,7 @@ else System.out.println("   myType is POSITIVE");
 			}
 			provided_type = (AggregationType)((SelectType)domain).types[iSelect - 2];
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return provided_type;
 	}
@@ -8879,6 +9323,11 @@ else System.out.println("   myType is POSITIVE");
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (old_value instanceof CEntity) {
 			CEntity old_ref = (CEntity)old_value;
 			if (!old_ref.owning_model.optimized) {
@@ -8903,7 +9352,7 @@ else System.out.println("   myType is POSITIVE");
 			}
 			provided_type = (AggregationType)((SelectType)domain).types[iSelect - 2];
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return provided_type;
 	}
@@ -8927,91 +9376,10 @@ else System.out.println("   myType is POSITIVE");
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
-		if (old_value != null) {
-			((CAggregate)old_value).unsetAllByRef(this);
-		}
-		EAggregation_type provided_type;
-		DataType domain = (DataType)attr.getDomain(null);
-		while (domain.express_type == DataType.DEFINED_TYPE) {
-			domain = (DataType)((CDefined_type)domain).getDomain(null);
-		}
-		if (iSelect == 0) {
-			if (domain.express_type < DataType.LIST || domain.express_type > DataType.AGGREGATE) {
-				throw new SdaiException(SdaiException.SY_ERR);
-			}
-			provided_type = (EAggregation_type)attr.getDomain(null);
-		} else {
-			if (domain.express_type < DataType.SELECT || domain.express_type > DataType.ENT_EXT_EXT_SELECT) {
-				throw new SdaiException(SdaiException.SY_ERR);
-			}
-			provided_type = (AggregationType)((SelectType)domain).types[iSelect - 2];
-		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
-		modified();
-		return provided_type;
-	}
-
-
-/**
-	Prepares aggregation type and performs other operations related with
-	creation of an aggregate for values of type enumeration.
-	The method is invoked in <code>create_aggregate_enumeration</code>,
-	<code>create_aggregate2_enumeration</code> and <code>create_aggregate3_enumeration</code>
-	methods.
-*/
-	final private EAggregation_type create_aggregate_enumeration_internal(Object old_value,
-			CExplicit_attribute attr, int iSelect) throws SdaiException {
-		if (iSelect == 1) {
-			throw new SdaiException(SdaiException.SY_ERR);
-		}
-		if (owning_model == null) {
-			throw new SdaiException(SdaiException.EI_NEXS);
-		}
-		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
-			throw new SdaiException(SdaiException.MX_NRW, owning_model);
-		}
-		if (old_value != null) {
-			((CAggregate)old_value).unsetAllByRef(this);
-		}
-		EAggregation_type provided_type;
-		DataType domain = (DataType)attr.getDomain(null);
-		while (domain.express_type == DataType.DEFINED_TYPE) {
-			domain = (DataType)((CDefined_type)domain).getDomain(null);
-		}
-		if (iSelect == 0) {
-			if (domain.express_type < DataType.LIST || domain.express_type > DataType.AGGREGATE) {
-				throw new SdaiException(SdaiException.SY_ERR);
-			}
-			provided_type = (EAggregation_type)attr.getDomain(null);
-		} else {
-			if (domain.express_type < DataType.SELECT || domain.express_type > DataType.ENT_EXT_EXT_SELECT) {
-				throw new SdaiException(SdaiException.SY_ERR);
-			}
-			provided_type = (AggregationType)((SelectType)domain).types[iSelect - 2];
-		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
-		modified();
-		return provided_type;
-	}
-
-
-/**
-	Prepares aggregation type and performs other operations related with
-	creation of an aggregate for values of type <code>Binary</code>.
-	The method is invoked in <code>create_aggregate_binary</code>,
-	<code>create_aggregate2_binary</code> and <code>create_aggregate3_binary</code>
-	methods.
-*/
-	final private EAggregation_type create_aggregate_binary_internal(Object old_value,
-			CExplicit_attribute attr, int iSelect)	throws SdaiException {
-		if (iSelect == 1) {
-			throw new SdaiException(SdaiException.SY_ERR);
-		}
-		if (owning_model == null) {
-			throw new SdaiException(SdaiException.EI_NEXS);
-		}
-		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
-			throw new SdaiException(SdaiException.MX_NRW, owning_model);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 		if (old_value instanceof CEntity) {
 			CEntity old_ref = (CEntity)old_value;
@@ -9037,7 +9405,113 @@ else System.out.println("   myType is POSITIVE");
 			}
 			provided_type = (AggregationType)((SelectType)domain).types[iSelect - 2];
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		session.undoRedoModifyPrepare(this);
+		modified();
+		return provided_type;
+	}
+
+
+/**
+	Prepares aggregation type and performs other operations related with
+	creation of an aggregate for values of type enumeration.
+	The method is invoked in <code>create_aggregate_enumeration</code>,
+	<code>create_aggregate2_enumeration</code> and <code>create_aggregate3_enumeration</code>
+	methods.
+*/
+	final private EAggregation_type create_aggregate_enumeration_internal(Object old_value,
+			CExplicit_attribute attr, int iSelect) throws SdaiException {
+		if (iSelect == 1) {
+			throw new SdaiException(SdaiException.SY_ERR);
+		}
+		if (owning_model == null) {
+			throw new SdaiException(SdaiException.EI_NEXS);
+		}
+		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
+			throw new SdaiException(SdaiException.MX_NRW, owning_model);
+		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		if (old_value instanceof CEntity) {
+			CEntity old_ref = (CEntity)old_value;
+			if (!old_ref.owning_model.optimized) {
+				removeFromInverseList(old_ref);
+			}
+		} else if (old_value instanceof CAggregate) {
+			((CAggregate)old_value).unsetAllByRef(this);
+		}
+		EAggregation_type provided_type;
+		DataType domain = (DataType)attr.getDomain(null);
+		while (domain.express_type == DataType.DEFINED_TYPE) {
+			domain = (DataType)((CDefined_type)domain).getDomain(null);
+		}
+		if (iSelect == 0) {
+			if (domain.express_type < DataType.LIST || domain.express_type > DataType.AGGREGATE) {
+				throw new SdaiException(SdaiException.SY_ERR);
+			}
+			provided_type = (EAggregation_type)attr.getDomain(null);
+		} else {
+			if (domain.express_type < DataType.SELECT || domain.express_type > DataType.ENT_EXT_EXT_SELECT) {
+				throw new SdaiException(SdaiException.SY_ERR);
+			}
+			provided_type = (AggregationType)((SelectType)domain).types[iSelect - 2];
+		}
+		session.undoRedoModifyPrepare(this);
+		modified();
+		return provided_type;
+	}
+
+
+/**
+	Prepares aggregation type and performs other operations related with
+	creation of an aggregate for values of type <code>Binary</code>.
+	The method is invoked in <code>create_aggregate_binary</code>,
+	<code>create_aggregate2_binary</code> and <code>create_aggregate3_binary</code>
+	methods.
+*/
+	final private EAggregation_type create_aggregate_binary_internal(Object old_value,
+			CExplicit_attribute attr, int iSelect)	throws SdaiException {
+		if (iSelect == 1) {
+			throw new SdaiException(SdaiException.SY_ERR);
+		}
+		if (owning_model == null) {
+			throw new SdaiException(SdaiException.EI_NEXS);
+		}
+		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
+			throw new SdaiException(SdaiException.MX_NRW, owning_model);
+		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		if (old_value instanceof CEntity) {
+			CEntity old_ref = (CEntity)old_value;
+			if (!old_ref.owning_model.optimized) {
+				removeFromInverseList(old_ref);
+			}
+		} else if (old_value instanceof CAggregate) {
+			((CAggregate)old_value).unsetAllByRef(this);
+		}
+		EAggregation_type provided_type;
+		DataType domain = (DataType)attr.getDomain(null);
+		while (domain.express_type == DataType.DEFINED_TYPE) {
+			domain = (DataType)((CDefined_type)domain).getDomain(null);
+		}
+		if (iSelect == 0) {
+			if (domain.express_type < DataType.LIST || domain.express_type > DataType.AGGREGATE) {
+				throw new SdaiException(SdaiException.SY_ERR);
+			}
+			provided_type = (EAggregation_type)attr.getDomain(null);
+		} else {
+			if (domain.express_type < DataType.SELECT || domain.express_type > DataType.ENT_EXT_EXT_SELECT) {
+				throw new SdaiException(SdaiException.SY_ERR);
+			}
+			provided_type = (AggregationType)((SelectType)domain).types[iSelect - 2];
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return provided_type;
 	}
@@ -9058,7 +9532,12 @@ else System.out.println("   myType is POSITIVE");
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE && !owning_model.bypass_setAll) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return Integer.MIN_VALUE;
 //		} // syncObject
@@ -9078,7 +9557,12 @@ else System.out.println("   myType is POSITIVE");
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE && !owning_model.bypass_setAll) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return Double.NaN;
 //		} // syncObject
@@ -9098,7 +9582,12 @@ else System.out.println("   myType is POSITIVE");
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE && !owning_model.bypass_setAll) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return null;
 //		} // syncObject
@@ -9118,7 +9607,12 @@ else System.out.println("   myType is POSITIVE");
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE && !owning_model.bypass_setAll) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return 0;
 //		} // syncObject
@@ -9138,7 +9632,12 @@ else System.out.println("   myType is POSITIVE");
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE && !owning_model.bypass_setAll) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return 0;
 //		} // syncObject
@@ -9158,7 +9657,12 @@ else System.out.println("   myType is POSITIVE");
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE && !owning_model.bypass_setAll) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return 0;
 //		} // syncObject
@@ -9178,7 +9682,12 @@ else System.out.println("   myType is POSITIVE");
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE && !owning_model.bypass_setAll) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return null;
 //		} // syncObject
@@ -9198,6 +9707,11 @@ else System.out.println("   myType is POSITIVE");
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE && !owning_model.bypass_setAll) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (old_value instanceof CEntity) {
 			CEntity to_ent = (CEntity)old_value;
 			if (to_ent.owning_model != null && !to_ent.owning_model.closingAll && 
@@ -9210,8 +9724,8 @@ System.out.println("CEntity:  this instance being unset: #" + instance_identifie
 //System.out.println("CEntity:  owning_instance: #" + instance_identifier);
 			((SdaiModel.Connector)old_value).disconnect();
 		}
-		if (owning_model.repository.session.undo_redo_file != null && !owning_model.bypass_setAll) {
-			owning_model.repository.session.undoRedoModifyPrepare(this);
+		if (session.undo_redo_file != null && !owning_model.bypass_setAll) {
+			session.undoRedoModifyPrepare(this);
 		}
 		modified();
 		return null;
@@ -9232,10 +9746,15 @@ System.out.println("CEntity:  this instance being unset: #" + instance_identifie
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE  && !owning_model.bypass_setAll) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (old_value instanceof CAggregate) {
 			((CAggregate)old_value).unsetAllByRef(this);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(this);
+		session.undoRedoModifyPrepare(this);
 		modified();
 		return null;
 //		} // syncObject
@@ -9255,6 +9774,11 @@ System.out.println("CEntity:  this instance being unset: #" + instance_identifie
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE && !owning_model.bypass_setAll) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (old_value instanceof CEntity) {
 			CEntity to_ent = (CEntity)old_value;
 			if (to_ent.owning_model != null && !to_ent.owning_model.closingAll) {
@@ -9267,8 +9791,8 @@ System.out.println("CEntity:  this instance being unset: #" + instance_identifie
 		} else if (old_value instanceof CAggregate) {
 			((CAggregate)old_value).unsetAllByRef(this);
 		}
-		if (owning_model.repository.session.undo_redo_file != null && !owning_model.bypass_setAll) {
-			owning_model.repository.session.undoRedoModifyPrepare(this);
+		if (session.undo_redo_file != null && !owning_model.bypass_setAll) {
+			session.undoRedoModifyPrepare(this);
 		}
 		modified();
 		return null;
@@ -11118,6 +11642,10 @@ System.out.println("CEntity:  this instance being unset: #" + instance_identifie
 		}
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
+		}
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 		CEntity_definition def = (CEntity_definition)srce.getInstanceType();
 		if (getInstanceType() != def) {

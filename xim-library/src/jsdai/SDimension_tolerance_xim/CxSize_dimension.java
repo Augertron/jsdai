@@ -79,7 +79,6 @@ public class CxSize_dimension extends CSize_dimension implements EMappedXIMEntit
 		} else {
 			return;
 		}
-
 		setTemp("AIM", CDimensional_size.definition);
 
 		setMappingConstraints(context, this);
@@ -109,6 +108,8 @@ public class CxSize_dimension extends CSize_dimension implements EMappedXIMEntit
 		// (* Its own attributes *)	  
 		// envelope_principle : OPTIONAL BOOLEAN;
 		setEnvelope_principle(context, this);
+		
+		unsetEnvelope_principle(null);
 		
 		// id : STRING;
 		unsetId(null);
@@ -632,20 +633,22 @@ end_attribute_mapping;
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	// DS <- DCR -> SDR -> DRI
+	// DS <- DCR -> SDR
 	public static void setEnvelope_principle(SdaiContext context, ESize_dimension armEntity) throws SdaiException {
 		unsetEnvelope_principle(context, armEntity);
 		if(armEntity.testEnvelope_principle(null)){
 			boolean value = armEntity.getEnvelope_principle(null);
+			EShape_dimension_representation esdr = CxGDTCommon.setDimension_value(context, armEntity, null);
 			if(value){
-				EShape_dimension_representation esdr = CxGDTCommon.setDimension_value(context, armEntity, null);
-				esdr.setName(null, "envelope tolerance");
+				esdr.setName(null, "envelope requirement");
+			}else{
+				esdr.setName(null, "independency");
 			}
 		}
 	}
 
 	/**
-	 * Unsets/deletes mapping constraint data.
+	 * Unsets/deletes data for envelope_principle attribute.
 	 * 
 	 * @param context
 	 * @param armEntity

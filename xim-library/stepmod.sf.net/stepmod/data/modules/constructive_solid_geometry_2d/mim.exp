@@ -1,7 +1,7 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N5789 - ISO/TS 10303-1731 Constructive solid geometry 2d - EXPRESS MIM
-   Supersedes ISO TC184/SC4/WG12 N4141
+   ISO TC184/SC4/WG12 N6951 - ISO/TS 10303-1731 Constructive solid geometry 2d - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N6346
 *) 
 
 
@@ -111,7 +111,7 @@ END_ENTITY;
 ENTITY path_area_with_parameters
   SUBTYPE OF (complex_area, mapped_item);
   WHERE
-    WR1: 'BASIC_CURVE.CURVE' IN TYPEOF(SELF\mapped_item.mapping_target);
+    WR1: 'GEOMETRY_SCHEMA.CURVE' IN TYPEOF(SELF\mapped_item.mapping_target);
       -- the mapping source must be a curve (open or closed)
       -- no the mapping target must be a curve (open or closed)
     --wr2: -- the mapping_source.mapped_representation must be curve_style_parameters_representation;
@@ -190,7 +190,14 @@ FUNCTION open_path_based_inner_boundary (input : SET OF primitive_2d) : BOOLEAN;
   END_LOCAL;
   REPEAT i := 1 TO SIZEOF(input);
       IF ('CONSTRUCTIVE_SOLID_GEOMETRY_2D_MIM.PATH_AREA_WITH_PARAMETERS' IN TYPEOF(input[i]))
-        AND ('BASIC_CURVE_MIM.CLOSED_CURVE' IN TYPEOF(input[i]\mapped_item.mapping_source))
+        AND ( 
+         ('GEOMETRY_SCHEMA.CIRCLE' IN TYPEOF(input[i]\mapped_item.mapping_source\representation_map.mapping_origin))
+          OR
+          (('GEOMETRY_SCHEMA.COMPOSITE_CURVE' IN TYPEOF(input[i]\mapped_item.mapping_source\representation_map.mapping_origin))
+           AND
+            (input[i]\mapped_item.mapping_source\representation_map.mapping_origin\composite_curve.closed_curve = TRUE) 
+          )
+        )  
       THEN
        pass := FALSE;
       END_IF;

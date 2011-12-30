@@ -36,7 +36,9 @@ import jsdai.SBasic_attribute_schema.CRole_association;
 import jsdai.SDocument_assignment_mim.CDocument_product_equivalence;
 import jsdai.SDocument_schema.CDocument;
 import jsdai.SDocument_schema.CDocument_type;
-import jsdai.SGeometric_tolerance_mim.CShape_representation_with_parameters;
+import jsdai.SGeometric_tolerance_xim.AGeometric_tolerance_armx;
+import jsdai.SGeometric_tolerance_xim.CGeometric_tolerance_armx;
+import jsdai.SGeometric_tolerance_xim.EGeometric_tolerance_armx;
 import jsdai.SGroup_mim.CApplied_group_assignment;
 import jsdai.SIdentification_assignment_mim.CApplied_identification_assignment;
 // import jsdai.SManagement_resources_schema.CClassification_role;
@@ -62,17 +64,23 @@ import jsdai.SRepresentation_schema.CRepresentation_item;
 import jsdai.SRequirement_assignment_mim.CAssigned_requirement;
 import jsdai.SRequirement_assignment_mim.CRequirement_assigned_object;
 import jsdai.SShape_aspect_definition_schema.CShape_aspect_deriving_relationship;
+import jsdai.SShape_aspect_definition_schema.CShape_representation_with_parameters;
 import jsdai.SShape_dimension_schema.CDimensional_characteristic_representation;
 import jsdai.SShape_dimension_schema.CShape_dimension_representation;
 import jsdai.SShape_parameters_mim.CKeepout_design_object_category;
+import jsdai.SShape_tolerance_schema.AGeometric_tolerance_with_modifiers;
 import jsdai.SShape_tolerance_schema.CGeometric_tolerance_relationship;
+import jsdai.SShape_tolerance_schema.CGeometric_tolerance_with_modifiers;
 import jsdai.SShape_tolerance_schema.CTolerance_zone;
 import jsdai.SShape_tolerance_schema.CTolerance_zone_form;
+import jsdai.SShape_tolerance_schema.EGeometric_tolerance_with_modifiers;
 import jsdai.dictionary.EEntity_definition;
 import jsdai.lang.ASdaiModel;
+import jsdai.lang.A_enumeration;
 import jsdai.lang.SchemaInstance;
 import jsdai.lang.SdaiContext;
 import jsdai.lang.SdaiException;
+import jsdai.lang.SdaiIterator;
 import jsdai.lang.SdaiModel;
 import jsdai.lang.SdaiRepository;
 import jsdai.lang.SdaiSession;
@@ -90,6 +98,7 @@ import jsdaix.processor.xim_aim.pre.manual_arm_repair.AIMGarbageCleaner;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.AP210SpecificGarbageCleaner;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.AssemblyRepair;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.Closed_curveFixer;
+import jsdaix.processor.xim_aim.pre.manual_arm_repair.DatumTargetFixer;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.DefinitionsRepair;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.FakedMappingCleaner;
 import jsdaix.processor.xim_aim.pre.manual_arm_repair.GDTRepair;
@@ -102,6 +111,8 @@ import jsdaix.processor.xim_aim.pre.manual_arm_repair.ShapeAspectRelationshipCle
 
 // RR
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import jsdai.util.UtilMonitor;
 
@@ -214,7 +225,7 @@ public class Importer {
 			CDimensional_characteristic_representation.definition,
 			CShape_dimension_representation.definition,
 			CTolerance_zone_form.definition,
-			CTolerance_zone.definition,
+//			CTolerance_zone.definition,
 			CGeometric_tolerance_relationship.definition,
 			CIdentification_role.definition,
 			CShape_representation_with_parameters.definition,
@@ -308,6 +319,8 @@ public class Importer {
 		ValueRangeFixer.run(models, this);
 		StylingModelRepair.run(models, this);
 		TargetDiameterFixer.run(models, this);
+		Map instances2Values = preProcessModifiers(models);
+
 		// automatic mapping launch
 		AutomaticXimPopulationCreator ximPopulationCreator = new AutomaticXimPopulationCreator(context, this);
 //		long timePure = System.currentTimeMillis();
@@ -325,6 +338,9 @@ public class Importer {
 			tt.printStackTrace();
 			throw (SdaiException)new SdaiException(SdaiException.SY_ERR, tt.getMessage()).initCause(tt);
 		}
+		
+		postProcessModifiers(models, instances2Values);
+		
 		GDTRepair.run(context, models, this);
 		//System.out.println(" Pure mapping operations time is "+(System.currentTimeMillis()-timePure)/1000+" seconds"+inputRepo.getSessionIdentifier("#436"));
 		FakedMappingCleaner.run(models, ximPopulationCreator, this);
@@ -351,9 +367,39 @@ public class Importer {
 		RepresentationRelationshipRepair.run(models, this);
 		IncorrectReuseOfContextRepair.run(models, this);
 		StylingModelRepair.runAfterMapping(models, this);
+		DatumTargetFixer.run(models, this);
 		// System.out.println(" mapping operations + POST processing time is "+(System.currentTimeMillis()-timePure)/1000+" seconds"+inputRepo.getSessionIdentifier("#436"));
 		// repoAP210Extended.deleteRepository();
 		// session.closeSession();
+	}
+
+	private void postProcessModifiers(ASdaiModel models, Map instances2Values) throws SdaiException {
+		AGeometric_tolerance_armx agt = (AGeometric_tolerance_armx)models.getInstances(CGeometric_tolerance_armx.definition);
+		for (SdaiIterator j = agt.createIterator(); j.next();) {
+			EGeometric_tolerance_armx egt = agt.getCurrentMember(j);
+			int[] values = (int[])instances2Values.get(egt.getPersistentLabel());
+			if(values != null){
+				A_enumeration enums = egt.createModification_new(null);
+				for(int i=0;i<values.length;i++){
+					enums.addUnordered(values[i]);
+				}
+			}
+		}
+	}
+
+	private Map preProcessModifiers(ASdaiModel models) throws SdaiException {
+		Map instances2Values = new HashMap(); 
+		AGeometric_tolerance_with_modifiers agtwm = (AGeometric_tolerance_with_modifiers)models.getInstances(CGeometric_tolerance_with_modifiers.definition);
+		for (SdaiIterator j = agtwm.createIterator(); j.next();) {
+			EGeometric_tolerance_with_modifiers egtwm = agtwm.getCurrentMember(j);
+			A_enumeration ae = egtwm.getModifiers(null);
+			int[] values = new int[ae.getMemberCount()];
+			for(int i=1;i<=values.length;i++){
+				values[i-1] = ae.getByIndex(i);
+			}
+			instances2Values.put(egtwm.getPersistentLabel(), values);
+		}
+		return instances2Values;
 	}
 
 	private SdaiTransaction startTransactionReadWriteAccess(SdaiSession session) throws SdaiException

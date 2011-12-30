@@ -1,0 +1,143 @@
+(* Copied from  TC184/SC4/WG12 N2649 *)
+
+
+SCHEMA assembly_constraint_schema;
+
+REFERENCE FROM shape_data_quality_inspection_result_schema
+    (using_product_definition_of_shape_representation);
+REFERENCE FROM assembly_feature_relationship_schema; -- ISO 10303-109
+REFERENCE FROM explicit_constraint_schema; -- ISO 10303-108
+REFERENCE FROM explicit_geometric_constraint_schema; -- ISO 10303-108
+REFERENCE FROM geometry_schema; -- ISO 10303-42
+REFERENCE FROM geometric_model_schema; -- ISO 10303-42
+REFERENCE FROM parameterization_schema; -- ISO 10303-108
+REFERENCE FROM product_definition_schema; -- 10303-41
+REFERENCE FROM product_structure_schema; -- ISO 10303-44
+REFERENCE FROM representation_schema; -- ISO 10303-43
+REFERENCE FROM support_resource_schema; -- 10303-41
+
+    
+ENTITY assembly_geometric_constraint
+  ABSTRACT SUPERTYPE OF (ONEOF
+           (binary_assembly_constraint,
+           fixed_constituent_assembly_constraint))
+  SUBTYPE OF (explicit_constraint);
+
+END_ENTITY;-- assembly_geometric_constraint
+
+ENTITY binary_assembly_constraint
+  ABSTRACT SUPERTYPE OF (ONEOF
+           (parallel_assembly_constraint,
+            surface_distance_assembly_constraint_with_dimension,
+             angle_assembly_constraint_with_dimension,
+            perpendicular_assembly_constraint,
+            incidence_assembly_constraint,
+            coaxial_assembly_constraint,
+            tangent_assembly_constraint))
+  SUBTYPE OF (assembly_geometric_constraint,
+            representation_relationship_with_transformation);
+SELF\representation_relationship.rep_1: representative_shape_representation;
+SELF\representation_relationship.rep_2: representative_shape_representation;
+WHERE
+WR1: (SELF\explicit_constraint.constrained_elements[1]
+      \geometric_representation_item.dim = 3) AND
+     (SELF\explicit_constraint.reference_elements[1]
+      \geometric_representation_item.dim = 3);
+WR2: (SELF\representation_relationship.rep_1 IN (using_representations 
+     (SELF\representation_relationship_with_transformation.
+      transformation_operator\item_defined_transformation.transform_item_1) +
+      using_representation_with_mapping 
+     (SELF\representation_relationship_with_transformation.
+      transformation_operator\item_defined_transformation.transform_item_1))) AND
+     (SELF\representation_relationship.rep_2 IN (using_representations 
+     (SELF\representation_relationship_with_transformation.
+       transformation_operator\item_defined_transformation.transform_item_2) +
+      using_representation_with_mapping 
+     (SELF\representation_relationship_with_transformation.
+      transformation_operator\item_defined_transformation.transform_item_2)));
+WR3: (SIZEOF(SELF\explicit_constraint.constrained_elements)=1) AND
+     (SIZEOF(SELF\explicit_constraint.reference_elements)=1);
+WR4: (SELF\representation_relationship_with_transformation.
+      transformation_operator\item_defined_transformation.transform_item_1 =  
+      SELF\explicit_constraint.reference_elements[1]) AND
+     (SELF\representation_relationship_with_transformation.
+      transformation_operator\item_defined_transformation.transform_item_2 =  
+      SELF\explicit_constraint.constrained_elements[1]);
+
+END_ENTITY;-- binary_assembly_constraint
+
+ENTITY fixed_constituent_assembly_constraint
+SUBTYPE OF (assembly_geometric_constraint,
+            fixed_element_geometric_constraint);
+    fixed_constituent: representative_shape_representation;
+WHERE
+WR1: SELF\explicit_constraint.constrained_elements[1]
+     \geometric_representation_item.dim = 3;
+WR2: (assembly_leaf (using_product_definition_of_shape_representation
+     (fixed_constituent)[1]));
+WR3: (SIZEOF(SELF\explicit_constraint.constrained_elements) = 1) AND
+     (SIZEOF(SELF\explicit_constraint.reference_elements) = 0);
+WR4: fixed_constituent IN (using_representations(SELF\explicit_constraint.constrained_elements[1]) + 
+     using_representation_with_mapping(SELF\explicit_constraint.constrained_elements[1]));
+END_ENTITY;-- fixed_constituent_assembly_constraint
+
+
+ENTITY parallel_assembly_constraint
+  SUBTYPE OF (binary_assembly_constraint,
+              parallel_geometric_constraint);
+END_ENTITY;-- parallel_assembly_constraint
+
+ENTITY  parallel_assembly_constraint_with_dimension
+  SUBTYPE OF (parallel_assembly_constraint,
+              pgc_with_dimension);
+END_ENTITY;-- parallel_assembly_constraint_with_dimension
+
+ENTITY surface_distance_assembly_constraint_with_dimension
+  SUBTYPE OF (binary_assembly_constraint,
+              sdgc_with_dimension);
+END_ENTITY;-- surface_distance_assembly_constraint_with_dimension
+
+ENTITY angle_assembly_constraint_with_dimension
+  SUBTYPE OF (binary_assembly_constraint,
+              agc_with_dimension);
+END_ENTITY;-- angle_assembly_constraint_with_dimension
+
+ENTITY perpendicular_assembly_constraint
+  SUBTYPE OF (binary_assembly_constraint,
+              perpendicular_geometric_constraint);
+END_ENTITY;-- perpendicular_assembly_constraint
+
+ENTITY incidence_assembly_constraint
+  SUBTYPE OF (binary_assembly_constraint,
+              incidence_geometric_constraint);
+END_ENTITY;-- incidence_assembly_constraint
+
+ENTITY coaxial_assembly_constraint
+  SUBTYPE OF (binary_assembly_constraint,
+              coaxial_geometric_constraint);
+END_ENTITY;-- coaxial_assembly_constraint
+
+ENTITY tangent_assembly_constraint
+  SUBTYPE OF (binary_assembly_constraint,
+              tangent_geometric_constraint);
+END_ENTITY;-- tangent_assembly_constraint
+
+FUNCTION assembly_leaf
+  (item: product_definition) : BOOLEAN;
+LOCAL
+  local_relation: SET OF assembly_component_usage := [];
+  local_relation2: BAG OF assembly_component_usage := [];
+END_LOCAL;
+-- extraction of related assembly_component_relationships --
+local_relation2 := local_relation2 + QUERY(pdr <* USEDIN (item, 
+    'PRODUCT_STRUCTURE_SCHEMA.PRODUCT_DEFINITION_RELATIONSHIP.RELATING_PRODUCT_DEFINITION') |
+    'PRODUCT_STRUCTURE_SCHEMA.ASSEMBLY_COMPONENT_USAGE' IN
+      TYPEOF(pdr));
+local_relation := bag_to_set (local_relation2);
+IF (SIZEOF (local_relation) = 0) THEN RETURN (TRUE);
+  ELSE RETURN (FALSE);
+END_IF;
+END_FUNCTION;
+
+
+END_SCHEMA; -- assembly_constraint

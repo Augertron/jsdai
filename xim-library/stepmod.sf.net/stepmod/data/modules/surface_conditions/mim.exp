@@ -29,33 +29,26 @@ USE FROM product_property_representation_schema(
   ENTITY contact_ratio_representation
     SUBTYPE OF (representation);
     WHERE
-      WR1: ( SIZEOF ( SELF.items ) =1 ) AND ( SIZEOF ( QUERY ( i <*
-        SELF.items | ( SIZEOF ( ['SURFACE_CONDITIONS_MIM.'+
-        'MEASURE_REPRESENTATION_ITEM' , 'SURFACE_CONDITIONS_MIM.'+
-        'VALUE_RANGE']* TYPEOF ( i ) ) =1 ) AND ( i.name =
-        'ratio value' ) ) ) =1 ) ;
-      WR2: ( SIZEOF ( QUERY ( pdr <* USEDIN ( SELF ,
-        'SURFACE_CONDITIONS_MIM.'+'PROPERTY_DEFINITION_REPRESENTATION.'+
-        'USED_REPRESENTATION' ) | pdr. name =
-        'contact ratio reference' ) ) =1 ) AND ( SIZEOF ( QUERY (
-        pdr <* USEDIN ( SELF ,
-        'SURFACE_CONDITIONS_MIM.'+'PROPERTY_DEFINITION_REPRESENTATION.'+
-        'USED_REPRESENTATION' ) | ( pdr. name =
-        'contact ratio reference' ) AND ( 'PRODUCT_DEFINITION_SCHEMA.'+
-        'PRODUCT_DEFINITION' IN TYPEOF ( pdr.
-        definition.definition ) ) ) ) =1 ) ;
-      WR3: ( SIZEOF ( USEDIN ( SELF ,
-        'SURFACE_CONDITIONS_MIM.'+'PROPERTY_DEFINITION_REPRESENTATION.'+
-        'USED_REPRESENTATION' ) ) =1 ) AND ( SIZEOF ( QUERY ( pdr
-        <* USEDIN ( SELF ,
-        'SURFACE_CONDITIONS_MIM.'+'PROPERTY_DEFINITION_REPRESENTATION.'+
-        'USED_REPRESENTATION' ) | SIZEOF ( QUERY ( gpa <* USEDIN (
-        pdr. definition ,
-        'SURFACE_CONDITIONS_MIM.'+'GENERAL_PROPERTY_ASSOCIATION.'+
-        'DERIVED_DEFINITION' ) | ( 'SURFACE_CONDITIONS_MIM.'+
-        'GENERAL_PROPERTY' IN TYPEOF ( gpa. base_definition ) ) AND
-        ( gpa. base_definition.name ='surface_condition' ) ) ) =1 )
-        ) =1 ) ;
+      WR1: (SIZEOF ( SELF.items ) =1 ) AND
+            (SIZEOF ( QUERY ( i <* SELF.items | 
+             (SIZEOF(['SURFACE_CONDITIONS_MIM.'+ 'MEASURE_REPRESENTATION_ITEM' , 'SURFACE_CONDITIONS_MIM.' + 'VALUE_RANGE']* TYPEOF(i)) = 1) AND
+             (i.name = 'ratio value'))) = 1);
+      WR2: (SIZEOF ( QUERY ( pdr <* USEDIN ( SELF ,'SURFACE_CONDITIONS_MIM.'+'PROPERTY_DEFINITION_REPRESENTATION.'+ 'USED_REPRESENTATION' ) |
+                   pdr\property_definition_representation.name = 'contact ratio reference' ) ) = 1 ) AND 
+           (SIZEOF ( QUERY (pdr <* USEDIN ( SELF ,'SURFACE_CONDITIONS_MIM.'+'PROPERTY_DEFINITION_REPRESENTATION.'+ 'USED_REPRESENTATION' ) |
+           (pdr\property_definition_representation.name = 'contact ratio reference' ) AND
+           ('PRODUCT_DEFINITION_SCHEMA.'+ 'PRODUCT_DEFINITION' IN TYPEOF ( pdr\property_definition_representation.definition\property_definition.definition))
+           )) = 1);
+      WR3:(SIZEOF(USEDIN(SELF ,'SURFACE_CONDITIONS_MIM.'+'PROPERTY_DEFINITION_REPRESENTATION.'+ 'USED_REPRESENTATION')) = 1) AND 
+          (SIZEOF ( QUERY ( pdr <* USEDIN ( SELF ,
+          'SURFACE_CONDITIONS_MIM.'+'PROPERTY_DEFINITION_REPRESENTATION.'+
+          'USED_REPRESENTATION' ) | SIZEOF ( QUERY ( gpa <* USEDIN (pdr.definition ,
+          'SURFACE_CONDITIONS_MIM.'+'GENERAL_PROPERTY_ASSOCIATION.'+
+          'DERIVED_DEFINITION' ) | ( 'SURFACE_CONDITIONS_MIM.'+
+          'GENERAL_PROPERTY' IN TYPEOF (gpa\general_property_association.base_definition ) ) AND
+          (gpa\general_property_association.base_definition\general_property.name ='surface_condition')
+          )) = 1
+         )) = 1);
   END_ENTITY;
 
   ENTITY hardness_representation
@@ -84,11 +77,11 @@ USE FROM product_property_representation_schema(
         <* USEDIN ( SELF ,
         'SURFACE_CONDITIONS_MIM.'+'PROPERTY_DEFINITION_REPRESENTATION.'+
         'USED_REPRESENTATION' ) | SIZEOF ( QUERY ( gpa <* USEDIN (
-        pdr. definition ,
+        pdr.definition ,
         'SURFACE_CONDITIONS_MIM.'+'GENERAL_PROPERTY_ASSOCIATION.'+
         'DERIVED_DEFINITION' ) | ( 'SURFACE_CONDITIONS_MIM.'+
-        'GENERAL_PROPERTY' IN TYPEOF ( gpa. base_definition ) ) AND
-        ( gpa. base_definition.name ='surface_condition' ) ) ) =1 )
+        'GENERAL_PROPERTY' IN TYPEOF ( gpa.base_definition ) ) AND
+        ( gpa\general_property_association.base_definition\general_property.name ='surface_condition' ) ) ) =1 )
         ) =1 ) ;
   END_ENTITY;
 
@@ -115,7 +108,7 @@ USE FROM product_property_representation_schema(
         'SURFACE_CONDITIONS_MIM.'+'REPRESENTATION_RELATIONSHIP.'+
         'REP_2' ) ) =0 ) AND ( SIZEOF ( QUERY ( rr <* USEDIN ( SELF
         , 'SURFACE_CONDITIONS_MIM.'+'REPRESENTATION_RELATIONSHIP.'+
-        'REP_1' ) | rr. rep_2.name = 'measuring direction' ) ) =
+        'REP_1' ) | rr.rep_2.name = 'measuring direction' ) ) =
         SIZEOF ( USEDIN ( SELF ,
         'SURFACE_CONDITIONS_MIM.'+'REPRESENTATION_RELATIONSHIP.'+
         'REP_1' ) ) ) ;
@@ -125,11 +118,11 @@ USE FROM product_property_representation_schema(
         <* USEDIN ( SELF ,
         'SURFACE_CONDITIONS_MIM.'+'PROPERTY_DEFINITION_REPRESENTATION.'+
         'USED_REPRESENTATION' ) | SIZEOF ( QUERY ( gpa <* USEDIN (
-        pdr. definition ,
+        pdr.definition ,
         'SURFACE_CONDITIONS_MIM.'+'GENERAL_PROPERTY_ASSOCIATION.'+
         'DERIVED_DEFINITION' ) | ( 'SURFACE_CONDITIONS_MIM.'+
-        'GENERAL_PROPERTY' IN TYPEOF ( gpa. base_definition ) ) AND
-        ( gpa. base_definition.name ='surface_condition' ) ) ) =1 )
+        'GENERAL_PROPERTY' IN TYPEOF ( gpa.base_definition ) ) AND
+        ( gpa\general_property_association.base_definition\general_property.name ='surface_condition' ) ) ) =1 )
         ) =1 ) ;
   END_ENTITY;
 
@@ -146,11 +139,11 @@ USE FROM product_property_representation_schema(
         <* USEDIN ( SELF ,
         'SURFACE_CONDITIONS_MIM.'+'PROPERTY_DEFINITION_REPRESENTATION.'+
         'USED_REPRESENTATION' ) | SIZEOF ( QUERY ( gpa <* USEDIN (
-        pdr. definition ,
+        pdr.definition ,
         'SURFACE_CONDITIONS_MIM.'+'GENERAL_PROPERTY_ASSOCIATION.'+
         'DERIVED_DEFINITION' ) | ( 'SURFACE_CONDITIONS_MIM.'+
-        'GENERAL_PROPERTY' IN TYPEOF ( gpa. base_definition ) ) AND
-        ( gpa. base_definition.name ='surface_condition' ) ) ) =1 )) =1 ) ;
+        'GENERAL_PROPERTY' IN TYPEOF ( gpa.base_definition ) ) AND
+        ( gpa\general_property_association.base_definition\general_property.name ='surface_condition' ) ) ) =1 )) =1 ) ;
   END_ENTITY;
 
   ENTITY visual_appearance_representation
@@ -183,11 +176,11 @@ USE FROM product_property_representation_schema(
         <* USEDIN ( SELF ,
         'SURFACE_CONDITIONS_MIM.'+'PROPERTY_DEFINITION_REPRESENTATION.'+
         'USED_REPRESENTATION' ) | SIZEOF ( QUERY ( gpa <* USEDIN (
-        pdr. definition ,
+        pdr.definition ,
         'SURFACE_CONDITIONS_MIM.'+'GENERAL_PROPERTY_ASSOCIATION.'+
         'DERIVED_DEFINITION' ) | ( 'SURFACE_CONDITIONS_MIM.'+
-        'GENERAL_PROPERTY' IN TYPEOF ( gpa. base_definition ) ) AND
-        ( gpa. base_definition.name ='surface_condition' ) ) ) =1 )) =1 ) ;
+        'GENERAL_PROPERTY' IN TYPEOF ( gpa.base_definition ) ) AND
+        ( gpa\general_property_association.base_definition\general_property.name ='surface_condition' ) ) ) =1 )) =1 ) ;
   END_ENTITY;
 
 

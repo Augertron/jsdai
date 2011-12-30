@@ -614,6 +614,27 @@ public class Value {
 	}
 
 
+	int find_user_count(CEntity user, CEntity target, int count) throws SdaiException {
+		switch (tag) {
+			case PhFileReader.TYPED_PARAMETER:
+				count = nested_values[0].find_user_count(user, target, count);
+				break;
+			case PhFileReader.ENTITY_REFERENCE:
+				if (reference == target) {
+					count++;
+				}
+				break;
+			case PhFileReader.EMBEDDED_LIST:
+				for (int i = 0; i < length; i++) {
+					count = nested_values[i].find_user_count(user, target, count);
+				}
+				break;
+			default:
+		}
+		return count;
+	}
+
+
 	boolean user_exists(CEntity target) throws SdaiException {
 		switch (tag) {
 			case PhFileReader.TYPED_PARAMETER:
@@ -2560,7 +2581,12 @@ else System.out.println("  returned POSITIVE aggr_type.aggregateClass");
 			if (a_type != null) {
 				if (a_type == ExpressTypes.LIST_GENERIC_TYPE || a_type == ExpressTypes.SET_GENERIC_TYPE || 
 						a_type == ExpressTypes.BAG_GENERIC_TYPE || a_type == ExpressTypes.AGGREGATE_GENERIC_TYPE) {
-					aggr = new AEntity();
+					if (remedy_a_type()) {
+						a_type = (AggregationType)d_type;
+						aggr = (AEntity)a_type.getAggregateClass().newInstance();
+					} else {
+						aggr = new AEntity();
+					}
 					aggr.myType = a_type;
 				} else if (a_type == ExpressTypes.SET_STRING_TYPE) {
 					throw new SdaiException(SdaiException.SY_ERR);
@@ -2579,6 +2605,117 @@ else System.out.println("  returned POSITIVE aggr_type.aggregateClass");
 			aggr.setValue(a_type, inst, this, false, false);
 		}
 		return aggr;
+	}
+
+
+	private boolean remedy_a_type() throws SdaiException {
+		AggregationType ag_type = (AggregationType)d_type;
+		if (ag_type == null || ag_type == ExpressTypes.LIST_GENERIC_TYPE || ag_type == ExpressTypes.SET_GENERIC_TYPE || 
+						ag_type == ExpressTypes.BAG_GENERIC_TYPE || ag_type == ExpressTypes.AGGREGATE_GENERIC_TYPE) {
+			return false;
+		}
+		EData_type el_type = ((EAggregation_type)d_type).getElement_type(null);
+		for (int i = 0; i < length; i++) {
+			boolean res = nested_values[i].isConforming(el_type);
+			if (!res) {
+				return res;
+			}
+		}
+		if (agg_owner instanceof CEntity) {
+			ag_type.shift = SdaiSession.EXPRESSIONS_INST_AGGR;
+		} else {
+			ag_type.shift = SdaiSession.PRIVATE_AGGR;
+		}
+		return true;
+	}
+
+
+	private boolean isConforming(EData_type dtp) throws SdaiException {
+		if (v_type == null || dtp == null) {
+			return false;
+		}
+		DataType tp = (DataType)dtp;
+		if (tp.express_type >= DataType.NUMBER && tp.express_type <= DataType.BINARY) {
+			return isConformingSimple((DataType)v_type, tp);
+		} else if (tp.express_type == DataType.ENTITY) {
+			return isConformingEntityDef((DataType)v_type, tp);
+		} else if (tp.express_type == DataType.DATA_TYPE) {
+			if (tp.getName(null).equals("_ENTITY")) {
+				DataType val_tp = (DataType)v_type;
+				while (val_tp.express_type == DataType.DEFINED_TYPE) {
+					val_tp = (DataType)((CDefined_type)val_tp).getDomain(null);
+				}
+				if (val_tp.express_type == DataType.ENTITY) {
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				return true;
+			}
+		} else {
+			if (d_type == dtp || v_type == dtp) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+	private boolean isConformingSimple(DataType val_tp, DataType tp) throws SdaiException {
+		while (val_tp.express_type == DataType.DEFINED_TYPE) {
+			val_tp = (DataType)((CDefined_type)val_tp).getDomain(null);
+		}
+		if (val_tp.express_type < DataType.NUMBER || val_tp.express_type > DataType.BINARY) {
+			return false;
+		}
+		switch (tp.express_type) {
+			case DataType.NUMBER:
+				if (val_tp.express_type >= DataType.NUMBER && val_tp.express_type <= DataType.INTEGER) {
+					return true;
+				}
+				break;
+			case DataType.INTEGER:
+				if (val_tp.express_type == DataType.INTEGER) {
+					return true;
+				}
+				break;
+			case DataType.REAL:
+				if (val_tp.express_type == DataType.REAL || val_tp.express_type == DataType.INTEGER) {
+					return true;
+				}
+				break;
+			case DataType.BOOLEAN:
+				if (val_tp.express_type == DataType.BOOLEAN) {
+					return true;
+				}
+				break;
+			case DataType.LOGICAL:
+				if (val_tp.express_type == DataType.LOGICAL || val_tp.express_type == DataType.BOOLEAN) {
+					return true;
+				}
+				break;
+			case DataType.BINARY:
+				if (val_tp.express_type == DataType.BINARY) {
+					return true;
+				}
+				break;
+			case DataType.STRING:
+				if (val_tp.express_type == DataType.STRING) {
+					return true;
+				}
+				break;
+		}
+		return false;
+	}
+	private boolean isConformingEntityDef(DataType val_tp, DataType tp) throws SdaiException {
+		while (val_tp.express_type == DataType.DEFINED_TYPE) {
+			val_tp = (DataType)((CDefined_type)val_tp).getDomain(null);
+		}
+		if (val_tp.express_type == DataType.ENTITY && 
+				((EEntity_definition)val_tp).isSubtypeOf((EEntity_definition)tp)) {
+			return true;
+		}
+		return false;
 	}
 
 
@@ -2649,7 +2786,12 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 			if (a_type != null) {
 				if (a_type == ExpressTypes.LIST_GENERIC_TYPE || a_type == ExpressTypes.SET_GENERIC_TYPE || 
 						a_type == ExpressTypes.BAG_GENERIC_TYPE || a_type == ExpressTypes.AGGREGATE_GENERIC_TYPE) {
-					aggr = new CAggregate(a_type);
+					if (remedy_mixed_type()) {
+						a_type = (AggregationType)d_type;
+						aggr = (CAggregate)a_type.getAggregateClass().newInstance();
+					} else {
+						aggr = new CAggregate(a_type);
+					}
 				} else if (a_type == ExpressTypes.SET_STRING_TYPE) {
 					throw new SdaiException(SdaiException.SY_ERR);
 				} else {
@@ -2667,6 +2809,59 @@ if (SdaiSession.debug2) System.out.println(" In getMixedAggregate aggregation_ty
 			aggr.setValue(a_type, inst, this, true, false);
 		}
 		return aggr;
+	}
+
+
+	private boolean remedy_mixed_type() throws SdaiException {
+		AggregationType ag_type = (AggregationType)d_type;
+		if (ag_type == null || ag_type == ExpressTypes.LIST_GENERIC_TYPE || ag_type == ExpressTypes.SET_GENERIC_TYPE || 
+						ag_type == ExpressTypes.BAG_GENERIC_TYPE || ag_type == ExpressTypes.AGGREGATE_GENERIC_TYPE) {
+			return false;
+		}
+		EData_type el_type = ((EAggregation_type)d_type).getElement_type(null);
+		for (int i = 0; i < length; i++) {
+			boolean res = nested_values[i].isMixedConforming(el_type);
+			if (!res) {
+				return res;
+			}
+		}
+		if (agg_owner instanceof CEntity) {
+			ag_type.shift = SdaiSession.EXPRESSIONS_MIXED_AGGR;
+		} else {
+			ag_type.shift = SdaiSession.PRIVATE_AGGR;
+		}
+		return true;
+	}
+
+
+	private boolean isMixedConforming(EData_type dtp) throws SdaiException {
+		if (v_type == null || dtp == null) {
+			return false;
+		}
+		DataType tp = (DataType)dtp;
+		if ((tp.express_type >= DataType.NUMBER && tp.express_type <= DataType.BINARY) || tp.express_type == DataType.ENTITY) {
+			return false;
+		} else if (tp.express_type == DataType.DATA_TYPE) {
+			if (tp.getName(null).equals("_ENTITY")) {
+				DataType val_tp = (DataType)v_type;
+				while (val_tp.express_type == DataType.DEFINED_TYPE) {
+					val_tp = (DataType)((CDefined_type)val_tp).getDomain(null);
+				}
+				if (val_tp.express_type == DataType.ENTITY) {
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				return true;
+			}
+		} else {
+			if (d_type == dtp || v_type == dtp) {
+				return true;
+			} else {
+				return false;
+			}
+		}
 	}
 
 

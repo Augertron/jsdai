@@ -63,6 +63,9 @@ public class Agregate implements Named, LabelListener {
   public static final int BOUND_NONE = Integer.MIN_VALUE;
   protected int minBound = BOUND_NONE;
   protected int maxBound = BOUND_NONE;
+  // RR - for pdb
+  protected String minBoundStr = "";
+  protected String maxBoundStr = "";
 
   public Agregate(AbstractEGBox agregation_type) {
     setAgregation_type(agregation_type);
@@ -76,13 +79,15 @@ public class Agregate implements Named, LabelListener {
     return entity_link;
   }
 */
-  public Agregate(AbstractEGBox agregation_type, Agregate next, String name, int type, int minBound, int maxBound, boolean optional, boolean unique) {
+//  public Agregate(AbstractEGBox agregation_type, Agregate next, String name, int type, int minBound, int maxBound, boolean optional, boolean unique) {
+//  public Agregate(AbstractEGBox agregation_type, Agregate next, String name, int type, EBound minBound, EBound maxBound, boolean optional, boolean unique) {
+  public Agregate(AbstractEGBox agregation_type, Agregate next, String name, int type, int minBound, String minBoundStr, int maxBound, String maxBoundStr, boolean optional, boolean unique) {
     this(agregation_type);
     setName(name);
     setType(type);
     setNext(next);
-    setMinBound(minBound);
-    setMaxBound(maxBound);
+    setMinBound(minBound, minBoundStr);
+    setMaxBound(maxBound, maxBoundStr);
     setOptional(optional);
     setUnique(unique);
   }
@@ -110,9 +115,31 @@ public class Agregate implements Named, LabelListener {
         break;
     }
     text.append("[");
-    if (minBound == BOUND_NONE) text.append("?"); else text.append(minBound);
+		text.append(minBoundStr);
+//    if (minBound == BOUND_NONE) text.append("?"); else text.append(minBound);
+/*
+		if (minBound == BOUND_NONE) {
+			text.append("?"); 
+		} else 
+		if (minBound == Integer.MAX_VALUE) {
+			text.append(minBoundStr);
+		} else {
+			text.append(minBound);
+		}
+*/
     text.append(":");
-    if (maxBound == BOUND_NONE) text.append("?"); else text.append(maxBound);
+		text.append(maxBoundStr);
+//    if (maxBound == BOUND_NONE) text.append("?"); else text.append(maxBound);
+/*
+    if (maxBound == BOUND_NONE) {
+    	text.append("?"); 
+    } else
+    if (maxBound == Integer.MAX_VALUE) {
+    	 text.append(maxBoundStr);
+    } else {
+    	 text.append(maxBound);
+    }
+*/
     text.append("]");
     if (next != null) {
       text.append(" ");
@@ -247,15 +274,17 @@ public class Agregate implements Named, LabelListener {
   public int getMinBound() {
     return minBound;
   }
-  public void setMinBound(int minBound) {
+  public void setMinBound(int minBound, String minBoundStr) {
     this.minBound = minBound;
+    this.minBoundStr = minBoundStr;
     fireLabelChanged();
   }
   public int getMaxBound() {
     return maxBound;
   }
-  public void setMaxBound(int maxBound) {
+  public void setMaxBound(int maxBound, String maxBoundStr) {
     this.maxBound = maxBound;
+    this.maxBoundStr = maxBoundStr;
     fireLabelChanged();
   }
 

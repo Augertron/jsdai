@@ -28,6 +28,7 @@ import jsdai.lang.*;
 
 public interface ESchema_definition extends EGeneric_schema_definition {
 
+	boolean testEntityDefinition(String entity_name) throws jsdai.lang.SdaiException;
 	EEntity_definition getEntityDefinition(String entity_name) throws jsdai.lang.SdaiException;
 	EDefined_type getDefinedType(String type_name) throws jsdai.lang.SdaiException;
 

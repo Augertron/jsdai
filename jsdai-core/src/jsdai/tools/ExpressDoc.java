@@ -86,7 +86,7 @@ public class ExpressDoc {
 	String complex_title = "";
 	boolean complex_schema = false;
 	static boolean flag_generate_summary = false;
-	static boolean flag_original_expressions = false;
+	static boolean flag_original_expressions = true;
 	static String section_title = null;
 	static String iso_file = "iso_db";
 
@@ -131,6 +131,9 @@ public class ExpressDoc {
         // this switch is currently disabled, default changed to true; 	
 				if (args[i].equalsIgnoreCase("-original_expressions")){
 					flag_original_expressions = true;
+				} else
+				if (args[i].equalsIgnoreCase("-formatted_expressions")){
+					flag_original_expressions = false;
 				} else
 				if (args[i].equalsIgnoreCase("-include_implicit")){
 					flag_include_implicit = true;
@@ -529,7 +532,11 @@ REMOVE
 		result = replaceAll2(result, "begin",                   "BEGIN");
 		result = replaceAll2(result, "false",                   "FALSE"); 
 		result = replaceAll2(result, "fixed",                   "FIXED"); 
-		result = replaceAll2(result, "local",                   "LOCAL");
+//		result = replaceAll2(result, "local",                   "LOCAL");
+		result = replaceAll2(result, "local ",                   "LOCAL ");
+		result = replaceAll2(result, "local\n",                   "LOCAL\n");
+		result = replaceAll2(result, "local\t",                   "LOCAL\t");
+		result = replaceAll2(result, "local\r",                   "LOCAL\r");
 		result = replaceAll2(result, "log10",                   "LOG10");
 		result = replaceAll2(result, "oneof",                   "ONEOF");
 		result = replaceAll2(result, "query",                   "QUERY");
@@ -5107,7 +5114,20 @@ System.out.println("<2005-05-23> explicit redeclared attribute: " + (EAttribute)
 	                    //sEC=sEC.replaceAll( ";", ";<BR>\n");
   	                  //sEC=sEC.replaceAll( "end_local", "END_LOCAL").replaceAll( "local", "LOCAL<BR>\n");
     	                sEC=replaceAll( sEC, ";", ";<BR>\n");
-      	              sEC=replaceAll( replaceAll( sEC, "end_local", "END_LOCAL"), "local", "LOCAL<BR>\n");
+
+											// possibly this line causes local_some_name  to be incorrectly converted into LOCAL some_name 
+      	              //sEC=replaceAll( replaceAll( sEC, "end_local", "END_LOCAL"), "local", "LOCAL<BR>\n");
+
+      	              sEC=replaceAll(sEC, "end_local", "END_LOCAL");
+      	              sEC=replaceAll(sEC, "local ", "LOCAL<BR>\n");
+      	              sEC=replaceAll(sEC, "local\t", "LOCAL<BR>\n");
+      	              sEC=replaceAll(sEC, "local\n", "LOCAL<BR>\n");
+      	              sEC=replaceAll(sEC, "local\r", "LOCAL<BR>\n");
+      	              
+      	              
+      	             
+                      
+
         	            //sEC=sEC.replaceAll( "end_if", "END_IF").replaceAll( "else", "ELSE<BR>\n").replaceAll( "then", "THEN<BR>\n").replaceAll( "if", "IF");
           	          //sEC=sEC.replaceAll( "end_case", "END_CASE").replaceAll( "otherwise", "OTHERWISE").replaceAll( "case", "CASE");
             	        //sEC=sEC.replaceAll( "end_repeat", "END_REPEAT").replaceAll( "repeat", "REPEAT").replaceAll( "loindex", "LOINDEX").replaceAll( "hiindex", "HIINDEX");

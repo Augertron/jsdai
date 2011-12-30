@@ -1,0 +1,131 @@
+(*
+   $Id$
+   N - ISO/CD-TS - 10303- product_environment_definition - EXPRESS ARM
+*)
+
+SCHEMA Product_environment_definition_arm;
+
+USE FROM Activity_arm;
+
+USE FROM Activity_method_assignment_arm;
+
+USE FROM Classification_assignment_arm;
+
+USE FROM Description_assignment_arm;
+
+USE FROM Document_assignment_arm;
+
+USE FROM Foundation_state_definition_arm;
+
+USE FROM Identification_assignment_arm;
+
+USE FROM Location_assignment_arm;
+
+USE FROM Person_organization_assignment_arm;
+
+USE FROM Product_concept_identification_arm;
+
+USE FROM Product_group_arm;
+
+USE FROM Product_identification_arm;
+
+USE FROM Product_version_arm;
+
+USE FROM Product_view_definition_arm;
+
+USE FROM Product_view_definition_relationship_arm;
+
+USE FROM Property_assignment_arm;
+
+USE FROM Resource_item_arm;
+
+USE FROM State_observed_arm;
+
+TYPE end_dfn_activity_method_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_method_item WITH
+  (Environment_definition_view);
+END_TYPE;
+
+TYPE env_dfn_activity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON activity_item WITH
+  (Environment_definition_view);
+END_TYPE;
+
+TYPE env_dfn_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
+  (Environment_definition,
+   Environment_definition_version,
+   Environment_product_assignment,
+   Environment_view_definition_relationship);
+END_TYPE;
+
+TYPE env_dfn_description_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON description_item WITH
+  (Environment_definition_view);
+END_TYPE;
+
+TYPE env_dfn_documented_element_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON documented_element_select WITH
+  (Environment_definition_view);
+END_TYPE;
+
+TYPE env_dfn_identifcation_assignment = EXTENSIBLE SELECT BASED_ON identification_item WITH
+  (Environment_definition,
+   Environment_definition_version,
+   Environment_product_assignment,
+   Environment_view_definition_relationship);
+END_TYPE;
+
+TYPE env_dfn_location_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON location_assignment_select WITH
+  (Environment_definition_view);
+END_TYPE;
+
+TYPE env_dfn_organization_or_person_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_or_person_in_organization_item WITH
+  (Environment_definition_view);
+END_TYPE;
+
+TYPE env_dfn_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
+  (Environment_definition_view);
+END_TYPE;
+
+TYPE env_dfn_resource_assignment_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON resource_assignment_item WITH
+  (Environment_definition_view);
+END_TYPE;
+
+TYPE env_dfn_state_defnition_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_definition_of_item WITH
+  (Environment_definition_view);
+END_TYPE;
+
+TYPE env_dfn_state_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_of_item WITH
+  (Environment_definition_view);
+END_TYPE;
+
+TYPE environment_product_item = EXTENSIBLE GENERIC_ENTITY SELECT 
+  (Product,
+   Product_concept,
+   Product_group,
+   Product_version);
+END_TYPE;
+
+ENTITY Environment_definition
+SUBTYPE OF (Product);
+END_ENTITY;
+
+ENTITY Environment_definition_version
+SUBTYPE OF (Product_version);
+  of_environment : Environment_definition;
+END_ENTITY;
+
+ENTITY Environment_definition_view
+SUBTYPE OF (Product_view_definition);
+  defined_environment_version : Environment_definition_version;
+END_ENTITY;
+
+ENTITY Environment_product_assignment;
+  environment : Environment_definition_view;
+  item : environment_product_item;
+END_ENTITY;
+
+ENTITY Environment_view_definition_relationship
+SUBTYPE OF (View_definition_relationship);
+  SELF\View_definition_relationship.relating_view RENAMED relating_environment : Environment_definition_view;
+  SELF\View_definition_relationship.related_view RENAMED related_environment : Environment_definition_view;
+END_ENTITY;
+
+END_SCHEMA;
+

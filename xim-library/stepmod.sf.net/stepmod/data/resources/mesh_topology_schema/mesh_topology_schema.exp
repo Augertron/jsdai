@@ -1,4 +1,8 @@
-(* Genenerated from: part_52.exp *)
+(*
+   $Id$
+   ISO TC184/SC4/WG12 N5113 - ISO/IS 10303-52 Mesh-based topology - EXPRESS
+   Supersedes ISO TC184/SC4/WG12 N2166
+*) 
 
 SCHEMA mesh_topology_schema;
   REFERENCE FROM mathematical_description_of_distribution_schema  -- ISO 10303-51
@@ -15,7 +19,7 @@ SCHEMA mesh_topology_schema;
      text);
   REFERENCE FROM topology_schema                                  -- ISO 10303-42
     (topological_representation_item,
-     vertex);
+     vertex,  vertex_point);
 
 TYPE cell_shape = EXTENSIBLE SELECT 
     (cell_shape_0D,
@@ -34,8 +38,7 @@ END_TYPE;
 
 TYPE cell_shape_2D = EXTENSIBLE ENUMERATION OF
     (quadrilateral,
-     triangle,
-     polygon);
+     triangle);
 END_TYPE;
 
 TYPE cell_shape_3D = EXTENSIBLE ENUMERATION OF
@@ -54,12 +57,12 @@ TYPE mesh_location = EXTENSIBLE ENUMERATION OF
      (unspecified,
       application_defined,
       vertices,
-      cell_center,
-      face_center,
-      iface_center,
-      jface_center,
-      kface_center,
-      edge_center);
+      cell_centre,
+      face_centre,
+      iface_centre,
+      jface_centre,
+      kface_centre,
+      edge_centre);
 END_TYPE;
 
 TYPE mesh_maths_space_type = EXTENSIBLE ENUMERATION OF
@@ -89,24 +92,24 @@ WHERE
   wr1 : all_mesh_vertices(SELF);
 END_ENTITY;
 
+ENTITY cell
+  SUPERTYPE OF (ONEOF(cell_of_structured_mesh, vertex_defined_cell))
+  SUBTYPE OF (topological_representation_item);
+  description : text;
+  dimension   : INTEGER;
+END_ENTITY;
+
 ENTITY cell_of_structured_mesh
-  SUBTYPE OF (topological_region);
+  SUBTYPE OF (cell);
   the_mesh : structured_mesh;
   cell_identifier : ARRAY [1:index_count] OF INTEGER;
 DERIVE
   index_count : INTEGER := the_mesh\mesh.index_count;
 END_ENTITY;
 
-ENTITY composition_of_structured_mesh;
-  part         : structured_mesh;
-  whole        : structured_mesh;
-  lower_vertex : ARRAY [1:whole_indices] OF INTEGER;
-  lower_face   : ARRAY [1:whole_indices] OF OPTIONAL BOOLEAN;
-  used_indices : ARRAY [1:part_indices] OF INTEGER;
-  used_senses  : ARRAY [1:part_indices] OF BOOLEAN;
-DERIVE
-  whole_indices : INTEGER := whole\mesh.index_count;
-  part_indices  : INTEGER := part\mesh.index_count;
+ENTITY cell_with_explicit_boundary
+  SUBTYPE OF (cell);
+  boundary : SET [1:?] OF topological_representation_item;
 END_ENTITY;
 
 ENTITY explicit_unstructured_mesh
@@ -115,14 +118,37 @@ ENTITY explicit_unstructured_mesh
   cells          : ARRAY [1:cell_count] OF UNIQUE element_representation;
 END_ENTITY;
 
-ENTITY explicitly_defined_cell_patch
-  SUBTYPE OF (patch);
-  cells : LIST [1:?] OF vertex_defined_cell;
+ENTITY extraction_of_structured_submesh
+SUBTYPE OF(extraction_of_submesh);
+  lower_vertex : ARRAY [1:whole_indices] OF INTEGER;
+  used_indices : ARRAY [1:part_indices] OF INTEGER;
+  used_senses  : ARRAY [1:part_indices] OF BOOLEAN;
+DERIVE
+  whole_indices : INTEGER := whole\mesh.index_count;
+  part_indices  : INTEGER := part\mesh.index_count;
+WHERE
+  WR1: ('MESH_TOPOLOGY_SCHEMA.STRUCTURED_MESH' IN  TYPEOF(
+             SELF\extraction_of_submesh.whole));
+  WR2: ('MESH_TOPOLOGY_SCHEMA.STRUCTURED_MESH' IN  TYPEOF(
+             SELF\extraction_of_submesh.part));
+
 END_ENTITY;
 
-ENTITY explicitly_defined_vertex_patch
-  SUBTYPE OF (patch);
-  vertices : LIST [1:?] OF vertex;
+ENTITY extraction_of_submesh;
+   whole:  mesh;
+   part:   submesh;
+END_ENTITY;
+ 
+ENTITY extraction_of_submesh_by_cells
+  SUBTYPE OF (extraction_of_submesh);
+  cell_count: INTEGER;
+  cells : ARRAY [1:cell_count] OF cell;
+END_ENTITY;
+
+ENTITY extraction_of_submesh_by_vertices
+  SUBTYPE OF (extraction_of_submesh);
+  vertex_count: INTEGER;
+  vertices : ARRAY [1:vertex_count] OF vertex;
 END_ENTITY;
 
 ENTITY indices_list;
@@ -137,17 +163,12 @@ ENTITY indices_range;
 END_ENTITY;
 
 ENTITY mesh
-  SUBTYPE OF (topological_representation_item);
+  ABSTRACT SUPERTYPE OF (ONEOF(structured_mesh,
+        unstructured_mesh) ANDOR submesh)
+   SUBTYPE OF (topological_representation_item);
   description : text;
   index_count : INTEGER;
 END_ENTITY;
-
-SUBTYPE_CONSTRAINT sc1_mesh FOR mesh;
-  ABSTRACT SUPERTYPE;
-  ONEOF(patch,
-        structured_mesh,
-        unstructured_mesh);
-END_SUBTYPE_CONSTRAINT;
 
 ENTITY mesh_derived_maths_space
   SUBTYPE OF (maths_space);
@@ -157,14 +178,6 @@ ENTITY mesh_derived_maths_space
   the_mesh    : mesh;
   kind        : mesh_maths_space_type;
 END_ENTITY;
-
-ENTITY patch
-  SUBTYPE OF (mesh);
-END_ENTITY;
-
-SUBTYPE_CONSTRAINT sc1_patch FOR patch;
-  ABSTRACT SUPERTYPE;
-END_SUBTYPE_CONSTRAINT;
 
 ENTITY product_of_mesh;
   operands : LIST [2:2] OF mesh;
@@ -195,35 +208,21 @@ ENTITY structured_mesh_with_rind
   rind_planes : rind;
 END_ENTITY;
 
-ENTITY topological_region
-  SUBTYPE OF (topological_representation_item);
-  description : text;
-  dimension   : INTEGER;
-END_ENTITY;
-
-SUBTYPE_CONSTRAINT sc1_topological_region FOR topological_region;
-  ONEOF(cell_of_structured_mesh,
-        vertex_defined_cell);
-END_SUBTYPE_CONSTRAINT;
-
-ENTITY topological_region_with_boundary
-  SUBTYPE OF (topological_region);
-  boundary : SET [1:?] OF topological_representation_item;
+ENTITY submesh
+  SUBTYPE OF (mesh);
 END_ENTITY;
 
 ENTITY unstructured_mesh
+  ABSTRACT SUPERTYPE OF (ONEOF(array_based_unstructured_mesh, 
+        explicit_unstructured_mesh))
   SUBTYPE OF (mesh);
   cell_count   : INTEGER;
 END_ENTITY;
 
-SUBTYPE_CONSTRAINT sc1_unstructured_mesh FOR unstructured_mesh;
-  ABSTRACT SUPERTYPE;
-  ONEOF(array_based_unstructured_mesh,
-        explicit_unstructured_mesh);
-END_SUBTYPE_CONSTRAINT;
+
 
 ENTITY vertex_defined_cell 
-  SUBTYPE OF (topological_region); 
+  SUBTYPE OF (cell); 
   shape       : cell_shape;
   order       : element_order;
   vertices    : ARRAY [1:vn_count] OF OPTIONAL vertex;
@@ -233,15 +232,17 @@ DERIVE
   opt_node_count    : INTEGER := cell_counts(SELF)[3];
   required_count    : INTEGER := bound_count + edge_node_count;
   vn_count          : INTEGER := required_count + opt_node_count;
- (* required_vertices : ARRAY [1:required_count] OF vertex
-                              := vertices[1:required_count];*)
+  required_vertices : ARRAY [1:required_count] OF vertex
+                        := shorten_array(vertices, vn_count, required_count);
 END_ENTITY;
 
+(*
 ENTITY vertex_range_defined_patch
   SUBTYPE OF (patch);
   base_mesh : structured_mesh;
   range     : indices_range;
 END_ENTITY;
+*)
 
 FUNCTION all_mesh_vertices(arg : array_based_unstructured_mesh_and_vertices)
          : BOOLEAN;
@@ -315,13 +316,6 @@ END_LOCAL;
             linear : result[3] := 0;              -- 0
           END_CASE;
         END;
-    polygon :
-        BEGIN
-          vts := arg.vn_count; eds := arg.vn_count; 
-          result[1] := vts;
-          result[2] := 0;
-          result[3] := 0;
-        END;
     hexahedron :
         BEGIN
           vts := 8; eds := 12; qf := 6; tf := 0;
@@ -360,8 +354,28 @@ END_LOCAL;
 RETURN(result);
 END_FUNCTION;
 
+
+FUNCTION shorten_array(longa : ARRAY OF GENERIC : T;
+                      oldl, newl : INTEGER) : ARRAY OF GENERIC : T;
+   LOCAL
+     shorta : ARRAY [1:newl] OF GENERIC : T;
+   END_LOCAL;
+
+   IF (newl > oldl) THEN
+     RETURN(?);
+   ELSE
+     REPEAT i := 1 TO newl;
+       shorta[i] := longa[i];
+     END_REPEAT;
+     RETURN(shorta);
+   END_IF;
+END_FUNCTION;
+
+
+
 FUNCTION this_schema : STRING;
   RETURN('MESH_TOPOLOGY_SCHEMA');
 END_FUNCTION;
+
 
 END_SCHEMA;  -- end of mesh_topology_schema

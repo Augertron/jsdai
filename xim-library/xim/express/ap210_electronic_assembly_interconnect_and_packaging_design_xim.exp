@@ -79,9 +79,9 @@ TYPE ap210_ee_product_definition_with_annotation_elements = EXTENSIBLE GENERIC_E
    	(Part_usage_view);
 END_TYPE; 
 
-  SUBTYPE_CONSTRAINT ap210_eaiapd_restrict_product_subtypes FOR Product;
+  SUBTYPE_CONSTRAINT ap210_eaiapd_restrict_product_subtypes FOR Product_armx;
     ABSTRACT SUPERTYPE;
-    ONEOF (Document, Information_product, Part, Requirement, Substance, Template);
+    ONEOF (Document_armx, Information_product, Part, Requirement, Substance, Template);
   END_SUBTYPE_CONSTRAINT;
 
   SUBTYPE_CONSTRAINT ap210_eaiapd_restrict_product_view_definition_subtypes FOR Product_view_definition;
@@ -112,14 +112,6 @@ ONEOF (Component_terminal_to_assembly_module_macro_terminal_assignment,
  Component_terminal_to_interconnect_module_macro_terminal_assignment,
  Component_terminal_to_interconnect_module_interface_terminal_assignment,
  Component_terminal_to_layered_assembly_module_terminal_assignment);
-END_SUBTYPE_CONSTRAINT;
-
-(** Subtypes are totally mixed and appear in various schemas - most likely this constraint will remain in some CC *)
-SUBTYPE_CONSTRAINT geometric_representation_relationship_subtypes FOR Shape_representation_relationship;     
-(ONEOF (Component_part_2d_non_planar_geometric_representation_relationship,
-Shape_definition_3d_intersection_armx, -- layered_3d_shape
- shape_definition_3d_plane_projection -- layered_3d_shape
- ));    
 END_SUBTYPE_CONSTRAINT;
 
 (** Since this includes both pca and pca - I guess it will be it top most schema *)
@@ -277,7 +269,7 @@ TYPE ap210_managed_design_object_armx = EXTENSIBLE GENERIC_ENTITY SELECT BASED_O
  Line_width_class,
  Linear_array_placement_group_component_link,
  Located_interconnect_module_thickness_requirement,
- Marking,
+ Marking_armx,
  Mating_connector_usage,
  Mating_connector_placement_relationship,
  Mating_connector_termination,
@@ -434,7 +426,7 @@ Assembly_module_with_interconnect_component_xim  - most likely in some Assembly 
 		 Cable_usage_view_armx,
 		 Packaged_part_armx,
 		 Assembly_module_usage_view_armx,
-		 Layered_interconnect_module_usage_view_armx);
+		 Interconnect_module_usage_view_armx);
 	END_SUBTYPE_CONSTRAINT;
 
 	SUBTYPE_CONSTRAINT ap210_apd_part_view_definition_subtypes FOR Part_view_definition ; 
@@ -471,8 +463,7 @@ END_TYPE;
 SUBTYPE_CONSTRAINT planar_projected_shape_model_subtypes FOR Planar_projected_shape_model;  
 	(ONEOF ((Assembly_component_2d_shape_model ANDOR
 	 (ONEOF (Part_template_planar_shape_model,
-	 Physical_unit_planar_shape_model))),
-	 Stratum_planar_shape_model));
+	 Physical_unit_planar_shape_model)))));
 END_SUBTYPE_CONSTRAINT; 
 
 (** Pre_defined_datum_symbol_arm and Layered_interconnect_module_3d_shape_arm are not linked in any way.

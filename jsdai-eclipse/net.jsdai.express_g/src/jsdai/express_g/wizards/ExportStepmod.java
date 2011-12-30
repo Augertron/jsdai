@@ -58,9 +58,13 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IExportWizard;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
@@ -107,14 +111,33 @@ public class ExportStepmod extends Wizard implements IExportWizard {
 			}
 
 			// let's add here initialization of iso_db:
-			ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getSelection();
+
 			IProject fProject = null;
-			if (selection instanceof IStructuredSelection) {
-				Object obj = ((IStructuredSelection)selection).getFirstElement();
-				if (obj instanceof IResource) {
-					fProject = ((IResource)obj).getProject();
-				} else {
-					// System.out.println("selection element is NOT a resource: " + obj);
+
+			IProject activeProject = null;
+			IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+			if ( window != null ) {
+				IWorkbenchPage page = window.getActivePage();
+				if ( page != null ) {
+					IEditorPart editor = page.getActiveEditor();
+					if ( editor != null ) {
+						IEditorInput input = editor.getEditorInput();
+						if ( input instanceof IFileEditorInput ) {
+							IFileEditorInput fileInput = (IFileEditorInput) input;
+							fProject = fileInput.getFile().getProject();
+						}
+					}
+				}					
+			}
+			if (fProject == null) {
+				ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getSelection();
+				if (selection instanceof IStructuredSelection) {
+					Object obj = ((IStructuredSelection)selection).getFirstElement();
+					if (obj instanceof IResource) {
+						fProject = ((IResource)obj).getProject();
+					} else {
+						// System.out.println("selection element is NOT a resource: " + obj);
+					}
 				}
 			}
 			if (fProject != null) {

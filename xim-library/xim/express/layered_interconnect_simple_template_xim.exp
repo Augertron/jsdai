@@ -240,7 +240,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
       SELF\shape_aspect_relationship.related_shape_aspect RENAMED end_vertex		: Edge_segment_vertex_armx;
       reference_path 																														: Trimmed_curve;
     WHERE
-      WR1 : EXISTS(reference_path.start_point) AND EXISTS(reference_path.end_point);      
+      WR1 : EXISTS(reference_path.trim_1) AND EXISTS(reference_path.trim_2);      
       WR2 : start_vertex :<>: end_vertex;
   END_ENTITY;
 
@@ -496,8 +496,8 @@ FUNCTION get_electrical_conductivity
 	REPEAT i := 1 to SIZEOF(mi) by 1;
 	  IF ('CONDUCTIVITY_MATERIAL_ASPECT.'+'MATERIAL_IDENTIFICATION_WITH_CONDUCTIVITY_CLASSIFICATION' 
 	  	IN TYPEOF (mi[i])) THEN
-		  IF((EXISTS(mi[i].electrical_conductivity_classification)) AND 
-		  (mi[i].electrical_conductivity_classification IN ['conductive', 'semi conductive', 'super conductive'])) THEN
+		  IF((EXISTS(mi[i]\material_identification_with_conductivity_classification.electrical_conductivity_classification)) AND 
+		  (mi[i]\material_identification_with_conductivity_classification.electrical_conductivity_classification IN ['conductive', 'semi conductive', 'super conductive'])) THEN
 	  		RETURN (TRUE);
 	  	END_IF;	
 	  END_IF;

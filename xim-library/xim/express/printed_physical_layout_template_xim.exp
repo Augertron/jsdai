@@ -103,7 +103,7 @@ END_SUBTYPE_CONSTRAINT;
     UNIQUE
       UR1 : join_terminal;
     WHERE
-      WR1: join_terminal\Printed_part_template_terminal.associated_definition :=: connector;
+      WR1: join_terminal\Printed_part_template_terminal_armx.associated_definition :=: connector;
       WR2: interface_terminal.associated_definition :=: connector;
   END_ENTITY;
 
@@ -157,13 +157,13 @@ END_SUBTYPE_CONSTRAINT;
       WR6 : NOT (EXISTS(material_to_right_of_terminal) AND EXISTS(material_to_bottom_of_terminal)) OR (material_to_right_of_terminal :<>: material_to_bottom_of_terminal);
       WR7 : NOT (EXISTS(material_to_top_of_terminal) AND EXISTS(material_to_bottom_of_terminal)) OR (material_to_top_of_terminal :<>: material_to_bottom_of_terminal);
       WR8 : NOT EXISTS(material_to_left_of_terminal) OR  
-                      (material_to_left_of_terminal\Printed_part_template_material_link.precedent_material\shape_aspect.name = 'right');
+                      (material_to_left_of_terminal\Printed_part_template_material_link_armx.precedent_material\shape_aspect.name = 'right');
       WR9 : NOT EXISTS(material_to_right_of_terminal) OR
-                      (material_to_right_of_terminal\Printed_part_template_material_link.subsequent_material\shape_aspect.name = 'left');
+                      (material_to_right_of_terminal\Printed_part_template_material_link_armx.subsequent_material\shape_aspect.name = 'left');
      WR10 : NOT EXISTS(material_to_bottom_of_terminal) OR
-                      (material_to_bottom_of_terminal\Printed_part_template_material_link.subsequent_material\shape_aspect.name = 'top');
+                      (material_to_bottom_of_terminal\Printed_part_template_material_link_armx.subsequent_material\shape_aspect.name = 'top');
      WR11 : NOT EXISTS(material_to_top_of_terminal) OR
-                      (material_to_top_of_terminal\Printed_part_template_material_link.precedent_material\shape_aspect.name = 'bottom');      
+                      (material_to_top_of_terminal\Printed_part_template_material_link_armx.precedent_material\shape_aspect.name = 'bottom');      
   END_ENTITY;
 
   ENTITY Printed_part_template_armx
@@ -286,15 +286,15 @@ END_SUBTYPE_CONSTRAINT;
           (SIZEOF(QUERY(tsm <* tiebar_shape_model |
           (ap2d_geometrically_in_tiebar(pcl,tsm)) )) > 0)
           )) = SIZEOF(passage_component_location));
-        WR4: SIZEOF(QUERY(t <* SELF\Structured_template.templates | 'LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_XIM.STRATUM_FEATURE_TEMPLATE' IN TYPEOF(t\Template_location_in_structured_template.template))) > 0;
-        WR5: SIZEOF(QUERY(spptt <* SELF\Printed_part_template.access_mechanisms | 
-          NOT(SIZEOF(USEDIN(spptt,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION.CONNECTED_TERMINALS')) = 1)
+        WR4: SIZEOF(QUERY(t <* SELF\Structured_template_armx.templates | 'LAYERED_INTERCONNECT_SIMPLE_TEMPLATE_XIM.STRATUM_FEATURE_TEMPLATE_ARMX' IN TYPEOF(t\Template_location_in_structured_template.template))) > 0;
+        WR5: SIZEOF(QUERY(spptt <* SELF\Printed_part_template_armx.access_mechanisms | 
+          NOT(SIZEOF(USEDIN(spptt,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION_ARMX.CONNECTED_TERMINALS')) = 1)
           )) = 0;
-        WR6: SIZEOF(QUERY(spptt1 <* SELF\Printed_part_template.access_mechanisms |
-          NOT(SIZEOF(QUERY(spptt2 <* SELF\Printed_part_template.access_mechanisms | 
-          (bag_to_set(USEDIN(spptt1,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION.CONNECTED_TERMINALS')) =
-          bag_to_set(USEDIN(spptt2,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION.CONNECTED_TERMINALS'))))) 
-          = SIZEOF(SELF\Printed_part_template.access_mechanisms)))) = 0;
+        WR6: SIZEOF(QUERY(spptt1 <* SELF\Printed_part_template_armx.access_mechanisms |
+          NOT(SIZEOF(QUERY(spptt2 <* SELF\Printed_part_template_armx.access_mechanisms | 
+          (bag_to_set(USEDIN(spptt1,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION_ARMX.CONNECTED_TERMINALS')) =
+          bag_to_set(USEDIN(spptt2,'PRINTED_PHYSICAL_LAYOUT_TEMPLATE_XIM.' + 'PRINTED_PART_TEMPLATE_CONNECTED_TERMINALS_DEFINITION_ARMX.CONNECTED_TERMINALS'))))) 
+          = SIZEOF(SELF\Printed_part_template_armx.access_mechanisms)))) = 0;
         WR7: SIZEOF(QUERY(tl <* terminal_location |
           (SIZEOF(QUERY(pcl <* passage_component_location |
           ((tl :=: pcl) OR 

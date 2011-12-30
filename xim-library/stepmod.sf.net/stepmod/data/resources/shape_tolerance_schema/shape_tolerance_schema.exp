@@ -1,72 +1,227 @@
-(* Genenerated from: ../../irs/wg12n548.exp *)
-(* This file incorporates the proposed solution for SEDS #1286. *)
+(*
+ $Id$
+ISO TC184/SC4/WG12 N7297 - ISO/DIS 10303-47 Shape variation tolerances - EXPRESS
+*) 
+
 
 SCHEMA shape_tolerance_schema;
-REFERENCE FROM product_property_definition_schema
-    (shape_aspect,
-     shape_aspect_relationship);
-REFERENCE FROM measure_schema
-   (derive_dimensional_exponents,
-    dimensional_exponents,
-    measure_with_unit,
-    measure_value);
-REFERENCE FROM representation_schema
-    (representation);
-REFERENCE FROM support_resource_schema
-    (label,
-     text);
-REFERENCE FROM shape_aspect_definition_schema
-    (datum_reference,
-     limit_condition);
-REFERENCE FROM shape_dimension_schema
-    (dimensional_characteristic,
-     dimensional_location);
+
+REFERENCE FROM product_property_definition_schema   -- ISO 10303-41
+  (product_definition_shape,
+   shape_aspect,
+   shape_aspect_relationship); 
+
+REFERENCE FROM product_property_representation_schema   -- ISO 10303-41
+  (item_identified_representation_usage_definition); 
+
+REFERENCE FROM measure_schema   -- ISO 10303-41
+  (derive_dimensional_exponents,
+   dimensional_exponents,
+   length_measure_with_unit,
+   measure_with_unit,
+   measure_value,
+   plane_angle_measure_with_unit); 
+
+REFERENCE FROM qualified_measure_schema   -- ISO 10303-45
+  (measure_representation_item);
+
+REFERENCE FROM representation_schema   -- ISO 10303-43
+  (representation); 
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (label,
+   text,
+   type_check_function); 
+
+REFERENCE FROM shape_aspect_definition_schema   -- ISO 10303-47
+  (datum_reference,
+   datum_system,
+   limit_condition,
+   general_datum_reference); 
+
+REFERENCE FROM shape_dimension_schema   -- ISO 10303-47
+  (dimensional_characteristic,
+   dimensional_location,
+   dimensional_size); 
+
+TYPE area_unit_type = EXTENSIBLE ENUMERATION OF 
+   (circular,
+    square,
+    rectangular);
+END_TYPE; 
+
+TYPE datum_system_or_reference = SELECT
+   (datum_reference, 
+    datum_system);
+END_TYPE; 
+
+TYPE geometric_tolerance_modifier = EXTENSIBLE ENUMERATION OF 
+   (maximum_material_requirement,
+    least_material_requirement,
+    reciprocity_requirement,
+    any_cross_section,
+    free_state,
+    common_zone,
+    minor_diameter,
+    major_diameter,
+    pitch_diameter,
+    line_element,
+    not_convex,
+    statistical_tolerance,
+    tangent_plane,
+    each_radial_element,
+    separate_requirement);
+END_TYPE; 
+
+TYPE geometric_tolerance_target = SELECT
+   (dimensional_location, 
+    dimensional_size, 
+    product_definition_shape, 
+    shape_aspect);
+END_TYPE; 
+
+TYPE shape_tolerance_select = SELECT
+   (geometric_tolerance, 
+    plus_minus_tolerance);
+END_TYPE; 
+
+TYPE sts_item_identified_representation_usage_definition = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON item_identified_representation_usage_definition WITH 
+   (geometric_tolerance);
+END_TYPE; 
 
 TYPE tolerance_method_definition = SELECT
-  (tolerance_value,
-   limits_and_fits);
+   (limits_and_fits, 
+    tolerance_value);
+END_TYPE; 
+
+TYPE tolerance_zone_target = SELECT (
+  dimensional_location,
+  dimensional_size,
+  geometric_tolerance,
+  general_datum_reference);
 END_TYPE;
 
-TYPE  shape_tolerance_select = SELECT
-     (geometric_tolerance,
-      plus_minus_tolerance);
-END_TYPE;
-
-ENTITY dimension_related_tolerance_zone_element;
-  related_dimension : dimensional_location; 
-  related_element   : tolerance_zone_definition;
+ENTITY angularity_tolerance
+  SUBTYPE OF (geometric_tolerance_with_datum_reference);
 END_ENTITY;
 
-ENTITY geometric_tolerance;
-  name                    : label;
-  description             : text;
-  magnitude               : measure_with_unit; 
-  toleranced_shape_aspect : shape_aspect; 
+ENTITY circular_runout_tolerance
+  SUBTYPE OF (geometric_tolerance_with_datum_reference);
+END_ENTITY;
+
+ENTITY coaxiality_tolerance
+  SUBTYPE OF (geometric_tolerance_with_datum_reference);
+END_ENTITY;
+
+ENTITY concentricity_tolerance
+  SUBTYPE OF (geometric_tolerance_with_datum_reference);
+END_ENTITY;
+
+ENTITY cylindricity_tolerance
+  SUBTYPE OF (geometric_tolerance);
 WHERE
-  WR1: ('NUMBER' IN TYPEOF
-       (magnitude\measure_with_unit.value_component)) AND
-       (magnitude\measure_with_unit.value_component >= 0.0);
+  WR1: NOT ('SHAPE_TOLERANCE_SCHEMA.' + 'GEOMETRIC_TOLERANCE_WITH_DATUM_REFERENCE' IN TYPEOF (SELF));
+END_ENTITY;
+
+ENTITY dimension_related_tolerance_zone_element;
+  related_dimension : dimensional_location;
+  related_element : tolerance_zone_definition;
+END_ENTITY;
+
+ENTITY flatness_tolerance
+  SUBTYPE OF (geometric_tolerance);
+WHERE
+  WR1: NOT ('SHAPE_TOLERANCE_SCHEMA.' + 'GEOMETRIC_TOLERANCE_WITH_DATUM_REFERENCE' IN TYPEOF (SELF));
+END_ENTITY;
+
+ENTITY geometric_tolerance
+  ABSTRACT SUPERTYPE OF (geometric_tolerance_with_datum_reference
+                         ANDOR geometric_tolerance_with_defined_unit
+                        ANDOR ONEOF (geometric_tolerance_with_modifiers,
+                             modified_geometric_tolerance)
+                      ANDOR unequally_disposed_geometric_tolerance
+                     ANDOR ONEOF (cylindricity_tolerance,
+                          flatness_tolerance,
+                          line_profile_tolerance,
+                          position_tolerance,
+                          roundness_tolerance,
+                          straightness_tolerance,
+                          surface_profile_tolerance));
+  name : label;
+  description : OPTIONAL text;
+  magnitude : OPTIONAL length_measure_with_unit;
+  toleranced_shape_aspect : geometric_tolerance_target;
+DERIVE
+  controlling_shape : product_definition_shape := sts_get_product_definition_shape(toleranced_shape_aspect);
+UNIQUE
+  UR1: name,controlling_shape;
+WHERE
+  WR1: magnitude\measure_with_unit.value_component >= 0.0;
+  WR2: EXISTS(controlling_shape);
+  WR3: NOT ('PRODUCT_PROPERTY_DEFINITION_SCHEMA.SHAPE_ASPECT_RELATIONSHIP' IN TYPEOF(toleranced_shape_aspect))
+       OR (toleranced_shape_aspect\shape_aspect_relationship.relating_shape_aspect.of_shape :=:
+            toleranced_shape_aspect\shape_aspect_relationship.related_shape_aspect.of_shape);
 END_ENTITY;
 
 ENTITY geometric_tolerance_relationship;
-                                   name                         :label;
-                                   description                  :text;
-                                   relating_geometric_tolerance : geometric_tolerance; 
-                                   related_geometric_tolerance  : geometric_tolerance; 
+  name : label;
+  description : text;
+  relating_geometric_tolerance : geometric_tolerance;
+  related_geometric_tolerance : geometric_tolerance;
 END_ENTITY;
 
 ENTITY geometric_tolerance_with_datum_reference
-   SUBTYPE OF (geometric_tolerance);
-   datum_system : SET [1:?] OF  datum_reference;
+  SUPERTYPE OF (ONEOF (angularity_tolerance,
+                       circular_runout_tolerance,
+                       coaxiality_tolerance,
+                       concentricity_tolerance,
+                       parallelism_tolerance,
+                       perpendicularity_tolerance,
+                       symmetry_tolerance,
+                       total_runout_tolerance))
+  SUBTYPE OF (geometric_tolerance);
+  datum_system : SET[1:?] OF datum_system_or_reference;
+WHERE
+  WR1: (SIZEOF(QUERY(ds <* datum_system | 'SHAPE_TOLERANCE_SCHEMA.' + 'DATUM_SYSTEM' in TYPEOF(ds)))=0) OR (SIZEOF(datum_system)=1);
+END_ENTITY;
+
+ENTITY geometric_tolerance_with_defined_area_unit
+  SUBTYPE OF (geometric_tolerance_with_defined_unit);
+  area_type : area_unit_type;
+  second_unit_size : OPTIONAL length_measure_with_unit;
+WHERE
+  WR1: NOT (EXISTS(second_unit_size) XOR (area_type = rectangular));
 END_ENTITY;
 
 ENTITY geometric_tolerance_with_defined_unit
   SUBTYPE OF (geometric_tolerance);
-  unit_size : measure_with_unit;
+  unit_size : length_measure_with_unit;
 WHERE
-  WR1: ('NUMBER' IN TYPEOF
-       (unit_size\measure_with_unit.value_component)) AND
-       (unit_size\measure_with_unit.value_component > 0.0);
+  WR1: ('NUMBER' IN TYPEOF (unit_size\measure_with_unit.value_component)) AND (unit_size\measure_with_unit.value_component > 0.0);
+END_ENTITY;
+
+ENTITY geometric_tolerance_with_maximum_tolerance
+  SUBTYPE OF (geometric_tolerance_with_modifiers);
+  maximum_upper_tolerance : length_measure_with_unit;
+WHERE
+  WR1: (geometric_tolerance_modifier.maximum_material_requirement IN SELF\geometric_tolerance_with_modifiers.modifiers) OR (geometric_tolerance_modifier.least_material_requirement IN SELF\geometric_tolerance_with_modifiers.modifiers);
+  WR2: (maximum_upper_tolerance\measure_with_unit.unit_component = SELF\geometric_tolerance.magnitude\measure_with_unit.unit_component) AND (maximum_upper_tolerance\measure_with_unit.value_component > SELF\geometric_tolerance.magnitude\measure_with_unit.value_component);
+END_ENTITY;
+
+ENTITY geometric_tolerance_with_modifiers
+  SUBTYPE OF (geometric_tolerance);
+  modifiers : SET[1:?] OF geometric_tolerance_modifier;
+END_ENTITY;
+
+ENTITY limits_and_fits;
+  form_variance : label;
+  zone_variance : label;
+  grade : label;
+  source : text;
+END_ENTITY;
+
+ENTITY line_profile_tolerance
+  SUBTYPE OF (geometric_tolerance);
 END_ENTITY;
 
 ENTITY modified_geometric_tolerance
@@ -74,87 +229,146 @@ ENTITY modified_geometric_tolerance
   modifier : limit_condition;
 END_ENTITY;
 
-ENTITY projected_zone_definition 
-  SUBTYPE OF (tolerance_zone_definition);  
-  projection_end   : shape_aspect; 
-  projected_length : measure_with_unit;
-WHERE 
-  WR1: ('NUMBER' IN TYPEOF
-       (projected_length\measure_with_unit.value_component)) AND
-       (projected_length\measure_with_unit.value_component > 0.0);
-  WR2: (derive_dimensional_exponents
-       (projected_length\measure_with_unit.unit_component)=
-        dimensional_exponents(1,0,0,0,0,0,0));
+ENTITY non_uniform_zone_definition
+  SUBTYPE OF (tolerance_zone_definition);
+END_ENTITY;
+
+ENTITY parallelism_tolerance
+  SUBTYPE OF (geometric_tolerance_with_datum_reference);
+END_ENTITY;
+
+ENTITY perpendicularity_tolerance
+  SUBTYPE OF (geometric_tolerance_with_datum_reference);
+END_ENTITY;
+
+ENTITY plus_minus_tolerance;
+  range : tolerance_method_definition;
+  toleranced_dimension : dimensional_characteristic;
+UNIQUE
+  UR1: toleranced_dimension;
+END_ENTITY;
+
+ENTITY position_tolerance
+  SUBTYPE OF (geometric_tolerance);
+END_ENTITY;
+
+ENTITY projected_zone_definition
+  SUBTYPE OF (tolerance_zone_definition);
+  projection_end : shape_aspect;
+  projected_length : length_measure_with_unit;
+WHERE
+  WR1: ('NUMBER' IN TYPEOF (projected_length\measure_with_unit.value_component)) AND (projected_length\measure_with_unit.value_component > 0.0);
+  WR2: (derive_dimensional_exponents (projected_length\measure_with_unit.unit_component)= dimensional_exponents(1,0,0,0,0,0,0));
+END_ENTITY;
+
+ENTITY projected_zone_definition_with_offset
+  SUBTYPE OF (projected_zone_definition);
+  offset : length_measure_with_unit;
+END_ENTITY;
+
+ENTITY roundness_tolerance
+  SUBTYPE OF (geometric_tolerance);
+WHERE
+  WR1: NOT ('SHAPE_TOLERANCE_SCHEMA.' + 'GEOMETRIC_TOLERANCE_WITH_DATUM_REFERENCE' IN TYPEOF (SELF));
 END_ENTITY;
 
 ENTITY runout_zone_definition
-  SUBTYPE OF (tolerance_zone_definition); 
-  orientation  : runout_zone_orientation;
+  SUBTYPE OF (tolerance_zone_definition);
+  orientation : runout_zone_orientation;
 END_ENTITY;
 
 ENTITY runout_zone_orientation;
-  angle : measure_with_unit;
+  angle : plane_angle_measure_with_unit;
 END_ENTITY;
 
 ENTITY runout_zone_orientation_reference_direction
-  SUBTYPE OF (runout_zone_orientation); 
-  orientation_defining_relationship: shape_aspect_relationship;
+  SUBTYPE OF (runout_zone_orientation);
+  orientation_defining_relationship : shape_aspect_relationship;
 END_ENTITY;
 
 ENTITY statistical_distribution_for_tolerance
   SUBTYPE OF (representation);
 WHERE
-  WR1: SIZEOF (QUERY (item <* SELF\representation.items |
-       NOT ('QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM' 
-       IN TYPEOF (item)))) = 0;
+  WR1: SIZEOF (QUERY (item <* SELF\representation.items | NOT ('QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM' IN TYPEOF (item)))) = 0;
+END_ENTITY;
+
+ENTITY straightness_tolerance
+  SUBTYPE OF (geometric_tolerance);
+WHERE
+  WR1: NOT ('SHAPE_TOLERANCE_SCHEMA.' + 'GEOMETRIC_TOLERANCE_WITH_DATUM_REFERENCE' IN TYPEOF (SELF));
+END_ENTITY;
+
+ENTITY surface_profile_tolerance
+  SUBTYPE OF (geometric_tolerance);
+END_ENTITY;
+
+ENTITY symmetry_tolerance
+  SUBTYPE OF (geometric_tolerance_with_datum_reference);
+END_ENTITY;
+
+ENTITY tolerance_value;
+  lower_bound : measure_with_unit;
+  upper_bound : measure_with_unit;
+DERIVE
+  ubvc : REAL := upper_bound\measure_with_unit.value_component;
+  lbvc : REAL := lower_bound\measure_with_unit.value_component;
+WHERE
+  WR1: ubvc > lbvc;
+  WR2: upper_bound\measure_with_unit.unit_component = lower_bound\measure_with_unit.unit_component;
 END_ENTITY;
 
 ENTITY tolerance_with_statistical_distribution;
-   associated_tolerance : shape_tolerance_select;
-   tolerance_allocation : statistical_distribution_for_tolerance;
+  associated_tolerance : shape_tolerance_select;
+  tolerance_allocation : statistical_distribution_for_tolerance;
 END_ENTITY;
 
 ENTITY tolerance_zone
   SUBTYPE OF (shape_aspect);
-  defining_tolerance : SET [1:?] OF geometric_tolerance; 
-  form               : tolerance_zone_form;
+  defining_tolerance : SET[1:?] OF tolerance_zone_target;
+  form : tolerance_zone_form;
+END_ENTITY;
+
+ENTITY tolerance_zone_definition
+  SUPERTYPE OF (ONEOF (projected_zone_definition,
+                       non_uniform_zone_definition,
+                       runout_zone_definition));
+  zone : tolerance_zone;
+  boundaries : SET[0:?] OF shape_aspect;
 END_ENTITY;
 
 ENTITY tolerance_zone_form;
   name : label;
 END_ENTITY;
 
-ENTITY tolerance_zone_definition
-  SUPERTYPE OF (ONEOF (projected_zone_definition,
-                       runout_zone_definition));
-  zone : tolerance_zone;
-  boundaries: SET [1:?] OF shape_aspect;
+ENTITY total_runout_tolerance
+  SUBTYPE OF (geometric_tolerance_with_datum_reference);
 END_ENTITY;
 
-ENTITY limits_and_fits;
-  form_variance   : label;
-  zone_variance   : label;
-  grade           : label;
-  source          : text;
+ENTITY unequally_disposed_geometric_tolerance
+  SUBTYPE OF (geometric_tolerance);
+  displacement : length_measure_with_unit;
+WHERE
+  WR1: ('NUMBER' IN TYPEOF (SELF\geometric_tolerance_with_defined_unit.unit_size\measure_with_unit.value_component)) AND (SELF\geometric_tolerance_with_defined_unit.unit_size\measure_with_unit.value_component > 0.0);
 END_ENTITY;
 
-ENTITY  plus_minus_tolerance;
-  range                : tolerance_method_definition; 
-  toleranced_dimension : dimensional_characteristic;
-UNIQUE
-  UR1: toleranced_dimension;
-END_ENTITY;
+RULE subtype_exclusiveness_geometric_tolerance FOR 
+(geometric_tolerance);
+WHERE
+  WR1: SIZEOF(QUERY (gt <* geometric_tolerance | NOT (type_check_function(gt, ['SHAPE_TOLERANCE_SCHEMA.ANGULARITY_TOLERANCE', 'SHAPE_TOLERANCE_SCHEMA.CIRCULAR_RUNOUT_TOLERANCE', 'SHAPE_TOLERANCE_SCHEMA.COAXIALITY_TOLERANCE', 'SHAPE_TOLERANCE_SCHEMA.CONCENTRICITY_TOLERANCE', 'SHAPE_TOLERANCE_SCHEMA.CYLINDRICITY_TOLERANCE', 'SHAPE_TOLERANCE_SCHEMA.FLATNESS_TOLERANCE', 'SHAPE_TOLERANCE_SCHEMA.LINE_PROFILE_TOLERANCE', 'SHAPE_TOLERANCE_SCHEMA.PARALLELISM_TOLERANCE', 'SHAPE_TOLERANCE_SCHEMA.PERPENDICULARITY_TOLERANCE', 'SHAPE_TOLERANCE_SCHEMA.POSITION_TOLERANCE', 'SHAPE_TOLERANCE_SCHEMA.ROUNDNESS_TOLERANCE', 'SHAPE_TOLERANCE_SCHEMA.STRAIGHTNESS_TOLERANCE', 'SHAPE_TOLERANCE_SCHEMA.SURFACE_PROFILE_TOLERANCE', 'SHAPE_TOLERANCE_SCHEMA.SYMMETRY_TOLERANCE', 'SHAPE_TOLERANCE_SCHEMA.TOTAL_RUNOUT_TOLERANCE'] , 2 ) ))) = 0;
+END_RULE; 
 
-ENTITY tolerance_value; 
-   lower_bound : measure_with_unit; 
-   upper_bound : measure_with_unit;
-DERIVE
-    ubvc : REAL := upper_bound\measure_with_unit.value_component;
-    lbvc : REAL := lower_bound\measure_with_unit.value_component;
-WHERE 
-   WR1: ubvc > lbvc;  
-   WR2: upper_bound\measure_with_unit.unit_component =
-        lower_bound\measure_with_unit.unit_component;
-END_ENTITY;
+FUNCTION sts_get_product_definition_shape
+ (input : geometric_tolerance_target) : product_definition_shape; 
+CASE TRUE OF ('SHAPE_DIMENSION_SCHEMA.DIMENSIONAL_LOCATION' IN TYPEOF(input)) : 
+                 RETURN(input\shape_aspect_relationship.relating_shape_aspect\shape_aspect.of_shape);
+               ('SHAPE_DIMENSION_SCHEMA.DIMENSIONAL_SIZE' IN TYPEOF(input)) : 
+                 RETURN(input\dimensional_size.applies_to\shape_aspect.of_shape);
+               ('PRODUCT_PROPERTY_DEFINITION_SCHEMA.PRODUCT_DEFINITION_SHAPE' IN TYPEOF(input)) : 
+                 RETURN(input);
+               ('PRODUCT_PROPERTY_DEFINITION_SCHEMA.SHAPE_ASPECT' IN TYPEOF(input)) : 
+                 RETURN(input\shape_aspect.of_shape);
+  OTHERWISE : RETURN(?);
+  END_CASE;END_FUNCTION; 
 
-END_SCHEMA;   -- End of shape_tolerance_schema
+END_SCHEMA;  -- shape_tolerance_schema
+

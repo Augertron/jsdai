@@ -21,6 +21,9 @@
  * See also http://www.jsdai.net/
  *)
 
+-- 2011-01-24: fixed supertype - subtype for map_declaration, map_declaration in supertype moved from declaration to data_type_declaration
+
+
 	(** For V3.6,  version 3.17 2005-10-20 *)
 	(*
 	
@@ -337,7 +340,8 @@ END_ENTITY;
 ENTITY data_type_declaration
 	SUPERTYPE OF 
 --	(ONEOF(entity_declaration, type_declaration))
-	(ONEOF(entity_declaration, type_declaration, view_declaration))
+--	(ONEOF(entity_declaration, type_declaration, view_declaration)) -- 2011-01-24: fixed supertype - subtype for map_declaration
+	(ONEOF(entity_declaration, type_declaration, view_declaration, map_declaration)) -- 2011-01-24: fixed supertype - subtype for map_declaration
 	SUBTYPE OF (declaration);
 END_ENTITY;
 
@@ -352,7 +356,8 @@ ENTITY declaration
 	ABSTRACT SUPERTYPE OF (ONEOF(inner_declaration, interfaced_declaration, local_declaration)
 		AND ONEOF(data_type_declaration, rule_declaration, 
 --		algorithm_declaration, constant_declaration));
-		algorithm_declaration, constant_declaration, map_declaration, subtype_constraint_declaration));
+--		algorithm_declaration, constant_declaration, map_declaration, subtype_constraint_declaration)); -- 2011-01-24: fixed supertype - subtype for map_declaration
+		algorithm_declaration, constant_declaration, subtype_constraint_declaration)); -- 2011-01-24: fixed supertype - subtype for map_declaration
 	-- deprecated, present for backward compatibility
 	-- parent_schema : schema_definition;
 	parent : generic_schema_definition;

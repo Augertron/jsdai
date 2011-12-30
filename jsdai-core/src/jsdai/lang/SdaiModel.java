@@ -1957,6 +1957,10 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 		if (entity_definition == null) {
 			throw new SdaiException(SdaiException.ED_NDEF);
 		}
+		if (repository.session.undo_redo_file != null && repository.session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 //		synchronized (syncObject) {
 		CEntity instance = createEntityInstanceInternal((CEntity_definition)entity_definition, 0);
 		bypass_setAll = true;
@@ -2572,6 +2576,7 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 		if (modified || modified_by_import) {
 			throw new SdaiException(SdaiException.TR_RW, repository.session.active_transaction);
 		}
+		repository.endAccessExternalData(this);
 		exists = true;
 		boolean saved_modified = modified;
 //closingAll=true;
@@ -3048,6 +3053,10 @@ if (SdaiSession.debug2) System.out.println("  SdaiModel   MODEL being DELETED: "
 		if (entity_definition == null) {
 			throw new SdaiException(SdaiException.ED_NDEF);
 		}
+		if (repository.session.undo_redo_file != null && repository.session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		int i, j;
 //		synchronized (syncObject) {
 		CEntity_definition old_def = (CEntity_definition)old.getInstanceType();
@@ -3434,6 +3443,10 @@ SdaiSession.line_separator + "   New instance definition: " + new_def);
 		}
 		if (((CEntity)old).owning_model == null) {
 			throw new SdaiException(SdaiException.EI_NEXS);
+		}
+		if (repository.session.undo_redo_file != null && repository.session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 //		synchronized (syncObject) {
 		CEntity_definition def = (CEntity_definition)old.getInstanceType();
@@ -11061,6 +11074,10 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 		if (source == null) {
 			throw new SdaiException(SdaiException.VA_NSET);
 		}
+		if (repository.session.undo_redo_file != null && repository.session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		SdaiModel source_owner = ((CEntity)source).owning_model;
 		if (source_owner.repository == SdaiSession.systemRepository || repository == SdaiSession.systemRepository) {
 			throw new SdaiException(SdaiException.FN_NAVL);
@@ -11116,6 +11133,10 @@ System.out.println(" ENTITY: " + en_nam + "   count = " + mod.lengths[j]);
 	public AEntity copyInstances(AEntity source) throws SdaiException {
 		if (source == null) {
 			throw new SdaiException(SdaiException.VA_NSET);
+		}
+		if (repository.session.undo_redo_file != null && repository.session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 //		synchronized (syncObject) {
 		if (source.myType == SdaiSession.setTypeForInstancesAll) {
@@ -13033,6 +13054,22 @@ System.out.println("****** count = " + count + "   entity_vals.def: " + entity_v
 			CEntity inst = instances_sim[ent_index][j];
 			inst.search_for_user(staticFields, used, entityDef, result);
 		}
+	}
+
+
+	int scanForUserCount(StaticFields staticFields, CEntity used, CEntityDefinition entityDef, 
+			int ent_index, int count) throws SdaiException {
+		if ((mode & MODE_MODE_MASK) == READ_ONLY) {
+ 			ent_index = find_entityRO(entityDef);
+ 			if (ent_index < 0) {
+				return count;
+			}
+		}
+		for (int j = 0; j < lengths[ent_index]; j++) {
+			CEntity inst = instances_sim[ent_index][j];
+			count = inst.search_for_user_count(staticFields, used, entityDef, count);
+		}
+		return count;
 	}
 
 

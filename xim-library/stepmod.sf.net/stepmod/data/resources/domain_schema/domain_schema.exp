@@ -1,7 +1,7 @@
 (*
- $Id$
- ISO TC184/SC4/WG12 N2175 ISO/CD 10303-110 Document WG12 N2176, 2003/07/09
-   Complete EXPRESS code extracted from WG12 N2175
+   $Id$
+   ISO TC184/SC4/WG12 N5952 - ISO 10303-110 Mesh-based computational fluid dynamics - EXPRESS
+   Supersedes ISO TC184/SC4/WG12 N2176
 *)
 
 SCHEMA domain_schema;
@@ -9,7 +9,8 @@ SCHEMA domain_schema;
                  (model_product_domain_with_mesh,
                   model_property_distribution);
   REFERENCE FROM basis_schema                     -- ISO 10303-110
-                 (specified_general_property);
+                 (mbna_property_distribution_select,
+                 specified_general_property);
   REFERENCE FROM mathematical_description_of_distribution_schema  -- ISO 10303-51
                  (property_distribution_description);
   REFERENCE FROM mesh_topology_schema             -- ISO 10303-52
@@ -34,9 +35,8 @@ ENTITY grid_coordinates
   SUBTYPE OF (model_property_distribution);
   SELF\model_property_distribution.domain : model_product_domain_with_mesh;
   SELF\model_property_distribution.range  : specified_general_property;
-(* INVERSE
+INVERSE
   data : SET OF property_distribution_description FOR physical_function;
-*)
 WHERE
   wr1 : is_coordinate_property(range);
 END_ENTITY;

@@ -183,7 +183,7 @@ public class DialogRelationSimple extends DialogBasic {
 		        if ((dialogCard == null)||(dialogCard.isDisposed())) dialogCardInverse = new DialogAgregate(panelInverse, ((EGRelationSimple)object).getInverse(), prop);
 		        if (dialogCardInverse.object == null) {
 		        	dialogCardInverse.object = new Agregate(null, null, "", Agregate.TYPE_SIMPLE,
-		              Agregate.BOUND_NONE, Agregate.BOUND_NONE, false, false);
+		              Agregate.BOUND_NONE, "", Agregate.BOUND_NONE, "", false, false);
 		        }
 		        dialogCardInverse.open();
 			}
@@ -258,7 +258,7 @@ public class DialogRelationSimple extends DialogBasic {
 			if (buttonInverse.getSelection()) {
 				Agregate inverse = ((EGRelationSimple)object).getInverse();
 				if (dialogCardInverse == null) {
-					if (inverse == null) inverse = new Agregate(null, null, "", Agregate.TYPE_SIMPLE, Agregate.BOUND_NONE, Agregate.BOUND_NONE, false, false);
+					if (inverse == null) inverse = new Agregate(null, null, "", Agregate.TYPE_SIMPLE, Agregate.BOUND_NONE, "", Agregate.BOUND_NONE, "", false, false);
 				} else {
 					inverse = (Agregate)dialogCardInverse.object;
 				}

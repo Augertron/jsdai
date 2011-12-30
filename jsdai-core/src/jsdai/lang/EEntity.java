@@ -618,6 +618,31 @@ public interface EEntity extends SdaiEventSource {
 		throws SdaiException;
 
 /**
+ * Gives the count of entity instances which reference the current instance.
+ * The search area for such entity instances is restricted to those <code>SdaiModel</code>s
+ * which belong to the set given by the method's parameter.
+ * In the case where this parameter is null, the search is restricted
+ * to the model which is the owner of the current instance (can be found
+ * using {@link #findEntityInstanceSdaiModel findEntityInstanceSdaiModel}).
+ * If the value of the parameter is an empty array of type <code>ASdaiModel</code>, 
+ * then no restriction is imposed on the search area, that is, referencing 
+ * instances from all <code>SdaiModel</code>s, which have either read-only 
+ * or read-write access, are considered as being relevant.
+ * A referencing instance is counted as many times as it references 
+ * the current instance.
+ * <p> This method is an extension of JSDAI, which is
+ * not a part of the standard.
+ * @param domain the list of <code>SdaiModel</code>s specifying the
+ * area where to search for entity instances referencing the current
+ * entity instance.
+ * @return the count of entity instances which reference the current instance.
+ * @throws SdaiException EI_NEXS, entity instance does not exist.
+ * @throws SdaiException SY_ERR, underlying system error.
+ * @see #findEntityInstanceUsers findEntityInstanceUsers
+ */
+	int findEntityInstanceUserCount(ASdaiModel domain) throws SdaiException;
+
+/**
  * Searches for entity instances which reference the current instance
  * in the role specified by an instance of EAttribute (first parameter).
  * The search area for such entity instances is restricted to those <code>SdaiModel</code>s

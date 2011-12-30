@@ -49,13 +49,13 @@ public class CxDigital_file extends CDigital_file implements EMappedXIMEntity
 		return get_string(a4);
 	}*/
 	public void setName(ECharacterized_object type, String value) throws SdaiException {
-		a4 = set_string(value);
+		a3 = set_string(value);
 	}
 	public void unsetName(ECharacterized_object type) throws SdaiException {
-		a4 = unset_string();
+		a3 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(ECharacterized_object type) throws SdaiException {
-		return a4$;
+		return a3$;
 	}
 
 	//<01> generating methods for consolidated attribute:  description
@@ -69,13 +69,13 @@ public class CxDigital_file extends CDigital_file implements EMappedXIMEntity
 		return get_string(a5);
 	}*/
 	public void setDescription(ECharacterized_object type, String value) throws SdaiException {
-		a5 = set_string(value);
+		a4 = set_string(value);
 	}
 	public void unsetDescription(ECharacterized_object type) throws SdaiException {
-		a5 = unset_string();
+		a4 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(ECharacterized_object type) throws SdaiException {
-		return a5$;
+		return a4$;
 	}
 	// END OF taken from CCharacterized_object
 
@@ -88,13 +88,13 @@ public class CxDigital_file extends CDigital_file implements EMappedXIMEntity
 		return get_string(a1);
 	}*/
 	public void setName(EDocument type, String value) throws SdaiException {
-		a1 = set_string(value);
+		a0 = set_string(value);
 	}
 	public void unsetName(EDocument type) throws SdaiException {
-		a1 = unset_string();
+		a0 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeName(EDocument type) throws SdaiException {
-		return a1$;
+		return a0$;
 	}
 
 	//<01> generating methods for consolidated attribute:  description
@@ -108,13 +108,13 @@ public class CxDigital_file extends CDigital_file implements EMappedXIMEntity
 		return get_string(a2);
 	}*/
 	public void setDescription(EDocument type, String value) throws SdaiException {
-		a2 = set_string(value);
+		a1 = set_string(value);
 	}
 	public void unsetDescription(EDocument type) throws SdaiException {
-		a2 = unset_string();
+		a1 = unset_string();
 	}
 	public static jsdai.dictionary.EAttribute attributeDescription(EDocument type) throws SdaiException {
-		return a2$;
+		return a1$;
 	}
 
 	//<01> generating methods for consolidated attribute:  kind
@@ -131,13 +131,13 @@ public class CxDigital_file extends CDigital_file implements EMappedXIMEntity
 		return (EDocument_type)get_instance(a3);
 	}*/
 	public void setKind(EDocument type, EDocument_type value) throws SdaiException {
-		a3 = set_instanceX(a3, value);
+		a5 = set_instanceX(a5, value);
 	}
 	public void unsetKind(EDocument type) throws SdaiException {
-		a3 = unset_instance(a3);
+		a5 = unset_instance(a5);
 	}
 	public static jsdai.dictionary.EAttribute attributeKind(EDocument type) throws SdaiException {
-		return a3$;
+		return a5$;
 	}
 	// END OF taken from CDocument	
 	public int attributeState = ATTRIBUTES_MODIFIED;	

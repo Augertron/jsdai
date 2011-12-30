@@ -233,6 +233,11 @@ class A_double3 extends A_double {
 		if (Double.isNaN(value)) {
 			throw new SdaiException(SdaiException.VA_NSET);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (!(myType.express_type == DataType.LIST || myType.express_type == DataType.ARRAY)) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
@@ -244,7 +249,7 @@ class A_double3 extends A_double {
 		if (index <= 0 || index > myLength) {
 			throw new SdaiException(SdaiException.IX_NVLD, this);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		switch(index) {
 			case 1:
 				double1 = value;
@@ -341,6 +346,11 @@ class A_double3 extends A_double {
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myType.express_type != DataType.ARRAY) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
@@ -350,7 +360,7 @@ class A_double3 extends A_double {
 		if (index <= 0 || index > myLength) {
 			throw new SdaiException(SdaiException.IX_NVLD, this);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		switch(index) {
 			case 1:
 				double1 = Double.NaN;
@@ -392,6 +402,11 @@ class A_double3 extends A_double {
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myType.express_type != DataType.LIST) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
@@ -402,7 +417,7 @@ class A_double3 extends A_double {
 		if (index <= 0 || index > myLength+1) {
 			throw new SdaiException(SdaiException.IX_NVLD, this);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		switch(myLength) {
 			case 0:
 				double1 = value;
@@ -470,13 +485,18 @@ class A_double3 extends A_double {
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myType.express_type != DataType.LIST) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
 		if (index <= 0 || index > myLength) {
 			throw new SdaiException(SdaiException.IX_NVLD, this);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		switch(myLength) {
 			case 2:
 				if (index == 1) {
@@ -487,7 +507,7 @@ class A_double3 extends A_double {
 				if (index == 1) {
 					double1 = double2;
 					double2 = double3;
-				} else {
+				} else if (index == 2) {
 					double2 = double3;
 				}
 				break;
@@ -523,6 +543,11 @@ class A_double3 extends A_double {
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myType.express_type == DataType.ARRAY || myType.express_type == DataType.LIST) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
@@ -533,7 +558,7 @@ class A_double3 extends A_double {
 		if (myType.express_type == DataType.SET && isMember(value)) {
 			return;
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		switch(myLength) {
 			case 0:
 				double1 = value;
@@ -588,10 +613,15 @@ class A_double3 extends A_double {
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myType.express_type == DataType.ARRAY || myType.express_type == DataType.LIST) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		boolean found = false;
 		switch(myLength) {
 			case 1:
@@ -835,6 +865,11 @@ class A_double3 extends A_double {
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (it.myAggregate != this) {
 			String base = SdaiSession.line_separator + AdditionalMessages.IR_IMPR;
 			throw new SdaiException(SdaiException.SY_ERR, base);
@@ -845,7 +880,7 @@ class A_double3 extends A_double {
 		if (myType.express_type == DataType.SET && isMember(value)) {
 			throw new SdaiException(SdaiException.VA_NVLD);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		switch(it.myIndex) {
 			case 1:
 				double1 = value;
@@ -904,6 +939,11 @@ class A_double3 extends A_double {
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myType.express_type != DataType.LIST) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
@@ -915,7 +955,7 @@ class A_double3 extends A_double {
 			String base = SdaiSession.line_separator + AdditionalMessages.AI_BVL;
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		switch(myLength) {
 			case 0:
 				double1 = value;
@@ -1013,6 +1053,11 @@ class A_double3 extends A_double {
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myType.express_type != DataType.LIST) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
@@ -1024,7 +1069,7 @@ class A_double3 extends A_double {
 			String base = SdaiSession.line_separator + AdditionalMessages.AI_BVL;
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		switch(myLength) {
 			case 0:
 				double1 = value;
@@ -1103,7 +1148,12 @@ class A_double3 extends A_double {
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
+		session.undoRedoModifyPrepare(aggr_owner);
 		if (myType.express_type == DataType.ARRAY) {
 			double1 = double2 = double3 = Double.NaN;
 		} else {

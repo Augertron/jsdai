@@ -31,8 +31,8 @@ package jsdai.SShape_feature_xim;
 
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
-import jsdai.SShape_feature_mim.CInstanced_feature;
 import jsdai.SProduct_property_definition_schema.*;
+import jsdai.SShape_aspect_definition_schema.CInstanced_feature;
 
 public class CxInstanced_feature_armx extends CInstanced_feature_armx implements EMappedXIMEntity{
 

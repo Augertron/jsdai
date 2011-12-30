@@ -26,6 +26,8 @@ package jsdaix.processor.xim_aim.pre.manual_arm_repair;
 import java.util.ArrayList;
 
 import jsdai.SAic_associative_draughting_elements.EDraughting_model;
+import jsdai.SAic_mechanical_design_geometric_presentation.EMechanical_design_geometric_presentation_representation;
+import jsdai.SAic_mechanical_design_shaded_presentation.EMechanical_design_shaded_presentation_representation;
 import jsdai.SAssembly_structure_xim.ENext_assembly_usage_occurrence_relationship_armx;
 import jsdai.SConstruction_geometry_mim.AConstructive_geometry_representation_relationship;
 import jsdai.SConstruction_geometry_mim.CConstructive_geometry_representation_relationship;
@@ -68,7 +70,7 @@ public final class RepresentationRelationshipRepair {
 
 	public static void run(ASdaiModel models, Importer importer)
 		throws SdaiException {
-
+		processRRBetweenDM(models, importer);
 		processCGRR(models, importer);
 		preossSRAndProductStructure(models, importer);
 		removeAuxillaryMappingInstances(models, importer);
@@ -320,4 +322,36 @@ public final class RepresentationRelationshipRepair {
 		}
 	}
 
+	/**
+	 * This method should implement bug https://intranet.lksoft.net/bugzilla/show_bug.cgi?id=4032.
+	 * Delete representation_relationships between draughting models
+	 */
+	public static void processRRBetweenDM(ASdaiModel models, Importer importer)throws SdaiException {
+		for (SdaiIterator i = models.createIterator(); i.next();) {
+			SdaiModel model = models.getCurrentMember(i);
+			ARepresentation_relationship arr = (ARepresentation_relationship) model.getExactInstances(CRepresentation_relationship.definition);
+			for (SdaiIterator j = arr.createIterator(); j.next();) {
+				ERepresentation_relationship err = arr.getCurrentMember(j);
+				if(!err.testRep_1(null)){
+					continue;
+				}
+				if(!err.testRep_2(null)){
+					continue;
+				}
+				ERepresentation er1 = err.getRep_1(null);
+				ERepresentation er2 = err.getRep_2(null);
+				if((er1 instanceof EDraughting_model)||
+					(er1 instanceof EMechanical_design_geometric_presentation_representation)||
+					(er1 instanceof EMechanical_design_shaded_presentation_representation)){
+					if((er2 instanceof EDraughting_model)||
+						(er2 instanceof EMechanical_design_geometric_presentation_representation)||
+						(er2 instanceof EMechanical_design_shaded_presentation_representation)){
+						importer.logMessage(" Deleting "+err+", as incorrect link between 2 styling models ");
+						err.deleteApplicationInstance();
+					}					
+				}
+			}
+		}
+	}
+	
 }

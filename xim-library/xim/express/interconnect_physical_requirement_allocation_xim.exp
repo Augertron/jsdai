@@ -59,7 +59,7 @@ ENTITY Interconnect_shield_allocation_armx
       SELF\Requirement_assignment_armx.assigned_to : Integral_shield_armx;
       SELF\Requirement_assignment_armx.assigned_requirement RENAMED assigned_requirement_property  : Predefined_requirement_view_definition_armx;
     WHERE
-     WR1 : assigned_requirement_property\Product_view_definition.initial_context\product_definition_context.application_domain = 'electrical';      
+     WR1 : assigned_requirement_property\Product_view_definition.initial_context\product_definition_context.frame_of_reference.application = 'electrical';      
   END_ENTITY;
 		
   ENTITY Thermal_isolation_requirement
@@ -96,10 +96,10 @@ FUNCTION get_specific_requirement_type_for_primary_rvd_relationship(
 ) : SET OF Predefined_requirement_view_definition_armx; 
 
 LOCAL
-    rvdr : SET[0:?] OF Requirement_view_definition_relationship := [];
+    rvdr : SET[0:?] OF Requirement_view_definition_relationship_armx := [];
     rdp : SET[0:?] OF Predefined_requirement_view_definition_armx := [];  --this gives us access to the information base
 END_LOCAL;
-	rvdr := bag_to_set(QUERY(rvdre <* USEDIN (input, 'REQUIREMENT_DECOMPOSITION_XIM.'+ 'REQUIREMENT_VIEW_DEFINITION_RELATIONSHIP.PRIMARY')|
+	rvdr := bag_to_set(QUERY(rvdre <* USEDIN (input, 'REQUIREMENT_DECOMPOSITION_XIM.'+ 'REQUIREMENT_VIEW_DEFINITION_RELATIONSHIP_ARMX.PRIMARY')|
 	                           ((rvdre.relation_type = id) AND (reqType IN TYPEOF(rvdre.secondary)))
                        ));
 	-- iterate over rvdr

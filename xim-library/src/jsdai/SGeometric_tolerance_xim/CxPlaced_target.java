@@ -32,8 +32,6 @@ package jsdai.SGeometric_tolerance_xim;
 import jsdai.SDerived_shape_element_xim.EContact;
 import jsdai.SDimension_tolerance_xim.CxAssociated_shape_element;
 import jsdai.SGeometric_tolerance_mim.CPlaced_datum_target_feature;
-import jsdai.SGeometric_tolerance_mim.CShape_representation_with_parameters;
-import jsdai.SGeometric_tolerance_mim.EShape_representation_with_parameters;
 import jsdai.SProduct_property_definition_schema.AProperty_definition;
 import jsdai.SProduct_property_definition_schema.CProperty_definition;
 import jsdai.SProduct_property_definition_schema.EProduct_definition_shape;
@@ -43,8 +41,13 @@ import jsdai.SProduct_property_representation_schema.AProperty_definition_repres
 import jsdai.SProduct_property_representation_schema.CProperty_definition_representation;
 import jsdai.SProduct_property_representation_schema.CShape_definition_representation;
 import jsdai.SProduct_property_representation_schema.EProperty_definition_representation;
+import jsdai.SRepresentation_schema.ARepresentation;
+import jsdai.SRepresentation_schema.CRepresentation;
+import jsdai.SRepresentation_schema.ERepresentation_context;
 import jsdai.SRepresentation_schema.ERepresentation_item;
+import jsdai.SShape_aspect_definition_schema.CShape_representation_with_parameters;
 import jsdai.SShape_aspect_definition_schema.EDatum_target;
+import jsdai.SShape_aspect_definition_schema.EShape_representation_with_parameters;
 import jsdai.lang.ELogical;
 import jsdai.lang.SdaiContext;
 import jsdai.lang.SdaiException;
@@ -200,9 +203,8 @@ public class CxPlaced_target extends CPlaced_target implements EMappedXIMEntity
 		CxAssociated_shape_element.setMappingConstraints(context, armEntity);
         // SELF\shape_aspect.of_shape : product_definition_shape := ?;
         // SELF\shape_aspect.product_definitional : LOGICAL := ?;
-		if(!armEntity.testProduct_definitional(null)){
-			armEntity.setProduct_definitional(null, ELogical.UNKNOWN);
-		}
+		// "wr2" in entity "datum_target" 
+		armEntity.setProduct_definitional(null, ELogical.TRUE);
         // SELF\shape_aspect.description : text := ?;
         // SELF\datum_target.target_id : identifier := ?;
 		if(!armEntity.testTarget_id(null)){
@@ -214,6 +216,7 @@ public class CxPlaced_target extends CPlaced_target implements EMappedXIMEntity
 				armEntity.setName((EShape_aspect)null, "");
 			}
 		}
+		setOrientation(context, armEntity);
 	}
 
 	/**
@@ -351,7 +354,7 @@ public class CxPlaced_target extends CPlaced_target implements EMappedXIMEntity
 		}
 	}
 */	
-	public static void setParameter(SdaiContext context, 
+	public static EShape_representation_with_parameters setParameter(SdaiContext context, 
 			EPlaced_target armEntity, ERepresentation_item eri)
 			throws SdaiException {
 		// SRWP
@@ -381,6 +384,7 @@ public class CxPlaced_target extends CPlaced_target implements EMappedXIMEntity
 			context.working_model.createEntityInstance(CShape_definition_representation.definition);
 		epdr.setDefinition(null, epd);
 		epdr.setUsed_representation(null, esrwp);
+		return esrwp;
 	}
 
 	/**
@@ -393,7 +397,8 @@ public class CxPlaced_target extends CPlaced_target implements EMappedXIMEntity
 
 	public static void unsetProperty(SdaiContext context,
 			EPlaced_target armEntity) throws SdaiException {
-		AProperty_definition apd = new AProperty_definition();
+		// do nothing as orientation is already using this link
+/*		AProperty_definition apd = new AProperty_definition();
 		CProperty_definition.usedinDefinition(null, armEntity, context.domain, apd);
 		for(int i=1,n=apd.getMemberCount(); i<=n; i++){
 			EProperty_definition epd = apd.getByIndex(i);
@@ -405,7 +410,25 @@ public class CxPlaced_target extends CPlaced_target implements EMappedXIMEntity
 					epdr.deleteApplicationInstance();
 				}
 			}
-		}
+		}*/
 	}
+	
+	// Converting new pattern to old one - According Rec practices:
+	// "CAx-IF Recommended Practices For the Representation and Presentation of Product Manufacturing Information (PMI)
+	// Version 3.2a, 6/22/2011"
+	public static void setOrientation(SdaiContext context, EPlaced_target armEntity) throws SdaiException {
+		ERepresentation_item eri = armEntity.getIdentified_item(null);
+		ARepresentation ar = new ARepresentation();
+		CRepresentation.usedinItems(null, eri, null, ar);
+		ERepresentation_context erc = null;
+		if(ar.getMemberCount() > 0){
+			erc = ar.getByIndex(1).getContext_of_items(null);
+		}
+		eri.setName(null, "orientation");
+		EShape_representation_with_parameters esrwp = CxPlaced_target.setParameter(context, armEntity, eri);
+		if(erc != null){
+			esrwp.setContext_of_items(null, erc);
+		}
+	}	
 	
 }

@@ -47,7 +47,7 @@ USE FROM Physical_unit_3d_design_view_mim;
       SELF\Representation.name : label := '3d bound volume shape';
       equivalent_reference_shape_model : SET [0:1] OF Shape_representation_relationship :=
         bag_to_set(QUERY( gmr <* USEDIN(SELF, 'PRODUCT_PROPERTY_REPRESENTATION_SCHEMA.SHAPE_REPRESENTATION_RELATIONSHIP.REP_2') |
-        (gmr\Representation_relationship.relation_type = 'equivalent reference shape model')));      
+        (gmr\Representation_relationship.name = 'equivalent reference shape model')));      
     WHERE
       WR1 : SIZEOF(equivalent_reference_shape_model) < 2;         
   END_ENTITY;
@@ -59,7 +59,7 @@ USE FROM Physical_unit_3d_design_view_mim;
       SELF\shape_representation_relationship.rep_1 RENAMED component_model : Assembly_component_3d_shape_model;
       SELF\shape_representation_relationship.rep_2 RENAMED assembly_model : Physical_unit_3d_shape_model;
     DERIVE
-      component : Next_assembly_usage_occurrence_relationship_armx := SELF\Contextual_shape_representation.contextual_shape.described_element;    
+      component : Next_assembly_usage_occurrence_relationship_armx := SELF\Contextual_shape_representation.contextual_shape.definition;    
       the_context : geometric_representation_context := assembly_model\Shape_representation\Representation.context_of_items;
       SELF\Contextual_shape_representation.representing_relationship : Shape_representation_relationship := SELF;   -- NEW
       SELF\representation_relationship.name : label := 'component 3d location';

@@ -29,6 +29,12 @@ package jsdai.SGeometric_tolerance_xim;
 * $Id$
 */
 
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
+
+import jsdai.SDimension_tolerance_xim.EAssociated_shape_element;
+import jsdai.SMeasure_schema.ELength_measure_with_unit;
 import jsdai.SMeasure_schema.EMeasure_with_unit;
 import jsdai.SProduct_property_definition_schema.AShape_aspect_relationship;
 import jsdai.SProduct_property_definition_schema.CShape_aspect_relationship;
@@ -42,23 +48,30 @@ import jsdai.SQualified_measure_schema.CType_qualifier;
 import jsdai.SQualified_measure_schema.EMeasure_qualification;
 import jsdai.SQualified_measure_schema.EPrecision_qualifier;
 import jsdai.SQualified_measure_schema.EType_qualifier;
+import jsdai.SShape_tolerance_schema.ATolerance_zone_target;
 import jsdai.SShape_tolerance_schema.AGeometric_tolerance_relationship;
 import jsdai.SShape_tolerance_schema.ATolerance_zone;
 import jsdai.SShape_tolerance_schema.ATolerance_zone_definition;
 import jsdai.SShape_tolerance_schema.CGeometric_tolerance;
 import jsdai.SShape_tolerance_schema.CGeometric_tolerance_relationship;
-import jsdai.SShape_tolerance_schema.CGeometric_tolerance_with_defined_unit;
-import jsdai.SShape_tolerance_schema.CGeometric_tolerance_with_defined_unit$modified_geometric_tolerance;
-import jsdai.SShape_tolerance_schema.CModified_geometric_tolerance;
+import jsdai.SShape_tolerance_schema.CLine_profile_tolerance;
+import jsdai.SShape_tolerance_schema.CPosition_tolerance;
+import jsdai.SShape_tolerance_schema.CStraightness_tolerance;
+import jsdai.SShape_tolerance_schema.CSurface_profile_tolerance;
 import jsdai.SShape_tolerance_schema.CTolerance_zone;
 import jsdai.SShape_tolerance_schema.CTolerance_zone_definition;
 import jsdai.SShape_tolerance_schema.CTolerance_zone_form;
 import jsdai.SShape_tolerance_schema.EGeometric_tolerance_relationship;
+import jsdai.SShape_tolerance_schema.EGeometric_tolerance_with_defined_area_unit;
 import jsdai.SShape_tolerance_schema.EGeometric_tolerance_with_defined_unit;
+import jsdai.SShape_tolerance_schema.EGeometric_tolerance_with_modifiers;
 import jsdai.SShape_tolerance_schema.EModified_geometric_tolerance;
 import jsdai.SShape_tolerance_schema.ETolerance_zone;
 import jsdai.SShape_tolerance_schema.ETolerance_zone_definition;
 import jsdai.SShape_tolerance_schema.ETolerance_zone_form;
+import jsdai.SShape_tolerance_schema.EUnequally_disposed_geometric_tolerance;
+import jsdai.dictionary.EEntity_definition;
+import jsdai.lang.A_enumeration;
 import jsdai.lang.EEntity;
 import jsdai.lang.ELogical;
 import jsdai.lang.SdaiContext;
@@ -70,6 +83,103 @@ import jsdai.util.LangUtils;
 public class CxGeometric_tolerance_armx extends CGeometric_tolerance_armx implements EMappedXIMEntity
 {
 
+	//going through all the attributes: #5629499534230550=EXPLICIT_ATTRIBUTE('modifiers',#5629499534230548,0,#5629499534691833,$,.F.);
+	//<01> generating methods for consolidated attribute:  modifiers
+	//<01-0> current entity
+	//<01-0-0> explicit attribute - generateExplicitCurrentEntityMethodsX()
+	// methods for attribute: modifiers, base type: SET OF ENUMERATION
+/*	public boolean testModifiers(EGeometric_tolerance_with_modifiers type) throws SdaiException {
+		return test_aggregate(a16);
+	}
+	public A_enumeration getModifiers(EGeometric_tolerance_with_modifiers type) throws SdaiException {
+		return (A_enumeration)get_aggregate(a16);
+	}*/
+	public A_enumeration createModifiers(EGeometric_tolerance_with_modifiers type) throws SdaiException {
+		a16 = create_aggregate_enumeration(a16, a16$, 0);
+		return a16;
+	}
+	public void unsetModifiers(EGeometric_tolerance_with_modifiers type) throws SdaiException {
+		unset_aggregate(a16);
+		a16 = null;
+	}
+	public static jsdai.dictionary.EAttribute attributeModifiers(EGeometric_tolerance_with_modifiers type) throws SdaiException {
+		return a16$;
+	}
+	
+	//going through all the attributes: #5629499534230612=EXPLICIT_ATTRIBUTE('defining_tolerance',#5629499534230610,0,#5629499534691835,$,.F.);
+	//<01> generating methods for consolidated attribute:  defining_tolerance
+	//<01-0> current entity
+	//<01-0-0> explicit attribute - generateExplicitCurrentEntityMethodsX()
+	// methods for attribute: defining_tolerance, base type: SET OF SELECT
+/*	public static int usedinDefining_tolerance(ETolerance_zone type, EEntity instance, ASdaiModel domain, AEntity result) throws SdaiException {
+		return ((CEntity)instance).makeUsedin(definition, a12$, domain, result);
+	}
+	public boolean testDefining_tolerance(ETolerance_zone type) throws SdaiException {
+		return test_aggregate(a12);
+	}
+	public ATolerance_zone_target getDefining_tolerance(ETolerance_zone type) throws SdaiException {
+		if (a12 == null)
+			throw new SdaiException(SdaiException.VA_NSET);
+		return a12;
+	}*/
+	public ATolerance_zone_target createDefining_tolerance(ETolerance_zone type) throws SdaiException {
+		a12 = (ATolerance_zone_target)create_aggregate_class(a12, a12$, ATolerance_zone_target.class, 0);
+		return a12;
+	}
+	public void unsetDefining_tolerance(ETolerance_zone type) throws SdaiException {
+		unset_aggregate(a12);
+		a12 = null;
+	}
+	public static jsdai.dictionary.EAttribute attributeDefining_tolerance(ETolerance_zone type) throws SdaiException {
+		return a12$;
+	}
+	
+	//going through all the attributes: #5629499534230540=EXPLICIT_ATTRIBUTE('area_type',#5629499534230538,0,#5629499534230490,$,.F.);
+	//<01> generating methods for consolidated attribute:  area_type
+	//<01-0> current entity
+	//<01-0-0> explicit attribute - generateExplicitCurrentEntityMethodsX()
+	// attribute:area_type, base type: ENUMERATION
+/*	public boolean testArea_type(EGeometric_tolerance_with_defined_area_unit type) throws SdaiException {
+		return test_enumeration(a5);
+	}
+	public int getArea_type(EGeometric_tolerance_with_defined_area_unit type) throws SdaiException {
+		return get_enumeration(a5);
+	}*/
+	public void setArea_type(EGeometric_tolerance_with_defined_area_unit type, int value) throws SdaiException {
+		a5 = set_enumeration(value, a5$);
+	}
+	public void unsetArea_type(EGeometric_tolerance_with_defined_area_unit type) throws SdaiException {
+		a5 = unset_enumeration();
+	}
+	public static jsdai.dictionary.EAttribute attributeArea_type(EGeometric_tolerance_with_defined_area_unit type) throws SdaiException {
+		return a5$;
+	}
+	
+	//going through all the attributes: #5629499534230625=EXPLICIT_ATTRIBUTE('displacement',#5629499534230623,0,#5629499534231041,$,.F.);
+	//<01> generating methods for consolidated attribute:  displacement
+	//<01-0> current entity
+	//<01-0-0> explicit attribute - generateExplicitCurrentEntityMethodsX()
+	// attribute (current explicit or supertype explicit) : displacement, base type: entity length_measure_with_unit
+/*	public static int usedinDisplacement(EUnequally_disposed_geometric_tolerance type, jsdai.SMeasure_schema.ELength_measure_with_unit instance, ASdaiModel domain, AEntity result) throws SdaiException {
+		return ((CEntity)instance).makeUsedin(definition, a17$, domain, result);
+	}
+	public boolean testDisplacement(EUnequally_disposed_geometric_tolerance type) throws SdaiException {
+		return test_instance(a17);
+	}
+	public jsdai.SMeasure_schema.ELength_measure_with_unit getDisplacement(EUnequally_disposed_geometric_tolerance type) throws SdaiException {
+		return (jsdai.SMeasure_schema.ELength_measure_with_unit)get_instance(a17);
+	}*/
+	public void setDisplacement(EUnequally_disposed_geometric_tolerance type, jsdai.SMeasure_schema.ELength_measure_with_unit value) throws SdaiException {
+		a17 = set_instance(a17, value);
+	}
+	public void unsetDisplacement(EUnequally_disposed_geometric_tolerance type) throws SdaiException {
+		a17 = unset_instance(a17);
+	}
+	public static jsdai.dictionary.EAttribute attributeDisplacement(EUnequally_disposed_geometric_tolerance type) throws SdaiException {
+		return a17$;
+	}
+
+	
 	/* Taken from EGeometric_tolerance_with_defined_unit */
 	//going through all the attributes: #5629499534230365=EXPLICIT_ATTRIBUTE('unit_size',#5629499534230363,0,#5629499534230845,$,.F.);
 	//<01> generating methods for consolidated attribute:  unit_size
@@ -125,26 +235,22 @@ public class CxGeometric_tolerance_armx extends CGeometric_tolerance_armx implem
 		} else {
 			return;
 		}
-
-		if(testModification(null)){
-			if(testSegment_size(null)){
-				setTemp("AIM", CGeometric_tolerance_with_defined_unit$modified_geometric_tolerance.definition);
-			}else{
-				setTemp("AIM", CModified_geometric_tolerance.definition);
-			}
-		}else{
-			if(testSegment_size(null)){
-				setTemp("AIM", CGeometric_tolerance_with_defined_unit.definition);				
-			}else{
-				setTemp("AIM", CGeometric_tolerance.definition);
-			}
-		}
-
+		
+		CxGeometric_tolerance_armx.setType(context, this, CGeometric_tolerance.definition);
 		setMappingConstraints(context, this);
 
 		
 		// modification : OPTIONAL limit_condition;
 		setModification(context, this);
+		
+		// modification_new : OPTIONAL SET [1:?] OF geometric_tolerance_modifier;
+		setModification_new(context, this);
+		
+		// unequally_disposed_tolerance_zone_displacement : OPTIONAL length_measure_with_unit;
+		setUnequally_disposed_tolerance_zone_displacement(context, this);
+		
+		// Area_unit_type : OPTIONAL area_unit_type;
+		setArea_unit_type(context, this);
 		
 		// segment_size : OPTIONAL measure_with_unit;
 		setSegment_size(context, this);
@@ -170,6 +276,15 @@ public class CxGeometric_tolerance_armx extends CGeometric_tolerance_armx implem
 		// modification : OPTIONAL limit_condition;
 		unsetModification(null);
 		
+		// modification_new : OPTIONAL SET [1:?] OF geometric_tolerance_modifier;
+		unsetModification_new(null);
+		
+		// unequally_disposed_tolerance_zone_displacement : OPTIONAL length_measure_with_unit;
+		unsetUnequally_disposed_tolerance_zone_displacement(null);
+		
+		// Area_unit_type : OPTIONAL area_unit_type;
+		unsetArea_unit_type(null);
+		
 		// segment_size : OPTIONAL measure_with_unit;
 		unsetSegment_size(null);
 		
@@ -188,6 +303,15 @@ public class CxGeometric_tolerance_armx extends CGeometric_tolerance_armx implem
 			
 			// modification : OPTIONAL limit_condition;
 			unsetModification(context, this);
+			
+			// unequally_disposed_tolerance_zone_displacement : OPTIONAL length_measure_with_unit;
+			unsetUnequally_disposed_tolerance_zone_displacement(context, this);
+			
+			// Area_unit_type : OPTIONAL area_unit_type;
+			unsetArea_unit_type(context, this);
+			
+			// modification_new : OPTIONAL SET [1:?] OF geometric_tolerance_modifier;
+			unsetModification_new(context, this);
 			
 			// segment_size : OPTIONAL measure_with_unit;
 			unsetSegment_size(context, this);
@@ -363,6 +487,43 @@ public class CxGeometric_tolerance_armx extends CGeometric_tolerance_armx implem
 	}
 
 	/**
+	 * Sets/creates data for unequally_disposed_tolerance_zone_displacement attribute.
+	 * 
+	 * <p>
+attribute_mapping unequally_disposed_tolerance_zone_displacement(unequally_disposed_tolerance_zone_displacement, $PATH, length_measure_with_unit);
+	geometric_tolerance => 
+	unequally_disposed_geometric_tolerance 
+	unequally_disposed_geometric_tolerance.displacement ->
+	length_measure_with_unit
+end_attribute_mapping;
+	 * </p>
+	 * 
+	 * @param context
+	 *            SdaiContext.
+	 * @param armEntity
+	 *            arm entity.
+	 * @throws SdaiException
+	 */
+	public static void setUnequally_disposed_tolerance_zone_displacement(SdaiContext context, EGeometric_tolerance_armx armEntity) throws SdaiException {
+		unsetUnequally_disposed_tolerance_zone_displacement(context, armEntity);
+		if(armEntity.testUnequally_disposed_tolerance_zone_displacement(null)){
+			ELength_measure_with_unit value = armEntity.getUnequally_disposed_tolerance_zone_displacement(null);
+			armEntity.setDisplacement(null, value);
+		}
+	}
+
+	/**
+	 * Unsets/deletes mapping for attribute unequally_disposed_tolerance_zone_displacement.
+	 * 
+	 * @param context
+	 * @param armEntity
+	 * @throws SdaiException
+	 */
+	public static void unsetUnequally_disposed_tolerance_zone_displacement(SdaiContext context, EGeometric_tolerance_armx armEntity) throws SdaiException {
+		armEntity.unsetDisplacement(null);
+	}
+
+	/**
 	 * Sets/creates data for Significant_digits attribute.
 	 * 
 	 * <p>
@@ -383,7 +544,6 @@ public class CxGeometric_tolerance_armx extends CGeometric_tolerance_armx implem
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	// GT <- MQ -> PQ 
 	public static void setModification(SdaiContext context,
 			EGeometric_tolerance_armx armEntity) throws SdaiException {
 		unsetModification(context, armEntity);
@@ -394,7 +554,7 @@ public class CxGeometric_tolerance_armx extends CGeometric_tolerance_armx implem
 	}
 
 	/**
-	 * Unsets/deletes mapping for attribute Significant_digits.
+	 * Unsets/deletes mapping for attribute modification_new.
 	 * 
 	 * @param context
 	 * @param armEntity
@@ -404,7 +564,101 @@ public class CxGeometric_tolerance_armx extends CGeometric_tolerance_armx implem
 			EGeometric_tolerance_armx armEntity) throws SdaiException {
 		armEntity.unsetModifier(null);
 	}
+	
+	/**
+	 * Sets/creates data for modification_new attribute.
+	 * 
+	 * <p>
+attribute_mapping modification_new(modification_new, $PATH, geometric_tolerance_modifier);
+	geometric_tolerance => 
+	geometric_tolerance_with_modifiers 
+	geometric_tolerance_with_modifiers.modifiers ->
+	geometric_tolerance_modifier
+	(geometric_tolerance_modifier = .MAXIMUM_MATERIAL_REQUIREMENT.)
+	(geometric_tolerance_modifier = .LEAST_MATERIAL_REQUIREMENT.)
+	(geometric_tolerance_modifier = .RECIPROCITY_REQUIREMENT.)
+	(geometric_tolerance_modifier = .ANY_CROSS_SECTION.)
+	(geometric_tolerance_modifier = .FREE_STATE.)
+	(geometric_tolerance_modifier = .COMMON_ZONE.)
+	(geometric_tolerance_modifier = .MINOR_DIAMETER.)
+	(geometric_tolerance_modifier = .MAJOR_DIAMETER.)
+	(geometric_tolerance_modifier = .PITCH_DIAMETER.)
+	(geometric_tolerance_modifier = .LINE_ELEMENT.)
+	(geometric_tolerance_modifier = .NOT_CONVEX.)
+	(geometric_tolerance_modifier = .STATISTICAL_TOLERANCE.)
+	(geometric_tolerance_modifier = .TANGENT_PLANE.)
+	(geometric_tolerance_modifier = .EACH_RADIAL_ELEMENT.)
+end_attribute_mapping;
+	 * </p>
+	 * 
+	 * @param context
+	 *            SdaiContext.
+	 * @param armEntity
+	 *            arm entity.
+	 * @throws SdaiException
+	 */
+	public static void setModification_new(SdaiContext context, EGeometric_tolerance_armx armEntity) throws SdaiException {
+		unsetModification_new(context, armEntity);
+		if(armEntity.testModification_new(null)){
+			A_enumeration values = armEntity.getModification_new(null);
+			A_enumeration values2 = armEntity.createModifiers(null);
+			for(int index=1;index<=values.getMemberCount();index++){
+				values2.addUnordered(values.getByIndex(index));
+			}
+		}
+	}
 
+	/**
+	 * Unsets/deletes mapping for attribute Significant_digits.
+	 * 
+	 * @param context
+	 * @param armEntity
+	 * @throws SdaiException
+	 */
+	public static void unsetModification_new(SdaiContext context, EGeometric_tolerance_armx armEntity) throws SdaiException {
+		armEntity.unsetModifiers(null);
+	}
+	
+	/**
+	 * Sets/creates data for Area_unit_type attribute.
+	 * 
+	 * <p>
+attribute_mapping Area_unit_type(Area_unit_type, $PATH, area_unit_type);
+	geometric_tolerance => 
+	geometric_tolerance_with_defined_area_unit 
+	geometric_tolerance_with_defined_area_unit.area_type ->
+	area_unit_type
+	(area_unit_type = .CIRCULAR.)
+	(area_unit_type = .SQUARE.)
+	(area_unit_type = .RECTANGULAR.)
+end_attribute_mapping;
+	 * </p>
+	 * 
+	 * @param context
+	 *            SdaiContext.
+	 * @param armEntity
+	 *            arm entity.
+	 * @throws SdaiException
+	 */
+	public static void setArea_unit_type(SdaiContext context, EGeometric_tolerance_armx armEntity) throws SdaiException {
+		unsetArea_unit_type(context, armEntity);
+		if(armEntity.testArea_unit_type(null)){
+			int value = armEntity.getArea_unit_type(null);
+			armEntity.setArea_type(null, value);
+		}
+	}
+
+	/**
+	 * Unsets/deletes mapping for attribute Area_unit_type.
+	 * 
+	 * @param context
+	 * @param armEntity
+	 * @throws SdaiException
+	 */
+	public static void unsetArea_unit_type(SdaiContext context, EGeometric_tolerance_armx armEntity) throws SdaiException {
+		armEntity.unsetArea_type(null);
+	}
+	
 	/**
 	 * Sets/creates data for Significant_digits attribute.
 	 * 
@@ -429,7 +683,9 @@ public class CxGeometric_tolerance_armx extends CGeometric_tolerance_armx implem
 		unsetSegment_size(context, armEntity);
 		if(armEntity.testSegment_size(null)){
 			EMeasure_with_unit value = armEntity.getSegment_size(null);
-			armEntity.setUnit_size(null, value);
+			if(value instanceof ELength_measure_with_unit){
+				armEntity.setUnit_size(null, (ELength_measure_with_unit)value);
+			}
 		}
 	}
 
@@ -528,35 +784,39 @@ public class CxGeometric_tolerance_armx extends CGeometric_tolerance_armx implem
 	public static void setTolerance_zone_attributes(SdaiContext context, EGeometric_tolerance_armx armEntity) throws SdaiException {
 		unsetTolerance_zone_attributes(context, armEntity);
 		ATolerance_zone_definition atzd = new ATolerance_zone_definition();
-		CTolerance_zone_definition.usedinZone(null, armEntity, context.domain, atzd);
+		CTolerance_zone_definition.usedinZone(null, armEntity, armEntity.findEntityInstanceSdaiModel().getRepository().getModels(), atzd);
 		// If at least one attribute is set, than we create it
-		if((armEntity.testAffected_plane(null))||(armEntity.testModel_coordinate_system(null))||
+		if((armEntity.testAffected_plane(null))||//(armEntity.testModel_coordinate_system(null))||
 				(armEntity.testForm_type(null))||(atzd.getMemberCount() > 0)){
 			ETolerance_zone etz = (ETolerance_zone)
 				context.working_model.createEntityInstance(CTolerance_zone.definition);
 			etz.setProduct_definitional(null, ELogical.FALSE);
 			if(armEntity.testApplied_to(null)){
-				EShape_aspect esa = armEntity.getApplied_to(null);
-				if(esa.testOf_shape(null)){
-					etz.setOf_shape(null, esa.getOf_shape(null));
-				}
-				if(esa.testName(null)){
-					etz.setName(null, esa.getName(null));
-				}else{
-					etz.setName(null, "");
-				}
-				
+				EEntity ee = armEntity.getApplied_to(null);
+				if(ee instanceof EShape_aspect){
+					EShape_aspect esa = (EShape_aspect)ee;
+					if(esa.testOf_shape(null)){
+						etz.setOf_shape(null, esa.getOf_shape(null));
+					}
+// https://intranet.lksoft.net/bugzilla/show_bug.cgi?id=4066#c2 c) point					
+//					if(esa.testName(null)){
+//						etz.setName(null, esa.getName(null));
+//					}else{
+//						etz.setName(null, "");
+//					}
+				}				
 			}
+			etz.setName(null, "");
 			etz.createDefining_tolerance(null).addUnordered(armEntity);
 			setAffected_plane(context, armEntity, etz);
-			setModel_coordinate_system(context, armEntity, etz);
+//			setModel_coordinate_system(context, armEntity, etz);
 			setForm_type(context, armEntity, etz);
 			for(int i=1,count=atzd.getMemberCount();i<=count;i++){
 				ETolerance_zone_definition etzd = atzd.getByIndex(i);
 				etzd.setZone(null, etz);
 			}
 			armEntity.unsetAffected_plane(null);
-			armEntity.unsetModel_coordinate_system(null);
+//			armEntity.unsetModel_coordinate_system(null);
 			armEntity.unsetForm_type(null);
 		}
 	}
@@ -593,7 +853,7 @@ public class CxGeometric_tolerance_armx extends CGeometric_tolerance_armx implem
 	public static void setAffected_plane(SdaiContext context, ETolerance_zone_armx armEntity, ETolerance_zone mimEntity) throws SdaiException {
 		unsetAffected_plane(context, mimEntity);
 		if(armEntity.testAffected_plane(null)){
-			EAxis_placement_shape_element eapse = armEntity.getAffected_plane(null);
+			EAssociated_shape_element eapse = armEntity.getAffected_plane(null);
 			EShape_aspect_relationship esar = (EShape_aspect_relationship)
 				context.working_model.createEntityInstance(CShape_aspect_relationship.definition);
 			esar.setRelated_shape_aspect(null, mimEntity);
@@ -634,7 +894,7 @@ public class CxGeometric_tolerance_armx extends CGeometric_tolerance_armx implem
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	public static void setModel_coordinate_system(SdaiContext context, ETolerance_zone_armx armEntity, ETolerance_zone mimEntity) throws SdaiException {
+/*	public static void setModel_coordinate_system(SdaiContext context, ETolerance_zone_armx armEntity, ETolerance_zone mimEntity) throws SdaiException {
 		unsetModel_coordinate_system(context, mimEntity);
 		if(armEntity.testModel_coordinate_system(null)){
 			EAxis_placement_shape_element eapse = armEntity.getModel_coordinate_system(null);
@@ -644,7 +904,7 @@ public class CxGeometric_tolerance_armx extends CGeometric_tolerance_armx implem
 			esar.setName(null, "model coordinate system");
 			esar.setRelating_shape_aspect(null, eapse);
 		}
-	}
+	}*/
 
 	public static void unsetModel_coordinate_system(SdaiContext context, ETolerance_zone mimEntity) throws SdaiException {
 		AShape_aspect_relationship asar = new AShape_aspect_relationship();
@@ -699,11 +959,72 @@ public class CxGeometric_tolerance_armx extends CGeometric_tolerance_armx implem
 				LangUtils.createInstanceIfNeeded(context,
 						CTolerance_zone_form.definition, tzfStructure);
 			mimEntity.setForm(null, etzf);
+		}else{
+			// TZF
+			LangUtils.Attribute_and_value_structure[] tzfStructure = {
+					new LangUtils.Attribute_and_value_structure(
+							CTolerance_zone_form.attributeName(null), "")
+			};
+			ETolerance_zone_form etzf = (ETolerance_zone_form) 
+				LangUtils.createInstanceIfNeeded(context,
+						CTolerance_zone_form.definition, tzfStructure);
+			mimEntity.setForm(null, etzf);
 		}
 	}
 
 	public static void unsetForm_type(SdaiContext context, ETolerance_zone mimEntity) throws SdaiException {
 		mimEntity.unsetForm(null);
 	}			
+	
+	public static void setType(SdaiContext context, EGeometric_tolerance_armx armEntity, EEntity_definition type)throws SdaiException{
+		// Collect complex leaves
+		Set complexLeaves = new TreeSet();
+		complexLeaves.add(type.getName(null));
+		if(armEntity.testUnequally_disposed_tolerance_zone_displacement(null)){
+			complexLeaves.add("unequally_disposed_geometric_tolerance");	
+		}
+		if(armEntity.testArea_unit_type(null)){
+			complexLeaves.add("geometric_tolerance_with_defined_area_unit");
+		}
+		if(armEntity.testModification_new(null)){
+			complexLeaves.add("geometric_tolerance_with_modifiers");
+		}
+		if(armEntity.testModification(null)){
+			complexLeaves.add("modified_geometric_tolerance");
+		}
+		if(armEntity.testSegment_size(null)){
+			complexLeaves.add("geometric_tolerance_with_defined_unit");
+		}
+		if(armEntity instanceof EGeometric_tolerance_with_datum_reference_xim){
+			// Only those complexes possible - other are already subtypes
+			// line_profile_tolerance+geometric_tolerance_with_datum_reference+
+			// position_tolerance+geometric_tolerance_with_datum_reference+
+			// straightness_tolerance+geometric_tolerance_with_datum_reference+
+			// surface_profile_tolerance+geometric_tolerance_with_datum_reference+
+			if((type == CLine_profile_tolerance.definition)||
+				(type == CPosition_tolerance.definition)||
+				(type == CStraightness_tolerance.definition)||
+				(type == CSurface_profile_tolerance.definition)){
+				EGeometric_tolerance_with_datum_reference_xim egtwdr = (EGeometric_tolerance_with_datum_reference_xim)armEntity; 
+				if(egtwdr.testDatum_system(null)){
+					complexLeaves.add("geometric_tolerance_with_datum_reference");
+				}
+			}
+		}
+		String overallComplex = new String();
+		Iterator it = complexLeaves.iterator();
+		while(it.hasNext()){
+			overallComplex += it.next()+"+";
+		}
+		overallComplex = overallComplex.substring(0, overallComplex.length()-1);
+		EEntity_definition eed = LangUtils.findEntityDefinition(overallComplex, context.schema);
+		if(eed == null){
+			armEntity.setTemp("AIM", type);
+			System.err.println("Missing complex "+overallComplex);
+		}else{
+			armEntity.setTemp("AIM", eed);
+		}
+
+	}
 	
 }

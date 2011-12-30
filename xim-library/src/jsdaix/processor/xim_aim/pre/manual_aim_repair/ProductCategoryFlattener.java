@@ -86,8 +86,11 @@ public class ProductCategoryFlattener {
 					if (!((EProduct_related_product_category) superCategory).testProducts(null)) {
 						((EProduct_related_product_category) superCategory).createProducts(null);
 					}
-					((EProduct_related_product_category) superCategory).getProducts(null).addUnordered(product); 
-					importer.logMessage(" Adding product "+product+" to category "+superCategory);
+					AProduct products = ((EProduct_related_product_category) superCategory).getProducts(null);
+					if(!products.isMember(product)){
+						products.addUnordered(product);
+						importer.logMessage(" Adding product "+product+" to category "+superCategory);
+					}
 				}
 			}
 		}

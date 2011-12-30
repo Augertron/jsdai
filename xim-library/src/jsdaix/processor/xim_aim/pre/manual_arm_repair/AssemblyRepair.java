@@ -127,10 +127,10 @@ public class AssemblyRepair {
 				// System.err.println(" Complex "+complexName+" vs "+eAc.getInstanceType()+" "+eAc);
 				SdaiModel model = eAc.findEntityInstanceSdaiModel();
 				// TEMPORARY WORKAROUND
-				if(eAc instanceof ELand_with_join_terminal){
-					ELand_with_join_terminal elwjt = (ELand_with_join_terminal)eAc;
-					elwjt.unsetOf_shape(null);
-				}
+//				if(eAc instanceof ELand_with_join_terminal){
+//					ELand_with_join_terminal elwjt = (ELand_with_join_terminal)eAc;
+//					elwjt.unsetOf_shape(null);
+//				}
 				EEntity_definition complextEntityDefinition =
 					model.getUnderlyingSchema().getEntityDefinition(complexName);
 				String message = "Substituted "+eAc;

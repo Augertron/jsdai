@@ -1,6 +1,7 @@
 (*
 $Id$ 
-ISO TC184/SC4/WG12 N5248 - ISO/IS 10303-504 Draughting annotation - EXPRESS
+ISO TC184/SC4/WG12 N6165 - ISO 10303-504 Draughting annotation - EXPRESS
+Supersedes ISO TC184/SC4/WG12 N5248
 *)
 
 SCHEMA aic_draughting_annotation;
@@ -12,6 +13,9 @@ USE FROM draughting_element_schema	-- ISO 10303-101
 USE FROM geometry_schema	-- ISO 10303-42
   (axis2_placement_2d,
    geometric_representation_context);
+
+REFERENCE FROM geometry_schema	-- ISO 10303-42
+  (axis2_placement);
 
 USE FROM measure_schema	-- ISO 10303-41
   (conversion_based_unit,
@@ -86,6 +90,20 @@ USE FROM representation_schema	-- ISO 10303-43
   (mapped_item,
    representation,
    representation_item);
+
+TYPE draughting_subfigure_representation_item = SELECT (
+	annotation_occurrence,
+	draughting_callout,
+	axis2_placement);
+END_TYPE;
+
+TYPE draughting_symbol_representation_item = SELECT (
+	annotation_curve_occurrence,
+	annotation_symbol_occurrence,
+	annotation_fill_area_occurrence,
+	annotation_text_occurrence,
+	axis2_placement);
+END_TYPE;
 
 ENTITY annotation_subfigure_occurrence
   SUBTYPE OF (annotation_symbol_occurrence);
@@ -279,17 +297,13 @@ END_ENTITY;
 
 ENTITY draughting_subfigure_representation
   SUBTYPE OF (symbol_representation);
+  SELF\representation.items : SET[1:?] OF draughting_subfigure_representation_item;
 WHERE
   WR1: SIZEOF (QUERY (item <* SELF\representation.items |
-         NOT (SIZEOF (['AIC_DRAUGHTING_ANNOTATION.ANNOTATION_OCCURRENCE',
-              'AIC_DRAUGHTING_ANNOTATION.DRAUGHTING_CALLOUT',
-              'GEOMETRY_SCHEMA.AXIS2_PLACEMENT']
-               * TYPEOF (item)) = 1))) = 0;
-  WR2: SIZEOF (QUERY (item <* SELF\representation.items |
          SIZEOF (['AIC_DRAUGHTING_ANNOTATION.ANNOTATION_OCCURRENCE',
                   'AIC_DRAUGHTING_ANNOTATION.DRAUGHTING_CALLOUT'] *
            TYPEOF (item)) = 1)) >= 1;
-  WR3: SIZEOF (QUERY (srm <* QUERY (rm <*
+  WR2: SIZEOF (QUERY (srm <* QUERY (rm <*
           USEDIN (SELF, 'REPRESENTATION_SCHEMA.' +
                         'REPRESENTATION_MAP.MAPPED_REPRESENTATION') |
           ('AIC_DRAUGHTING_ANNOTATION.SYMBOL_REPRESENTATION_MAP'
@@ -301,25 +315,16 @@ WHERE
                          'STYLED_ITEM.ITEM') |
           NOT ('AIC_DRAUGHTING_ANNOTATION.ANNOTATION_SUBFIGURE_OCCURRENCE'
             IN TYPEOF(aso)))) = 0))) = 0))) > 0;
-  WR4: NOT (acyclic_mapped_item_usage (SELF));
-  WR5: SIZEOF (SELF.context_of_items.representations_in_context) = 1;
+  WR3: SIZEOF (SELF.context_of_items.representations_in_context) = 1;
 END_ENTITY;
 
 ENTITY draughting_symbol_representation
   SUBTYPE of (symbol_representation);
+  SELF\representation.items : SET[1:?] OF draughting_symbol_representation_item;
 UNIQUE
   UR1: SELF\representation.name;
 WHERE
   WR1: 
-    SIZEOF (QUERY (item <* SELF\representation.items |
-         NOT (SIZEOF (TYPEOF (item) *
-            ['AIC_DRAUGHTING_ANNOTATION.ANNOTATION_CURVE_OCCURRENCE',
-             'AIC_DRAUGHTING_ANNOTATION.ANNOTATION_SYMBOL_OCCURRENCE',
-             'AIC_DRAUGHTING_ANNOTATION.ANNOTATION_FILL_AREA_OCCURRENCE',
-             'AIC_DRAUGHTING_ANNOTATION.ANNOTATION_TEXT_OCCURRENCE',
-             'GEOMETRY_SCHEMA.AXIS2_PLACEMENT']) = 1)
-       )) = 0;
-  WR2: 
     SIZEOF (QUERY (item <* SELF\representation.items |
          (SIZEOF (TYPEOF (item) *
             ['AIC_DRAUGHTING_ANNOTATION.ANNOTATION_CURVE_OCCURRENCE',
@@ -327,27 +332,17 @@ WHERE
              'AIC_DRAUGHTING_ANNOTATION.ANNOTATION_FILL_AREA_OCCURRENCE',
              'AIC_DRAUGHTING_ANNOTATION.ANNOTATION_TEXT_OCCURRENCE']) = 1)
        )) >= 1;
-  WR3: 
+  WR2: 
     SIZEOF (QUERY (item <* SELF\representation.items |
          'AIC_DRAUGHTING_ANNOTATION.ANNOTATION_SUBFIGURE_OCCURRENCE'
           IN TYPEOF (item))) = 0;
-  WR4: 
-    SIZEOF (QUERY (srm <* QUERY (rm <*
+  WR3: 
+    SIZEOF ( QUERY (rm <*
           USEDIN (SELF, 'REPRESENTATION_SCHEMA.' +
                         'REPRESENTATION_MAP.MAPPED_REPRESENTATION') |
-          ('REPRESENTATION_SCHEMA.SYMBOL_REPRESENTATION_MAP'
-             IN TYPEOF(rm))) |
-         (SIZEOF (QUERY (a_s <* QUERY (mi <* srm.map_usage |
-           ('AIC_DRAUGHTING_ANNOTATION.ANNOTATION_SYMBOL' IN TYPEOF(mi))) |
-         NOT (SIZEOF (QUERY(aso <*
-             USEDIN(a_s, 'PRESENTATION_APPEARANCE_SCHEMA.' +
-                         'STYLED_ITEM.ITEM') |
-             NOT ('AIC_DRAUGHTING_ANNOTATION.ANNOTATION_SYMBOL_OCCURRENCE'
-                  IN TYPEOF(aso))
-          )) = 0) )) = 0) )) > 0;
-  WR5: 
-    NOT (acyclic_mapped_item_usage (SELF));
-  WR6: 
+          NOT ('REPRESENTATION_SCHEMA.SYMBOL_REPRESENTATION_MAP'
+             IN TYPEOF(rm)))) = 0; 
+  WR4: 
     SIZEOF (SELF.context_of_items.representations_in_context) = 1;
 END_ENTITY;
 
@@ -356,32 +351,6 @@ ENTITY draughting_text_literal_with_delineation
 WHERE
   WR1: SELF.delineation IN ['underline', 'overline'];
 END_ENTITY;
-
-FUNCTION acyclic_mapped_item_usage (rep: representation) : BOOLEAN;
-  -- returns TRUE if the representation contains one or more mapped_items
-  -- that are a mapping of the representation itself
-  LOCAL
-    items : SET OF representation_item;
-  END_LOCAL;
-
-  items := QUERY (item <* rep.items |
-           'AIC_DRAUGHTING_ANNOTATION.MAPPED_ITEM' IN TYPEOF (item));
-  IF SIZEOF (items) = 0
-  THEN 
-    RETURN (FALSE);
-  ELSE 
-    REPEAT i := 1 TO HIINDEX (items);
-      IF items[i]\mapped_item.mapping_source.mapped_representation :=: rep
-      THEN 
-        RETURN (TRUE);
-      ELSE 
-        RETURN (acyclic_mapped_item_usage(items[i]\
-                  mapped_item.mapping_source.mapped_representation));
-      END_IF;
-    END_REPEAT;
-  RETURN (FALSE);
-  END_IF;
-END_FUNCTION;
 
 FUNCTION check_text_alignment (ct : composite_text) : BOOLEAN;
 

@@ -1,0 +1,36 @@
+(*
+$Id$
+ISO TC184/SC4/WG12 N7134 - ISO/TS 10303-1786 Risk definition - EXPRESS MIM
+Supersedes ISO TC184/SC4/WG12 N6837
+*) 
+
+
+SCHEMA Risk_definition_mim;
+
+USE FROM Activity_method_assignment_mim;    -- ISO/TS 10303-1249
+
+USE FROM Probability_distribution_mim;    -- ISO/TS 10303-1274
+
+USE FROM Process_property_assignment_mim;    -- ISO/TS 10303-1040
+
+USE FROM Product_relationship_mim;    -- ISO/TS 10303-1024
+
+USE FROM Product_view_definition_relationship_mim;    -- ISO/TS 10303-1041
+
+USE FROM Property_assignment_mim;    -- ISO/TS 10303-1030
+
+USE FROM risk_schema;    -- ISO 10303-58
+
+
+TYPE risk_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH 
+   (risk_perception);
+END_TYPE; 
+
+ENTITY risk_event
+  SUBTYPE OF (applied_action_method_assignment);
+  SELF\applied_action_method_assignment.items : SET[1:1] OF risk_perception;
+WHERE
+  WR1: SELF\action_method_assignment.role.name = 'risk of event';
+END_ENTITY;
+
+END_SCHEMA;  -- Risk_definition_mim

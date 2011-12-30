@@ -170,6 +170,7 @@ public class ValidateBgAction extends Action implements IWorkbenchWindowActionDe
   boolean flag_mim_xim = true;
   boolean flag_mim = true;
   boolean flag_xim = false;
+  boolean flag_2nd_validation = false;
   int fValidationCount = 0;
 	String fLog_out;
 	String fLog_err;
@@ -214,10 +215,69 @@ public class ValidateBgAction extends Action implements IWorkbenchWindowActionDe
 
 
 		String path = null;
-		flag_in_express_project = false;
-		flag_mim_xim = true;
-		flag_mim = true;
+		flag_in_express_project = true;
+		flag_mim_xim = false;
+		flag_mim = false;
 		flag_xim = false;
+  	flag_2nd_validation = false;
+
+    // let's try to change the flags above for general validation as opposed to mim-xim validation
+    // how to deterimene it?
+    
+    // this is a simple temporary way:
+    // 1. if the name of the step file contains "mim" or "xim"  - then mim-xim validation
+    // 2. if not 1, but if the fProject != 0, then if the name of the project contains "mim" or "xim" - then mim-xim validation
+    // 3. all the rest - a regular validation
+
+    // 
+
+		if (fProject != null) {
+    	String library_jar = fProject.getProject().getLocation().toOSString();
+    	if (library_jar.endsWith("\\") || library_jar.endsWith("/")) {
+	    	library_jar += fProject.getName() + ".jar";
+    	} else {
+	    	library_jar += File.separator + fProject.getName() + ".jar";
+    	}
+				File fff = new File(library_jar);
+				if (fff.isFile()) {  // single validation
+					flag_in_express_project = true;
+					flag_mim_xim = false;
+					flag_mim = false;
+					flag_xim = false;
+			  	flag_2nd_validation = false;
+				} else { // mim+xim validation using the library in a separate plugin
+					flag_in_express_project = false;
+					flag_mim_xim = true;
+					flag_mim = true; 
+					flag_xim = false;
+			  	flag_2nd_validation = false;
+				}
+		} else { // when fProject == null probably it makes no sense to proceed anyway
+
+	 		if (fStepFile != null) {
+
+					if ((fStepFile.toUpperCase().contains("MIM")) || (fStepFile.toUpperCase().contains("XIM"))) {
+						flag_in_express_project = false;
+						flag_mim_xim = true;
+						flag_mim = true; 
+						flag_xim = false;
+				  	flag_2nd_validation = false;
+					} else
+					if (fProject != null) {
+						if ((fProject.getName().toUpperCase().contains("MIM")) || (fProject.getName().toUpperCase().contains("MIM"))) {
+							flag_in_express_project = false;
+							flag_mim_xim = true;
+							flag_mim = true; 
+							flag_xim = false;
+					  	flag_2nd_validation = false;
+						} 
+					}
+
+			}
+		
+		}
+
+
 		if (flag_in_express_project) {
 
     	fDestination = fProject.getProject().getLocation().toOSString();
@@ -227,7 +287,7 @@ public class ValidateBgAction extends Action implements IWorkbenchWindowActionDe
 	    	fDestination += File.separator + fProject.getName() + ".jar";
 				
     	}
-System.out.println("lib - EXPRESS PROJECT: " + fDestination);
+//System.out.println("lib - EXPRESS PROJECT: " + fDestination);
 
 		}
     else if (flag_mim_xim) {
@@ -235,7 +295,7 @@ System.out.println("lib - EXPRESS PROJECT: " + fDestination);
 
 			fDestination = CommonUtils.getClassPath(Platform.getBundle("net.jsdai.xim.jlib"),"jsdai_xim_full.jar");
 
-System.out.println("lib - XIM-MIM: " + fDestination);
+//System.out.println("lib - XIM-MIM: " + fDestination);
 		} else {
 		}
 
@@ -282,6 +342,8 @@ System.out.println("lib - XIM-MIM: " + fDestination);
 				CommonUtils.printResultToConsole(fValidateOutput, fPage, fOutput);
 
 		    flag_exception = 0;
+
+if (flag_mim_xim) {
 				
 				try {
 					doRunMim2Xim(monitor);
@@ -298,6 +360,7 @@ System.out.println("lib - XIM-MIM: " + fDestination);
     flag_xim = true;
     flag_mim = false;
     fValidationCount = 1;
+  	flag_2nd_validation = true;  // this is really not needed
 
 					try {
 						doRunValidation(monitor);
@@ -313,6 +376,8 @@ System.out.println("lib - XIM-MIM: " + fDestination);
 
 	if (flag_xim)
 		CommonUtils.printResultToConsole(fValidateOutput_xim, fPage, fOutput);
+
+} // if mim-xim validation
 
 		        return new Status(IStatus.OK, ValidationPlugin.VALIDATION_PLUGIN_ID, "Job finished");
 		    }
@@ -333,11 +398,11 @@ System.out.println("lib - XIM-MIM: " + fDestination);
 //				String java_directory = null;
 				
 
-				boolean enabled = false;
+				boolean enabled = true;
 //				try {
 					if (selection instanceof IStructuredSelection) {
 
-		System.out.println("in structured selection - ############");
+//		System.out.println("in structured selection - ############");
 
 
 						IStructuredSelection sel = (IStructuredSelection) selection;
@@ -348,7 +413,7 @@ System.out.println("lib - XIM-MIM: " + fDestination);
 								IFile file = (IFile) resource;
 								fFile = file;
 								String fileName = file.getName();
-								if(fileName.endsWith(".p21") || fileName.endsWith(".stp") || fileName.endsWith(".pf")) {
+								if(fileName.endsWith(".p21") || fileName.endsWith(".stp")  || fileName.endsWith(".step") || fileName.endsWith(".pf")) {
 									if(fStepFile == null) {
 										fStepFile = file.getLocation().toOSString();
 										fXimFile = fStepFile.substring(0,fStepFile.lastIndexOf(".")) + "_XIM.stp";
@@ -363,7 +428,9 @@ System.out.println("lib - XIM-MIM: " + fDestination);
 							fProject = resource.getProject();
 							fIn_project = true;
 							// let's change the xim step file name to a fixed one:
-							fXimFile = fProject.getLocation().toString()	+ File.separator + "_temporary_xim.pf"; 				
+
+              // no, let's don't - commenting out:
+							// fXimFile = fProject.getLocation().toString()	+ File.separator + "_temporary_xim.pf"; 				
 
 		/*		
 							// true, if express project, 
@@ -371,6 +438,8 @@ System.out.println("lib - XIM-MIM: " + fDestination);
 							// if it is defined, if it contains classes folder
 							enabled = checkEnabledForSelectedProject();
 		*/
+//						enabled = checkEnabledForSelectedProject();
+		
 						}
 
 					} else if (selection instanceof ITextSelection) {
@@ -383,7 +452,7 @@ System.out.println("lib - XIM-MIM: " + fDestination);
 								FileEditorInput fedin = (FileEditorInput)active_input;
 								IFile file = fedin.getFile();
 								String fileName = file.getName();
-								if(fileName.endsWith(".p21") || fileName.endsWith(".stp") || fileName.endsWith(".pf")) {
+								if(fileName.endsWith(".p21") || fileName.endsWith(".stp")  || fileName.endsWith(".step") || fileName.endsWith(".pf")) {
 									if(fStepFile == null) {
 										fStepFile = file.getLocation().toOSString();
 										fXimFile = fStepFile.substring(0,fStepFile.lastIndexOf(".")) + "_XIM.stp";
@@ -412,7 +481,7 @@ System.out.println("lib - XIM-MIM: " + fDestination);
 		    
 		    // it is really enabled only if java directory is present - that indicates that express has been successfully compiled
 		    // it could be done in a different way - working only with ExpressCompilerRepo.sdai file, as it is the only input that is needed. 
-//				action.setEnabled(enabled);
+				action.setEnabled(enabled);
 		    
 		  }
 
@@ -427,8 +496,10 @@ System.out.println("lib - XIM-MIM: " + fDestination);
 
     String current_directory;
 
-//	if (fIn_express_project) {	
-	if (false) {	
+
+// it seems that we do not need a separate processing for non mim-xim conversion, the same for both:
+// if (fIn_express_project) {	
+if (false) {	
 
 		String s_temp_location = "_no_value_";
 
@@ -699,6 +770,14 @@ System.out.println("current directory: " + current_directory);
 					 subtaskCount -= subtaskCounter;
 			    }
 				}
+
+
+				if (flag_2nd_validation) {
+					IWorkspace workspace= ResourcesPlugin.getWorkspace(); 
+					 IPath location= Path.fromOSString(fXimFile); 
+					 fFile= workspace.getRoot().getFileForLocation(location);										
+				}
+
 				if (subtaskQueue != null) {
 					//ValidationPlugin.log("Queue: " + subtaskQueue.toString(),1);
 				/*	
@@ -1108,14 +1187,24 @@ System.out.println("Got output string: " + validateOutput);
     if (!success) {
 			ValidationPlugin.log("<CONVERSION> - the conversion result NOT succesfully renamed", 1);
     }
+    
  
  
     // show the conversion result:
 		if (fProject != null)
 			fProject.refreshLocal(IResource.DEPTH_INFINITE, null);
 
+/* 
+				if (flag_2nd_validation) { // this should not be necessary
 
-		
+
+					IWorkspace workspace= ResourcesPlugin.getWorkspace(); 
+					 IPath location= Path.fromOSString(fXimFile); 
+					 fFile= workspace.getRoot().getFileForLocation(location);										
+				
+				}
+
+*/		
 		
 		//###############################################################################
    

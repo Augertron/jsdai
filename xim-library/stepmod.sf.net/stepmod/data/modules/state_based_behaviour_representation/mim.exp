@@ -8,42 +8,15 @@ SCHEMA State_based_behaviour_representation_mim;
 
 USE FROM Foundation_representation_mim;    -- ISO/TS 10303-1006
 
-USE FROM Foundation_state_definition_mim;    -- ISO/WD 10303-1469
+USE FROM Foundation_state_definition_mim;    -- ISO/TS 10303-1469
 
-USE FROM Group_mim;    -- ISO/TS 10303-1113
+USE FROM systems_engineering_representation_schema   -- ISO 10303-61
+  (se_representation_proxy_select,
+   state_based_behaviour_model,
+   state_based_behaviour_representation_context,
+   state_based_behaviour_representation_item); 
 
-USE FROM representation_schema   -- ISO 10303-43
-  (representation,
-   representation_context,
-   representation_item); 
-
-USE FROM state_type_schema   -- ISO 10303-56
-  (state_type,
-   state_type_relationship); 
-
-
-TYPE state_based_behaviour_element_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON groupable_item WITH 
-   (state_type, 
-    state_type_relationship);
-END_TYPE; 
-
-TYPE state_based_behaviour_representation_item_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON groupable_item WITH 
-   (state_based_behaviour_representation_item);
-END_TYPE; 
-
-ENTITY state_based_behaviour_model
-  SUBTYPE OF (representation);
-  SELF\representation.context_of_items : state_based_behaviour_representation_context;
-  SELF\representation.items : SET[1:?] OF state_based_behaviour_representation_item;
-END_ENTITY;
-
-ENTITY state_based_behaviour_representation_context
-  SUBTYPE OF (representation_context);
-END_ENTITY;
-
-ENTITY state_based_behaviour_representation_item
-  SUBTYPE OF (representation_item);
-END_ENTITY;
 
 END_SCHEMA;  -- State_based_behaviour_representation_mim
+
 

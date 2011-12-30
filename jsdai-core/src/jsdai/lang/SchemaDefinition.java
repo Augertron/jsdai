@@ -52,6 +52,36 @@ public abstract class SchemaDefinition extends CEntity {
 
 
 /**
+ * Checks whether there exists entity definition with the specified name.
+ * This method searches the set of entities that are encountered in the
+ * EXPRESS schema represented by this <code>ESchema_definition</code>.
+ * Method's parameter is some string giving the name of an entity. 
+ * If this entity is complex, then its constituents (simple entity data 
+ * types) within this string are separated by the '+' character.
+ * For example, "length_unit+si_unit". Both lower case letters and 
+ * upper case letters are acceptable. If the entity is not known for this schema,
+ * then <code>false</code> value is returned. Passing null value to the method's
+ * parameter results in SdaiException VA_NSET.
+ * @param entity_name the name of the entity whose definition is checked for inclusion in the schema.
+ * @return <code>true</code> if the specified entity definition was found, <code>false</code> otherwise.
+ * @throws SdaiException VA_NSET, value not set.
+ * @throws SdaiException SY_ERR, underlying system error.
+ * @see #getEntityDefinition
+ */
+	public boolean testEntityDefinition(String entity_name) throws SdaiException {
+		if (entity_name == null) {
+			throw new SdaiException(SdaiException.VA_NSET);
+		}
+		entity_name = entity_name.replace('+', '$').toUpperCase();
+		SchemaData sch_data = modelDictionary.schemaData;
+		int index = sch_data.find_entity(0, sch_data.sNames.length - 1, entity_name);
+		if (index >= 0) {
+			return true;
+		}
+		return false;
+	}
+
+/**
  * Returns entity definition for the entity with the specified name.
  * This method searches the set of entities that are encountered in the
  * EXPRESS schema represented by this <code>ESchema_definition</code>.
@@ -254,10 +284,17 @@ if (SdaiSession.debug2) System.out.println("  In SchemaDefinition    modelDictio
 //"   !!!!entity: " + entity.getCorrectName() + 
 //"   supertypes.myLength: " + supertypes.myLength);
 //System.out.println("*****MODEL: " + modelDictionary.name/* + "    SCHEMA: " + schema.getName(null)*/);
-//for (int s = 0; s < data.noOfEntityDataTypes; s++) {
-//System.out.println("    *****NORMAL NAME: " + data.sNames[s] + 
-//"   LONG NAME: " + data.sLongNames[s]);
-//}System.out.println(); }
+/*if (index < 0) {
+System.out.println("modelDictionary: " + modelDictionary.name);
+System.out.println("entity: " + entity + "  i: " + i);
+System.out.println("name original: " + super_entity.getCorrectName());
+System.out.println("name searched: " + super_entity.getNameUpperCase());
+System.out.println("*****Schema: " + data.schema.getName(null));
+System.out.println();
+for (int s = 0; s < data.noOfEntityDataTypes; s++) {
+System.out.println("s=" + s + "    *****NORMAL NAME: " + data.sNames[s] + 
+"   LONG NAME: " + data.sLongNames[s]);
+}System.out.println(); }*/
 
 				}
 				if (index < 0) {

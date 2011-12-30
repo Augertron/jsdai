@@ -1,0 +1,106 @@
+(*
+   $Id$
+   N - ISO/CD-TS - 10303- machining_features - EXPRESS MIM*)
+(* UNDER DEVELOPMENT *)
+SCHEMA Machining_features_mim;
+
+USE FROM Elemental_geometric_shape_mim; -- ISO/TS 10303-1004
+USE FROM Feature_and_connection_zone_mim; 
+USE FROM Measure_representation_mim;
+USE FROM Specification_document_mim;
+USE FROM Value_with_unit_mim;
+
+USE FROM aic_machining_feature; -- ISO 10303-522
+
+ENTITY face_shape_representation_relationship
+  SUBTYPE OF (representation_relationship);
+      WHERE
+      WR1: ('AIC_MACHINING_FEATURE.FACE_SHAPE_REPRESENTATION' 
+            IN TYPEOF(SELF.rep_1));
+      WR2: ('AIC_MACHINING_FEATURE.FACE_SHAPE_REPRESENTATION' 
+            IN TYPEOF(SELF.rep_2));
+END_ENTITY;
+
+RULE chamfer_requires_faces FOR (chamfer,
+property_definition_representation);
+WHERE
+WR1: (SIZEOF (QUERY (cf <* chamfer |
+NOT (1 = SIZEOF (QUERY (pdr <* property_definition_representation |
+((pdr\property_definition_representation.definition\property_definition.definition = cf) AND
+('AIC_MACHINING_FEATURE.FACE_SHAPE_REPRESENTATION'
+IN TYPEOF (pdr.used_representation)) AND
+(pdr.used_representation.name = 'chamfer face'))
+)))
+))=0);
+END_RULE;
+
+RULE chamfer_offset_requires_faces FOR
+(chamfer_offset, property_definition_representation);
+WHERE
+WR1: (SIZEOF (QUERY (co <* chamfer_offset |
+NOT (1 = SIZEOF (QUERY (pdr <* property_definition_representation |
+((pdr\property_definition_representation.definition\property_definition.definition = co) AND
+('AIC_MACHINING_FEATURE.FACE_SHAPE_REPRESENTATION' IN TYPEOF (pdr.used_representation)) AND
+( ((pdr\property_definition_representation.definition\property_definition.definition.description = 'first offset') AND
+(pdr.used_representation.name = 'first face shape'))
+OR
+((pdr\property_definition_representation.definition\property_definition.definition.description = 'second offset') AND
+(pdr.used_representation.name = 'second face shape'))
+))
+)))
+))=0);
+END_RULE;
+
+RULE edge_round_requires_faces FOR
+(edge_round, property_definition_representation);
+WHERE
+WR1: (0 = SIZEOF (QUERY (er <* edge_round |
+NOT (1 = SIZEOF (QUERY (pdr <* property_definition_representation |
+((pdr\property_definition_representation.definition\property_definition.definition = er) AND
+('AIC_MACHINING_FEATURE.FACE_SHAPE_REPRESENTATION'
+IN TYPEOF (pdr.used_representation)) AND
+(pdr.used_representation.name = 'edge round face'))
+)))
+)));
+WR2: (SIZEOF (QUERY (er <* edge_round |
+NOT (1 = SIZEOF (QUERY (pdr <* property_definition_representation |
+((pdr\property_definition_representation.definition\property_definition.definition = er) AND
+('AIC_MACHINING_FEATURE.FACE_SHAPE_REPRESENTATION'
+IN TYPEOF (pdr.used_representation)) AND
+(pdr.used_representation.name = 'first face shape'))
+)))
+))=0);
+WR3: (SIZEOF (QUERY (er <* edge_round |
+NOT (1 = SIZEOF (QUERY (pdr <* property_definition_representation |
+((pdr\property_definition_representation.definition\property_definition.definition = er) AND
+('AIC_MACHINING_FEATURE.FACE_SHAPE_REPRESENTATION'
+IN TYPEOF (pdr.used_representation)) AND
+(pdr.used_representation.name = 'second face shape'))
+)))
+))=0);
+END_RULE;
+
+RULE machining_feature_life_cycle FOR
+(instanced_feature);
+WHERE
+WR1: SIZEOF (QUERY (mf <* instanced_feature |
+NOT (mf.of_shape.definition.frame_of_reference.life_cycle_stage =
+'manufacturing planning'))) = 0;
+END_RULE;
+
+RULE transition_feature_life_cycle FOR
+(transition_feature);
+WHERE
+WR1: SIZEOF (QUERY (tf <* transition_feature |
+NOT (tf.of_shape.definition.frame_of_reference.life_cycle_stage =
+'manufacturing planning'))) = 0;
+END_RULE;
+
+RULE transition_feature_on_part_boundary FOR
+(transition_feature);
+WHERE
+WR1: SIZEOF (QUERY (tf <* transition_feature |
+NOT (tf.product_definitional))) = 0;
+END_RULE;
+
+END_SCHEMA;

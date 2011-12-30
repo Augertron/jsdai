@@ -28,17 +28,29 @@ package jsdai.SDimension_tolerance_xim;
 * @version $$
 */
 
-import jsdai.SDimension_tolerance_mim.CDirected_dimensional_location;
+import jsdai.SRepresentation_schema.ERepresentation_context;
+import jsdai.SShape_dimension_schema.CDirected_dimensional_location;
+import jsdai.SGeometry_schema.EGeometric_representation_context;
 import jsdai.SGeometry_schema.EPlacement;
+import jsdai.SProduct_property_definition_schema.EProduct_definition_shape;
 import jsdai.SProduct_property_definition_schema.EShape_aspect_relationship;
+import jsdai.SProduct_property_representation_schema.AShape_definition_representation;
+import jsdai.SProduct_property_representation_schema.CShape_definition_representation;
+import jsdai.SProduct_property_representation_schema.EShape_definition_representation;
 import jsdai.SQualified_measure_schema.CDescriptive_representation_item;
 import jsdai.SQualified_measure_schema.EDescriptive_representation_item;
 import jsdai.SQualified_measure_schema.EMeasure_representation_item;
+import jsdai.SShape_dimension_schema.ADimensional_characteristic_representation;
+import jsdai.SShape_dimension_schema.CDimensional_characteristic_representation;
 import jsdai.SShape_dimension_schema.CDimensional_location;
+import jsdai.SShape_dimension_schema.EDimensional_characteristic_representation;
+import jsdai.SShape_dimension_schema.EShape_dimension_representation;
 import jsdai.lang.A_string;
 import jsdai.lang.SdaiContext;
 import jsdai.lang.SdaiException;
+import jsdai.libutil.CxAP210ARMUtilities;
 import jsdai.libutil.EMappedXIMEntity;
+import jsdai.util.LangUtils;
 
 public class CxLocation_dimension extends CLocation_dimension implements EMappedXIMEntity
 {
@@ -95,7 +107,7 @@ public class CxLocation_dimension extends CLocation_dimension implements EMapped
 		} else {
 			return;
 		}
-
+		System.err.println(" LD "+this);
 		if((testDirected(null))&&(getDirected(null))){
 			setTemp("AIM", CDirected_dimensional_location.definition);
 		}else{
@@ -104,6 +116,8 @@ public class CxLocation_dimension extends CLocation_dimension implements EMapped
 
 		setMappingConstraints(context, this);
 
+		// id : STRING;
+		setId_x(context, this);
 			
 		// single_value : OPTIONAL measure_representation_item;
 		setSingle_value(context, this);
@@ -133,7 +147,16 @@ public class CxLocation_dimension extends CLocation_dimension implements EMapped
 		// target		: placed_element_select;
 //		setTarget(context, this);
 		
+		// envelope_principle : OPTIONAL BOOLEAN;
+		setEnvelope_principle(context, this);
+		
 		// Unset attributes
+		
+		unsetEnvelope_principle(null);
+		
+		// id : STRING;
+		unsetId_x(null);
+		
 		// single_value : OPTIONAL measure_representation_item;
 		unsetSingle_value(null);
 
@@ -163,6 +186,9 @@ public class CxLocation_dimension extends CLocation_dimension implements EMapped
 
 	public void removeAimData(SdaiContext context) throws SdaiException {
 			unsetMappingConstraints(context, this);
+			
+			// id : STRING;
+			unsetId_x(context, this);
 			
 			// single_value : OPTIONAL measure_representation_item;
 			unsetSingle_value(context, this);
@@ -1055,7 +1081,21 @@ end_attribute_mapping;
 		unsetOrientation(context, armEntity);
 		if(armEntity.testOrientation(null)){
 			EPlacement ep = (EPlacement)armEntity.getOrientation(null);
-			CxGDTCommon.setOrientation(context, armEntity, ep);
+			EShape_dimension_representation esdr = CxGDTCommon.setDimension_value(context, armEntity, ep);
+			// need to make rep_conext -> geometric_rep_ontext
+			ERepresentation_context erc = esdr.getContext_of_items(null);
+			if(!(erc instanceof EGeometric_representation_context)){
+				EProduct_definition_shape epds = armEntity.getRelated_shape_aspect(null).getOf_shape(null);
+				AShape_definition_representation asdr = new AShape_definition_representation();
+				CShape_definition_representation.usedinDefinition(null, epds, context.domain, asdr);
+				CShape_definition_representation.usedinDefinition(null, epds, null, asdr);
+				if(asdr.getMemberCount() > 0){
+					esdr.unsetContext_of_items(null);
+					LangUtils.deleteInstanceIfUnused(context.domain, erc);
+					EShape_definition_representation esdr1 = asdr.getByIndex(1);
+					esdr.setContext_of_items(null, esdr1.getUsed_representation(null).getContext_of_items(null));
+				}
+			}
 		}
 	}
 
@@ -1069,4 +1109,101 @@ end_attribute_mapping;
 	public static void unsetOrientation(SdaiContext context, ELocation_dimension armEntity) throws SdaiException {
 		CxGDTCommon.unsetOrientation(context, armEntity);
 	}
+
+	/**
+	 * Sets/creates data for envelope_principle attribute.
+	 * 
+	 * <p>
+	 * 
+	attribute_mapping envelope_principle(envelope_principle, representation.name);
+		dimensional_size
+		dimensional_characteristic = dimensional_size
+		dimensional_characteristic <-
+		dimensional_characteristic_representation.dimension
+		dimensional_characteristic_representation
+		dimensional_characteristic_representation.representation ->
+		shape_dimension_representation <=
+		shape_representation <=
+		representation
+		representation.name
+		{representation.name = 'envelope tolerance'}
+	end_attribute_mapping;
+	 * </p>
+	 * 
+	 * @param context
+	 *            SdaiContext.
+	 * @param armEntity
+	 *            arm entity.
+	 * @throws SdaiException
+	 */
+	// DS <- DCR -> SDR
+	public static void setEnvelope_principle(SdaiContext context, ELocation_dimension armEntity) throws SdaiException {
+		unsetEnvelope_principle(context, armEntity);
+		if(armEntity.testEnvelope_principle(null)){
+			boolean value = armEntity.getEnvelope_principle(null);
+			EShape_dimension_representation esdr = CxGDTCommon.setDimension_value(context, armEntity, null);
+			if(value){
+				esdr.setName(null, "envelope requirement");
+			}else{
+				esdr.setName(null, "independency");
+			}
+		}
+	}
+
+	/**
+	 * Unsets/deletes data for envelope_principle attribute.
+	 * 
+	 * @param context
+	 * @param armEntity
+	 * @throws SdaiException
+	 */
+	public static void unsetEnvelope_principle(SdaiContext context, ELocation_dimension armEntity) throws SdaiException {
+		ADimensional_characteristic_representation adcr = new ADimensional_characteristic_representation();
+		CDimensional_characteristic_representation.usedinDimension(null, armEntity, context.domain, adcr);
+		for(int i=1,count=adcr.getMemberCount(); i<=count; i++){
+			EDimensional_characteristic_representation edcr = adcr.getByIndex(i);
+			EShape_dimension_representation esdr = edcr.getRepresentation(null);
+			esdr.setName(null, "");
+		}
+	}
+
+	/**
+	 * Sets/creates data for id_x attribute.
+	 * 
+	 * <p>
+	 * 
+	attribute_mapping id_x(id_x, shape_aspect_relationship.id);
+		dimensional_location <=
+		shape_aspect_relationship
+		shape_aspect_relationship.id
+	
+	end_attribute_mapping;
+	 * </p>
+	 * 
+	 * @param context
+	 *            SdaiContext.
+	 * @param armEntity
+	 *            arm entity.
+	 * @throws SdaiException
+	 */
+	// DS <- DCR -> SDR
+	public static void setId_x(SdaiContext context, ELocation_dimension armEntity) throws SdaiException {
+		unsetId_x(context, armEntity);
+		if(armEntity.testId_x(null)){
+			String value = armEntity.getId_x(null);
+			CxAP210ARMUtilities.setId(context, armEntity, value);
+		}
+	}
+
+	/**
+	 * Unsets/deletes data for id_x attribute.
+	 * 
+	 * @param context
+	 * @param armEntity
+	 * @throws SdaiException
+	 */
+	public static void unsetId_x(SdaiContext context, ELocation_dimension armEntity) throws SdaiException {
+		CxAP210ARMUtilities.unsetId(context, armEntity);
+	}
+	
 }

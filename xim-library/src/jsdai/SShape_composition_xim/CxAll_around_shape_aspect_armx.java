@@ -2,7 +2,7 @@
  * $Id$
  *
  * JSDAI(TM), a way to implement STEP, ISO 10303
- * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ * Copyright (C) 1997-2011, LKSoftWare GmbH, Germany
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License
@@ -31,13 +31,13 @@ package jsdai.SShape_composition_xim;
 
 import jsdai.SProduct_property_definition_schema.EProduct_definition_shape;
 import jsdai.SProduct_property_definition_schema.EShape_aspect;
-import jsdai.SShape_aspect_definition_schema.CComposite_shape_aspect;
+import jsdai.SShape_aspect_definition_schema.CAll_around_shape_aspect;
 import jsdai.lang.ELogical;
 import jsdai.lang.SdaiContext;
 import jsdai.lang.SdaiException;
 import jsdai.libutil.EMappedXIMEntity;
 
-public class CxAll_around_shape_aspect extends CAll_around_shape_aspect implements EMappedXIMEntity
+public class CxAll_around_shape_aspect_armx extends CAll_around_shape_aspect_armx implements EMappedXIMEntity
 {
 	// From CShape_aspect.java
 	// attribute (current explicit or supertype explicit) : of_shape, base type: entity product_definition_shape
@@ -123,7 +123,7 @@ public class CxAll_around_shape_aspect extends CAll_around_shape_aspect implemen
 			return;
 		}
 
-		setTemp("AIM", CComposite_shape_aspect.definition);
+		setTemp("AIM", CAll_around_shape_aspect.definition);
 
 		setMappingConstraints(context, this);
 
@@ -163,7 +163,7 @@ public class CxAll_around_shape_aspect extends CAll_around_shape_aspect implemen
 	 *            arm entity.
 	 * @throws SdaiException
 	 */
-	public static void setMappingConstraints(SdaiContext context, EAll_around_shape_aspect armEntity) throws SdaiException {
+	public static void setMappingConstraints(SdaiContext context, EAll_around_shape_aspect_armx armEntity) throws SdaiException {
 		unsetMappingConstraints(context, armEntity);
 		CxComposite_shape_aspect_armx.setMappingConstraints(context, armEntity);
 		// SELF\shape_aspect.product_definitional : LOGICAL := ?;
@@ -187,7 +187,7 @@ public class CxAll_around_shape_aspect extends CAll_around_shape_aspect implemen
 	 * @throws SdaiException
 	 */
 	public static void unsetMappingConstraints(SdaiContext context,
-			EAll_around_shape_aspect armEntity) throws SdaiException {
+			EAll_around_shape_aspect_armx armEntity) throws SdaiException {
 		CxComposite_shape_aspect_armx.unsetMappingConstraints(context, armEntity);
 		armEntity.unsetDescription(null);
 	}

@@ -256,7 +256,7 @@ public class DialogAgregate extends DialogBasic {
 			{
 		        if ((dialogCard == null)||(dialogCard.isDisposed())) dialogCard = new DialogAgregate(panelAgregate, ((Agregate)object).getNext(), prop);
 		        if (dialogCard.object == null) {
-		        	dialogCard.object = new Agregate(((Agregate)object).getAgregation_type(), null, "", Agregate.TYPE_SIMPLE, Agregate.BOUND_NONE, Agregate.BOUND_NONE, false, false);
+		        	dialogCard.object = new Agregate(((Agregate)object).getAgregation_type(), null, "", Agregate.TYPE_SIMPLE, Agregate.BOUND_NONE, "",  Agregate.BOUND_NONE, "", false, false);
 		        }
 		        dialogCard.open();
 			}
@@ -351,18 +351,20 @@ public class DialogAgregate extends DialogBasic {
 	    ((Agregate)object).setOptional(buttonOptional.getSelection());
 	    ((Agregate)object).setUnique(buttonUnique.getSelection());
 	    int minBound = Agregate.BOUND_NONE;
+	    String minBoundStr = "";
 	    try { minBound = Integer.parseInt(textFrom.getText()); } catch (NumberFormatException ex) {}
-	    ((Agregate)object).setMinBound(minBound);
+	    ((Agregate)object).setMinBound(minBound, minBoundStr);
 	    int maxBound = Agregate.BOUND_NONE;
+	    String maxBoundStr = "";
 	    try { maxBound = Integer.parseInt(textTo.getText()); } catch (NumberFormatException ex) {}
-	    ((Agregate)object).setMaxBound(maxBound);
+	    ((Agregate)object).setMaxBound(maxBound, maxBoundStr);
 	    if (radio1.getSelection()) {
 	      ((Agregate)object).setType(Agregate.TYPE_SIMPLE);
 	      ((Agregate)object).setNext(null);
 	    } else {
 	      Agregate next = ((Agregate)object).getNext();
 	      if (dialogCard == null) {
-	        if (next == null) next = new Agregate(((Agregate)object).getAgregation_type(), null, "", Agregate.TYPE_SIMPLE, Agregate.BOUND_NONE, Agregate.BOUND_NONE, false, false);
+	        if (next == null) next = new Agregate(((Agregate)object).getAgregation_type(), null, "", Agregate.TYPE_SIMPLE, Agregate.BOUND_NONE, "", Agregate.BOUND_NONE, "", false, false);
 	      } else {
 	        next = (Agregate)dialogCard.object;
 	      }

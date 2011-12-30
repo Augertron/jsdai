@@ -1,7 +1,7 @@
 (*
  $Id$
- ISO TC184/SC4/WG12 N5441 - ISO/TS 10303-1770 Part and zone laminate tables - EXPRESS MIM
- Supersedes ISO TC184/SC4/WG12 N4772
+ ISO TC184/SC4/WG12 N6250 - ISO/TS 10303-1770 Part and zone laminate tables - EXPRESS MIM
+ Supersedes ISO TC184/SC4/WG12 N5441
 *)
 
 SCHEMA Part_and_zone_laminate_tables_mim;
@@ -19,18 +19,6 @@ USE FROM product_structure_schema (next_assembly_usage_occurrence);
 USE FROM product_definition_schema     --  ISO 10303-41
     (product_related_product_category); 
 
-
-  ENTITY composite_assembly_definition
-    SUBTYPE OF (product_definition);
-    WHERE
-      WR1: SIZEOF (QUERY (pdr <* USEDIN (SELF, 
-                             'PRODUCT_DEFINITION_SCHEMA.' +
-                             'PRODUCT_DEFINITION_RELATIONSHIP.' +
-                             'RELATING_PRODUCT_DEFINITION') |
-                             'PRODUCT_STRUCTURE_SCHEMA.' +
-                             'NEXT_ASSEMBLY_USAGE_OCCURRENCE' IN
-                             TYPEOF (pdr))) = 1;
-  END_ENTITY;
 
   ENTITY composite_assembly_sequence_definition
     SUBTYPE OF (product_definition);
@@ -58,42 +46,8 @@ USE FROM product_definition_schema     --  ISO 10303-41
     SUBTYPE OF (laminate_table);
   END_ENTITY;
 
-  ENTITY percentage_laminate_definition
-    SUBTYPE OF (product_definition);
-    WHERE
-      WR1: SIZEOF (QUERY (pdr <* USEDIN (SELF, 
-                             'PRODUCT_DEFINITION_SCHEMA.' +
-                             'PRODUCT_DEFINITION_RELATIONSHIP.' +
-                             'RELATING_PRODUCT_DEFINITION') |
-                             'PRODUCT_STRUCTURE_SCHEMA.' +
-                             'NEXT_ASSEMBLY_USAGE_OCCURRENCE' IN
-                             TYPEOF (pdr))) > 0;
-  END_ENTITY;
-
   ENTITY percentage_laminate_table
     SUBTYPE OF (zone_structural_makeup);
-  END_ENTITY;
-
-  ENTITY percentage_ply_definition
-    SUBTYPE OF (product_definition);
-    WHERE
-      WR1: SIZEOF (QUERY (pdr <* USEDIN (SELF, 'PRODUCT_DEFINITION_SCHEMA.' +
-        'PRODUCT_DEFINITION_RELATIONSHIP.RELATING_PRODUCT_DEFINITION') |
-        ('STRUCTURAL_ANALYSIS_DESIGN.PERCENTAGE_LAMINATE_DEFINITION' 
-        IN TYPEOF (pdr.related_product_definition)) AND
-        (pdr.name = 'makeup and properties'))) = 0;
-  END_ENTITY;
-
-  ENTITY ply_laminate_definition
-    SUBTYPE OF (product_definition);
-    WHERE
-      WR1: SIZEOF (QUERY (pdr <* USEDIN (SELF, 
-                             'PRODUCT_DEFINITION_SCHEMA.' +
-                             'PRODUCT_DEFINITION_RELATIONSHIP.' +
-                             'RELATING_PRODUCT_DEFINITION') |
-                             'PRODUCT_STRUCTURE_SCHEMA.' +
-                             'NEXT_ASSEMBLY_USAGE_OCCURRENCE' IN
-                             TYPEOF (pdr))) = 1;
   END_ENTITY;
 
   ENTITY ply_laminate_sequence_definition
@@ -116,18 +70,6 @@ USE FROM product_definition_schema     --  ISO 10303-41
     SUBTYPE OF (zone_structural_makeup);
   END_ENTITY;
 
-  ENTITY thickness_laminate_definition
-    SUBTYPE OF (product_definition);
-    WHERE
-      WR1: SIZEOF (QUERY (pdr <* USEDIN (SELF, 
-                             'PRODUCT_DEFINITION_SCHEMA.' +
-                             'PRODUCT_DEFINITION_RELATIONSHIP.' +
-                             'RELATING_PRODUCT_DEFINITION') |
-                             'PRODUCT_STRUCTURE_SCHEMA.' +
-                             'NEXT_ASSEMBLY_USAGE_OCCURRENCE' IN
-                             TYPEOF (pdr))) = 1;
-  END_ENTITY;
-
   ENTITY thickness_laminate_table
     SUBTYPE OF (zone_structural_makeup);
   END_ENTITY;
@@ -138,14 +80,9 @@ USE FROM product_definition_schema     --  ISO 10303-41
   END_ENTITY;
 
   SUBTYPE_CONSTRAINT pos_product_definition_subtypes FOR product_definition;
-    ONEOF (composite_assembly_definition,
-           composite_assembly_sequence_definition,
+    ONEOF (composite_assembly_sequence_definition,
            laminate_table,
-           percentage_laminate_definition,
-           percentage_ply_definition,
-           ply_laminate_definition,
-           ply_laminate_sequence_definition,
-           thickness_laminate_definition);
+           ply_laminate_sequence_definition);
   END_SUBTYPE_CONSTRAINT;
 
   RULE component_class_for_assembly_select FOR
@@ -246,6 +183,7 @@ USE FROM product_definition_schema     --  ISO 10303-41
       WR1:  dkuhr;
   END_RULE;
 
+(*
   RULE stock_material_reference FOR
      (percentage_ply_definition,
       make_from_usage_option,
@@ -296,7 +234,8 @@ USE FROM product_definition_schema     --  ISO 10303-41
     WHERE
       WR1:  dkuhr;
   END_RULE;
-
+*)
+(*
   RULE thickness_laminate_table_component_select FOR
      (thickness_laminate_definition,
       next_assembly_usage_occurrence,
@@ -346,5 +285,5 @@ USE FROM product_definition_schema     --  ISO 10303-41
     WHERE
       WR1:  dkuhr;
   END_RULE;
-
+*)
 END_SCHEMA;

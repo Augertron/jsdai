@@ -133,6 +133,8 @@ You should see in the log file something similar to:
 
 
 
+	private static final String SUFIX_XIM = "_XIM";
+
 // Non-persistent lists being submitted as parameters to the methods:
 // validateRequiredExplicitAttributesAssigned, validateInverseAttributes, 
 // validateExplicitAttributesReferences, validateAggregatesSize, 
@@ -152,6 +154,7 @@ You should see in the log file something similar to:
 	static PrintWriter pw;
 // Iterator used for aggregates of various types
 	SdaiIterator iterator;
+	SdaiIterator it_rules;
 // Iterator used for aggregates of entity instances
 	SdaiIterator inst_iterator;
 // Variable used to designate either underlying schema for a model or 
@@ -170,8 +173,71 @@ You should see in the log file something similar to:
 	int un_rules_count;
 	long all_steps_count;
 	long inst_counter = 0;
+	boolean only_xim;
 //	List queue;
 
+
+	private void identifyPartialEntities(EEntity_definition entity, AEntity_definition result)
+			throws SdaiException {
+// all supertypes are processed recursively
+		if (!(result.isMember(entity))) {
+			AEntity supertypes = entity.getSupertypes(null);
+			SdaiIterator iter = supertypes.createIterator();
+			while (iter.next()) {
+				EEntity_definition sprtp = (EEntity_definition)supertypes.getCurrentMemberEntity(iter);
+				identifyPartialEntities(sprtp, result);
+			}
+			if (!entity.getComplex(null)) {
+				int ind = ((AEntity)result).getMemberCount() + 1;
+				result.addByIndex(ind, entity);
+			}
+		}
+	}
+
+
+	private int validateWhereRulesXim(EEntity instance, EEntity_definition type, AWhere_rule w_rules_viol, 
+				ASdaiModel models_dom) throws SdaiException {
+		AEntity_definition result = new AEntity_definition();
+//System.out.println("Validate *** type: " + type.getName(null));
+		identifyPartialEntities(type, result);
+		int res = ELogical.TRUE;
+		SdaiIterator iter = result.createIterator();
+		while (iter.next()) {
+			EEntity_definition part_type = (EEntity_definition)result.getCurrentMemberEntity(iter);
+//System.out.println("       part_type: " + part_type.getName(null));
+			SdaiModel own_mod = ((CEntity)part_type).findEntityInstanceSdaiModel();
+			String mod_name = own_mod.getName();
+//System.out.println("            belongs to model: " + mod_name);
+      int xim_ind = mod_name.lastIndexOf(SUFIX_XIM);
+			if (xim_ind < 0) {
+				continue;
+			}
+//System.out.println("            it is xim model: " + mod_name);
+			AWhere_rule w_rules = part_type.getWhere_rules(null, null);
+			if (w_rules.getMemberCount() <= 0) {
+				continue;
+			}
+			if (it_rules == null) {
+				it_rules = w_rules.createIterator();
+			} else {
+				w_rules.attachIterator(it_rules);
+			}
+			while(it_rules.next()) {
+				EWhere_rule w_rule = w_rules.getCurrentMember(it_rules);
+				int check_res = instance.validateWhereRule(w_rule, models_dom);
+				if (check_res == ELogical.FALSE) {
+					res = check_res;
+					int ind = w_rules_viol.getMemberCount() + 1;
+					w_rules_viol.addByIndex(ind, w_rule);
+				} else if (check_res == ELogical.UNKNOWN) {
+					if (res == ELogical.TRUE) {
+						res = check_res;
+					}
+				}
+			}
+		}
+		return res;
+	}
 
 	private void listAttributes(AAttribute aat, String message) throws SdaiException, java.lang.InterruptedException {
 // Preparing iterator for running through the attributes list
@@ -420,7 +486,12 @@ You should see in the log file something similar to:
 		}
 		int res8 = ELogical.TRUE; // instance.validateStringWidth(aat7);
 		int res9 = ELogical.TRUE; // reserved for instance.validateBinaryWidth()
-		int res1 = instance.validateWhereRule(w_rules_viol, models_dom);
+		int res1;
+		if (only_xim) {
+			res1 = validateWhereRulesXim(instance, type, w_rules_viol, models_dom);
+		} else {
+			res1 = instance.validateWhereRule(w_rules_viol, models_dom);
+		}
 
 // Selection of the value (true/false) to be returned
 		if (res1 == ELogical.FALSE || !res2 || !res3 || res4 == ELogical.FALSE || 
@@ -520,6 +591,14 @@ You should see in the log file something similar to:
 // Preparing SdaiContext with an appropriate working model (only in the case when the 
 // native schema for the current schema instance is different from that for the previous one)
 			ESchema_definition schema = schema_inst.getNativeSchema();
+			if (only_xim) {
+				String sch_name = schema.getName(null);
+//System.out.println("Validate            schema name: " + sch_name);
+				int xim_ind = sch_name.lastIndexOf(SUFIX_XIM);
+				if (xim_ind < 0) {
+					continue;
+				}
+			}
 			if (schema != old_schema) {
 				if (old_schema != null) {
 					work_model.deleteSdaiModel();
@@ -687,6 +766,7 @@ You should see in the log file something similar to:
 			System.out.println("Part 21 file (exchange structure) must be indicated.");
 			return;
 		}
+		boolean use_xim = false;
 		Validate validation = null;
 		try {
 			for (int ihi = 0; ihi < args.length-1; ihi++) {
@@ -725,6 +805,9 @@ You should see in the log file something similar to:
 					perr = new PrintStream(berr);
 					System.setErr(perr);
 				}
+				if (args[ihi].equalsIgnoreCase("-xim")) {
+					use_xim = true;
+				}
 			}	
 
 // Output stream is initialized
@@ -738,6 +821,8 @@ You should see in the log file something similar to:
 			SdaiSession session = SdaiSession.openSession();
 			SdaiTransaction trans = session.startTransactionReadWriteAccess();
 			validation = new Validate();
+			validation.only_xim = use_xim;
+			//validation.only_xim = true;
 			SdaiRepository repo = session.importClearTextEncoding("", args[0], null);
 // did not work, Vaidas says - to set to null first, to try
 //			pw.close();

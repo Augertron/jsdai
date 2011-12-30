@@ -26,4 +26,15 @@ ENTITY applied_effectivity_assignment
   items : SET[1:?] OF effectivity_item;
 END_ENTITY;
 
+ENTITY applied_ineffectivity_assignment
+  SUBTYPE OF (effectivity_assignment);
+  items : SET [1:?] OF effectivity_item;
+WHERE
+  WR1:  SIZEOF(['EFFECTIVITY_SCHEMA.LOT_EFFECTIVITY',
+                'EFFECTIVITY_SCHEMA.SERIAL_NUMBERED_EFFECTIVITY',
+                'PRODUCT_DEFINITION_SCHEMA.PRODUCT_DEFINITION_EFFECTIVITY'] *
+                     TYPEOF(SELF.assigned_effectivity)
+              ) = 0;   
+END_ENTITY;
+
 END_SCHEMA;  -- Effectivity_application_mim

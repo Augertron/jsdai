@@ -29,14 +29,10 @@ package jsdai.SMixed_complex_types;
  * @version $$
  */
 
-import jsdai.SDerived_shape_element_xim.CxCentre_axis;
-import jsdai.SDerived_shape_element_xim.CxDerived_shape_element;
-import jsdai.SDerived_shape_element_xim.EDerived_shape_element;
 import jsdai.SDimension_tolerance_xim.CxAssociated_shape_element;
 import jsdai.SGeometric_tolerance_xim.CxDatum_defined_by_feature;
 import jsdai.SProduct_property_definition_schema.EShape_aspect;
 import jsdai.SProduct_property_representation_schema.EItem_identified_representation_usage;
-import jsdai.SShape_aspect_definition_schema.CCentre_of_symmetry;
 import jsdai.SShape_aspect_definition_schema.CDatum;
 import jsdai.lang.EEntity;
 import jsdai.lang.SdaiContext;

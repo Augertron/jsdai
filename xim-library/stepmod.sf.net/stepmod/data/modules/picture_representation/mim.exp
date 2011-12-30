@@ -1,14 +1,14 @@
 (*
    $Id$
-   ISO TC184/SC4/WG12 N5453 - ISO/TS 10303-1308 Picture representation - EXPRESS MIM
-   Supersedes ISO TC184/SC4/WG12 N4778
+   ISO TC184/SC4/WG12 N6253 - ISO/TS 10303-1308 Picture representation - EXPRESS MIM
+   Supersedes ISO TC184/SC4/WG12 N5453
 *)
 
 SCHEMA Picture_representation_mim;
 
-USE FROM Binary_representation_mim; -- ISO/CD-TS 10303-1369
-
-USE FROM Presentation_hierarchy_mim; -- ISO/CD-TS 10303-1330
+USE FROM Binary_representation_mim; -- ISO/TS 10303-1369
+USE FROM External_item_identification_assignment_mim; -- ISO/TS 10303-1128
+USE FROM Presentation_hierarchy_mim; -- ISO/TS 10303-1330
 
 USE FROM presentation_organization_schema 
   (presentation_area, 
@@ -25,7 +25,6 @@ USE FROM geometry_schema (axis2_placement_2d);
 
   TYPE picture_representation_item_select = SELECT (
     styled_item,
-    picture_representation_item, 
     planar_box,
     axis2_placement_2d); 
   END_TYPE; 
@@ -48,7 +47,12 @@ USE FROM geometry_schema (axis2_placement_2d);
     INVERSE
       size : presentation_size FOR unit;
   WHERE
-    WR1: SIZEOF(QUERY(items <* SELF\representation.items | 'PICTURE_REPRESENTATION_MIM.PICTURE_REPRESENTATION_ITEM' IN TYPEOF(items))) = 1;
+    WR1: SIZEOF(QUERY(item <* items | 
+        'PICTURE_REPRESENTATION_MIM.STYLED_ITEM' IN TYPEOF(item))) = 1;
+    WR2: SIZEOF (QUERY (se <* QUERY (item <* SELF.items 
+                   | ('PICTURE_REPRESENTATION_MIM.STYLED_ITEM' IN TYPEOF (item))) 
+         | NOT ('PICTURE_REPRESENTATION_MIM.PICTURE_REPRESENTATION_ITEM' 
+                IN TYPEOF (se\styled_item.item)) )) = 0;
   END_ENTITY;
  
   ENTITY picture_representation_item 

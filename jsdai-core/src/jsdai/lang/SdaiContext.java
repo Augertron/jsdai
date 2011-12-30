@@ -29,7 +29,7 @@ import jsdai.mapping.*;
 import jsdai.util.MappingOperations;
 
 /**
- * This class servers as context for several JSDAI operations.
+ * This class serves as context for several JSDAI operations.
  * The main purposes of this class are the following:
  * <ul>
  * <li>Express environment for expressions.
@@ -61,7 +61,7 @@ public class SdaiContext {
 	public ASdaiModel mappingDomain;
 
 	/** 
-	 * Used when temporory instances are needed to be created during the evaluation of expressions.
+	 * Used when temporary instances are needed to be created during the evaluation of expressions.
 	 * The non-temporary application model may be provided if needed. Working model is also
 	 * used in some mapping operations.
 	 */

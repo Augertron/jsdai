@@ -73,6 +73,11 @@ import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.MessageConsoleStream;
 
@@ -448,8 +453,11 @@ for (int i = 0; i < 256; i++) {
 
 		try {
 	    g_editor0 = ((Application)prop).getEditor();
+//	    ((Application)prop).getExpressGEditor()
 //System.out.println("<retreaved g-editor: " +  g_editor0);    
 			rphinput0 = ((ExpressGEditor)g_editor0).getInput();
+//System.out.println("exg repository: " +	rphinput0.getRepositoryHandler().getRepoPath().toString());
+
 //System.out.println("<retreaved repository handler input: " +  rphinput0);    
 			//rphinput.getModelHandler();
 			//rphinput.getRepositoryHandler();
@@ -523,19 +531,45 @@ for (int i = 0; i < 256; i++) {
             String informal_propositions = "";
             String iso_db_path = "";
 
-						ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getSelection();
-            
             IProject fProject = null;
 
-						if (selection instanceof IStructuredSelection) {
+//---------------------------
 
-							Object obj = ((IStructuredSelection)selection).getFirstElement();
-							if (obj instanceof IResource) {
-								fProject = ((IResource)obj).getProject();
-							} else {
-								System.out.println("selection element is NOT a resource: " + obj);
+						IProject activeProject = null;
+						IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+						if ( window != null ) {
+							IWorkbenchPage page = window.getActivePage();
+							if ( page != null ) {
+								IEditorPart editor = page.getActiveEditor();
+								if ( editor != null ) {
+									IEditorInput input = editor.getEditorInput();
+									if ( input instanceof IFileEditorInput ) {
+										IFileEditorInput fileInput = (IFileEditorInput) input;
+										fProject = fileInput.getFile().getProject();
+									}
+								}
+							}					
+						}
+						if (fProject == null) {
+							ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getSelection();
+							if (selection instanceof IStructuredSelection) {
+								Object obj = ((IStructuredSelection)selection).getFirstElement();
+								if (obj instanceof IResource) {
+									fProject = ((IResource)obj).getProject();
+								} else {
+									// System.out.println("selection element is NOT a resource: " + obj);
+								}
 							}
 						}
+						if (fProject == null) {
+							System.out.println("Failed to find the project");
+						}
+						
+//		System.out.println("Active project: " + activeProject);
+
+//-------------------------
+
+
 						stream = CommonPlugin.getDefault().getConsole();
 
             if (fProject != null) {

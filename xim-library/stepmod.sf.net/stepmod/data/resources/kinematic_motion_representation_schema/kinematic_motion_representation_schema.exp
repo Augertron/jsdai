@@ -1,207 +1,231 @@
-(* Genenerated from: ../../irs/wg12n587.exp *)
+(*
+ISO TC184/SC4/WG12 N7302 - ISO/IS 10303-105 Kinematics - EXPRESS
+*)
 
 SCHEMA kinematic_motion_representation_schema;
 
 REFERENCE FROM geometry_schema
-    (cartesian_point,
-     curve);
+    (axis2_placement,
+     b_spline_curve,
+     b_spline_surface,
+     bounded_curve,
+     cartesian_point,
+     curve,
+     geometric_representation_context,
+     geometric_representation_item,
+     placement,
+     transition_code);
 
 REFERENCE FROM measure_schema
     (length_measure,
      measure_with_unit,
      parameter_value,
-     plane_angle_measure);
+     plane_angle_measure,
+     unit);
 
 REFERENCE FROM representation_schema
-    (functionally_defined_transformation,
-     representation_item);
-
+    (definitional_representation,
+     founded_item,
+     functionally_defined_transformation,
+     item_defined_transformation,
+     item_in_context,
+     parametric_representation_context,
+     representation,
+     representation_item,
+     representation_relationship,
+     definitional_representation_relationship,
+     representation_relationship_with_transformation,
+     using_representations);
+     
 REFERENCE FROM kinematic_structure_schema
+	(kinematic_link_representation,
+	 mechanism_representation,
+	 rigid_placement);     
+
+REFERENCE FROM kinematic_state_schema
     (rotation_about_direction,
      spatial_rotation,
-     ypr_rotation);
+     ypr_rotation,
+     mechanism_state_representation);
 
-TYPE motion_parameter_measure = SELECT
-  (parameter_value,
-   measure_with_unit);
+
+REFERENCE FROM product_property_representation_schema
+    (shape_representation);     
+
+TYPE link_or_shape_representation = SELECT(
+  kinematic_link_representation,
+  shape_representation);
 END_TYPE;
 
-ENTITY translation;
-  x : length_measure;
-  y : length_measure;
-  z : length_measure;
+TYPE interpolation_type = ENUMERATION OF
+  (undefined_interpolation_type,
+   discontinuous_interpolation_type,
+   synchronous_interpolation_type,
+   linear_interpolation_type);
+END_TYPE;
+
+ENTITY interpolated_configuration_representation
+  SUBTYPE OF (representation);
+  SELF\representation.context_of_items : geometric_representation_context_with_parameter;
+  SELF\representation.items : SET[1:?] OF interpolated_configuration_sequence;
 END_ENTITY;
 
-ENTITY transform
-  SUBTYPE OF (functionally_defined_transformation);
-  rotation_component    : spatial_rotation;
-  translation_component : translation;
+ENTITY interpolated_configuration_sequence
+  SUBTYPE OF (representation_item);
+  segments : LIST[2:?] OF interpolated_configuration_segment;
+DERIVE
+  n_segments : INTEGER := SIZEOF(segments);
+  closed_interpolation : LOGICAL := segments[n_segments].interpolation <> discontinuous_interpolation_type;
+  configured_mechanism : mechanism_representation := segments[1].state.represented_mechanism;
+WHERE
+  WR1: SIZEOF( QUERY(ics <* segments | ics.state.represented_mechanism :<>: configured_mechanism)) = 0;
+END_ENTITY;  
+
+ENTITY interpolated_configuration_segment
+  SUBTYPE OF (founded_item);
+  state : mechanism_state_representation;
+  t_parameter : parameter_value;
+  interpolation : interpolation_type;
 END_ENTITY;
 
-ENTITY path_node;
-  control_transform : transform;
-  t_parameter       : motion_parameter_measure;
+ENTITY link_motion_relationship
+  SUBTYPE OF (definitional_representation_relationship, representation_relationship_with_transformation);
+  SELF\representation_relationship.rep_1 : link_or_shape_representation;
+  SELF\representation_relationship.rep_2 : link_motion_representation_along_path;
+  SELF\representation_relationship_with_transformation.transformation_operator : link_motion_transformation;
+WHERE
+  WR1: transformation_operator\item_defined_transformation.transform_item_1 IN rep_1.items;
+  WR2: transformation_operator\item_defined_transformation.transform_item_2 IN rep_2.items;
+END_ENTITY;
+
+ENTITY item_link_motion_relationship
+  SUBTYPE OF (link_motion_relationship);
+  SELF\representation_relationship.rep_1 : shape_representation;
+  item : geometric_representation_item;
+END_ENTITY;  
+
+ENTITY link_motion_transformation
+  SUBTYPE OF (item_defined_transformation);
+  SELF\item_defined_transformation.transform_item_1 : rigid_placement;
+  SELF\item_defined_transformation.transform_item_2 : kinematic_path;
+END_ENTITY;
+
+ENTITY link_motion_representation_along_path
+  SUBTYPE OF (representation);
+  SELF\representation.items : SET [1:?] OF kinematic_path;
+  SELF\representation.context_of_items : geometric_representation_context_with_parameter;
+END_ENTITY;
+
+ENTITY geometric_representation_context_with_parameter 
+  SUBTYPE OF (geometric_representation_context);
+  parameter_unit : OPTIONAL unit;
 END_ENTITY;
 
 ENTITY kinematic_path
-  SUPERTYPE OF (ONEOF (path_element, composite_path))
-  SUBTYPE OF (representation_item);
-END_ENTITY;
-
-ENTITY path_element_connection;
-  previous_element     : path_element;
-  next_element         : path_element;
+  ABSTRACT SUPERTYPE OF (ONEOF (kinematic_path_defined_by_nodes, kinematic_path_defined_by_curves))
+  SUBTYPE OF (geometric_representation_item);
+  segments : LIST [1:?] OF kinematic_path_segment;
+  t_start : parameter_value;
+DERIVE
+  n_segments : INTEGER := SIZEOF(segments);
+  closed_path : LOGICAL := segments[n_segments].transition <> discontinuous;
 WHERE
-  WR1: previous_element.node_to = next_element.node_from;
-  WR2: compare_unit_components (previous_element.node_to.t_parameter,
-                                next_element.node_from.t_parameter);
+  WR1: SIZEOF(QUERY(using_rep <* using_representations(SELF)| 
+        NOT('KINEMATIC_MOTION_REPRESENTATION_SCHEMA.GEOMETRIC_REPRESENTATION_CONTEXT_WITH_PARAMETER' IN TYPEOF(using_rep.context_of_items))))= 0;
+  -- WR2 - parameters are increasing
+  -- WR3 - different end positions
 END_ENTITY;
 
-ENTITY composite_path
+ENTITY kinematic_path_defined_by_nodes
   SUBTYPE OF (kinematic_path);
-  elements : SET [1 : ?] OF path_element_connection;
-  t_start  : motion_parameter_measure;
-  t_end    : motion_parameter_measure;
-WHERE
-  WR1: increasing_measure_value (t_start, t_end);
-  WR2: compare_unit_components (t_start, t_end);
-  WR3: connected_in_simple_path (elements);
+  SELF\kinematic_path.segments : LIST [1:?] OF path_node;
+  placement_start : placement;
+END_ENTITY;  
+
+ENTITY kinematic_path_defined_by_curves
+  SUBTYPE OF (kinematic_path);
+  SELF\kinematic_path.segments : LIST [1:?] OF curve_based_path_with_orientation;
+END_ENTITY;  
+
+ENTITY kinematic_path_segment
+  ABSTRACT SUPERTYPE OF (ONEOF (
+    path_node,
+    curve_based_path_with_orientation) )
+  SUBTYPE OF (founded_item);
+  t_end : parameter_value;
+  transition : transition_code;
 END_ENTITY;
 
-ENTITY path_element
-  SUPERTYPE OF (ONEOF (point_to_point_path,
-                       circular_path,
-                       linear_path,
-                       curve_based_path))
-  SUBTYPE OF (kinematic_path);
-  node_from : path_node;
-  node_to   : path_node;
+ENTITY path_parameter_representation
+  SUBTYPE OF (definitional_representation);
+  SELF\representation.context_of_items : path_parameter_representation_context;
+  SELF\representation.items : SET[1:?] OF bounded_curve;
 WHERE
-  WR1: compare_unit_components (node_from.t_parameter,
-                                node_to.t_parameter);
-  WR2: increasing_measure_value (node_from.t_parameter,
-                                 node_to.t_parameter);
+  WR1: SELF\representation.context_of_items\geometric_representation_context.coordinate_space_dimension = 2;
+END_ENTITY;
+
+ENTITY path_parameter_representation_context
+  SUBTYPE OF (geometric_representation_context, parametric_representation_context);
+END_ENTITY;  
+
+ENTITY path_node
+  ABSTRACT SUPERTYPE OF (ONEOF (
+    point_to_point_path,
+    circular_path,
+    linear_path,
+    curve_based_path))
+  SUBTYPE OF (kinematic_path_segment);
+  placement_end : placement;
 END_ENTITY;
 
 ENTITY point_to_point_path
-  SUBTYPE OF (path_element);
+  SUBTYPE OF (path_node);
+DERIVE
+  SELF\kinematic_path_segment.transition : transition_code := discontinuous;
 END_ENTITY;
 
 ENTITY circular_path
-  SUBTYPE OF (path_element);
+  SUBTYPE OF (path_node);
   via_point : cartesian_point;
-WHERE
-  WR1: SELF\path_element.node_to.control_transform.translation_component <>
-       SELF\path_element.node_from.control_transform.translation_component;
-  WR2: non_coincident_coordinates (via_point,
-         SELF\path_element.node_from.control_transform.translation_component)
-       AND
-       non_coincident_coordinates (via_point,
-         SELF\path_element.node_to.control_transform.translation_component);
 END_ENTITY;
 
 ENTITY linear_path
-  SUBTYPE OF (path_element);
+  SUBTYPE OF (path_node);
+DERIVE
+  SELF\kinematic_path_segment.transition : transition_code := continuous;
 END_ENTITY;
 
 ENTITY curve_based_path
-  SUBTYPE OF (path_element);
+  SUBTYPE OF (path_node);
   path_curve : curve;
+END_ENTITY;
+-- IP1 : start and end point shall be on the curve
+
+ENTITY curve_based_path_with_orientation
+  SUBTYPE OF (kinematic_path_segment);
+  position_curve : bounded_curve;
+  orientation_curve : bounded_curve;
 WHERE
-  WR1: SELF\path_element.node_to.control_transform.translation_component <>
-       SELF\path_element.node_from.control_transform.translation_component;
+  WR1: TYPEOF(position_curve) = TYPEOF(orientation_curve);
 END_ENTITY;
 
-FUNCTION connected_in_simple_path (connections : SET OF path_element_connection)
-                                               : BOOLEAN;
-  LOCAL
-     connection_set : SET [0 : ?] OF path_element_connection;
-     nec0           : INTEGER;
-     pec0           : INTEGER;
-     necbranch      : INTEGER;
-     pecbranch      : INTEGER;
-  END_LOCAL;
+ENTITY curve_based_path_with_orientation_and_parameters
+  SUBTYPE OF (curve_based_path_with_orientation);
+  parameters : path_parameter_representation;
+END_ENTITY;  
 
-  IF SIZEOF (connections) > 1 THEN
-    connection_set := QUERY (pec1 <* connections |
-                        SIZEOF (QUERY (pec2 <* connections - pec1 |
-                          pec1.next_element :=: pec2.previous_element)) = 0);
-    nec0 := SIZEOF (connection_set);
+SUBTYPE_CONSTRAINT kmr_representation_subtypes FOR representation;
+  ONEOF (interpolated_configuration_representation, link_motion_representation_along_path);
+END_SUBTYPE_CONSTRAINT; 
 
-    connection_set := QUERY (pec1 <* connections |
-                        SIZEOF (QUERY (pec2 <* connections - pec1 |
-                          pec2.next_element :=: pec1.previous_element)) = 0);
-    pec0 := SIZEOF (connection_set);
+SUBTYPE_CONSTRAINT kmr_geometric_representation_item_subtypes FOR geometric_representation_item;
+  ONEOF (
+    kinematic_path,
+    placement);
+END_SUBTYPE_CONSTRAINT; 
 
-    connection_set := QUERY (pec1 <* connections |
-                        SIZEOF (QUERY (pec2 <* connections - pec1 |
-                          pec1.next_element :=: pec2.previous_element)) > 1);
-    necbranch := SIZEOF (connection_set);
-
-    connection_set := QUERY (pec1 <* connections |
-                        SIZEOF (QUERY (pec2 <* connections - pec1 |
-                          pec2.next_element :=: pec1.previous_element)) > 1);
-    pecbranch := SIZEOF (connection_set);
-
-    IF ((nec0 <> 1) OR (pec0 <> 1) OR (necbranch > 0) OR (pecbranch > 0)) THEN
-      RETURN (FALSE);
-    ELSE
-      RETURN (TRUE);
-    END_IF;
-  ELSE
-    RETURN (TRUE);
-  END_IF;
-END_FUNCTION;
-
-FUNCTION compare_unit_components (parm1 : motion_parameter_measure;
-                                  parm2 : motion_parameter_measure) : BOOLEAN;
-   IF (('MEASURE_SCHEMA.PARAMETER_VALUE' IN TYPEOF (parm1)) AND
-       ('MEASURE_SCHEMA.PARAMETER_VALUE' IN TYPEOF (parm2))) THEN
-         RETURN (TRUE);
-   ELSE
-     IF (('MEASURE_SCHEMA.MEASURE_WITH_UNIT' IN TYPEOF (parm1)) AND
-         ('MEASURE_SCHEMA.MEASURE_WITH_UNIT' IN TYPEOF (parm2))) THEN
-        IF (parm1.unit_component :=: parm2.unit_component) THEN
-           RETURN (TRUE);
-        ELSE
-           RETURN (FALSE);
-        END_IF;
-     ELSE
-       RETURN (FALSE);
-     END_IF;
-  END_IF;
-END_FUNCTION;
-
-FUNCTION increasing_measure_value (parm1 : motion_parameter_measure;
-                                   parm2 : motion_parameter_measure) : BOOLEAN;
-  IF ('MEASURE_SCHEMA.PARAMETER_VALUE' IN TYPEOF (parm1)) THEN
-    IF (parm1 < parm2)  THEN
-      RETURN (TRUE);
-    ELSE
-      RETURN (FALSE);
-    END_IF;
-  ELSE
-    IF ('MEASURE_SCHEMA.MEASURE_WITH_UNIT' IN TYPEOF (parm1)) THEN
-      IF (parm1.value_component < parm2.value_component) THEN
-        RETURN (TRUE);
-      ELSE
-        RETURN (FALSE);
-      END_IF;
-    ELSE
-      RETURN (FALSE);
-    END_IF;
-  END_IF;
-END_FUNCTION;
-
-FUNCTION non_coincident_coordinates (crtpt : cartesian_point;
-                                     trltn : translation) : BOOLEAN;
-  IF ((crtpt.coordinates[1] = trltn.x) AND
-      (crtpt.coordinates[2] = trltn.y) AND
-      (crtpt.coordinates[3] = trltn.z)) THEN
-    RETURN (FALSE);
-  ELSE
-    RETURN (TRUE);
-  END_IF;
-END_FUNCTION;
+SUBTYPE_CONSTRAINT kmr_geometric_representation_context_subtypes FOR geometric_representation_context;
+  ONEOF (geometric_representation_context_with_parameter, path_parameter_representation_context);
+END_SUBTYPE_CONSTRAINT; 
 
 END_SCHEMA;   -- end kinematic_motion_representation_schema

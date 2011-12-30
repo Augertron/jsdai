@@ -1,5 +1,6 @@
 (*
-ISO TC184/SC4/WG12 N4830 - ISO/CD 10303-46 Visual presentation - EXPRESS
+ISO TC184/SC4/WG12 N6141 - ISO/IS 10303-46 Visual presentation - EXPRESS
+Supersedes ISO TC184/SC4/WG12 N4830
 *)
 
 SCHEMA presentation_definition_schema;
@@ -8,6 +9,9 @@ REFERENCE FROM external_reference_schema
     (externally_defined_item,
      pre_defined_item);
  
+REFERENCE FROM geometric_model_schema (
+	geometric_curve_set);  
+
 REFERENCE FROM geometry_schema
     (axis2_placement,
      b_spline_curve,
@@ -48,10 +52,15 @@ REFERENCE FROM support_resource_schema
     (label,
      text,
      bag_to_set);
-
+     
   TYPE annotation_symbol_occurrence_item = SELECT (
     annotation_symbol,
     defined_symbol); 
+  END_TYPE;
+
+  TYPE curve_or_curve_set = SELECT (
+    curve,
+    geometric_curve_set); 
   END_TYPE;
 
   TYPE defined_glyph_select = SELECT
@@ -114,7 +123,7 @@ REFERENCE FROM support_resource_schema
 
   ENTITY annotation_curve_occurrence
     SUBTYPE OF (annotation_occurrence);
-      SELF\styled_item.item : curve;
+      SELF\styled_item.item : curve_or_curve_set;
   END_ENTITY;
 
   ENTITY annotation_fill_area
@@ -306,6 +315,10 @@ REFERENCE FROM support_resource_schema
     SUBTYPE OF (representation_map);
       SELF\representation_map.mapped_representation : symbol_representation;
       SELF\representation_map.mapping_origin        : axis2_placement;
+  WHERE
+    WR1: SIZEOF(
+           QUERY(mi <* SELF\representation_map.map_usage | NOT('PRESENTATION_DEFINITION_SCHEMA.ANNOTATION_SYMBOL' IN TYPEOF(mi)))
+         ) = 0; 
   END_ENTITY;
 
   ENTITY symbol_representation_relationship

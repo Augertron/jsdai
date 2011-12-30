@@ -1,7 +1,6 @@
- (* 
- $Id$
- Document WG12 N4855 date 2007-05-08. EXPRESS listing corresponding to part
- 42  edition 3 IS as modified by TC1  - WG12 N4854*)
+ (* Document WG12 N7169 date 2010-07-27. EXPRESS listing corresponding to part
+ 42  edition 4 WG12 N7164 incorporating TC1 revisions and SEDS 1244, 1267, 1292 changes to Geometry schema *)
+ (* checked with STEPTOOLS compiler 27/7/10 *)
  SCHEMA geometry_schema;
    REFERENCE FROM representation_schema
      (definitional_representation,
@@ -9,8 +8,8 @@
       functionally_defined_transformation,
       item_in_context,
       representation,
-      representation_item,
       representation_context,
+      representation_item,
       using_representations);
    REFERENCE FROM measure_schema
      (global_unit_assigned_context,
@@ -1517,11 +1516,17 @@ FUNCTION dimension_of(item : geometric_representation_item) :
   -- RULE compatible_dimension ensures that the context_of_items
   -- is of type geometric_representation_context and has
   -- the same dimension_count for all values of x.
-  -- The SET x is non-empty since this is required by WR1 of
+  -- The SET x is non-empty for legal instances since this is required by WR1 of
   -- representation_item.
-    y := x[1].context_of_items;
-    dim := y\geometric_representation_context.coordinate_space_dimension;
+    IF (SIZEOF(x) > 0) THEN
+       y := x[1].context_of_items;
+      dim := y\geometric_representation_context.coordinate_space_dimension;
     RETURN (dim);
+    ELSE
+      RETURN(?);
+    -- mark error by returning indeterminate result
+   END_IF;
+   
 
 END_FUNCTION;
 
@@ -1702,9 +1707,9 @@ END_FUNCTION;
  FUNCTION normalise (arg : vector_or_direction) : vector_or_direction;
     LOCAL
       ndim   : INTEGER;
-      v      : direction;
+      v      : direction := dummy_gri || direction ([1.0,0.0,0.0]);
       result : vector_or_direction;
-      vec    : vector;
+      vec    : vector := dummy_gri || vector (v, 1.0);
       mag    : REAL;
     END_LOCAL;
     
@@ -1716,7 +1721,7 @@ END_FUNCTION;
       IF 'GEOMETRY_SCHEMA.VECTOR' IN TYPEOF(arg) THEN
         BEGIN
               v := dummy_gri || direction(arg\vector.orientation.direction_ratios);
-          IF arg.magnitude = 0.0 THEN
+          IF arg\vector.magnitude = 0.0 THEN
             RETURN(?);
           ELSE
            vec := dummy_gri || vector (v, 1.0);
@@ -1798,7 +1803,7 @@ END_FUNCTION;
      ELSE
       IF 'GEOMETRY_SCHEMA.VECTOR' IN TYPEOF (vec) THEN
         v   := dummy_gri || direction(vec\vector.orientation.direction_ratios);
-        mag := scalar * vec.magnitude;
+        mag := scalar * vec\vector.magnitude;
       ELSE
         v   := dummy_gri || direction(vec.direction_ratios);
         mag := scalar;
@@ -1866,14 +1871,14 @@ END_FUNCTION;
      ELSE
       BEGIN
         IF 'GEOMETRY_SCHEMA.VECTOR' IN TYPEOF(arg1) THEN
-          mag1 := arg1.magnitude;
+          mag1 := arg1\vector.magnitude;
           vec1 := arg1\vector.orientation;
         ELSE
           mag1 := 1.0;
           vec1 := arg1;
         END_IF;
         IF 'GEOMETRY_SCHEMA.VECTOR' IN TYPEOF(arg2) THEN
-          mag2 := arg2.magnitude;
+          mag2 := arg2\vector.magnitude;
           vec2 := arg2\vector.orientation;
         ELSE
           mag2 := 1.0;
@@ -1915,14 +1920,14 @@ FUNCTION vector_sum(arg1, arg2 : vector_or_direction) : vector;
    ELSE
      BEGIN
        IF 'GEOMETRY_SCHEMA.VECTOR' IN TYPEOF(arg1) THEN
-         mag1 := arg1.magnitude;
+         mag1 := arg1\vector.magnitude;
          vec1 := arg1\vector.orientation;
        ELSE
          mag1 := 1.0;
          vec1 := arg1;
        END_IF;
        IF 'GEOMETRY_SCHEMA.VECTOR' IN TYPEOF(arg2) THEN
-         mag2 := arg2.magnitude;
+         mag2 := arg2\vector.magnitude;
          vec2 := arg2\vector.orientation;
        ELSE
          mag2 := 1.0;

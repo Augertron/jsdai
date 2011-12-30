@@ -1,5 +1,6 @@
 (*
-ISO TC184/SC4/WG12 N4830 - ISO/CD 10303-46 Visual presentation - EXPRESS
+ISO TC184/SC4/WG12 N6141 - ISO/IS 10303-46 Visual presentation - EXPRESS
+Supersedes ISO TC184/SC4/WG12 N4830
 *) 
 
 
@@ -29,6 +30,7 @@ REFERENCE FROM geometry_schema
      dot_product,
      geometric_representation_context,
      geometric_representation_item,
+     placement,
      plane
      );
  
@@ -200,7 +202,6 @@ REFERENCE FROM support_resource_schema
       WR1: ('PRESENTATION_ORGANIZATION_SCHEMA.CAMERA_MODEL_D2' IN TYPEOF(SELF\mapped_item.mapping_source.mapping_origin));
       WR2: aspect_ratio (SELF\mapped_item.mapping_target) = aspect_ratio (SELF\mapped_item.mapping_source.mapping_origin\camera_model_d2.view_window);
       WR3: SELF\mapped_item.mapping_source.mapping_origin\camera_model_d2.view_window_clipping;
-      WR4: NOT('PRESENTATION_ORGANIZATION_SCHEMA.CAMERA_MODEL_D2' IN TYPEOF(SELF));
   END_ENTITY;
  
   ENTITY camera_image_3d_with_scale
@@ -258,7 +259,6 @@ REFERENCE FROM support_resource_schema
       view_window_clipping : BOOLEAN;
     WHERE
       WR1: SELF\geometric_representation_item.dim = 2;
-      WR2: NOT('PRESENTATION_ORGANIZATION_SCHEMA.CAMERA_IMAGE_2D_WITH_SCALE' IN TYPEOF(SELF));      
   END_ENTITY;
 
   ENTITY camera_model_d2_shape_clipping
@@ -271,13 +271,7 @@ REFERENCE FROM support_resource_schema
       view_reference_system : axis2_placement_3d;
       perspective_of_volume : view_volume;
     WHERE
-      WR1: (dot_product (SELF.view_reference_system.p[3],
-           SELF.perspective_of_volume.view_window.placement.p[3]) = 1.0)
-           AND
-           (SELF.view_reference_system.location.coordinates[3] =
-           SELF.perspective_of_volume.view_window.
-             placement.location.coordinates[3]);
-      WR2: SELF\geometric_representation_item.dim = 3;
+      WR1: SELF\geometric_representation_item.dim = 3;
   END_ENTITY;
 
   ENTITY camera_model_d3_multi_clipping 
@@ -598,6 +592,13 @@ REFERENCE FROM support_resource_schema
       back_plane_clipping        : BOOLEAN;
       view_volume_sides_clipping : BOOLEAN;
       view_window                : planar_box;
+    INVERSE
+      camera_usages : SET[1:?] OF camera_model_d3 FOR perspective_of_volume;
+    WHERE
+      WR1:('GEOMETRY_SCHEMA.AXIS2_PLACEMENT_2D' IN TYPEOF(SELF\view_volume.view_window.placement)) OR
+  (dot_product ((representation_item(' ') || geometric_representation_item() || direction([0.0,0.0,1.0])),
+    SELF.view_window\planar_box.placement\axis2_placement_3d.p[3] ) = 1.0);
+    WR2: view_plane_distance = view_window.placement\placement.location.coordinates[3];
   END_ENTITY;
 
   RULE symbol_representation_rule

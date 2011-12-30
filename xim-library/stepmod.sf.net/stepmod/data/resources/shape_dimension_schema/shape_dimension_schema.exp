@@ -1,30 +1,56 @@
+(*
+ $Id$
+ISO TC184/SC4/WG12 N7297 - ISO/DIS 10303-47 Shape variation tolerances - EXPRESS
+*) 
+
 
 SCHEMA shape_dimension_schema;
-REFERENCE FROM measure_schema
-   (measure_with_unit);
-REFERENCE FROM representation_schema
-    (representation);
-REFERENCE FROM qualified_measure_schema
-    (measure_representation_item, 
-     qualified_representation_item);
-REFERENCE FROM product_property_representation_schema
-    (shape_representation);
-REFERENCE FROM product_property_definition_schema
-    (shape_aspect,
-     shape_aspect_relationship);
-REFERENCE FROM support_resource_schema
-    (label,
-     text);
 
-TYPE angle_relator = ENUMERATION OF
-  (equal,
-   large,
-   small);
-END_TYPE;
+REFERENCE FROM measure_schema   -- ISO 10303-41
+  (measure_with_unit); 
 
-TYPE dimensional_characteristic = SELECT (dimensional_location,
-                                          dimensional_size);
-END_TYPE;
+REFERENCE FROM representation_schema   -- ISO 10303-43
+  (representation,
+   compound_representation_item); 
+
+REFERENCE FROM qualified_measure_schema   -- ISO 10303-45
+  (descriptive_representation_item,
+   measure_representation_item,
+   qualified_representation_item); 
+
+REFERENCE FROM product_property_representation_schema   -- ISO 10303-41
+  (item_identified_representation_usage_definition,
+   shape_representation); 
+
+REFERENCE FROM product_property_definition_schema   -- ISO 10303-41
+  (shape_aspect,
+   shape_aspect_relationship); 
+
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (label,
+   text); 
+
+
+TYPE angle_relator = ENUMERATION OF 
+   (equal,
+    large,
+    small);
+END_TYPE; 
+
+TYPE dimensional_characteristic = SELECT
+   (dimensional_location, 
+    dimensional_size);
+END_TYPE; 
+
+TYPE sds_item_identified_representation_usage_definition = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON item_identified_representation_usage_definition WITH 
+   (dimensional_size);
+END_TYPE; 
+
+TYPE shape_dimension_representation_item = SELECT
+   (compound_representation_item, 
+    descriptive_representation_item, 
+    measure_representation_item);
+END_TYPE; 
 
 ENTITY angular_location
   SUBTYPE OF (dimensional_location);
@@ -37,7 +63,7 @@ ENTITY angular_size
 END_ENTITY;
 
 ENTITY dimensional_characteristic_representation;
-  dimension      : dimensional_characteristic; 
+  dimension : dimensional_characteristic;
   representation : shape_dimension_representation;
 END_ENTITY;
 
@@ -56,7 +82,7 @@ ENTITY dimensional_size
   SUPERTYPE OF (ONEOF (angular_size,
                        dimensional_size_with_path));
   applies_to : shape_aspect;
-  name       : label;
+  name : label;
 WHERE
   WR1: applies_to.product_definitional = TRUE;
 END_ENTITY;
@@ -66,17 +92,15 @@ ENTITY dimensional_size_with_path
   path : shape_aspect;
 END_ENTITY;
 
-ENTITY shape_dimension_representation
-                SUBTYPE OF (shape_representation);
-  WHERE
-   WR1: SIZEOF (QUERY (temp <* SELF\representation.items | 
-    NOT ('QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM' 
-        IN TYPEOF (temp)))) = 0;
-   WR2: SIZEOF (SELF\representation.items) <= 3;
-   WR3: SIZEOF (QUERY (pos_mri <* QUERY (real_mri <*
-        SELF\representation.items | 'REAL' IN TYPEOF
-        (real_mri\measure_with_unit.value_component) ) |        
-     NOT  (pos_mri\measure_with_unit.value_component > 0.0 ))) = 0;
+ENTITY directed_dimensional_location
+  SUBTYPE OF (dimensional_location);
 END_ENTITY;
 
-END_SCHEMA;   --  shape_dimension_schema
+ENTITY shape_dimension_representation
+  SUBTYPE OF (shape_representation);
+  SELF\representation.items : SET[1:?] OF shape_dimension_representation_item;
+WHERE
+  WR1: SIZEOF (QUERY (temp <* items | NOT ( NOT('QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM' IN TYPEOF (temp)) OR (('MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT' IN TYPEOF (temp)) OR ('MEASURE_SCHEMA.PLANE_ANGLE_MEASURE_WITH_UNIT' IN TYPEOF (temp))) ) )) = 0;
+END_ENTITY;
+
+END_SCHEMA;  -- shape_dimension_schema

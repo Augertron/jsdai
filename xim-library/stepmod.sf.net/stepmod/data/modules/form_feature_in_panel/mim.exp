@@ -1,0 +1,605 @@
+(*
+   $Id$
+   N - ISO/CD-TS - 10303- form_feature_in_panel - EXPRESS MIM*)
+(* UNDER DEVELOPMENT *)
+SCHEMA Form_feature_in_panel_mim;
+
+USE FROM Shape_feature_mim;    -- ISO/TS 10303-1764
+USE FROM Value_with_unit_extension_mim;    -- ISO/TS 10303-1753
+USE FROM Basic_geometry_mim;    -- ISO/TS 10303-1652
+USE FROM Machining_features_mim;    -- ISO/CD-TS 10303-xxxx
+USE FROM Elemental_topology_mim;    -- ISO/TS 10303-1005
+REFERENCE FROM product_property_representation_schema (
+  get_property_definition_representations);
+REFERENCE FROM Geometric_tolerance_mim (
+  get_shape_aspect_property_definition_representations);  
+REFERENCE FROM product_property_definition_schema (
+  get_shape_aspects);  
+
+ENTITY barring_hole
+  SUBTYPE OF (feature_definition);
+WHERE
+  WR1:  SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+              (sa.name = 'hole profile') AND
+              (sa.description = 'closed profile occurrence') AND
+              (SIZEOF( QUERY( sar <* USEDIN( sa, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' +
+                'SHAPE_ASPECT_RELATIONSHIP.RELATED_SHAPE_ASPECT') |
+                ('AIC_MACHINING_FEATURE.SHAPE_DEFINING_RELATIONSHIP' IN
+                 TYPEOF(sar)) AND
+                (sar.description = 'profile usage') AND
+                (SIZEOF(['AIC_MACHINING_FEATURE.CIRCULAR_CLOSED_PROFILE',
+                  'AIC_MACHINING_FEATURE.NGON_CLOSED_PROFILE',
+                  'AIC_MACHINING_FEATURE.RECTANGULAR_CLOSED_PROFILE',
+                  'AIC_MACHINING_FEATURE.CLOSED_PATH_PROFILE']
+                  * TYPEOF(sar.relating_shape_aspect)
+                 ) = 1 )
+               )) = 1 )
+             )) = 1;   
+  WR2:  SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+              (sa.name = 'barring profile') AND
+              (sa.description = 'closed profile occurrence') AND
+              (SIZEOF( QUERY( sar <* USEDIN( sa, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' +
+                'SHAPE_ASPECT_RELATIONSHIP.RELATED_SHAPE_ASPECT') |
+                ('AIC_MACHINING_FEATURE.SHAPE_DEFINING_RELATIONSHIP' IN
+                 TYPEOF(sar)) AND
+                (sar.description = 'profile usage') 
+               )) = 1 )
+             )) = 1;   
+  WR3:  (SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              'SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)
+             )) = 1) AND
+             (SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+               ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+                TYPEOF(pdr.used_representation)) AND
+              {1 <= SIZEOF(pdr.used_representation.items) <= 2}
+             )) = 1);   
+  WR4:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+               NOT( i.name IN ['orientation','base radius'])
+               )) > 0)
+             )) = 0;   
+  WR5:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='base radius') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) <> 1)
+             )) = 0;   
+END_ENTITY;
+
+
+ENTITY bead
+  SUBTYPE OF (feature_definition);
+WHERE
+  WR1:  (SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              'SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)
+             )) <= 1) AND
+             (SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+               ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+                TYPEOF(pdr.used_representation)) AND
+               (SIZEOF(pdr.used_representation.items) > 2)
+             )) = 0);   
+  WR2:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+               NOT( i.name IN ['orientation','base radius'])
+               )) > 0)
+             )) = 0;   
+  WR3:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='base radius') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) > 1)
+             )) = 0;   
+  WR4:  SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+              (sa.name = 'sweep path') AND
+              (sa.description = 'path feature component occurrence') AND
+              (SIZEOF( QUERY( sar <* USEDIN( sa, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' +
+                'SHAPE_ASPECT_RELATIONSHIP.RELATED_SHAPE_ASPECT') |
+                ('AIC_MACHINING_FEATURE.SHAPE_DEFINING_RELATIONSHIP' IN
+                 TYPEOF(sar)) AND
+                (sar.description = 'path feature component usage') AND
+                ('AIC_MACHINING_FEATURE.PATH_FEATURE_COMPONENT' IN
+                 TYPEOF(sar.relating_shape_aspect))
+               )) = 1 )
+             )) = 1;   
+  WR5:  SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+              (sa.name = 'bead profile') AND
+              (sa.description = 'open profile occurrence') AND
+              (SIZEOF( QUERY( sar <* USEDIN( sa, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' +
+                'SHAPE_ASPECT_RELATIONSHIP.RELATED_SHAPE_ASPECT') |
+                ('AIC_MACHINING_FEATURE.SHAPE_DEFINING_RELATIONSHIP' IN
+                 TYPEOF(sar)) AND
+                (sar.description = 'profile usage') AND
+                (SIZEOF(['AIC_MACHINING_FEATURE.OPEN_PATH_PROFILE',
+                  'AIC_MACHINING_FEATURE.PARTIAL_CIRCULAR_PROFILE',
+                  'AIC_MACHINING_FEATURE.ROUNDED_U_PROFILE',
+                  'AIC_MACHINING_FEATURE.SQUARE_U_PROFILE',
+                  'AIC_MACHINING_FEATURE.TEE_PROFILE',
+                  'AIC_MACHINING_FEATURE.VEE_PROFILE']
+                  * TYPEOF(sar.relating_shape_aspect)
+                 ) = 1 )
+               )) = 1 )
+             )) = 1;   
+  WR6:  SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+              (sa.name = 'end condition') AND
+              (sa.description = 'bead end occurrence') AND
+              (SIZEOF( QUERY( sar <* USEDIN( sa, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' +
+                'SHAPE_ASPECT_RELATIONSHIP.RELATED_SHAPE_ASPECT') |
+                ('AIC_MACHINING_FEATURE.FEATURE_COMPONENT_RELATIONSHIP' IN
+                 TYPEOF(sar)) AND
+                (sar.name = 'bead end usage') AND
+                (sar.description = 'starting' 
+)  AND
+                ('FORM_FEATURE_IN_PANEL_MIM.BEAD_END' IN
+                 TYPEOF(sar.relating_shape_aspect))
+               )) = 1 )
+             )) = 1;   
+  WR7:  SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+              (sa.name = 'end condition') AND
+              (sa.description = 'bead end occurrence') AND
+              (SIZEOF( QUERY( sar <* USEDIN( sa, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' +
+                'SHAPE_ASPECT_RELATIONSHIP.RELATED_SHAPE_ASPECT') |
+                ('AIC_MACHINING_FEATURE.FEATURE_COMPONENT_RELATIONSHIP' IN
+                 TYPEOF(sar)) AND
+                (sar.name = 'bead end usage') AND
+                (sar.description = 'ending'
+)  AND
+                ('FORM_FEATURE_IN_PANEL_MIM.BEAD_END' IN
+                 TYPEOF(sar.relating_shape_aspect))
+               )) = 1 )
+             )) = 1;   
+END_ENTITY;
+
+
+ENTITY bead_end
+  SUBTYPE OF (shape_aspect);
+WHERE
+  WR1:  'AIC_MACHINING_FEATURE.FEATURE_COMPONENT_DEFINITION' IN
+             TYPEOF(SELF.of_shape.definition);   
+  WR2:   SELF.description IN ['linear','open','radiused'];
+           
+  WR3:  (SELF.description <> 'linear') XOR
+             (SIZEOF( QUERY( pdr <* get_shape_aspect_property_definition_representations(SELF) |
+               ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+                TYPEOF(pdr.used_representation)) 
+              )) > 0);   
+  WR4:  (SELF.description <> 'linear') OR
+             (SIZEOF( QUERY( pdr <* get_shape_aspect_property_definition_representations(SELF) |
+               ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+                TYPEOF(pdr.used_representation)) AND
+               (SIZEOF(pdr.used_representation.items) = 2)
+              )) = 1);   
+  WR5:  (SELF.description <> 'linear') OR
+             (SIZEOF( QUERY( pdr <* get_shape_aspect_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+               TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='end length') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+              )) = 1);   
+  WR6:  (SELF.description <> 'linear') OR
+             (SIZEOF( QUERY( pdr <* get_shape_aspect_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+               TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+               (i.name = 'end shape') AND 
+               (i\descriptive_representation_item.description IN ['straight','tapered']) AND
+                ('QUALIFIED_MEASURE_SCHEMA.DESCRIPTIVE_REPRESENTATION_ITEM'
+                 IN TYPEOF(i))
+               )) = 1)
+              )) = 1);   
+  WR7:  SIZEOF( QUERY( sar <* USEDIN( SELF, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' +
+              'SHAPE_ASPECT_RELATIONSHIP.RELATING_SHAPE_ASPECT') |
+              ('AIC_MACHINING_FEATURE.FEATURE_COMPONENT_RELATIONSHIP' IN
+               TYPEOF(sar)) AND
+              (sar.name = 'bead end usage') AND
+              (sar.description IN ['starting'
+,'ending'
+]) AND
+              ('FORM_FEATURE_IN_PANEL_MIM.BEAD' IN
+               TYPEOF(sar.related_shape_aspect.of_shape.definition)) AND
+              (sar.related_shape_aspect.of_shape.definition\characterized_object.name = 'end condition') AND
+              (sar.related_shape_aspect.of_shape.definition\characterized_object.description = 'bead end occurrence')
+             )) = 1;   
+END_ENTITY;
+
+ENTITY directed_angle
+  SUBTYPE OF (shape_aspect);
+WHERE
+  WR1:  'AIC_MACHINING_FEATURE.FEATURE_COMPONENT_DEFINITION' IN
+             TYPEOF(SELF.of_shape.definition);   
+  WR2:  SIZEOF( QUERY( pdr <* get_shape_aspect_property_definition_representations(SELF) |
+               ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+                TYPEOF(pdr.used_representation)) 
+              )) = 1;   
+  WR3:  SIZEOF( QUERY( pdr <* get_shape_aspect_property_definition_representations(SELF) |
+               ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+                TYPEOF(pdr.used_representation)) AND
+               (SIZEOF(pdr.used_representation.items) = 1)
+              )) = 1;   
+  WR4:  SELF.description IN ['punch direction','profile normal','surface normal'];   
+  WR5:  SIZEOF( QUERY( pdr <* get_shape_aspect_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+               TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='angle') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.PLANE_ANGLE_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+              )) = 1;   
+END_ENTITY;
+
+ENTITY feature_in_panel
+  SUBTYPE OF (feature_definition);
+WHERE
+  WR1:  SELF.description IN ['pocket','boss','stairstep'];   
+  WR2:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+               ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+                TYPEOF(pdr.used_representation)) AND
+               NOT ({2 <= SIZEOF(pdr.used_representation.items) <= 3})
+             )) = 0;   
+  WR3:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+               NOT( i.name IN ['orientation','base radius','target radius'])
+               )) > 0)
+             )) = 0;   
+  WR4:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='base radius') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+             )) = 1;   
+  WR5:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='target radius') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+             )) = 1;   
+  WR6:  SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+              (sa.name = 'base boundary') AND
+              (sa.description IN ['directed angle occurrence','closed profile occurrence'])
+             )) = 1;   
+  WR7:  SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+              (sa.name = 'target boundary') AND
+              (sa.description IN ['directed angle occurrence','closed profile occurrence'])
+             )) = 1;   
+  WR8:  SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+              (sa.description = 'directed angle occurrence')
+             )) <= 1;   
+  WR9:  SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+               (sa.description = 'directed angle occurrence') AND
+               (SIZEOF( QUERY( sar <* USEDIN( sa, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' +
+                 'SHAPE_ASPECT_RELATIONSHIP.RELATED_SHAPE_ASPECT') |
+                 ('AIC_MACHINING_FEATURE.SHAPE_DEFINING_RELATIONSHIP' IN
+                  TYPEOF(sar)) AND
+                 (sar.name = 'directed angle usage')  AND
+                 ('FORM_FEATURE_IN_PANEL_MIM.DIRECTED_ANGLE' IN
+                  TYPEOF(sar.relating_shape_aspect))
+                )) = 1 )
+              )) = 
+              SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+               (sa.description = 'directed angle occurrence')));   
+  WR10: SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+               (sa.description = 'closed profile occurrence') AND
+               (SIZEOF( QUERY( sar <* USEDIN( sa, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' +
+                 'SHAPE_ASPECT_RELATIONSHIP.RELATED_SHAPE_ASPECT') |
+                 ('AIC_MACHINING_FEATURE.SHAPE_DEFINING_RELATIONSHIP' IN
+                  TYPEOF(sar)) AND
+                 (sar.description = 'profile usage')  AND
+                 (SIZEOF(['AIC_MACHINING_FEATURE.CIRCULAR_CLOSED_PROFILE',
+ 'AIC_MACHINING_FEATURE.NGON_CLOSED_PROFILE',
+ 'AIC_MACHINING_FEATURE.RECTANGULAR_CLOSED_PROFILE',
+ 'AIC_MACHINING_FEATURE.CLOSED_PATH_PROFILE']
+ * TYPEOF(sar.relating_shape_aspect)
+                  ) = 1 )
+                )) = 1 )
+              )) = 
+              SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+               (sa.description = 'closed profile occurrence')));   
+  WR11: (SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              'AIC_MACHINING_FEATURE.FACE_SHAPE_REPRESENTATION' IN 
+              TYPEOF(pdr.used_representation)
+             )) <= 1) AND
+             (SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+               ('AIC_MACHINING_FEATURE.FACE_SHAPE_REPRESENTATION' IN 
+                TYPEOF(pdr.used_representation)) AND
+               NOT(pdr.used_representation.name = 'target face')
+             )) = 0);   
+  WR12: (SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+                (sa.name = 'target boundary') AND
+                (sa.description = 'directed angle occurrence')
+               )) = 0) OR
+              (SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+               ('AIC_MACHINING_FEATURE.FACE_SHAPE_REPRESENTATION' IN 
+                TYPEOF(pdr.used_representation)) 
+              )) = 1);   
+END_ENTITY;
+
+ENTITY hole_in_panel
+  SUBTYPE OF (feature_definition);
+WHERE
+  WR1:  SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+              (sa.name = 'hole profile') AND
+              (sa.description = 'closed profile occurrence') AND
+              (SIZEOF( QUERY( sar <* USEDIN( sa, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' +
+                'SHAPE_ASPECT_RELATIONSHIP.RELATED_SHAPE_ASPECT') |
+                ('AIC_MACHINING_FEATURE.SHAPE_DEFINING_RELATIONSHIP' IN
+                 TYPEOF(sar)) AND
+                (sar.description = 'profile usage') AND
+                (SIZEOF(['AIC_MACHINING_FEATURE.CIRCULAR_CLOSED_PROFILE',
+                  'AIC_MACHINING_FEATURE.NGON_CLOSED_PROFILE',
+                  'AIC_MACHINING_FEATURE.RECTANGULAR_CLOSED_PROFILE',
+                  'AIC_MACHINING_FEATURE.CLOSED_PATH_PROFILE']
+                  * TYPEOF(sar.relating_shape_aspect)
+                 ) = 1 )
+               )) = 1 )
+             )) = 1;   
+  WR2:  SIZEOF( get_property_definition_representations(SELF)) =
+             SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              SIZEOF( pdr.used_representation.items) = 1));   
+END_ENTITY;
+
+ENTITY joggle
+  SUBTYPE OF (feature_definition);
+WHERE
+  WR1:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+               ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+                TYPEOF(pdr.used_representation)) AND
+               NOT({5 <= SIZEOF(pdr.used_representation.items) <= 10})
+             )) = 0;   
+  WR2:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+               ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+                TYPEOF(pdr.used_representation)) AND
+               (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                 NOT(i.name IN ['orientation','base radius 1','base radius 2','direction angle 1',
+       'direction angle 2','height','slope angle 1','slope angle 2',
+       'top radius 1','top radius 2'])
+                )) > 0)
+             )) = 0;   
+  WR3:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='direction angle 1') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.PLANE_ANGLE_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+             )) = 1;   
+  WR4:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='direction angle 2') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.PLANE_ANGLE_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+             )) = 1;   
+  WR5:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='height') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+             )) <= 1;   
+  WR6:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='slope angle 1') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.PLANE_ANGLE_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+             )) = 1;   
+  WR7:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='slope angle 2') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.PLANE_ANGLE_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+             )) = 1;   
+  WR8:  SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+              (sa.name = 'defining path') AND
+              (sa.description = 'path feature component occurrence') AND
+              (SIZEOF( QUERY( sar <* USEDIN( sa, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' +
+                'SHAPE_ASPECT_RELATIONSHIP.RELATED_SHAPE_ASPECT') |
+                ('AIC_MACHINING_FEATURE.SHAPE_DEFINING_RELATIONSHIP' IN
+                 TYPEOF(sar)) AND
+                (sar.description = 'path feature component usage')  AND
+                ('AIC_MACHINING_FEATURE.PATH_FEATURE_COMPONENT' IN
+                 TYPEOF(sar.relating_shape_aspect)) AND
+                (sar.relating_shape_aspect.description = 'linear')
+               )) = 1 )
+             )) = 1;   
+  WR9:  SIZEOF( QUERY( sa <* get_shape_aspects(SELF) |
+              (sa.name = 'termination') AND
+              (sa.description = 'joggle termination occurrence') AND
+              (SIZEOF( QUERY( sar <* USEDIN( sa, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' +
+                'SHAPE_ASPECT_RELATIONSHIP.RELATED_SHAPE_ASPECT') |
+                ('AIC_MACHINING_FEATURE.FEATURE_COMPONENT_RELATIONSHIP' IN
+                 TYPEOF(sar)) AND
+                (sar.name = 'joggle termination usage')  AND
+                ('FORM_FEATURE_IN_PANEL_MIM.JOGGLE_TERMINATION' IN
+                 TYPEOF(sar.relating_shape_aspect)) 
+               )) = 1 )
+             )) = 1;   
+  WR10: SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='base radius 1') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+             )) <= 1;   
+  WR11: SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='base radius 2') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+              )) <= 1;   
+  WR12: SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='top radius 1') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+              )) <= 1;   
+  WR13: SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='top radius 2') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+              )) <= 1;   
+END_ENTITY;
+
+
+ENTITY joggle_termination
+  SUBTYPE OF (shape_aspect);
+WHERE
+  WR1:  'AIC_MACHINING_FEATURE.FEATURE_COMPONENT_DEFINITION' IN
+              TYPEOF(SELF.of_shape.definition);   
+  WR2:  SELF.description IN ['value termination','face termination'];   
+  WR3:  (SELF.description = 'value termination') XOR
+             (SIZEOF( QUERY( pdr <* get_shape_aspect_property_definition_representations(SELF) |
+               ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+                TYPEOF(pdr.used_representation)) 
+              )) = 0);   
+  WR4:  (SELF.description <> 'value termination') OR
+             (SIZEOF( QUERY( pdr <* get_shape_aspect_property_definition_representations(SELF) |
+               ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+                TYPEOF(pdr.used_representation)) AND
+               (SIZEOF(pdr.used_representation.items) = 2)
+              )) = 1);   
+  WR5:  (SELF.description <> 'value termination') OR
+             (SIZEOF( QUERY( pdr <* get_shape_aspect_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+               TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='depth') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+              )) = 1);   
+  WR6:  (SELF.description <> 'value termination') OR
+             (SIZEOF( QUERY( pdr <* get_shape_aspect_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+               TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='angle') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.PLANE_ANGLE_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+              )) = 1);   
+  WR7:  SIZEOF( QUERY( sar <* USEDIN( SELF, 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' +
+               'SHAPE_ASPECT_RELATIONSHIP.RELATING_SHAPE_ASPECT') |
+               ('AIC_MACHINING_FEATURE.FEATURE_COMPONENT_RELATIONSHIP' IN
+                TYPEOF(sar)) AND
+               (sar.name = 'joggle termination usage') AND
+               ('FORM_FEATURE_IN_PANEL_MIM.JOGGLE' IN TYPEOF(sar.related_shape_aspect.of_shape.definition)) AND
+               (sar.related_shape_aspect.of_shape.definition\characterized_object.name = 'termination') AND
+               (sar.related_shape_aspect.of_shape.definition\characterized_object.description = 'joggle termination occurrence')
+              )) = 1;   
+END_ENTITY;
+
+ENTITY locator
+  SUBTYPE OF (feature_definition);
+WHERE
+  WR1:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+               ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+                TYPEOF(pdr.used_representation)) AND
+               NOT ({2 <= SIZEOF(pdr.used_representation.items) <= 5})
+             )) = 0;   
+  WR2:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='diameter') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+             )) = 1;   
+  WR3:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='tip radius') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+             )) <= 1;   
+  WR4:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='tip angle') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.PLANE_ANGLE_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+             )) = 1;   
+  WR5:  SIZEOF( QUERY( pdr <* get_property_definition_representations(SELF) |
+              ('SHAPE_ASPECT_DEFINITION_SCHEMA.SHAPE_REPRESENTATION_WITH_PARAMETERS' IN 
+              TYPEOF(pdr.used_representation)) AND
+              (SIZEOF( QUERY( i <* pdr.used_representation.items |
+                (i.name='base radius') AND
+                (SIZEOF(['QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM',
+'MEASURE_SCHEMA.LENGTH_MEASURE_WITH_UNIT']*TYPEOF(i)
+                 ) = 2)
+               )) = 1)
+             )) <= 1;   
+END_ENTITY;
+
+
+END_SCHEMA;

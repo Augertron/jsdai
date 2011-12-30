@@ -49,6 +49,8 @@ class SchemaData {
 	SchemaData [] toInterfaced;
 	CEntityDefinition entities[];
 
+	String [] bypass_rules [];
+
 	private final int ARRAY_FOR_ENTITIES_SORTING_SIZE = 512;
 
 	int defTypesCount;
@@ -1613,6 +1615,77 @@ if (SdaiSession.debug2) System.out.println("  entities[index] ident = " + entiti
 			aux2 = new int[noOfEntityDataTypes];
 		}
 		return aux2;
+	}
+
+
+// accessed by entities[i].index
+	int getBypassedRulesCount(int index, SdaiSession ss) throws SdaiException {
+		if (ss.byp_rules_count < 0) {
+			return 0;
+		}
+		String [][] byp_rules;
+		if (ss.byp_rules_count == 0) {
+			byp_rules = ss.getBlackList();
+			if (ss.byp_rules_count < 0) {
+				return 0;
+			}
+			getBypassedRulesAll(byp_rules, ss.byp_rules_count);
+		}
+		if (bypass_rules[index] == null) {
+			return 0;
+		}
+		return bypass_rules[index].length;
+	}
+
+
+// It is assumed, for the sake of efficiency, that at least one bypassed rule for the 
+// submitted entity index exists.
+// Thus the method shall be invoked only when getBypassedRulesCount(...) 
+// returns positive integer.
+	String [] getBypassedRules(int index) throws SdaiException {
+		return bypass_rules[index];
+	}
+
+
+	private void getBypassedRulesAll(String [][] byp_rules, int byp_rules_count) throws SdaiException {
+		bypass_rules = new String[entities.length][];
+		for (int i = 0; i < entities.length; i++) {
+			String ent_name = sNames[i];
+			int count = 0;
+			for (int j = 0; j < byp_rules_count; j++) {
+				if (byp_rules[0][j] == null) {
+					if (!(byp_rules[1][j].toUpperCase().equals(ent_name))) {
+						continue;
+					}
+					if (bypass_rules[i] == null) {
+						bypass_rules[i] = new String[1];
+					} else {
+						enlarge_bypass_rules(i);
+					}
+					bypass_rules[i][count] = "";
+					count++;
+				} else {
+					if (!(byp_rules[0][j].equals(ent_name))) {
+						continue;
+					}
+					if (bypass_rules[i] == null) {
+						bypass_rules[i] = new String[1];
+					} else {
+						enlarge_bypass_rules(i);
+					}
+					bypass_rules[i][count] = byp_rules[1][j];
+					count++;
+				}
+			}
+		}
+	}
+
+
+	private void enlarge_bypass_rules(int index) throws SdaiException {
+		int new_length = bypass_rules[index].length + 1;
+		String [] new_rules_file = new String[new_length];
+		System.arraycopy(bypass_rules[index], 0, new_rules_file, 0, bypass_rules[index].length);
+		bypass_rules[index] = new_rules_file;
 	}
 
 

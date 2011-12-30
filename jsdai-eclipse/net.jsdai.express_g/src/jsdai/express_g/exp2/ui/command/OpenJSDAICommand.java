@@ -85,6 +85,7 @@ import jsdai.SExtended_dictionary_schema.EAttribute;
 import jsdai.SExtended_dictionary_schema.EBag_type;
 import jsdai.SExtended_dictionary_schema.EBinary_type;
 import jsdai.SExtended_dictionary_schema.EBoolean_type;
+import jsdai.SExtended_dictionary_schema.EBound;
 import jsdai.SExtended_dictionary_schema.EConstant_definition;
 import jsdai.SExtended_dictionary_schema.EData_type;
 import jsdai.SExtended_dictionary_schema.EDeclaration;
@@ -103,6 +104,7 @@ import jsdai.SExtended_dictionary_schema.EExtensible_select_type;
 import jsdai.SExtended_dictionary_schema.EGeneric_schema_definition;
 import jsdai.SExtended_dictionary_schema.EGlobal_rule;
 import jsdai.SExtended_dictionary_schema.EImplicit_declaration;
+import jsdai.SExtended_dictionary_schema.EInteger_bound;
 import jsdai.SExtended_dictionary_schema.EInterface_specification;
 import jsdai.SExtended_dictionary_schema.EInterfaced_declaration;
 import jsdai.SExtended_dictionary_schema.EInverse_attribute;
@@ -182,6 +184,7 @@ import jsdai.lang.SdaiRepository;
 
 public abstract class OpenJSDAICommand extends AbstractCommand {
 	private static final String EENTITY_KEY = "JSDAI EXPRESS-G EDITOR KEY";
+  private static final String EXPRESS_MOD_PREFIX = "_EXPRESS_";  // RR - for pdb
 
 	/**
 	 * for cleaning tempData purposes
@@ -285,13 +288,63 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 			if (object != null) {
 				int minBound = Agregate.BOUND_NONE;
 				int maxBound = Agregate.BOUND_NONE;
+				String minBoundStr = "";
+				String maxBoundStr = "";
 				String name = "";
+//System.out.println(">>>>>>>>>========= BOUNDS - entity: " + entity);
+
+/*
+ >>>>>>>>>========= BOUNDS - entity: #2462=INVERSE_ATTRIBUTE('basis_relationships',#2460,0,#2454,$,#2450,#2482,$,.F.);
+ >>>>>>>>>========= BOUNDS - entity: #2459=INVERSE_ATTRIBUTE('deriving_relationships',#2457,0,#2454,$,#2456,#2480,$,.F.);
+ >>>>>>>>>========= BOUNDS - entity: #2465=INVERSE_ATTRIBUTE('rr_deriving_relationships',#2463,0,#2466,$,#2470,#2484,$,.F.);
+
+9 attributes printed
+
+
+1.	name : express_id;                                                   basis_relationships
+2.	parent : entity_or_view_definition;                                  #2460
+3.	order : OPTIONAL INTEGER;                                            0
+ DERIVE
+parent_entity : entity_definition := get_entity_definition(parent); 
+
+4.	domain : entity_definition;                                          2454
+5.	redeclaring : OPTIONAL inverse_attribute;                            $
+6.	inverted_attr : explicit_attribute;                                  #2450
+7.	min_cardinality : OPTIONAL bound;                                    #2482
+8.	max_cardinality : OPTIONAL bound;                                    $
+9.	duplicates : BOOLEAN;                                                .F.
+
+*/
+
+
 				if (entity.testMin_cardinality(null))
 					minBound = entity.getMin_cardinality(null).getBound_value(
 							null);
 				if (entity.testMax_cardinality(null))
 					maxBound = entity.getMax_cardinality(null).getBound_value(
 							null);
+
+//System.out.println(">>>>>>>>>========= BOUNDS - minBound: " + minBound);
+//System.out.println(">>>>>>>>>========= BOUNDS - maxBound: " + maxBound);
+// prints 1 - so OK
+
+// RR ------- temp experiment ---------------------------------
+
+					if (minBound == Integer.MIN_VALUE) {
+						minBoundStr = "?";
+					} else {
+						minBoundStr += minBound;
+					}
+				
+					if (maxBound == Integer.MIN_VALUE) {
+						maxBoundStr = "?";
+					} else {
+						maxBoundStr += maxBound;
+					}
+				
+
+// RR ---------- temp experiment end --------------
+
 				int type = Agregate.TYPE_SIMPLE;
 				if (minBound != Agregate.BOUND_NONE) {
 					if (entity.getDuplicates(null))
@@ -312,8 +365,100 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 //					else
 //						System.err.println("declaration of new inverse failed: " + entity);
 				}
-				((EGRelationSimple) object).setInverse(new Agregate(null, null,
-						name, type, minBound, maxBound, false, false));
+// System.out.println("OpenJSDAICommand - CreateEG inverse - before setInverse: type: " + type + ", entity: " + entity + ", object: " + object);
+// OpenJSDAICommand - CreateEG inverse - before setInverse: type: 4, entity: #2462=INVERSE_ATTRIBUTE('basis_relationships',#2460,0,#2454,$,#2450,#2470,$,.F.);, object: related_shape_aspect
+// System.out.println("---------- inverse attribute ----------------------");
+// System.out.println("\tname: " + entity.getName(null));
+// System.out.println("\tparent: " + entity.getParent(null));
+// if (entity.testOrder(null)) System.out.println("\torder: " + entity.getOrder(null));
+// else System.out.println("\torder: UNSET");
+//System.out.println("\tparent entity: " + entity.getParent_entity(null));
+// System.out.println("\tdomain: " + entity.getDomain(null));
+// if (entity.testRedeclaring(null)) System.out.println("\tredeclaring: " + entity.getRedeclaring(null));
+// else System.out.println("\tredeclaring: UNSET");
+// System.out.println("\tinverted_attr: " + entity.getInverted_attr(null));
+// if (entity.getInverted_attr(null) instanceof EExplicit_attribute) {
+// System.out.println("\tparent of inverted_attr: " + ((EExplicit_attribute)entity.getInverted_attr(null)).getParent(null));
+// } 
+// if (entity.testMin_cardinality(null)) System.out.println("\tmin_cardinality: " + entity.getMin_cardinality(null));
+// else System.out.println("\tmin_cardinality: UNSET");
+// if (entity.testMax_cardinality(null)) System.out.println("\tmax_cardinality: " + entity.getMax_cardinality(null));
+// else System.out.println("\tmax_cardinality: UNSET");
+// System.out.println("\tduplicates: " + entity.getDuplicates(null));
+// System.out.println("........................ end of inverse attribute ............................");
+
+/*
+
+---------- inverse attribute ----------------------
+	name: basis_relationships
+	parent: #2460=ENTITY_DEFINITION('symmetric_shape_aspect',$,(#2451),.F.,.T.,.T.,.F.,.F.);
+	order: 0
+	domain: #2454=ENTITY_DEFINITION('shape_aspect_deriving_relationship',$,(#2447),.F.,.T.,.T.,.F.,.F.);
+	redeclaring: UNSET
+	inverted_attr: #2450=EXPLICIT_ATTRIBUTE('related_shape_aspect',#2447,1,#2451,$,.F.);
+	parent of inverted_attr: #2447=ENTITY_DEFINITION('shape_aspect_relationship',$,(),.F.,.T.,.T.,.F.,.F.);
+	min_cardinality: #2470=INTEGER_BOUND(1);
+	max_cardinality: UNSET
+	duplicates: false
+........................ end of inverse attribute ............................
+
+
+---------- inverse attribute ----------------------
+	name: deriving_relationships
+	parent: #2457=ENTITY_DEFINITION('derived_shape_aspect',$,(#2451),.F.,.T.,.T.,.F.,.F.);
+	order: 0
+	domain: #2454=ENTITY_DEFINITION('shape_aspect_deriving_relationship',$,(#2447),.F.,.T.,.T.,.F.,.F.);
+	redeclaring: UNSET
+	inverted_attr: #2456=EXPLICIT_ATTRIBUTE('relating_shape_aspect',#2454,$,#2457,#2449,.F.);
+	parent of inverted_attr: #2454=ENTITY_DEFINITION('shape_aspect_deriving_relationship',$,(#2447),.F.,.T.,.T.,.F.,.F.);
+	min_cardinality: #2468=INTEGER_BOUND(1);
+	max_cardinality: UNSET
+	duplicates: false
+........................ end of inverse attribute ............................
+
+
+
+
+*/
+
+// RR
+Object rr_domain = null;
+if (entity.testDomain(null)) {
+	rr_domain = entity.getDomain(null);
+} else {
+	// error - not optional
+}
+EAttribute rr_inverted = null;
+Object rr_parent = null;
+if (entity.testInverted_attr(null)) {
+	rr_inverted = entity.getInverted_attr(null);
+	if (rr_inverted != null) {
+		if (rr_inverted.testParent(null)) {
+			rr_parent = rr_inverted.getParent(null);
+		} else {
+			// error - not optional
+		}
+	} else {
+		// error - not optional
+	}
+} else {
+	// error - not optional
+}
+boolean flag_inverted_in_supertype = false;
+String parent_of_inverted = null;
+if ((rr_domain != null) && (rr_parent != null)) {
+	if (rr_domain != rr_parent) {  
+		flag_inverted_in_supertype = true; // assuming that it is in the supertype - perhaps we should test and actually find it in a supertype, but it should not be necessary
+		if (rr_parent instanceof EEntity_definition) {
+			parent_of_inverted = ((EEntity_definition)rr_parent).getName(null);
+		}
+	}
+}
+				// RR - passing the flag if the inverted attribute is in the supertype entity
+				((EGRelationSimple) object).setInverse(new Agregate(null, null, name, type, minBound, minBoundStr, maxBound, maxBoundStr, false, false), flag_inverted_in_supertype, parent_of_inverted);
+
+//				((EGRelationSimple) object).setInverse(new Agregate(null, null,
+//						name, type, minBound, minBoundStr, maxBound, maxBoundStr, false, false));
 				if (entity.testRedeclaring(null)) {
 					String redeclaring = "";
 					EInverse_attribute red_ent = entity.getRedeclaring(null);
@@ -332,6 +477,28 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 
 	protected Agregate createAgregate(EAggregation_type entity)
 			throws SdaiException {
+
+// ......... RR - for pdb - maybe move somewhere else for a more optimal solution - if not only for Aggregate ...........
+	
+		SdaiModel modelx = entity.findEntityInstanceSdaiModel();
+		SdaiRepository repox = modelx.getRepository();
+		String model_name = modelx.getName();
+    String schema_name = model_name.substring(0,model_name.length()-"_DICTIONARY_DATA".length());
+//System.out.println("schema name: " + schema_name);
+    String xpr_model_name = EXPRESS_MOD_PREFIX + schema_name.toUpperCase();
+    SdaiModel xpr_model = repox.findSdaiModel(xpr_model_name);
+    if (xpr_model != null && xpr_model.getMode() == SdaiModel.NO_ACCESS) {
+      xpr_model.startReadOnlyAccess();
+    }
+    jsdai.dictionary.ESchema_definition und_schema = modelx.getUnderlyingSchema();
+    jsdai.dictionary.EEntity_definition xpr_code_def = und_schema.getEntityDefinition("express_code");
+
+   AEntity xpr_code_aggr = null;
+    if (xpr_model != null) {
+      xpr_code_aggr = xpr_model.getInstances(xpr_code_def);
+    }
+// .......... end of pdb support .........................................
+
 		EData_type data_type = null;
 		if (entity.testElement_type(null)) {
 			data_type = entity.getElement_type(null);
@@ -347,6 +514,8 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 			}
 			int minBound = Agregate.BOUND_NONE;
 			int maxBound = Agregate.BOUND_NONE;
+			String minBoundStr = "";
+			String maxBoundStr = "";
 			boolean unique = false;
 			boolean optional = false;
 			String name = "";
@@ -354,10 +523,20 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 				name = entity.getName(null);
 			if (entity instanceof EVariable_size_aggregation_type) {
 				EVariable_size_aggregation_type ent = (EVariable_size_aggregation_type) entity;
-				if (ent.testLower_bound(null))
-					minBound = ent.getLower_bound(null).getBound_value(null);
-				if (ent.testUpper_bound(null))
-					maxBound = ent.getUpper_bound(null).getBound_value(null);
+				EBound minBoundInst = null;
+				if (ent.testLower_bound(null)) {
+					minBoundInst = ent.getLower_bound(null);
+					// we still may want to use Integer.MAX_VALUE to indicated pdb in minBound
+					minBound = minBoundInst.getBound_value(null);
+				}
+				minBoundStr = getBoundString(minBoundInst,xpr_code_aggr);
+				EBound maxBoundInst = null;
+				if (ent.testUpper_bound(null)) {
+					maxBoundInst = ent.getUpper_bound(null);
+					// we still may want to use Integer.MAX_VALUE to indicated pdb in maxBound
+					maxBound = maxBoundInst.getBound_value(null);
+				}
+				maxBoundStr = getBoundString(maxBoundInst,xpr_code_aggr);
 				if (entity instanceof EList_type) {
 					EList_type list = (EList_type) entity;
 					type = Agregate.TYPE_LIST;
@@ -370,23 +549,102 @@ public abstract class OpenJSDAICommand extends AbstractCommand {
 			} else {
 				EArray_type ent = (EArray_type) entity;
 				type = Agregate.TYPE_ARRAY;
-				if (ent.testLower_index(null))
-					minBound = ent.getLower_index(null).getBound_value(null);
-				if (ent.testUpper_index(null))
-					maxBound = ent.getUpper_index(null).getBound_value(null);
+				EBound minBoundInst = null;
+				if (ent.testLower_index(null)) {
+					minBoundInst = ent.getLower_index(null);
+					// we still may want to use Integer.MAX_VALUE to indicated pdb in minBound
+					minBound = minBoundInst.getBound_value(null);
+					
+				}
+				minBoundStr = getBoundString(minBoundInst,xpr_code_aggr);
+
+//					if (minBoundInst instanceof EInteger_bound) {
+//						minBound = ent.getLower_index(null).getBound_value(null);
+//						minBound = minBoundInst.getBound_value(null);
+//					} else {
+//						// population-dependent
+//						minBound = Integer.MAX_VALUE;
+//						// get here the minBoundStr somehow
+//						minBoundStr = getPDBString();
+//					}
+//				}
+				EBound maxBoundInst = null;
+				if (ent.testUpper_index(null)) {
+					maxBoundInst = ent.getUpper_index(null);
+					// we still may want to use Integer.MAX_VALUE to indicated pdb in maxBound
+					maxBound = maxBoundInst.getBound_value(null);
+				}
+				maxBoundStr = getBoundString(maxBoundInst,xpr_code_aggr);
+//					if (maxBoundInst instanceof EInteger_bound) {
+//						maxBound = maxBoundInst.getBound_value(null);
+//					} else {
+//						maxBound = Integer.MAX_VALUE;
+//						maxBoundStr = getPDBString();
+//					}
+//				}
 				if (ent.testUnique_flag(null))
 					unique = ent.getUnique_flag(null);
 				if (ent.testOptional_flag(null))
 					optional = ent.getOptional_flag(null);
 			}
-			Agregate agregate = new Agregate(box, next, name, type, minBound,
-					maxBound, optional, unique);
+			Agregate agregate = new Agregate(box, next, name, type, minBound, minBoundStr,
+					maxBound, maxBoundStr, optional, unique);
 			return agregate;
 		} else {
 //			System.err.println("null agregate: " + entity);
 			return null;
 		}
 	}
+
+// ########################################
+	static String getPDBString() {
+		return "_PDB_";
+	}
+// -------------------------------------------------
+
+	private static String getBoundString(EBound bnd, AEntity xpr_code_aggr) throws SdaiException {
+	  String result = "";
+	  if (bnd == null) {
+	  	result = "?";
+	  } else
+	  if (bnd instanceof EInteger_bound) {
+	  	result = Integer.toString(bnd.getBound_value(null));
+	  } else {
+	  	// population-dependent-bound
+			SdaiIterator iter_auxil	= xpr_code_aggr.createIterator();
+	    String value = null;
+  	  while (iter_auxil.next()) {
+    	  EExpress_code xpr_code = (EExpress_code)xpr_code_aggr.getCurrentMemberEntity(iter_auxil);
+      	if (xpr_code.getTarget(null) == bnd) {
+        	A_string expression_aggr = xpr_code.getValues(null);
+	        value = expression_aggr.getByIndex(1);
+  	      break;
+    	  }
+    	} // while
+			result = value;	
+		}	
+		return result;
+	}
+
+
+
+// ---------------------------------------------------------------------
+/*
+    static final String EXPRESS_MOD_PREFIX = "_EXPRESS_";
+
+    String xpr_model_name = EXPRESS_MOD_PREFIX + schema_name.toUpperCase();
+    SdaiModel xpr_model = repo.findSdaiModel(xpr_model_name);
+    if (xpr_model != null && xpr_model.getMode() == SdaiModel.NO_ACCESS) {
+      xpr_model.startReadOnlyAccess();
+    }
+
+    AEntity xpr_code_aggr = null;
+    if (xpr_model != null) {
+      xpr_code_aggr = xpr_model.getInstances(xpr_code_def);
+    }
+
+*/
+// ############################################
 
 	protected EGRelationSimple createEG(EDerived_attribute entity)
 			throws SdaiException {

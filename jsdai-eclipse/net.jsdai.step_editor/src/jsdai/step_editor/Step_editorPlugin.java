@@ -140,7 +140,7 @@ public class Step_editorPlugin extends AbstractUIPlugin implements IResourceChan
 	 * Returns the shared instance.
 	 */
 	public static Step_editorPlugin getDefault() {
-System.out.println("<<>> Step_editorPlugin getDefault() - plugin: " + plugin);
+//System.out.println("<<>> Step_editorPlugin getDefault() - plugin: " + plugin);
 		return plugin;
 	}
 

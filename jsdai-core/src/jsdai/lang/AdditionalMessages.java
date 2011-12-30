@@ -61,6 +61,8 @@ class AdditionalMessages {
 	static final String SS_LOCF = "First repository location: ";
 	static final String SS_LOCS = "Second repository location: ";
 	static final String SS_SCMI = "Error: SdaiContext is not provided.";
+	static final String SS_BLNO = "Error: rules black list file not found: ";
+	static final String SS_BLEX = "Error: exception while reading rules black list file: ";
 //   SdaiRepository
 	static final String SS_NODR = "A directory for repositories is not specified"; // deleteRepository()
 	static final String RP_DICT = "The repository containing data dictionary cannot be deleted"; // deleteRepository()
@@ -87,6 +89,7 @@ class AdditionalMessages {
 	static final String AT_VANX = "Error: attribute value does not exist";
 	static final String AT_VAWR = "Error: wrong type of the attribute value";
 	static final String EI_ROMD = "Error: entity instance to be deleted is referenced by an instance in a Read-Only model.";
+	static final String EI_NCOM = "Error: the value type is not compatible with this method; please, use get_boolean instead of get_int.";
 //   CAggregate and other aggregate classes
 	static final String AI_BVL  = "Aggregate instance bound is violated";
 	static final String AI_CREF = "Creation of the aggregate instance failed"; // also in SdaiModel class
@@ -323,6 +326,7 @@ class AdditionalMessages {
 //   undo_redo
 	static final String UR_WRME = "   Wrong member in the aggregate of entity instances: ";
 	static final String UR_NUME = "   Null member in the list of entity instances. ";
+	static final String UR_MOPO = "   JSDAI data are modified while responding to fired SdaiEvent. ";
          // Methods for Express compiler
 	static final String EC_INET = "Incompatible Express types."; // check() in Value
 	static final String EC_TOF1 = "Error: built-in function 'typeOf' is applied in the context of the schema '";

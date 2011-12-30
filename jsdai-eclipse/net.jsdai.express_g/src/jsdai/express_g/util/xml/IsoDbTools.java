@@ -39,6 +39,7 @@ public class IsoDbTools {
 
 	static HashMap hm_iso_ids = null;
 	static HashMap hm_part_names = null;
+	static String last_iso_file_name = null;
 
 	public static HashMap getIsoIds() {
 		return hm_iso_ids;
@@ -51,6 +52,7 @@ public class IsoDbTools {
 	public static void initIsoDb() {
 		hm_iso_ids = null;
 		hm_part_names = null;
+		last_iso_file_name = null;
 	}
 	
 	
@@ -76,12 +78,27 @@ public class IsoDbTools {
 		// hm_iso_ids = new HashMap();
 		// hm_part_names = new HashMap();
 
+	 // it was like this:  when a new exg is opened, the first next export after that reads the file again
+	 // obviously, it is wrong, if several (more than one) exg files are opened simultaneously, and the export is done back and forth from different exg files
+	
+	 // so now we will remember the last used document_reference path (and therefore, its project), and if the project is different, then read the file again.
+	 // also, perhaps we can remove the forcing of the new file reading when a new exg is opened, this is no longer necessary - but that is done in SdaiEditor, remove there (or not)
+
 		if (hm_iso_ids == null) {
 			hm_iso_ids = new HashMap();
 			hm_part_names = new HashMap();
 		} else {
-			return true;
+        if (false) {
+//			if (iso_file_name.equals(last_iso_file_name)) {
+//System.out.println("document_reference - NOT READING");
+				return true;
+			} else {
+				last_iso_file_name = iso_file_name;
+				hm_iso_ids = new HashMap();
+				hm_part_names = new HashMap();
+			}
 		}
+//System.out.println("document_reference - READING");
 
 		try {
 

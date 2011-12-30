@@ -189,84 +189,19 @@ to ignore:
 */		
 
 		boolean starts_with_ERROR = line.startsWith("ERROR:");
+		boolean starts_with_WARNING = line.startsWith("WARNING:");
 
 //System.out.println("<>ERROR parser, line: " + line);
 //System.out.println("<>ERROR parser, previous line: " + eoParser.getPreviousLine());
 
 		if (starts_with_ERROR) {
-// System.out.println("<>ERROR parser, line: " + line);
-//			String fileName = "test_schema.exp";
+			 singleLineErrorOrWarning(compiled_file, line, SEVERITY_WARNING);
+//			 singleLineErrorOrWarning(compiled_file, line, SEVERITY_ERROR);
+		} else 
+		if (starts_with_WARNING) {
+			 singleLineErrorOrWarning(compiled_file, line, SEVERITY_WARNING);
 
-//			String fileName = "E:/eclipse/runtime-workbench-workspace/aaaaa5/express/test_schema.exp";
 
-//			String fileName = "E:/eclipse/runtime-workbench-workspace/ZZZ_333/Express files/cartesian_dot.exp";
-			// String fileName = null;
-			
-			// try to get selected something
-			
-//			String fileName = ExpressCorePlugin.getCompiledExpressFileName();	
-			
-//			IFile file = eoParser.findFilePath(fileName);
-			IFile file = compiled_file;
-
-// seems that fileName not needed here			
-/*
-			String fileName = null;
-			if (file != null) {
-				fileName = file.getName();
-			} else {
-				fileName = compiled_path.lastSegment(); 
-			}
-*/			
-			// System.out.println("PARSING ERRORS - IFile: " + file);			
-			int num = -1;
-			int num2 = line.indexOf("line");
-			int num3 = line.indexOf(",");
-			if (num2 > 0) {
-				String line_number = line.substring(num2+6,num3);
-				num = Integer.parseInt(line_number);
-//				int severity = inheritedSeverity;
-			
-				int not_found_nr = line.indexOf("not found");
-			    String not_found_str = null;
-				int encountered_nr = line.indexOf("Encountered");
-				int at_line = line.indexOf("at line");
-				String desc = "problem";
-				String problem_description = "";
-				String varName = null;
-                int var_num1 = line.indexOf(". ");
-				if (var_num1 > 0) {
-					int var_num2 = line.indexOf(" - ", var_num1+1);
-					if (var_num2 > 0) {
-						varName = line.substring(var_num1+2, var_num2);
-					} else if ((encountered_nr > 0) && (at_line > 0)) {
-						varName = line.substring(encountered_nr+13, at_line-2); 
-					} else {
-						varName = "unknown name";
-					}
-					problem_description = line.substring(var_num2 + 2, line.length()-1);
-					if (not_found_nr > 0) {
-						if (var_num2 > 0) {
-							   not_found_str = line.substring(var_num2, not_found_nr + 9);
-							}
-							if (not_found_str != null) {
-								desc = varName + not_found_str;
-							} else {
-								desc = varName + " definition not found";
-							}
-//						desc = varName + " definition not found";
-					} else if (encountered_nr >= 0) {
-						desc = "encountered " + varName + ", if the error is not obvious, look for details in the console";
-						//						desc = "encountered " + varName + ", the error may be before it";
-					} else {
-//						desc = desc += " with " + varName;
-						desc = varName + ": " + problem_description;
-					}
-
-				}
-//				eoParser.generateMarker(file, num, desc, severity, varName);
-				setMarker(file, desc, num, SEVERITY_ERROR);
-			}
 		} else {
 			// see if it is a two-line error
 //			String previous = eoParser.getPreviousLine();
@@ -277,6 +212,7 @@ to ignore:
 			}
 
 			boolean previous_starts_with_ERROR = previous.startsWith("ERROR in file");
+			boolean previous_starts_with_WARNING = previous.startsWith("WARNING in file");
 			if (previous_starts_with_ERROR) {
 //System.out.println("<>ERROR parser, previous line: " + previous);
 				// XXXXXXX here:   ERROR in file XXXXXXXX:
@@ -338,9 +274,10 @@ to ignore:
 			}
 			
 		
-		} // two-line error
-		
-		} // not single line error
+		} else // two-line error
+		if (previous_starts_with_WARNING) {
+		}		
+	} // not single line error
 		
 	
 	
@@ -704,6 +641,337 @@ to ignore:
 
 		fLine = line.trim();
 
+		if (fLine.startsWith("ERROR")) {
+			fSeverity = SEVERITY_ERROR;
+		} else 
+		if (fLine.startsWith("WARNING")) {
+			fSeverity = SEVERITY_WARNING;
+		}
+		
+//		if (fLine.startsWith("ERROR:")) {
+		if ((fLine.startsWith("ERROR:")) || (fLine.startsWith("WARNING:")) ) {
+			setMarkerIfNeededAndReset(fFile, fDescription, fLine_number, fSeverity);
+			fError_to_mark = true;
+			fSingle_file_error = true;
+			fFile = compiled_file;
+			// get the line number
+			int index_line_start = fLine.indexOf("line: ");
+			int index_line_end = fLine.indexOf(", column:");
+			int index_column_end = -1;
+			
+			if ((index_line_start > 0) && (index_line_end > index_line_start)) {
+				fLine_number = Integer.parseInt(fLine.substring(index_line_start+6, index_line_end));
+				index_column_end = fLine.indexOf(". ", index_line_end);
+				fColumn_number = Integer.parseInt(fLine.substring(index_line_end+10, index_column_end));
+// System.out.println("column: " + fColumn_number);
+				fSub_line = fLine.substring(index_column_end + 2);
+				processMessage();
+			} else {
+				// something wrong here, probably we need just to return
+				resetAll();
+				return;
+			}  
+		} else
+//		if (fLine.startsWith("ERROR in file")) {
+		if ((fLine.startsWith("ERROR in file")) || (fLine.startsWith("WARNING in file")) ){
+			setMarkerIfNeededAndReset(fFile, fDescription, fLine_number, fSeverity);
+			fError_to_mark = true;
+			fMulti_file_error = true;
+			String fileName = null;
+			if (fLine.startsWith("ERROR")) {
+				fileName = fLine.substring(14, fLine.length()-1);
+			} else 
+			if (fLine.startsWith("WARNING")) {
+				fileName = fLine.substring(16, fLine.length()-1);
+			} else {
+				// internal error - TODO or not TODO
+			}
+//System.out.println("multi-file file name: " + fileName);
+			String key = fileName.toLowerCase().replace('\\','$').replace('/','$');
+//System.out.println("multi-file key: " + key);
+			fFile = (IFile)express_files.get(key);
+//System.out.println("multi-file: " + fFile);
+		} else 
+		if (fLine.startsWith("line:")) {
+			if (fMulti_file_error) {
+				// get the line number
+				int index_line_start = fLine.indexOf("line: ");
+				int index_line_end = fLine.indexOf(", column:");
+				int index_column_end = -1;
+			
+				if ((index_line_start >= 0) && (index_line_end > index_line_start)) {
+					fLine_number = Integer.parseInt(fLine.substring(index_line_start+6, index_line_end));
+					index_column_end = fLine.indexOf(". ", index_line_end);
+					fSub_line = fLine.substring(index_column_end + 2);
+					processMessage();
+//System.out.println("we are here: " + fLine_number + ", " + fSub_line);
+				} else {
+//System.out.println("but not here");
+					// something wrong here, probably we need just to return
+					resetAll();
+					return;
+				}  
+			} else {
+				// should not happen
+				resetAll();
+				return;
+			}
+		} else 	
+		if (fLine.startsWith("Was expecting:")) {
+			if (fSyntax_error) {
+				// the only choice
+				fSingle_choice = true;
+			} else {
+				resetAll();
+				return;
+			}
+		} else
+		if (fLine.startsWith("Was expecting one of:")) {
+			if (fSyntax_error) {
+				fSingle_choice = false;
+				fChoice_count = 0;
+				if (fChoices == null) {
+					fChoices = new Vector();
+				} else {
+					fChoices.clear();
+				}
+			} else {
+				resetAll();
+				return;
+			}
+		} else
+		if (fLine.endsWith(" ...") && (fLine.startsWith("\"") || fLine.startsWith("<"))) {
+			// a syntax alternative
+			if (fSyntax_error) {
+				String choice_value = fLine.substring(0, fLine.length()-4); 
+				if (fSingle_choice) {
+					if (choice_value.equals("\";\"")) {
+						fDescription = "\";\" is missing";
+					} else
+					if (choice_value.equals("<SIMPLE_ID>")) {
+						fDescription = "an identifier is missing before " + fEncountered;
+					} else {
+						fDescription = choice_value + " is missing, " + fEncountered + " encountered";
+					}
+					setMarkerIfNeededAndReset(fFile, fDescription, fLine_number, fSeverity);
+				} else {
+					// one of multiple choices
+					fChoices.addElement(choice_value);
+					
+				}
+			} else {
+				resetAll();
+				return;
+			}
+		} else
+		if (fLine.startsWith("ERROR RECOVERY:")) {
+			setMarkerIfNeededAndReset(fFile, fDescription, fLine_number, fSeverity);
+		} else
+		if (fLine.equals("")) {
+		} else
+		if (fLine.startsWith("--- End of Express Compiler Output ---")) {
+			setMarkerIfNeededAndReset(fFile, fDescription, fLine_number, fSeverity);
+		} else {
+		}
+
+
+/*
+		boolean starts_with_ERROR = line.startsWith("ERROR:");
+
+		if (starts_with_ERROR) {
+			 // will not happen
+			IFile file = null; // will not happen
+
+			int num = -1;
+			int num2 = line.indexOf("line");
+			int num3 = line.indexOf(",");
+			if (num2 > 0) {
+				String line_number = line.substring(num2+6,num3);
+				num = Integer.parseInt(line_number);
+//				int severity = inheritedSeverity;
+			
+				int not_found_nr = line.indexOf("not found");
+			    String not_found_str = null;
+				int encountered_nr = line.indexOf("Encountered");
+				int at_line = line.indexOf("at line");
+				String desc = "problem";
+				String problem_description = "";
+				String varName = null;
+                int var_num1 = line.indexOf(". ");
+				if (var_num1 > 0) {
+					int var_num2 = line.indexOf(" - ", var_num1+1);
+					if (var_num2 > 0) {
+						varName = line.substring(var_num1+2, var_num2);
+					} else if ((encountered_nr > 0) && (at_line > 0)) {
+						varName = line.substring(encountered_nr+13, at_line-2); 
+					} else {
+						varName = "unknown name";
+					}
+					problem_description = line.substring(var_num2 + 2, line.length()-1);
+					if (not_found_nr > 0) {
+						if (var_num2 > 0) {
+							   not_found_str = line.substring(var_num2, not_found_nr + 9);
+							}
+							if (not_found_str != null) {
+								desc = varName + not_found_str;
+							} else {
+								desc = varName + " definition not found";
+							}
+//						desc = varName + " definition not found";
+					} else if (encountered_nr >= 0) {
+						desc = "encountered " + varName + ", if the error is not obvious, look for details in the console";
+						//						desc = "encountered " + varName + ", the error may be before it";
+					} else {
+//						desc = desc += " with " + varName;
+						desc = varName + ": " + problem_description;
+					}
+
+				}
+//				eoParser.generateMarker(file, num, desc, severity, varName);
+				setMarker(file, desc, num, SEVERITY_ERROR);
+			}
+		} else { // two line message - this will always occur here
+			// see if it is a two-line error
+//			String previous = eoParser.getPreviousLine();
+			String previous = previous_line;
+			// protection from NullPointerException
+			if (previous == null) {
+				previous = line;
+			}
+
+			boolean previous_starts_with_ERROR = previous.startsWith("ERROR in file");
+			if (previous_starts_with_ERROR) {
+//System.out.println("<>ERROR parser, previous line: " + previous);
+				// XXXXXXX here:   ERROR in file XXXXXXXX:
+				String fileName = previous.substring(14, previous.length()-2);
+//System.out.println("ERROR parser, file name 2: " + fileName);
+//			String fileName = "E:/eclipse/runtime-workbench-workspace/ZZZ_333/Express files/cartesian_dot.exp";
+
+
+				// !!! need to do something here - to find IFile by the name, or to have them all stored somewhere as IFile
+				//TODO tempororily, for testing with single files - WRONG for multiple
+
+//if (express_files.containsKey(fileName)) {
+//	System.out.println("Contains key: " + fileName);				
+//} else {
+//	System.out.println("DOES NOT Contain key: " + fileName);				
+
+//}
+
+				String key = fileName.toLowerCase().replace('\\','$').replace('/','$');
+				IFile file = (IFile)express_files.get(key);
+//System.out.println("file from HM - key: (" + key + ")");				
+//System.out.println("file from HM: " + file);				
+//System.out.println("files from HM: " + express_files);				
+//				IFile file = eoParser.findFilePath(fileName);
+				int num = -1;
+				int num2 = line.indexOf("line");
+				int num3 = line.indexOf(",");
+				if (num2 > 0) {
+				String line_number = line.substring(num2+6,num3);
+				num = Integer.parseInt(line_number);
+//				int severity = inheritedSeverity;
+
+				int not_found_nr = line.indexOf("not found");
+			    String not_found_str = null;
+				int encountered_nr = line.indexOf("Encountered");
+				int ref_object = line.indexOf("reference to unknown object in an expression");
+				int at_line = line.indexOf("at line");
+				String desc = "problem";
+				String problem_description = "";
+				String varName = null;
+                int var_num1 = line.indexOf(". ");
+				if (var_num1 > 0) {
+					int var_num2 = line.indexOf(" - ", var_num1+1);
+					if (var_num2 > 0) {
+						varName = line.substring(var_num1+2, var_num2);
+					} else if ((encountered_nr > 0) && (at_line > 0)) {
+						varName = line.substring(encountered_nr+13, at_line-2); 
+					} else {
+						varName = "unknown name";
+					}
+//					varName = line.substring(var_num1+2, var_num2);
+					problem_description = line.substring(var_num2 + 2, line.length()-1);
+					if (not_found_nr > 0) {
+						if (var_num2 > 0) {
+						   not_found_str = line.substring(var_num2, not_found_nr + 9);
+						}
+						if (not_found_str != null) {
+							desc = varName + not_found_str;
+						} else {
+							desc = varName + " definition not found";
+						}
+					} else if (encountered_nr >= 0) {
+						desc = "encountered " + varName + ", if the error is not obvious, look for details in the console";
+					} else if (ref_object > 0) {
+						desc = varName + ": reference to unknown object in an expression";
+					} else {
+//						desc = desc += " with " + varName;
+						desc = varName + ": " + problem_description;
+					}
+
+				}
+				//eoParser.generateMarker(file, num, desc, severity, varName);
+        setMarker(file, desc, num, SEVERITY_ERROR);
+			}
+			
+		
+		} // two-line error
+		
+		} // not single line error
+		
+	*/
+	
+	} // end of method
+
+//#######################################=====================================================start
+
+	void processLineBACKING_IT_UP(IFile compiled_file ,HashMap express_files, String line, IPath compiled_path) throws CoreException {
+
+// IPath compiled_path is not currently used (or not used any longer?)
+
+//if (line != null) {
+//	System.out.println("<3> parsing line: " + line);
+//} else {
+//	System.out.println("<> parsing line: NULL");
+//}
+		
+		
+/*		
+		Known patterns.
+
+
+single-line messages:
+
+ERROR: ...
+
+NOTE: in the case of a single line error message, the file name is not available, it should be supplied internally,
+because internally it must be known to run the compiler on it.
+
+
+NOTE: there are arrors without line numbers, at least some of them are duplicating error messages with line numbers,
+but perhaps not all of them. To do something abaut it in the compiler, some formatting of the messages is needed, perhaps.
+
+multi-line messages:
+
+ERROR in file E:\eclipse\runtime-workbench-workspace\ZZZ_333\Express files\cartesian_dot.exp: 
+referenced (line 12, column 10) named type "huhu" not found
+
+
+to ignore:
+
+1 error found in pass 3.
+
+		
+		
+		
+		
+*/		
+
+
+
+		fLine = line.trim();
+
 		if (fLine.startsWith("ERROR:")) {
 			setMarkerIfNeededAndReset(fFile, fDescription, fLine_number, fSeverity);
 			fError_to_mark = true;
@@ -969,13 +1237,17 @@ to ignore:
 	*/
 	
 	} // end of method
+
+
+
+//###########################################===============================================================end
 	
 	
 	/*
 			here we have sub_line with the erorr message
 	*/
 	void processMessage()  throws CoreException {
-System.out.println("description: " + fSub_line);
+//System.out.println("description: " + fSub_line);
 		if (fSub_line.startsWith("Encountered ")) {
 			fSyntax_error = true;
 			int index_encountered_start = 12;
@@ -1043,7 +1315,7 @@ System.out.println("description: " + fSub_line);
   	// fLine = null;	
   	int fLine_nr = 0;
 		// fFile = null;
-		fSeverity = SEVERITY_ERROR;
+		//fSeverity = SEVERITY_ERROR;  // if enabled, this changes warning into error in my current implementation
 		fDescription = null;
 		fSyntax_error = false;
 	}
@@ -1073,6 +1345,67 @@ System.out.println("description: " + fSub_line);
 		return -1;
 	} // method end
 	
+	
+	void singleLineErrorOrWarning(IFile compiled_file, String line, int what_severity) throws CoreException {
+
+System.out.println("Does it even gets here?");
+
+			IFile file = compiled_file;
+
+			int num = -1;
+			int num2 = line.indexOf("line");
+			int num3 = line.indexOf(",");
+			if (num2 > 0) {
+				String line_number = line.substring(num2+6,num3);
+				num = Integer.parseInt(line_number);
+			
+				int not_found_nr = line.indexOf("not found");
+				String not_found_str = null;
+				int encountered_nr = line.indexOf("Encountered");
+				int at_line = line.indexOf("at line");
+				String desc = "problem";
+				String problem_description = "";
+				String varName = null;
+				int var_num1 = line.indexOf(". ");
+				if (var_num1 > 0) {
+					int var_num2 = line.indexOf(" - ", var_num1+1);
+					if (var_num2 > 0) {
+						varName = line.substring(var_num1+2, var_num2);
+					} else if ((encountered_nr > 0) && (at_line > 0)) {
+						varName = line.substring(encountered_nr+13, at_line-2); 
+					} else {
+						varName = "unknown name";
+					}
+					problem_description = line.substring(var_num2 + 2, line.length()-1);
+					if (not_found_nr > 0) {
+						if (var_num2 > 0) {
+							   not_found_str = line.substring(var_num2, not_found_nr + 9);
+							}
+							if (not_found_str != null) {
+								desc = varName + not_found_str;
+							} else {
+								desc = varName + " definition not found";
+							}
+					} else if (encountered_nr >= 0) {
+						if (what_severity == SEVERITY_ERROR) {
+							desc = "encountered " + varName + ", if the error is not obvious, look for details in the console";
+						} else {
+							desc = "encountered " + varName + ", if the warning is not obvious, look for details in the console";
+						}
+						//						desc = "encountered " + varName + ", the error may be before it";
+					} else {
+						desc = varName + ": " + problem_description;
+					}
+
+				}
+//				eoParser.generateMarker(file, num, desc, severity, varName);
+//				setMarker(file, desc, num, SEVERITY_ERROR);
+				setMarker(file, desc, num, what_severity);
+//				setMarker(file, desc, num, SEVERITY_WARNING);
+			}
+
+
+	} // singleLineErrorOrWarning
 	
 	
 } // end of class

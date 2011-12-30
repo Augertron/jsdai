@@ -175,14 +175,28 @@ public class CxPart_view_definition
 				return;
 			}
 		}
-      LangUtils.Attribute_and_value_structure[] pdcS = {
+		LangUtils.Attribute_and_value_structure[] pdcS = {
             new LangUtils.Attribute_and_value_structure(
             CProduct_definition_context.attributeName(null), name)
          };
          EProduct_definition_context epdc = (EProduct_definition_context)
             LangUtils.createInstanceIfNeeded(context,
             	CProduct_definition_context.definition, pdcS);
-		
+         // mandatory attributes
+		if(!epdc.testLife_cycle_stage(null)){
+			epdc.setLife_cycle_stage(null, "");
+		}
+		if(!epdc.testFrame_of_reference(null)){
+			AEntity aac = context.domain.getInstances(CApplication_context.definition);
+			EApplication_context eac;
+			if(aac.getMemberCount() > 0){
+				eac = (EApplication_context)aac.getByIndexEntity(1);
+			}else{
+				eac = (EApplication_context)context.working_model.createEntityInstance(CApplication_context.definition);
+				eac.setApplication(null, "");
+			}
+			epdc.setFrame_of_reference(null, eac);
+		}
 		armEntity.setFrame_of_reference(null, epdc);
 		// System.err.println(" PVD "+armEntity);
 	}

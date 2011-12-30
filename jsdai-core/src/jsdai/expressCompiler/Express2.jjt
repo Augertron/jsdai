@@ -78,14 +78,14 @@ public class Compiler2 extends Support
 	static String progress;
 	static boolean in_progress = true;
 
-	static final String xc_build     = "486";
-	static final String xc_date      = "2010-10-26";
-	static final String xc_version   = "4.3";
+	static final String xc_build     = "500";
+	static final String xc_date      = "2011-12-13";
+	static final String xc_version   = "4.3.2";
 	static final String xc_title     = "JSDAI(TM) Express Compiler";
-	static final String xc_copyright = "Copyright (C) 1998-2010 LKSoftWare GmbH";
+	static final String xc_copyright = "Copyright (C) 1998-2011 LKSoftWare GmbH";
 
 	// old, perhaps updated during builds? If not, remove
-	static String build = "486";
+	static String build = "500";
 	
     final static int WA_UNKNOWN             =  0;
 		final static int WA_ATTRIBUTE_REF       =  1;
@@ -512,6 +512,7 @@ System.out.println("------------------------------");
   flag_scope_stack = false;
   flag_verbose0 = false;
   flag_verbose = false;
+  flag_hard_supertype_error = true;
   flag_debug = false;
   flag_error_debug = false;
   flag_deep_debug = false;
@@ -523,6 +524,8 @@ System.out.println("------------------------------");
 	flag_complex_off = false;
   flag_implicit_select = false;
 	flag_original_expressions = true;
+	flag_formatted_1 = false;
+	flag_format_level = 1;
 	flag_really_original_expressions = false;
   scope_stack = new Stack();
   current_scope = new Vector();
@@ -702,7 +705,6 @@ System.out.println("------------------------------");
 			}			
 
 
-
 			if (args[ihi].equalsIgnoreCase("-spec_reference_from")) flag_no_special_reference_from = false;
 			if (args[ihi].equalsIgnoreCase("-rf")) flag_no_special_reference_from = false;
 			if (args[ihi].equalsIgnoreCase("-express_x")) express_x = true;
@@ -728,6 +730,8 @@ System.out.println("------------------------------");
 			if (args[ihi].equalsIgnoreCase("-replace_schemas")) flag_replace_schema = true;
 			if (args[ihi].equalsIgnoreCase("-replace")) flag_replace_schema = true;
 			if (args[ihi].equalsIgnoreCase("-rs")) flag_replace_schema = true;
+			if (args[ihi].equalsIgnoreCase("-type_tracking")) flag_type_tracking = true;
+			if (args[ihi].equalsIgnoreCase("-tt")) flag_type_tracking = true;
 			if (args[ihi].equalsIgnoreCase("-incremental")) flag_serialize = true;
 			if (args[ihi].equalsIgnoreCase("-inc")) flag_serialize = true;
 			if (args[ihi].equalsIgnoreCase("-no_amendment"))   no_express_amendment = true;
@@ -753,6 +757,16 @@ System.out.println("------------------------------");
 			if (args[ihi].equalsIgnoreCase("-oe")) flag_original_expressions = true;                   // changed to default, no longer needed
 			if (args[ihi].equalsIgnoreCase("-parsed_expressions")) flag_original_expressions = false;
 			if (args[ihi].equalsIgnoreCase("-pe")) flag_original_expressions = false;
+			if (args[ihi].equalsIgnoreCase("-formatted_expressions")) flag_formatted_1 = true;
+			if (args[ihi].equalsIgnoreCase("-fe")) flag_formatted_1 = true;
+			if (args[ihi].equalsIgnoreCase("-format_level_0")) flag_format_level = 0;
+			if (args[ihi].equalsIgnoreCase("-fl0")) flag_format_level = 0;
+			if (args[ihi].equalsIgnoreCase("-format_level_1")) flag_format_level = 1;
+			if (args[ihi].equalsIgnoreCase("-fl1")) flag_format_level = 1;
+			if (args[ihi].equalsIgnoreCase("-format_level_2")) flag_format_level = 2;
+			if (args[ihi].equalsIgnoreCase("-fl2")) flag_format_level = 2;
+			if (args[ihi].equalsIgnoreCase("-format_level_3")) flag_format_level = 3;
+			if (args[ihi].equalsIgnoreCase("-fl3")) flag_format_level = 3;
 			if (args[ihi].equalsIgnoreCase("-really_original_expressions")) flag_really_original_expressions = true;
 			if (args[ihi].equalsIgnoreCase("-roe")) flag_really_original_expressions = true;
 			if (args[ihi].equalsIgnoreCase("-instantiate_expressions")) expression_instances = true;
@@ -1223,7 +1237,10 @@ System.out.println("------------------------------");
       if (args[ihi].equalsIgnoreCase("-d")) delete_old = true;
       if (args[ihi].equalsIgnoreCase("-short_names")) add_short_names = true;
       if (args[ihi].equalsIgnoreCase("-s")) add_short_names = true;
-      if (args[ihi].equalsIgnoreCase("-repository")) create_repository = true;
+      if (args[ihi].equalsIgnoreCase("-repository")) {
+      	create_repository = true;
+				flag_hard_supertype_error = false;
+      }
       if (args[ihi].equalsIgnoreCase("-r")) create_repository = true;
       if (args[ihi].equalsIgnoreCase("-mixed_declarations")) delete_declarations = false;
       if (args[ihi].equalsIgnoreCase("-m")) delete_declarations = false;
@@ -7516,7 +7533,8 @@ jsdai.lang.EEntity FormalParameter(jsdai.SExtended_dictionary_schema.AParameter 
 	 }
 	 )* ":" par = ParameterType()
 	{
-		if (parser_pass == 5) {
+//		if (parser_pass == 4) { // <TT> experiment - trying to move from 5 to 4 or at least to duplicate in 4
+		if (parser_pass == 5) { // <TT> experiment - trying to move from 5 to 4 or at least to duplicate in 4
 			if (parameters != null) {
 // printDDebug("Last parameter name: " + par_name);
 if (par == null) {
@@ -8125,9 +8143,9 @@ jsdai.SExtended_dictionary_schema.EFunction_definition FunctionHead() throws jsd
 					}
 					// is it really needed to convert to lowercase here?
 					if (flag_oc) {
-						function_description += t.image + " ";
+						function_description += formatStartSeparator(t) + t.image + formatEndSeparator(t);
 					} else {
-						function_description += t.image.toLowerCase() + " ";
+						function_description += formatStartSeparator(t) + t.image.toLowerCase() + formatEndSeparator(t);
 					}
 //					function_description += t.image;
 			}
@@ -10153,6 +10171,12 @@ jsdai.SExtended_dictionary_schema.EDeclaration NamedTypeOrRename(jsdai.lang.Sdai
 	jsdai.SExtended_dictionary_schema.ENamed_type nt = null;
 	jsdai.SExtended_dictionary_schema.EEntity_definition ed = null;
 	jsdai.SExtended_dictionary_schema.EDefined_type dt = null;
+	jsdai.SExtended_dictionary_schema.EConstant_definition cd = null;
+	jsdai.SExtended_dictionary_schema.EFunction_definition fd = null;
+	jsdai.SExtended_dictionary_schema.EProcedure_definition pd = null;
+	jsdai.SExtended_dictionary_schema.EGlobal_rule gr = null;
+	jsdai.SExtended_dictionary_schema.ESub_supertype_constraint sc = null;
+	jsdai.SExtended_dictionary_schema.EGeneric_schema_definition gs = null;
 	jsdai.SExtended_dictionary_schema.EDeclaration dc = null;
 //      jsdai.SExtended_dictionary_schema.EEntity_declaration$used_declaration edc = null;
 //      jsdai.SExtended_dictionary_schema.EType_declaration$used_declaration tdc = null;
@@ -10168,6 +10192,21 @@ jsdai.SExtended_dictionary_schema.EDeclaration NamedTypeOrRename(jsdai.lang.Sdai
 			if (ed == null) {
 				dt = findInterfacedDefined_type(interfaced_model, named_type_name);
 				if (dt == null) {
+					cd = findInterfacedConstant(interfaced_model, named_type_name);
+					if (cd == null) {
+						fd = findInterfacedFunction(interfaced_model, named_type_name);
+						if (fd == null) {
+							pd = findInterfacedProcedure(interfaced_model, named_type_name);
+							if (pd == null) {
+								gr = findInterfacedRule(interfaced_model, named_type_name);
+								if (gr == null) {
+	               	sc = findInterfacedConstraint(interfaced_model, named_type_name);
+									if (sc == null) {
+		               	gs = findInterfacedSchema(interfaced_model, named_type_name);
+										if (gs == null) {
+
+
+
 					error_count++;
 					if (interfaced_schema != null ) {
 //						printError("interfaced named type \"" + named_type_name + "\" not found in schema: " + interfaced_schema.getName(null).toLowerCase());
@@ -10178,7 +10217,69 @@ jsdai.SExtended_dictionary_schema.EDeclaration NamedTypeOrRename(jsdai.lang.Sdai
 						printErrorMsg("" + named_type_name + " - interfaced named type not found because the interfaced schema itself not found", null, true);
 						printDebug("USE FROM: interfaced named type \"" + named_type_name + "\" not found in model: NULL");
 					}
+				
+				
+								} else {
+								printDebug("interfaced schema: " + named_type_name);
+								error_count++;
+								printErrorMsg("" + named_type_name + " - attempting to interface a schema in a list (with USE FROM), from schema: " + interfaced_schema.getName(null), null, true);
+								
+								}
+								} else {
+								printDebug("interfaced subtype_constraint: " + named_type_name);
+								error_count++;
+								printErrorMsg("" + named_type_name + " - attempting to interface a subtype constraint (with USE FROM), from schema: " + interfaced_schema.getName(null), null, true);
+								
+								}
+								} else {
+								printDebug("interfaced rule: " + named_type_name);
+								error_count++;
+								printErrorMsg("" + named_type_name + " - attempting to interface a global rule  (with USE FROM), from schema: " + interfaced_schema.getName(null), null, true);
+								}
+							} else {
+								printDebug("interfaced procedure: " + named_type_name);
+								error_count++;
+								printErrorMsg("" + named_type_name + " - attempting to interface a procedure  with USE FROM, from schema: " + interfaced_schema.getName(null), null, true);
+							}
+						} else {
+								printDebug("interfaced function: " + named_type_name);
+								error_count++;
+								printErrorMsg("" + named_type_name + " - attempting to interface a function  with USE FROM, from schema: " + interfaced_schema.getName(null), null, true);
+						}
+					} else {
+								printDebug("interfaced constant: " + named_type_name);
+								error_count++;
+								printErrorMsg("" + named_type_name + " - attempting to interface a constant  with USE FROM, from schema: " + interfaced_schema.getName(null), null, true);
+					}
+				
+				
+				
+				
 				} else {
+
+			// check for duplicate interfacing here, because later an unnecessary declaration will not be created and null will be returned.
+			// therefore le'ts put definitions, not declarations int the HashMap.
+
+			HashSet items_hashset = (HashSet)hm_used_froms.get(interfaced_model);	 // should be found, as we just created it above, in the case that was not yet present		
+		  
+		  // dt is != null here
+		  if (!items_hashset.add(dt)) { 
+	//			printWarningMsg("" + dc +  " already interfaced separately from " + interfaced_model, null, true);
+				printSoftErrorMsg(" Defined type " + dt.getName(null) +  " already interfaced with USE FROM from schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+			}
+
+			if (hm_referenced_froms != null) {
+				HashSet items_hashset2 = (HashSet)hm_referenced_froms.get(interfaced_model);	 
+				if (items_hashset2 != null) {
+					if (items_hashset2.contains(dt)) {
+						printSoftErrorMsg(" Defined type " + dt.getName(null) +  " already interfaced UNNECESSARILY with REFERENCE FROM from schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+					}
+				}
+			}
+
+
+
+
 //                                      tdc = checkTypeUsedDeclaration(dt);
 //                                      if (tdc == null ) {
 					if (neededTypeUsedDeclaration(dt)) {
@@ -10196,6 +10297,30 @@ jsdai.SExtended_dictionary_schema.EDeclaration NamedTypeOrRename(jsdai.lang.Sdai
 					}
 				}
 			} else { // entity_definition
+
+				// check for duplicate interfacing here, because later an unnecessary declaration will not be created and null will be returned.
+				// therefore le'ts put definitions, not declarations int the HashMap.
+
+				HashSet items_hashset = (HashSet)hm_used_froms.get(interfaced_model);	 // should be found, as we just created it above, in the case that was not yet present		
+		  
+			  // ed is != null here
+			  if (!items_hashset.add(ed)) { 
+			//			printWarningMsg("" + dc +  " already interfaced separately from " + interfaced_model, null, true);
+					printSoftErrorMsg(" Entity " + ed.getName(null) +  " already interfaced with USE FROM from schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+				}
+
+			if (hm_referenced_froms != null) {
+				HashSet items_hashset2 = (HashSet)hm_referenced_froms.get(interfaced_model);	 
+				if (items_hashset2 != null) {
+					if (items_hashset2.contains(ed)) {
+						printSoftErrorMsg(" Entity " + ed.getName(null) +  " already interfaced UNNECESSARILY with REFERENCE FROM from schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+					}
+				}
+			}
+
+
+
+
 //                                      edc = checkEntityUsedDeclaration(ed);
 //                                      if (edc == null ) {
 					if (neededEntityUsedDeclaration(ed)) {
@@ -12089,10 +12214,66 @@ void ReferenceClause(Vector referenced_vector) throws jsdai.lang.SdaiException :
       			if (interfaced_model.getMode() == jsdai.lang.SdaiModel.NO_ACCESS) {
         			interfaced_model.startReadOnlyAccess();
       			}              
+   
+    	if (parser_pass == 2) {
+    		// we can check here if the schema already had REFERENCE FROM (at this point still not clear - with a list or not, perhaps too early?
+
+				//HashSet hs = hm_used_froms.get(interfaced_model);			
+				if (!(hm_referenced_froms.containsKey(interfaced_model))) {
+					hm_referenced_froms.put(interfaced_model, new HashSet());
+				} else {
+					// duplicate use declaration detected, may be whole schema or not - to see later
+					// we can print the message right here or a mare specific later
+					printSoftErrorMsg("More than one REFERENCE FROM to interface items from the same schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+				}
+  	
+    	
+    	}
+   
+   
     		}
 
 	}
-	 ["(" dc = ResourceOrRename(interfaced_model){items_listed = true; items_vector.addElement(dc);} ("," dc = ResourceOrRename(interfaced_model) { items_vector.addElement(dc);})* ")"] [ <AS> ( <SOURCE> | <TARGET> ) ] ";"
+	 ["(" dc = ResourceOrRename(interfaced_model)
+	 {
+	 	items_listed = true; 
+	 	items_vector.addElement(dc);
+
+ 		if ((parser_pass == 2) && (interfaced_model != null)) {
+			HashSet items_hashset = (HashSet)hm_referenced_froms.get(interfaced_model);	 // should be found, as we just created it above, in the case that was not yet present		
+		  HashSet items_hashset_u = (HashSet)hm_referenced_froms.get(interfaced_model);  // this one  may be found or not
+		  
+		  if (dc != null) {
+				// System.out.println("1 dc: " + dc);
+		  	if (!items_hashset.add(dc)) { 
+					printWarningMsg("" + dc +  " already interfaced separately from " + interfaced_model, null, true);
+				}
+			} else {
+				// this occurs if illegal item is attempted to interface, such as subtype constraint or global rule, but an error is given elsewhere
+				// can we still break it? what about schema?
+				// System.out.println("1 dc = null");
+			}
+		}
+	 } 
+	 ("," dc = ResourceOrRename(interfaced_model) 
+	 { 
+	 	items_vector.addElement(dc);
+
+ 		if ((parser_pass == 2) && (interfaced_model != null)) {
+			HashSet items_hashset = (HashSet)hm_referenced_froms.get(interfaced_model);	 // should be found, as we just created it above, in the case that was not yet present		
+		  if (dc != null) {
+				// System.out.println("2 dc: " + dc);
+			  if (!items_hashset.add(dc)) { 
+					printWarningMsg("" + dc +  " already interfaced separately from " + interfaced_model, null, true);
+				}
+			} else {
+				// this occurs if illegal item is attempted to interface, such as subtype constraint or global rule, but an error is given elsewhere
+				// can we still break it? what about schema?
+				// System.out.println("2 dc = null");
+			}
+		}
+	 }
+	)* ")"] [ <AS> ( <SOURCE> | <TARGET> ) ] ";"
 	{
 		if (parser_pass == 2) {
 			rfs = (jsdai.SExtended_dictionary_schema.EReference_from_specification)model.createEntityInstance(jsdai.SExtended_dictionary_schema.CReference_from_specification.class);
@@ -12123,6 +12304,23 @@ void ReferenceClause(Vector referenced_vector) throws jsdai.lang.SdaiException :
 					rfs.deleteApplicationInstance();
 				}
 			}
+
+			if (interfaced_model != null) { // this is new addition for detecting duplicate declarations
+				if (!items_listed) {
+					// the whole schema at once.
+					if (hm_referenced_froms_all == null) { // should not happen
+						hm_referenced_froms_all = new HashSet();
+					}
+					boolean not_yet_present = hm_referenced_froms_all.add(interfaced_model);
+					if (!not_yet_present) {
+						// the whole schema interfaced again
+						printSoftErrorMsg("More than one interfacing with REFERENCE FROM of the whole schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+					}
+				}
+			}
+
+
+
 		}
 	}
 }
@@ -12403,6 +12601,8 @@ jsdai.SExtended_dictionary_schema.EDeclaration ResourceRef(jsdai.lang.SdaiModel 
 	jsdai.SExtended_dictionary_schema.EFunction_definition fd = null;
 	jsdai.SExtended_dictionary_schema.EProcedure_definition pd = null;
 	jsdai.SExtended_dictionary_schema.EGlobal_rule gr = null;
+	jsdai.SExtended_dictionary_schema.ESub_supertype_constraint sc = null;
+	jsdai.SExtended_dictionary_schema.EGeneric_schema_definition gs = null;
 	jsdai.SExtended_dictionary_schema.EDeclaration dc = null;
 //      jsdai.SExtended_dictionary_schema.EEntity_declaration$referenced_declaration edc = null;
 //      jsdai.SExtended_dictionary_schema.EReferenced_declaration$type_declaration tdc = null;
@@ -12434,21 +12634,57 @@ printDDebug("#@# ResourceRef: ed: " + ed);
 							if (pd == null) {
 								gr = findInterfacedRule(interfaced_model, referenced_type_name);
 								if (gr == null) {
-									error_count++;
-									if (interfaced_schema != null) {
+	               	sc = findInterfacedConstraint(interfaced_model, referenced_type_name);
+									if (sc == null) {
+		               	gs = findInterfacedSchema(interfaced_model, referenced_type_name);
+										if (gs == null) {
+	
+	
+										error_count++;
+										if (interfaced_schema != null) {
 //										printError("interfaced EXPRESS type \"" + referenced_type_name + "\" not found in schema: " + interfaced_schema.getName(null).toLowerCase());
-										printErrorMsg("" + referenced_type_name + "- interfaced EXPRESS type not found in schema: " + interfaced_schema.getName(null), null, true);
-									} else {
-//										printError("interfaced EXPRESS type \"" + referenced_type_name + "\" not found in schema which itself was not found");
-										printErrorMsg("" + referenced_type_name + " - interfaced EXPRESS type not found in a schema which itself was not found", null, true);
+											printErrorMsg("" + referenced_type_name + "- interfaced EXPRESS type not found in schema: " + interfaced_schema.getName(null), null, true);
+										} else {
+//											printError("interfaced EXPRESS type \"" + referenced_type_name + "\" not found in schema which itself was not found");
+											printErrorMsg("" + referenced_type_name + " - interfaced EXPRESS type not found in a schema which itself was not found", null, true);
+										}
+										if (interfaced_model != null) {
+											printDebug("REFERENCE FROM: interfaced express type \"" + referenced_type_name + "\" not found in model: " + interfaced_model.getName());
+										} else {
+											printDebug("REFERENCE FROM: interfaced express type \"" + referenced_type_name + "\" not found in model which itself was not found");
+										}
+								} else {
+									printDebug("interfaced schema: " + referenced_type_name);
+									error_count++;
+									printErrorMsg("" + referenced_type_name + " - attempting to interface a schema in a list with REFERENCE FROM, from schema: " + interfaced_schema.getName(null), null, true);
+								
+								/*
+									if (neededRuleReferencedDeclaration(gr)) {
+										dc = (jsdai.SExtended_dictionary_schema.EDeclaration)model.createEntityInstance(jsdai.SExtended_dictionary_schema.CReferenced_declaration$rule_declaration.class);
+										dc.setParent_schema(null, (jsdai.SExtended_dictionary_schema.ESchema_definition)sd);
+										dc.setDefinition(null, (jsdai.SExtended_dictionary_schema.EGlobal_rule)gr);
+										gr.setTemp(FLAG_REFERENCED);
 									}
-									if (interfaced_model != null) {
-										printDebug("REFERENCE FROM: interfaced express type \"" + referenced_type_name + "\" not found in model: " + interfaced_model.getName());
-									} else {
-										printDebug("REFERENCE FROM: interfaced express type \"" + referenced_type_name + "\" not found in model which itself was not found");
+								*/
+								}
+								} else {
+								printDebug("interfaced subtype_constraint: " + referenced_type_name);
+								error_count++;
+								printErrorMsg("" + referenced_type_name + " - attempting to interface a subtype constraint with REFERENCE FROM, from schema: " + interfaced_schema.getName(null), null, true);
+								
+								/*
+									if (neededRuleReferencedDeclaration(gr)) {
+										dc = (jsdai.SExtended_dictionary_schema.EDeclaration)model.createEntityInstance(jsdai.SExtended_dictionary_schema.CReferenced_declaration$rule_declaration.class);
+										dc.setParent_schema(null, (jsdai.SExtended_dictionary_schema.ESchema_definition)sd);
+										dc.setDefinition(null, (jsdai.SExtended_dictionary_schema.EGlobal_rule)gr);
+										gr.setTemp(FLAG_REFERENCED);
 									}
+								*/
+								}
 								} else {
 								printDebug("interfaced rule: " + referenced_type_name);
+								error_count++;
+								printErrorMsg("" + referenced_type_name + " - attempting to interface a global rule  with REFERENCE FROM, from schema: " + interfaced_schema.getName(null), null, true);
 								/*
 									if (neededRuleReferencedDeclaration(gr)) {
 										dc = (jsdai.SExtended_dictionary_schema.EDeclaration)model.createEntityInstance(jsdai.SExtended_dictionary_schema.CReferenced_declaration$rule_declaration.class);
@@ -12459,6 +12695,17 @@ printDDebug("#@# ResourceRef: ed: " + ed);
 								*/
 								}
 							} else {
+
+								// check for duplicate interfacing here, because later an unnecessary declaration will not be created and null will be returned.
+								// therefore le'ts put definitions, not declarations int the HashMap.
+	
+								HashSet items_hashset = (HashSet)hm_referenced_froms.get(interfaced_model);	 // should be found, as we just created it above, in the case that was not yet present		
+	  
+							  if (!items_hashset.add(pd)) { 
+									printSoftErrorMsg(" Procedure " + pd.getName(null) +  " already interfaced with REFERENCE FROM from schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+								}
+
+
 								if (neededProcedureReferencedDeclaration(pd)) {
 									dc = (jsdai.SExtended_dictionary_schema.EDeclaration)model.createEntityInstance(jsdai.SExtended_dictionary_schema.CProcedure_declaration$referenced_declaration.class);
 									dc.setParent(null, sd);
@@ -12474,6 +12721,16 @@ printDDebug("#@# ResourceRef: ed: " + ed);
 								}
 							}
 						} else {
+
+							// check for duplicate interfacing here, because later an unnecessary declaration will not be created and null will be returned.
+							// therefore le'ts put definitions, not declarations int the HashMap.
+
+							HashSet items_hashset = (HashSet)hm_referenced_froms.get(interfaced_model);	 // should be found, as we just created it above, in the case that was not yet present		
+	  
+						  if (!items_hashset.add(fd)) { 
+								printSoftErrorMsg(" Function " + fd.getName(null) +  " already interfaced with REFERENCE FROM from schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+							}
+
 							if (neededFunctionReferencedDeclaration(fd)) {
 								dc = (jsdai.SExtended_dictionary_schema.EDeclaration)model.createEntityInstance(jsdai.SExtended_dictionary_schema.CFunction_declaration$referenced_declaration.class);
 								dc.setParent(null, sd);
@@ -12489,6 +12746,17 @@ printDDebug("#@# ResourceRef: ed: " + ed);
 							}
 						}
 					} else {
+						// check for duplicate interfacing here, because later an unnecessary declaration will not be created and null will be returned.
+						// therefore le'ts put definitions, not declarations int the HashMap.
+
+						HashSet items_hashset = (HashSet)hm_referenced_froms.get(interfaced_model);	 // should be found, as we just created it above, in the case that was not yet present		
+	  
+					  if (!items_hashset.add(cd)) { 
+							printSoftErrorMsg(" Constant " + cd.getName(null) +  " already interfaced with REFERENCE FROM from schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+						}
+
+
+
 						if (neededConstantReferencedDeclaration(cd)) {
 							dc = (jsdai.SExtended_dictionary_schema.EDeclaration)model.createEntityInstance(jsdai.SExtended_dictionary_schema.CConstant_declaration$referenced_declaration.class);
 							dc.setParent(null, sd);
@@ -12504,6 +12772,34 @@ printDDebug("#@# ResourceRef: ed: " + ed);
 						}
 					}
 				} else {
+
+			// check for duplicate interfacing here, because later an unnecessary declaration will not be created and null will be returned.
+			// therefore le'ts put definitions, not declarations int the HashMap.
+
+			HashSet items_hashset = (HashSet)hm_referenced_froms.get(interfaced_model);	 // should be found, as we just created it above, in the case that was not yet present		
+		  
+		  // dt is != null here
+		  if (!items_hashset.add(dt)) { 
+	//			printWarningMsg("" + dc +  " already interfaced separately from " + interfaced_model, null, true);
+				printSoftErrorMsg(" Defined type " + dt.getName(null) +  " already interfaced with REFERENCE FROM from schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+			}
+			if (hm_used_froms_all != null) {
+				if (hm_used_froms_all.contains(interfaced_model)) {
+					printSoftErrorMsg(" Defined type " + dt.getName(null) +  " already interfaced with USE FROM, interfaced whole schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+				}
+			}
+			if (hm_used_froms != null) {
+				HashSet items_hashset2 = (HashSet)hm_used_froms.get(interfaced_model);	 
+				if (items_hashset2 != null) {
+					if (items_hashset2.contains(dt)) {
+						printSoftErrorMsg(" Defined type " + dt.getName(null) +  " already interfaced with USE FROM from schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+					}
+				}
+			}
+
+
+
+
 //                                      tdc = checkTypeReferencedDeclaration(dt);
 //                                      if (tdc == null ) {
 					if (neededTypeReferencedDeclaration(dt)) {
@@ -12521,6 +12817,32 @@ printDDebug("#@# ResourceRef: ed: " + ed);
 					}
 				}
 			} else { // entity_definition
+
+			// check for duplicate interfacing here, because later an unnecessary declaration will not be created and null will be returned.
+			// therefore le'ts put definitions, not declarations int the HashMap.
+
+			HashSet items_hashset = (HashSet)hm_referenced_froms.get(interfaced_model);	 // should be found, as we just created it above, in the case that was not yet present		
+		  
+		  // ed is != null here
+		  if (!items_hashset.add(ed)) { 
+	//			printWarningMsg("" + dc +  " already interfaced separately from " + interfaced_model, null, true);
+				printSoftErrorMsg(" Entity " + ed.getName(null) +  " already interfaced with REFERENCE FROM from schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+			}
+			if (hm_used_froms_all != null) {
+				if (hm_used_froms_all.contains(interfaced_model)) {
+					printSoftErrorMsg(" Entity " + ed.getName(null) +  " already interfaced with USE FROM, interfaced whole schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+				}
+			}
+			if (hm_used_froms != null) {
+				HashSet items_hashset2 = (HashSet)hm_used_froms.get(interfaced_model);	 
+				if (items_hashset2 != null) {
+					if (items_hashset2.contains(ed)) {
+						printSoftErrorMsg(" Entity " + ed.getName(null) +  " already interfaced with USE FROM from schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+					}
+				}
+			}	
+
+
 //                                      edc = checkEntityReferencedDeclaration(ed);
 //                                      if (edc == null ) {
 // System.out.println("X__X in ResourceRef, entity definition: " + ed.getName(null));
@@ -12732,9 +13054,9 @@ printVerbose("Global Rule: " + name);
 					}
 					// is it really needed here?
 					if (flag_oc) {
-						rule_description += t.image + " ";
+						rule_description += formatStartSeparator(t) + t.image + formatEndSeparator(t);
 					} else {
-						rule_description += t.image.toLowerCase() + " ";
+						rule_description += formatStartSeparator(t) + t.image.toLowerCase() + formatEndSeparator(t);
 					}
 //					rule_description += t.image;
 			}
@@ -13266,6 +13588,12 @@ try {
 		scope_stack.push(current_scope);
 		current_scope = new Vector();
 		function_depth = 0;
+
+		hm_used_froms = new HashMap();
+		hm_referenced_froms = new HashMap();
+		hm_used_froms_all = new HashSet();
+		hm_referenced_froms_all = new HashSet();
+
 	}
 	a_token = <SCHEMA> { schema_depth++; } schema_name = SchemaId()
 	{
@@ -13333,6 +13661,14 @@ try {
 				hm_current_subtype_constraint_declarations = new HashMap();
 				hm_current_variables = new HashMap();
 				hm_current_parameters = new HashMap();
+
+				// these hashmaps are used to detect interfacing duplications
+				// those without _all contain HashSets for each schema from which interfaced
+				// with _all - just schemas, actually, directly HashSet coul be used, or nothing at all, adding a special member to the other ones - the implementation might get refined in the future
+				//hm_used_froms = new HashMap();
+				//hm_referenced_froms = new HashMap();
+				//hm_used_froms_all = new HashSet();
+				//hm_referenced_froms_all = new HashSet();
 
 // System.out.println("Model created in pass 1: " + model);				
 				
@@ -15293,10 +15629,12 @@ void SubtypeDeclaration(jsdai.SExtended_dictionary_schema.EEntity_or_view_defini
 	int index = 1;
 	int index_g = 1;
 	boolean is_connotational = false;
+	HashSet all_supertypes = null;
 }
 {
 	{
 		if (parser_pass == 3) {
+			all_supertypes = new HashSet();
 			generic_supertypes = ed.getGeneric_supertypes(null);
 			if (ed instanceof jsdai.SExtended_dictionary_schema.EEntity_definition) {
 				if (supertypes != null) {
@@ -15319,6 +15657,7 @@ void SubtypeDeclaration(jsdai.SExtended_dictionary_schema.EEntity_or_view_defini
 				}
 			}
 			if (super_ed != null) {
+				all_supertypes.add(super_ed);
 				if (checkCyclicSupertypes((jsdai.SExtended_dictionary_schema.EEntity_definition)ed, super_ed)) {
 					generic_supertypes.addByIndex(index_g++, super_ed);
 					if (supertypes != null) {
@@ -15342,6 +15681,11 @@ void SubtypeDeclaration(jsdai.SExtended_dictionary_schema.EEntity_or_view_defini
 		if (parser_pass == 3)
 		{
 			if (super_ed != null) {
+				boolean is_new = all_supertypes.add(super_ed);
+				if (!is_new) {
+					// error_count++;
+					printErrorMsg("" + super_ed.getName(null) + " - duplicate supertype in entity " + ed.getName(null), null, true);
+				}
 				if (checkCyclicSupertypes((jsdai.SExtended_dictionary_schema.EEntity_definition)ed, super_ed)) {
 					generic_supertypes.addByIndex(index_g++, super_ed);
 					if (supertypes != null) {
@@ -16243,9 +16587,64 @@ void UseClause(Vector used_vector) throws jsdai.lang.SdaiException :
 			if (interfaced_model.getMode() == jsdai.lang.SdaiModel.NO_ACCESS) {
 				interfaced_model.startReadOnlyAccess();
       }
+    
+    	if (parser_pass == 2) {
+    		// we can check here if the schema already had USE FROM (at this point still not clear - with a list or not, perhaps too early?
+
+				//HashSet hs = hm_used_froms.get(interfaced_model);			
+				if (!(hm_used_froms.containsKey(interfaced_model))) {
+					hm_used_froms.put(interfaced_model, new HashSet());
+				} else {
+					// duplicate use declaration detected, may be whole schema or not - to see later, and for some violations/duplications it is not even important
+					// we can print the message right here or a more specific later
+//					printWarningMsg("TEMPORARY WARNING - Duplicate USE FROM detected, may be whole schema or not - to see later: " + interfaced_model, null, true);
+//					printErrorMsg("More than one USE FROM to interface items from the same schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+					printSoftErrorMsg("More than one USE FROM to interface items from the same schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+				}
+  	
+    	
+    	}
+    
     }
 	}
-	["(" dc = NamedTypeOrRename(interfaced_model) {items_listed = true; items_vector.addElement(dc);}("," dc = NamedTypeOrRename(interfaced_model) { items_vector.addElement(dc);})* ")"] ";"
+	["(" dc = NamedTypeOrRename(interfaced_model) 
+	{
+		items_listed = true; 
+// this is handled in NamedTypeOrRename() (although perhaps this handling could be improved: when attempting to interface a function my_function, we get: "named type my_function not found", could get: "my_function is not a named type but function, not allowed to interface with USE FROM"
+//		if (!validUsedFromItem(dc)) {
+//			printWarningMsg("" + dc +  " not allowed to interface with USE FROM, " + interfaced_model, null, true);
+//		}
+		items_vector.addElement(dc);
+		
+ 		if ((parser_pass == 2) && (interfaced_model != null)) {
+			HashSet items_hashset = (HashSet)hm_used_froms.get(interfaced_model);	 // should be found, as we just created it above, in the case that was not yet present		
+		  if (dc != null) {  // it seems that NamedTypeOrRename() returns null in the case of duplication, therefore it will not work here
+		  	if (!items_hashset.add(dc)) { 
+					printWarningMsg("" + dc +  " already interfaced separately from " + interfaced_model, null, true);
+				}
+			} else {
+				// probably attempting to interface not a named type, perhaps should get more specific information (elsewhere)
+			}
+		}
+	}
+	("," dc = NamedTypeOrRename(interfaced_model) 
+	{ 
+		//if (!validUsedFromItem(dc)) {
+		//	printWarningMsg("" + dc +  " not allowed to interface with USE FROM, " + interfaced_model, null, true);
+		//}
+		items_vector.addElement(dc);
+ 		if ((parser_pass == 2) && (interfaced_model != null)) {
+			HashSet items_hashset = (HashSet)hm_used_froms.get(interfaced_model);	 // should be found, as we just created it above, in the case that was not yet present		
+		  if (dc != null) {
+			  if (!items_hashset.add(dc)) { 
+					printWarningMsg("" + dc +  " already interfaced separately from " + interfaced_model, null, true);
+				}
+			} else {
+				// probably attempting to interface not a named type, perhaps should get more specific information (elsewhere)
+			}
+		}
+}
+	)* ")"] ";"
 	{
 		if (parser_pass == 2) {
 			ufs = (jsdai.SExtended_dictionary_schema.EUse_from_specification)model.createEntityInstance(jsdai.SExtended_dictionary_schema.CUse_from_specification.class);
@@ -16274,7 +16673,20 @@ void UseClause(Vector used_vector) throws jsdai.lang.SdaiException :
 					ufs.deleteApplicationInstance();
 				}
 			}
-		}
+			if (interfaced_model != null) { // this is new addition for detecting duplicate declarations
+				if (!items_listed) {
+					// the whole schema at once.
+					if (hm_used_froms_all == null) { // should not happen
+						hm_used_froms_all = new HashSet();
+					}
+					boolean not_yet_present = hm_used_froms_all.add(interfaced_model);
+					if (!not_yet_present) {
+						// the whole schema interfaced again
+						printSoftErrorMsg("More than one interfacing with USE FROM of the whole schema " + getSchema_definitionFromModel(interfaced_model).getName(null), null, true);
+					}
+				} // no items - so whole schema
+			}
+		} // pass 2
 	}
 }
 /* ------------------------------------------------------------------------------------ ISO 10303-11:A.2.314------------ */
@@ -16946,6 +17358,7 @@ int WidthSpec() throws jsdai.lang.SdaiException :
 
 /* ---------------------------------------------------------------------------------- ISO 10303-11:A.1.5.145 ------------*/
 jsdai.SExtended_dictionary_schema.EAttribute AttributeRef5(jsdai.SExtended_dictionary_schema.EEntity_definition ed, jsdai.SExtended_dictionary_schema.EEntity_definition ed2, int attr_type, Object reference)  throws jsdai.lang.SdaiException #AttributeRef :
+//jsdai.SExtended_dictionary_schema.EAttribute AttributeRef5(jsdai.SExtended_dictionary_schema.EEntity_definition ed, jsdai.SExtended_dictionary_schema.EEntity_definition ed2, int attr_type, Object reference)  #AttributeRef :
 {
 	jsdai.SExtended_dictionary_schema.EAttribute attr = null;
 	String attribute_name;
@@ -16955,6 +17368,7 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef5(jsdai.SExtended_dicti
 	boolean to_debug = false;
 }
 {
+
 {
 	printDebug("In AttributeRef5, starting, ed: " + ed + ", ed2: " + ed2 + ", attr. type: " + attr_type + ", reference: " + reference + ", pass: " + parser_pass);
 		attr_type_original = attr_type;
@@ -16968,6 +17382,8 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef5(jsdai.SExtended_dicti
 }
 	attribute_token = AttributeId5()
 	{
+	
+	
 		if (flag_oc) {
 			attribute_name = attribute_token.image;
 		} else {
@@ -17078,7 +17494,16 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeRef5(jsdai.SExtended_dicti
 //System.out.println("XXXX 01: name: " + attribute_name + ", ed: " + ed2 + ", type: " + attr_type);
 //System.out.println("@#@# Invoking findAttribute from AttributeRef5, pass = 5, type != 3, name: " + attribute_name + ", ed: " + ed2); 
 //System.out.println("before findAttirbute: " + attr_type + ", name: " + attribute_name + ", ed2: " + ed2 + ", ed: " + ed + ", key: " + attr_key); 
-					attr = findAttribute(attribute_name, ed2, attr_type_original, ed, attr_key);
+
+					// will be using extended findAttribute() instead, in the case of failure, it may attempt using the reference object to further attempt to resolve the attribute
+					 // attr = findAttribute(attribute_name, ed2, attr_type_original, ed, attr_key);
+try {
+					attr = findAttribute(attribute_name, ed2, attr_type_original, ed, attr_key, reference);
+} catch (jsdai.lang.SdaiException sex) {
+	System.out.println("SdaiException in new findAttribute: " + sex);
+}
+
+//System.out.println(">>>>>>PROBLEM - attr: " + attr);
 //if (attr == null) {
 //			System.out.println("NULL dAttributeRef5, after findAttribute: attribute_name: " + attribute_name + ", ed2: " + ed2 + ", attr_type: " + attr_type + ", ed: " + ed + ", attr_key: " + attr_key + ", result attr: "  + attr);
 //}
@@ -17269,7 +17694,10 @@ System.out.println("resolved attr: "  + attr);
 
 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 */
+//System.out.println(">>>>>>PROBLEM-2 - attr: " + attr);
+
 		return attr;
+
 	}
 }
 /* ------------------------------------------------------------------------------ ISO 10303-11:A.1.5-interpreted identifiers----------- */
@@ -17798,7 +18226,7 @@ jsdai.lang.EEntity ConcreteTypes5(jsdai.lang.EEntity whose) throws jsdai.lang.Sd
 	}
 }
 /* ------------------------------------------------------------------------------------ ISO 10303-11:A.2.157 ------------ */
-int ActualParameterList5(Vector arguments, Vector expressions) throws jsdai.lang.SdaiException :
+int ActualParameterList5(Vector arguments, Vector expressions, Vector argument_types) throws jsdai.lang.SdaiException :
 {
 	int argument_count = 0;
 	Object argument [] = null;
@@ -17807,7 +18235,7 @@ int ActualParameterList5(Vector arguments, Vector expressions) throws jsdai.lang
 	{
 		printDebug("Starting ActualParameterList5");
 	}
-	("(" [argument = Parameter5() {argument_count++; arguments.addElement(argument[0]); expressions.addElement(argument[1]);}("," argument = Parameter5(){argument_count++; arguments.addElement(argument[0]);expressions.addElement(argument[1]);})*] ")")
+	("(" [argument = Parameter5() {argument_count++; arguments.addElement(argument[0]); expressions.addElement(argument[1]); argument_types.addElement(argument[2]);}("," argument = Parameter5(){argument_count++; arguments.addElement(argument[0]);expressions.addElement(argument[1]); argument_types.addElement(argument[2]);})*] ")")
 	{
 		printDebug("Ending ActualParameterList5, nr of arguments: " + argument_count);
 		return argument_count;
@@ -18481,6 +18909,28 @@ jsdai.SExtended_dictionary_schema.EAttribute AttributeQualifier5(jsdai.SExtended
 		if (attr2 == null) {
 			if (to_debug) {
 				//System.out.println("attr2 = null in AttributeQualifier5");
+			}
+			String err_reference_name = "";
+			String err_attribute_name = getToken(0).image;
+			if (reference instanceof jsdai.SExtended_dictionary_schema.EParameter) {
+				err_reference_name = ((jsdai.SExtended_dictionary_schema.EParameter)reference).getName(null);
+			} else
+			if (reference instanceof ECtVariable) {
+				err_reference_name = ((ECtVariable)reference).getName();
+			} else
+			if (reference instanceof jsdai.SExtended_dictionary_schema.EEntity_definition) {
+				err_reference_name = ((jsdai.SExtended_dictionary_schema.EEntity_definition)reference).getName(null);
+				if (ed != null) {
+					printErrorMsg(err_reference_name + "." + err_attribute_name + " - attribute \"" + err_attribute_name + "\" not found in entity " + ed.getName(null), null, true);
+				}
+			} else {
+			}
+			//System.out.println("KUKUBUKU: " + getToken(0).image);
+			//error_count++;
+			if (ed != null) {
+// removed here, because a warning is printed elsewhere
+//				printErrorMsg(err_reference_name + "." + err_attribute_name + " - attribute \"" + err_attribute_name + "\" not found in entity " + ed.getName(null), null, true);
+			} else {
 			}
 			printDebug("In AttributeQualifier5, ending with attr2 = NULL");
 			return null;
@@ -19171,10 +19621,11 @@ jsdai.SExtended_dictionary_schema.EBound Bound15(boolean make_pdb) throws jsdai.
 				) {
 					break;
 				}
-				if (flag_oc) {
-					bound_description += t.image + " ";
+
+ 			  if (flag_oc) {
+					bound_description += formatStartSeparator(t) + t.image + formatEndSeparator(t);
 				} else {
-					bound_description += t.image.toLowerCase() + " ";
+					bound_description += formatStartSeparator(t) + t.image.toLowerCase() + formatEndSeparator(t);
 				}
 				if (first_token) {
 					start_token = t;
@@ -19252,9 +19703,9 @@ jsdai.SExtended_dictionary_schema.EBound Bound25(boolean make_pdb) throws jsdai.
 					break;
 				}
 				if (flag_oc) {
-					bound_description += t.image + " ";
+					bound_description += formatStartSeparator(t) + t.image + formatEndSeparator(t);
 				} else {
-					bound_description += t.image.toLowerCase() + " ";
+					bound_description += formatStartSeparator(t) + t.image.toLowerCase() + formatEndSeparator(t);
 				}
 				if (first_token) {
 					start_token = t;
@@ -19661,9 +20112,9 @@ void ConstantBody5() throws jsdai.lang.SdaiException #ConstantBody:
 				}
 				// is it needed?
 				if (flag_oc) {
-					constant_expression_description += t.image + " ";
+					constant_expression_description += formatStartSeparator(t) + t.image + formatEndSeparator(t);
 				} else {
-					constant_expression_description += t.image.toLowerCase() + " ";
+					constant_expression_description += formatStartSeparator(t) + t.image.toLowerCase() + formatEndSeparator(t);
 				}
 				if (first_token) {
 					start_token = t;
@@ -19928,7 +20379,7 @@ jsdai.SExtended_dictionary_schema.ESub_supertype_constraint SubtypeConstraintHea
 	{
 		printDebug("In SubtypeConstraintHead5, starting");
 	}
-	<SUBTYPE_CONSTRAINT> constraint_id = SubtypeConstraintId5() <FOR> ed = EntityRef5(null) ";" 
+	<SUBTYPE_CONSTRAINT> constraint_id = SubtypeConstraintId5() <FOR> ed = EntityRef5(null) {global_supertype_entity = ed;}";" 
 	{
 		printDebug("In SubtypeConstraintHead5, ending");
 
@@ -20269,9 +20720,9 @@ void DerivedAttr5(jsdai.SExtended_dictionary_schema.EEntity_definition ed) throw
 				}
 				// is it needed?
 				if (flag_oc) {
-					derived_description += t.image + " "; 
+					derived_description += formatStartSeparator(t) + t.image + formatEndSeparator(t); 
 				} else {
-					derived_description += t.image.toLowerCase() + " "; 
+					derived_description += formatStartSeparator(t) + t.image.toLowerCase() + formatEndSeparator(t); 
 				}
 //				derived_description += t.image; 
 	  	}  
@@ -20303,6 +20754,151 @@ void DerivedAttr5(jsdai.SExtended_dictionary_schema.EEntity_definition ed) throw
 				if (!((jsdai.SExtended_dictionary_schema.EDerived_attribute)da).testDomain(null)) {
 					((jsdai.SExtended_dictionary_schema.EDerived_attribute)da).setDomain(null, (jsdai.SExtended_dictionary_schema.EAggregation_type)bt);
 				}
+//------------------ adding GENERIC-ABSTRACT checks --------------------------------------------------
+					// let's put here some checks for generalized aggregates
+					jsdai.lang.EEntity domain = null;
+					jsdai.lang.EEntity domain2 = null;
+					boolean already_error = false;
+
+//							if (((jsdai.SExtended_dictionary_schema.EParameter)bt).testParameter_type(null)) {
+//								domain = ((jsdai.SExtended_dictionary_schema.EParameter)bt).getParameter_type(null);
+
+
+//System.out.println("bt name: " + bt);
+
+					if ((((jsdai.SExtended_dictionary_schema.EAggregation_type)bt).getName(null).startsWith("_AGGREGATE")) || 
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)bt).getName(null).startsWith("_GENERALARRAY")) ||
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)bt).getName(null).startsWith("_GENERALSET")) ||
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)bt).getName(null).startsWith("_GENERALLIST")) ||
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)bt).getName(null).startsWith("_GENERALBAG")) 
+					){
+						// allowed only in ABSTRACT ENTITIES 
+						if (ed != null) { // stupid test, not really needed
+							if (ed.testAbstract_entity(null)) {
+								if (ed.getAbstract_entity(null)) {
+									// ok
+								} else {
+									// error - generic_entity and not abstract entity!!!
+									error_count++;
+									printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + da.getName(null) + " - general aggregate attributes allowed in ABSTRACT entities only", null, true);
+									//break;
+									already_error = true;
+								}
+							} else {
+								// mandatory abstract_entity unset
+								printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+							}
+						} else {
+							// entity definition ed = NULL - internal error
+							printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+						}
+					} // if AGGREGATE etc
+
+
+
+
+								if (((jsdai.SExtended_dictionary_schema.EAggregation_type)bt).testElement_type(null)) {
+									domain = ((jsdai.SExtended_dictionary_schema.EAggregation_type)bt).getElement_type(null);
+//System.out.println("before - domain: " + domain);								
+
+
+	
+								boolean done_something = true;
+								if (already_error) done_something = false;
+								while (done_something) {	
+									done_something = false;
+
+									if (domain instanceof jsdai.SExtended_dictionary_schema.EDefined_type) {
+										if (((jsdai.SExtended_dictionary_schema.EDefined_type)domain).testDomain(null)) {
+											domain2 = ((jsdai.SExtended_dictionary_schema.EDefined_type)domain).getDomain(null);
+											done_something = true;
+										} else {
+											break;
+										}
+									} else
+									if (domain instanceof jsdai.SExtended_dictionary_schema.EAggregation_type) {
+//System.out.println("aggregate-domain: " + domain);
+										if ((((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_AGGREGATE")) || 
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALARRAY")) ||
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALSET")) ||
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALLIST")) ||
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALBAG")) 
+										){
+											// allowed only in ABSTRACT ENTITIES 
+											if (ed != null) { // stupid test, not really needed
+												if (ed.testAbstract_entity(null)) {
+													if (ed.getAbstract_entity(null)) {
+													// ok
+													} else {
+														// error - generic_entity and not abstract entity!!!
+														error_count++;
+														printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + da.getName(null) + " - general aggregate attributes allowed in ABSTRACT entities only", null, true);
+														break;
+													}
+												} else {
+													// mandatory abstract_entity unset
+													printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+												}
+											} else {
+												// entity definition ed = NULL - internal error
+												printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+											}
+										} // if AGGREGATE etc
+
+										if (((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).testElement_type(null)) {
+											domain2 = ((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getElement_type(null);
+											done_something = true;
+										} else {
+											break;
+										}	
+									}
+									if (done_something) {
+										domain = domain2;
+//System.out.println("in loop - domain: " + domain);								
+										
+									}
+								} // while
+							} // parameter_type not null							
+//System.out.println("final domain: " + domain);								
+//System.out.println("domain2: " + domain2);								
+							// if domain is GENERIC - always an error
+							// if domain is GENERIC_ENTITY - check if ABSTRACT ENTITY
+							// as to AGGREGATE - we better catch AGGREGATE in the middle of the chain, at the end it might be too late: AGGREGATE OF INTEGER, for example.
+							// we should also catch ARRAY and check if it has bounds or not, if not - the same as AGGREGATE - means generalized type.
+							if (domain instanceof jsdai.SExtended_dictionary_schema.EData_type) {
+								String domain_name = ((jsdai.SExtended_dictionary_schema.EData_type)domain).getName(null); 
+								if (domain_name.equals("_GENERIC")) {	
+	              	// always an error
+									error_count++;
+									printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + da.getName(null) + " - GENERIC in attributes not allowed, even as an element of an aggregate", null, true);
+	              } else							
+								if (domain_name.equals("_ENTITY")) {	
+									// an error if not abstract entity
+									if (ed != null) { // not really needed
+										if (ed.testAbstract_entity(null)) {
+											if (ed.getAbstract_entity(null)) {
+												// ok
+											} else {
+												// error - generic_entity and not abstract entity!!!
+												error_count++;
+												printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + da.getName(null) + " - GENERIC_ENTITY in attributes allowed in ABSTRACT entities only, even when as element of an aggregate", null, true);
+											}
+										} else {
+											// mandatory abstract_entity unset
+											printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+										}
+									} else {
+										// entity definition ed = NULL - internal error
+										printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+									}
+
+
+
+								}
+								
+							}
+
+//----------------------------------------------------------------------------------------------------------ABSTRACT-GENERIC end
 			} else
 			if (bt instanceof jsdai.SExtended_dictionary_schema.ENamed_type) {
 				if (da != null) {
@@ -20319,7 +20915,198 @@ void DerivedAttr5(jsdai.SExtended_dictionary_schema.EEntity_definition ed) throw
 				if (!((jsdai.SExtended_dictionary_schema.EDerived_attribute)da).testDomain(null)) {
 				((jsdai.SExtended_dictionary_schema.EDerived_attribute)da).setDomain(null, (jsdai.SExtended_dictionary_schema.EParameter)bt);
 				}
-				
+
+//------------- checking GENERIC-ABSTRACT -------------------------------------------------------------------------------------
+
+					if (((jsdai.SExtended_dictionary_schema.EParameter)bt).testParameter_type(null)) {
+						String parameter_type_name = ((jsdai.SExtended_dictionary_schema.EParameter)bt).getParameter_type(null).getName(null);
+						if (parameter_type_name.equals("_GENERIC")) {
+							// error - never allowed
+							error_count++;
+							printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + da.getName(null) + " - GENERIC attributes not allowed", null, true);
+						} else
+						if (parameter_type_name.equals("_ENTITY")) {
+							// allowed only in ABSTRACT ENTITIES 
+							if (ed != null) {
+								if (ed.testAbstract_entity(null)) {
+									if (ed.getAbstract_entity(null)) {
+										// ok
+									} else {
+										// error - generic_entity and not abstract entity!!!
+										error_count++;
+										printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + da.getName(null) + " - GENERIC_ENTITY attributes allowed in ABSTRACT entities only", null, true);
+									}
+								} else {
+									// mandatory abstract_entity unset
+									printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+								}
+							} else {
+								// entity definition ed = NULL - internal error
+								printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+							}
+						} else
+						if (parameter_type_name.startsWith("_AGGREGATE")) {
+							// allowed only in ABSTRACT ENTITIES 
+							if (ed != null) {
+								if (ed.testAbstract_entity(null)) {
+									if (ed.getAbstract_entity(null)) {
+										// ok
+									} else {
+										// error - generic_entity and not abstract entity!!!
+										error_count++;
+										printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + da.getName(null) + " - AGGREGATE attributes allowed in ABSTRACT entities only", null, true);
+									}
+								} else {
+									// mandatory abstract_entity unset
+									printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+								}
+							} else {
+								// entity definition ed = NULL - internal error
+								printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+							}
+						} else {
+							// to do - generalized aggregation types - need to check too - element should not be GENERIC
+							// check if it is a generalized aggregation type
+							// if element is GENERIC - always error
+							// if generalized, but element is other as GENERIC - error if ed is not ABSTRACT ENTITY.
+							
+							// it seems that here only the outer-most aggregate is detected, and inner aggregates and element types - above in aggregation_type, not parameter
+	
+							jsdai.lang.EEntity domain = null;
+							jsdai.lang.EEntity domain2 = null;
+							boolean already_error = false;
+
+							if (((jsdai.SExtended_dictionary_schema.EParameter)bt).testParameter_type(null)) {
+								domain = ((jsdai.SExtended_dictionary_schema.EParameter)bt).getParameter_type(null);
+	
+	
+
+					if ((((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_AGGREGATE")) || 
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALARRAY")) ||
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALSET")) ||
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALLIST")) ||
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALBAG")) 
+					){
+						// allowed only in ABSTRACT ENTITIES 
+						if (ed != null) { // stupid test, not really needed
+							if (ed.testAbstract_entity(null)) {
+								if (ed.getAbstract_entity(null)) {
+									// ok
+								} else {
+									// error - generic_entity and not abstract entity!!!
+									error_count++;
+									printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + da.getName(null) + " - general aggregate attributes allowed in ABSTRACT entities only", null, true);
+									//break;
+									already_error = true;
+								}
+							} else {
+								// mandatory abstract_entity unset
+								printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+							}
+						} else {
+							// entity definition ed = NULL - internal error
+							printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+						}
+					} // if AGGREGATE etc
+
+	
+								boolean done_something = true;
+								if (already_error) done_something = false;
+								while (done_something) {	
+									done_something = false;
+									if (domain instanceof jsdai.SExtended_dictionary_schema.EDefined_type) {
+										if (((jsdai.SExtended_dictionary_schema.EDefined_type)domain).testDomain(null)) {
+											domain2 = ((jsdai.SExtended_dictionary_schema.EDefined_type)domain).getDomain(null);
+											done_something = true;
+										} else {
+											break;
+										}
+									} else
+									if (domain instanceof jsdai.SExtended_dictionary_schema.EAggregation_type) {
+
+										if ((((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_AGGREGATE")) || 
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALARRAY")) ||
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALSET")) ||
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALLIST")) ||
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALBAG")) 
+										){
+											// allowed only in ABSTRACT ENTITIES 
+											if (ed != null) { // stupid test, not really needed
+												if (ed.testAbstract_entity(null)) {
+													if (ed.getAbstract_entity(null)) {
+													// ok
+													} else {
+														// error - generic_entity and not abstract entity!!!
+														error_count++;
+														printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + da.getName(null) + " - general aggregate attributes allowed in ABSTRACT entities only", null, true);
+														break;
+													}
+												} else {
+													// mandatory abstract_entity unset
+													printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+												}
+											} else {
+												// entity definition ed = NULL - internal error
+												printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+											}
+										} // if AGGREGATE etc
+
+
+										if (((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).testElement_type(null)) {
+											domain2 = ((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getElement_type(null);
+											done_something = true;
+										} else {
+											break;
+										}	
+									}
+									if (done_something) {
+										domain = domain2;
+									}
+								} // while
+							} // parameter_type not null							
+
+							
+							if (domain instanceof jsdai.SExtended_dictionary_schema.EData_type) {
+								String domain_name = ((jsdai.SExtended_dictionary_schema.EData_type)domain).getName(null); 
+								if (domain_name.equals("_GENERIC")) {	
+	              	// always an error
+									error_count++;
+									printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + da.getName(null) + " - GENERIC in attributes not allowed, even as an element of an aggregate", null, true);
+	              } else							
+								if (domain_name.equals("_ENTITY")) {	
+									// an error if not abstract entity
+									if (ed != null) { // not really needed
+										if (ed.testAbstract_entity(null)) {
+											if (ed.getAbstract_entity(null)) {
+												// ok
+											} else {
+												// error - generic_entity and not abstract entity!!!
+												error_count++;
+												printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + da.getName(null) + " - GENERIC_ENTITY in attributes allowed in ABSTRACT entities only, even when as element of an aggregate", null, true);
+											}
+										} else {
+											// mandatory abstract_entity unset
+											printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+										}
+									} else {
+										// entity definition ed = NULL - internal error
+										printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+									}
+
+
+
+								}
+								
+							}
+						}
+						
+					} else {
+						// parameter type null - INTERNAL ERROR?
+						printDDebug("XP: explicit atttribute daclaration, base type -> parameter_type is NULL: " + da.getName(null) + ", t: " + bt);
+					}
+
+
+//----------------end of checking of GENERIC-ABSTRACT -------------------------------------------------------------------------------				
 			}
 			if (parser_pass == 5) {
 					if (expression_instances) {
@@ -20327,9 +21114,11 @@ void DerivedAttr5(jsdai.SExtended_dictionary_schema.EEntity_definition ed) throw
 							jjtThis.attribute = da;
 					} // maybe include the next line or two
 					exp = argument_stack.pop();
-					if (flag_type_tracking) 
-						exp_type = type_stack.pop();
 					printStack("POP: DerivedAttr5: Expression5: " + exp);
+					if (flag_type_tracking) {
+						exp_type = type_stack.pop();
+						printTStack("POP: DerivedAttr5: Expression5 type: " + exp_type);
+					}
 					if (expression_instances) {
 							// x_operand = (String)expression_stack.pop(); // could be je;
 							// printXStack("POP: DerivedAttr5: Expression5: " + x_operand);
@@ -20521,9 +21310,9 @@ jsdai.SExtended_dictionary_schema.EWhere_rule DomainRule5(jsdai.lang.EEntity par
 					}
 					// is it needed?
 					if (flag_oc) {
-						where_description += t.image + " ";
+						where_description += formatStartSeparator(t) + t.image + formatEndSeparator(t);
 					} else {
-						where_description += t.image.toLowerCase() + " ";
+						where_description += formatStartSeparator(t) + t.image.toLowerCase() + formatEndSeparator(t);
 					}
 //					where_description += t.image;
 	  		}
@@ -20556,9 +21345,11 @@ jsdai.SExtended_dictionary_schema.EWhere_rule DomainRule5(jsdai.lang.EEntity par
 
 		if (parser_pass == 5) {
 			exp = argument_stack.pop();
-			if (flag_type_tracking) 
-				exp_type = type_stack.pop();
 			printStack("POP: DomainRule5: LogicalExpression5: " + exp);
+			if (flag_type_tracking) {
+				exp_type = type_stack.pop();
+				printTStack("POP: DomainRule5: LogicalExpression5 type: " + exp_type);
+			}
 			if (expression_instances) {
 				// pop_inst = expression_stack.pop();
 			}
@@ -21150,9 +21941,151 @@ printDDebug("XP: ERROR - explicit atttribute daclaration, base type - null: " + 
 				} else
 				if (bt instanceof jsdai.SExtended_dictionary_schema.EAggregation_type) {
 printDDebug("XP: explicit atttribute daclaration, base type - aggregate: " + ea.getName(null) + ", t: " + bt);
+//System.out.println("aggregation: " + bt);								
 					if (!ea.testDomain(null)) {
 						ea.setDomain(null, (jsdai.SExtended_dictionary_schema.EAggregation_type)bt);
 					}
+					// let's put here some checks for generalized aggregates
+					jsdai.lang.EEntity domain = null;
+					jsdai.lang.EEntity domain2 = null;
+
+//							if (((jsdai.SExtended_dictionary_schema.EParameter)bt).testParameter_type(null)) {
+//								domain = ((jsdai.SExtended_dictionary_schema.EParameter)bt).getParameter_type(null);
+
+
+//System.out.println("bt name: " + bt);
+
+					if ((((jsdai.SExtended_dictionary_schema.EAggregation_type)bt).getName(null).startsWith("_AGGREGATE")) || 
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)bt).getName(null).startsWith("_GENERALARRAY")) ||
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)bt).getName(null).startsWith("_GENERALSET")) ||
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)bt).getName(null).startsWith("_GENERALLIST")) ||
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)bt).getName(null).startsWith("_GENERALBAG")) 
+					){
+						// allowed only in ABSTRACT ENTITIES 
+						if (ed != null) { // stupid test, not really needed
+							if (ed.testAbstract_entity(null)) {
+								if (ed.getAbstract_entity(null)) {
+									// ok
+								} else {
+									// error - generic_entity and not abstract entity!!!
+									error_count++;
+									printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + ea.getName(null) + " - general aggregate attributes allowed in ABSTRACT entities only", null, true);
+									break;
+								}
+							} else {
+								// mandatory abstract_entity unset
+								printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+							}
+						} else {
+							// entity definition ed = NULL - internal error
+							printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+						}
+					} // if AGGREGATE etc
+
+
+
+
+								if (((jsdai.SExtended_dictionary_schema.EAggregation_type)bt).testElement_type(null)) {
+									domain = ((jsdai.SExtended_dictionary_schema.EAggregation_type)bt).getElement_type(null);
+//System.out.println("before - domain: " + domain);								
+
+
+	
+								boolean done_something = true;
+								while (done_something) {	
+									done_something = false;
+
+									if (domain instanceof jsdai.SExtended_dictionary_schema.EDefined_type) {
+										if (((jsdai.SExtended_dictionary_schema.EDefined_type)domain).testDomain(null)) {
+											domain2 = ((jsdai.SExtended_dictionary_schema.EDefined_type)domain).getDomain(null);
+											done_something = true;
+										} else {
+											break;
+										}
+									} else
+									if (domain instanceof jsdai.SExtended_dictionary_schema.EAggregation_type) {
+//System.out.println("aggregate-domain: " + domain);
+										if ((((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_AGGREGATE")) || 
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALARRAY")) ||
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALSET")) ||
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALLIST")) ||
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALBAG")) 
+										){
+											// allowed only in ABSTRACT ENTITIES 
+											if (ed != null) { // stupid test, not really needed
+												if (ed.testAbstract_entity(null)) {
+													if (ed.getAbstract_entity(null)) {
+													// ok
+													} else {
+														// error - generic_entity and not abstract entity!!!
+														error_count++;
+														printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + ea.getName(null) + " - general aggregate attributes allowed in ABSTRACT entities only", null, true);
+														break;
+													}
+												} else {
+													// mandatory abstract_entity unset
+													printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+												}
+											} else {
+												// entity definition ed = NULL - internal error
+												printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+											}
+										} // if AGGREGATE etc
+
+										if (((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).testElement_type(null)) {
+											domain2 = ((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getElement_type(null);
+											done_something = true;
+										} else {
+											break;
+										}	
+									}
+									if (done_something) {
+										domain = domain2;
+//System.out.println("in loop - domain: " + domain);								
+										
+									}
+								} // while
+							} // parameter_type not null							
+//System.out.println("final domain: " + domain);								
+//System.out.println("domain2: " + domain2);								
+							// if domain is GENERIC - always an error
+							// if domain is GENERIC_ENTITY - check if ABSTRACT ENTITY
+							// as to AGGREGATE - we better catch AGGREGATE in the middle of the chain, at the end it might be too late: AGGREGATE OF INTEGER, for example.
+							// we should also catch ARRAY and check if it has bounds or not, if not - the same as AGGREGATE - means generalized type.
+							if (domain instanceof jsdai.SExtended_dictionary_schema.EData_type) {
+								String domain_name = ((jsdai.SExtended_dictionary_schema.EData_type)domain).getName(null); 
+								if (domain_name.equals("_GENERIC")) {	
+	              	// always an error
+									error_count++;
+									printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + ea.getName(null) + " - GENERIC in attributes not allowed, even as an element of an aggregate", null, true);
+	              } else							
+								if (domain_name.equals("_ENTITY")) {	
+									// an error if not abstract entity
+									if (ed != null) { // not really needed
+										if (ed.testAbstract_entity(null)) {
+											if (ed.getAbstract_entity(null)) {
+												// ok
+											} else {
+												// error - generic_entity and not abstract entity!!!
+												error_count++;
+												printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + ea.getName(null) + " - GENERIC_ENTITY in attributes allowed in ABSTRACT entities only, even when as element of an aggregate", null, true);
+											}
+										} else {
+											// mandatory abstract_entity unset
+											printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+										}
+									} else {
+										// entity definition ed = NULL - internal error
+										printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+									}
+
+
+
+								}
+								
+							}
+				
+				
 				} else
 				if (bt instanceof jsdai.SExtended_dictionary_schema.ENamed_type) {
 printDDebug("XP: explicit atttribute daclaration, base type - named type: " + ea.getName(null) + ", t: " + bt);
@@ -21165,6 +22098,205 @@ printDDebug("XP: explicit atttribute daclaration, base type - named type: " + ea
 					if (!ea.testDomain(null)) {
 						ea.setDomain(null, (jsdai.SExtended_dictionary_schema.EParameter)bt);
 					}
+					// trying to detect unallowed generalized types:
+//System.out.println("base type: " + bt);
+					if (((jsdai.SExtended_dictionary_schema.EParameter)bt).testParameter_type(null)) {
+						String parameter_type_name = ((jsdai.SExtended_dictionary_schema.EParameter)bt).getParameter_type(null).getName(null);
+//System.out.println("parameter_type_name : " + parameter_type_name);
+//						if (parameter_type_name.equals("_generic_")) {
+						if (parameter_type_name.equals("_GENERIC")) {
+							// error - never allowed
+							error_count++;
+							printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + ea.getName(null) + " - GENERIC attributes not allowed", null, true);
+						} else
+//						if (parameter_type_name.equals("_generic_entity_")) {
+						if (parameter_type_name.equals("_ENTITY")) {
+							// allowed only in ABSTRACT ENTITIES 
+							if (ed != null) {
+								if (ed.testAbstract_entity(null)) {
+									if (ed.getAbstract_entity(null)) {
+										// ok
+									} else {
+										// error - generic_entity and not abstract entity!!!
+										error_count++;
+										printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + ea.getName(null) + " - GENERIC_ENTITY attributes allowed in ABSTRACT entities only", null, true);
+									}
+								} else {
+									// mandatory abstract_entity unset
+									printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+								}
+							} else {
+								// entity definition ed = NULL - internal error
+								printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+							}
+						} else
+						if (parameter_type_name.startsWith("_AGGREGATE")) {
+							// allowed only in ABSTRACT ENTITIES 
+							if (ed != null) {
+								if (ed.testAbstract_entity(null)) {
+									if (ed.getAbstract_entity(null)) {
+										// ok
+									} else {
+										// error - generic_entity and not abstract entity!!!
+										error_count++;
+										printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + ea.getName(null) + " - AGGREGATE attributes allowed in ABSTRACT entities only", null, true);
+									}
+								} else {
+									// mandatory abstract_entity unset
+									printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+								}
+							} else {
+								// entity definition ed = NULL - internal error
+								printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+							}
+						} else {
+							// to do - generalized aggregation types - need to check too - element should not be GENERIC
+							// check if it is a generalized aggregation type
+							// if element is GENERIC - always error
+							// if generalized, but element is other as GENERIC - error if ed is not ABSTRACT ENTITY.
+							
+							// it seems that here only the outer-most aggregate is detected, and inner aggregates and element types - above in aggregation_type, not parameter
+	
+							jsdai.lang.EEntity domain = null;
+							jsdai.lang.EEntity domain2 = null;
+
+							if (((jsdai.SExtended_dictionary_schema.EParameter)bt).testParameter_type(null)) {
+								domain = ((jsdai.SExtended_dictionary_schema.EParameter)bt).getParameter_type(null);
+	
+	
+
+					if ((((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_AGGREGATE")) || 
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALARRAY")) ||
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALSET")) ||
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALLIST")) ||
+						(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALBAG")) 
+					){
+						// allowed only in ABSTRACT ENTITIES 
+						if (ed != null) { // stupid test, not really needed
+							if (ed.testAbstract_entity(null)) {
+								if (ed.getAbstract_entity(null)) {
+									// ok
+								} else {
+									// error - generic_entity and not abstract entity!!!
+									error_count++;
+									printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + ea.getName(null) + " - general aggregate attributes allowed in ABSTRACT entities only", null, true);
+									break;
+								}
+							} else {
+								// mandatory abstract_entity unset
+								printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+							}
+						} else {
+							// entity definition ed = NULL - internal error
+							printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+						}
+					} // if AGGREGATE etc
+
+	
+								boolean done_something = true;
+								while (done_something) {	
+									done_something = false;
+									if (domain instanceof jsdai.SExtended_dictionary_schema.EDefined_type) {
+										if (((jsdai.SExtended_dictionary_schema.EDefined_type)domain).testDomain(null)) {
+											domain2 = ((jsdai.SExtended_dictionary_schema.EDefined_type)domain).getDomain(null);
+											done_something = true;
+										} else {
+											break;
+										}
+									} else
+									if (domain instanceof jsdai.SExtended_dictionary_schema.EAggregation_type) {
+
+										if ((((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_AGGREGATE")) || 
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALARRAY")) ||
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALSET")) ||
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALLIST")) ||
+												(((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getName(null).startsWith("_GENERALBAG")) 
+										){
+											// allowed only in ABSTRACT ENTITIES 
+											if (ed != null) { // stupid test, not really needed
+												if (ed.testAbstract_entity(null)) {
+													if (ed.getAbstract_entity(null)) {
+													// ok
+													} else {
+														// error - generic_entity and not abstract entity!!!
+														error_count++;
+														printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + ea.getName(null) + " - general aggregate attributes allowed in ABSTRACT entities only", null, true);
+														break;
+													}
+												} else {
+													// mandatory abstract_entity unset
+													printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+												}
+											} else {
+												// entity definition ed = NULL - internal error
+												printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+											}
+										} // if AGGREGATE etc
+
+
+										if (((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).testElement_type(null)) {
+											domain2 = ((jsdai.SExtended_dictionary_schema.EAggregation_type)domain).getElement_type(null);
+											done_something = true;
+										} else {
+											break;
+										}	
+									}
+									if (done_something) {
+										domain = domain2;
+									}
+								} // while
+							} // parameter_type not null							
+							
+							if (domain instanceof jsdai.SExtended_dictionary_schema.EData_type) {
+								String domain_name = ((jsdai.SExtended_dictionary_schema.EData_type)domain).getName(null); 
+								if (domain_name.equals("_GENERIC")) {	
+	              	// always an error
+									error_count++;
+									printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + ea.getName(null) + " - GENERIC in attributes not allowed, even as an element of an aggregate", null, true);
+	              } else							
+								if (domain_name.equals("_ENTITY")) {	
+									// an error if not abstract entity
+									if (ed != null) { // not really needed
+										if (ed.testAbstract_entity(null)) {
+											if (ed.getAbstract_entity(null)) {
+												// ok
+											} else {
+												// error - generic_entity and not abstract entity!!!
+												error_count++;
+												printErrorMsg5("Entity: " + ed.getName(null) + ", attribute: " + ea.getName(null) + " - GENERIC_ENTITY in attributes allowed in ABSTRACT entities only, even when as element of an aggregate", null, true);
+											}
+										} else {
+											// mandatory abstract_entity unset
+											printDDebug("XP: explicit atttribute daclaration, ed - abstract_entity unset: " + ed);
+										}
+									} else {
+										// entity definition ed = NULL - internal error
+										printDDebug("XP: explicit atttribute daclaration, ed is NULL");
+									}
+
+
+
+								}
+								
+							}
+							
+							
+							
+//>>>>>>>>>>>>>>>>>>>>>							
+							
+							//printDDebug("XP: explicit atttribute daclaration, base type -> parameter_type: " + ea.getName(null) + ", t: " + bt);
+						}
+						
+					} else {
+						// parameter type null - INTERNAL ERROR?
+						printDDebug("XP: explicit atttribute daclaration, base type -> parameter_type is NULL: " + ea.getName(null) + ", t: " + bt);
+//System.out.println("INTERNAL ERROR - parameter_type UNSET: " + bt);
+					}
+					// detecting unallowed generalized types
+
+				
+				
+				
 				} else {
 printDDebug("XP: ERROR - explicit atttribute daclaration, base type - unknown type: " + ea.getName(null) + ", t: " + bt);
 				}
@@ -21195,6 +22327,7 @@ X_Expression Expression5() throws jsdai.lang.SdaiException #Expression :
 	Object operand2 = null;
 	Object operand2_type = null;
 	Object result = "";
+	Object result_type = null;
 	String x_operand1 = "";
 	String x_operand2 = "";
 	double op1double;
@@ -21217,15 +22350,18 @@ X_Expression Expression5() throws jsdai.lang.SdaiException #Expression :
 		if (parser_pass == 5) {
 			nr_of_operands++;
 			operand1 = argument_stack.pop();
-			if (flag_type_tracking) 
-				operand1_type = type_stack.pop();
 			printStack("POP: Expression5, operand1: " + operand1);
+			if (flag_type_tracking) {
+				operand1_type = type_stack.pop();
+				printTStack("POP: Expression5, operand1 type: " + operand1_type);
+			}
 			if (expression_instances) {
 				// x_operand1 = (String)expression_stack.pop();
 				//printXStack("POP: Expression5, operand1: " + x_operand1);
 				// x_result = x_operand1;
 			}
 			result = operand1;
+			result_type = operand1_type; // temp, perhaps ok at this point anyway
 		}
 	}
 	// without lookahead, "<" is ambiguous, although I do not imagine "<" in other situations in correct schemas?
@@ -21244,9 +22380,11 @@ X_Expression Expression5() throws jsdai.lang.SdaiException #Expression :
 				op_nr++;
 			}
 			operand2 = argument_stack.pop();
-			if (flag_type_tracking) 
-				operand2_type = type_stack.pop();
 			printStack("POP: Expression5, operand2: " + operand2);
+			if (flag_type_tracking) {
+				operand2_type = type_stack.pop();
+				printTStack("POP: Expression5, operand2 type: " + operand2_type);
+			}
 			if (expression_instances) {
 				// x_operand2 = (String)expression_stack.pop();
 				// printXStack("POP: Expression5, operand2: " + x_operand2);
@@ -21262,43 +22400,55 @@ X_Expression Expression5() throws jsdai.lang.SdaiException #Expression :
 					if (expression_instances) {
 						// result = "(" + x_operand1 + " < " + x_operand2 + ")";
 					}
+					//back-here
+					result_type = _st_logical;
 					break;
 				case 2: // >
 					if (expression_instances) {
 						// result = "(" + x_operand1 + " > " + x_operand2 + ")";
 					}
+					result_type = _st_logical;
 					break;
 				case 3: // <=
 					if (expression_instances) {
 						// result = "(" + x_operand1 + " <= " + x_operand2 + ")";
 					}
+					result_type = _st_logical;
 					break;
 				case 4: // >=
 					if (expression_instances) {
 						// result = "(" + x_operand1 + " >= " + x_operand2 + ")";
 					}
+					result_type = _st_logical;
 					break;
 				case 5: // <>
 					if (expression_instances) {
 						// result = "(" + x_operand1 + " != " + x_operand2 + ")";
 					}
+					result_type = _st_logical;
 					break;
 				case 6: // =
 					if (expression_instances) {
 						// result = "(" + x_operand1 + " == " + x_operand2 + ")";
 					}
+					result_type = _st_logical;
 					break;
 				case 7: // :<>:
+					result_type = _st_logical;
 					break;
 				case 8: // :=:
+					result_type = _st_logical;
 					break;
 				case 9: // <IN>
+					result_type = _st_logical;
 					break;
 				case 10: // <LIKE>
+					result_type = _st_logical;
 					break;
 				case  0:
 				default:
 	//                              printError ("unknown RelOperation"); - or rather no second operand - perfectly ok.
+				// if no second operand - then the result type remains the same as the type of the first operand (?)
 					break;
 			}
 			argument_stack.push(result);
@@ -21306,6 +22456,10 @@ X_Expression Expression5() throws jsdai.lang.SdaiException #Expression :
 			if (expression_instances) {
 				// expression_stack.push(x_result);
 			  //    printXStack("PUSH: Expression5, result: " + x_result);
+			}
+			if (flag_type_tracking) {
+				type_stack.push(result_type);
+				printTStack("PUSH: Expression5, result type: " + result_type);
 			}
 		}
 		return jjtThis;
@@ -21340,6 +22494,8 @@ void Factor5() throws jsdai.lang.SdaiException :
 {
 	Object operand1 = null;
 	Object operand2 = null;
+	Object operand1_type = null;
+	Object operand2_type = null;
 	String x_operand1 = "";
 	String x_operand2 = "";
 	String x_result = "";
@@ -21360,6 +22516,10 @@ void Factor5() throws jsdai.lang.SdaiException :
 				// x_result = x_operand1;
 				// printXStack("POP: Factor5, operand1: " + x_operand1);
 			}
+			if (flag_type_tracking)  {
+				operand1_type = type_stack.pop();
+				printTStack("POP: Factor5, operand1 type: " + operand1_type);
+			}			
 		}
 	}
 	 // seems to be an issue with nested grammar, lookahead 2 added to suppress the warning, otherwise should be OK
@@ -21375,6 +22535,10 @@ void Factor5() throws jsdai.lang.SdaiException :
 				// printXStack("POP: Factor5, operand2: " + x_operand2);
 				// modify x_result here
 			}
+			if (flag_type_tracking)  {
+				operand2_type = type_stack.pop();
+				printTStack("POP: Factor5, operand2 type: " + operand2_type);
+			}			
 		}
 	}
 	 )]) #PowerOp(power_present)
@@ -21387,6 +22551,9 @@ void Factor5() throws jsdai.lang.SdaiException :
 				// expression_stack.push(x_result);
 				// printXStack("PUSH: Factor5, result: " + x_result);
 			}
+			if (flag_type_tracking) 
+				type_stack.push(operand1_type); // possibly true
+				printTStack("PUSH: Factor5, result type: " + operand1_type);
 		}
 	}
 }
@@ -21537,7 +22704,8 @@ jsdai.lang.EEntity FormalParameter5(jsdai.SExtended_dictionary_schema.AParameter
 	 }
 	 )* ":" par = ParameterType5()
 	{
-		if (parser_pass == 5) {
+		if (parser_pass == 5) { 
+		//if (false) { // TT - experiment, moved to pass 4
 			if (parameters != null) {
 // printDDebug("Last Parameter5 name: " + par_name);
 if (par == null) {
@@ -21633,14 +22801,17 @@ Object FunctionCall5() throws jsdai.lang.SdaiException #FunctionCall :
 	int built_in_id = -1;
 	Vector arguments = new Vector();
 	Vector expressions = new Vector();
+	Vector argument_types = new Vector();
 	int arg_count = -1;
 	Object result = null;
+	Object result_type = null;
 	Object function_instance = null;
 	jsdai.SExtended_dictionary_schema.EFunction_definition fd = null;
 	int sizeof_restriction_value;
 	boolean is_spec_error_sizeof;
 	boolean is_spec_warning_sizeof;
 	boolean is_outer_sizeof;
+	String are_compatible;
 
 	// jsdai.SIso13584_expressions_schema.EAbs_function abs_f = null;
 }
@@ -21676,7 +22847,7 @@ Object FunctionCall5() throws jsdai.lang.SdaiException #FunctionCall :
 // causes the problem:  
 //	((built_in_id = BuiltInFunction5() | fd = FunctionRef5()) [ LOOKAHEAD(ActualParameterList5(arguments, expressions)) arg_count = ActualParameterList5(arguments, expressions)])
 // risks eliminating the lookahead, but fixes the problem:
-	((built_in_id = BuiltInFunction5() | fd = FunctionRef5()) [ arg_count = ActualParameterList5(arguments, expressions)])
+	((built_in_id = BuiltInFunction5() | fd = FunctionRef5()) [ arg_count = ActualParameterList5(arguments, expressions, argument_types)])
 
 	{
 		if (parser_pass == 5) {
@@ -21712,6 +22883,17 @@ Object FunctionCall5() throws jsdai.lang.SdaiException #FunctionCall :
 			jjtThis.argument_count = arg_count;
 			switch (built_in_id) {
 				case -1: // not a built in function
+					// perhaps we could implement here the type compatibility check for not build-in functions, for built-in - perhaps separately one-by-one
+//System.out.println("<TT> arguments: " + arguments);					
+//System.out.println("<TT> arguments: " + argument_types);					
+					if (flag_type_tracking) { 
+						are_compatible = checkFunctionParameterArgumentCompatibility((jsdai.SExtended_dictionary_schema.EFunction_definition)result, built_in_id, arguments, argument_types);
+						if (are_compatible != null) {
+							// not compatible then
+							error_count++;
+							printErrorMsg5(are_compatible, null, true);
+						}
+					}
 					break;
 				case  0: // unknown built in function, internal error
 					break;
@@ -21965,6 +23147,50 @@ Object FunctionCall5() throws jsdai.lang.SdaiException #FunctionCall :
 			if (expression_instances) {
 				// expression_stack.push(function_instance);
 			}
+	
+			if (flag_type_tracking) { 
+				// CHECK IF THIS STUFF HERE WRITTEN EARLIER IS NONSENSE
+				// IT SEEMS, here we are speaking not about tracking inside the function, but rather outside it
+				// tracking the result type of a function call is probably impossible, maybe only for special simple cases, based on declared result type rather than actual tracked one.
+				// the actual tracked result would be RETURN expression result type, but our stack method tracks it once when parsing the function declaration, not each time when a function call occurs.
+				// perhaps I could save temporarily somewhere the tracked RETURN expression type for each function, but then the 5th pass may not be enough if the call comes before the function declaration, some forward-referencing is needed
+				
+				// for now, let's try to put a declared return type here:
+
+        // EVEN this is not always possible - the declared return type is set in pass 5 only !!!. So, depends if the call comes after the function declaration or before (often - before)
+        // therefore the type is null, unless we can change it here to something else
+
+//System.out.println("<TT>FunctionCall, result: " + result);
+
+				if (result instanceof jsdai.SExtended_dictionary_schema.EFunction_definition) {
+//System.out.println("<TT>FunctionCall-1");
+				   if (((jsdai.SExtended_dictionary_schema.EFunction_definition)result).testReturn_type(null)) {
+//System.out.println("<TT>FunctionCall-2");
+				   	jsdai.SExtended_dictionary_schema.EData_type result_type1 = ((jsdai.SExtended_dictionary_schema.EFunction_definition)result).getReturn_type(null);
+//System.out.println("<TT>FunctionCall-3, result_type1: " + result_type1);
+				   	result_type = result_type1;
+				   } else { // internal error
+//System.out.println("<TT>FunctionCall-4 - INTERNAL ERROR - return type not set????");
+				   }
+				} else 
+				if (result instanceof Integer) { // built-in
+					// TODO
+					switch (built_in_id) {
+						default: 
+							result_type = new String("_BUILT_IN_FUNCTION_"); // to implement specific result types according to the function
+							break;
+					}
+				} else { 
+					result_type = new String("_INTERNAL_ERROR_IN_FUNCTION_CALL_"); // to implement specific result types according to the function
+				}
+				type_stack.push(result_type);  
+				printTStack("PUSH: FunctionCall5, result type: " + result_type);
+			}	
+
+
+
+
+
 			printDebug("Ending FunctionCall5: " + built_in_id);
 		}
 		return result;
@@ -22243,9 +23469,9 @@ jsdai.SExtended_dictionary_schema.EFunction_definition FunctionHead5() throws js
 					}
 					// is it needed?
 					if (flag_oc) {
-						function_description += t.image + " ";
+						function_description += formatStartSeparator(t) + t.image + formatEndSeparator(t);
 					} else {
-						function_description += t.image.toLowerCase() + " ";
+						function_description += formatStartSeparator(t) + t.image.toLowerCase() + formatEndSeparator(t);
 					}
 //					function_description += t.image;
 			}
@@ -23981,6 +25207,10 @@ void Literal5() throws jsdai.lang.SdaiException #Literal:
 				// expression_stack.push(x_operand);
 				// printXStack("PUSH: Literal5: <INTEGER_LITERAL>: " + x_operand);
 			}
+			if (flag_type_tracking) {
+				type_stack.push(_st_integer);
+				printTStack("PUSH: Literal5: <INTEGER_LITERAL>: " + _st_integer);
+			}
 		}
 	}
 	| logical_value = LogicalLiteral5()
@@ -24962,9 +26192,10 @@ void OrderedByClause5() throws jsdai.lang.SdaiException :
 /* ------------------------------------------------------------------------------------ ISO 10303-11:A.2.251------------ */
 Object [] Parameter5() throws jsdai.lang.SdaiException #Parameter :
 {
-	Object [] results = new Object[2];
+	Object [] results = new Object[3];
 	results[0] = null;
 	results[1] = null;
+	results[2] = null;
 }
 {
 	{
@@ -24978,7 +26209,14 @@ Object [] Parameter5() throws jsdai.lang.SdaiException #Parameter :
 			if (expression_instances) {
 				// results[1] = expression_stack.pop();
 			}
+			if (flag_type_tracking) {
+				results[2] = type_stack.pop();
+				printTStack("POP: Parameter5, type: " + results[2]);
+			}
 		}
+//System.out.println("<TT><01>parameter - argument_stack: " + results[0]);
+//System.out.println("<TT><01>parameter - expression_stack: " + results[1]);
+//System.out.println("<TT><01>parameter - type_stack: " + results[2]);
 		printDebug("Ending Parameter5");
 		return results;
 	}
@@ -25162,6 +26400,7 @@ void ProcedureCallStmt5() throws jsdai.lang.SdaiException #ProcedureCallStmt :
 	int builtin_proc_id = -1;
 	Vector arguments = new Vector();
 	Vector expressions = new Vector();
+	Vector argument_types = new Vector();
 	int argument_count = -1;
 	Object operand = null;
 	jsdai.SExtended_dictionary_schema.EProcedure_definition pd = null;
@@ -25170,7 +26409,7 @@ void ProcedureCallStmt5() throws jsdai.lang.SdaiException #ProcedureCallStmt :
 	{
 		printDebug("In ProcedureCallStmt5, starting");
 	}
-	(builtin_proc_id = BuiltInProcedure5() | pd = ProcedureRef5()) [argument_count = ActualParameterList5(arguments, expressions)] ";"
+	(builtin_proc_id = BuiltInProcedure5() | pd = ProcedureRef5()) [argument_count = ActualParameterList5(arguments, expressions, argument_types)] ";"
 	{
 		if (parser_pass == 5) {
 			jjtThis.built_in_id = builtin_proc_id;
@@ -25349,9 +26588,9 @@ jsdai.SExtended_dictionary_schema.EProcedure_definition ProcedureHead5() throws 
 					}
 					// is it needed?
 					if (flag_oc) {
-						procedure_description += t.image + " ";
+						procedure_description += formatStartSeparator(t) + t.image + formatEndSeparator(t);
 					} else {
-						procedure_description += t.image.toLowerCase() + " ";
+						procedure_description += formatStartSeparator(t) + t.image.toLowerCase() + formatEndSeparator(t);
 					}
 //					procedure_description += t.image;
 			}
@@ -25581,7 +26820,49 @@ Object QualifiableFactor5() throws jsdai.lang.SdaiException  :
 					if (expression_instances) {
 						String x_operand = attr.getName(null);
 					}
+					if (flag_type_tracking)  {
+						if (attr instanceof jsdai.SExtended_dictionary_schema.EExplicit_attribute) {
+							if (((jsdai.SExtended_dictionary_schema.EExplicit_attribute)attr).testDomain(null)) {
+								jsdai.lang.EEntity base_type = ((jsdai.SExtended_dictionary_schema.EExplicit_attribute)attr).getDomain(null);
+								type_stack.push(base_type); 
+								printTStack("PUSH: QF attribute, type - explicit: " + base_type);
+//System.out.println("<TT>base_type: " + base_type);
+							} else {
+								type_stack.push(new String("_BAD_EXPLICIT_ATTRIBUTE_"));  // temp solution
+								printTStack("PUSH: QF attribute, type - explicit, BAD");
+							}
+						} else
+						if (attr instanceof jsdai.SExtended_dictionary_schema.EDerived_attribute) {
+							if (((jsdai.SExtended_dictionary_schema.EDerived_attribute)attr).testDomain(null)) {
+								jsdai.lang.EEntity base_type = ((jsdai.SExtended_dictionary_schema.EDerived_attribute)attr).getDomain(null);
+								type_stack.push(base_type); 
+								printTStack("PUSH: QF attribute, type - derived: " + base_type);
+							} else {
+								type_stack.push(new String("_BAD_DERIVED_ATTRIBUTE_"));  // temp solution
+								printTStack("PUSH: QF attribute, type - derived, BAD");
+							}
+						} else
+						if (attr instanceof jsdai.SExtended_dictionary_schema.EInverse_attribute) {
+							if (((jsdai.SExtended_dictionary_schema.EInverse_attribute)attr).testDomain(null)) {
+								jsdai.SExtended_dictionary_schema.EEntity_definition base_type = ((jsdai.SExtended_dictionary_schema.EInverse_attribute)attr).getDomain(null);
+								type_stack.push(base_type); 
+								printTStack("PUSH: QF attribute, type - inverse: " + base_type);
+							} else {
+								type_stack.push(new String("_BAD_DERIVED_ATTRIBUTE_"));  // temp solution
+								printTStack("PUSH: QF attribute, type - inverse, BAD");
+							}
+						} else
+						if (attr instanceof jsdai.SExtended_dictionary_schema.EView_attribute) {
+							type_stack.push(new String("_VIEW_ATTRIBUTE_"));  // temp solution
+						  printTStack("PUSH: QF attribute, type - View - DUMMY");
+						} else {
+							type_stack.push(new String("_UNKNOWN_ATTRIBUTE_"));  // temp solution
+								printTStack("PUSH: QF attribute, type - UNKNOWN");
+						}						
+				
+				 }
 				} else {
+						printStack("PUSH: QF attribute - NULL ");
 						printVerbose("ERROR: QF attribute is NULL");
 				}
 //				printStack("PUSH: QF attribute: " + attr.getName(null));
@@ -27118,6 +28399,7 @@ printDDebug("#@# ResourceRef5: ed: " + ed);
 void ReturnStmt5() throws jsdai.lang.SdaiException #ReturnStmt :
 {
 	Object operand = null;
+	Object operand_type = null;
 	Object pop_inst = null;
 }
 {
@@ -27132,6 +28414,11 @@ void ReturnStmt5() throws jsdai.lang.SdaiException #ReturnStmt :
 			if (expression_instances) {
 				// pop_inst = expression_stack.pop();
 			}
+			if (flag_type_tracking)  {
+				operand_type = type_stack.pop();
+				printTStack("POP: ReturnStmt5, return type: " + operand_type);
+			}			
+
 		}
 	}
 	")"] ";"
@@ -27264,9 +28551,9 @@ printVerbose("Global Rule: " + name);
 				}
 				// is it needed?
 				if (flag_oc) {
-					rule_description += t.image + " ";
+					rule_description += formatStartSeparator(t) + t.image + formatEndSeparator(t);
 				} else {
-					rule_description += t.image.toLowerCase() + " ";
+					rule_description += formatStartSeparator(t) + t.image.toLowerCase() + formatEndSeparator(t);
 				}
 //				rule_description += t.image;
 	 		}
@@ -28918,7 +30205,9 @@ void Sign5() : // Actually moved to ISO 10303-11:A.1.2 - Character classes (as S
 void SimpleExpression5() throws jsdai.lang.SdaiException :
 {
 	Object operand1 = null;
+	Object operand1_type = null;
 	Object operand2;
+	Object operand2_type = null;
 	String x_operand1 = "";
 	String x_operand2 = "";
 	double op1double;
@@ -28944,6 +30233,11 @@ void SimpleExpression5() throws jsdai.lang.SdaiException :
 				// printXStack("POP: SimpleExpression5, operand1: " + x_operand1);
 				// x_result = x_operand1;
 			}
+			if (flag_type_tracking)  {
+				operand1_type = type_stack.pop();
+				printTStack("POP: SimpleExpression5, operand1 type: " + operand1_type);
+			}			
+			
 		}
 	}
 	// "+" choice conflict, probably not real but related to nested grammar, lookahead of 2 to suppress the warning
@@ -28962,6 +30256,11 @@ void SimpleExpression5() throws jsdai.lang.SdaiException :
 			// x_operand2 = (String)expression_stack.pop();
 			// printXStack("POP: SimpleExpression5, operand2: " + x_operand2);
 		}
+		if (flag_type_tracking)  {
+			operand2_type = type_stack.pop();
+			printTStack("POP: SimpleExpression5, operand2 type: " + operand2_type);
+		}			
+		
 		if (operation == 1) {       // +
 			// create an instance of plus_expression
 			// create attribute operands - LIST, add members pop_inst1 and pop_inst2;
@@ -29055,6 +30354,10 @@ void SimpleExpression5() throws jsdai.lang.SdaiException :
 				// expression_stack.push(x_result);
 				// printXStack("PUSH: SimpleExpression5, result: " + x_result);
 			}
+			if (flag_type_tracking) {
+				type_stack.push(operand1_type);  // temp solution - assuming that the result type is the same as the type of the 1st operand
+				printTStack("PUSH: SimpleExpression5, result type: " + operand1_type);
+			}
 		}
 	}
 }
@@ -29077,6 +30380,7 @@ void SimpleFactor5() throws jsdai.lang.SdaiException :
 {
 	int t = 0;
 	Object operand1 = "";
+	Object operand1_type = null;
 	String x_operand1 = "";
 	double op1double;
 	int op1int;
@@ -29181,6 +30485,10 @@ void SimpleFactor5() throws jsdai.lang.SdaiException :
 				// x_operand1 = (String)expression_stack.pop();
 				// printXStack("POP: SimpleFactor5, operand1: " + x_operand1);
 			}
+			if (flag_type_tracking)  {
+				operand1_type = type_stack.pop();
+				printTStack("POP: SimpleFactor5, operand1 type: " + operand1_type);
+			}			
 			if (operand1 instanceof Integer) {
 				op1int = ((Integer)operand1).intValue();
 				op1int = -op1int;
@@ -29196,6 +30504,10 @@ void SimpleFactor5() throws jsdai.lang.SdaiException :
 			if (expression_instances) {
 				// expression_stack.push(x_operand1);
 				// printXStack("PUSH: SimpleFactor5, operand1: " + x_operand1);
+			}
+			if (flag_type_tracking) {
+				type_stack.push(operand1_type);  // temp solution
+				printStack("PUSH: SimpleFactor5, result type: " + operand1_type);
 			}
 		}
 	 }
@@ -29552,6 +30864,9 @@ void SubtypeConstraint5(jsdai.SExtended_dictionary_schema.EEntity_or_view_defini
 	jsdai.SExtended_dictionary_schema.AEntity_or_subtype_expression operands;
 }
 {
+	{
+		global_supertype_entity = (jsdai.SExtended_dictionary_schema.EEntity_definition)ed;
+	}
 	<OF> "("  SupertypeExpression5() ")"
 	{
 
@@ -29978,6 +31293,37 @@ void SupertypeTerm5() throws jsdai.lang.SdaiException :
 // because we now have in the dictionary entity_or_view_definition, so no problem.
  ed = EntityRef5(null)
 	{
+    
+    if ((ed != null) && (global_supertype_entity != null)) {
+			// go through the supertypes of ed
+			jsdai.SExtended_dictionary_schema.AEntity_or_view_definition supertypes = ed.getGeneric_supertypes(null);
+			jsdai.lang.SdaiIterator iter_super = supertypes.createIterator();
+    	boolean supertype_found = false;
+    	while (iter_super.next()) {
+      	jsdai.SExtended_dictionary_schema.EEntity_definition ed1 = (jsdai.SExtended_dictionary_schema.EEntity_definition) supertypes.getCurrentMemberObject(iter_super);
+				if (ed1 == global_supertype_entity) {
+					supertype_found = true;
+					break;
+				}
+			}
+			if (!supertype_found) {
+				if (flag_hard_supertype_error) {
+					//System.out.println("SCHEMA: " + model);
+					if (model.getName().equalsIgnoreCase("EXTENDED_DICTIONARY_SCHEMA_DICTIONARY_DATA")) {
+						// let's also skip this one for now, not only SDAI_dictionary_schema which is done by flag_hard_supertype_error
+					} else {
+						// at least for now, allow to proced for all cases (probably we allways allow the compiler to continue)
+						// error_count++;
+					}
+				}
+				printErrorMsg5(" Entity " + ed.getName(null) + " is not declared as a subtype of entity " + global_supertype_entity.getName(null), null, true);
+//				printWarningMsg(" Entity " + ed.getName(null) + " is not declared as a subtype of entity " + global_supertype_entity.getName(null), null, true);
+			}
+		} else {
+			// should not happen, internal error?
+			System.out.println("INTERNAL ERROR (SupertypeTerm5)");
+		}
+		
 		if (parser_pass == 5) {
 			argument_stack.push(ed);
 			if (ed != null) {
@@ -30236,7 +31582,9 @@ jsdai.SExtended_dictionary_schema.ESource_parameter SourceParameterRef5() throws
 void Term5() throws jsdai.lang.SdaiException :
 {
 	Object operand1 = null;
+	Object operand1_type = null;
 	Object operand2;
+	Object operand2_type = null;
 	String x_operand1 = "";
 	String x_operand2 = "";
 	String x_result = "";
@@ -30262,6 +31610,10 @@ void Term5() throws jsdai.lang.SdaiException :
 				// printXStack("POP: Term5, operand1: " + x_operand1);
 				// x_result = x_operand1;
 			}
+			if (flag_type_tracking)  {
+				operand1_type = type_stack.pop();
+				printTStack("POP: Term5, operand1 type: " + operand1_type);
+			}			
 		}
  }
  // "*" choice conflict, probably caused by nested grammar, or something, ignore? lookahead 2 to suppress the warning
@@ -30280,6 +31632,10 @@ void Term5() throws jsdai.lang.SdaiException :
 			// x_operand2 = (String)expression_stack.pop();
 			// printXStack("POP: Term5, operand2: " + x_operand2);
 		}
+		if (flag_type_tracking)  {
+			operand2_type = type_stack.pop();
+			printTStack("POP: Term5, operand2 type: " + operand2_type);
+		}			
 		if (operation == 1) {       // *
 			if ((operand1 instanceof Integer) && (operand2 instanceof Integer)) {
 				op1int = ((Integer)operand1).intValue();
@@ -30365,6 +31721,10 @@ void Term5() throws jsdai.lang.SdaiException :
 		if (expression_instances) {
 			// expression_stack.push(x_result);
 			// printXStack("PUSH: Term5, result: " + x_result);
+		}
+		if (flag_type_tracking) { 
+			type_stack.push(operand1_type);  // temp solution, later try to calculate the type more precisely
+			printTStack("PUSH: Term5, result type: " + operand1_type);
 		}
 	}
  }
@@ -31783,6 +33143,7 @@ JAVACODE
 
 JAVACODE
 
+	// actually, rule cannot be interfaced
 	jsdai.SExtended_dictionary_schema.EGlobal_rule findInterfacedRule(jsdai.lang.SdaiModel interfaced_model, String name) throws jsdai.lang.SdaiException {
 		if (interfaced_model == null) {
 			return null;
@@ -31792,6 +33153,50 @@ JAVACODE
 		while (iter_inst.next()) {
 			jsdai.SExtended_dictionary_schema.EGlobal_rule inst = (jsdai.SExtended_dictionary_schema.EGlobal_rule)ia.getCurrentMemberObject(iter_inst);
 			String instance_name = inst.getName(null);
+			if (instance_name.equalsIgnoreCase(name)) { // found! return it
+				return inst;
+			}
+		}
+		return null;
+	}
+
+JAVACODE
+
+	// actually, SUBTYPE_CONSTRAINT cannot be interfaced (although there is a contradiction about it in part 11 edition 2 itself)
+	jsdai.SExtended_dictionary_schema.ESub_supertype_constraint findInterfacedConstraint(jsdai.lang.SdaiModel interfaced_model, String name) throws jsdai.lang.SdaiException {
+		if (interfaced_model == null) {
+			return null;
+		}
+		jsdai.lang.Aggregate ia = interfaced_model.getEntityExtentInstances(jsdai.SExtended_dictionary_schema.ESub_supertype_constraint.class);
+		jsdai.lang.SdaiIterator iter_inst = ia.createIterator();
+		while (iter_inst.next()) {
+			jsdai.SExtended_dictionary_schema.ESub_supertype_constraint inst = (jsdai.SExtended_dictionary_schema.ESub_supertype_constraint)ia.getCurrentMemberObject(iter_inst);
+			String instance_name = "";
+			if (inst.testName(null)) {
+				instance_name = inst.getName(null);
+			}
+			if (instance_name.equalsIgnoreCase(name)) { // found! return it
+				return inst;
+			}
+		}
+		return null;
+	}
+
+JAVACODE
+
+	// actually, SUBTYPE_CONSTRAINT cannot be interfaced (although there is a contradiction about it in part 11 edition 2 itself)
+	jsdai.SExtended_dictionary_schema.EGeneric_schema_definition findInterfacedSchema(jsdai.lang.SdaiModel interfaced_model, String name) throws jsdai.lang.SdaiException {
+		if (interfaced_model == null) {
+			return null;
+		}
+		jsdai.lang.Aggregate ia = interfaced_model.getEntityExtentInstances(jsdai.SExtended_dictionary_schema.EGeneric_schema_definition.class);
+		jsdai.lang.SdaiIterator iter_inst = ia.createIterator();
+		while (iter_inst.next()) {
+			jsdai.SExtended_dictionary_schema.EGeneric_schema_definition inst = (jsdai.SExtended_dictionary_schema.EGeneric_schema_definition)ia.getCurrentMemberObject(iter_inst);
+			String instance_name = "";
+			if (inst.testName(null)) {
+				instance_name = inst.getName(null);
+			}
 			if (instance_name.equalsIgnoreCase(name)) { // found! return it
 				return inst;
 			}
@@ -32301,6 +33706,9 @@ JAVACODE
 		if (flag_original_expressions) {
 			description = getOriginalExpressionString(start_token, end_token);
 		} else {
+			// turns out, this replace(string,string) is from 1.5 only, does not work in builds.
+			// so perhaps need to implement a special method here to do that. For now, lets go back to the old version
+//			description = express_code.replace(" ;",";");
 			description = express_code;
 		}
 		
@@ -33192,6 +34600,7 @@ JAVACODE
 
 JAVACODE
 
+	// note: actually, rule cannot be interfaced
 	boolean neededRuleReferencedDeclaration(jsdai.SExtended_dictionary_schema.EGlobal_rule dt) throws jsdai.lang.SdaiException {
 		jsdai.lang.Aggregate ia = model.getEntityExtentInstances(jsdai.SExtended_dictionary_schema.EDeclaration.class);
 		jsdai.lang.SdaiIterator iter_inst = ia.createIterator();
@@ -34716,6 +36125,52 @@ JAVACODE
 		}
 	}
 
+JAVACODE
+	String formatEndSeparator(Token t) {
+
+		String format_end_separator = " ";
+		if (flag_format_level == 0) {
+			format_end_separator = "";
+		} else
+		if (flag_format_level == 1) {
+			format_end_separator = " ";
+		} else 
+		if (flag_format_level == 2) {
+			if (t.kind == SEMICOLON) {
+				format_end_separator = "\n";
+			} else {
+				format_end_separator = " ";
+			}
+		}
+		return format_end_separator;
+	}
+
+JAVACODE
+	String formatStartSeparator(Token t) {
+		String format_start_separator = "";
+		// at this time not used yet
+		return format_start_separator;
+}
+
+JAVACODE
+	// this check may not be needed, because only named types are attempted to interface
+	// in other words, "such named type not found", instead of "such item is not a named type"
+	boolean validUsedFromItem(jsdai.SExtended_dictionary_schema.EDeclaration dc) throws jsdai.lang.SdaiException {
+		if (parser_pass != 2) {
+			return true;
+		}
+		Object df = null;
+		if (dc != null) {
+			if (dc.testDefinition(null)) {
+				df = dc.getDefinition(null);
+			}
+		}
+		if (!(df instanceof jsdai.SExtended_dictionary_schema.ENamed_type)) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 
 /*
 

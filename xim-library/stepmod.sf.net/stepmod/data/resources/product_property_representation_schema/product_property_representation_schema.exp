@@ -1,12 +1,10 @@
 (*
-$Id$
-
-2008-02-07
-ISO TC184/SC4/WG12 N4883 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+2009-11-14
+ISO TC184/SC4/WG12 N7295 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
 *)
 (*
-Supersedes ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
-changes to date_time schema and to measure_schema as per TC1 - WG12 N4884.
+Supersedes ISO TC184/SC4/WG12 N6753 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+changes to product_property_representation_schema and to measure_schema as per TC2 - WG12 N6752.
 *)
 
 
@@ -16,16 +14,84 @@ SCHEMA product_property_representation_schema;
   REFERENCE FROM basic_attribute_schema (description_attribute, get_description_value, get_name_value, name_attribute);
   REFERENCE FROM material_property_definition_schema (property_definition_relationship);
   REFERENCE FROM product_definition_schema (product_definition, product_definition_relationship);
-  REFERENCE FROM product_property_definition_schema (characterized_definition, general_property, product_definition_shape, property_definition, shape_aspect, shape_aspect_relationship);
-  REFERENCE FROM representation_schema (representation, representation_item, representation_relationship, using_representations);
+  REFERENCE FROM product_property_definition_schema (characterized_object, characterized_definition, general_property, product_definition_shape, property_definition, shape_aspect, shape_aspect_relationship);
+  REFERENCE FROM representation_schema (representation, representation_item, representation_relationship, using_representations, mapped_item, representation_context, representation_map);
   REFERENCE FROM support_resource_schema (bag_to_set, label, text);
-  USE FROM shape_tolerance_schema(geometric_tolerance);
-  USE FROM shape_dimension_schema(dimensional_size);
-  
-  TYPE represented_definition = SELECT (general_property, property_definition, property_definition_relationship, shape_aspect, shape_aspect_relationship,
-  geometric_tolerance,    -- added anew as work-around
-  dimensional_size );     -- added anew as work-around
+
+  TYPE chained_representation_link = SELECT (mapped_item, representation_context, representation_relationship);
   END_TYPE;
+
+  TYPE represented_definition = SELECT (
+    general_property, 
+    property_definition, 
+    property_definition_relationship, 
+    shape_aspect, 
+    shape_aspect_relationship);
+  END_TYPE;
+
+  TYPE item_identified_representation_usage_definition = EXTENSIBLE GENERIC_ENTITY SELECT (
+    represented_definition);
+  END_TYPE;
+
+  ENTITY chain_based_item_identified_representation_usage
+    SUBTYPE OF (item_identified_representation_usage);
+    nodes : LIST [2:?] OF UNIQUE representation;
+    undirected_link : LIST [1:?] OF UNIQUE chained_representation_link;
+  DERIVE
+    root : representation := nodes[1];
+    SELF\item_identified_representation_usage.used_representation RENAMED leaf : representation := nodes[HIINDEX(nodes)];
+    directed_link : LIST [1:?] OF representation_relationship := get_directed_link(nodes, undirected_link);
+  WHERE
+    WR1 : root :=: directed_link[1]\representation_relationship.rep_1;
+    WR2 : leaf :=: directed_link[HIINDEX(undirected_link)]\representation_relationship.rep_2;
+    WR3 : SIZEOF(nodes) :=: SIZEOF(undirected_link) + 1;
+    WR4 : (SIZEOF(QUERY(directed_link_element <* directed_link |(root :=:  directed_link_element\representation_relationship.rep_1))) +
+           SIZEOF(QUERY(directed_link_element <* directed_link |(root :=:  directed_link_element\representation_relationship.rep_2)))) = 1;
+    WR5 : (SIZEOF(QUERY(directed_link_element <* directed_link |(leaf :=:  directed_link_element\representation_relationship.rep_1))) +
+           SIZEOF(QUERY(directed_link_element <* directed_link |(leaf :=:  directed_link_element\representation_relationship.rep_2)))) = 1;
+    WR6 : (SIZEOF(QUERY(directed_link_element <* directed_link |(root :<>: directed_link_element\representation_relationship.rep_1))) +
+           SIZEOF(QUERY(directed_link_element <* directed_link |(root :<>: directed_link_element\representation_relationship.rep_2))) + 
+           SIZEOF(QUERY(directed_link_element <* directed_link |(leaf :<>: directed_link_element\representation_relationship.rep_1))) +
+           SIZEOF(QUERY(directed_link_element <* directed_link |(leaf :<>: directed_link_element\representation_relationship.rep_2)))) = 2;
+    WR7 : NOT('REPRESENTATION_SCHEMA.MAPPED_ITEM' IN TYPEOF(undirected_link[1])) OR
+              (root IN using_representations(undirected_link[1]));
+    WR8 : SIZEOF(undirected_link) = SIZEOF(directed_link);
+  END_ENTITY;
+ 
+  ENTITY characterized_chain_based_item_within_representation 
+    SUBTYPE OF (characterized_item_within_representation);
+    nodes : LIST[2:?] OF UNIQUE representation;
+    undirected_link : LIST[1:?] OF UNIQUE chained_representation_link;
+  DERIVE
+    root : representation := nodes[1];
+    SELF\characterized_item_within_representation.rep RENAMED leaf : representation := nodes[HIINDEX(nodes)];
+    directed_link : LIST[1:?] OF representation_relationship := get_directed_link(nodes, undirected_link);
+  WHERE
+    WR1 : root :=: directed_link[1]\representation_relationship.rep_1;
+    WR2 : leaf :=: directed_link[HIINDEX(undirected_link)]\representation_relationship.rep_2;
+    WR3 : SIZEOF(nodes) :=: SIZEOF(undirected_link) + 1;
+    WR4 : (SIZEOF(QUERY(directed_link_element <* directed_link |(root :=:  directed_link_element\representation_relationship.rep_1))) +
+           SIZEOF(QUERY(directed_link_element <* directed_link |(root :=:  directed_link_element\representation_relationship.rep_2)))) = 1;
+    WR5 : (SIZEOF(QUERY(directed_link_element <* directed_link |(leaf :=:  directed_link_element\representation_relationship.rep_1))) +
+           SIZEOF(QUERY(directed_link_element <* directed_link |(leaf :=:  directed_link_element\representation_relationship.rep_2)))) = 1;
+    WR6 : (SIZEOF(QUERY(directed_link_element <* directed_link |(root :<>: directed_link_element\representation_relationship.rep_1))) +
+           SIZEOF(QUERY(directed_link_element <* directed_link |(root :<>: directed_link_element\representation_relationship.rep_2))) + 
+           SIZEOF(QUERY(directed_link_element <* directed_link |(leaf :<>: directed_link_element\representation_relationship.rep_1))) +
+           SIZEOF(QUERY(directed_link_element <* directed_link |(leaf :<>: directed_link_element\representation_relationship.rep_2)))) = 2;
+    WR7 : NOT('REPRESENTATION_SCHEMA.MAPPED_ITEM' IN TYPEOF(undirected_link[1])) OR
+              (root IN using_representations(undirected_link[1]));
+    WR8 : SIZEOF(undirected_link) = SIZEOF(directed_link);
+  END_ENTITY;
+ 
+  ENTITY characterized_item_within_representation
+    SUBTYPE OF (characterized_object);
+    item : representation_item;
+    rep : representation;
+  UNIQUE
+    WR1: item, rep;
+  WHERE
+    WR2: rep IN using_representations(item);
+  END_ENTITY;
 
   ENTITY context_dependent_shape_representation;
     representation_relation : shape_representation_relationship;
@@ -42,7 +108,7 @@ SCHEMA product_property_representation_schema;
   ENTITY item_identified_representation_usage;
     name : label;
     description : OPTIONAL text;
-    definition : represented_definition;
+    definition : item_identified_representation_usage_definition;
     used_representation : representation;
     identified_item : representation_item;
   WHERE
@@ -63,8 +129,9 @@ SCHEMA product_property_representation_schema;
   ENTITY shape_definition_representation
     SUBTYPE OF (property_definition_representation);
   WHERE
-    WR1: ('PRODUCT_PROPERTY_DEFINITION_SCHEMA.PRODUCT_DEFINITION_SHAPE' IN TYPEOF(SELF.definition)) OR ('PRODUCT_PROPERTY_DEFINITION_SCHEMA.SHAPE_DEFINITION' IN TYPEOF(SELF.definition.definition));
-    WR2: 'PRODUCT_PROPERTY_REPRESENTATION_SCHEMA.SHAPE_REPRESENTATION' IN TYPEOF(SELF.used_representation);
+    WR1: ('PRODUCT_PROPERTY_DEFINITION_SCHEMA.PRODUCT_DEFINITION_SHAPE' IN TYPEOF(SELF\property_definition_representation.definition)) OR 
+         ('PRODUCT_PROPERTY_DEFINITION_SCHEMA.SHAPE_DEFINITION' IN TYPEOF(SELF\property_definition_representation.definition\property_definition.definition));
+    WR2: 'PRODUCT_PROPERTY_REPRESENTATION_SCHEMA.SHAPE_REPRESENTATION' IN TYPEOF(SELF\property_definition_representation.used_representation);
   END_ENTITY;
 
   ENTITY shape_representation
@@ -76,6 +143,52 @@ SCHEMA product_property_representation_schema;
   WHERE
     WR1: 'PRODUCT_PROPERTY_REPRESENTATION_SCHEMA.SHAPE_REPRESENTATION' IN (TYPEOF(SELF\representation_relationship.rep_1) + TYPEOF(SELF\representation_relationship.rep_2));
   END_ENTITY;
+
+  FUNCTION get_directed_link ( nodes : LIST OF representation;
+                            undirected_link  : LIST OF chained_representation_link) : LIST OF representation_relationship;
+  LOCAL
+   directed_link : LIST OF representation_relationship := [];
+  END_LOCAL;
+
+  REPEAT i := 1 to SIZEOF(undirected_link);
+   CASE TRUE OF
+    ('REPRESENTATION_SCHEMA.REPRESENTATION_CONTEXT' IN TYPEOF(undirected_link[i])) :
+    BEGIN
+     IF ((nodes[i]\representation.context_of_items   :=: undirected_link[i]) AND 
+         (nodes[i+1]\representation.context_of_items :=: undirected_link[i])) THEN
+       INSERT(directed_link, representation_relationship('','',nodes[i],nodes[i+1]), (i - 1));
+     ELSE
+       RETURN(?); 
+     END_IF;
+    END;
+
+    ('REPRESENTATION_SCHEMA.REPRESENTATION_RELATIONSHIP' IN TYPEOF(undirected_link[i])) :
+    BEGIN
+     IF (((nodes[i]   :=: undirected_link[i]\representation_relationship.rep_1) AND
+          (nodes[i+1] :=: undirected_link[i]\representation_relationship.rep_2)) OR
+         ((nodes[i]   :=: undirected_link[i]\representation_relationship.rep_2) AND
+          (nodes[i+1] :=: undirected_link[i]\representation_relationship.rep_1))) THEN
+       INSERT(directed_link, representation_relationship('','',nodes[i],nodes[i+1]), (i - 1));
+     ELSE
+       RETURN(?); 
+     END_IF;
+    END;
+
+    ('REPRESENTATION_SCHEMA.MAPPED_ITEM' IN TYPEOF(undirected_link[i])) :
+    BEGIN
+     IF ((nodes[i] IN using_representations(undirected_link[i])) AND 
+         (nodes[i+1] :=: undirected_link[i]\mapped_item.mapping_source\representation_map.mapped_representation)) THEN
+       INSERT(directed_link, representation_relationship('','',nodes[i],nodes[i+1]), (i - 1));
+     ELSE
+       RETURN(?); 
+     END_IF;
+    END;
+
+    OTHERWISE : RETURN(?);
+   END_CASE;
+  END_REPEAT;
+  RETURN(directed_link);
+  END_FUNCTION;
 
   FUNCTION relatives_of_product_definitions (definition_set : SET OF product_definition; relation_subtype : STRING):SET OF product_definition;
     FUNCTION local_relatives_of_product_definitions (definition_set : SET OF product_definition; total_definitions : SET OF product_definition; relation_subtype : STRING):SET OF product_definition;

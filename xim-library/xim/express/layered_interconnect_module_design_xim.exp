@@ -35,9 +35,7 @@ USE FROM Assembly_component_placement_requirements_xim;	-- ISO/TS 10303-1634
 (*REFERENCE FROM*) USE FROM Land_xim;	-- ISO/TS 10303-1692
 (*REFERENCE FROM*) USE FROM Layered_interconnect_module_with_printed_component_design_xim; -- ISO/TS 10303-1700
 
-REFERENCE FROM Physical_unit_2d_design_view_xim(pu2dv_has_shape);  -- ISO/TS 10303-1724
-REFERENCE FROM Physical_unit_2d_design_view_xim(pu2dv_typeof);  -- ISO/TS 10303-1724
-
+REFERENCE FROM Physical_unit_2d_design_view_xim(pu2dv_has_shape, pu2dv_typeof);  -- ISO/TS 10303-1724
 
 USE FROM Physical_unit_design_view_mim;	
 
@@ -113,7 +111,7 @@ USE FROM Layered_interconnect_module_design_mim;
 		 Laminate_component_feature_armx);
 	END_SUBTYPE_CONSTRAINT;
 
-	SUBTYPE_CONSTRAINT component_terminal_subtypes FOR Component_terminal;     
+	SUBTYPE_CONSTRAINT component_terminal_subtypes FOR Component_terminal_armx;     
 		 ONEOF (Physical_component_terminal_armx,
 		 Laminate_component_join_terminal_armx);
 	END_SUBTYPE_CONSTRAINT;
@@ -335,7 +333,7 @@ USE FROM Layered_interconnect_module_design_mim;
     WHERE
       WR2: NOT('LAYERED_INTERCONNECT_MODULE_XIM.PROBE_ACCESS_AREA' IN TYPEOF(SELF));
       WR3: NOT('LAYERED_INTERCONNECT_MODULE_XIM.FIDUCIAL_ARMX' IN TYPEOF(SELF));
-      WR4: correlated_terminals(SELF\Conductive_interconnect_element.access_mechanisms,
+      WR4: correlated_terminals(SELF\Conductive_interconnect_element_armx.access_mechanisms,
          connected_points);      
       WR5: (1 + SIZEOF(connected_points)) = limd_get_sz_cp(connected_points);
       WR6: NOT('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.AREA_COMPONENT_ARMX' IN TYPEOF(SELF));         
@@ -435,7 +433,7 @@ USE FROM Layered_interconnect_module_design_mim;
       WR1 : SIZEOF(implementation_requirement) - SIZEOF(join_component) = 1;
       WR2 : (SIZEOF(join_component) = 0) OR
              (SIZEOF(QUERY(jc <* join_component |
-             ('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.TIEBAR_PRINTED_COMPONENT_ARMX' IN TYPEOF(jc\Product_occurrence.occurrence_contexts[1]relating_view)) AND
+             ('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.TIEBAR_PRINTED_COMPONENT_ARMX' IN TYPEOF(jc\Product_occurrence.occurrence_contexts[1].relating_view)) AND
              (SIZEOF(jc\Single_stratum_printed_component_armx.stratum_feature_implementation) :<>: 1)
               )) = 0);
   END_ENTITY;
@@ -762,7 +760,7 @@ ENTITY Laminate_component_armx
       SELF\Component_make_from_relationship.resultant_component : Assembly_group_component_armx;
       stratum_mapping                                           : SET[1:?] OF Part_definition_relationship; --stratum_make_from_relationship;
     WHERE
-      WR1 : SIZEOF(QUERY(sar <* SELF\Component_make_from_relationship.reusable_component.assembly | NOT ('LAYERED_INTERCONNECT_MODULE_DESIGN_xim.LAMINATE_COMPONENT_ARMX' IN TYPEOF(sar.related_component)))) = 0;
+      WR1 : SIZEOF(QUERY(sar <* SELF\Component_make_from_relationship.reusable_component\Assembly_group_component_armx.components | NOT ('LAYERED_INTERCONNECT_MODULE_DESIGN_XIM.LAMINATE_COMPONENT_ARMX' IN TYPEOF(sar.related_component)))) = 0;
       WR2 : SIZEOF(QUERY(sar <* SELF\Component_make_from_relationship.resultant_component.components | NOT ('LAYERED_INTERCONNECT_MODULE_DESIGN_xim.LAMINATE_COMPONENT_ARMX' IN TYPEOF(sar.related_component)))) = 0;
   END_ENTITY;
 
@@ -775,8 +773,8 @@ ENTITY Laminate_component_armx
       applied_stack                       : SET [1:?] OF Local_linear_stack_armx;
       SELF\shape_aspect.of_shape : Layered_interconnect_module_design_view_armx;
     WHERE
-      WR1: SIZEOF(SELF\Shape_feature_definition.feature_model) = 1;
-      WR2: 'CONSTRUCTIVE_SOLID_GEOMETRY_2D_XIM.SINGLE_BOUNDARY_CSG_2D_SHAPE_REPRENTATION' IN TYPEOF (SELF\Shape_feature_definition.feature_model[1]);            
+      WR1: SIZEOF(SELF\Shape_feature_definition_armx.feature_model) = 1;
+      WR2: 'CONSTRUCTIVE_SOLID_GEOMETRY_2D_XIM.SINGLE_BOUNDARY_CSG_2D_SHAPE_REPRENTATION' IN TYPEOF (SELF\Shape_feature_definition_armx.feature_model[1]);            
   END_ENTITY;
 
   ENTITY Generic_laminate_text_component_armx
@@ -786,7 +784,7 @@ ENTITY Laminate_component_armx
       SELF\Definition_based_product_occurrence.derived_from : Part_text_template_armx;
     DERIVE
       SELF\Product_view_definition.name_x : STRING := '';
-      of_character : STRING(1) := SELF\Definition_based_product_occurrence.derived_from\Part_text_template_armx.of_character.character;      
+      of_character : STRING(1) := SELF\Definition_based_product_occurrence.derived_from\Part_text_template_armx.of_character.name;      
   END_ENTITY;
 
   ENTITY Laminate_text_string_component_armx
@@ -1374,8 +1372,7 @@ ENTITY Laminate_component_armx
   ENTITY Routed_join_relationship
     ABSTRACT SUPERTYPE OF (ONEOF (
         Inter_stratum_join_relationship,
-		Intra_stratum_join_relationship,
-	 	Stratum_embedded_physical_component_join_relationship))
+		Intra_stratum_join_relationship))
     SUBTYPE OF (Join_relationship);
     INVERSE
       network_topology : Routed_physical_network FOR routed_connectivity_requirement_element;
@@ -1405,7 +1402,7 @@ ENTITY Laminate_component_armx
    ENTITY Pre_defined_physical_network_group_armx
      SUBTYPE OF (Physical_network_group_armx, pre_defined_physical_network_group);
      WHERE
-       WR1: SELF\Group.membership_meaning IN Pre_defined_physical_network_group_types;
+       WR1: SIZEOF(QUERY(aga <* USEDIN(SELF, 'GROUP_MIM.APPLIED_GROUP_ASSIGNMENT.' + 'ASSIGNED_GROUP') | aga.role.name IN Pre_defined_physical_network_group_types)) = 1;
    END_ENTITY;
 
    ENTITY Externally_defined_physical_network_group_armx
@@ -1413,7 +1410,7 @@ ENTITY Laminate_component_armx
      INVERSE
        source : External_source_identification FOR item;
      WHERE
-       WR1: NOT (SELF\Group.membership_meaning IN Pre_defined_physical_network_group_types);
+       WR1: SIZEOF(QUERY(aga <* USEDIN(SELF, 'GROUP_MIM.APPLIED_GROUP_ASSIGNMENT.' + 'ASSIGNED_GROUP') | aga.role.name IN Pre_defined_physical_network_group_types)) = 0;
    END_ENTITY; 
 
    ENTITY Physical_network_group_element_relationship_armx
@@ -1431,7 +1428,7 @@ ENTITY Laminate_component_armx
    ENTITY Pre_defined_physical_network_group_element_relationship_armx
      SUBTYPE OF (Physical_network_group_element_relationship_armx, pre_defined_physical_network_group_element_relationship);
      WHERE
-       WR1: SELF\Group_relationship.relation_type IN Pre_defined_physical_network_group_relation_types;
+       WR1: SELF\Group_relationship.name IN Pre_defined_physical_network_group_relation_types;
    END_ENTITY;
 
    ENTITY Externally_defined_physical_network_group_element_relationship_armx
@@ -1439,7 +1436,7 @@ ENTITY Laminate_component_armx
     INVERSE
       source : External_source_identification FOR item;
     WHERE
-      WR1: NOT (SELF\Group_relationship.relation_type IN Pre_defined_physical_network_group_relation_types);
+      WR1: NOT (SELF\Group_relationship.name IN Pre_defined_physical_network_group_relation_types);
   END_ENTITY; 
 
   FUNCTION acyclic_area_component
@@ -1560,7 +1557,7 @@ sftc_sf : SET OF Stratum_feature_template_component := [];
        sftc_t := sftc_s + sftc_sf;
     REPEAT i := 1 to HIINDEX(sftc_t) BY 1;
       IF(('LAYERED_INTERCONNECT_MODULE_DESIGN_ARM.AREA_COMPONENT' IN TYPEOF(sftc_t[i])) AND
-         (sftc_t[i]\Area_component.is_base = TRUE))
+         (sftc_t[i]\Area_component_armx.is_base = TRUE))
       THEN
        ac := ac + sftc_t[i];
       END_IF;
@@ -1616,7 +1613,7 @@ FUNCTION get_resident_stratum(input: Stratum_feature_template_component_armx) : 
    END_IF;
    RETURN(?); 
 END_FUNCTION;
-
+(*
   FUNCTION limd_get_sto(input : SET OF Local_linear_stack_armx) : BAG OF Stratum_technology_occurrence_armx;
     LOCAL
       sto : BAG OF Stratum_technology_occurrence_armx := [];
@@ -1632,7 +1629,7 @@ END_FUNCTION;
     END_REPEAT;
     RETURN(sto);
   END_FUNCTION;
-
+*)
   FUNCTION limd_get_sz_cp (
     input : SET[1:?] OF Conductive_interconnect_element_terminal_link_armx) : INTEGER;
   LOCAL

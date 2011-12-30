@@ -5617,6 +5617,49 @@ if (SdaiSession.debug2) System.out.println("   REPOSIT new model in data_diction
 		extData.removed();
 	}
 
+
+	void endAccessExternalData(SdaiModel mod_under_closing) throws SdaiException {
+		Iterator it;
+		ExternalData extData;
+		CEntity ownr;
+//		Long instIdentObject;
+		if (entityExternalData != null) {
+			for (it = entityExternalData.values().iterator(); it.hasNext();) {
+				extData = (ExternalData)it.next();
+				ownr = extData.owningEntity;
+				if (ownr == null) {
+					continue;
+				}
+				if (ownr.owning_model != mod_under_closing) {
+					continue;
+				}
+//				instIdentObject = new Long(ownr.instance_identifier);
+				extData.owningEntity = null;
+//				entityExternalData.remove(instIdentObject);
+				it.remove();
+				extData.removed();
+			}
+		}
+		if (entityRemovedExternalData != null) {
+			for (it = entityRemovedExternalData.values().iterator(); it.hasNext();) {
+				extData = (ExternalData)it.next();
+				ownr = extData.owningEntity;
+				if (ownr == null) {
+					continue;
+				}
+				if (ownr.owning_model != mod_under_closing) {
+					continue;
+				}
+//				instIdentObject = new Long(ownr.instance_identifier);
+				extData.owningEntity = null;
+//				entityRemovedExternalData.remove(instIdentObject);
+				it.remove();
+				extData.removed();
+			}
+		}
+	}
+
+
  /**
  * Assigns a <code>String</code> value to the location attribute of the repository.
  * This assignment is allowed only if the repository is stored in

@@ -25,12 +25,26 @@ package jsdaix.processor.xim_aim.post;
 
 import java.util.*;
 
+import jsdai.SApplication_context_schema.CApplication_context;
+import jsdai.SAssociative_draughting_elements_mim.CDraughting_model_item_association;
+import jsdai.SAssociative_draughting_elements_mim.EDraughting_model_item_association;
+import jsdai.SDraughting_element_schema.ADraughting_callout_element;
+import jsdai.SDraughting_element_schema.CDraughting_callout;
+import jsdai.SDraughting_element_schema.EDimension_curve;
+import jsdai.SDraughting_element_schema.EDimension_curve_directed_callout;
+import jsdai.SDraughting_element_schema.EDraughting_callout;
+import jsdai.SDraughting_element_schema.ELeader_curve;
+import jsdai.SDraughting_element_schema.ELeader_directed_callout;
+import jsdai.SDraughting_element_schema.EProjection_curve;
+import jsdai.SDraughting_element_schema.EProjection_directed_callout;
 import jsdai.SFabrication_technology_xim.EStratum_technology_occurrence_armx;
-import jsdai.SLksoft_extensions_xim.ESequential_stratum_technology_occurrence_group_xim;
+import jsdai.SGeometric_tolerance_xim.EGeometric_tolerance_armx;
+import jsdai.SLksoft_extensions_xim.EIgnorable_xim;
 import jsdai.SPhysical_unit_design_view_xim.AAssembly_component_armx;
 import jsdai.SPhysical_unit_design_view_xim.EAssembly_component_armx;
 import jsdai.SProduct_definition_schema.CProduct_related_product_category;
 import jsdai.SProperty_assignment_xim.EApplied_independent_property;
+import jsdai.dictionary.AEntity_or_view_definition;
 import jsdai.dictionary.EEntity_definition;
 import jsdai.dictionary.ESchema_definition;
 import jsdai.lang.AEntity;
@@ -271,9 +285,153 @@ public class Main {
 		// session.closeSession();
 	}
 
+	// heal data, which is needed before running real conversion
+	private static void healData(SdaiContext context, ASdaiModel allIncludedModels) throws SdaiException {
+		AEntity dmias = allIncludedModels.getInstances(CDraughting_model_item_association.definition);
+		// TODO - delete duplicates
+//		List dmias2Delete = new ArrayList();
+		for(int i=1,count=dmias.getMemberCount(); i<=count; i++){
+			EDraughting_model_item_association edmia = (EDraughting_model_item_association)dmias.getByIndexEntity(i);
+			if(edmia.testDefinition(null)){
+				EEntity ee = edmia.getDefinition(null);
+				if(ee instanceof EGeometric_tolerance_armx){
+					EGeometric_tolerance_armx egta = (EGeometric_tolerance_armx)ee;
+					EEntity appliedTo = egta.getApplied_to(null);
+					edmia.setDefinition(null, appliedTo);
+//					dmias2Delete.add(edmia);
+				}
+			}
+		}
+		healCallouts(context, allIncludedModels);
+/*		for(int i=0,count=dmias2Delete.size(); i<count; i++){
+			EDraughting_model_item_association edmia = (EDraughting_model_item_association)dmias2Delete.get(i);
+			if(!edmia.isValid()){
+				continue;
+			}
+			EEntity ee = edmia.getDefinition(null);
+			ADraughting_model_item_association admias = new ADraughting_model_item_association();
+			CDraughting_model_item_association.usedinDefinition(null, ee, allIncludedModels, admias);
+			ERepresentation_item item = edmia.getIdentified_item(null);
+			for(int j=1,count2=admias.getMemberCount(); j<=count2; j++){
+				EDraughting_model_item_association edmia2 = (EDraughting_model_item_association)admias.getByIndexEntity(j);
+				if(edmia == edmia2){
+					continue;
+				}
+				if(edmia2.testIdentified_item(null)){
+					if(edmia2.getIdentified_item(null) == item){
+						System.err.println(" Deleting "+edmia2);
+						edmia2.deleteApplicationInstance();
+					}
+				}
+			}			
+		}*/
+	}
+
+	private static void healCallouts(SdaiContext context, ASdaiModel allIncludedModels) throws SdaiException {
+		AEntity callouts = allIncludedModels.getInstances(CDraughting_callout.definition);
+		ESchema_definition schema = allIncludedModels.getByIndex(1).getUnderlyingSchema();
+		// Leader
+		final String leaderName = "leader_directed_callout";
+		top: for(int i=1,count=callouts.getMemberCount(); i<=count; i++){
+			EDraughting_callout edc = (EDraughting_callout)callouts.getByIndexEntity(i);
+			if(edc.testContents(null)){
+				ADraughting_callout_element adce = edc.getContents(null);
+				for(int j=1,countE=adce.getMemberCount(); j<=countE; j++){
+					EEntity ee = adce.getByIndex(j);
+					if(ee instanceof ELeader_curve){
+						if(edc instanceof ELeader_directed_callout){
+							continue top;
+						}
+						createComplexIfPossible(context, schema, edc, leaderName);
+						continue top;
+					}
+				}
+			}
+		}
+		// Projection
+		final String projectionName = "projection_directed_callout";
+		top: for(int i=1,count=callouts.getMemberCount(); i<=count; i++){
+			EDraughting_callout edc = (EDraughting_callout)callouts.getByIndexEntity(i);
+			if(edc.testContents(null)){
+				ADraughting_callout_element adce = edc.getContents(null);
+				for(int j=1,countE=adce.getMemberCount(); j<=countE; j++){
+					EEntity ee = adce.getByIndex(j);
+					if(ee instanceof EProjection_curve){
+						if(edc instanceof EProjection_directed_callout){
+							continue top;
+						}
+						createComplexIfPossible(context, schema, edc, projectionName);
+						continue top;
+					}
+				}
+			}
+		}
+		// Dimension
+		final String dimensionName = "dimension_directed_callout";
+		top: for(int i=1,count=callouts.getMemberCount(); i<=count; i++){
+			EDraughting_callout edc = (EDraughting_callout)callouts.getByIndexEntity(i);
+			if(edc.testContents(null)){
+				ADraughting_callout_element adce = edc.getContents(null);
+				for(int j=1,countE=adce.getMemberCount(); j<=countE; j++){
+					EEntity ee = adce.getByIndex(j);
+					if(ee instanceof EDimension_curve){
+						if(edc instanceof EDimension_curve_directed_callout){
+							continue top;
+						}
+						createComplexIfPossible(context, schema, edc, dimensionName);
+						continue top;
+					}
+				}
+			}
+		}
+		
+	}
+
+	private static void createComplexIfPossible(SdaiContext context, ESchema_definition schema, EDraughting_callout edc, String leaderName){
+		// Need to make complex
+		try {
+			EEntity_definition type = edc.getInstanceType();
+			EEntity_definition newComplex = null;
+			String name;
+			if(type.getComplex(null)){
+				AEntity_or_view_definition complexLeaves = type.getGeneric_supertypes(null);
+				Collection complexNames = new TreeSet();
+				complexNames.add(leaderName);
+				for(SdaiIterator c = complexLeaves.createIterator(); c.next(); ) {
+					EEntity_definition complexLeaf = (EEntity_definition) complexLeaves.getCurrentMember(c);
+					complexNames.add(complexLeaf.getName(null));
+				}
+				StringBuffer complexNameBuffer = new StringBuffer();
+				for(Iterator c = complexNames.iterator(); c.hasNext(); ) {
+					complexNameBuffer.append(c.next()).append('+');
+				}
+				complexNameBuffer.setLength(complexNameBuffer.length() - 1);
+				name = complexNameBuffer.toString();
+			}else{
+				name = type.getName(null);
+				if(name.compareTo(leaderName) > 0){
+					name = leaderName +"+"+ name; 
+				}else{
+					name = name +"+"+ leaderName;
+				}
+			}
+			newComplex = LangUtils.findEntityDefinition(name, schema);
+			if(newComplex == null){
+				sessionLog(context, "Missing Complex " + name);
+			}else{
+				edc.findEntityInstanceSdaiModel().substituteInstance(edc, newComplex);
+			}
+		} catch (SdaiException e) {
+			sessionLog(context, "Failed to create complex for " + edc+" with "+leaderName);
+			e.printStackTrace();
+		}
+	}
+	
 	private static ArrayList firstRun(SdaiContext context, ASdaiModel allIncludedModels, SdaiModel modelAIM) throws SdaiException {
-		if (modelAIM == null)
+		if (modelAIM == null){
 			modelAIM = context.domain.getByIndex(2);
+		}
+		healData(context, allIncludedModels);
 		Object[] allOriginalInstances = LangUtils.aggregateToArray(allIncludedModels.getInstances());
 		ArrayList allInstancesBasedOnXIM = new ArrayList();
 		// System.err.println(" Domain "+context.domain.getMemberCount()+" 1
@@ -287,6 +445,13 @@ public class Main {
 			EEntity category = categories.getByIndexEntity(1);
 			modelAIM.substituteInstance(category);
 		}
+		// the same with application_contexts
+		AEntity contexts = allIncludedModels.getExactInstances(CApplication_context.definition);
+		while (contexts.getMemberCount() > 0) {
+			EEntity ee = contexts.getByIndexEntity(1);
+			modelAIM.substituteInstance(ee);
+		}
+		
 		// NAUO&co uses some stuff from Assembly_components, so assure that Cx for AC is invoked at the end of process
 		AAssembly_component_armx aac = new AAssembly_component_armx();
 		for (int index = 0; index < allOriginalInstances.length; index++) {
@@ -313,7 +478,7 @@ public class Main {
 					}
 				}
 			} else if ((schemaName.substring(schemaName.length() - 3, schemaName.length()).equalsIgnoreCase("XIM"))) {
-				if(instanceExtended instanceof ESequential_stratum_technology_occurrence_group_xim){
+				if(instanceExtended instanceof EIgnorable_xim){
 					instanceExtended.deleteApplicationInstance();
 				}else{
 					sessionLog(context, "Missing Cx " + instanceExtended.getClass() + " within " + schemaName);

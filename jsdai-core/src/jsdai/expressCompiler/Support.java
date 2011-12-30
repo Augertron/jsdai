@@ -81,7 +81,95 @@ public class Support {
 	static HashMap hm_subtype_constraint_declarations;
 	static HashMap hm_current_subtype_constraint_declarations;
 	static HashMap hm_attributes;
+	static EEntity_definition global_supertype_entity;
 
+
+	/*
+		using those to contain Hashsets for each interfaced schema, for detecting duplicate interfacing DIRECTLY into the same schemma
+		part 11 does not prohibit duplicate interfac (? to check more thoroughly) but perhaps it is better to warn the user (not sure about error, though)
+
+		There are the following possible cases, where to use ERROR and where WARNING, and where nothing?
+
+		1. a whole schema is interfaced with REFERENCE FROM and then (or perhaps in any order) separate entities and/or types with USE FROM
+		NOTHING ?  perfectly legitimate reasons - want to override only for some named types
+ 
+	  2. a whole schema is interfaced both with REFERENCE FROM and with USE FROM
+ 		NOTHING ? legitimate reasons - if one wants all named types to be interfaced with USE FROM but also wants all functions, procedures, constants  
+
+	  3. a whole schema is interfaced with USE FROM and then separate constants, functions, procedures with REFERENCE FROM  
+		NOTHING - perfectly legitimate
+
+	  4. a whole schema is interfaced with REFERENCE FROM and then separate items ALSO with REFERENCE FROM
+		WARNING?
+
+	  5. a whole schema is interfaced with USE FROM and then separate entities and/or types  with REFERENCE FROM  
+		WARNING?
+
+	  6. a whole schema is interfaced with USE FROM and then separate entities and/or types also with USE FROM  
+		WARNING?
+
+		7. a separate entity or types is interfaced BOTH with REFERENCE FROM and with USE FROM (even if in the overriding sequence: REFERENCE FROM first, USE FROM last - still, the 1st of them not needed, and which one was not intended?)
+		WARNING?
+
+    8. a separate item is interfaced more than once with REFERENCE FROM
+		WARNING?
+
+    9. a separate entity or type is interfaced more than once with USE FROM
+		WARNING?
+
+   10. more than one REFERENCE FROM declaration used for separate items
+  	NOTHING? - there was a warning request
+
+	 11. more than one USE FROM declaration used for separate entities and/or types
+  	NOTHING? - there was a warning request
+
+	 12. Items ather than entities or types included in USE FROM
+	 ERROR 
+
+	 13. Items other than the allowed ones included in REFERENCE FROM  (explicitly excluded: schemas, global rules; explicitly included: types, entities, constants, functions, procedures; so what about subtype constraints ???)
+	 ERROR
+
+    NOTICE:
+		10. & 11. are more controversial, in my opinion.
+    do the really require a warning? 
+    It could be: 
+    - such a coding style; 
+    - or some item(s) emphasized this way for better readability;
+    - or emphasized because they are (exceptionally) given alias names with AS, again for better readability or not to forget;
+    - or because they are added only temporarily;
+
+    also, USE FROM - only entities and types
+    REFERENCE FROM - entities, types + constants, functions, procedures
+    not interfaced at all - rules, schemas, 
+
+
+    NOTICE 2:  there might be an error in part 11 edition 2:  !!!!!!!!!!!!!!!!!!!!!!!!!
+    
+    11 says:
+    
+    "...the reference specification applies to all declarations except rules and schemas"
+
+    but 11.2 says:
+    
+	   A reference specification enables the following EXPRESS items, declared in a foreign schema, to be visible in the current schema:
+
+		— Constant;
+		— Entity;
+		— Function;
+		— Procedure;
+		— Type.
+    
+		THERE IS A CONTRADICTION BETWEEN THOSE TWO CLAUSES:  - Subtype constraints.
+		According to 11 they are interfaced (not explicitly excluded), according to 11.2 - they are not (not explicitly included).   
+
+
+    
+	*/
+
+	static HashMap hm_used_froms;
+	static HashMap hm_referenced_froms; 
+	static HashSet hm_used_froms_all;
+	static HashSet hm_referenced_froms_all; 
 
 	static boolean global_flag_for_expression_inside = false;
 
@@ -127,8 +215,13 @@ public class Support {
   static boolean flag_complex_off = false;
   static boolean flag_implicit_select = false;
 	static boolean flag_original_expressions = false;
+	static boolean flag_formatted_1 = false; // possibly will not be used at this time
+	static int flag_format_level = 1;
 	static boolean flag_really_original_expressions = true;
   static boolean flag_eof = false;
+	
+	static boolean flag_hard_supertype_error = true;
+
 
   static Stack scope_stack = new Stack();
   static Vector current_scope;
@@ -749,6 +842,84 @@ another solution would be to expant tabs - all tabs in the string
 		}
 	}
 
+	// leave ERROR at this time, perhaps we will change to SOFT ERROR or something, but then, more work in Eclipse to parse it will be needed, so perhaps - not
+	static void printSoftErrorMsg(String msg, Token token, boolean print_line) throws SdaiException {
+		String schema_name = "ERROR in file " + express_file + ": \n";
+		if (sd != null) {
+			if (flag_oc) {
+				schema_name += sd.getName(null) + ": ";
+			} else {
+				schema_name += sd.getName(null).toLowerCase() + ": ";
+			}
+		}
+
+		int line = -1;
+		int column = -1;
+		if (token != null) {
+			line = token.beginLine;
+			column = token.beginColumn;
+		} else {
+			if (print_line) {
+				Token t = Compiler2.getToken(0);
+				line = t.beginLine;
+				column = t.beginColumn;
+			}
+		}
+		
+		// perhaps we can provide the last line of the file, or better, of the schema, if the  line is not provided?
+		// or perhaps it can be done in the error parser. See later
+		String line_str = "";
+		
+		if (line >= 0) {
+			line_str = " line: " + line + ", column: " + column + ". ";
+		}
+
+		if (express_files.size() > 1) {
+			System.out.println(schema_name + line_str + msg);
+		} else {
+			System.out.println("ERROR: " + line_str + msg);
+		}
+	}
+
+
+	static void printSoftErrorMsg_alt(String msg, Token token, boolean print_line) throws SdaiException {
+		String schema_name = "SOFT ERROR in file " + express_file + ": \n";
+		if (sd != null) {
+			if (flag_oc) {
+				schema_name += sd.getName(null) + ": ";
+			} else {
+				schema_name += sd.getName(null).toLowerCase() + ": ";
+			}
+		}
+
+		int line = -1;
+		int column = -1;
+		if (token != null) {
+			line = token.beginLine;
+			column = token.beginColumn;
+		} else {
+			if (print_line) {
+				Token t = Compiler2.getToken(0);
+				line = t.beginLine;
+				column = t.beginColumn;
+			}
+		}
+		
+		// perhaps we can provide the last line of the file, or better, of the schema, if the  line is not provided?
+		// or perhaps it can be done in the error parser. See later
+		String line_str = "";
+		
+		if (line >= 0) {
+			line_str = " line: " + line + ", column: " + column + ". ";
+		}
+
+		if (express_files.size() > 1) {
+			System.out.println(schema_name + line_str + msg);
+		} else {
+			System.out.println("SOFT ERROR: " + line_str + msg);
+		}
+	}
+
 
 	static void printErrorMsgW(String msg, Token token, boolean print_line) throws SdaiException {
 		String schema_name = "WARNING in file " + express_file + ": \n";
@@ -907,6 +1078,11 @@ another solution would be to expant tabs - all tabs in the string
   static void printXStack(String msg) {
     if (flag_stack) {
       System.out.println("X STACK @ " + expression_stack.size() + " > " + msg);
+    }
+  }
+  static void printTStack(String msg) {
+    if (flag_stack) {
+      System.out.println("T STACK @ " + type_stack.size() + " > " + msg);
     }
   }
 
@@ -2428,6 +2604,88 @@ aaa$bbbb1 -> aaab1
 		return true;
 	}
 */
+
+	static String checkFunctionParameterArgumentCompatibility(EFunction_definition fd, int built_in_id, Vector arguments, Vector argument_types)   throws SdaiException {
+		String result = null;
+		int parameter_count;
+		int argument_count;
+		
+		if (arguments.size() != argument_types.size()) {
+			// internal error - we were not able to check, so leave true.
+			System.out.println("Express Compiler INTERNAL ERROR 01 while checking argument-parameter compatibility: Function: " + fd + ", built-in: " + built_in_id + ", arguments: " + arguments + ", argument types: " + argument_types);
+			return null;
+		}
+		
+		// if built_in_id = -1 and fd non-null, then not a built in function
+		switch (built_in_id) {
+				case -1: // not a built in function
+					// as declared:  
+					// 		parameters : LIST[0:?] OF parameter;
+					// 				parameter_type : data_type;
+					AParameter parameters = null;
+					if (fd.testParameters(null)) {
+						parameters = fd.getParameters(null);
+					}
+//System.out.println("parameters: " + parameters);
+					parameter_count = parameters.getMemberCount();
+					argument_count = argument_types.size();
+//System.out.println("parameter count: " + parameter_count);					
+//System.out.println("argument count: " + argument_count);					
+					if (argument_count != parameter_count) {
+						// must report an error in express, but how? Perhaps return int and report by its type
+						// System.out.println("The number of arguments is not the same as declared number of parameters in function " + fd.getName(null));
+						// return false;  // perhaps return some int number to signal to the parser that a specific error message has to be issued
+						return ("The number of arguments is not the same as declared number of parameters in function " + fd.getName(null));
+					}
+					//System.out.println("One parameter: " + a_parameter);
+					for (int i = 0; i < argument_types.size(); i++) {
+						EParameter a_parameter = parameters.getByIndex(i+1);
+						EData_type parameter_type = null;
+						if (a_parameter.testParameter_type(null)) {
+							parameter_type = a_parameter.getParameter_type(null);
+						} else { // something wrong, so we cannot check
+							System.out.println("EXPRESS COMPILER INTERNAL ERROR - Type Tracking 02");
+							return null;
+						}					
+						//System.out.println("One parameter: " + parameter_type);
+						Object an_argument_type = argument_types.get(i);
+						//System.out.println("One argument: " + an_argument_type);
+						if ((parameter_type instanceof EEntity_definition) && (an_argument_type instanceof EEntity_definition)) {
+							 // check this simple case when both the parameter and argument type are entities
+							 // if parameter and argument entities have no commont supertype
+							 boolean is_subtype = isSubtype((EEntity_definition)an_argument_type, (EEntity_definition)parameter_type);
+							 if (is_subtype) {
+							 	return null;
+							 }
+							 is_subtype = isSubtype((EEntity_definition)parameter_type, (EEntity_definition)an_argument_type);
+							 if (is_subtype) {
+							 	// can be checked only at runtime, so better to allow
+							 	return null;
+							 } else {
+							 	 // not the same entity
+							 	 // argument is not a subtype of parameter
+							 	 // and even parameter is not a subtype of argument
+							 	 // do we need to allow some over cases where entities are in the same tree? 
+								 //System.out.println("Wrong argument type " + an_argument_type + " in function " + fd.getName(null) + " call, expected: " + parameter_type);
+								 //return false;
+								 return ("Wrong argument type " + ((EEntity_definition)an_argument_type).getName(null) + " in function call of function " + fd.getName(null) + ", expected: " + ((EEntity_definition)parameter_type).getName(null));
+							 }
+						} else
+//						if ((parameter_type instanceof _st_integer) && (an_argument_type instanceof EEntity_definition)) {
+						if ((parameter_type instanceof EInteger_type) && (an_argument_type instanceof EEntity_definition)) {
+								 return ("Wrong argument type " + ((EEntity_definition)an_argument_type).getName(null) + " in function call of function " + fd.getName(null) + ", expected: INTEGER");
+						}
+					} // for
+		
+				case  0: // unknown built in function, internal error
+					break;
+				default: // must be an internal error.
+					break;
+		}
+
+		return result;
+	}
+
 
 	static boolean isRedeclared_attrCompatible(EAttribute redeclaring, EAttribute redeclared)  throws SdaiException {
 		
@@ -4091,11 +4349,121 @@ etc
 
     	while (iter_super.next()) {
       	EEntity_definition ed1 = (EEntity_definition) aed.getCurrentMemberObject(iter_super);
-	      EAttribute at = findAttribute(tag_name);
+				// I think there was a bug - in this recursion, wrong method was used
+//	      EAttribute at = findAttribute(tag_name);
+	      EAttribute at = findAttribute_2_tags(ed1, tag_name);
   	    if (at != null) {
     	    return at;
       	}
 			} // while		
+
+		return null;
+	}
+
+	static EAttribute findAttribute_everywhere(EEntity_definition ed, String tag_name) throws SdaiException {
+	    // this may not be needed and somewhat duplicates the further implementation, but this result may be suitable for more applications of the parent method, for that reason included here for now
+	    EAttribute attr = findAttribute_2_tags(ed, tag_name);
+	    if (attr != null) {
+	    	return attr;
+	    } 
+	    SdaiModel mdl = ed.findEntityInstanceSdaiModel();
+  	  Aggregate ied = mdl.getEntityExtentInstances(EEntity_declaration.class);
+    	SdaiIterator iter_ed = ied.createIterator();
+	    while (iter_ed.next()) {
+  	    EEntity_declaration edec = (EEntity_declaration) ied.getCurrentMemberObject(iter_ed);
+				EEntity_definition edef = (EEntity_definition)edec.getDefinition(null);
+			
+				// check if entity edef is a subtype of our entity ed
+				if (isSubtype(edef, ed)) {
+						// if edef is subtype of ed, then check if edef or any of its supertypes has an attribute with the required name
+						attr = findAttribute_2_tags(edef, tag_name);
+						if (attr != null) {
+							// this is a bit different, question is - is it ok for other applications of this method (its parent method) - to check and modify if needed
+							return attr;
+						}
+				}
+			} // while - through entity declarations
+		return null;
+	} // method findAttribute_everywhere
+
+	static boolean isSubtype(EEntity_definition sub_candidate, EEntity_definition super_candidate) throws SdaiException {
+			boolean result = false;
+			if (sub_candidate == super_candidate) {
+				// currently do this, later we'll see - depends on the implementation of parent methods
+				return true;
+			}
+	    AEntity_or_view_definition aed = sub_candidate.getGeneric_supertypes(null);
+  	  SdaiIterator iter_super = aed.createIterator();
+
+    	while (iter_super.next()) {
+      	EEntity_definition ed1 = (EEntity_definition) aed.getCurrentMemberObject(iter_super);
+				if (ed1 == super_candidate) {
+					return true;
+				} else {
+					result = isSubtype(ed1, super_candidate);
+					if (result) {
+						return true;
+					}
+				}
+			} // while - through all the supertypes
+		return result;
+	} // method isSubtype
+
+
+	// here, we will search for attributes also in subtypes and in other supertypes of subtypes
+	static EAttribute findAttribute_everywhere2(EEntity_definition ed, String tag_name) throws SdaiException {
+		// ok, we can search for attributes of that entity - not using hashmap and keys, not taking into account support for RENAMED attributes (TODO later)
+	    SdaiModel mdl = ed.findEntityInstanceSdaiModel();
+  	  Aggregate ia = mdl.getEntityExtentInstances(EAttribute.class);
+    	SdaiIterator iter_inst = ia.createIterator();
+			
+			EEntity_definition ed2 = null;
+
+	    while (iter_inst.next()) {
+  	    EAttribute inst = (EAttribute) ia.getCurrentMemberObject(iter_inst);
+    	  String instance_name = inst.getName(null);
+
+      	if (instance_name.equalsIgnoreCase(tag_name)) {
+      		ed2 = (EEntity_definition)inst.getParent_entity(null);
+					if (ed2 == ed) {
+						// ok, found it
+						return inst;
+					}
+//-----------------------------------------------
+
+			// and now let's try in subtypes
+
+			if (ed2 != null) {
+		    AEntity_or_view_definition aed2 = ed2.getGeneric_supertypes(null);
+  		  SdaiIterator iter_super2 = aed2.createIterator();
+    		while (iter_super2.next()) {
+      		EEntity_definition ed21 = (EEntity_definition) aed2.getCurrentMemberObject(iter_super2);
+	      	EAttribute at2 = findAttribute_2_tags(ed21, tag_name);
+	  	    if (at2 != null) {
+  	  	    return at2;
+    	  	}
+				} // while		
+			}	
+
+
+//--------------------------------------
+				}
+			} // while
+
+	    AEntity_or_view_definition aed = ed.getGeneric_supertypes(null);
+  	  SdaiIterator iter_super = aed.createIterator();
+
+    	while (iter_super.next()) {
+      	EEntity_definition ed1 = (EEntity_definition) aed.getCurrentMemberObject(iter_super);
+	      // here, we are interested in supertypes only
+	      EAttribute at = findAttribute_2_tags(ed1, tag_name);
+  	    if (at != null) {
+    	    return at;
+      	}
+			} // while		
+
+
+
 
 		return null;
 	}
@@ -5266,8 +5634,392 @@ etc
 
 
 // end
+/*
+  static EAttribute findAttribute(String attribute_name, EEntity_definition ed, int attr_type, EEntity_definition edx, String attr_key, Object reference) throws SdaiException {
+		EAttribute result = null;
+		result = findAttribute(attribute_name, ed, attr_type, edx, attr_key);
+		if (result == null) {
+			// may want to attempt to resolve this attribute again, this time, using the reference object
+			System.out.println("in findAttribute extended version, default result is null,  reference: " + reference);
+			if ((reference instanceof EParameter) || (reference instanceof ECtVariable)) {
+				Object parameter_type = null;
+				if (reference instanceof EParameter) {
+					parameter_type = ((EParameter)reference).getParameter_type(null);
+				} else
+				if (reference instanceof ECtVariable) {
+					parameter_type = ((ECtVariable)reference).getType().getParameter_type(null);
+				} 
+				if (parameter_type instanceof EDefined_type) {
+					Object underlying_type = ((EDefined_type)parameter_type).getDomain(null);
+					if (underlying_type instanceof ESelect_type) {
+						// here perhaps we can try to resolve the attribute if it is a select type with a single element of entity type (may also be a nested or extensible select, never mind, important that there is only one final element
+						// however, because we actually resolve attributes, we cannot resolve if there are several entity elements and each entity has (or perhaps even its supertype has?) the attribute with this name
+						// for such cases we need to extend to accept not only resolved attributes, but also matches by the name only for selects.
+					
+						// perhaps we should limit ourselves with non-extensible selects for now, with non-extensible selects we could detect errors with 100% certainty.
+						if (underlying_type instanceof ENon_extensible_select_type) {
+							// we are interested in two cases: 
+							// 1. a single entity select
+							// 2. a select where none of the elements is an entity with an attribute with this name
+							// especially for selects perhaps we should allow the attribute to be in a supertype
+							// we should allow nested selects for both cases
+							// a special case - a nested multi-element select which resolves into a single element single entity select
+							// in othe words - the single entity select is a special case of the same - if we do not find an attribute in any entity element  when selects are only non-extensible
+							// however, from the implementation point of view it is different: we return the attribute directly, and now we will have to return just a fact if an attribute with this name was found or not.
+							// the single entity select also may be nested and have more than one elements as long as they all lead to the same final entity leaf, as mentioned above.
+							// at this point, move this case to the more general implementation (without returning direct references), and leave the simplest case here (which often occurs)
+
+    						EEntity an_ss;
+    						EEntity an_ss_super;
+							  boolean name_found = false;
+							
+							  ENon_extensible_select_type nest = (ENon_extensible_select_type)underlying_type;
+							  ANamed_type ant = nest.getLocal_selections(null);
+						    if (ant.getMemberCount() == 1) {
+							    SdaiIterator iant1 = ant.createIterator();
+							    while (iant1.next()) {
+      							an_ss = (ENamed_type) ant.getCurrentMemberObject(iant1);
+									  if (an_ss instanceof EEntity_definition) {
+											result = findAttribute_2_tags((EEntity_definition)an_ss, attribute_name)									  }
+											return result;
+									}						    	
+						    }
+						    
+						    SdaiIterator iant = ant.createIterator();
+    						//all_selects.add(st);
+						    while (iant.next()) {
+      						an_ss = (ENamed_type) ant.getCurrentMemberObject(iant);
+						      while (an_ss instanceof EDefined_type) {
+        					EEntity domain = ((EDefined_type) an_ss).getDomain(null);
+        					an_ss_super = an_ss;
+        					an_ss = domain;
+      					}
+				      	if (an_ss instanceof ESelect_type) {
+				      		if (an_ss instanceof ENon_extensible_select_type) {
+				      		} else {
+				      			// if extensible - better not to report an error at this time.
+				      			return null;
+				      		}
+				      	} else if (an_ss instanceof EEntity_definition) {
+				      		// check if it has an attribute with this name, if not, check also if an entity in a supertype chain has this attribute - if it has, better not to report an error either
+				      	} else if (an_ss instanceof EAggregation_type) {
+									// not interested at this time
+								} else {
+									// not interested
+								}      					
+							}
+					
+					}
+				System.out.println("variable-or-parameter: " + underlying_type);  // #1670=NON_EXTENSIBLE_SELECT_TYPE('_SELECT_my_select',(#1665));
+				}
+			}
+		}
+		return result;
+	}
+*/
+
+  static EAttribute findAttribute(String attribute_name, EEntity_definition ed, int attr_type, EEntity_definition edx, String attr_key, Object reference) throws SdaiException {
+		EAttribute result = null;
+		result = findAttribute(attribute_name, ed, attr_type, edx, attr_key);
+		if (result == null) {
+			// may want to attempt to resolve this attribute again, this time, using the reference object
+//			System.out.println("in findAttribute extended version, default result is null,  reference: " + reference);
+//System.out.println("FA-01");
+			if ((reference instanceof EParameter) || (reference instanceof ECtVariable)) {
+//System.out.println("FA-02");
+				Object parameter_type = null;
+				if (reference instanceof EParameter) {
+					//System.out.println("FA-02-B test: " + ((EParameter)reference).testParameter_type(null));
+					if (((EParameter)reference).testParameter_type(null)) {
+						parameter_type = ((EParameter)reference).getParameter_type(null);
+					} else {
+						// print a warning - may be too many, for debugging only
+						return null;
+					}
+				} else
+				if (reference instanceof ECtVariable) {
+					// this occurs sometimse - to investigate further
+					//System.out.println("FA-02-C test: " + ((ECtVariable)reference).getType().testParameter_type(null));
+					if (((ECtVariable)reference).getType().testParameter_type(null)) {
+						parameter_type = ((ECtVariable)reference).getType().getParameter_type(null);
+					} else {
+						// print a warning - there actually ARE too many, for debugging only
+						//RR-TO-DO(got with semanticstep)
+						//System.out.println("attribute parameter_type not set in a variable: " + reference + ", attribute: " + attribute_name + ", ed: " + ed + ", edx: " + edx + ", key: " + attr_key);						
+						return null;
+					}
+				} 
+				if (parameter_type instanceof EDefined_type) {
+//System.out.println("FA-03");
+					Object underlying_type = ((EDefined_type)parameter_type).getDomain(null);
+					if (underlying_type instanceof ESelect_type) {
+//System.out.println("FA-04");
+	
+//						if (underlying_type instanceof ENon_extensible_select_type) {
+						if (true) {  // no longer needed to differentiate
+//System.out.println("FA-05");
+							// it is safe to deal with non_extensible selects
+							// let's handle a single entity select first (it occurs often)
+							EEntity an_ss = null;
+//							ENon_extensible_select_type nest = (ENon_extensible_select_type)underlying_type;
+							//ESelect_type nest = (ESelect_type)underlying_type;
+							//ANamed_type ant = nest.getLocal_selections(null);
+							ANamed_type ant = getAllSelections((ESelect_type)underlying_type);
+
+							if (true) {
+//System.out.println("FA-06");
+							// if (ant.getMemberCount() == 1) {
+								// we could extend the implementation to handle multiple elements - nested selects if they resolve to the same single entity, this implementation ignores nested selects for now
+								SdaiIterator iant1 = ant.createIterator();
+					    	boolean error_found = true;
+								while (iant1.next()) {
+									an_ss = (ENamed_type) ant.getCurrentMemberObject(iant1);
+									if (an_ss instanceof EEntity_definition) {
+										//result = findAttribute_2_tags((EEntity_definition)an_ss, attribute_name);
+										result = findAttribute_everywhere((EEntity_definition)an_ss, attribute_name);
+										if (result != null) {
+											error_found = false;
+											result = null;
+											break;
+										}		
+										// if result == null - then report an error : but check also where else this method is invoked from, may we always report an error here?
+										
+/*	
+										if (result == null) {
+											String err_reference_name = "";
+											if (reference instanceof jsdai.SExtended_dictionary_schema.EParameter) {
+												err_reference_name = ((jsdai.SExtended_dictionary_schema.EParameter)reference).getName(null);
+											} else
+											if (reference instanceof ECtVariable) {
+												err_reference_name = ((ECtVariable)reference).getName();
+											}
+											//error_count++;
+//											printErrorMsg(err_reference_name + "." + attribute_name + " - " + err_reference_name + " type is single entity SELECT, but attribute \"" + attribute_name + "\" not found in entity " + ((EEntity_definition)an_ss).getName(null), null, true);
+											printWarningMsg(err_reference_name + "." + attribute_name + " - " + err_reference_name + " type is SELECT, but attribute \"" + attribute_name + "\" may not be present in entity " + ((EEntity_definition)an_ss).getName(null), null, true);
+// reports:  ERROR:  line: 26, column: 21. var2.weights - var2 type is single entity SELECT, but attribute "weights" not found in entity Rational_b_spline_surface
+										} // result = null, so reporting an error
+										
+System.out.println("== SINGLE ENTITY SELECT, resolving attribute: " + result);										
+										return result;
+*/									
+									} // if element is entity
+								}	// through select elements, 	
+					    	// if not found - print warning
+					    	if (error_found) {
+									String err_reference_name = "";
+									if (reference instanceof jsdai.SExtended_dictionary_schema.EParameter) {
+										err_reference_name = ((jsdai.SExtended_dictionary_schema.EParameter)reference).getName(null);
+									} else
+									if (reference instanceof ECtVariable) {
+										err_reference_name = ((ECtVariable)reference).getName();
+									}
+//									printErrorMsg(err_reference_name + "." + attribute_name + " - " + err_reference_name + " type is non-extensible SELECT, but attribute \"" + attribute_name + "\" not found in any elements - entities", null, true);
+									printWarningMsg(err_reference_name + "." + attribute_name + " - " + err_reference_name + " type is SELECT, but attribute \"" + attribute_name + "\" may not be present in any elements - entities", null, true);
+					    	} // error found
+					    
+					    } else { // if NOT only one element - this is currently disabled
+//System.out.println("FA-07");
+					    	// if this non-extensible select contains more than one element, let's attempt the general solution
+					    	// get each select (possibly nested select) leaf, check for each leaf, if at least one leaf found with such an attribute, then do not report an error
+					    	HashSet entity_leaves = new HashSet();
+					    	boolean outcome = getAllSelectEntityLeaves((ESelect_type)underlying_type, (ESelect_type)underlying_type, entity_leaves);
+					    	if (!outcome) {
+					    		return null;
+					    	}
+					    	// here we will go through all the entity leaves and check if at least one of them (or its supertype) has an attribute with this name
+					    	boolean error_found = true;
+					    	Iterator it1 = entity_leaves.iterator();
+					    	while (it1.hasNext()) {
+					    		EEntity_definition current_entity = (EEntity_definition)it1.next();
+									result = findAttribute_2_tags(current_entity, attribute_name);
+					    		if (result != null) {
+					    			error_found = false;
+					    			break;
+					    		}
+					    	} // while - through all the entities
+					    	if (error_found) {
+									String err_reference_name = "";
+									if (reference instanceof jsdai.SExtended_dictionary_schema.EParameter) {
+										err_reference_name = ((jsdai.SExtended_dictionary_schema.EParameter)reference).getName(null);
+									} else
+									if (reference instanceof ECtVariable) {
+										err_reference_name = ((ECtVariable)reference).getName();
+									}
+//									printErrorMsg(err_reference_name + "." + attribute_name + " - " + err_reference_name + " type is non-extensible SELECT, but attribute \"" + attribute_name + "\" not found in any elements - entities", null, true);
+									printWarningMsg(err_reference_name + "." + attribute_name + " - " + err_reference_name + " type is SELECT, but attribute \"" + attribute_name + "\" may not be present in any elements - entities", null, true);
+					    	} // error found
+								// error or not, still do not return anything
+					    	return null;
+					    }
+						} else {  // non_extensible select
+//System.out.println("FA-08");
+							// extensible_select type - here catching references to non-existing attributes is more problematic
+							System.out.println("INTERNAL WARNING FA6-04: underlying_type is an extensible select type: " + underlying_type);
+							ANamed_type all_sels = getAllSelections((ESelect_type)underlying_type);
+							System.out.println("selections: " + all_sels);
+						}
+					} else { // unferlying_type = select type
+						// unferlying_type is not a select type - interesting why it was not resolved before
+						System.out.println("INTERNAL WARNING FA6-03: underlying_type is not a select type: " + underlying_type);
+					}
+				} else { // parameter_type = defined type
+//System.out.println("FA-09");
+					// parameter_type not defined type 
+					// perhaps try again, with a bit different method - however if we find attributes in subtypes and other supertypes of subtypes, it may be too much for other application of the underlying method findAttribute()
+					if (parameter_type instanceof EEntity_definition) {
+//System.out.println("FA-10");
+							result = findAttribute_everywhere((EEntity_definition)parameter_type, attribute_name);
+							if (result == null) {
+//System.out.println("FA-11");
+									String err_reference_name = "";
+									if (reference instanceof jsdai.SExtended_dictionary_schema.EParameter) {
+										err_reference_name = ((jsdai.SExtended_dictionary_schema.EParameter)reference).getName(null);
+									} else
+									if (reference instanceof ECtVariable) {
+										err_reference_name = ((ECtVariable)reference).getName();
+									}
+									printWarningMsg(err_reference_name + "." + attribute_name + " - " + " attribute \"" + attribute_name + "\" may not be present in entity " + err_reference_name + " or its subtypes or supertypes unless a new suitable complex entity is created", null, true);
+							} else {
+								result = null;
+							}
+						
+
+					} else {
+						// System.out.println("INTERNAL WARNING FA6-02: parameter_type is not a defined type nor entity: " + parameter_type);
+						/*
+						
+							actually found, while compiling stepmod arm
+								#9=DATA_TYPE('_GENERIC');
+						
+						*/
+					
+					}
+				}
+			} else {  // reference is Parameter or variable
+				// reference not Parameter or variable - to implement if needed
+				// System.out.println("INTERNAL WARNING FA6-01: reference is not parameter nor variable: " + reference);
+				/*
+					actually found, while compiling stepmod arm
+					
+					defined_type
+					entity_definition
+					function_definition
+					global_rule
+					
+					
+				
+				
+				*/
+			
+			}
+			
+		} // result == null
+		return result;
+	} // method
+  
+	// do we need to support aggregates inside selects here?
+	// for the test cases I am working so far - not, but perhaps for the more general application - yes?
+	static boolean getSelectEntityLeaves(ENon_extensible_select_type start, ENon_extensible_select_type current, HashSet entity_leaves) throws SdaiException {
+		boolean outcome = false;
+		ANamed_type ant = current.getLocal_selections(null);
+		EEntity element = null;
+		SdaiIterator iant1 = ant.createIterator();
+		while (iant1.next()) {
+			element = (ENamed_type) ant.getCurrentMemberObject(iant1);
+			
+			while (element instanceof EDefined_type) {
+				EEntity domain = ((EDefined_type)element).getDomain(null);
+				/*
+				if (domain instanceof ESelect_type) {
+					// anything here?
+					// perhaps this (could have done this outside the loop)  - perhaps a more elegant solution to do it outside the loop
+					if (domain != instance of ENon_extensible_select_type) {
+						return false;
+					}
+				} else {
+					// or here?
+				}
+				*/
+    		element = domain;
+			}
+			// here we have element resolved to its underlying type, of which we are interested in
+			// entity_definition - mostly, aggregate - if we are going to go into them, not now, perhaps later, 
+			// and, of course select - for recursion, but only non_extensible_select, if extensible - we consider it is unsafe to issue errors about attributes
+			// other types - of no interest to us
+			if (element instanceof EEntity_definition) {
+				// add this entity to the hashset if not already there
+				entity_leaves.add(element);
+			} else 
+			if (element instanceof ESelect_type) {
+					if (element instanceof ENon_extensible_select_type) {
+						outcome = getSelectEntityLeaves(start, (ENon_extensible_select_type) element, entity_leaves);
+						if (!outcome) {
+							return false;
+						}
+					} else {
+						return false;
+					}
+				
+			} else {
+				// not interested for now, later might add aggregates here as well
+			}				
+		
+		} // while - through all elements
+		return true;
+	} // method
+
+	static boolean getAllSelectEntityLeaves(ESelect_type start, ESelect_type current, HashSet entity_leaves) throws SdaiException {
+		boolean outcome = false;
+		ANamed_type ant = current.getLocal_selections(null);
+		EEntity element = null;
+		SdaiIterator iant1 = ant.createIterator();
+		while (iant1.next()) {
+			element = (ENamed_type) ant.getCurrentMemberObject(iant1);
+			
+			while (element instanceof EDefined_type) {
+				EEntity domain = ((EDefined_type)element).getDomain(null);
+				/*
+				if (domain instanceof ESelect_type) {
+					// anything here?
+					// perhaps this (could have done this outside the loop)  - perhaps a more elegant solution to do it outside the loop
+					if (domain != instance of ENon_extensible_select_type) {
+						return false;
+					}
+				} else {
+					// or here?
+				}
+				*/
+    		element = domain;
+			}
+			// here we have element resolved to its underlying type, of which we are interested in
+			// entity_definition - mostly, aggregate - if we are going to go into them, not now, perhaps later, 
+			// and, of course select - for recursion, but only non_extensible_select, if extensible - we consider it is unsafe to issue errors about attributes
+			// other types - of no interest to us
+			if (element instanceof EEntity_definition) {
+				// add this entity to the hashset if not already there
+				entity_leaves.add(element);
+			} else 
+			if (element instanceof ESelect_type) {
+					if (true) {
+					// if (element instanceof ENon_extensible_select_type) {
+						outcome = getAllSelectEntityLeaves(start, (ESelect_type) element, entity_leaves);
+						if (!outcome) {
+							return false;
+						}
+					} else {
+						return false;
+					}
+				
+			} else {
+				// not interested for now, later might add aggregates here as well
+			}				
+		
+		} // while - through all elements
+		return true;
+	} // method
 
 
+  
   static EAttribute findAttribute(String attribute_name, EEntity_definition ed, int attr_type, EEntity_definition edx, String attr_key)
                     throws SdaiException {
 
@@ -11425,6 +12177,32 @@ System.out.println(">01-C<: " + wr);
     }
   }
 
+
+/* 
+
+ here we will attemt to collect all the selections for an extensible select from later extended selects as well as from previous selects if this extensible select is at the same time also an extended select,
+ and also local selections, of course
+
+*/
+
+	static ANamed_type getAllSelections(ESelect_type st) throws SdaiException {
+		// ANamed_type l_selections = null;
+		ANamed_type selections = null;
+		if (st.testLocal_selections(null)) {
+			selections = st.getLocal_selections(null);
+		}
+		if (st instanceof EExtended_select_type) {
+			selections = addSelectionsFromExtensible((EExtended_select_type)st, selections);
+			return selections;
+		}
+		if (st instanceof EExtensible_select_type) {
+			// add all selections from later extended
+			selections = addSelectionsFromLaterExtended((EExtensible_select_type)st, selections);
+			return selections;
+		}
+		return selections;
+	}
+
 	static ANamed_type getSelections(ESelect_type st) throws SdaiException {
 		ANamed_type l_selections = null;
 		ANamed_type selections = null;
@@ -11438,6 +12216,76 @@ System.out.println(">01-C<: " + wr);
 // System.out.println("XAM: number of selections: " + selections.getMemberCount());
 		return l_selections;
 	}
+
+	static ANamed_type addSelectionsFromLaterExtended(EExtensible_select_type st, ANamed_type current_selections) throws SdaiException {
+		// go through all the type declarations and check if the type is select and then if it is extended and if so, if it directly or indirectly extends st.
+
+	    SdaiModel mdl = st.findEntityInstanceSdaiModel();
+  	  Aggregate itd = mdl.getEntityExtentInstances(EType_declaration.class);
+    	SdaiIterator iter_td = itd.createIterator();
+	    while (iter_td.next()) {
+  	    EType_declaration td = (EType_declaration) itd.getCurrentMemberObject(iter_td);
+				EDefined_type tdef = (EDefined_type)td.getDefinition(null);
+				Object ut = tdef.getDomain(null); 
+				if (ut instanceof ESelect_type) {
+					if (ut == st) { // found our select - can add selections
+					} else {
+						if (ut instanceof EExtended_select_type) {
+							// check if directly or inderectly extends st
+							boolean if_extends = extendsOrNot((EExtended_select_type)ut, st);
+							if (if_extends) {
+								// add selections
+								ANamed_type selections = ((ESelect_type)ut).getLocal_selections(null);
+
+								if (selections != null) {
+									if (selections.getMemberCount() > 0) {
+										if (current_selections == null) {
+											current_selections = new ANamed_type();
+										}	
+		
+										for (int i = 1; i < selections.getMemberCount() + 1; i++) {
+											ENamed_type element = (ENamed_type)selections.getByIndexEntity(i);
+											if (!(current_selections.isMember(element))) {
+												current_selections.addUnordered(element);
+											}
+										} // for
+									} // if > 0
+								} // if != null
+
+
+			
+							}
+						}
+					}
+				} else {
+					// not interested
+				}
+			} // while - through all the type declarations
+			return current_selections;
+	}
+
+	static boolean extendsOrNot(EExtended_select_type current, EExtensible_select_type required) throws SdaiException {
+		EDefined_type dt = current.getIs_based_on(null);
+		Object ut = dt.getDomain(null); 
+		if (ut instanceof ESelect_type) {
+			if (ut == required) {
+				return true;
+			} else {
+				if (ut instanceof EExtended_select_type) {
+					boolean if_extends = extendsOrNot((EExtended_select_type)ut, required);
+					if (if_extends) {
+						return true;
+					}
+				} // extended
+			} // not required
+		} // select type
+		
+		return false;
+	}
+
+   
+  
+  
 
 	static ANamed_type addSelectionsFromExtensible(EExtended_select_type st, ANamed_type current_selections) throws SdaiException {
 		ANamed_type l_selections = null;

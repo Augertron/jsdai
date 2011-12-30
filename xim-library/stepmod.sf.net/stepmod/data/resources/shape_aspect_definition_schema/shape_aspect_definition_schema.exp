@@ -1,90 +1,239 @@
+(*
+ $Id$
+ISO TC184/SC4/WG12 N7297 - ISO/DIS 10303-47 Shape variation tolerances - EXPRESS
+*) 
+
 
 SCHEMA shape_aspect_definition_schema;
-REFERENCE FROM product_property_definition_schema
-    (shape_aspect,
-     shape_aspect_relationship);
-REFERENCE FROM measure_schema
-    (measure_with_unit);
-REFERENCE FROM support_resource_schema
-    (bag_to_set, label, identifier);
 
-TYPE limit_condition = ENUMERATION OF
-  (maximum_material_condition,
-   least_material_condition,
-   regardless_of_feature_size);
-END_TYPE;
+REFERENCE FROM measure_schema   -- ISO 10303-41
+  (length_measure_with_unit,
+   measure_with_unit); 
 
-ENTITY common_datum 
- SUBTYPE OF ( composite_shape_aspect , datum );
- WHERE 
-   WR1 : SIZEOF (SELF\composite_shape_aspect.component_relationships) = 2;
-   WR2 : SIZEOF (QUERY ( sar <* SELF\composite_shape_aspect.component_relationships| 
-                      NOT (('SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM' IN TYPEOF (sar.related_shape_aspect)) AND 
-                          NOT ('SHAPE_ASPECT_DEFINITION_SCHEMA.COMMON_DATUM' IN TYPEOF (sar.related_shape_aspect))) )) = 0;
- END_ENTITY;
+REFERENCE FROM support_resource_schema   -- ISO 10303-41
+  (bag_to_set,
+   label,
+   identifier); 
+
+REFERENCE FROM representation_schema   -- ISO 10303-43
+  (representation,
+   using_representations); 
+
+REFERENCE FROM geometry_schema   -- ISO 10303-42
+  (axis2_placement,
+   cartesian_point,
+   direction,
+   geometric_representation_context,
+   line,
+   placement,
+   plane); 
+
+REFERENCE FROM qualified_measure_schema   -- ISO 10303-45
+  (descriptive_representation_item,
+   measure_representation_item); 
+
+REFERENCE FROM product_property_definition_schema   -- ISO 10303-41
+  (characterized_object,
+   shape_aspect,
+   shape_aspect_relationship); 
+
+REFERENCE FROM product_property_representation_schema   -- ISO 10303-41
+  (shape_representation); 
+
+REFERENCE FROM shape_dimension_schema   -- ISO 10303-47
+  (dimensional_location,
+   dimensional_size); 
+
+
+TYPE common_datum_list = LIST[2:?] OF datum_reference_element;
+WHERE
+  WR1: SIZEOF( QUERY(dre <* SELF | dre\shape_aspect.of_shape <> SELF[1]\shape_aspect.of_shape)) = 0;
+END_TYPE; 
+
+TYPE datum_or_common_datum = SELECT
+   (common_datum_list, 
+    datum);
+END_TYPE; 
+
+TYPE datum_reference_modifier = EXTENSIBLE SELECT
+   (datum_reference_modifier_with_value, 
+    simple_datum_reference_modifier);
+END_TYPE; 
+
+TYPE datum_reference_modifier_type = EXTENSIBLE ENUMERATION OF 
+   (circular_or_cylindrical,
+    spherical,
+    distance);
+END_TYPE; 
+
+TYPE limit_condition = ENUMERATION OF 
+   (maximum_material_condition,
+    least_material_condition,
+    regardless_of_feature_size);
+END_TYPE; 
+
+TYPE shape_representation_with_parameters_items = EXTENSIBLE GENERIC_ENTITY SELECT
+   (descriptive_representation_item, 
+    direction, 
+    measure_representation_item, 
+    placement);
+END_TYPE; 
+
+TYPE simple_datum_reference_modifier = EXTENSIBLE ENUMERATION OF 
+   (free_state,
+    basic,
+    translation,
+    least_material_requirement,
+    maximum_material_requirement,
+    point,
+    line,
+    plane,
+    orientation,
+    any_cross_section,
+    any_longitudinal_section,
+    contacting_feature,
+    distance_variable,
+    degree_of_freedom_constraint_x,
+    degree_of_freedom_constraint_y,
+    degree_of_freedom_constraint_z,
+    degree_of_freedom_constraint_u,
+    degree_of_freedom_constraint_v,
+    degree_of_freedom_constraint_w,
+    minor_diameter,
+    major_diameter,
+    pitch_diameter);
+END_TYPE; 
+
+ENTITY all_around_shape_aspect
+  SUBTYPE OF (composite_shape_aspect);
+END_ENTITY;
+
+ENTITY apex
+  SUBTYPE OF (derived_shape_aspect);
+END_ENTITY;
+
+ENTITY between_shape_aspect
+  SUBTYPE OF (continuous_shape_aspect);
+END_ENTITY;
+
+ENTITY centre_of_symmetry
+  SUBTYPE OF (derived_shape_aspect);
+END_ENTITY;
+
+ENTITY common_datum
+  SUBTYPE OF (composite_shape_aspect, datum);
+WHERE
+  WR1: SIZEOF (SELF\composite_shape_aspect.component_relationships) = 2;
+  WR2: SIZEOF (QUERY ( sar <* SELF\composite_shape_aspect.component_relationships| NOT (('SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM' IN TYPEOF (sar.related_shape_aspect)) AND NOT ('SHAPE_ASPECT_DEFINITION_SCHEMA.COMMON_DATUM' IN TYPEOF (sar.related_shape_aspect))) )) = 0;
+END_ENTITY;
+
+ENTITY composite_group_shape_aspect
+  SUBTYPE OF (composite_shape_aspect);
+END_ENTITY;
+
+ENTITY composite_shape_aspect
+  SUPERTYPE OF (ONEOF (all_around_shape_aspect,
+                       continuous_shape_aspect,
+                       common_datum,
+                       composite_group_shape_aspect))
+  SUBTYPE OF (shape_aspect);
+INVERSE
+  component_relationships : SET[2:?] OF shape_aspect_relationship FOR relating_shape_aspect;
+END_ENTITY;
+
+ENTITY contacting_feature
+  SUBTYPE OF (shape_aspect);
+WHERE
+  WR1: SELF\shape_aspect.product_definitional = FALSE;
+END_ENTITY;
+
+ENTITY continuous_shape_aspect
+  SUBTYPE OF (composite_shape_aspect);
+END_ENTITY;
 
 ENTITY datum
   SUBTYPE OF (shape_aspect);
-  identification               :identifier;
+  identification : identifier;
 INVERSE
-  established_by_relationships : SET [1:?] OF shape_aspect_relationship
-                                 FOR related_shape_aspect;
+  established_by_relationships : SET[1:?] OF shape_aspect_relationship FOR related_shape_aspect;
+UNIQUE
+  UR1: identification,SELF\shape_aspect.of_shape;
 WHERE
-  WR1: ('SHAPE_ASPECT_DEFINITION_SCHEMA.COMMON_DATUM' IN TYPEOF(SELF)) XOR
-       ((SIZEOF(QUERY(x <* SELF\datum.established_by_relationships |
-       ('SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM_FEATURE' IN TYPEOF(x\shape_aspect_relationship.relating_shape_aspect)))) = 1) XOR
-       (SIZEOF(QUERY(x <* SELF\datum.established_by_relationships |
-       ('SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM_TARGET' IN TYPEOF(x\shape_aspect_relationship.relating_shape_aspect)))) >= 1));
+  WR1: ('SHAPE_ASPECT_DEFINITION_SCHEMA.COMMON_DATUM' IN TYPEOF(SELF)) 
+   XOR ((SIZEOF(QUERY(x <* SELF\datum.established_by_relationships |
+          SIZEOF(['SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM_FEATURE',
+             'SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM_TARGET'] * 
+           TYPEOF(x\shape_aspect_relationship.relating_shape_aspect)) = 1)) >= 1));
+  WR2: SIZEOF(QUERY(x <* SELF\datum.established_by_relationships | 
+          ('SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM_FEATURE' IN TYPEOF(x\shape_aspect_relationship.relating_shape_aspect)))) <= 1; 
+  WR3: SELF\shape_aspect.product_definitional = FALSE;
+  WR4: SELF\shape_aspect.name = '';
 END_ENTITY;
 
 ENTITY datum_feature
-   SUBTYPE OF (shape_aspect);
-INVERSE 
-   feature_basis_relationship : SET [1:?] OF shape_aspect_relationship
-                              FOR relating_shape_aspect;
+  SUPERTYPE OF (ONEOF (dimensional_location_with_datum_feature, dimensional_size_with_datum_feature))
+  SUBTYPE OF (shape_aspect);
+INVERSE
+  feature_basis_relationship : SET[1:?] OF shape_aspect_relationship FOR relating_shape_aspect;
 WHERE
-   WR1: SIZEOF(QUERY(sar <* SELF\datum_feature.feature_basis_relationship 
-       | ('SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM' IN TYPEOF
-       (sar\shape_aspect_relationship.related_shape_aspect)))) = 1;
+  WR1: SIZEOF(QUERY(sar <* SELF\datum_feature.feature_basis_relationship | ('SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM' IN TYPEOF (sar\shape_aspect_relationship.related_shape_aspect)))) = 1;
   WR2: SELF\shape_aspect.product_definitional = TRUE;
 END_ENTITY;
 
-ENTITY datum_target
-  SUBTYPE OF (shape_aspect);
-  target_id             : identifier; 
-INVERSE
-  target_basis_relationship : SET [1:?] OF shape_aspect_relationship FOR
-                              relating_shape_aspect;
-WHERE
-   WR1: SIZEOF(QUERY(sar <* SELF\datum_target.target_basis_relationship 
-       | ('SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM' IN TYPEOF
-       (sar\shape_aspect_relationship.related_shape_aspect)))) = 1;
-   WR2: SELF\shape_aspect.product_definitional = TRUE;
-END_ENTITY;
-
 ENTITY datum_reference;
-  precedence       : INTEGER;
+  precedence : INTEGER;
   referenced_datum : datum;
 WHERE
   WR1: precedence > 0;
 END_ENTITY;
 
-ENTITY referenced_modified_datum
-  SUBTYPE OF (datum_reference);
-  modifier : limit_condition;
+ENTITY datum_reference_compartment
+  SUBTYPE OF (general_datum_reference);
+INVERSE
+  owner : datum_system FOR constituents;
 END_ENTITY;
 
-ENTITY composite_shape_aspect
+ENTITY datum_reference_element
+  SUBTYPE OF (general_datum_reference);
+DERIVE
+  owner : general_datum_reference := sts_get_general_datum_reference(SELF);
+WHERE
+  WR1: SELF <> owner;
+  WR2: EXISTS(owner);
+  WR3: SELF\shape_aspect.of_shape = owner\shape_aspect.of_shape;
+END_ENTITY;
+
+ENTITY datum_reference_modifier_with_value;
+  modifier_type : datum_reference_modifier_type;
+  modifier_value : length_measure_with_unit;
+WHERE
+  WR1: (modifier_value\measure_with_unit.value_component > 0.0);
+END_ENTITY;
+
+ENTITY datum_system
   SUBTYPE OF (shape_aspect);
+  constituents : LIST[1:3] OF UNIQUE datum_reference_compartment;
+UNIQUE
+  UR1: SELF\shape_aspect.of_shape,SELF\shape_aspect.name;
+WHERE
+  WR1: SELF\shape_aspect.product_definitional = FALSE;
+END_ENTITY;
+
+ENTITY datum_target
+  SUBTYPE OF (shape_aspect);
+  target_id : identifier;
 INVERSE
-  component_relationships : SET [2:?] OF shape_aspect_relationship
-                            FOR relating_shape_aspect;
+  target_basis_relationship : SET[1:?] OF shape_aspect_relationship FOR relating_shape_aspect;
+WHERE
+  WR1: SIZEOF(QUERY(sar <* SELF\datum_target.target_basis_relationship | ('SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM' IN TYPEOF (sar\shape_aspect_relationship.related_shape_aspect)))) = 1;
+  WR2: SELF\shape_aspect.product_definitional = TRUE;
 END_ENTITY;
 
 ENTITY derived_shape_aspect
   SUPERTYPE OF (ONEOF (apex,
                        centre_of_symmetry,
                        geometric_alignment,
+                       geometric_contact,
                        geometric_intersection,
                        parallel_offset,
                        perpendicular_to,
@@ -92,28 +241,40 @@ ENTITY derived_shape_aspect
                        tangent))
   SUBTYPE OF (shape_aspect);
 INVERSE
-  deriving_relationships : SET [1:?] OF
-          shape_aspect_relationship FOR relating_shape_aspect;
-WHERE
-   WR1: SIZEOF (QUERY (dr <*
-          SELF\derived_shape_aspect.deriving_relationships |
-          NOT ('SHAPE_ASPECT_DEFINITION_SCHEMA.' +
-               'SHAPE_ASPECT_DERIVING_RELATIONSHIP'
-          IN TYPEOF (dr)))) = 0;
+  deriving_relationships : SET[1:?] OF shape_aspect_deriving_relationship FOR relating_shape_aspect;
 END_ENTITY;
 
-ENTITY apex
+ENTITY dimensional_location_with_datum_feature
+  SUBTYPE OF (datum_feature, dimensional_location);
+END_ENTITY;
+
+ENTITY dimensional_size_with_datum_feature
+  SUBTYPE OF (datum_feature, dimensional_size);
+END_ENTITY;
+
+ENTITY extension
   SUBTYPE OF (derived_shape_aspect);
+WHERE
+  WR1: SIZEOF (SELF\derived_shape_aspect.deriving_relationships)= 1;
 END_ENTITY;
 
-ENTITY centre_of_symmetry 
-   SUBTYPE OF (derived_shape_aspect);
+ENTITY feature_definition
+  SUBTYPE OF (characterized_object);
+END_ENTITY;
+
+ENTITY general_datum_reference
+  ABSTRACT SUPERTYPE OF (ONEOF (datum_reference_compartment,
+                                datum_reference_element))
+  SUBTYPE OF (shape_aspect);
+  base : datum_or_common_datum;
+  modifiers : OPTIONAL SET[1:?] OF datum_reference_modifier;
 WHERE
-    WR1: SIZEOF
-        (QUERY(sadr<*SELF\derived_shape_aspect.deriving_relationships|
-    NOT('SHAPE_ASPECT_DEFINITION_SCHEMA.SYMMETRIC_SHAPE_ASPECT'
-     IN TYPEOF
-     (sadr\shape_aspect_relationship.related_shape_aspect))))=0; 
+  WR1: SELF\shape_aspect.name = '';
+  WR2: NOT EXISTS(SELF\shape_aspect.description);
+  WR3: NOT EXISTS(SELF\shape_aspect.id);
+  WR4: SELF\shape_aspect.product_definitional = FALSE;
+  WR5: NOT('SHAPE_ASPECT_DEFINITION_SCHEMA.DATUM' IN TYPEOF(base)) OR (SELF\shape_aspect.of_shape = base\shape_aspect.of_shape);
+  WR6: NOT('SHAPE_ASPECT_DEFINITION_SCHEMA.COMMON_DATUM_LIST' IN TYPEOF(base)) OR (SELF\shape_aspect.of_shape = base[1]\shape_aspect.of_shape);
 END_ENTITY;
 
 ENTITY geometric_alignment
@@ -122,15 +283,28 @@ WHERE
   WR1: SIZEOF (SELF\derived_shape_aspect.deriving_relationships)> 1;
 END_ENTITY;
 
+ENTITY geometric_contact
+  SUBTYPE OF (derived_shape_aspect);
+WHERE
+  WR1: SIZEOF (SELF\derived_shape_aspect.deriving_relationships)= 2;
+END_ENTITY;
+
 ENTITY geometric_intersection
   SUBTYPE OF (derived_shape_aspect);
 WHERE
   WR1: SIZEOF (SELF\derived_shape_aspect.deriving_relationships)> 1;
 END_ENTITY;
 
+ENTITY instanced_feature
+  SUBTYPE OF (feature_definition, shape_aspect);
+WHERE
+  WR1: 'PRODUCT_DEFINITION_SCHEMA.PRODUCT_DEFINITION' IN TYPEOF (SELF.of_shape.definition);
+  WR2: SELF.product_definitional;
+END_ENTITY;
+
 ENTITY parallel_offset
   SUBTYPE OF (derived_shape_aspect);
-  offset               : measure_with_unit;
+  offset : measure_with_unit;
 WHERE
   WR1: SIZEOF (SELF\derived_shape_aspect.deriving_relationships)= 1;
 END_ENTITY;
@@ -141,10 +315,25 @@ WHERE
   WR1: SIZEOF (SELF\derived_shape_aspect.deriving_relationships)= 1;
 END_ENTITY;
 
-ENTITY extension
-  SUBTYPE OF (derived_shape_aspect);
-WHERE
-  WR1: SIZEOF (SELF\derived_shape_aspect.deriving_relationships)= 1;
+ENTITY referenced_modified_datum
+  SUBTYPE OF (datum_reference);
+  modifier : limit_condition;
+END_ENTITY;
+
+ENTITY shape_aspect_deriving_relationship
+  SUBTYPE OF (shape_aspect_relationship);
+  SELF\shape_aspect_relationship.relating_shape_aspect : derived_shape_aspect;
+END_ENTITY;
+
+ENTITY shape_representation_with_parameters
+  SUBTYPE OF (shape_representation);
+  SELF\representation.items : SET[1:?] OF shape_representation_with_parameters_items;
+END_ENTITY;
+
+ENTITY symmetric_shape_aspect
+  SUBTYPE OF (shape_aspect);
+INVERSE
+  basis_relationships : SET[1:?] OF shape_aspect_deriving_relationship FOR related_shape_aspect;
 END_ENTITY;
 
 ENTITY tangent
@@ -153,23 +342,46 @@ WHERE
   WR1: SIZEOF (SELF\derived_shape_aspect.deriving_relationships)= 1;
 END_ENTITY;
 
-ENTITY shape_aspect_deriving_relationship
-       SUBTYPE OF (shape_aspect_relationship);
-     WHERE
-       WR1: 'SHAPE_ASPECT_DEFINITION_SCHEMA.DERIVED_SHAPE_ASPECT' IN
-TYPEOF
-            (SELF\SHAPE_ASPECT_RELATIONSHIP.RELATING_SHAPE_ASPECT);
-     END_ENTITY;
+SUBTYPE_CONSTRAINT sads_shape_aspect_subtypes FOR shape_aspect;
+  ONEOF (contacting_feature,
+         datum,
+         datum_feature,
+         datum_target,
+         datum_system,
+         general_datum_reference);
+END_SUBTYPE_CONSTRAINT;
 
-ENTITY symmetric_shape_aspect
-  SUBTYPE OF (shape_aspect);
-INVERSE
-  basis_relationships : SET [1:?] OF shape_aspect_relationship
-                        FOR relating_shape_aspect;
-WHERE
-  WR1: SIZEOF (QUERY (x<*SELF\symmetric_shape_aspect.basis_relationships |
-       'SHAPE_ASPECT_DEFINITION_SCHEMA.CENTRE_OF_SYMMETRY' IN TYPEOF 
-       (x\shape_aspect_relationship.related_shape_aspect)))>=1;
-END_ENTITY;
+RULE unique_datum_system FOR 
+(datum_system);
 
-END_SCHEMA;  --  shape_aspect_definition_schema
+LOCAL
+  pass : BOOLEAN := TRUE;
+END_LOCAL; 
+REPEAT i := 1 TO SIZEOF(datum_system);
+ REPEAT j := 1 TO SIZEOF(datum_system);
+  IF (i <> j) THEN
+   IF datum_system[i]\datum_system.constituents = 
+      datum_system[j]\datum_system.constituents  THEN
+    pass := FALSE;
+   END_IF;
+  END_IF;
+ END_REPEAT;
+END_REPEAT;WHERE
+  WR1: pass;
+END_RULE; 
+
+FUNCTION sts_get_general_datum_reference
+ (input : datum_reference_element) : general_datum_reference; 
+LOCAL
+      general_datum_reference_bag : BAG OF general_datum_reference :=
+(USEDIN(input, 
+      'SHAPE_ASPECT_DEFINITION_SCHEMA.' + 'GENERAL_DATUM_REFERENCE.' + 'BASE'));
+    END_LOCAL;
+
+    IF SIZEOF(general_datum_reference_bag) = 1 THEN
+      RETURN (general_datum_reference_bag[1]);
+    ELSE
+      RETURN (?);
+    END_IF;END_FUNCTION; 
+
+END_SCHEMA;  -- shape_aspect_definition_schema

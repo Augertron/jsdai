@@ -136,6 +136,49 @@ REFERENCE FROM Fabrication_technology_xim(get_stack);
       WR2: (SIZEOF(USEDIN(SELF, 'LAYERED_INTERCONNECT_COMPLEX_TEMPLATE_XIM.LOCAL_LINEAR_STACK_ARMX.' + 'ROOT_XIM')) <= 1);
   END_ENTITY;
 
+(** From bug - 3885 *)
+  TYPE any_entity = EXTENSIBLE GENERIC_ENTITY SELECT;
+  END_TYPE;
+
+  ENTITY Xim_state_data
+    SUPERTYPE OF ( ONEOF (
+      Xim_state_instance,
+      Xim_state_string,
+      Xim_state_logical,
+      Xim_state_real,
+      Xim_state_binary))
+    SUBTYPE OF (Ignorable_xim);
+    scope : OPTIONAL any_entity;
+    key : STRING; -- defines the purpose
+  END_ENTITY;
+
+  ENTITY Xim_state_instance
+    SUBTYPE OF (Xim_state_data);
+      data : OPTIONAL any_entity;
+  END_ENTITY;
+
+  ENTITY Xim_state_string
+    SUBTYPE OF (Xim_state_data);
+      data : STRING;
+  END_ENTITY;
+
+  ENTITY Xim_state_logical
+    SUBTYPE OF (Xim_state_data);
+      data : LOGICAL;
+  END_ENTITY;
+
+  ENTITY Xim_state_real
+    SUBTYPE OF (Xim_state_data);
+      data : REAL;
+  END_ENTITY;
+
+  ENTITY Xim_state_binary
+    SUBTYPE OF (Xim_state_data);
+      data : BINARY;
+  END_ENTITY;
+
+(** ENDOF bug 3885 *)
+
   (** returns the root for the tree the specified input group belongs to *)
   FUNCTION get_group_stack(input : Stratum_technology_occurrence_group_xim) : Local_linear_stack_armx;
     LOCAL

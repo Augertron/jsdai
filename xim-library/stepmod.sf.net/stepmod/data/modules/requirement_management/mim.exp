@@ -1,470 +1,605 @@
 (*
-   $Id$
-   ISO TC184/SC4/WG3 N2507 - ISO/TS 10303-1348 Requirement management - EXPRESS MIM
-   Supersedes ISO TC184/SC4/WG12 N2416
+$Id$
+ISO TC184/SC4/WG3 N2751 - ISO/TS 10303-1348 Requirement management - EXPRESS MIM
+Supersedes ISO TC184/SC4/WG3 N2713
 *) 
+
 
 SCHEMA Requirement_management_mim;
 
-USE FROM Classification_assignment_mim;
+USE FROM Classification_assignment_mim;    -- ISO/TS 10303-1114
 
-USE FROM Document_assignment_mim;
+USE FROM Collection_identification_and_version_mim;    -- ISO/TS 10303-1396
 
-USE FROM Document_properties_mim;
-
-USE FROM Effectivity_application_mim;
-
-USE FROM Information_rights_mim;
-
-USE FROM Product_view_definition_properties_mim;
-
-USE FROM Requirement_assignment_mim;
-
-USE FROM Requirement_view_definition_relationship_mim;
-
-USE FROM date_time_schema   
+USE FROM date_time_schema   -- ISO 10303-41
   (local_time); 
 
-TYPE requirement_aliasable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON aliasable_item WITH
-  (requirement_assignment,
-   requirement_source,
-   product_definition_formation_relationship,
-   product_definition_relationship);
-END_TYPE;
+USE FROM Document_assignment_mim;    -- ISO/TS 10303-1122
 
-TYPE requirement_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
-  (product,
-   product_definition_formation);
-END_TYPE;
+USE FROM Document_properties_mim;    -- ISO/TS 10303-1126
 
-TYPE requirement_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
-  (address,
-   person_and_organization_address, organizational_address,
-   applied_usage_right,
-   approval,
-   applied_approval_assignment,
-   approval_relationship,
-   approval_status,
-   approval_person_organization,
-   property_definition,
-   multi_language_attribute_assignment,
-   calendar_date,
-   certification,
-   applied_certification_assignment,
-   class,
-   context_dependent_unit,
-   contract,
-   applied_contract_assignment,
-   date_assignment, date_and_time_assignment,
-   date_and_time,
-   product_definition,
-   document_file,
-   product,
-   applied_document_reference, applied_document_usage_constraint_assignment,
-   applied_external_identification_assignment,
-   product_definition_formation,
-   effectivity,
-   applied_effectivity_assignment,
-   effectivity_relationship,
-   event_occurrence,
-   applied_event_occurrence_assignment,
-   event_occurrence_relationship,
-   applied_identification_assignment,
-   general_property,
-   general_property_relationship,
-   information_right,
-   information_usage_right,
-   usage_association,
-   language,
-   attribute_language_assignment,
-   local_time,
-   organization,
-   applied_organization_assignment, applied_person_and_organization_assignment,
-   organization_relationship,
-   person,
-   person_and_organization,
-   product_category,
-   product_definition_formation_relationship,
-   organizational_project,
-   applied_organizational_project_assignment,
-   organizational_project_relationship,
-   property_definition_representation,
-   representation,
-   representation_context,
-   representation_item,
-   requirement_assignment,
-   product_definition_relationship,
-   requirement_source,
-   security_classification,
-   applied_security_classification_assignment,
-   time_interval_relationship,
-   uncertainty_measure_with_unit,
-   named_unit, derived_unit,
-   measure_with_unit,
-   product_definition_context);
-END_TYPE;
+USE FROM Effectivity_application_mim;    -- ISO/TS 10303-1059
 
-TYPE requirement_contract_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON contract_item WITH
-  (product,
-   product_definition_formation,
-   organizational_project,
-   requirement_assignment,
-   requirement_source,
-   product_definition_formation_relationship,
-   product_definition,
-   security_classification,
-   product_definition_relationship);
-END_TYPE;
+USE FROM Identification_relationship_mim;    -- ISO/TS 10303-1398
 
-TYPE requirement_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH
-  (approval,
-   applied_approval_assignment,
-   property_definition,
-   certification,
-   applied_certification_assignment,
-   contract,
-   applied_contract_assignment,
-   product,
-   product_definition,
-   product_definition_formation,
-   effectivity,
-   applied_effectivity_assignment,
-   applied_identification_assignment,
-   general_property,
-   general_property_relationship,
-   information_right,
-   information_usage_right,
-   organization,
-   applied_organization_assignment, applied_person_and_organization_assignment,
-   person,
-   product_definition_formation_relationship,
-   organizational_project,
-   property_definition_representation,
-   representation,
-   representation_item,
-   requirement_assignment,
-   requirement_source,
-   security_classification,
-   applied_security_classification_assignment,
-   product_definition_relationship);
-END_TYPE;
+USE FROM Information_rights_mim;    -- ISO/TS 10303-1241
 
-TYPE requirement_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
-  (person_and_organization_address, organizational_address,
-   applied_usage_right,
-   applied_approval_assignment,
-   property_definition,
-   multi_language_attribute_assignment,
-   applied_certification_assignment,
-   applied_contract_assignment,
-   date_assignment, date_and_time_assignment,
-   product,
-   applied_document_reference, applied_document_usage_constraint_assignment,
-   product_definition,
-   applied_external_identification_assignment,
-   product_definition_formation,
-   applied_effectivity_assignment,
-   document_file,
-   applied_identification_assignment,
-   applied_organization_assignment, applied_person_and_organization_assignment,
-   organization_relationship,
-   person_and_organization,
-   product_definition_formation_relationship,
-   applied_organizational_project_assignment,
-   requirement_assignment,
-   product_definition_relationship,
-   requirement_source,
-   applied_security_classification_assignment);
-END_TYPE;
+USE FROM Property_as_definition_mim;    -- ISO/TS 10303-1399
 
-TYPE requirement_event_occurrence_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON event_occurrence_item WITH
-  (certification,
-   organizational_project);
-END_TYPE;
+USE FROM Requirement_assignment_mim;    -- ISO/TS 10303-1233
 
-TYPE requirement_ir_usage_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ir_usage_item WITH
-  (applied_usage_right,
-   certification,
-   applied_certification_assignment,
-   product_definition,
-   document_file,
-   product,
-   product_definition_formation,
-   requirement_assignment,
-   security_classification,
-   applied_security_classification_assignment);
-END_TYPE;
+USE FROM Requirement_view_definition_relationship_mim;    -- ISO/TS 10303-1142
 
-TYPE requirement_mri_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_approval_item WITH
-  (person_and_organization_address, organizational_address,
-   property_definition,
-   applied_certification_assignment,
-   applied_classification_assignment,
-   applied_contract_assignment,
-   date_assignment, date_and_time_assignment,
-   product_definition,
-   applied_document_reference, applied_document_usage_constraint_assignment,
-   applied_effectivity_assignment,
-   applied_event_occurrence_assignment,
-   applied_identification_assignment,
-   applied_organization_assignment, applied_person_and_organization_assignment,
-   organization_relationship,
-   person_and_organization,
-   product_related_product_category,
-   product_definition_formation_relationship,
-   organizational_project,
-   applied_organizational_project_assignment,
-   requirement_assignment,
-   product_definition_relationship,
-   requirement_source,
-   security_classification,
-   applied_security_classification_assignment);
-END_TYPE;
-
-TYPE requirement_mri_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_date_item WITH
-  (person_and_organization_address, organizational_address,
-   applied_identification_assignment,
-   applied_usage_right,
-   approval,
-   property_definition,
-   applied_certification_assignment,
-   applied_classification_assignment,
-   applied_contract_assignment,
-   date_assignment, date_and_time_assignment,
-   product_definition,
-   document_file,
-   product,
-   applied_document_reference, applied_document_usage_constraint_assignment,
-   product_definition_formation,
-   effectivity,
-   applied_effectivity_assignment,
-   applied_event_occurrence_assignment,
-   general_property,
-   general_property_relationship,
-   organization_relationship,
-   person,
-   person_and_organization,
-   product_related_product_category,
-   product_definition_formation_relationship,
-   organizational_project,
-   applied_organizational_project_assignment,
-   property_definition_representation,
-   representation,
-   requirement_assignment,
-   product_definition_relationship,
-   requirement_source,
-   security_classification,
-   product_definition_context);
-END_TYPE;
-
-TYPE requirement_mri_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_date_and_time_item WITH
-  (person_and_organization_address, organizational_address,
-   applied_identification_assignment,
-   applied_usage_right,
-   approval,
-   property_definition,
-   applied_certification_assignment,
-   applied_classification_assignment,
-   applied_contract_assignment,
-   date_assignment, date_and_time_assignment,
-   product_definition,
-   document_file,
-   product,
-   applied_document_reference, applied_document_usage_constraint_assignment,
-   product_definition_formation,
-   effectivity,
-   applied_effectivity_assignment,
-   applied_event_occurrence_assignment,
-   general_property,
-   general_property_relationship,
-   organization_relationship,
-   person,
-   person_and_organization,
-   product_related_product_category,
-   product_definition_formation_relationship,
-   organizational_project,
-   applied_organizational_project_assignment,
-   property_definition_representation,
-   representation,
-   requirement_assignment,
-   product_definition_relationship,
-   requirement_source,
-   security_classification,
-   product_definition_context);
-END_TYPE;
-
-TYPE requirement_mri_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_identification_item WITH
-  (address,
-   approval,
-   property_definition,
-   certification,
-   product_definition,
-   document_file,
-   product,
-   applied_document_reference, applied_document_usage_constraint_assignment,
-   product_definition_formation,
-   effectivity,
-   event_occurrence,
-   general_property,
-   general_property_relationship,
-   information_right,
-   information_usage_right,
-   applied_organization_assignment, applied_person_and_organization_assignment,
-   person,
-   person_and_organization,
-   organizational_project,
-   requirement_assignment,
-   product_definition_relationship,
-   requirement_source,
-   product_definition_formation_relationship,
-   applied_security_classification_assignment);
-END_TYPE;
-
-TYPE requirement_mri_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_organization_item WITH
-  (person_and_organization_address, organizational_address,
-   applied_identification_assignment,
-   approval,
-   property_definition,
-   certification,
-   applied_certification_assignment,
-   applied_classification_assignment,
-   applied_contract_assignment,
-   date_assignment, date_and_time_assignment,
-   product_definition,
-   document_file,
-   product,
-   applied_document_reference, applied_document_usage_constraint_assignment,
-   product_definition_formation,
-   effectivity,
-   applied_effectivity_assignment,
-   event_occurrence,
-   applied_event_occurrence_assignment,
-   general_property,
-   general_property_relationship,
-   applied_organization_assignment, applied_person_and_organization_assignment,
-   person_and_organization,
-   product_category,
-   product_related_product_category,
-   organizational_project,
-   applied_organizational_project_assignment,
-   property_definition_representation,
-   representation,
-   requirement_assignment,
-   product_definition_relationship,
-   requirement_source,
-   product_definition_formation_relationship,
-   security_classification,
-   applied_security_classification_assignment,
-   product_definition_context);
-END_TYPE;
-
-TYPE requirement_mri_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_person_and_organization_item WITH
-  (person_and_organization_address, organizational_address,
-   applied_identification_assignment,
-   approval,
-   property_definition,
-   certification,
-   applied_certification_assignment,
-   applied_classification_assignment,
-   applied_contract_assignment,
-   date_assignment, date_and_time_assignment,
-   product_definition,
-   document_file,
-   product,
-   applied_document_reference, applied_document_usage_constraint_assignment,
-   product_definition_formation,
-   effectivity,
-   applied_effectivity_assignment,
-   event_occurrence,
-   applied_event_occurrence_assignment,
-   general_property,
-   general_property_relationship,
-   applied_organization_assignment, applied_person_and_organization_assignment,
-   person_and_organization,
-   product_category,
-   product_related_product_category,
-   organizational_project,
-   applied_organizational_project_assignment,
-   property_definition_representation,
-   representation,
-   requirement_assignment,
-   product_definition_relationship,
-   requirement_source,
-   product_definition_formation_relationship,
-   security_classification,
-   applied_security_classification_assignment,
-   product_definition_context);
-END_TYPE;
-
-TYPE requirement_mri_multi_language_attribute_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_multi_language_attribute_item WITH
-  (property_definition,
-   product_definition,
-   product,
-   applied_document_reference, applied_document_usage_constraint_assignment,
-   product_definition_formation,
-   event_occurrence,
-   applied_external_identification_assignment,
-   general_property,
-   general_property_relationship,
-   information_right,
-   information_usage_right,
-   product_category,
-   representation_item,
-   requirement_assignment,
-   product_definition_relationship,
-   requirement_source,
-   product_definition_formation_relationship);
-END_TYPE;
-
-TYPE requirement_mri_attribute_language_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_attribute_language_item WITH
-  (property_definition,
-   product_definition,
-   product,
-   applied_document_reference, applied_document_usage_constraint_assignment,
-   product_definition_formation,
-   event_occurrence,
-   applied_external_identification_assignment,
-   general_property,
-   general_property_relationship,
-   information_right,
-   information_usage_right,
-   product_category,
-   representation_item,
-   requirement_assignment,
-   product_definition_relationship,
-   requirement_source,
-   product_definition_formation_relationship);
-END_TYPE;
-
-TYPE requirement_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
-  (product,
-   product_definition_formation);
-END_TYPE;
-
-TYPE requirement_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
-  (product_definition,
-   document_file,
-   product,
-   applied_document_reference, applied_document_usage_constraint_assignment,
-   product_definition_formation,
-   requirement_assignment,
-   product_definition_relationship,
-   requirement_source,
-   product_definition_formation_relationship);
-END_TYPE;
-
-TYPE rm_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH
-  (product,
-   product_definition_formation,
-   product_definition);
-END_TYPE;
-
-TYPE rm_requirement_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_source_item WITH
-  (product,
-   product_definition_formation,
-   product_definition);
-END_TYPE;
-
-END_SCHEMA;
+USE FROM Same_as_external_item_mim;    -- ISO/TS 10303-1402
 
 
+TYPE requirement_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH 
+   (product, 
+    product_definition_formation);
+END_TYPE; 
+
+TYPE requirement_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH 
+   (address, 
+    applied_approval_assignment, 
+    applied_certification_assignment, 
+    applied_contract_assignment, 
+    applied_document_reference, 
+    applied_document_usage_constraint_assignment, 
+    applied_effectivity_assignment, 
+    applied_event_occurrence_assignment, 
+    applied_external_identification_assignment, 
+    applied_identification_assignment, 
+    applied_organization_assignment, 
+    applied_organizational_project_assignment, 
+    applied_person_and_organization_assignment, 
+    applied_security_classification_assignment, 
+    applied_usage_right, 
+    approval, 
+    approval_person_organization, 
+    approval_relationship, 
+    approval_status, 
+    attribute_language_assignment, 
+    calendar_date, 
+    certification, 
+    class, 
+    contract, 
+    contract_relationship, 
+    date_and_time, 
+    date_and_time_assignment, 
+    date_assignment, 
+    derived_unit, 
+    document_file, 
+    effectivity, 
+    effectivity_relationship, 
+    event_occurrence, 
+    event_occurrence_relationship, 
+    general_property, 
+    general_property_relationship, 
+    information_right, 
+    information_usage_right, 
+    language, 
+    local_time, 
+    measure_with_unit, 
+    multi_language_attribute_assignment, 
+    named_unit, 
+    organization, 
+    organization_relationship, 
+    organizational_project, 
+    organizational_project_relationship, 
+    person, 
+    person_and_organization, 
+    product, 
+    product_definition, 
+    product_definition_context, 
+    product_definition_formation, 
+    product_definition_formation_relationship, 
+    product_definition_relationship, 
+    property_definition, 
+    property_definition_representation, 
+    representation, 
+    representation_context, 
+    representation_item, 
+    requirement_assignment, 
+    requirement_source, 
+    security_classification, 
+    time_interval_relationship, 
+    usage_association);
+END_TYPE; 
+
+TYPE requirement_collection_assignment_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON collection_assignment_groupable_item WITH 
+   (contract, 
+    organization, 
+    organizational_project, 
+    product, 
+    product_definition, 
+    product_definition_formation);
+END_TYPE; 
+
+TYPE requirement_collection_membership_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON collection_membership_groupable_item WITH 
+   (address, 
+    applied_approval_assignment, 
+    applied_certification_assignment, 
+    applied_classification_assignment, 
+    applied_contract_assignment, 
+    applied_document_reference, 
+    applied_document_usage_constraint_assignment, 
+    applied_effectivity_assignment, 
+    applied_event_occurrence_assignment, 
+    applied_external_identification_assignment, 
+    applied_identification_assignment, 
+    applied_organization_assignment, 
+    applied_organizational_project_assignment, 
+    applied_person_and_organization_assignment, 
+    applied_security_classification_assignment, 
+    applied_usage_right, 
+    approval, 
+    approval_person_organization, 
+    approval_relationship, 
+    approval_status, 
+    attribute_language_assignment, 
+    calendar_date, 
+    certification, 
+    class, 
+    collection_assignment, 
+    collection_membership, 
+    contract, 
+    contract_relationship, 
+    coordinated_universal_time_offset, 
+    date_and_time, 
+    date_and_time_assignment, 
+    date_assignment, 
+    derived_unit, 
+    derived_unit_element, 
+    document_file, 
+    effectivity, 
+    effectivity_relationship, 
+    event_occurrence, 
+    event_occurrence_relationship, 
+    external_source, 
+    general_property, 
+    general_property_relationship, 
+    identification_assignment_relationship, 
+    information_right, 
+    information_usage_right, 
+    language, 
+    local_time, 
+    measure_with_unit, 
+    multi_language_attribute_assignment, 
+    named_unit, 
+    organization, 
+    organization_relationship, 
+    organizational_project, 
+    organizational_project_relationship, 
+    person, 
+    person_and_organization, 
+    product, 
+    product_definition, 
+    product_definition_context, 
+    product_definition_formation, 
+    product_definition_formation_relationship, 
+    product_definition_relationship, 
+    product_relationship, 
+    property_definition, 
+    property_definition_representation, 
+    representation, 
+    representation_context, 
+    representation_item, 
+    representation_relationship, 
+    requirement_assignment, 
+    requirement_source, 
+    same_as_external_item_assignment, 
+    satisfies_requirement, 
+    security_classification, 
+    time_interval, 
+    time_interval_relationship, 
+    usage_association);
+END_TYPE; 
+
+TYPE requirement_contract_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON contract_item WITH 
+   (organizational_project, 
+    product, 
+    product_definition, 
+    product_definition_formation, 
+    product_definition_formation_relationship, 
+    product_definition_relationship, 
+    requirement_assignment, 
+    requirement_source, 
+    security_classification);
+END_TYPE; 
+
+TYPE requirement_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH 
+   (applied_approval_assignment, 
+    applied_certification_assignment, 
+    applied_contract_assignment, 
+    applied_effectivity_assignment, 
+    applied_identification_assignment, 
+    applied_organization_assignment, 
+    applied_person_and_organization_assignment, 
+    applied_security_classification_assignment, 
+    approval, 
+    certification, 
+    contract, 
+    contract_relationship, 
+    effectivity, 
+    general_property, 
+    general_property_relationship, 
+    information_right, 
+    information_usage_right, 
+    organization, 
+    organizational_project, 
+    person, 
+    product, 
+    product_definition, 
+    product_definition_formation, 
+    product_definition_formation_relationship, 
+    product_definition_relationship, 
+    property_definition, 
+    property_definition_representation, 
+    representation, 
+    representation_item, 
+    requirement_assignment, 
+    requirement_source, 
+    security_classification);
+END_TYPE; 
+
+TYPE requirement_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH 
+   (applied_approval_assignment, 
+    applied_certification_assignment, 
+    applied_contract_assignment, 
+    applied_document_reference, 
+    applied_document_usage_constraint_assignment, 
+    applied_effectivity_assignment, 
+    applied_external_identification_assignment, 
+    applied_identification_assignment, 
+    applied_organization_assignment, 
+    applied_organizational_project_assignment, 
+    applied_person_and_organization_assignment, 
+    applied_security_classification_assignment, 
+    applied_usage_right, 
+    date_and_time_assignment, 
+    date_assignment, 
+    document_file, 
+    multi_language_attribute_assignment, 
+    organization_relationship, 
+    organizational_address, 
+    person_and_organization, 
+    product, 
+    product_definition, 
+    product_definition_formation, 
+    product_definition_formation_relationship, 
+    product_definition_relationship, 
+    property_definition, 
+    requirement_assignment, 
+    requirement_source);
+END_TYPE; 
+
+TYPE requirement_event_occurrence_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON event_occurrence_item WITH 
+   (certification, 
+    organizational_project);
+END_TYPE; 
+
+TYPE requirement_ir_usage_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ir_usage_item WITH 
+   (applied_certification_assignment, 
+    applied_security_classification_assignment, 
+    applied_usage_right, 
+    certification, 
+    document_file, 
+    product, 
+    product_definition, 
+    product_definition_formation, 
+    requirement_assignment, 
+    security_classification);
+END_TYPE; 
+
+TYPE requirement_mri_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_approval_item WITH 
+   (applied_certification_assignment, 
+    applied_classification_assignment, 
+    applied_contract_assignment, 
+    applied_document_reference, 
+    applied_document_usage_constraint_assignment, 
+    applied_effectivity_assignment, 
+    applied_event_occurrence_assignment, 
+    applied_identification_assignment, 
+    applied_organization_assignment, 
+    applied_organizational_project_assignment, 
+    applied_person_and_organization_assignment, 
+    applied_security_classification_assignment, 
+    date_and_time_assignment, 
+    date_assignment, 
+    organization_relationship, 
+    organizational_address, 
+    organizational_project, 
+    person_and_organization, 
+    product, 
+    product_definition, 
+    product_definition_formation, 
+    product_definition_formation_relationship, 
+    product_definition_relationship, 
+    property_definition, 
+    requirement_assignment, 
+    requirement_source, 
+    security_classification);
+END_TYPE; 
+
+TYPE requirement_mri_attribute_language_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_attribute_language_item WITH 
+   (applied_document_reference, 
+    applied_document_usage_constraint_assignment, 
+    applied_external_identification_assignment, 
+    event_occurrence, 
+    general_property, 
+    general_property_relationship, 
+    information_right, 
+    information_usage_right, 
+    product, 
+    product_definition, 
+    product_definition_formation, 
+    product_definition_formation_relationship, 
+    product_definition_relationship, 
+    property_definition, 
+    representation_item, 
+    requirement_assignment, 
+    requirement_source);
+END_TYPE; 
+
+TYPE requirement_mri_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_date_and_time_item WITH 
+   (applied_certification_assignment, 
+    applied_classification_assignment, 
+    applied_contract_assignment, 
+    applied_document_reference, 
+    applied_document_usage_constraint_assignment, 
+    applied_effectivity_assignment, 
+    applied_event_occurrence_assignment, 
+    applied_identification_assignment, 
+    applied_organizational_project_assignment, 
+    applied_usage_right, 
+    approval, 
+    date_and_time_assignment, 
+    date_assignment, 
+    document_file, 
+    effectivity, 
+    general_property, 
+    general_property_relationship, 
+    organization_relationship, 
+    organizational_address, 
+    organizational_project, 
+    person, 
+    person_and_organization, 
+    product, 
+    product_definition, 
+    product_definition_context, 
+    product_definition_formation, 
+    product_definition_formation_relationship, 
+    product_definition_relationship, 
+    property_definition, 
+    property_definition_representation, 
+    representation, 
+    requirement_assignment, 
+    requirement_source);
+END_TYPE; 
+
+TYPE requirement_mri_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_date_item WITH 
+   (applied_certification_assignment, 
+    applied_classification_assignment, 
+    applied_contract_assignment, 
+    applied_document_reference, 
+    applied_document_usage_constraint_assignment, 
+    applied_effectivity_assignment, 
+    applied_event_occurrence_assignment, 
+    applied_identification_assignment, 
+    applied_organizational_project_assignment, 
+    applied_usage_right, 
+    approval, 
+    date_and_time_assignment, 
+    date_assignment, 
+    document_file, 
+    effectivity, 
+    general_property, 
+    general_property_relationship, 
+    organization_relationship, 
+    organizational_address, 
+    organizational_project, 
+    person, 
+    person_and_organization, 
+    product, 
+    product_definition, 
+    product_definition_context, 
+    product_definition_formation, 
+    product_definition_formation_relationship, 
+    product_definition_relationship, 
+    property_definition, 
+    property_definition_representation, 
+    representation, 
+    requirement_assignment, 
+    requirement_source);
+END_TYPE; 
+
+TYPE requirement_mri_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_identification_item WITH 
+   (address, 
+    applied_document_reference, 
+    applied_document_usage_constraint_assignment, 
+    applied_organization_assignment, 
+    applied_person_and_organization_assignment, 
+    applied_security_classification_assignment, 
+    approval, 
+    certification, 
+    document_file, 
+    effectivity, 
+    event_occurrence, 
+    general_property, 
+    general_property_relationship, 
+    information_right, 
+    information_usage_right, 
+    organizational_project, 
+    person, 
+    person_and_organization, 
+    product, 
+    product_definition, 
+    product_definition_formation, 
+    product_definition_formation_relationship, 
+    product_definition_relationship, 
+    property_definition, 
+    requirement_assignment, 
+    requirement_source);
+END_TYPE; 
+
+TYPE requirement_mri_multi_language_attribute_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_multi_language_attribute_item WITH 
+   (applied_document_reference, 
+    applied_document_usage_constraint_assignment, 
+    applied_external_identification_assignment, 
+    event_occurrence, 
+    general_property, 
+    general_property_relationship, 
+    information_right, 
+    information_usage_right, 
+    product, 
+    product_definition, 
+    product_definition_formation, 
+    product_definition_formation_relationship, 
+    product_definition_relationship, 
+    property_definition, 
+    representation_item, 
+    requirement_assignment, 
+    requirement_source);
+END_TYPE; 
+
+TYPE requirement_mri_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_organization_item WITH 
+   (applied_certification_assignment, 
+    applied_classification_assignment, 
+    applied_contract_assignment, 
+    applied_document_reference, 
+    applied_document_usage_constraint_assignment, 
+    applied_effectivity_assignment, 
+    applied_event_occurrence_assignment, 
+    applied_organization_assignment, 
+    applied_organizational_project_assignment, 
+    applied_person_and_organization_assignment, 
+    approval, 
+    certification, 
+    date_and_time_assignment, 
+    date_assignment, 
+    document_file, 
+    effectivity, 
+    event_occurrence, 
+    general_property, 
+    general_property_relationship, 
+    organizational_address, 
+    organizational_project, 
+    person_and_organization, 
+    product, 
+    product_definition, 
+    product_definition_context, 
+    product_definition_formation, 
+    product_definition_formation_relationship, 
+    product_definition_relationship, 
+    property_definition, 
+    property_definition_representation, 
+    representation, 
+    requirement_assignment, 
+    requirement_source, 
+    security_classification);
+END_TYPE; 
+
+TYPE requirement_mri_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON mri_person_and_organization_item WITH 
+   (applied_certification_assignment, 
+    applied_classification_assignment, 
+    applied_contract_assignment, 
+    applied_document_reference, 
+    applied_document_usage_constraint_assignment, 
+    applied_effectivity_assignment, 
+    applied_event_occurrence_assignment, 
+    applied_organization_assignment, 
+    applied_organizational_project_assignment, 
+    applied_person_and_organization_assignment, 
+    approval, 
+    certification, 
+    date_and_time_assignment, 
+    date_assignment, 
+    document_file, 
+    effectivity, 
+    event_occurrence, 
+    general_property, 
+    general_property_relationship, 
+    organizational_address, 
+    organizational_project, 
+    person_and_organization, 
+    product, 
+    product_definition, 
+    product_definition_context, 
+    product_definition_formation, 
+    product_definition_formation_relationship, 
+    product_definition_relationship, 
+    property_definition, 
+    property_definition_representation, 
+    representation, 
+    requirement_assignment, 
+    requirement_source, 
+    security_classification);
+END_TYPE; 
+
+TYPE requirement_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH 
+   (product, 
+    product_definition_formation);
+END_TYPE; 
+
+TYPE requirement_representation_proxy_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON representation_proxy_select WITH 
+   (product_definition_formation);
+END_TYPE; 
+
+TYPE requirement_same_as_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON same_as_item WITH 
+   (address, 
+    applied_external_identification_assignment, 
+    approval, 
+    approval_status, 
+    attribute_language_assignment, 
+    calendar_date, 
+    certification, 
+    contract, 
+    coordinated_universal_time_offset, 
+    date_and_time, 
+    derived_unit, 
+    derived_unit_element, 
+    event_occurrence, 
+    external_source, 
+    general_property, 
+    information_right, 
+    information_usage_right, 
+    language, 
+    local_time, 
+    measure_with_unit, 
+    named_unit, 
+    organization, 
+    person, 
+    product_definition_context, 
+    representation_context, 
+    requirement_source, 
+    security_classification, 
+    time_interval, 
+    usage_association);
+END_TYPE; 
+
+TYPE requirement_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH 
+   (applied_document_reference, 
+    applied_document_usage_constraint_assignment, 
+    document_file, 
+    product, 
+    product_definition, 
+    product_definition_formation, 
+    product_definition_formation_relationship, 
+    product_definition_relationship, 
+    requirement_assignment, 
+    requirement_source);
+END_TYPE; 
+
+TYPE rm_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH 
+   (product, 
+    product_definition, 
+    product_definition_formation);
+END_TYPE; 
+
+TYPE rm_requirement_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_source_item WITH 
+   (product, 
+    product_definition, 
+    product_definition_formation);
+END_TYPE; 
+
+END_SCHEMA;  -- Requirement_management_mim

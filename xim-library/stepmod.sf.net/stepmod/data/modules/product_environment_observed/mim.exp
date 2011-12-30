@@ -1,0 +1,99 @@
+(*
+$Id$
+ISO TC184/SC4/WG12 N6819 - ISO/TS 10303-1401 Product environment observed - EXPRESS MIM
+Supersedes ISO TC184/SC4/WG12 N6063
+*) 
+
+
+SCHEMA Product_environment_observed_mim;
+
+USE FROM Classification_assignment_mim;    -- ISO/TS 10303-1114
+
+USE FROM group_schema   -- ISO 10303-41
+  (group); 
+
+USE FROM Identification_assignment_mim;    -- ISO/TS 10303-1021
+
+USE FROM product_definition_schema   -- ISO 10303-41
+  (product,
+   product_definition,
+   product_definition_formation,
+   product_definition_formation_relationship,
+   product_definition_relationship,
+   product_relationship); 
+
+USE FROM Product_environment_definition_mim;    -- ISO/TS 10303-1400
+
+USE FROM Product_group_mim;    -- ISO/TS 10303-1278
+
+USE FROM Product_identification_mim;    -- ISO/TS 10303-1017
+
+USE FROM product_property_definition_schema   -- ISO 10303-41
+  (characterized_object); 
+
+USE FROM Product_version_mim;    -- ISO/TS 10303-1018
+
+USE FROM Product_view_definition_mim;    -- ISO/TS 10303-1019
+
+USE FROM Product_view_definition_relationship_mim;    -- ISO/TS 10303-1041
+
+USE FROM Property_assignment_mim;    -- ISO/TS 10303-1030
+
+
+TYPE env_obs_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH 
+   (observed_environment, 
+    observed_environment_assignment, 
+    observed_environment_version, 
+    observed_environment_view_definition_relationship);
+END_TYPE; 
+
+TYPE env_obs_identification_assignment = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH 
+   (observed_environment, 
+    observed_environment_assignment, 
+    observed_environment_version, 
+    observed_environment_view_definition_relationship);
+END_TYPE; 
+
+ENTITY observed_environment
+  SUBTYPE OF (product);
+END_ENTITY;
+
+ENTITY observed_environment_assignment
+  SUBTYPE OF (group);
+END_ENTITY;
+
+ENTITY observed_environment_to_definition
+  SUBTYPE OF (product_relationship);
+  SELF\product_relationship.relating_product RENAMED defined_environment : environment_definition;
+  SELF\product_relationship.related_product RENAMED observed_environment : observed_environment;
+END_ENTITY;
+
+ENTITY observed_environment_to_definition_version
+  SUBTYPE OF (product_definition_formation_relationship);
+  SELF\product_definition_formation_relationship.relating_product_definition_formation RENAMED defined_environment_version : environment_definition_version;
+  SELF\product_definition_formation_relationship.related_product_definition_formation RENAMED observed_environment_version : observed_environment_version;
+END_ENTITY;
+
+ENTITY observed_environment_to_definition_view
+  SUBTYPE OF (product_definition_relationship);
+  SELF\product_definition_relationship.relating_product_definition RENAMED defined_environment_view : observed_environment_view;
+  SELF\product_definition_relationship.related_product_definition RENAMED observed_environment_view : environment_definition_view;
+END_ENTITY;
+
+ENTITY observed_environment_version
+  SUBTYPE OF (product_definition_formation);
+  SELF\product_definition_formation.of_product RENAMED of_environment : observed_environment;
+END_ENTITY;
+
+ENTITY observed_environment_view
+  SUBTYPE OF (characterized_object, product_definition);
+  SELF\product_definition.formation RENAMED observed_environment_version : observed_environment_version;
+END_ENTITY;
+
+ENTITY observed_environment_view_definition_relationship
+  SUBTYPE OF (product_definition_relationship);
+  SELF\product_definition_relationship.relating_product_definition RENAMED relating_environment : observed_environment_view;
+  SELF\product_definition_relationship.related_product_definition RENAMED related_environment : observed_environment_view;
+END_ENTITY;
+
+END_SCHEMA;  -- Product_environment_observed_mim

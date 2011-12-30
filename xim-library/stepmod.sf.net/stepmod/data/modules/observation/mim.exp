@@ -1,15 +1,15 @@
 (*
- $Id$
- ISO TC184/SC4/WG12 N3089 - ISO/TS 10303-1258 Observation - EXPRESS MIM
- Supersedes ISO TC184/SC4/WG12 N2397
+$Id$
+ISO TC184/SC4/WG12 N7277 - ISO/TS 10303-1258 Observation - EXPRESS MIM
+Supersedes ISO TC184/SC4/WG12 N6049
 *) 
 
 
 SCHEMA Observation_mim;
 
 USE FROM action_schema   -- ISO 10303-41
-  (action_relationship,
-   action_request_solution); 
+  (action_directive,
+   action_relationship); 
 
 USE FROM Activity_as_realized_mim;    -- ISO/TS 10303-1259
 
@@ -17,7 +17,11 @@ USE FROM Activity_mim;    -- ISO/TS 10303-1047
 
 USE FROM Classification_assignment_mim;    -- ISO/TS 10303-1114
 
+USE FROM Description_assignment_mim;    -- ISO/TS 10303-1473
+
 USE FROM Management_resource_information_mim;    -- ISO/TS 10303-1288
+
+USE FROM Name_assignment_mim;    -- ISO/TS 10303-1340
 
 USE FROM Product_as_individual_mim;    -- ISO/TS 10303-1164
 
@@ -25,9 +29,10 @@ USE FROM qualified_measure_schema   -- ISO 10303-45
   (descriptive_representation_item); 
 
 USE FROM representation_schema   -- ISO 10303-43
-  (representation,
-   representation_context,
+  (representation_context,
    representation_item); 
+
+USE FROM Work_order_mim;    -- ISO/TS 10303-1043
 
 USE FROM Work_request_mim;    -- ISO/TS 10303-1042
 
@@ -41,7 +46,15 @@ TYPE observation_classification = SELECT BASED_ON classification_item WITH
     observation_relationship);
 END_TYPE; 
 
-TYPE observation_date = SELECT BASED_ON mri_date_item WITH 
+TYPE observation_consequence_name_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON name_item WITH 
+   (observation_consequence);
+END_TYPE; 
+
+TYPE observation_consequence_role = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON description_item WITH 
+   (observation_consequence);
+END_TYPE; 
+
+TYPE observation_date = SELECT
    (observation);
 END_TYPE; 
 
@@ -54,10 +67,6 @@ TYPE observation_identification_item = SELECT BASED_ON mri_identification_item W
     observation_consequence);
 END_TYPE; 
 
-TYPE observation_item_representation = SELECT BASED_ON action_items WITH 
-   (representation);
-END_TYPE; 
-
 TYPE observation_organization = SELECT BASED_ON mri_organization_item WITH 
    (observation);
 END_TYPE; 
@@ -67,8 +76,7 @@ TYPE observation_person_and_organization = SELECT BASED_ON mri_person_and_organi
 END_TYPE; 
 
 TYPE observation_recorder_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH 
-   (product_definition_formation --product_as_realized
-   );
+   (product_definition_formation);
 END_TYPE; 
 
 TYPE observed_context_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items;
@@ -79,7 +87,7 @@ ENTITY observation
 END_ENTITY;
 
 ENTITY observation_consequence
-  SUBTYPE OF (action_request_solution);
+  SUBTYPE OF (applied_action_assignment);
 END_ENTITY;
 
 ENTITY observation_relationship
@@ -87,4 +95,3 @@ ENTITY observation_relationship
 END_ENTITY;
 
 END_SCHEMA;  -- Observation_mim
-

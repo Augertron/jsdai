@@ -1,440 +1,163 @@
 (*
-   $Id$
-   ISO TC184/SC4/WG3 2471 - ISO/TS 10303-433 ap233_systems_engineering - EXPRESS MIM 
-   Supersedes ISO TC184/SC4/WG12 N2271
-*)
+$Id$
+ISO TC184/SC4/WG3 N2721 - ISO/TS 10303-433 AP233 systems engineering - EXPRESS MIM
+Supersedes ISO TC184/SC4/WG3 N2471
+*) 
+
 
 SCHEMA Ap233_systems_engineering_mim;
-  USE FROM Program_management_mim;
-  USE FROM System_modelling_mim;
-  USE FROM product_property_definition_schema   -- ISO 10303-41
-  (characterized_object); 
-  USE FROM state_type_schema;
 
-TYPE syse_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
-	(analysis_assignment,
-	applied_action_method_assignment,
-	group,
-	hierarchical_interface_connection,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	property_definition_representation,
-	requirement_source,
-	verification);
-END_TYPE;
+USE FROM Program_management_mim;    -- ISO/TS 10303-1466
 
-TYPE syse_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(action_method_assignment_relationship,
-	analysis_assignment,
-	applied_action_method_assignment,
-	group,
-	interface_connection,
-	interface_definition_connection,
-	interface_definition_for,
-	product,
-	product_definition,
-	product_definition_formation,
-	requirement_assignment,
-	verification,
-	verification_evidence);
-END_TYPE;
+USE FROM System_modelling_mim;    -- ISO/TS 10303-1477
 
-TYPE syse_action_request_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_request_item WITH
-	(group,
-	requirement_assignment);
-END_TYPE;
 
-TYPE syse_analysed_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON analysed_item WITH
-	(action_method_assignment,
-	action_method_relationship,
-	action_relationship,
-	action_resource_relationship,
-	ascribable_state,
-	group,
-	issue,
-	lessons_learned,
-	observation,
-	observation_consequence,
-	observation_relationship,
-	product_group_relationship,
-	product_relationship,
-	representation,
-	risk,
-	risk_analysis,
-	risk_assessment,
-	risk_consequence,
-	risk_control,
-	risk_criteria,
-	risk_estimation,
-	risk_evaluation,
-	risk_perception_relationship,
-	risk_reduction,
-	risk_relationship,
-	risk_treatment,
-	state_observed,
-	state_observed_role,
-	state_type,
-	task_method);
-END_TYPE;
+TYPE syse_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ds_action_items WITH 
+   (alternate_product_relationship, 
+    applied_description_text_assignment, 
+    applied_expression_assignment, 
+    assembly_component_usage_substitute, 
+    characterized_object, 
+    context_dependent_shape_representation, 
+    description_text, 
+    generic_expression, 
+    geometric_item_specific_usage, 
+    group_relationship, 
+    item_defined_transformation, 
+    measure_qualification, 
+    precision_qualifier, 
+    shape_aspect, 
+    shape_aspect_relationship, 
+    type_qualifier, 
+    uncertainty_qualifier);
+END_TYPE; 
 
-(* Arm extend list for characterized_activity_definition does not have mim.exp mapping; see 
- resource_management_characterized clause 5.1.13.  
+TYPE syse_analysed_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON sysm_analysed_item WITH 
+   (action_method_assignment, 
+    observation_consequence);
+END_TYPE; 
 
-	TYPE syse_characterized_activity_definition = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON characterized_activity_definition WITH
-		(action,
-		action_method,
-		risk);			   ERROR
-	END_TYPE;
-*)
+TYPE syse_attribute_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON prgm_attribute_classification_item WITH 
+   (alternate_product_relationship, 
+    description_text, 
+    group_relationship);
+END_TYPE; 
 
-TYPE syse_attribute_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON attribute_classification_item WITH
-	(alternate_product_relationship,
-	description_text,
-	descriptive_representation_item,
-	group,
-	group_relationship,
-	interface_connection,
-	interface_connector_definition,
-	interface_definition_connection,
-	interface_specification_definition,
-	measure_representation_item,
-	product_definition,
-	product_definition_formation_relationship,
-	property_definition_representation,
-	representation);
-END_TYPE;
+TYPE syse_description_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON sysm_description_item WITH 
+   (action, 
+    applied_position_in_organization_group_assignment, 
+    experience, 
+    experience_type, 
+    organization_type, 
+    person_type, 
+    person_type_definition, 
+    person_type_definition_relationship, 
+    position_in_organization, 
+    position_in_organization_assignment, 
+    position_in_organization_relationship, 
+    position_in_organization_type, 
+    position_in_organization_type_assignment, 
+    qualification_type, 
+    qualification_type_relationship);
+END_TYPE; 
 
-TYPE syse_experience_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON experience_item WITH
-	(group);
-END_TYPE;
+TYPE syse_evidence_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON sysm_evidence_item WITH 
+   (action_method_assignment, 
+    action_property, 
+    action_resource_relationship, 
+    applied_person_type_assignment, 
+    applied_position_in_organization_assignment, 
+    risk_impact_assignment, 
+    risk_perception_source_assignment);
+END_TYPE; 
 
-TYPE syse_experience_type_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON experience_type_item WITH
-	(analysis_assignment,
-	groupable_item);
-END_TYPE;
+TYPE syse_experience_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON prjm_experience_item WITH 
+   (group);
+END_TYPE; 
 
-TYPE syse_description_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON description_item WITH
-	(action_resource,
-	issue,
-	lessons_learned,
-	observation,
-	risk,
-	risk_analysis,
-	risk_treatment);
-END_TYPE;
+TYPE syse_experience_type_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON prjm_experience_type_item WITH 
+   (behaviour_model_groupable_item);
+END_TYPE; 
 
-TYPE syse_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
-	(make_from_usage_option,
-	property_definition_representation);
-END_TYPE;
+TYPE syse_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON sysm_groupable_item WITH 
+   (experience_type);
+END_TYPE; 
 
-TYPE syse_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON groupable_item WITH
-	(action_method,
-	action_resource,
-	applied_action_method_assignment,
-	experience_type,
-	issue,
-	location,
-	observation,
-	risk);
-END_TYPE;
+TYPE syse_location_representation_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON prgm_location_representation_item WITH 
+   (alternate_product_relationship, 
+    assembly_component_usage_substitute, 
+    constrained_general_parameter_relationship, 
+    evidence, 
+    interface_connection, 
+    interface_connector_occurrence, 
+    verification);
+END_TYPE; 
 
-TYPE syse_ir_usage_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ir_usage_item WITH
-	(characterized_object,
-	group,
-	group_relationship,
-	interface_connector_definition);
-END_TYPE;
+TYPE syse_observed_context_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON im_observed_context_item WITH 
+   (alternate_product_relationship, 
+    assembly_component_usage_substitute, 
+    evidence);
+END_TYPE; 
 
-TYPE syse_issue_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON issue_reference_item WITH
-	(action_method,
-	action_method_assignment_relationship,
-	alternate_product_relationship,
-	analysis_assignment,
-	applied_description_text_assignment,
-	assembly_component_usage_substitute,
-	characterized_object,
-	configuration_effectivity,
-	description_text,
-	expression_assignment,
-	generic_expression,
-	group,
-	group_relationship,
-	in_zone,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	interface_definition_for,
-	product_definition_shape,
-	requirement_assignment,
-	requirement_source,
-	shape_aspect_relationship,
-	verification,
-	verification_evidence,
-	verification_relationship);
-END_TYPE;
+TYPE syse_person_type_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON prgm_person_type_item WITH 
+   (behaviour_model_groupable_item, 
+    evidence);
+END_TYPE; 
 
-TYPE syse_location_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON location_item WITH
-	(analysis_assignment,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection);
-END_TYPE;
+TYPE syse_position_in_organization_group_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON prgm_position_in_organization_group_item WITH 
+   (evidence, 
+    interface_definition_connection, 
+    verification);
+END_TYPE; 
 
-TYPE syse_observed_context_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON observed_context_item WITH
-	(alternate_product_relationship,
-	analysis_assignment,
-	assembly_component_usage_substitute,
-	group,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	interface_definition_for,
-	requirement_assignment,
-	verification,
-	verification_evidence);
-END_TYPE;
+TYPE syse_position_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON prgm_position_in_organization_item WITH 
+   (evidence, 
+    interface_definition_connection, 
+    verification);
+END_TYPE; 
 
-(*
-TYPE syse_parameter_value_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON parameter_value_select WITH
-	(risk_analysis,
-	state_observed_relationship);
-END_TYPE;
-*)
+TYPE syse_position_in_organization_type_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON prgm_position_in_organization_type_item WITH 
+   (evidence, 
+    interface_definition_connection, 
+    verification);
+END_TYPE; 
 
-		ENTITY syse_characterizable_risk_analysis
-		  SUBTYPE OF (risk_analysis, characterized_object);
-		END_ENTITY;		
+TYPE syse_requirement_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON sysm_requirement_source_item WITH 
+   (action);
+END_TYPE; 
 
-		ENTITY syse_characterizable_state_observed_relationship
-		  SUBTYPE OF (state_observed_relationship, characterized_object);
-		END_ENTITY;
+TYPE syse_risk_impact_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON prgm_risk_impact_item WITH 
+   (alternate_product_relationship, 
+    assembly_component_usage_substitute, 
+    evidence, 
+    verification_relationship);
+END_TYPE; 
 
-TYPE syse_position_in_organization_group_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_group_item WITH
-	(product_definition,
-	interface_definition_connection,
-	verification,
-	verification_evidence);
-END_TYPE;
+TYPE syse_risk_perception_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON prgm_risk_perception_source_item WITH 
+   (alternate_product_relationship, 
+    applied_expression_assignment, 
+    assembly_component_usage_substitute, 
+    evidence, 
+    generic_expression, 
+    verification_relationship);
+END_TYPE; 
 
-TYPE syse_position_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_item WITH
-	(product_definition,
-	interface_definition_connection,
-	verification,
-	verification_evidence);
-END_TYPE;
+TYPE syse_selected_item_context_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON prjm_selected_item_context_items WITH 
+   (product_definition_formation);
+END_TYPE; 
 
-TYPE syse_position_in_organization_type_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_type_item WITH
-	(product_definition,
-	interface_definition_connection,
-	verification,
-	verification_evidence);
-END_TYPE;
+TYPE syse_selected_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON pmri_selected_item_select WITH 
+   (interface_connection, 
+    interface_connector_definition, 
+    interface_connector_occurrence, 
+    interface_definition_connection);
+END_TYPE; 
 
-TYPE syse_probable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON probable_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage_substitute,
-	verification,
-	verification_evidence,
-	verification_relationship);
-END_TYPE;
+TYPE syse_state_observed_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON sysm_state_observed_of_item WITH 
+   (alternate_product_relationship, 
+    assembly_component_usage_substitute, 
+    evidence, 
+    group);
+END_TYPE; 
 
-TYPE syse_location_representation_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON location_representation_item WITH
-	(alternate_product_relationship,
-	applied_action_method_assignment,
-	assembly_component_usage_substitute,
-	constrained_general_parameter_relationship,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	verification,
-	verification_evidence);
-END_TYPE;
-
-TYPE syse_requirement_assigned_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_assigned_item WITH
-	(action_method,
-	state_observed,
-	state_observed_assignment);
-END_TYPE;
-
-TYPE syse_requirement_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON requirement_source_item WITH
-	(action,
-	issue,
-	lessons_learned,
-	observation,
-	risk_analysis,
-	risk_stakeholder,
-	risk_treatment,
-	state_observed,
-	state_observed_assignment);
-END_TYPE;
-
-TYPE syse_risk_impact_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_impact_item WITH
-	(alternate_product_relationship,
-	assembly_component_usage_substitute,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	requirement_assignment,
-	requirement_source,
-	verification,
-	verification_evidence,
-	verification_relationship);
-END_TYPE;
-
-TYPE syse_risk_source_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON risk_source_item WITH
-	(action,
-	action_directive,
-	action_method,
-	action_method_assignment,
-	action_property,
-	action_resource,
-	action_resource_relationship,
-	action_resource_requirement,
-	alternate_product_relationship,
-	applied_action_assignment,
-	applied_action_method_assignment,
-	applied_certification_assignment,
-	applied_contract_assignment,
-	applied_effectivity_assignment,
-	applied_event_occurrence_assignment,
-	applied_experience_assignment,
-	applied_organizational_project_assignment,
-	applied_person_type_assignment,
-	applied_person_type_definition_assignment,
-	applied_position_in_organization_assignment,
-	applied_position_in_organization_group_assignment,
-	applied_position_in_organization_type_assignment,
-	applied_qualification_type_assignment,
-	ascribable_state,
-	ascribable_state_relationship,
-	assembly_component_usage_substitute,
-	breakdown_context,
-	breakdown_of,
-	contract,
-	event_occurrence,
-	experience,
-	expression_assignment,
-	generic_expression,
-	group,
-	information_right,
-	information_usage_right,
-	interface_connection,
-	interface_connector_occurrence,
-	interface_definition_connection,
-	interface_definition_for,
-	observation,
-	observation_consequence,
-	observation_relationship,
-	organizational_project,
-	organizational_project_relationship,
-	person_type,
-	person_type_definition,
-	person_type_definition_relationship,
-	position_in_organization,
-	position_in_organization_assignment,
-	position_in_organization_relationship,
-	position_in_organization_type,
-	position_in_organization_type_assignment,
-	product_concept,
-	product_concept_context,
-	product_definition_formation_relationship,
-	product_definition_relationship,
-	product_design_to_individual,
-	product_design_version_to_individual,
-	product_group,
-	product_group_relationship,
-	product_planned_to_realized,
-	qualification_type,
-	requirement_assignment,
-	requirement_source,
-	resource_property,
-	selected_item,
-	selected_item_assignment,
-	state_observed,
-	state_observed_assignment,
-	state_observed_relationship,
-	task_objective,
-	verification,
-	verification_evidence,
-	verification_relationship);
-END_TYPE;
-
-TYPE syse_selected_item_context_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON selected_item_context_items WITH
-	(product,
-	product_definition_formation);
-END_TYPE;
-
-TYPE syse_selected_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON selected_item_select WITH
-	(interface_connection,
-	interface_connector_definition,
-	interface_connector_occurrence,
-	interface_definition_connection);
-END_TYPE;
-
-TYPE syse_state_observed_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_observed_of_item WITH
-	(alternate_product_relationship,
-	analysis_assignment,
-	assembly_component_usage,
-	assembly_component_usage_substitute,
-	group,
-	interface_connection,
-	interface_connector_definition,
-	interface_connector_occurrence,
-	interface_connector_version,
-	interface_definition_connection,
-	interface_specification_definition,
-	interface_specification_version,
-	product,
-	product_definition,
-	product_definition_formation,
-	quantified_assembly_component_usage,
-	verification,
-	verification_evidence);
-END_TYPE;
-
-TYPE syse_person_type_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_type_item WITH
-	(analysis_assignment,
-	group,
-	groupable_item,
-	interface_definition_connection,
-	interface_definition_for,
-	verification,
-	verification_evidence);
-END_TYPE;
-
-TYPE syse_verification_evidence_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON verification_evidence_item WITH
-	(action_method,
-	action_method_assignment,
-	action_property,
-	action_relationship,
-	action_resource_relationship,
-	applied_action_assignment,
-	applied_action_method_assignment,
-	applied_location_assignment,
-	applied_person_type_assignment,
-	applied_position_in_organization_assignment,
-	ascribable_state,
-	ascribable_state_relationship,
-	issue_consequence,
-	lessons_learned,
-	observation,
-	observation_consequence,
-	observation_relationship,
-	risk_analysis,
-	risk_communication,
-	risk_consequence,
-	risk_criteria,
-	risk_estimation,
-	risk_evaluation,
-	risk_impact_assignment,
-	risk_source_assignment,
-	risk_treatment,
-	state_observed,
-	state_observed_assignment,
-	state_observed_relationship);
-END_TYPE;
-
-END_SCHEMA;
-
+END_SCHEMA;  -- Ap233_systems_engineering_mim

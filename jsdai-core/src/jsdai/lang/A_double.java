@@ -253,12 +253,17 @@ public class A_double extends A_primitive {
 		if (Double.isNaN(value)) {
 			throw new SdaiException(SdaiException.VA_NSET);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myType.express_type == DataType.LIST) {
 			index--;
 			if (index < 0 || index >= myLength) {
 				throw new SdaiException(SdaiException.IX_NVLD, this);
 			}
-			owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+			session.undoRedoModifyPrepare(aggr_owner);
 			ListElementDouble [] myDataList = (ListElementDouble [])myData;
 			ListElementDouble element = myDataList[0];
 			while (index-- > 0) {
@@ -276,7 +281,7 @@ public class A_double extends A_primitive {
 			if (index < 0 || index >= myLength) {
 				throw new SdaiException(SdaiException.IX_NVLD, this);
 			}
-			owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+			session.undoRedoModifyPrepare(aggr_owner);
 			double [] myDataArray = (double [])myData;
 			myDataArray[index] = value;
 		} else {
@@ -388,6 +393,11 @@ public class A_double extends A_primitive {
 		if (myType.express_type != DataType.ARRAY) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myData == null) {
 			return;
 		}
@@ -397,7 +407,7 @@ public class A_double extends A_primitive {
 		if (index < 0 || index >= myLength) {
 			throw new SdaiException(SdaiException.IX_NVLD, this);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		double [] myDataArray = (double [])myData;
 		myDataArray[index] = Double.NaN;
 		owner.modified();
@@ -421,6 +431,7 @@ public class A_double extends A_primitive {
 		}
 		CEntity aggr_owner = null;
 		SdaiModel owning_model = null;
+		SdaiSession session = null;
 		if (myType.shift != SdaiSession.PRIVATE_AGGR) {
 			if (getOwner() == null) {
 				throw new SdaiException(SdaiException.AI_NEXS);
@@ -432,6 +443,11 @@ public class A_double extends A_primitive {
 			}
 			if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 				throw new SdaiException(SdaiException.MX_NRW, owning_model);
+			}
+			session = owning_model.repository.session;
+			if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+				String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+				throw new SdaiException(SdaiException.SY_ERR, base);
 			}
 		}
 		if (myType.express_type != DataType.LIST) {
@@ -453,7 +469,7 @@ public class A_double extends A_primitive {
 			myData = new ListElementDouble[2];
 		}
 		if (aggr_owner != null) {
-			owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+			session.undoRedoModifyPrepare(aggr_owner);
 		}
 		ListElementDouble [] myDataList = (ListElementDouble [])myData;
 		ListElementDouble new_element = new ListElementDouble(value);
@@ -506,6 +522,7 @@ public class A_double extends A_primitive {
 		}
 		CEntity aggr_owner = null;
 		SdaiModel owning_model = null;
+		SdaiSession session = null;
 		if (myType.shift != SdaiSession.PRIVATE_AGGR) {
 			if (getOwner() == null) {
 				throw new SdaiException(SdaiException.AI_NEXS);
@@ -518,6 +535,11 @@ public class A_double extends A_primitive {
 			if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 				throw new SdaiException(SdaiException.MX_NRW, owning_model);
 			}
+			session = owning_model.repository.session;
+			if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+				String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+				throw new SdaiException(SdaiException.SY_ERR, base);
+			}
 		}
 		if (myType.express_type != DataType.LIST) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
@@ -527,7 +549,7 @@ public class A_double extends A_primitive {
 			throw new SdaiException(SdaiException.IX_NVLD, this);
 		}
 		if (aggr_owner != null) {
-			owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+			session.undoRedoModifyPrepare(aggr_owner);
 		}
 		ListElementDouble [] myDataList = (ListElementDouble [])myData;
 		if (myLength == 1) {
@@ -570,6 +592,7 @@ public class A_double extends A_primitive {
 		}
 		CEntity aggr_owner = null;
 		SdaiModel owning_model = null;
+		SdaiSession session = null;
 		if (myType.shift != SdaiSession.PRIVATE_AGGR) {
 			if (getOwner() == null) {
 				throw new SdaiException(SdaiException.AI_NEXS);
@@ -581,6 +604,11 @@ public class A_double extends A_primitive {
 			}
 			if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 				throw new SdaiException(SdaiException.MX_NRW, owning_model);
+			}
+			session = owning_model.repository.session;
+			if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+				String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+				throw new SdaiException(SdaiException.SY_ERR, base);
 			}
 		}
 		if (myType.express_type == DataType.ARRAY || myType.express_type == DataType.LIST) {
@@ -608,7 +636,7 @@ public class A_double extends A_primitive {
 			initializeData(ln);
 		}
 		if (aggr_owner != null) {
-			owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+			session.undoRedoModifyPrepare(aggr_owner);
 		}
 		double [] myDataArray = (double [])myData;
 		if (myLength >= myDataArray.length) {						
@@ -661,11 +689,16 @@ public class A_double extends A_primitive {
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myType.express_type == DataType.ARRAY || myType.express_type == DataType.LIST) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
 		int index = -1;
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		double [] myDataArray = (double [])myData;
 		for (int i = 0; i < myLength; i++) {
 			if (myDataArray[i] == value) {
@@ -889,11 +922,16 @@ public class A_double extends A_primitive {
 			String base = SdaiSession.line_separator + AdditionalMessages.IR_IMPR;
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myType.express_type == DataType.LIST) {
 			if (it.myElement == null) {
 				throw new SdaiException(SdaiException.IR_NSET, it);
 			}
-			owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+			session.undoRedoModifyPrepare(aggr_owner);
 			((ListElementDouble)it.myElement).value = value;
 		} else {
 			if (it.myIndex < 0 || it.myIndex >= myLength) {
@@ -902,7 +940,7 @@ public class A_double extends A_primitive {
 			if (myType.express_type == DataType.SET && isMember(value)) {
 				throw new SdaiException(SdaiException.VA_NVLD);
 			}
-			owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+			session.undoRedoModifyPrepare(aggr_owner);
 			double [] myDataArray = (double [])myData;
 			myDataArray[it.myIndex] = value;
 		}
@@ -953,6 +991,11 @@ public class A_double extends A_primitive {
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myType.express_type != DataType.LIST) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
@@ -971,7 +1014,7 @@ public class A_double extends A_primitive {
 		if (myData == null) {
 			myData = new ListElementDouble[2];
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		ListElementDouble [] myDataList = (ListElementDouble [])myData;
 		ListElementDouble new_element = new ListElementDouble(value);
 		if (myLength == 0) {
@@ -1044,6 +1087,11 @@ public class A_double extends A_primitive {
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myType.express_type != DataType.LIST) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
@@ -1062,7 +1110,7 @@ public class A_double extends A_primitive {
 		if (myData == null) {
 			myData = new ListElementDouble[2];
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		ListElementDouble [] myDataList = (ListElementDouble [])myData;
 		ListElementDouble new_element = new ListElementDouble(value);
 		if (myLength == 0) {
@@ -1111,6 +1159,7 @@ public class A_double extends A_primitive {
 		}
 		CEntity aggr_owner = null;
 		SdaiModel owning_model = null;
+		SdaiSession session = null;
 		if (myType.shift != SdaiSession.PRIVATE_AGGR) {
 			if (getOwner() == null) {
 				throw new SdaiException(SdaiException.AI_NEXS);
@@ -1123,11 +1172,16 @@ public class A_double extends A_primitive {
 			if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 				throw new SdaiException(SdaiException.MX_NRW, owning_model);
 			}
+			session = owning_model.repository.session;
+			if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+				String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+				throw new SdaiException(SdaiException.SY_ERR, base);
+			}
 //			owner.modified();
 //			fireSdaiEvent(SdaiEvent.MODIFIED, -1, null);
 		}
 		if (aggr_owner != null) {
-			owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+			session.undoRedoModifyPrepare(aggr_owner);
 		}
 		if (myType.express_type == DataType.LIST) {
 			myLength = 0;

@@ -347,7 +347,8 @@ public class ExpressXmlConverter {
           iter_auxil = iter;
         }
       }
-      convertUnderType((EData_type)const_def.getDomain(null), const_elem, doc, null, 0);
+//RR-pdb-support      convertUnderType((EData_type)const_def.getDomain(null), const_elem, doc, null, 0);
+      convertUnderType((EData_type)const_def.getDomain(null), const_elem, doc, null, 0, xpr_code_aggr);
     }
 
     jsdai.dictionary.EEntity_definition def_type_def = und_schema.getEntityDefinition("defined_type");
@@ -368,7 +369,8 @@ public class ExpressXmlConverter {
       atr = doc.createAttribute("name");
       atr.setValue(def_type.getName(null));
       def_type_elem.setAttributeNode(atr);
-      convertDefType((EData_type)def_type.getDomain(null), def_type_elem, doc);
+//RR-pdb-suport      convertDefType((EData_type)def_type.getDomain(null), def_type_elem, doc);
+      convertDefType((EData_type)def_type.getDomain(null), def_type_elem, doc, xpr_code_aggr);
       if (xpr_code_aggr != null) {
         iter = convertWhereRules(def_type.getWhere_rules(null, null), wh_rules, xpr_code_aggr, iter_auxil, iter_auxil2, 
           def_type_elem, doc);
@@ -471,7 +473,8 @@ public class ExpressXmlConverter {
 //      while (iter_auxil.next()) {
 //        ent_at = (EAttribute)ent_attrs.getCurrentMemberEntity(iter_auxil);
         if (ent_at instanceof EExplicit_attribute) {
-          convertExplicitAttribute((EExplicit_attribute)ent_at, entity_elem, doc);
+//RR-pdb-support            convertExplicitAttribute((EExplicit_attribute)ent_at, entity_elem, doc);
+          convertExplicitAttribute((EExplicit_attribute)ent_at, entity_elem, doc, xpr_code_aggr);
         }
       }
       for (j = 0; j < attr_count; j++) {
@@ -492,7 +495,8 @@ public class ExpressXmlConverter {
 //      while (iter_auxil.next()) {
 //        ent_at = (EAttribute)ent_attrs.getCurrentMemberEntity(iter_auxil);
         if (ent_at instanceof EInverse_attribute) {
-          convertInverseAttribute((EInverse_attribute)ent_at, entity_elem, doc);
+//RR-pdb-support            convertInverseAttribute((EInverse_attribute)ent_at, entity_elem, doc);
+          convertInverseAttribute((EInverse_attribute)ent_at, entity_elem, doc, xpr_code_aggr);
         }
       }
       iter = convertUniquenessRules(def.getUniqueness_rules(null, null), un_rules, iter_auxil, entity_elem, doc);
@@ -606,14 +610,17 @@ public class ExpressXmlConverter {
       atr.setValue(getCorrectedName(funct_def));
 //      atr.setValue(funct_def.getName(null));
       funct_elem.setAttributeNode(atr);
-      iter = convertParameters(funct_def.getParameters(null), iter_auxil, funct_elem, doc);
+//RR-pdb-support      iter = convertParameters(funct_def.getParameters(null), iter_auxil, funct_elem, doc);
+      iter = convertParameters(funct_def.getParameters(null), iter_auxil, funct_elem, doc, xpr_code_aggr);
       if (iter != null) {
         iter_auxil = iter;
       }
       if (funct_def.testReturn_type_label(null)) {
-        convertUnderType(funct_def.getReturn_type(null), funct_elem, doc, funct_def.getReturn_type_label(null), 0);
+//RR-pdb-support          convertUnderType(funct_def.getReturn_type(null), funct_elem, doc, funct_def.getReturn_type_label(null), 0);
+        convertUnderType(funct_def.getReturn_type(null), funct_elem, doc, funct_def.getReturn_type_label(null), 0, xpr_code_aggr);
       } else {
-        convertUnderType(funct_def.getReturn_type(null), funct_elem, doc, null, 0);
+//RR-pdb-support          convertUnderType(funct_def.getReturn_type(null), funct_elem, doc, null, 0);
+        convertUnderType(funct_def.getReturn_type(null), funct_elem, doc, null, 0, xpr_code_aggr);
       }
       if (xpr_code_aggr != null) {
         iter = convertAlgorithm(xpr_code_aggr, funct_def, iter_auxil, funct_elem, doc);
@@ -635,7 +642,8 @@ public class ExpressXmlConverter {
       atr.setValue(getCorrectedName(proc_def));
 //      atr.setValue(proc_def.getName(null));
       proc_elem.setAttributeNode(atr);
-      iter = convertParameters(proc_def.getParameters(null), iter_auxil, proc_elem, doc);
+//RR-pdb-support      iter = convertParameters(proc_def.getParameters(null), iter_auxil, proc_elem, doc);
+      iter = convertParameters(proc_def.getParameters(null), iter_auxil, proc_elem, doc, xpr_code_aggr);
       if (iter != null) {
         iter_auxil = iter;
       }
@@ -967,8 +975,8 @@ now:
   }
 
 
-  private static SdaiIterator convertParameters(AParameter parameters, SdaiIterator iter_auxil, 
-      Element parent, Document doc) throws SdaiException {
+//RR-pdb-support  private static SdaiIterator convertParameters(AParameter parameters, SdaiIterator iter_auxil, Element parent, Document doc) throws SdaiException {
+  private static SdaiIterator convertParameters(AParameter parameters, SdaiIterator iter_auxil, Element parent, Document doc, AEntity xpr_code_aggr) throws SdaiException {
     if (parameters.getMemberCount() > 0) {
       if (iter_auxil == null) {
         iter_auxil = parameters.createIterator();
@@ -990,7 +998,8 @@ now:
         if (param.testType_labels(null)) {
           labels = param.getType_labels(null);
         }
-        convertUnderType(param.getParameter_type(null), param_elem, doc, labels, 0);
+//RR-pdb-support        convertUnderType(param.getParameter_type(null), param_elem, doc, labels, 0);
+        convertUnderType(param.getParameter_type(null), param_elem, doc, labels, 0, xpr_code_aggr);
       }
     }
     return iter_auxil;
@@ -1039,11 +1048,14 @@ now:
   }
 
 
-  private static void convertDefType(EData_type type, Element parent, Document doc) throws SdaiException {
+//RR-pdb-support  private static void convertDefType(EData_type type, Element parent, Document doc) throws SdaiException {
+  private static void convertDefType(EData_type type, Element parent, Document doc, AEntity xpr_code_aggr) throws SdaiException {
     if (type instanceof EAggregation_type) {
-      convertTypeAggr((EAggregation_type)type, parent, doc, true, null, 0);
+//RR-pdb-support        convertTypeAggr((EAggregation_type)type, parent, doc, true, null, 0);
+      convertTypeAggr((EAggregation_type)type, parent, doc, true, null, 0, xpr_code_aggr);
     } else if (type instanceof ESimple_type) {
-      convertTypeSimple((ESimple_type)type, parent, doc);
+//RR-pdb-support        convertTypeSimple((ESimple_type)type, parent, doc);
+      convertTypeSimple((ESimple_type)type, parent, doc, xpr_code_aggr);
     } else if (type instanceof EDefined_type || type instanceof EEntity_definition) {
       convertTypeNamed(type, parent, doc);
     } else if (type instanceof ESelect_type) {
@@ -1161,8 +1173,8 @@ now:
   }
 
 
-  private static void convertExplicitAttribute(EExplicit_attribute ent_at, Element parent, Document doc) 
-      throws SdaiException {
+//RR-pdb-support  private static void convertExplicitAttribute(EExplicit_attribute ent_at, Element parent, Document doc) throws SdaiException {
+  private static void convertExplicitAttribute(EExplicit_attribute ent_at, Element parent, Document doc, AEntity xpr_code_aggr) throws SdaiException {
     Element attr_elem = doc.createElement("explicit");
     parent.appendChild(attr_elem);
     Attr atr = doc.createAttribute("name");
@@ -1174,7 +1186,8 @@ now:
       atr.setValue("YES");
       attr_elem.setAttributeNode(atr);
     }
-    convertUnderType((EData_type)ent_at.getDomain(null), attr_elem, doc, null, 0);
+//RR-pdb-support    convertUnderType((EData_type)ent_at.getDomain(null), attr_elem, doc, null, 0);
+    convertUnderType((EData_type)ent_at.getDomain(null), attr_elem, doc, null, 0, xpr_code_aggr);
     if (ent_at.testRedeclaring(null)) {
       convertRedeclaration(ent_at.getRedeclaring(null), a_name, attr_elem, doc);
     }
@@ -1195,7 +1208,8 @@ now:
         iter_auxil2 = iter;
       }
     }
-    convertUnderType((EData_type)ent_at.getDomain(null), attr_elem, doc, null, 0);
+//RR-pdb-support    convertUnderType((EData_type)ent_at.getDomain(null), attr_elem, doc, null, 0);
+    convertUnderType((EData_type)ent_at.getDomain(null), attr_elem, doc, null, 0, xpr_code_aggr);
     if (ent_at.testRedeclaring(null)) {
       convertRedeclaration((EAttribute)ent_at.getRedeclaring(null), a_name, attr_elem, doc);
     }
@@ -1203,7 +1217,8 @@ now:
   }
 
 
-  private static void convertInverseAttribute(EInverse_attribute ent_at, Element parent, Document doc) 
+//RR-pdb-support  private static void convertInverseAttribute(EInverse_attribute ent_at, Element parent, Document doc) 
+  private static void convertInverseAttribute(EInverse_attribute ent_at, Element parent, Document doc, AEntity xpr_code_aggr) 
       throws SdaiException {
     Element attr_elem = doc.createElement("inverse");
     parent.appendChild(attr_elem);
@@ -1231,12 +1246,14 @@ now:
       inv_aggr_elem.setAttributeNode(atr);
       EBound bnd = ent_at.getMin_cardinality(null);
       atr = doc.createAttribute("lower");
-      atr.setValue(Integer.toString(bnd.getBound_value(null)));
+//RR-pdb-support      atr.setValue(Integer.toString(bnd.getBound_value(null)));
+      atr.setValue(getBoundString(bnd, xpr_code_aggr));
       inv_aggr_elem.setAttributeNode(atr);
       atr = doc.createAttribute("upper");
       if (ent_at.testMax_cardinality(null)) {
         bnd = ent_at.getMax_cardinality(null);
-        atr.setValue(Integer.toString(bnd.getBound_value(null)));
+//-pdb-support        atr.setValue(Integer.toString(bnd.getBound_value(null)));
+	      atr.setValue(getBoundString(bnd, xpr_code_aggr));
       } else {
         atr.setValue("?");
       }
@@ -1248,14 +1265,17 @@ now:
   }
 
 
-  private static void convertUnderType(EData_type type, Element parent, Document doc, Object labels, int index) throws SdaiException {
+//RR-pdb-support  private static void convertUnderType(EData_type type, Element parent, Document doc, Object labels, int index) throws SdaiException {
+  private static void convertUnderType(EData_type type, Element parent, Document doc, Object labels, int index, AEntity xpr_code_aggr) throws SdaiException {
     Element elem;
     Attr type_atr;
     String lb;
     if (type instanceof EAggregation_type) {
-      convertTypeAggr((EAggregation_type)type, parent, doc, false, labels, index);
+//RR-pdb-suport        convertTypeAggr((EAggregation_type)type, parent, doc, false, labels, index);
+      convertTypeAggr((EAggregation_type)type, parent, doc, false, labels, index, xpr_code_aggr);
     } else if (type instanceof ESimple_type) {
-      convertTypeSimple((ESimple_type)type, parent, doc);
+//RR-pdb-support        convertTypeSimple((ESimple_type)type, parent, doc);
+      convertTypeSimple((ESimple_type)type, parent, doc, xpr_code_aggr);
     } else if (type instanceof EDefined_type || type instanceof EEntity_definition) {
       convertTypeNamed(type, parent, doc);
 //    } else if (type == ExpressTypes.GENERIC_ENTITY_TYPE) {
@@ -1293,9 +1313,8 @@ now:
     }
   }
 
-
-  private static void convertTypeAggr(EAggregation_type aggr_type, Element parent, Document doc, 
-      boolean def_type, Object labels, int index) throws SdaiException {
+//RR-pdb-support  private static void convertTypeAggr(EAggregation_type aggr_type, Element parent, Document doc, boolean def_type, Object labels, int index) throws SdaiException {
+  private static void convertTypeAggr(EAggregation_type aggr_type, Element parent, Document doc, boolean def_type, Object labels, int index, AEntity xpr_code_aggr) throws SdaiException {
     EBound bnd;
     Attr un, low, upp;
     Element elem = doc.createElement("aggregate");
@@ -1338,12 +1357,14 @@ now:
       EVariable_size_aggregation_type var_aggr_type = (EVariable_size_aggregation_type)aggr_type;
       bnd = var_aggr_type.getLower_bound(null);
       low = doc.createAttribute("lower");
-      low.setValue(Integer.toString(bnd.getBound_value(null)));
+//RR-pdb-support      low.setValue(Integer.toString(bnd.getBound_value(null)));
+      low.setValue(getBoundString(bnd, xpr_code_aggr));
       elem.setAttributeNode(low);
       upp = doc.createAttribute("upper");
       if (var_aggr_type.testUpper_bound(null)) {
         bnd = var_aggr_type.getUpper_bound(null);
-        upp.setValue(Integer.toString(bnd.getBound_value(null)));
+//RR-pdb-support        upp.setValue(Integer.toString(bnd.getBound_value(null)));
+      	upp.setValue(getBoundString(bnd, xpr_code_aggr));
       } else {
         upp.setValue("?");
       }
@@ -1363,26 +1384,30 @@ now:
       if (arr.testLower_index(null)) {
         bnd = arr.getLower_index(null);
         low = doc.createAttribute("lower");
-        low.setValue(Integer.toString(bnd.getBound_value(null)));
+//RR-pdb-support        low.setValue(Integer.toString(bnd.getBound_value(null)));
+	      low.setValue(getBoundString(bnd, xpr_code_aggr));
         elem.setAttributeNode(low);
       }
       if (arr.testUpper_index(null)) {
         bnd = arr.getUpper_index(null);
         low = doc.createAttribute("upper");
-        low.setValue(Integer.toString(bnd.getBound_value(null)));
+//RR-pdb-support        low.setValue(Integer.toString(bnd.getBound_value(null)));
+	      low.setValue(getBoundString(bnd, xpr_code_aggr));
         elem.setAttributeNode(low);
       }
     }
     if (def_type) {
-      convertDefType((EData_type)aggr_type.getElement_type(null), parent, doc);
+//RR-pdb-support        convertDefType((EData_type)aggr_type.getElement_type(null), parent, doc);
+      convertDefType((EData_type)aggr_type.getElement_type(null), parent, doc, xpr_code_aggr);
     } else {
-      convertUnderType((EData_type)aggr_type.getElement_type(null), parent, doc, labels, index + 1);
+//RR-pdb-support        convertUnderType((EData_type)aggr_type.getElement_type(null), parent, doc, labels, index + 1);
+      convertUnderType((EData_type)aggr_type.getElement_type(null), parent, doc, labels, index + 1, xpr_code_aggr);
     }
   }
 
 
-  private static void convertTypeSimple(ESimple_type type, Element parent, Document doc) 
-      throws SdaiException {
+//RR-pdb-support  private static void convertTypeSimple(ESimple_type type, Element parent, Document doc) throws SdaiException {
+  private static void convertTypeSimple(ESimple_type type, Element parent, Document doc, AEntity xpr_code_aggr) throws SdaiException {
     EBound bnd;
     Attr width, fix;
     Element elem = doc.createElement("builtintype");
@@ -1400,7 +1425,8 @@ now:
       if (((EReal_type)type).testPrecision(null)) {
         bnd = ((EReal_type)type).getPrecision(null);
         Attr prec = doc.createAttribute("precision");
-        prec.setValue(Integer.toString(bnd.getBound_value(null)));
+//RR-pdb-support        prec.setValue(Integer.toString(bnd.getBound_value(null)));
+	      prec.setValue(getBoundString(bnd, xpr_code_aggr));
         elem.setAttributeNode(prec);
       }
     } else if (type instanceof EBoolean_type) {
@@ -1415,7 +1441,8 @@ now:
       if (((EBinary_type)type).testWidth(null)) {
         bnd = ((EBinary_type)type).getWidth(null);
         width = doc.createAttribute("width");
-        width.setValue(Integer.toString(bnd.getBound_value(null)));
+//RR-pdb-support        width.setValue(Integer.toString(bnd.getBound_value(null)));
+	      width.setValue(getBoundString(bnd, xpr_code_aggr));
         elem.setAttributeNode(width);
       }
       if (((EBinary_type)type).getFixed_width(null)) {
@@ -1430,7 +1457,8 @@ now:
       if (str_type.testWidth(null)) {
         bnd = str_type.getWidth(null);
         width = doc.createAttribute("width");
-        width.setValue(Integer.toString(bnd.getBound_value(null)));
+//RR-pdb-support        width.setValue(Integer.toString(bnd.getBound_value(null)));
+	      width.setValue(getBoundString(bnd, xpr_code_aggr));
         elem.setAttributeNode(width);
       }
       if (str_type.testFixed_width(null) && str_type.getFixed_width(null)) {
@@ -1443,6 +1471,70 @@ now:
     }
   }
 
+  //RR-pdb-support      
+	private static String getBoundString_OLD(EBound bnd) throws SdaiException {
+	  String result = "_pdb_";
+	  if (bnd == null) {
+	  	result = "?";
+	  } else
+	  if (bnd instanceof EInteger_bound) {
+	  	result = Integer.toString(bnd.getBound_value(null));
+	  } else {
+	  	// population-dependent-bound
+				String result2 = null;
+				
+				// asmExpressDomain
+				ASdaiModel asmExpressDomain = new ASdaiModel();
+				// need to add all _EXPRESS_ models to it, or at least the needed model
+				
+        AEntity aeUsers = new AEntity();
+        bnd.findEntityInstanceUsers(asmExpressDomain, aeUsers);
+        SdaiIterator iter_users = aeUsers.createIterator();
+        while (iter_users.next()) {
+        	EEntity eUser = aeUsers.getCurrentMemberEntity(iter_users);
+          if (eUser instanceof EExpress_code) {
+          	EExpress_code ec = (EExpress_code) eUser;
+            A_string asECValues = ec.getValues(null);
+            SdaiIterator iter_ecv = asECValues.createIterator();
+            while (iter_ecv.next()) {
+	          	String expr = (String)asECValues.getCurrentMember(iter_ecv);  
+							result2 = expr; // possibly add some formatting if needed
+							break;
+            }
+          }
+        }
+				if (result2 == null) {
+					 result = "??";
+				} else {
+					 result = result2;
+				}
+
+	  } // pdb
+		return result;
+	}
+	private static String getBoundString(EBound bnd, AEntity xpr_code_aggr) throws SdaiException {
+	  String result = "";
+	  if (bnd == null) {
+	  	result = "?";
+	  } else
+	  if (bnd instanceof EInteger_bound) {
+	  	result = Integer.toString(bnd.getBound_value(null));
+	  } else {
+	  	// population-dependent-bound
+			SdaiIterator iter_auxil	= xpr_code_aggr.createIterator();
+	    String value = null;
+  	  while (iter_auxil.next()) {
+    	  EExpress_code xpr_code = (EExpress_code)xpr_code_aggr.getCurrentMemberEntity(iter_auxil);
+      	if (xpr_code.getTarget(null) == bnd) {
+        	A_string expression_aggr = xpr_code.getValues(null);
+	        value = expression_aggr.getByIndex(1);
+  	      break;
+    	  }
+    	} // while
+			result = value;	
+		}	
+		return result;
+	}
 
   private static String getLabel(Object labels, int index) throws SdaiException {
     String lb;

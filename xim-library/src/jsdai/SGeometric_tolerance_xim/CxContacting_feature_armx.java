@@ -2,7 +2,7 @@
  * $Id$
  *
  * JSDAI(TM), a way to implement STEP, ISO 10303
- * Copyright (C) 1997-2008, LKSoftWare GmbH, Germany
+ * Copyright (C) 1997-2011, LKSoftWare GmbH, Germany
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License
@@ -30,11 +30,8 @@ package jsdai.SGeometric_tolerance_xim;
 */
 
 import jsdai.SDimension_tolerance_xim.CxAssociated_shape_element;
-import jsdai.SGeometric_tolerance_mim.CShape_representation_with_parameters;
-import jsdai.SGeometric_tolerance_mim.EShape_representation_with_parameters;
 import jsdai.SProduct_property_definition_schema.AProperty_definition;
 import jsdai.SProduct_property_definition_schema.CProperty_definition;
-import jsdai.SProduct_property_definition_schema.CShape_aspect;
 import jsdai.SProduct_property_definition_schema.EProperty_definition;
 import jsdai.SProduct_property_definition_schema.EShape_aspect;
 import jsdai.SProduct_property_representation_schema.AProperty_definition_representation;
@@ -42,31 +39,34 @@ import jsdai.SProduct_property_representation_schema.CProperty_definition_repres
 import jsdai.SProduct_property_representation_schema.CShape_definition_representation;
 import jsdai.SProduct_property_representation_schema.EProperty_definition_representation;
 import jsdai.SRepresentation_schema.ERepresentation_item;
+import jsdai.SShape_aspect_definition_schema.CContacting_feature;
+import jsdai.SShape_aspect_definition_schema.CShape_representation_with_parameters;
+import jsdai.SShape_aspect_definition_schema.EShape_representation_with_parameters;
 import jsdai.lang.ELogical;
 import jsdai.lang.SdaiContext;
 import jsdai.lang.SdaiException;
 import jsdai.libutil.EMappedXIMEntity;
 import jsdai.util.LangUtils;
 
-public class CxContacting_feature extends CContacting_feature implements EMappedXIMEntity
+public class CxContacting_feature_armx extends CContacting_feature_armx implements EMappedXIMEntity
 {
 	// From CShape_aspect.java
 	
 	/// methods for attribute: product_definitional, base type: LOGICAL
 /*	public boolean testProduct_definitional(EShape_aspect type) throws SdaiException {
-		return test_logical(a8);
+		return test_logical(a3);
 	}
 	public int getProduct_definitional(EShape_aspect type) throws SdaiException {
-		return get_logical(a8);
+		return get_logical(a3);
 	}*/
 	public void setProduct_definitional(EShape_aspect type, int value) throws SdaiException {
-		a8 = set_logical(value);
+		a3 = set_logical(value);
 	}
 	public void unsetProduct_definitional(EShape_aspect type) throws SdaiException {
-		a8 = unset_logical();
+		a3 = unset_logical();
 	}
 	public static jsdai.dictionary.EAttribute attributeProduct_definitional(EShape_aspect type) throws SdaiException {
-		return a8$;
+		return a3$;
 	}
 
 		
@@ -97,7 +97,7 @@ public class CxContacting_feature extends CContacting_feature implements EMapped
 			return;
 		}
 
-		setTemp("AIM", CShape_aspect.definition);
+		setTemp("AIM", CContacting_feature.definition);
 
 		setMappingConstraints(context, this);
 
@@ -139,7 +139,7 @@ public class CxContacting_feature extends CContacting_feature implements EMapped
 	 * @throws SdaiException
 	 */
 	public static void setMappingConstraints(SdaiContext context,
-			EContacting_feature armEntity) throws SdaiException {
+			EContacting_feature_armx armEntity) throws SdaiException {
 		unsetMappingConstraints(context, armEntity);
 		CxAssociated_shape_element.setMappingConstraints(context, armEntity);
         // SELF\shape_aspect.of_shape : product_definition_shape := ?;
@@ -162,7 +162,7 @@ public class CxContacting_feature extends CContacting_feature implements EMapped
 	 * @throws SdaiException
 	 */
 	public static void unsetMappingConstraints(SdaiContext context,
-			EContacting_feature armEntity) throws SdaiException {
+			EContacting_feature_armx armEntity) throws SdaiException {
 		CxAssociated_shape_element.unsetMappingConstraints(context, armEntity);
 	}
 

@@ -208,11 +208,11 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
    INVERSE
 	  externally_defined_design_layer_purpose : SET [0:1] OF External_source_identification FOR item;            
    WHERE
-	WR1 : (SIZEOF([SELF\Stratum_technology.stratum_material[1]\Material_identification_with_conductivity_classification.electrical_conductivity_classification,
-           SELF\Stratum_technology.stratum_material[1]\Material_identification_with_conductivity_classification.thermal_conductivity_classification] *
+	WR1 : (SIZEOF([SELF\Stratum_technology_armx.stratum_material[1]\Material_identification_with_conductivity_classification.electrical_conductivity_classification,
+           SELF\Stratum_technology_armx.stratum_material[1]\Material_identification_with_conductivity_classification.thermal_conductivity_classification] *
            ['conductive']) >= 1) OR
-       (SELF\Stratum_technology.stratum_material[1]\Material_identification_with_conductivity_classification.magnetic_permeability_classification IN ['highly permeable']) OR
-       (SELF\Stratum_technology.stratum_material[1]\Material_identification_with_conductivity_classification.optical_insertion_loss_classification IN ['vacuum', 'very low loss', 'low loss']);
+       (SELF\Stratum_technology_armx.stratum_material[1]\Material_identification_with_conductivity_classification.magnetic_permeability_classification IN ['highly permeable']) OR
+       (SELF\Stratum_technology_armx.stratum_material[1]\Material_identification_with_conductivity_classification.optical_insertion_loss_classification IN ['vacuum', 'very low loss', 'low loss']);
     WR2 : (EXISTS (design_layer_purpose)) XOR ((SIZEOF(externally_defined_design_layer_purpose)) = 1);              
   END_ENTITY;
 
@@ -378,7 +378,7 @@ REFERENCE FROM support_resource_schema   -- ISO 10303-41
         EXISTS(single_stratum_passage_location);
       WR3: SIZEOF(get_stack(SELF\Stratum_sub_stack_armx.stratum_technology_sequence)) = 
                  (SIZEOF(SELF\Stratum_sub_stack_armx.stratum_technology_sequence) + 1);
-      WR4: sts_vertex_degree_check(SELF\Stratum_sub_stack.stratum_technology_sequence, 2);
+      WR4: sts_vertex_degree_check(SELF\Stratum_sub_stack_armx.stratum_technology_sequence, 2);
 	  WR5: NOT EXISTS(single_stratum_passage_location) OR NOT EXISTS(target_stratum);
 	  WR6: NOT EXISTS(target_stratum) OR
 			  ((target_stratum IN SELF\Stratum_sub_stack_armx.associated_stackup.composing_occurrence) AND

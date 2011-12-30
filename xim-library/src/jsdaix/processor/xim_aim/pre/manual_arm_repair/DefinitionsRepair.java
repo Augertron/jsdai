@@ -152,6 +152,9 @@ public class DefinitionsRepair {
 
 		EProduct product = version.getOf_product(null);
 		if (product instanceof EPart) {
+			if(productDefinition.testFrame_of_reference(null)){
+				productDefinition.getFrame_of_reference(null).setName(null, "part definition");
+			}
 			productDefinition.findEntityInstanceSdaiModel().substituteInstance(productDefinition, EPart_view_definition.class);
 			if (!(version instanceof EPart_version)) {
 				String message = " Changed "+version;

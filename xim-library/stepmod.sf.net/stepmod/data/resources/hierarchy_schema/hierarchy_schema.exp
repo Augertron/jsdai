@@ -1,22 +1,18 @@
-
 (*
- $Id$
- ISO TC184/SC4/WG12 N2175 ISO/CD 10303-110 Document WG12 N2176, 2003/07/09
-   Complete EXPRESS code extracted from WG12 N2175
+   $Id$
+   ISO TC184/SC4/WG12 N5952 - ISO 10303-110 Mesh-based computational fluid dynamics - EXPRESS
+   Supersedes ISO TC184/SC4/WG12 N2176
 *)
-
-
-
 
 SCHEMA hierarchy_schema;
   REFERENCE FROM analysis_schema                    -- ISO 10303-53
                  (model_action_domain,
+                  model_product_domain,
                   model_product_domain_with_mesh,
+                  model_state_domain,
                   numerical_model);
   REFERENCE FROM conditions_schema                  -- ISO 10303-110
                  (fd_zone_bc,
-                  mbna_family,
-                  mbna_integral_data,
                   mbna_reference_state,
                   mbna_zone_bc);
   REFERENCE FROM domain_schema                      -- ISO 10303-110
@@ -33,7 +29,7 @@ SCHEMA hierarchy_schema;
                  (mbna_discrete_data,
                   mbna_history,
                   mbna_solution);
-                  
+ 
 
 ENTITY fd_step
   SUBTYPE OF (mbna_step);
@@ -48,45 +44,33 @@ ENTITY fd_zone
 END_ENTITY;
 
 ENTITY mbna_model
-  SUBTYPE OF (numerical_model);
-  data               : SET OF mbna_integral_data;
-  equations          : SET OF mbna_equation_set;  
-  steps              : LIST OF mbna_step;
-INVERSE
+  SUBTYPE OF (model_product_domain);
+  SELF\model_product_domain.temporal_parts : LIST OF mbna_step;
+  equations : SET OF mbna_equation_set;  
+  INVERSE
   history : SET OF mbna_history for domain;  
 END_ENTITY;
 
+ENTITY mbna_state
+  SUBTYPE OF (model_state_domain);
+END_ENTITY;  
+
 ENTITY mbna_step
   SUBTYPE OF (model_action_domain);
-  data               : SET OF mbna_integral_data;
+  
+  SELF\model_action_domain.final : mbna_state;
   equations          : SET OF mbna_equation_set;  
-  families           : SET OF mbna_family;
   refstate           : SET OF mbna_reference_state;
   zones              : LIST OF mbna_zone;
 INVERSE
   history : SET OF mbna_history for domain;  
 END_ENTITY;
 
-ENTITY mbna_structured_zone
-  SUBTYPE OF (mbna_zone);
-  SELF\model_product_domain_with_mesh.model_mesh : structured_mesh;
-END_ENTITY;
-
-ENTITY mbna_unstructured_zone
-  SUBTYPE OF (mbna_zone);
-  SELF\model_product_domain_with_mesh.model_mesh : unstructured_mesh;
-END_ENTITY;
-
 ENTITY mbna_zone
   SUBTYPE OF (model_product_domain_with_mesh);
-  cell_dimension     : INTEGER;
   conditions         : SET OF mbna_zone_bc;
   equations          : SET OF mbna_equation_set;
-  families           : SET OF mbna_family;
-  global_data        : SET OF mbna_integral_data;
   grid_connectivity  : OPTIONAL multiple_mesh_block;
-  nindices           : INTEGER;
-  physical_dimension : INTEGER;
   rstate             : SET OF mbna_reference_state;
 INVERSE
   coordinates : SET OF grid_coordinates FOR domain;
@@ -94,11 +78,5 @@ INVERSE
   history     : SET OF mbna_history FOR domain;
   solution    : SET OF mbna_solution FOR domain;
 END_ENTITY;
-
-SUBTYPE_CONSTRAINT sc1_mbna_zone FOR mbna_zone;
-  ABSTRACT SUPERTYPE;
-  ONEOF(mbna_structured_zone,
-        mbna_unstructured_zone);
-END_SUBTYPE_CONSTRAINT;
 
 END_SCHEMA;  -- end of hierarchy_schema

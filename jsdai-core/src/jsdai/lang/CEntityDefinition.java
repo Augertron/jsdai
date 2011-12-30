@@ -773,23 +773,9 @@ System.out.println(" CEntityDefinition eee: " + eee.getName(null) + "  j = " + j
 					}
 					if (!found) {
 						cl_current = cl_this;
-						cl_next = cl_this.getSuperclass();
+						cl_next = getEntitySupertypeClass(cl_this);
 						CEntity_definition current_entity = (CEntity_definition)this;
 						while (cl_next != CEntity.class) {
-							while(true) {
-								String cl_next_name = cl_next.getName();
-								int pos = cl_next_name.lastIndexOf(".");
-								if(pos > 0) {
-									cl_next_name = cl_next_name.substring(pos + 1);
-								} else {
-									cl_next_name = null;
-								}
-								if(cl_next_name != null && cl_next_name.length() > 1
-									&& Character.isUpperCase(cl_next_name.charAt(1))) {
-									break;
-								}
-								cl_next = cl_next.getSuperclass();
-							}
 							CEntity_definition super_entity = sch_data.findEntity(cl_next);
 							boolean res = findPartialEntity(current_entity, super_entity, entity);
 							if (res) {
@@ -806,7 +792,7 @@ System.out.println(" CEntityDefinition eee: " + eee.getName(null) + "  j = " + j
 //								break;
 							}
 							cl_current = cl_next;
-							cl_next = cl_current.getSuperclass();
+							cl_next = getEntitySupertypeClass(cl_current);
 							current_entity = super_entity;
 						}
 					}
@@ -949,6 +935,36 @@ System.out.println(" CEntityDefinition eee: " + eee.getName(null) + "  j = " + j
 			attributesDerivedMethodName = attributesDerivedMethodName_shr;
 		}
 	}
+
+	/**
+	 * Returns a JSDAI entity (CXxxx class) super-class of the specified class, or <code>null</code> if no such class is available.
+	 * @param clazz specified class. Should be JSDAI C class itself.
+	 * @return a JSDAI C super-class of the specified class, or <code>null</code> if no such class is available.
+	 */
+	private static Class getEntitySupertypeClass(Class clazz) {
+		if (clazz == null) {
+			return null;
+		}
+
+		Class superclass = clazz.getSuperclass();
+		while (superclass != null) {
+			String superclassName = superclass.getName();
+
+			// get rid of all package names
+			int pos = superclassName.lastIndexOf(".");
+			if (pos > 0) {
+				superclassName = superclassName.substring(pos + 1);
+				// determine if class is a JSDAI C class by. this code ignores Cg, Cx and similar class names.
+				if (superclassName.length() > 1 && Character.isUpperCase(superclassName.charAt(1))) {
+					break;
+				}
+			}
+
+			superclass = superclass.getSuperclass();
+		}
+		return superclass;
+	}
+	
 	private boolean findPartialEntity(CEntity_definition base_entity, CEntity_definition super_entity,
 			CEntity_definition target_entity) throws SdaiException {
 		AEntity_definition supertypes = base_entity.getSupertypes(null);

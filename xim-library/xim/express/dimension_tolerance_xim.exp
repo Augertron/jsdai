@@ -91,9 +91,17 @@ ENTITY Associated_shape_element
     SELF\geometric_item_specific_usage.definition : shape_aspect := SELF;
 END_ENTITY;
 
+ENTITY Chain_based_associated_shape_element
+  SUBTYPE OF (chain_based_item_identified_representation_usage, shape_aspect);
+  DERIVE
+    SELF\item_identified_representation_usage.definition : shape_aspect := SELF;
+END_ENTITY; 
+
 ENTITY Angular_location_dimension
   (* CONNOTATIONAL *) SUBTYPE OF (angular_location, Location_dimension);
     SELF\Location_dimension.orientation : axis2_placement;
+  DERIVE  
+    SELF\shape_aspect_relationship.name : label := '';
 END_ENTITY;
 
 ENTITY Angular_size_dimension
@@ -105,6 +113,8 @@ END_ENTITY;
 
 ENTITY Curved_distance_dimension
   (* CONNOTATIONAL *) SUBTYPE OF (dimensional_location_with_path, Location_dimension);
+  DERIVE  
+    SELF\shape_aspect_relationship.name : label := '';
   WHERE
     WR1: NOT EXISTS(orientation);	
 END_ENTITY;
@@ -147,8 +157,10 @@ ENTITY Location_dimension
   lower_range : OPTIONAL measure_representation_item;
   upper_range : OPTIONAL measure_representation_item;  
   notes : OPTIONAL SET[1:?] OF STRING; (** Originally it is mandatory SET[0:?] **)
-  (* Its own attributes *)	  
+  (* Its own attributes *)	
+    id_x : OPTIONAL STRING;  
   	directed 	: BOOLEAN;
+  	envelope_principle : BOOLEAN;
   (* Added as spinout of notes *)
 	theoretical_exact : BOOLEAN;
 	auxiliary         : BOOLEAN;

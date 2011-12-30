@@ -227,6 +227,8 @@ System.out.println("active editor input: " + e_name);
 // System.out.println(">> NOT structured selection: " + selection);
 
 		}
+    // this thing was missing here, only for some reason in ValidateAction
+		ExpressCompilerPlugin.getDefault().setExportToJarAction(action);
 		action.setEnabled(enabled);
 		
 		
@@ -1692,6 +1694,10 @@ fCompilerOutput += "Express compilation canceled";
 
 //		Vector compiled_schemas = ExpressCompilerUtils.getCompiledSchemas(current_directory);
 		
+//System.out.println("1: " + ExpressCompilerPlugin);
+//System.out.println("2: " + ExpressCompilerPlugin.getDefault());
+//System.out.println("3: " + ExpressCompilerPlugin.getDefault().getExportToJarAction());
+
 
 		ExpressCompilerPlugin.getDefault().getExportToJarAction().setEnabled(true);
 
@@ -2207,7 +2213,7 @@ fCompilerOutput += "Express compilation canceled";
 				if (current_line.equalsIgnoreCase("")) continue;
 				if (current_line.startsWith("#")) continue;
         if (!current_line.endsWith(".exp")) continue;			
-				current_line.replace('/', File.separatorChar).replace('\\', File.separatorChar);			
+        		current_line = current_line.replace('/', File.separatorChar).replace('\\', File.separatorChar);			
 				current_line = absolute_path_prefix + current_line;
 				bw.write(current_line+"\n");
 			

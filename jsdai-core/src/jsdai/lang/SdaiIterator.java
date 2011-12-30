@@ -1701,6 +1701,7 @@ System.out.println("  SdaiIterator ============    myElement: " + myElement +
 //		synchronized (SdaiCommon.syncObject) {
 		CEntity aggr_owner = null;
 		SdaiModel owning_model = null;
+		SdaiSession session;
 		boolean has_member = true;
 		switch (AggregationType) {
 			case ENTITY_AGGR:
@@ -1718,6 +1719,11 @@ System.out.println("  SdaiIterator ============    myElement: " + myElement +
 					}
 					if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 						throw new SdaiException(SdaiException.MX_NRW, owning_model);
+					}
+					session = owning_model.repository.session;
+					if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+						String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+						throw new SdaiException(SdaiException.SY_ERR, base);
 					}
 				}
 				int i;
@@ -2083,6 +2089,11 @@ System.out.println("  SdaiIterator ============    myElement: " + myElement +
 					if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 						throw new SdaiException(SdaiException.MX_NRW, owning_model);
 					}
+					session = owning_model.repository.session;
+					if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+						String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+						throw new SdaiException(SdaiException.SY_ERR, base);
+					}
 				}
 				if (type_int.express_type == DataType.LIST) {
 					if (agg_int.myLength <= 0) {
@@ -2161,6 +2172,11 @@ System.out.println("  SdaiIterator ============    myElement: " + myElement +
 					}
 					if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 						throw new SdaiException(SdaiException.MX_NRW, owning_model);
+					}
+					session = owning_model.repository.session;
+					if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+						String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+						throw new SdaiException(SdaiException.SY_ERR, base);
 					}
 				}
 				if (type_double.express_type == DataType.LIST) {
@@ -2246,11 +2262,16 @@ System.out.println("  SdaiIterator ============    myElement: " + myElement +
 				if (myIndex <= 0 || myIndex > agg_double3.myLength) {
 					throw new SdaiException(SdaiException.IR_NSET, this);
 				}
+				session = owning_model.repository.session;
+				if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+					String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+					throw new SdaiException(SdaiException.SY_ERR, base);
+				}
 				if (myIndex == agg_double3.myLength) {
 					has_member = false;
 				} else {
 					if (aggr_owner != null) {
-						owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+						session.undoRedoModifyPrepare(aggr_owner);
 					}
 					switch(agg_double3.myLength) {
 						case 2:
@@ -2801,6 +2822,7 @@ System.out.println("  SdaiIterator ============    myElement: " + myElement +
 //		synchronized (SdaiCommon.syncObject) {
 		CEntity aggr_owner = null;
 		SdaiModel owning_model = null;
+		SdaiSession session;
 		switch (AggregationType) {
 			case ENTITY_AGGR:
 				CAggregate agg = (CAggregate)myAggregate;
@@ -2818,6 +2840,11 @@ System.out.println("  SdaiIterator ============    myElement: " + myElement +
 					}
 					if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 						throw new SdaiException(SdaiException.MX_NRW, owning_model);
+					}
+					session = owning_model.repository.session;
+					if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+						String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+						throw new SdaiException(SdaiException.SY_ERR, base);
 					}
 				}
 				if (myIndex < 0 || myIndex >= agg.myLength) {
@@ -2881,6 +2908,11 @@ System.out.println("  SdaiIterator ============    myElement: " + myElement +
 					if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 						throw new SdaiException(SdaiException.MX_NRW, owning_model);
 					}
+					session = owning_model.repository.session;
+					if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+						String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+						throw new SdaiException(SdaiException.SY_ERR, base);
+					}
 				}
 				if (type_int.express_type != DataType.ARRAY) {
 					throw new SdaiException(SdaiException.AI_NVLD, agg_int);
@@ -2919,6 +2951,11 @@ System.out.println("  SdaiIterator ============    myElement: " + myElement +
 					}
 					if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 						throw new SdaiException(SdaiException.MX_NRW, owning_model);
+					}
+					session = owning_model.repository.session;
+					if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+						String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+						throw new SdaiException(SdaiException.SY_ERR, base);
 					}
 				}
 				if (type_double.express_type != DataType.ARRAY) {
@@ -2960,8 +2997,13 @@ System.out.println("  SdaiIterator ============    myElement: " + myElement +
 				if (myIndex <= 0 || myIndex > agg_double3.myLength) {
 					throw new SdaiException(SdaiException.IR_NSET, this);
 				}
+				session = owning_model.repository.session;
+				if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+					String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+					throw new SdaiException(SdaiException.SY_ERR, base);
+				}
 				if (aggr_owner != null) {
-					owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+					session.undoRedoModifyPrepare(aggr_owner);
 				}
 				switch(myIndex) {
 					case 1:

@@ -1,14 +1,12 @@
 (*
-$Id$
-
-2008-02-07
-ISO TC184/SC4/WG12 N4883 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+// $Id$
+2009-11-14
+ISO TC184/SC4/WG12 N7295 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
 *)
 (*
-Supersedes ISO TC184/SC4/WG12 N2887 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
-changes to date_time schema and to measure_schema as per TC1 - WG12 N4834.
+Supersedes ISO TC184/SC4/WG12 N6753 - ISO/IS 10303-41 Fundamentals of product description and support - EXPRESS
+changes to product_property_representation_schema and to measure_schema as per TC2 - WG12 N6752.
 *)
-
 
 SCHEMA measure_schema;
 
@@ -301,9 +299,8 @@ END_ENTITY;
     SUBTYPE OF (named_unit);
      name : label;
      conversion_factor : measure_with_unit;
-   DERIVE
-     SELF\named_unit.dimensions : dimensional_exponents := 
-    derive_dimensional_exponents(conversion_factor\measure_with_unit.unit_component);
+  WHERE
+    WR1: SELF\named_unit.dimensions = derive_dimensional_exponents(conversion_factor\measure_with_unit.unit_component);
   END_ENTITY;
 
   ENTITY derived_unit
@@ -924,7 +921,7 @@ END_ENTITY;
       volt:
         RETURN (dimensional_exponents(2.0, 1.0, -3.0, -1.0, 0.0, 0.0, 0.0));
       farad:
-        RETURN (dimensional_exponents(-2.0, -1.0, 4.0, 1.0, 0.0, 0.0, 0.0));
+        RETURN (dimensional_exponents(-2.0, -1.0, 4.0, 2.0, 0.0, 0.0, 0.0));
       ohm:
         RETURN (dimensional_exponents(2.0, 1.0, -3.0, -2.0, 0.0, 0.0, 0.0));
       siemens:
@@ -1051,7 +1048,7 @@ END_ENTITY;
     END_IF;
      IF 'MEASURE_SCHEMA.CAPACITANCE_MEASURE' IN TYPEOF(m.value_component) THEN
       IF derive_dimensional_exponents(m.unit_component) <> 
-        dimensional_exponents( -2.0, -1.0, 4.0, 1.0, 0.0, 0.0, 0.0 ) THEN
+        dimensional_exponents( -2.0, -1.0, 4.0, 2.0, 0.0, 0.0, 0.0 ) THEN
         RETURN (FALSE);
       END_IF;
     END_IF;

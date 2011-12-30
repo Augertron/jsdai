@@ -6,41 +6,44 @@
 
 SCHEMA Dimension_and_tolerance_callouts_mim;
 
-USE FROM Associative_draughting_elements_mim; -- ISO/CD-TS 10303-1311
+USE FROM Associative_draughting_elements_mim; -- ISO/TS 10303-1311
+USE FROM Draughting_annotation_mim; -- ISO/TS 10303-1206
+USE FROM Draughting_element_specialisations_mim; -- ISO/TS 10303-1312
+USE FROM Geometric_tolerance_mim; -- ISO/TS 10303-1051
 
-USE FROM Dimension_tolerance_mim; -- ISO/TS 10303-1050
+TYPE datc_draughting_model_item_definition = EXTENSIBLE GENERIC_ENTITY SELECT 
+  BASED_ON draughting_model_item_definition WITH (
+  dimensional_size,
+  geometric_tolerance);
+END_TYPE;
 
-USE FROM Draughting_annotation_mim; -- ISO/CD-TS 10303-1206
+TYPE dimensioning_standard_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH 
+  (product_definition);
+END_TYPE; 
 
-USE FROM Draughting_element_specialisations_mim; -- ISO/CD-TS 10303-1312
+ENTITY dimension_curve_terminator_to_projection_curve_associativity
+  SUBTYPE OF(annotation_occurrence_associativity);
+  SELF\annotation_occurrence_relationship.relating_annotation_occurrence : dimension_curve_terminator;
+  SELF\annotation_occurrence_relationship.related_annotation_occurrence  : projection_curve;
+END_ENTITY;
 
-  TYPE dimensioning_standard_document_reference_item = EXTENSIBLE SELECT BASED_ON document_reference_item WITH 
-    (product_definition);
-  END_TYPE; 
-
-  ENTITY dimension_curve_terminator_to_projection_curve_associativity
-    SUBTYPE OF(annotation_occurrence_associativity);
-      SELF\annotation_occurrence_relationship.relating_annotation_occurrence : dimension_curve_terminator;
-      SELF\annotation_occurrence_relationship.related_annotation_occurrence  : projection_curve;
-  END_ENTITY;
-
-  RULE draughting_model_items_constraint FOR (draughting_model);
-    WHERE
-      -- logic - there should be 0 items, which are annotation_occurrences and which are not draughting_annotation_occurrences
-      WR1: SIZEOF(QUERY(dm <* draughting_model |
-        NOT(SIZEOF(QUERY(it1 <* dm\representation.items |
-        (('DRAUGHTING_ELEMENT_SCHEMA.ANNOTATION_OCCURRENCE' IN TYPEOF(it1))
-        AND
-        NOT('AIC_DRAUGHTING_ANNOTATION.' + 'DRAUGHTING_ANNOTATION_OCCURRENCE' IN TYPEOF(it1)))
-          )) = 0)
-        )) = 0;
-      WR2: SIZEOF(QUERY(dm <* draughting_model |
-        NOT(SIZEOF(QUERY(it1 <* dm\representation.items |
-        (('DRAUGHTING_ELEMENT_SCHEMA.DRAUGHTING_CALLOUT' IN TYPEOF(it1))
-        AND
-        NOT('AIC_DRAUGHTING_ELEMENTS.DRAUGHTING_ELEMENTS' IN TYPEOF(it1)))
-          )) = 0)
-        )) = 0;
-  END_RULE;
+RULE draughting_model_items_constraint FOR (draughting_model);
+WHERE
+  -- logic - there should be 0 items, which are annotation_occurrences and which are not draughting_annotation_occurrences
+  WR1: SIZEOF(QUERY(dm <* draughting_model |
+    NOT(SIZEOF(QUERY(it1 <* dm\representation.items |
+    (('DRAUGHTING_ELEMENT_SCHEMA.ANNOTATION_OCCURRENCE' IN TYPEOF(it1))
+    AND
+    NOT('AIC_DRAUGHTING_ANNOTATION.' + 'DRAUGHTING_ANNOTATION_OCCURRENCE' IN TYPEOF(it1)))
+      )) = 0)
+    )) = 0;
+  WR2: SIZEOF(QUERY(dm <* draughting_model |
+    NOT(SIZEOF(QUERY(it1 <* dm\representation.items |
+    (('DRAUGHTING_ELEMENT_SCHEMA.DRAUGHTING_CALLOUT' IN TYPEOF(it1))
+    AND
+    NOT('AIC_DRAUGHTING_ELEMENTS.DRAUGHTING_ELEMENTS' IN TYPEOF(it1)))
+      )) = 0)
+    )) = 0;
+END_RULE;
 
 END_SCHEMA; 

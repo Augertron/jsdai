@@ -32,6 +32,7 @@ public abstract class GlobalRule extends CEntity implements EGlobal_rule {
 	Object rule_object;
 
 	CWhere_rule w_rules_array [];
+	String bypass_rules [];
 
 	protected GlobalRule() {
 		super();
@@ -136,5 +137,65 @@ public abstract class GlobalRule extends CEntity implements EGlobal_rule {
 			}
 		}
 	}
+
+
+	int getBypassedRulesCount(SdaiSession ss) throws SdaiException {
+		if (ss.byp_rules_count < 0) {
+			return 0;
+		}
+		String [][] byp_rules;
+		if (ss.byp_rules_count == 0) {
+			byp_rules = ss.getBlackList();
+			if (ss.byp_rules_count < 0) {
+				return 0;
+			}
+			getBypassedRulesInit(byp_rules, ss.byp_rules_count);
+		}
+		if (bypass_rules == null) {
+			return 0;
+		}
+		return bypass_rules.length;
+	}
+
+
+	String [] getBypassedRules() throws SdaiException {
+		return bypass_rules;
+	}
+
+
+	private void getBypassedRulesInit(String [][] byp_rules, int byp_rules_count) throws SdaiException {
+		String glob_name = ((CGlobal_rule)this).getName(null).toUpperCase();
+		int count = 0;
+		for (int j = 0; j < byp_rules_count; j++) {
+			if (byp_rules[0][j] == null) {
+				if (!(byp_rules[1][j].toUpperCase().equals(glob_name))) {
+					continue;
+				}
+				bypass_rules = new String[1];
+				bypass_rules[0] = ""; // all where rules in this global rule should be bypassed
+				break;
+			} else {
+				if (!(byp_rules[0][j].equals(glob_name))) {
+					continue;
+				}
+				if (bypass_rules == null) {
+					bypass_rules = new String[1];
+				} else {
+					enlarge_bypass_rules();
+				}
+				bypass_rules[count] = byp_rules[1][j];
+				count++;
+			}
+		}
+	}
+
+
+	private void enlarge_bypass_rules() throws SdaiException {
+		int new_length = bypass_rules.length + 1;
+		String [] new_rules_file = new String[new_length];
+		System.arraycopy(bypass_rules, 0, new_rules_file, 0, bypass_rules.length);
+		bypass_rules = new_rules_file;
+	}
+
 
 }

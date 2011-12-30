@@ -1,437 +1,422 @@
 (*
-   $Id$
-   ISO TC184/SC4/WG12 N5900 - ISO/TS 10303-1434 Project management resource information - EXPRESS MIM
-   Supersedes ISO TC184/SC4/WG12 N4608
+$Id$
+ISO TC184/SC4/WG12 N7129 - ISO/TS 10303-1434 Project management resource information - EXPRESS MIM
+Supersedes ISO TC184/SC4/WG12 N5900
 *)
 
 SCHEMA Project_management_resource_information_mim;
-  USE FROM Document_structure_mim;
-  USE FROM External_class_mim;
-  USE FROM Position_in_organization_mim;
-  USE FROM Schedule_mim;
-  USE FROM Selected_item_mim;
-  USE FROM product_property_definition_schema   -- ISO 10303-41
+
+USE FROM date_time_schema   -- ISO 10303-41
+  (local_time); 
+
+USE FROM Document_structure_mim;    -- ISO/TS 10303-1124
+
+USE FROM External_class_mim;    -- ISO/TS 10303-1275
+
+USE FROM Position_in_organization_mim;    -- ISO/TS 10303-1242
+
+USE FROM product_property_definition_schema   -- ISO 10303-41
   (characterized_object); 
 
+USE FROM Schedule_mim;    -- ISO/TS 10303-1437
+
+USE FROM Selected_item_mim;    -- ISO/TS 10303-1357
 
 
-TYPE pmri_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_items WITH
-	(address,
-	applied_approval_assignment,
-	applied_certification_assignment,
-	applied_classification_assignment,
-	applied_contract_assignment,
-	applied_document_reference,  
-	applied_document_usage_constraint_assignment,
-	applied_identification_assignment,
-	applied_location_representation_assignment, 
-	applied_organization_assignment, 
-	applied_person_and_organization_assignment,
-	approval,
-	calendar_date,
-	contract,
-	date_and_time,
-	date_and_time_assignment,
-	date_assignment, 
-	general_property,
-	location,
-	product,
-	product_definition,
-	product_definition_formation,
-	product_related_product_category,
-	representation);
-END_TYPE;
+TYPE pmri_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_action_items WITH 
+   (applied_experience_assignment, 
+    applied_person_type_assignment, 
+    applied_person_type_definition_assignment, 
+    applied_position_in_organization_group_assignment, 
+    applied_qualification_type_assignment, 
+    document_relationship, 
+    experience, 
+    experience_type, 
+    experience_type_relationship, 
+    external_class_library, 
+    person_type, 
+    person_type_definition, 
+    person_type_definition_relationship, 
+    position_in_organization, 
+    position_in_organization_assignment, 
+    position_in_organization_relationship, 
+    position_in_organization_type, 
+    position_in_organization_type_assignment, 
+    qualification_type, 
+    qualification_type_relationship, 
+    selected_item_assignment);
+END_TYPE; 
 
+TYPE pmri_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_action_method_items WITH 
+   (applied_location_representation_assignment, 
+    applied_organizational_project_assignment, 
+    contract, 
+    contract_relationship, 
+    document_file, 
+    location, 
+    organizational_project, 
+    product, 
+    product_definition, 
+    product_definition_formation);
+END_TYPE; 
 
-TYPE pmri_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_method_items WITH
-	(applied_approval_assignment,
-	applied_certification_assignment,
-	applied_classification_assignment,
-	applied_contract_assignment,
-	applied_document_reference,  
-	applied_document_usage_constraint_assignment,
-	applied_location_representation_assignment,
-	applied_organization_assignment, 
-	applied_organizational_project_assignment,
-	applied_person_and_organization_assignment,
-	approval,
-	calendar_date,
-	contract,
-	date_and_time,
-	date_and_time_assignment,
-	date_assignment, 
-	document_file,
-	location,
-	organizational_project,
-	product,
-	product_definition,
-	product_definition_formation,
-	product_related_product_category,
-	representation);
-END_TYPE;
+TYPE pmri_action_request_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_action_request_item WITH 
+   (contract, 
+    document_file, 
+    product, 
+    product_definition, 
+    product_definition_formation);
+END_TYPE; 
 
+TYPE pmri_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_approval_item WITH 
+   (applied_identification_assignment, 
+    certification, 
+    effectivity, 
+    general_property, 
+    general_property_relationship, 
+    product_definition_context, 
+    selected_item_assignment);
+END_TYPE; 
 
-TYPE pmri_action_request_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON action_request_item WITH
-	(contract,
-	product,
-	product_definition,
-	product_definition_formation,
-	document_file);
-END_TYPE;
+TYPE pmri_attribute_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_attribute_classification_item WITH 
+   (action_method_relationship, 
+    applied_approval_assignment, 
+    applied_certification_assignment, 
+    applied_document_reference, 
+    applied_document_usage_constraint_assignment, 
+    applied_effectivity_assignment, 
+    applied_external_identification_assignment, 
+    applied_identification_assignment, 
+    applied_location_representation_assignment, 
+    applied_organization_assignment, 
+    applied_organizational_project_assignment, 
+    applied_person_and_organization_assignment, 
+    approval, 
+    approval_person_organization, 
+    approval_relationship, 
+    approval_status, 
+    certification, 
+    contract, 
+    contract_relationship, 
+    date_and_time_assignment, 
+    date_assignment, 
+    derived_unit, 
+    document_file, 
+    document_relationship, 
+    effectivity, 
+    general_property, 
+    general_property_relationship, 
+    justification_group_assignment, 
+    justification_item_group_assignment, 
+    justification_support_item_group_assignment, 
+    location, 
+    location_relationship, 
+    measure_with_unit, 
+    named_unit, 
+    organizational_project_relationship, 
+    product, 
+    product_definition, 
+    product_definition_context, 
+    product_definition_formation, 
+    product_definition_relationship, 
+    representation, 
+    representation_context, 
+    representation_item, 
+    security_classification, 
+    time_interval_relationship);
+END_TYPE; 
 
-TYPE pmri_aliasable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON aliasable_item WITH
-	(approval,
-	approval_status,
-	certification,
-	applied_organization_assignment, applied_person_and_organization_assignment,
-	organizational_project,
-	applied_security_classification_assignment);
-END_TYPE;
+TYPE pmri_attribute_language_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_attribute_language_item WITH 
+   (applied_location_assignment, 
+    applied_location_representation_assignment, 
+    location, 
+    location_relationship, 
+    measure_representation_item, 
+    representation);
+END_TYPE; 
 
-TYPE pmri_approval_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON approval_item WITH
-	(certification,
-	condition,
-	applied_action_method_assignment,
-	effectivity,
-	applied_identification_assignment,
-	general_property,
-	general_property_relationship,
-	product_definition,
-	selected_item_assignment,
-	product_definition_context);
-END_TYPE;
+TYPE pmri_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_certification_item WITH 
+   (product, 
+    product_definition_formation);
+END_TYPE; 
 
-TYPE pmri_certification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON certification_item WITH
-	(product,
-	product_definition_formation,
-	organizational_project);
-END_TYPE;
+TYPE pmri_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_classification_item WITH 
+   (address, 
+    applied_external_identification_assignment, 
+    applied_location_assignment, 
+    applied_location_representation_assignment, 
+    derived_unit, 
+    external_class_library, 
+    general_property, 
+    general_property_relationship, 
+    measure_with_unit, 
+    named_unit, 
+    product, 
+    product_definition, 
+    product_definition_formation, 
+    representation, 
+    selected_item, 
+    selected_item_assignment);
+END_TYPE; 
 
-(*TYPE pmri_characterized_activity_definition = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON characterized_activity_definition WITH
-	(condition,
-	action_method_relationship);
-END_TYPE;*)
+TYPE pmri_collection_membership_groupable_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_collection_membership_groupable_item WITH 
+   (applied_experience_assignment, 
+    applied_person_type_assignment, 
+    applied_person_type_definition_assignment, 
+    applied_position_in_organization_group_assignment, 
+    applied_qualification_type_assignment, 
+    document_relationship, 
+    experience, 
+    experience_type, 
+    experience_type_relationship, 
+    person_type, 
+    person_type_definition, 
+    person_type_definition_relationship, 
+    position_in_organization, 
+    position_in_organization_assignment, 
+    position_in_organization_relationship, 
+    position_in_organization_type, 
+    position_in_organization_type_assignment, 
+    qualification_type, 
+    qualification_type_relationship, 
+    selected_item_assignment);
+END_TYPE; 
 
-TYPE pmri_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON classification_item WITH
-	(conversion_based_unit,
-	derived_unit,
-	external_class_library,
-	applied_external_identification_assignment,
-	applied_location_assignment,
-	representation, applied_location_representation_assignment, address,
-	general_property,
-	general_property_relationship,
-	product,
-	product_category,
-	product_definition_formation,
-	product_definition,
-	measure_representation_item,
-	selected_item,
-	selected_item_assignment,
-	uncertainty_measure_with_unit,
-	named_unit, 
-	measure_with_unit,
-	product_definition_context);
-END_TYPE;
+TYPE pmri_condition_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_condition_action_method_items WITH 
+   (applied_approval_assignment, 
+    applied_certification_assignment, 
+    applied_classification_assignment, 
+    applied_contract_assignment, 
+    applied_document_reference, 
+    applied_document_usage_constraint_assignment, 
+    applied_organization_assignment, 
+    applied_person_and_organization_assignment, 
+    approval, 
+    calendar_date, 
+    date_and_time, 
+    date_and_time_assignment, 
+    date_assignment, 
+    product, 
+    product_definition, 
+    product_definition_formation, 
+    representation);
+END_TYPE; 
 
-TYPE pmri_attribute_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON attribute_classification_item WITH
-	(approval,
-	applied_approval_assignment,
-	approval_relationship,
-	approval_status,
-	approval_person_organization,
-	certification,
-	applied_certification_assignment,
-	condition,
-	applied_action_method_assignment,
-	action_method_relationship,
-	context_dependent_unit,
-	contract,
-	date_assignment, date_and_time_assignment,
-	document_file,
-	applied_document_reference,  applied_document_usage_constraint_assignment,
-	product_definition_relationship,
-	applied_external_identification_assignment,
-	effectivity,
-	applied_effectivity_assignment,
-	document_relationship,
-	representation,
-	applied_identification_assignment,
-	general_property,
-	general_property_relationship,
-	product,
-	justification_group_assignment,  justification_assignment,
-	justification_support_assignment,
-	language,
-	location,
-	location_relationship,
-	applied_organization_assignment, applied_person_and_organization_assignment,
-	applied_location_representation_assignment,
-	product_category,
-	product_definition_formation,
-	product_definition,
-	applied_organizational_project_assignment,
-	organizational_project_relationship,
-	measure_representation_item,
-	representation_context,
-	representation_item,
-	security_classification,
-	time_interval_relationship,
-	uncertainty_measure_with_unit,
-	named_unit, derived_unit,
-	measure_with_unit,
-	product_definition_context);
-END_TYPE;
+TYPE pmri_condition_evaluation_action_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_condition_evaluation_action_items WITH 
+   (applied_approval_assignment, 
+    applied_certification_assignment, 
+    applied_classification_assignment, 
+    applied_contract_assignment, 
+    applied_document_reference, 
+    applied_document_usage_constraint_assignment, 
+    applied_identification_assignment, 
+    applied_organization_assignment, 
+    applied_person_and_organization_assignment, 
+    approval, 
+    calendar_date, 
+    date_and_time, 
+    date_and_time_assignment, 
+    date_assignment, 
+    product, 
+    product_definition, 
+    product_definition_formation, 
+    representation);
+END_TYPE; 
 
+TYPE pmri_contract_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_contract_item WITH 
+   (external_class_library, 
+    organization_item, 
+    person_and_organization_item, 
+    product_definition_formation);
+END_TYPE; 
 
-TYPE pmri_condition_action_method_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON condition_action_method_items WITH
-	(approval,
-	applied_approval_assignment,
-	applied_document_reference,  applied_document_usage_constraint_assignment
-	);
-END_TYPE;
+TYPE pmri_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_date_and_time_item WITH 
+   (address, 
+    applied_identification_assignment, 
+    applied_location_assignment, 
+    applied_location_representation_assignment, 
+    general_property, 
+    general_property_relationship, 
+    product_definition, 
+    product_definition_context, 
+    product_definition_formation, 
+    representation);
+END_TYPE; 
 
+TYPE pmri_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_date_item WITH 
+   (address, 
+    applied_identification_assignment, 
+    applied_location_assignment, 
+    applied_location_representation_assignment, 
+    general_property, 
+    general_property_relationship, 
+    product_definition, 
+    product_definition_context, 
+    product_definition_formation, 
+    representation);
+END_TYPE; 
 
-TYPE pmri_contract_item = EXTENSIBLE SELECT BASED_ON contract_item WITH
-	(external_class_library,
-	organization_item, person_and_organization_item,
-	product_definition_formation);
-END_TYPE;
+TYPE pmri_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_document_reference_item WITH 
+   (applied_external_identification_assignment, 
+    applied_location_assignment, 
+    applied_location_representation_assignment, 
+    location, 
+    location_relationship, 
+    representation);
+END_TYPE; 
 
-TYPE pmri_date_and_time_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_and_time_item WITH
-	(condition,
-	applied_action_method_assignment,
-	applied_identification_assignment,
-	general_property,
-	general_property_relationship,
-	applied_location_assignment,
-	representation, applied_location_representation_assignment, address,
-	product_definition_formation,
-	product_definition,
-	selected_item,
-	product_definition_context);
-END_TYPE;
+TYPE pmri_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_effectivity_item WITH 
+   (applied_location_assignment, 
+    document_relationship, 
+    product_definition, 
+    product_definition_relationship, 
+    selected_item_assignment);
+END_TYPE; 
 
-TYPE pmri_date_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON date_item WITH
-	(condition,
-	applied_action_method_assignment,
-	applied_identification_assignment,
-	general_property,
-	general_property_relationship,
-	applied_location_assignment,
-	representation, applied_location_representation_assignment, address,
-	product_definition_formation,
-	product_definition,
-	selected_item,
-	product_definition_context);
-END_TYPE;
+TYPE pmri_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_identification_item WITH 
+   (address, 
+    applied_external_identification_assignment, 
+    applied_location_representation_assignment, 
+    applied_organization_assignment, 
+    applied_person_and_organization_assignment, 
+    applied_security_classification_assignment, 
+    approval, 
+    certification, 
+    document_file, 
+    external_class_library, 
+    general_property, 
+    general_property_relationship, 
+    location, 
+    organizational_project, 
+    product_definition_context, 
+    representation);
+END_TYPE; 
 
-TYPE pmri_document_reference_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON document_reference_item WITH
-	(applied_external_identification_assignment,
-	location,
-	applied_location_assignment,
-	location_relationship,
-	applied_location_representation_assignment,
-	product_category,
-	representation,
-	selected_item);
-END_TYPE;
+TYPE pmri_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_justification_item WITH 
+   (applied_location_assignment, 
+    document_relationship, 
+    product_definition_relationship);
+END_TYPE; 
 
-TYPE pmri_effectivity_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON effectivity_item WITH
-	(product_definition,
-	product_definition_relationship,
-	document_relationship,
-	applied_location_assignment,
-	selected_item_assignment);
-END_TYPE;
+TYPE pmri_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_justification_support_item WITH 
+   (applied_location_assignment, 
+    document_relationship, 
+    location, 
+    product_definition_context, 
+    product_definition_relationship);
+END_TYPE; 
 
+TYPE pmri_location_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_location_item WITH 
+   (document_file, 
+    organizational_project, 
+    product, 
+    product_definition, 
+    product_definition_formation);
+END_TYPE; 
 
-TYPE pmri_identification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON identification_item WITH
-	(document_file,
-	external_class_library,
-	applied_external_identification_assignment,
-	general_property,
-	general_property_relationship,
-	location,
-	representation, applied_location_representation_assignment, address,
-	product_category,
-	product_definition_context);
-END_TYPE;
+TYPE pmri_multi_language_attribute_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_multi_language_attribute_item WITH 
+   (applied_location_assignment, 
+    applied_location_representation_assignment, 
+    location, 
+    location_relationship, 
+    measure_representation_item, 
+    representation);
+END_TYPE; 
 
+TYPE pmri_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_organization_item WITH 
+   (applied_location_assignment, 
+    selected_item_assignment);
+END_TYPE; 
 
-TYPE pmri_justification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_item WITH
-	(product_definition_relationship,
-	document_relationship,
-	applied_location_assignment);
-END_TYPE;
+TYPE pmri_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_person_and_organization_item WITH 
+   (applied_location_assignment, 
+    selected_item_assignment);
+END_TYPE; 
 
+TYPE pmri_position_in_organization_group_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_group_item WITH 
+   (applied_organization_assignment, 
+    applied_person_and_organization_assignment, 
+    approval_person_organization, 
+    product_definition);
+END_TYPE; 
 
-TYPE pmri_justification_support_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON justification_support_item WITH
-	(product_definition_relationship,
-	document_relationship,
-	location,
-	applied_location_assignment,
-	product_definition_context);
-END_TYPE;
+TYPE pmri_position_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_item WITH 
+   (applied_organization_assignment, 
+    applied_person_and_organization_assignment, 
+    approval_person_organization, 
+    product_definition);
+END_TYPE; 
 
+TYPE pmri_position_in_organization_type_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_type_item WITH 
+   (applied_organization_assignment, 
+    applied_person_and_organization_assignment, 
+    approval_person_organization, 
+    product_definition);
+END_TYPE; 
 
-TYPE pmri_location_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON location_item WITH
-	(product,
-	product_definition,
-	product_definition_formation,
-	document_file,
-	organizational_project);
-END_TYPE;
+TYPE pmri_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_project_item WITH 
+   (general_property);
+END_TYPE; 
 
+TYPE pmri_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_security_classification_item WITH 
+   (organizational_project_relationship, 
+    product_definition, 
+    product_definition_formation);
+END_TYPE; 
 
-TYPE pmri_person_and_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON person_and_organization_item WITH
-	(condition,
-	applied_action_method_assignment,
-	applied_location_assignment,
-	selected_item,
-	selected_item_assignment);
-END_TYPE;
+TYPE pmri_selected_item_context_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON selected_item_context_items WITH 
+   (contract, 
+    contract_relationship, 
+    organizational_project);
+END_TYPE; 
 
-TYPE pmri_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON organization_item WITH
-	(condition,
-	applied_action_method_assignment,
-	applied_location_assignment,
-	selected_item,
-	selected_item_assignment);
-END_TYPE;
+TYPE pmri_selected_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON selected_item_select WITH 
+   (product, 
+    product_definition_formation);
+END_TYPE; 
 
-TYPE pmri_position_in_organization_group_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_group_item WITH
-	(approval_person_organization,
-	product_definition,
-	applied_organization_assignment, applied_person_and_organization_assignment);
-END_TYPE;
+TYPE pmri_state_observed_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_state_observed_of_item WITH 
+   (certification, 
+    contract, 
+    contract_relationship, 
+    document_file, 
+    location, 
+    security_classification);
+END_TYPE; 
 
+TYPE pmri_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON ss_state_type_of_item WITH 
+   (certification, 
+    contract, 
+    contract_relationship, 
+    location, 
+    organizational_project, 
+    product, 
+    product_definition_formation, 
+    security_classification);
+END_TYPE; 
 
-TYPE pmri_position_in_organization_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_item WITH
-	(approval_person_organization,
-	product_definition,
-	applied_organization_assignment, applied_person_and_organization_assignment);
-END_TYPE;
-
-
-TYPE pmri_position_in_organization_type_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON position_in_organization_type_item WITH
-	(approval_person_organization,
-	product_definition,
-	applied_organization_assignment, applied_person_and_organization_assignment);
-END_TYPE;
-
-
-TYPE pmri_project_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON project_item WITH
-	(general_property);
-END_TYPE;
-
-
-(*TYPE pmri_property_assignment_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON property_assignment_select WITH
-	(applied_document_reference,  applied_document_usage_constraint_assignment,
-	applied_location_assignment,
-	applied_organization_assignment, applied_person_and_organization_assignment,
-	product_definition,
-	organizational_project);
-END_TYPE;*)
-
-ENTITY pmri_characterizable_applied_document_reference  
+ENTITY pmri_characterizable_applied_document_reference
   SUBTYPE OF (applied_document_reference, characterized_object);
 END_ENTITY;
 
-  
 ENTITY pmri_characterizable_applied_document_usage_constraint_assignment
   SUBTYPE OF (applied_document_usage_constraint_assignment, characterized_object);
 END_ENTITY;
-
 
 ENTITY pmri_characterizable_applied_location_assignment
   SUBTYPE OF (applied_location_assignment, characterized_object);
 END_ENTITY;
 
-
-ENTITY pmri_characterizable_applied_organization_assignment 
+ENTITY pmri_characterizable_applied_organization_assignment
   SUBTYPE OF (applied_organization_assignment, characterized_object);
 END_ENTITY;
 
- 
 ENTITY pmri_characterizable_applied_person_and_organization_assignment
   SUBTYPE OF (applied_person_and_organization_assignment, characterized_object);
 END_ENTITY;
 
-
 ENTITY pmri_characterizable_organizational_project
-  SUBTYPE OF (organizational_project, characterized_object);
+  SUBTYPE OF (characterized_object, organizational_project);
 END_ENTITY;
 
-
-ENTITY pmri_characterizable_product_definition
-  SUBTYPE OF (product_definition, characterized_object);
-END_ENTITY;
-
-
-TYPE pmri_security_classification_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON security_classification_item WITH
-	(product_definition_formation,
-	product_definition,
-	organizational_project_relationship);
-END_TYPE;
-
-
-TYPE pmri_selected_item_context_items = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON selected_item_context_items WITH
-	(contract,
-	organizational_project);
-END_TYPE;
-
-
-TYPE pmri_selected_item_select = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON selected_item_select WITH
-	(product,
-	product_definition_formation);
-END_TYPE;
-
-
-TYPE pmri_state_type_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_type_of_item WITH
-	(certification,
-	contract,
-	location,
-	product,
-	product_category,
-	product_definition_formation,
-	organizational_project,
-	security_classification);
-END_TYPE;
-
-
-TYPE pmri_state_observed_of_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON state_observed_of_item WITH
-	(certification,
-	contract,
-	document_file,
-	location,
-	security_classification);
-END_TYPE;
-
-
-TYPE pmri_multi_language_attribute_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON multi_language_attribute_item WITH
-	(condition,
-	applied_action_method_assignment,
-	action_method_relationship,
-	location,
-	applied_location_assignment,
-	location_relationship,
-	applied_location_representation_assignment,
-	measure_representation_item,
-	representation);
-END_TYPE;
-
-TYPE pmri_attribute_language_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON attribute_language_item WITH
-	(condition,
-	applied_action_method_assignment,
-	action_method_relationship,
-	location,
-	applied_location_assignment,
-	location_relationship,
-	applied_location_representation_assignment,
-	measure_representation_item,
-	representation);
-END_TYPE;
-
-END_SCHEMA;
-
+END_SCHEMA;  -- Project_management_resource_information_mim

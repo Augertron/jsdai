@@ -441,8 +441,13 @@ System.out.println("site: " + site);
 //						String file_name = the_selected_file.getName();
 
 						if (the_selected_file.getFileExtension().equalsIgnoreCase("exp")) {
-//							String filePath = the_selected_file.getLocation().toOSString();
-							String filePath = the_selected_file.getFullPath().toOSString();
+//System.out.println("location: " + the_selected_file.getLocation());
+//System.out.println("full path: " + the_selected_file.getFullPath());
+
+							//							String filePath = the_selected_file.getLocation().toOSString();
+							String filePath = the_selected_file.getFullPath().toOSString().replace('\\','/');
+							// we want only forward slashes /
+							// perhaps removing toOSString() would be enough, but to make sure:
 							if (filePath.startsWith("\\") || filePath.startsWith("/")) {
 								filePath = filePath.substring(1);
 							}

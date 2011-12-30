@@ -32,12 +32,29 @@ package jsdai.SStyled_curve_xim;
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
 import jsdai.SPresentation_appearance_schema.CCurve_style;
+import jsdai.SPresentation_appearance_schema.ECurve_style;
 
 public class CxCurve_appearance extends CCurve_appearance implements EMappedXIMEntity{
 
 
-	// Taken from Organizational_project_assignment
-	// ENDOF taken from Organizational_project_assignment
+	// Taken from Curve_style
+	/// methods for attribute: name, base type: STRING
+/*	public boolean testName(ECurve_style type) throws SdaiException {
+		return test_string(a0);
+	}
+	public String getName(ECurve_style type) throws SdaiException {
+		return get_string(a0);
+	}*/
+	public void setName(ECurve_style type, String value) throws SdaiException {
+		a0 = set_string(value);
+	}
+	public void unsetName(ECurve_style type) throws SdaiException {
+		a0 = unset_string();
+	}
+	public static jsdai.dictionary.EAttribute attributeName(ECurve_style type) throws SdaiException {
+		return a0$;
+	}
+	// ENDOF taken from Curve_style
 	
 	public int attributeState = ATTRIBUTES_MODIFIED;	
 
@@ -46,7 +63,7 @@ public class CxCurve_appearance extends CCurve_appearance implements EMappedXIME
 			attributeState = ATTRIBUTES_UNMODIFIED;
 		} else {
 			return;
-		}
+		} 
 
 		setTemp("AIM", CCurve_style.definition);
 
@@ -75,6 +92,7 @@ public class CxCurve_appearance extends CCurve_appearance implements EMappedXIME
 	public static void setMappingConstraints(SdaiContext context,
 			CCurve_appearance armEntity) throws SdaiException {
 		unsetMappingConstraints(context, armEntity);
+		armEntity.setName(null, "");
 	}
 
 	/**

@@ -147,6 +147,8 @@ public class CxAssociated_shape_element extends CAssociated_shape_element implem
 			context.working_model.createEntityInstance(CGeometric_item_specific_usage.definition);
 		if(armEntity.testName((EItem_identified_representation_usage)null)){
 			egisu.setName(null, armEntity.getName((EItem_identified_representation_usage)null));
+		}else{
+			egisu.setName(null, "");
 		}
 		if(armEntity.testDescription((EItem_identified_representation_usage)null)){
 			egisu.setDescription(null, armEntity.getDescription((EItem_identified_representation_usage)null));

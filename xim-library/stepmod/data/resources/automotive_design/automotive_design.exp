@@ -16,6 +16,25 @@
 --
 
 SCHEMA automotive_design;
+
+USE FROM drawing_definition_mim(drawing_sheet_layout);
+USE FROM form_feature_in_panel_mim(
+	barring_hole,
+	bead,
+    bead_end,
+    directed_angle,
+    feature_in_panel,
+    hole_in_panel,
+    joggle,
+    joggle_termination,
+    locator);
+
+-- Needed for bug 4143 
+USE FROM Shape_property_assignment_mim(geometric_item_specific_usage);
+USE FROM Associative_draughting_elements_mim(draughting_model_item_association);
+
+USE FROM Design_product_data_management_mim(retention);
+
 USE FROM ISO13584_expressions_schema   -- ISO 13584-20
   (abs_function,
    acos_function,
@@ -288,80 +307,58 @@ USE FROM group_schema   -- ISO 10303-41
    group_relationship);
 
 USE FROM kinematic_analysis_control_and_result_schema   -- ISO 10303-105
-  (configuration_definition,
-   configuration_interpolation,
-   interpolated_configuration_sequence,
+  (interpolated_configuration_sequence,
    kinematic_analysis_consistency,
    kinematic_analysis_result,
    kinematic_control,
    resulting_path);
 
+USE FROM kinematic_state_schema   -- ISO 10303-105
+	(cylindrical_pair_value,
+	gear_pair_value,
+	pair_value,
+	planar_pair_value,
+	point_on_planar_curve_pair_value,
+	point_on_surface_pair_value,
+	prismatic_pair_value,
+	rack_and_pinion_pair_value,
+	revolute_pair_value,
+	rolling_curve_pair_value,
+	rolling_surface_pair_value,
+	screw_pair_value,
+	sliding_curve_pair_value,
+	sliding_surface_pair_value,
+	spherical_pair_value,
+	unconstrained_pair_value,
+	universal_pair_value);
+
 USE FROM kinematic_structure_schema   -- ISO 10303-105
   (cylindrical_pair,
-   cylindrical_pair_range,
-   cylindrical_pair_value,
    fully_constrained_pair,
    gear_pair,
-   gear_pair_range,
-   gear_pair_value,
-   initial_state,
-   kinematic_ground_representation,
+   homokinetic_pair,
    kinematic_joint,
    kinematic_link,
    kinematic_link_representation,
    kinematic_link_representation_association,
-   kinematic_link_representation_relation,
    kinematic_pair,
-   kinematic_property_definition,
-   kinematic_property_representation_relation,
-   kinematic_structure,
-   mechanism,
-   mechanism_base_placement,
-   pair_actuator,
-   pair_value,
    planar_curve_pair,
    planar_curve_pair_range,
    planar_pair,
-   planar_pair_range,
-   planar_pair_value,
    point_on_planar_curve_pair,
-   point_on_planar_curve_pair_range,
-   point_on_planar_curve_pair_value,
    point_on_surface_pair,
-   point_on_surface_pair_range,
-   point_on_surface_pair_value,
    prismatic_pair,
-   prismatic_pair_range,
-   prismatic_pair_value,
    rack_and_pinion_pair,
-   rack_and_pinion_pair_range,
-   rack_and_pinion_pair_value,
    revolute_pair,
-   revolute_pair_range,
-   revolute_pair_value,
    rolling_curve_pair,
-   rolling_curve_pair_value,
    rolling_surface_pair,
-   rolling_surface_pair_value,
    screw_pair,
-   screw_pair_range,
-   screw_pair_value,
-   simple_pair_range,
    sliding_curve_pair,
-   sliding_curve_pair_value,
    sliding_surface_pair,
-   sliding_surface_pair_value,
    spherical_pair,
-   spherical_pair_range,
-   spherical_pair_value,
    surface_pair,
-   surface_pair_range,
    unconstrained_pair,
-   unconstrained_pair_value,
-   universal_pair,
-   universal_pair_range,
-   universal_pair_value,
-   unlimited_range);
+   universal_pair);
 
 USE FROM management_resources_schema   -- ISO 10303-41
   (action_assignment,
@@ -557,6 +554,7 @@ USE FROM presentation_definition_schema   -- ISO 10303-46
 USE FROM presentation_organization_schema   -- ISO 10303-46
   (area_in_set,
    camera_image,
+   camera_image_2d_with_scale,
    camera_model,
    camera_model_d2,
    camera_model_d3,
@@ -708,12 +706,14 @@ USE FROM shape_aspect_definition_schema   -- ISO 10303-47
   (apex,
    centre_of_symmetry,
    composite_shape_aspect,
+   common_datum,
    datum,
    datum_feature,
    datum_reference,
    datum_target,
    derived_shape_aspect,
    extension,
+   feature_definition,
    geometric_alignment,
    geometric_intersection,
    limit_condition,
@@ -721,6 +721,7 @@ USE FROM shape_aspect_definition_schema   -- ISO 10303-47
    perpendicular_to,
    referenced_modified_datum,
    shape_aspect_deriving_relationship,
+   shape_representation_with_parameters,
    tangent);
 
 USE FROM shape_dimension_schema   -- ISO 10303-47
@@ -733,21 +734,32 @@ USE FROM shape_dimension_schema   -- ISO 10303-47
    dimensional_size_with_path,
    shape_dimension_representation);
 
+USE FROM extended_geometric_tolerance_mim(physical_unit_geometric_tolerance);
+
 USE FROM shape_tolerance_schema   -- ISO 10303-47
-  (geometric_tolerance,
+  (cylindricity_tolerance,
+  flatness_tolerance,
+  geometric_tolerance,
    geometric_tolerance_relationship,
    geometric_tolerance_with_datum_reference,
    geometric_tolerance_with_defined_unit,
+   geometric_tolerance_with_modifiers,
    limits_and_fits,
+   line_profile_tolerance,
    modified_geometric_tolerance,
    plus_minus_tolerance,
+   position_tolerance,
    projected_zone_definition,
+   roundness_tolerance,
    runout_zone_definition,
    runout_zone_orientation,
+   straightness_tolerance,
+   surface_profile_tolerance,
    tolerance_value,
    tolerance_zone,
    tolerance_zone_definition,
-   tolerance_zone_form);
+   tolerance_zone_form,
+   unequally_disposed_geometric_tolerance);
 
 USE FROM support_resource_schema   -- ISO 10303-41
   (label,
@@ -800,13 +812,13 @@ USE FROM aic_edge_based_wireframe;   -- ISO 10303-501
 
 USE FROM aic_faceted_brep;   -- ISO 10303-512
 
-USE FROM aic_geometric_tolerances;   -- ISO 10303-519
-
 USE FROM aic_geometrically_bounded_2d_wireframe;   -- ISO 10303-503
 
 USE FROM aic_geometrically_bounded_surface;   -- ISO 10303-507
 
 USE FROM aic_geometrically_bounded_wireframe;   -- ISO 10303-510
+
+USE FROM aic_machining_feature;   -- ISO 10303-522
 
 USE FROM aic_manifold_subsurface;   -- ISO 10303-521
 
@@ -830,9 +842,6 @@ USE FROM Activity_mim(
 USE FROM Approval_mim(
 	applied_approval_assignment,
 	approval_item);
-
--- TODO USE FROM Camera_view_3d_mim(
--- TODO	camera_image_2d_with_scale);
 
 USE FROM Certification_mim(
 	applied_certification_assignment,
@@ -894,6 +903,7 @@ USE FROM Draughting_annotation_mim(
 
 USE FROM Effectivity_application_mim(
 	applied_effectivity_assignment,
+	applied_ineffectivity_assignment,
 	effectivity_item);
 
 USE FROM Event_assignment_mim(
@@ -913,9 +923,6 @@ USE FROM External_item_identification_assignment_mim(
 USE FROM External_properties_mim(
 	externally_defined_general_property);
 
-USE FROM Feature_and_connection_zone_mim(
-	location_shape_representation);
-
 USE FROM File_identification_mim(
 	document_file);
 
@@ -923,8 +930,7 @@ USE FROM Generic_material_aspects_mim(
 	general_material_property);
 
 USE FROM Geometric_tolerance_mim(
-	placed_datum_target_feature,
-	shape_representation_with_parameters);
+	placed_datum_target_feature);
 
 USE FROM Group_mim(
 	applied_group_assignment);
@@ -986,6 +992,7 @@ USE FROM Security_classification_mim(
 	security_classification_item);
 
 USE FROM Shape_feature_mim(
+	general_feature,
 	instanced_feature,
 	placed_feature);
 
@@ -1189,7 +1196,6 @@ TYPE automotive_design_attribute_language_item = EXTENSIBLE GENERIC_ENTITY SELEC
    organization_role,
    organizational_project,
    organizational_project_relationship,
-   pair_actuator,
    person_and_organization_role,
    presentation_layer_assignment,
    process_product_association,
@@ -1624,7 +1630,6 @@ TYPE automotive_design_multi_language_attribute_item = EXTENSIBLE GENERIC_ENTITY
    organization_role,
    organizational_project,
    organizational_project_relationship,
-   pair_actuator,
    person_and_organization_role,
    presentation_layer_assignment,
    process_product_association,
@@ -1659,8 +1664,7 @@ END_TYPE;
 
 TYPE automotive_design_name_item = EXTENSIBLE GENERIC_ENTITY SELECT BASED_ON name_item WITH 
   (kinematic_joint,
-   kinematic_link,
-   kinematic_structure);
+   kinematic_link);
 END_TYPE;
 
 TYPE organizational_project_item = SELECT
@@ -1902,7 +1906,7 @@ ENTITY applied_approval_assignment
 END_ENTITY;
 *)
 
-(** TODO - find out where to move it *)
+(* Reuse from presentation_organization_schema
 ENTITY camera_image_2d_with_scale
   SUBTYPE OF (camera_image);
 DERIVE
@@ -1912,8 +1916,8 @@ WHERE
   WR2: aspect_ratio (SELF\mapped_item.mapping_target) = aspect_ratio (SELF\mapped_item.mapping_source.mapping_origin\camera_model_d2.view_window);
   WR3: SELF\mapped_item.mapping_source.mapping_origin\camera_model_d2.view_window_clipping;
 END_ENTITY;
-
-
+*)
+(* Reuse from aic_machining_feature 
 ENTITY applied_area
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -1982,7 +1986,7 @@ WHERE
      'external thread specification' ) ) ) AND ( sar.
      relating_shape_aspect.of_shape. definition.description =
      'partial area occurrence' ) ) ) =1;
-END_ENTITY;
+END_ENTITY; *)
 (* Reuse from Certification_mim
 ENTITY applied_certification_assignment
   SUBTYPE OF (certification_assignment);
@@ -2184,6 +2188,7 @@ WHERE
      ;
 END_ENTITY;
 *)
+(* Reuse from effectivity_application_mim
 ENTITY applied_ineffectivity_assignment
   SUBTYPE OF (effectivity_assignment);
   items : SET [1:?] OF effectivity_item;
@@ -2193,6 +2198,7 @@ WHERE
      'AUTOMOTIVE_DESIGN.'+ 'PRODUCT_DEFINITION_EFFECTIVITY']*
      TYPEOF ( SELF.assigned_effectivity ) ) =0;
 END_ENTITY;
+*)
 (* Reuse from Name_assignment_mim
 ENTITY applied_name_assignment
   SUBTYPE OF (name_assignment);
@@ -2270,6 +2276,7 @@ WHERE
      ;
 END_ENTITY;
 *)
+(* Taken from form_feature_in_panel_mim
 ENTITY barring_hole
   SUBTYPE OF (feature_definition);
 WHERE
@@ -2321,8 +2328,8 @@ WHERE
      'MEASURE_REPRESENTATION_ITEM' , 'AUTOMOTIVE_DESIGN.'+
      'LENGTH_MEASURE_WITH_UNIT']*TYPEOF ( i ) ) =2 ) ) ) <>1 ) )
      ) =0;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from form_feature_in_panel_mim
 ENTITY bead
   SUBTYPE OF (feature_definition);
 WHERE
@@ -2401,7 +2408,8 @@ WHERE
      'BEAD_END' IN TYPEOF ( sar. relating_shape_aspect ) ) ) )
      =1 ) ) ) =1;
 END_ENTITY;
-
+*)
+(* Taken from form_feature_in_panel_mim
 ENTITY bead_end
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -2453,7 +2461,8 @@ WHERE
      definition\characterized_object. description =
      'bead end occurrence' ) ) ) =1;
 END_ENTITY;
-
+*)
+(* Reuse from aic_machining_feature 
 ENTITY boss
   SUBTYPE OF (feature_definition);
 WHERE
@@ -2562,8 +2571,8 @@ WHERE
      relating_shape_aspect ) ) AND ( sar.
      relating_shape_aspect.description IN [ 'angle taper' ,
      'diameter taper' ] ) ) ) =1 ) ) ) <=1 ) ;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY boss_top
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -2616,7 +2625,7 @@ WHERE
      'MEASURE_REPRESENTATION_ITEM' , 'AUTOMOTIVE_DESIGN.'+
      'LENGTH_MEASURE_WITH_UNIT']*TYPEOF ( i ) ) =2 ) ) ) =1 ) )
      ) ) <=1;
-END_ENTITY;
+END_ENTITY; *)
 (* Reuse from Camera_view_mim
 ENTITY camera_image_2d_with_scale
   SUBTYPE OF (camera_image);
@@ -2635,7 +2644,7 @@ WHERE
  WR3:SELF\mapped_item. mapping_source.mapping_origin\
      camera_model_d2.view_window_clipping;
 END_ENTITY;
-*)
+*) (* Reuse from aic_machining_feature 
 ENTITY chamfer
   SUBTYPE OF (transition_feature);
 WHERE
@@ -2659,8 +2668,8 @@ WHERE
      ) | ( 'AUTOMOTIVE_DESIGN.'+ 'FACE_SHAPE_REPRESENTATION' IN
      TYPEOF ( pdr. used_representation ) ) AND ( pdr.
      used_representation.name = 'chamfer face' ) ) ) =1;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY chamfer_offset
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -2719,12 +2728,12 @@ WHERE
      ) | ( 'AUTOMOTIVE_DESIGN.'+ 'FACE_SHAPE_REPRESENTATION' IN
      TYPEOF ( pdr. used_representation ) ) AND ( pdr.
      used_representation.name = 'second face shape' ) ) ) =1 ) ;
-END_ENTITY;
+END_ENTITY; *)
 (* Reuse from Classification_with_attributes_mim
 ENTITY characterized_class
   SUBTYPE OF (characterized_object, class);
 END_ENTITY;
-*)
+*) (* Reuse from aic_machining_feature 
 ENTITY circular_closed_profile
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -2759,8 +2768,8 @@ WHERE
      'MEASURE_REPRESENTATION_ITEM' , 'AUTOMOTIVE_DESIGN.'+
      'LENGTH_MEASURE_WITH_UNIT']*TYPEOF ( i ) ) =2 ) ) ) =1 ) )
      ) =1;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY circular_pattern
   SUBTYPE OF (replicate_feature);
 WHERE
@@ -2815,7 +2824,7 @@ WHERE
      'MEASURE_REPRESENTATION_ITEM' , 'AUTOMOTIVE_DESIGN.'+
      'LENGTH_MEASURE_WITH_UNIT']*TYPEOF ( i ) ) =2 ) ) ) =1 ) )
      ) =1;
-END_ENTITY;
+END_ENTITY; *)
 (* Reuse from classification_schema
 ENTITY class
   SUBTYPE OF (group);
@@ -2847,7 +2856,7 @@ WHERE
      'PRODUCT_CONCEPT_FEATURE_CATEGORY_USAGE' IN TYPEOF ( i ) )
      ) ) =0 ) ;
 END_ENTITY;
-*)
+*) (* Reuse from aic_machining_feature 
 ENTITY closed_path_profile
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -2882,8 +2891,8 @@ WHERE
      TYPEOF ( pdr. used_representation ) ) AND ( SIZEOF ( QUERY
      ( i <* pdr. used_representation.items | ( i.name=
      'profile shape' ) ) ) =1 ) ) ) =1;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY composite_hole
   SUBTYPE OF (compound_feature);
 WHERE
@@ -2935,8 +2944,8 @@ WHERE
      'AUTOMOTIVE_DESIGN.'+ 'TAPER' IN TYPEOF ( sar.
      relating_shape_aspect ) ) ) ) =1 ) ) ) =1 ) ) ) =1 ) ) ) =1
      ) ;
-END_ENTITY;
-
+END_ENTITY; *)
+(*
 ENTITY compound_feature
   SUBTYPE OF (feature_definition);
 WHERE
@@ -3017,7 +3026,7 @@ WHERE
      sar. related_shape_aspect.of_shape. definition ) ) AND (
      sar. related_shape_aspect.name =
      'compound feature in panel' ) ) ) >0 ) ) ) =0;
-END_ENTITY;
+END_ENTITY; *)
 
 (* Reuse from Specification_based_configuration_mim
 ENTITY configured_effectivity_assignment
@@ -3182,7 +3191,7 @@ ENTITY derived_unit_variable
 INVERSE
 associated_variable_environment: environment FOR semantics;
 END_ENTITY;
-
+(* Taken from form_feature_in_panel_mim
 ENTITY directed_angle
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -3212,18 +3221,19 @@ WHERE
      'PLANE_ANGLE_MEASURE_WITH_UNIT']*TYPEOF ( i ) ) =2 ) ) ) =1
      ) ) ) =1;
 END_ENTITY;
+*)
 (* Reuse from Dimension_tolerance_mim
 ENTITY directed_dimensional_location
   SUBTYPE OF (dimensional_location);
 END_ENTITY;
-*)
+*) (* Reuse from aic_machining_feature 
 ENTITY direction_shape_representation
   SUBTYPE OF (shape_representation);
 WHERE
  WR1: SIZEOF ( SELF.items ) =1;
  WR2: SIZEOF ( QUERY ( i <* SELF.items | 'AUTOMOTIVE_DESIGN.'+
      'DIRECTION' IN TYPEOF ( i ) ) ) =1;
-END_ENTITY;
+END_ENTITY; *)
 (* Reuse from File_identification_mim
 ENTITY document_file
   SUBTYPE OF (document,characterized_object);
@@ -3275,11 +3285,11 @@ WHERE
  WR1: ( SELF.assigned_document. kind.product_data_type =
      'draughting specification' ) ;
 END_ENTITY;
-
+(* Reuse from drawing_definition_mim
 ENTITY drawing_sheet_layout
   SUBTYPE OF (draughting_symbol_representation);
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY edge_round
   SUBTYPE OF (transition_feature);
 WHERE
@@ -3352,7 +3362,7 @@ WHERE
      ) | ( 'AUTOMOTIVE_DESIGN.'+ 'FACE_SHAPE_REPRESENTATION' IN
      TYPEOF ( pdr. used_representation ) ) AND ( pdr.
      used_representation.name = 'edge round face' ) ) ) =1;
-END_ENTITY;
+END_ENTITY; *)
 
 ENTITY element_delivery
   SUBTYPE OF (action);
@@ -3425,7 +3435,7 @@ END_ENTITY;
 ENTITY externally_defined_class
   SUBTYPE OF (class,externally_defined_item);
 END_ENTITY;
-*)
+*) (* Reuse from aic_machining_feature 
 ENTITY externally_defined_feature_definition
   SUBTYPE OF (feature_definition,externally_defined_item);
 WHERE
@@ -3518,12 +3528,12 @@ WHERE
      'thread side' , 'major diameter' , 'number of threads' ,
      'fit class' , 'form' , 'hand' , 'qualifier'] ) ) ) ) >0 ) )
      ) =0;
-END_ENTITY;
+END_ENTITY; *)
 (* Reuse from External_properties_mim
 ENTITY externally_defined_general_property
   SUBTYPE OF (general_property,externally_defined_item);
 END_ENTITY;
-*)
+*) (* Reuse from aic_machining_feature 
 ENTITY face_shape_representation
   SUBTYPE OF (shape_representation);
 WHERE
@@ -3532,14 +3542,14 @@ WHERE
      ['AUTOMOTIVE_DESIGN.'+ 'FACE' , 'AUTOMOTIVE_DESIGN.'+
      'CLOSED_SHELL' , 'AUTOMOTIVE_DESIGN.'+ 'OPEN_SHELL']*TYPEOF
      ( i ) ) =1 ) ) =1;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY feature_component_definition
   SUBTYPE OF (characterized_object);
 WHERE
  WR1: SIZEOF ( get_shape_aspects ( SELF ) ) =1;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY feature_component_relationship
   SUBTYPE OF (shape_aspect_relationship);
 WHERE
@@ -3549,8 +3559,8 @@ WHERE
      'AUTOMOTIVE_DESIGN.'+
      'FEATURE_COMPONENT_DEFINITION']*TYPEOF (
      SELF.related_shape_aspect. of_shape.definition ) ) =1 ) ;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from shape_aspect_definition_schema 
 ENTITY feature_definition
   SUBTYPE OF (characterized_object);
 WHERE
@@ -3639,8 +3649,8 @@ WHERE
      'REPLICATE_FEATURE' , 'AUTOMOTIVE_DESIGN.'+ 'ROUND_HOLE' ,
      'AUTOMOTIVE_DESIGN.'+ 'SLOT' , 'AUTOMOTIVE_DESIGN.'+
      'THREAD']* TYPEOF ( SELF ) ) <=1;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Taken from form_feature_in_panel_mim
 ENTITY feature_in_panel
   SUBTYPE OF (feature_definition);
 WHERE
@@ -3728,7 +3738,8 @@ WHERE
      ( 'AUTOMOTIVE_DESIGN.'+ 'FACE_SHAPE_REPRESENTATION' IN
      TYPEOF ( pdr. used_representation ) ) ) ) =1 ) ;
 END_ENTITY;
-
+*)
+(* Reuse from aic_machining_feature 
 ENTITY feature_pattern
   SUBTYPE OF (replicate_feature);
 WHERE
@@ -3747,7 +3758,7 @@ WHERE
      used_representation ) ) AND ( SIZEOF ( QUERY ( i <* pdr.
      used_representation.items | NOT ( 'AUTOMOTIVE_DESIGN.'+
      'PLACEMENT' IN TYPEOF ( i ) ) ) ) >0 ) ) ) =0;
-END_ENTITY;
+END_ENTITY; *)
 
 ENTITY featured_shape
   SUBTYPE OF (product_definition_shape);
@@ -3773,7 +3784,7 @@ WHERE
      'AUTOMOTIVE_DESIGN.'+ 'INSTANCED_FEATURE']* TYPEOF ( sa ) )
      =1 ) ) >=1;
 END_ENTITY;
-
+(* Reuse from aic_machining_feature 
 ENTITY fillet
   SUBTYPE OF (transition_feature);
 WHERE
@@ -3849,8 +3860,8 @@ WHERE
      TYPEOF ( pdr. used_representation ) ) AND ( SIZEOF ( QUERY
      ( i <* pdr. used_representation.items | ( i.name=
      'fillet face' ) ) ) =1 ) ) ) =1;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Taken from shape_feature_mim
 ENTITY general_feature
   SUBTYPE OF (feature_definition);
 WHERE
@@ -3900,7 +3911,7 @@ WHERE
      'FEATURE_COMPONENT_RELATIONSHIP' IN TYPEOF ( sar ) ) AND (
      'AUTOMOTIVE_DESIGN.'+ 'INSTANCED_FEATURE' IN TYPEOF ( sar.
      related_shape_aspect ) ) ) ) >=2 ) ) ) <=1 ) ;
-END_ENTITY;
+END_ENTITY; *)
 (* Reuse from Generic_material_aspects_mim
 ENTITY general_material_property
   SUBTYPE OF (general_property);
@@ -3963,7 +3974,7 @@ WHERE
      'AUTOMOTIVE_DESIGN.'+ 'PRESENTATION_VIEW' IN TYPEOF ( rep )
      ) ) >0;
 END_ENTITY;
-*)
+*) (* Reuse from aic_machining_feature 
 ENTITY hole_bottom
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -4079,8 +4090,8 @@ WHERE
      'FEATURE_COMPONENT_RELATIONSHIP' IN TYPEOF ( sar ) ) AND (
      sar. name IN [ 'starting' , 'ending' ] ) )
      ) =1 ) ;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Taken from form_feature_in_panel_mim
 ENTITY hole_in_panel
   SUBTYPE OF (feature_definition);
 WHERE
@@ -4102,12 +4113,13 @@ WHERE
      get_property_definition_representations ( SELF ) | SIZEOF (
      pdr. used_representation.items ) =1 ) ) ;
 END_ENTITY;
-
+*)
+(* From kinematic structure_schema
 ENTITY homokinetic_pair
   SUBTYPE OF (universal_pair);
 WHERE
  WR1: NOT EXISTS ( SELF.input_skew_angle ) ;
-END_ENTITY;
+END_ENTITY; *)
 (* Reuse from Product_class_mim
 ENTITY inclusion_product_concept_feature
   SUBTYPE OF (conditional_concept_feature);
@@ -4141,6 +4153,7 @@ WHERE
      =1;
 END_ENTITY;
 *)
+(* Taken from form_feature_in_panel_mim
 ENTITY joggle
   SUBTYPE OF (feature_definition);
 WHERE
@@ -4328,6 +4341,7 @@ WHERE
      definition\characterized_object. description =
      'joggle termination occurrence' ) ) ) =1;
 END_ENTITY;
+*)
 (* Reuse from Plib_class_reference_mim
 ENTITY known_source
   SUBTYPE OF (external_source, pre_defined_item);
@@ -4358,6 +4372,7 @@ WHERE
      'POINT' IN TYPEOF ( i ) ) ) =1;
 END_ENTITY;
 *)
+(* Taken from form_feature_in_panel_mim
 ENTITY locator
   SUBTYPE OF (feature_definition);
 WHERE
@@ -4408,7 +4423,8 @@ WHERE
      'LENGTH_MEASURE_WITH_UNIT']*TYPEOF ( i ) ) =2 ) ) ) =1 ) )
      ) <=1;
 END_ENTITY;
-
+*)
+(* Reuse from aic_machining_feature 
 ENTITY modified_pattern
   SUBTYPE OF (replicate_feature);
 WHERE
@@ -4432,7 +4448,7 @@ WHERE
      SIZEOF ( ['AUTOMOTIVE_DESIGN.'+ 'PATTERN_OFFSET_MEMBERSHIP'
      , 'AUTOMOTIVE_DESIGN.'+ 'PATTERN_OMIT_MEMBERSHIP']* TYPEOF
      ( sar1 ) ) =1 ) ) ) =1 ) ) ) >=1 ) ) ) =1;
-END_ENTITY;
+END_ENTITY; *)
 (* Reuse from Inertia_characteristics_mim
 ENTITY moments_of_inertia_representation
   SUBTYPE OF (representation);
@@ -4473,7 +4489,7 @@ ENTITY named_unit_variable
 INVERSE
 associated_variable_environment: environment FOR semantics;
 END_ENTITY;
-
+(* Reuse from aic_machining_feature 
 ENTITY ngon_closed_profile
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -4541,8 +4557,8 @@ WHERE
      'LENGTH_MEASURE_WITH_UNIT']*TYPEOF ( i ) ) =2 ) ) ) =
      SIZEOF ( QUERY ( i <* pdr. used_representation.items | (
      i.name = 'corner radius' ) ) ) ) ) ) =1;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY open_path_profile
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -4584,7 +4600,7 @@ WHERE
      ) | ( 'AUTOMOTIVE_DESIGN.'+ 'PLANAR_SHAPE_REPRESENTATION'
      IN TYPEOF ( pdr. used_representation ) ) AND ( pdr.
      used_representation.name = 'profile limit' ) ) ) ) ;
-END_ENTITY;
+END_ENTITY; *)
 (* Reuse from Product_class_mim
 ENTITY package_product_concept_feature
   SUBTYPE OF (product_concept_feature);
@@ -4601,7 +4617,7 @@ WHERE
      'INCLUSION_PRODUCT_CONCEPT_FEATURE' IN TYPEOF ( ipcf ) ) )
      =1 ) ) ) >0;
 END_ENTITY;
-*)
+*) (* Reuse from aic_machining_feature 
 ENTITY partial_circular_profile
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -4666,8 +4682,8 @@ WHERE
      ) | ( 'AUTOMOTIVE_DESIGN.'+ 'PLANAR_SHAPE_REPRESENTATION'
      IN TYPEOF ( pdr. used_representation ) ) AND ( pdr.
      used_representation.name = 'profile limit' ) ) ) ) ;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY path_feature_component
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -4770,8 +4786,8 @@ WHERE
      'SHAPE_REPRESENTATION_WITH_PARAMETERS' IN TYPEOF ( pdr.
      used_representation ) ) AND ( SIZEOF ( pdr.
      used_representation.items ) =1 ) ) ) =1 ) ;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY path_shape_representation
   SUBTYPE OF (shape_representation);
 WHERE
@@ -4780,8 +4796,8 @@ WHERE
      ['AUTOMOTIVE_DESIGN.'+ 'BOUNDED_CURVE' ,
      'AUTOMOTIVE_DESIGN.'+ 'EDGE_CURVE' , 'AUTOMOTIVE_DESIGN.'+
      'PATH']* TYPEOF ( i ) ) =1 ) ) ) =1;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY pattern_offset_membership
   SUBTYPE OF (feature_component_relationship);
 WHERE
@@ -4871,8 +4887,8 @@ WHERE
      'AUTOMOTIVE_DESIGN.'+ 'DIRECTION_SHAPE_REPRESENTATION' IN
      TYPEOF ( pdr. used_representation ) ) AND ( pdr.
      used_representation.name = 'offset direction' ) ) ) =1 ) ;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY pattern_omit_membership
   SUBTYPE OF (feature_component_relationship);
 WHERE
@@ -4934,7 +4950,7 @@ WHERE
      'AUTOMOTIVE_DESIGN.'+ 'COUNT_MEASURE' IN TYPEOF (
      i\measure_with_unit. value_component ) ) ) ) =1 ) ) ) =1 )
      ;
-END_ENTITY;
+END_ENTITY; *)
 (* Reuse from Person_organization_mim
 ENTITY person_and_organization_address
   SUBTYPE OF (organizational_address,personal_address);
@@ -5064,7 +5080,7 @@ WHERE
      used_representation.name = 'maximum feature limit' ) ) )
      =1;
 END_ENTITY;
-*)
+*) (* Reuse from aic_machining_feature 
 ENTITY planar_shape_representation
   SUBTYPE OF (shape_representation);
 WHERE
@@ -5091,8 +5107,8 @@ WHERE
      'AUTOMOTIVE_DESIGN.'+ 'SQUARE_U_PROFILE' ,
      'AUTOMOTIVE_DESIGN.'+ 'TEE_PROFILE' , 'AUTOMOTIVE_DESIGN.'+
      'VEE_PROFILE']* TYPEOF ( sa ) ) =1 ) ) =1 ) ) =1 ) ;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY pocket
   SUBTYPE OF (feature_definition);
 WHERE
@@ -5190,8 +5206,8 @@ WHERE
      'MEASURE_REPRESENTATION_ITEM' , 'AUTOMOTIVE_DESIGN.'+
      'LENGTH_MEASURE_WITH_UNIT']*TYPEOF ( i ) ) =2 ) ) ) =1 ) )
      ) <=1;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY pocket_bottom
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -5270,7 +5286,7 @@ WHERE
      related_shape_aspect.of_shape.
      definition\characterized_object. description =
      'bottom condition occurrence' ) ) ) =1 ) ;
-END_ENTITY;
+END_ENTITY; *)
 
 ENTITY point_placement_shape_representation
   SUBTYPE OF (shape_representation);
@@ -5462,7 +5478,7 @@ END_ENTITY;
 ENTITY product_specification
   SUBTYPE OF (product_identification,configurable_item);
 END_ENTITY;
-*)
+*) (* Reuse from aic_machining_feature 
 ENTITY rectangular_closed_profile
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -5527,8 +5543,8 @@ WHERE
      ['AUTOMOTIVE_DESIGN.'+ 'MEASURE_REPRESENTATION_ITEM' ,
      'AUTOMOTIVE_DESIGN.'+ 'LENGTH_MEASURE_WITH_UNIT']*TYPEOF (
      i ) ) =2 ) ) ) =1 ) ) ) <=1 ) ;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY rectangular_pattern
   SUBTYPE OF (replicate_feature);
 WHERE
@@ -5589,8 +5605,8 @@ WHERE
      'MEASURE_REPRESENTATION_ITEM' , 'AUTOMOTIVE_DESIGN.'+
      'LENGTH_MEASURE_WITH_UNIT']*TYPEOF ( i ) ) =2 ) ) ) =1 ) )
      ) =1;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY replicate_feature
   SUBTYPE OF (feature_definition);
 WHERE
@@ -5616,8 +5632,8 @@ WHERE
      'FEATURE_DEFINITION' IN TYPEOF ( sar.
      related_shape_aspect.of_shape. definition ) ) ) ) =1 ) ) )
      =1;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse it from Design_product_data_management_mim
 ENTITY retention
   SUBTYPE OF (action);
 WHERE
@@ -5659,7 +5675,7 @@ WHERE
      'AUTOMOTIVE_DESIGN.'+'ACTION_RELATIONSHIP.'+
      'RELATED_ACTION' ) ) =0;
 END_ENTITY;
-
+*)
 ENTITY rib
   SUBTYPE OF (feature_definition);
 WHERE
@@ -5731,7 +5747,7 @@ WHERE
      relating_shape_aspect.description = 'directed taper' ) ) )
      =1 ) ) ) <=1;
 END_ENTITY;
-
+(* Reuse from aic_machining_feature 
 ENTITY round_hole
   SUBTYPE OF (feature_definition);
 WHERE
@@ -5781,8 +5797,8 @@ WHERE
      'SHAPE_REPRESENTATION_WITH_PARAMETERS' IN TYPEOF ( pdr.
      used_representation ) ) AND ( SIZEOF ( pdr.
      used_representation.items ) <>1 ) ) ) =0;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY rounded_u_profile
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -5832,7 +5848,7 @@ WHERE
      ) | ( 'AUTOMOTIVE_DESIGN.'+ 'PLANAR_SHAPE_REPRESENTATION'
      IN TYPEOF ( pdr. used_representation ) ) AND ( pdr.
      used_representation.name = 'profile limit' ) ) ) <=1 ) ;
-END_ENTITY;
+END_ENTITY; *)
 
 ENTITY shape_aspect_transition
   SUBTYPE OF (shape_aspect_relationship);
@@ -5882,7 +5898,7 @@ WHERE
      =0 ) ) ) =0 ) ) ) =0 ) ) =0 ) ) =0 ) ) =0;
  WR4:SELF.name IN ['g0' , 'g1' , 'g2'];
 END_ENTITY;
-
+(* Reuse from aic_machining_feature 
 ENTITY shape_defining_relationship
   SUBTYPE OF (shape_aspect_relationship);
 WHERE
@@ -5903,7 +5919,7 @@ WHERE
      'path feature component usage' ) OR ( 'AUTOMOTIVE_DESIGN.'+
      'PATH_FEATURE_COMPONENT' IN TYPEOF (
      SELF\shape_aspect_relationship. relating_shape_aspect ) ) ;
-END_ENTITY;
+END_ENTITY; *)
 (* Reuse from Geometric_tolerance_mim
 ENTITY shape_representation_with_parameters
   SUBTYPE OF (shape_representation);
@@ -5914,7 +5930,7 @@ WHERE
      'DESCRIPTIVE_REPRESENTATION_ITEM']* TYPEOF ( i ) ) =1 ) ) =
      SIZEOF ( SELF.items ) ;
 END_ENTITY;
-*)
+*) (* Reuse from aic_machining_feature 
 ENTITY slot
   SUBTYPE OF (feature_definition);
 WHERE
@@ -5966,8 +5982,8 @@ WHERE
      sar. name = 'ending' ) AND ( sar. description
      = 'slot end usage' ) AND ( 'AUTOMOTIVE_DESIGN.'+ 'SLOT_END'
      IN TYPEOF ( sar. relating_shape_aspect ) ) ) ) =1 ) ) ) =1;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY slot_end
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -6042,8 +6058,8 @@ WHERE
      AND ( sar. related_shape_aspect.of_shape.
      definition\characterized_object. description =
      'slot end occurrence' ) ) ) =1;
-END_ENTITY;
-
+END_ENTITY; *)
+(*
 ENTITY square_u_profile
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -6146,7 +6162,7 @@ WHERE
      ) | ( 'AUTOMOTIVE_DESIGN.'+ 'PLANAR_SHAPE_REPRESENTATION'
      IN TYPEOF ( pdr. used_representation ) ) AND ( pdr.
      used_representation.name = 'profile limit' ) ) ) <=1 ) ;
-END_ENTITY;
+END_ENTITY; *)
 (* Reuse from Draughting_element_specializations_mim
 ENTITY surface_condition_callout
   SUBTYPE OF (draughting_callout);
@@ -6223,7 +6239,7 @@ WHERE
      ( gpa. base_definition.name ='surface_condition' ) ) ) =1 )
      ) =1 ) ;
 END_ENTITY;
-*)
+*) (* Reuse from aic_machining_feature 
 ENTITY taper
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -6285,8 +6301,8 @@ WHERE
      'DIRECTION_SHAPE_REPRESENTATION' IN TYPEOF ( pdr.
      used_representation ) ) AND ( pdr. used_representation.name
      ='direction' ) ) ) =1 ) ;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY tee_profile
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -6421,8 +6437,8 @@ WHERE
      ) | ( 'AUTOMOTIVE_DESIGN.'+ 'PLANAR_SHAPE_REPRESENTATION'
      IN TYPEOF ( pdr. used_representation ) ) AND ( pdr.
      used_representation.name = 'profile limit' ) ) ) <=1 ) ;
-END_ENTITY;
-
+END_ENTITY;*)
+(* Reuse from aic_machining_feature 
 ENTITY thread
   SUBTYPE OF (feature_definition);
 WHERE
@@ -6534,8 +6550,8 @@ WHERE
      , 'major diameter' , 'minor diameter' , 'pitch diameter' ,
      'crest' , 'number of threads' , 'fit class' , 'form' ,
      'hand' , 'qualifier'] ) ) ) >0 ) ) ) =0;
-END_ENTITY;
-
+END_ENTITY; *)
+(* Reuse from aic_machining_feature 
 ENTITY transition_feature
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -6544,7 +6560,7 @@ WHERE
  WR2: SIZEOF ( ['AUTOMOTIVE_DESIGN.'+ 'CHAMFER' ,
      'AUTOMOTIVE_DESIGN.'+ 'EDGE_ROUND' , 'AUTOMOTIVE_DESIGN.'+
      'FILLET']* TYPEOF ( SELF ) ) =1;
-END_ENTITY;
+END_ENTITY;*)
 (* Reuse from Extended_measure_representation_mim
 ENTITY value_range
   SUBTYPE OF (compound_representation_item);
@@ -6561,6 +6577,7 @@ ENTITY vector_style
   SUBTYPE OF (pre_defined_terminator_symbol,curve_style);
 END_ENTITY;
 *)
+(* Reuse from aic_machining_feature 
 ENTITY vee_profile
   SUBTYPE OF (shape_aspect);
 WHERE
@@ -6638,7 +6655,7 @@ WHERE
      ) | ( 'AUTOMOTIVE_DESIGN.'+ 'PLANAR_SHAPE_REPRESENTATION'
      IN TYPEOF ( pdr. used_representation ) ) AND ( pdr.
      used_representation.name = 'profile limit' ) ) ) <=1 ) ;
-END_ENTITY;
+END_ENTITY; *)
 (* Reuse from Surface_conditions_mim
 ENTITY visual_appearance_representation
   SUBTYPE OF (representation);
@@ -9181,33 +9198,6 @@ WHERE
      =0;
 END_RULE;
 
-RULE restrict_multi_language_for_pair_actuator FOR
-    (pair_actuator);
-WHERE
- WR1: SIZEOF ( QUERY ( ent <* pair_actuator | SIZEOF ( QUERY (
-     mlaa <* USEDIN ( ent ,
-     'AUTOMOTIVE_DESIGN.'+'MULTI_LANGUAGE_ATTRIBUTE_ASSIGNMENT.'+
-     'ITEMS' ) | ( mlaa. attribute_name<>'name' ) ) ) >0 ) ) =0;
- WR2: SIZEOF ( QUERY ( ent <* pair_actuator | SIZEOF ( QUERY (
-     ala <* USEDIN ( ent ,
-     'AUTOMOTIVE_DESIGN.'+'ATTRIBUTE_LANGUAGE_ASSIGNMENT.'+
-     'ITEMS' ) | ( ala. attribute_name<>'name' ) ) ) >0 ) ) =0;
- WR3: SIZEOF ( QUERY ( ent <* pair_actuator | ( SIZEOF ( QUERY (
-     mlaa1 <* USEDIN ( ent ,
-     'AUTOMOTIVE_DESIGN.'+'MULTI_LANGUAGE_ATTRIBUTE_ASSIGNMENT.'+
-     'ITEMS' ) | SIZEOF ( QUERY ( mlaa2 <* USEDIN ( ent ,
-     'AUTOMOTIVE_DESIGN.'+'MULTI_LANGUAGE_ATTRIBUTE_ASSIGNMENT.'+
-     'ITEMS' ) | ( mlaa1. attribute_name =mlaa2. attribute_name
-     ) AND ( mlaa1. language =mlaa2. language ) ) ) >1 ) ) +
-     SIZEOF ( QUERY ( ala1 <* USEDIN ( ent ,
-     'AUTOMOTIVE_DESIGN.'+'ATTRIBUTE_LANGUAGE_ASSIGNMENT.'+
-     'ITEMS' ) | SIZEOF ( QUERY ( ala2 <* USEDIN ( ent ,
-     'AUTOMOTIVE_DESIGN.'+'ATTRIBUTE_LANGUAGE_ASSIGNMENT.'+
-     'ITEMS' ) | ( ala1. attribute_name =ala2. attribute_name )
-     AND ( ala1. language =ala2. language ) ) ) >1 ) ) ) >0 ) )
-     =0;
-END_RULE;
-
 RULE restrict_multi_language_for_person_and_organization_role FOR
     (person_and_organization_role);
 WHERE
@@ -10094,15 +10084,6 @@ WHERE
  WR1: SIZEOF ( QUERY ( ent <* kinematic_link | SIZEOF ( USEDIN (
      ent , 'AUTOMOTIVE_DESIGN.'+'APPLIED_NAME_ASSIGNMENT.'+
      'ITEMS' ) ) >1 ) ) =0;
-END_RULE;
-
-RULE restrict_name_assignment_for_kinematic_structure FOR
-    (kinematic_structure);
-WHERE
- WR1: SIZEOF ( QUERY ( ent <* kinematic_structure | SIZEOF (
-     USEDIN ( ent ,
-     'AUTOMOTIVE_DESIGN.'+'APPLIED_NAME_ASSIGNMENT.'+ 'ITEMS' )
-     ) >1 ) ) =0;
 END_RULE;
 
 RULE restrict_name_for_known_source FOR
@@ -11911,7 +11892,7 @@ alas : BAG OF attribute_language_assignment :=
 -- note: sizeof(alas) has to be 1 due to
 -- multi_language_attribute_assignment.wr2
 END_LOCAL;
-IF SIZEOF(alas) > 0 THEN RETURN(alas[1].language);
+IF SIZEOF(alas) > 0 THEN RETURN(alas[1].assigned_class);
 END_IF;
 RETURN (?);
 END_FUNCTION;

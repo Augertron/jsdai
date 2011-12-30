@@ -1,3 +1,26 @@
+/*
+ * $Id$
+ *
+ * JSDAI(TM), a way to implement STEP, ISO 10303
+ * Copyright (C) 1997-2011, LKSoftWare GmbH, Germany
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License
+ * version 3 as published by the Free Software Foundation (AGPL v3).
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * JSDAI is a registered trademark of LKSoftWare GmbH, Germany
+ * This software is also available under commercial licenses.
+ * See also http://www.jsdai.net/
+ */
+
 package jsdai.SDimension_tolerance_xim;
 
 import jsdai.SExtended_geometric_tolerance_xim.EExternally_defined_dimension_representation;
@@ -81,7 +104,7 @@ public class CxGDTCommon {
 		}
 		return esa;
 	}
-*/
+
 	public static void setOrientation(SdaiContext context, EEntity armEntity, EPlacement ep)
 	throws SdaiException {
 		ep.setName(null, "orientation");
@@ -112,17 +135,21 @@ public class CxGDTCommon {
 		epdr.setDefinition(null, epd);
 		epdr.setUsed_representation(null, suitableRep);
 	}
-	
+*/
 	public static void unsetOrientation(SdaiContext context, EEntity armEntity) throws SdaiException {
-		AProperty_definition apd = new AProperty_definition();
-		CProperty_definition.usedinDefinition(null, armEntity, context.domain, apd);
-		for(int i=1; i<=apd.getMemberCount(); i++){
-			EProperty_definition epd = apd.getByIndex(i);
-			AProperty_definition_representation apdr = new AProperty_definition_representation();
-			CProperty_definition_representation.usedinDefinition(null, epd, context.domain, apdr);
-			for(int j=1,count2=apdr.getMemberCount(); j<=count2; j++){
-				EProperty_definition_representation epdr = apdr.getByIndex(j);
-				epdr.deleteApplicationInstance();
+		ADimensional_characteristic_representation adcr = new ADimensional_characteristic_representation();
+		CDimensional_characteristic_representation.usedinDimension(null, armEntity, context.domain, adcr);
+		for(int i=1,count=adcr.getMemberCount(); i<=count; i++){
+			EDimensional_characteristic_representation edcr = adcr.getByIndex(i);
+			EShape_dimension_representation esdr = edcr.getRepresentation(null);
+			ARepresentation_item items = esdr.getItems(null);
+			for(int j=1; j<=items.getMemberCount();){
+				ERepresentation_item item = items.getByIndex(j);
+				if(item instanceof EPlacement){
+					items.removeByIndex(j);
+				}else{
+					j++;
+				}
 			}
 		}
 	}
@@ -232,9 +259,13 @@ public class CxGDTCommon {
 			for(int j=1; j<=items.getMemberCount();){
 				ERepresentation_item item = items.getByIndex(j);
 				if(item instanceof EMeasure_representation_item){
-					String name = item.getName(null);
-					if(name.equals("upper range")){
-						items.removeUnordered(item);
+					if(item.testName(null)){
+						String name = item.getName(null);
+						if(name.equals("upper range")){
+							items.removeUnordered(item);
+						}else{
+							j++;
+						}
 					}else{
 						j++;
 					}
@@ -255,9 +286,13 @@ public class CxGDTCommon {
 			for(int j=1; j<=items.getMemberCount();){
 				ERepresentation_item item = items.getByIndex(j);
 				if(item instanceof EMeasure_representation_item){
-					String name = item.getName(null);
-					if(name.equals("lower range")){
-						items.removeUnordered(item);
+					if(item.testName(null)){
+						String name = item.getName(null);
+						if(name.equals("lower range")){
+							items.removeUnordered(item);
+						}else{
+							j++;
+						}
 					}else{
 						j++;
 					}

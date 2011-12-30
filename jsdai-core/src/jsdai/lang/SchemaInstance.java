@@ -1698,8 +1698,15 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 			throw new SdaiException(SdaiException.RU_NDEF);
 		}
 		int ret_val = ELogical.TRUE;
-		Class rule_class = ((GlobalRule)rule).getRuleClass();
-		Object rule_object = ((GlobalRule)rule).getRuleObject();
+		GlobalRule grule = (GlobalRule)rule;
+		String [] bp_rules_names = null;                     // added for Bug #2739
+		int br_count = grule.getBypassedRulesCount(session); // added for Bug #2739
+		if (br_count > 0) {                                  // added for Bug #2739
+			bp_rules_names = grule.getBypassedRules();         // added for Bug #2739
+		}                                                    // added for Bug #2739
+
+		Class rule_class = grule.getRuleClass();
+		Object rule_object = grule.getRuleObject();
 
 		AWhere_rule where_rules = rule.getWhere_rules(null, null);
 		CWhere_rule [] w_rules_ord = ((GlobalRule)rule).getWhereRules(where_rules);
@@ -1720,6 +1727,9 @@ public abstract class SchemaInstance extends SdaiCommon implements SdaiEventSour
 		for (int i = 0; i < ((AEntity)where_rules).myLength; i++) {
 //			CWhere_rule w_rule = (CWhere_rule)element.object;
 			CWhere_rule w_rule = w_rules_ord[i];
+			if (br_count > 0 && ((WhereRule)w_rule).isRuleBypassed(bp_rules_names, br_count)) {  // added for Bug #2739
+				continue;                                                                          // added for Bug #2739
+			}                                                                                    // added for Bug #2739
 			String m_name = WHERE_RULE_METHOD_NAME_PREFIX + CEntity.normalise(w_rule.getLabel(null));
 			try {
 				meth = rule_class.getDeclaredMethod(m_name, param);

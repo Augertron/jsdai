@@ -32,7 +32,7 @@ package jsdai.SShape_composition_xim;
 import jsdai.lang.*;
 import jsdai.libutil.EMappedXIMEntity;
 import jsdai.SProduct_property_definition_schema.EShape_aspect;
-import jsdai.SShape_composition_mim.CComposite_group_shape_aspect;
+import jsdai.SShape_aspect_definition_schema.CComposite_group_shape_aspect;
 
 public class CxComposite_unit_shape_element extends CComposite_unit_shape_element implements EMappedXIMEntity{
 

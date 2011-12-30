@@ -26,14 +26,26 @@ package jsdai.express_doc.wizards;
 import java.io.File;
 import java.io.IOException;
 
+import jsdai.express_doc.ExpressDocPlugin;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -45,6 +57,8 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
+//import org.eclipse.compare.CompareEditorInput;
 
 /**
  * @author Mantas Balnys
@@ -65,21 +79,44 @@ public class ExpressDocSettingPage extends WizardPage {
 	private FileSelectGroup sourceFileGroup;
 	private FileSelectGroup destDirectoryGroup;
 	private Button generateJavaDocPart;
+	private Button enableIncremental;
+	IProject fProject = null;
+
+
+//	private Composite titleGroup = null;
+	private Group titleGroup = null;
+	protected Text titleTextField;
+  boolean textEntryChanged = false;
+  String initialTitle = "Express Data";
+
 
 	/**
 	 * changing of this string may require clearing metadata info associated with ExpressDocSettingPage.STORE_SOURCE_NAMES_ID
 	 */
-	public final static String STORE_SOURCE_NAMES_ID =	"ExpressDocSettingPage.STORE_SOURCE_NAMES_ID"; //$NON-NLS-1$
-	public final static String STORE_LAST_SOURCE_NAME_ID =	"ExpressDocSettingPage.STORE_LAST_SOURCE_NAME_ID"; //$NON-NLS-1$
-	public final static String STORE_JAVA_OPTION_ID =	"ExpressDocSettingPage.STORE_JAVA_OPTION_ID"; //$NON-NLS-1$
+
+// do we still need those?
+
+//	public final static String STORE_SOURCE_NAMES_ID =	"ExpressDocSettingPage.STORE_SOURCE_NAMES_ID"; //$NON-NLS-1$
+//	public final static String STORE_LAST_SOURCE_NAME_ID =	"ExpressDocSettingPage.STORE_LAST_SOURCE_NAME_ID"; //$NON-NLS-1$
+//	public final static String STORE_JAVA_OPTION_ID =	"ExpressDocSettingPage.STORE_JAVA_OPTION_ID"; //$NON-NLS-1$
+//	public final static String STORE_INCREMENTAL_DOCS_ID =	"ExpressDocSettingPage.STORE_INCREMENTAL_DOCS_ID"; //$NON-NQualifiedName
+//	public final static String STORE_DOCS_TITLE_ID = "ExpressDocSettingPage.STORE_DOCS_TITLE_ID";
+//	public final static String STORE_DOCS_DESTINATION_ID = "ExpressDocSettingPage.STORE_DOCS_DESTINATION_ID";
 
 	/**
 	 * 
 	 * @param name
 	 */
+	/*
 	public ExpressDocSettingPage(IPath projectPath, String name) {
 		super(name);
 		this.projectPath = projectPath;
+	}
+	*/
+	public ExpressDocSettingPage(IPath projectPath, String name, IProject fProject) {
+		super(name);
+		this.projectPath = projectPath;
+		this.fProject = fProject;
 	}
 
 	/* (non-Javadoc)
@@ -105,6 +142,12 @@ public class ExpressDocSettingPage extends WizardPage {
 					"Select Express Documentation directory", DIALOG_DIRECTORY, SWT.SAVE,
 					null, INVALID_DESTINATION_DIRECTORY_MESSAGE);
 		destDirectoryGroup.createGroupControls();
+		
+		createTitleGroup(mainComposite);
+
+//        generateJavaDocPart = new Button(optionGroup, SWT.CHECK);
+//       generateJavaDocPart.setText("Generate Java documentation part");
+  
 
 		Group optionGroup = new Group(mainComposite, SWT.NONE);
         optionGroup.setText("Documentation Options");
@@ -114,6 +157,15 @@ public class ExpressDocSettingPage extends WizardPage {
         generateJavaDocPart = new Button(optionGroup, SWT.CHECK);
         generateJavaDocPart.setText("Generate Java documentation part");
 
+		Group incGroup = new Group(mainComposite, SWT.NONE);
+        incGroup.setText("Incremental Generation Options");
+        incGroup.setLayout(new GridLayout(1, false));
+        incGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        enableIncremental = new Button(incGroup, SWT.CHECK);
+        enableIncremental.setText("Enable incremental generation");
+
+
 		restoreWidgetValues();
 		updateWidgetEnablements();
 		setPageComplete(determinePageCompletion());
@@ -121,7 +173,218 @@ public class ExpressDocSettingPage extends WizardPage {
 		setControl(mainComposite);
 
 	}
+
+
+
+	protected void createTitleGroup(Composite parent) {
+
+		titleGroup = new Group(parent, SWT.NONE);
+//		titleGroup = new Composite(parent, SWT.NONE);
+    titleGroup.setText("Specify the title");
+		GridLayout layout = new GridLayout();
+		layout.numColumns = 2;
+		titleGroup.setLayout(layout);
+		titleGroup.setFont(parent.getFont());
+		titleGroup.setLayoutData(
+			new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label titleLabel = new Label(titleGroup, SWT.NONE);
+		titleLabel.setText("Title:");
+		titleLabel.setFont(parent.getFont());
+
+
+		// source Text entry field (for diagram name)
+		
+		titleTextField = new Text(titleGroup, SWT.SINGLE | SWT.BORDER);
+		GridData data =
+			new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL);
+		data.widthHint = 250;
+		titleTextField.setLayoutData(data);
+		titleTextField.setFont(parent.getFont());
+
+
+/*
+    String title_value = null;
+		if (fProject == null) {
+			fProject = ExportDocumentation.getProject();
+			System.out.println("fProject: " + fProject);
+		}
+		
+		if (fProject != null) {
+			try {
+				title_value = fProject.getPersistentProperty(new QualifiedName("net.jsdai.express_doc",".fDocumentTitle"));
+			} catch (CoreException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		} else {
+			System.out.println("fProject = null");
+			
+		}
+			
 	
+    if (title_value == null) {
+    	title_value = initialTitle;
+    }
+    titleTextField.setText(title_value);
+*/
+
+
+		titleTextField.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				updateFromSourceField();
+			}
+		});
+		
+		titleTextField.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				updateWidgetEnablements();
+			}
+		});
+		
+		titleTextField.addKeyListener(new KeyListener(){
+			/*
+			 * @see KeyListener.keyPressed
+			 */
+			public void keyPressed(KeyEvent e){
+				//If there has been a key pressed then mark as dirty
+				textEntryChanged = true;
+			}
+
+			/*
+			 * @see KeyListener.keyReleased
+			 */
+			public void keyReleased(KeyEvent e){}
+		});
+		
+		titleTextField.addFocusListener(new FocusListener(){
+			/*
+			 * @see FocusListener.focusGained(FocusEvent)
+			 */
+			public void focusGained(FocusEvent e){
+				//Do nothing when getting focus
+			}
+			
+			/*
+			 * @see FocusListener.focusLost(FocusEvent)
+			 */
+			public void focusLost(FocusEvent e){
+				//Clear the flag to prevent constant update
+				if(textEntryChanged){
+					textEntryChanged = false;
+					updateFromSourceField();
+				}
+				
+			}	
+		});
+
+
+	}
+	void updateFromSourceField(){
+		
+		//setSourceName(sourceNameField.getText());
+		//Update enablements when this is selected
+		updateWidgetEnablements();
+	}		
+
+	public void setDestinationDirectory(IResource documentResource) {
+		String destination_path = null;
+		try {
+			destination_path = documentResource.getPersistentProperty(new QualifiedName(ExpressDocPlugin.ID_EXPRESS_DOC,".destinationPath"));
+
+	    if (destination_path == null) {
+				setInitialDestDirectory();
+    	} else {
+				File destDir = new File(destination_path);
+				if(destDir.exists()) {
+					destDirectoryGroup.setFileName(destDir.getCanonicalPath());
+				} else {
+					setInitialDestDirectory();
+				}
+			}
+		} catch (CoreException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e2) {
+			e2.printStackTrace();
+		}
+	}
+	public void setDestinationDirectory(String exd_string) {
+		Path exd_path = new Path(exd_string);
+		IFile exd_file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(exd_path);
+		if (exd_file != null ) {
+			setDestinationDirectory(exd_file);
+		} else {
+			try {
+				setInitialDestDirectory();
+			} catch (IOException e2) {
+				e2.printStackTrace();
+			}
+		}
+	}
+	
+	
+	public void setDocumentTitle(IResource documentResource) {
+		String title_value = null;
+		try {
+			title_value = documentResource.getPersistentProperty(new QualifiedName(ExpressDocPlugin.ID_EXPRESS_DOC,".documentTitle"));
+
+// experiment - a temporary workaround - start (this also sets two checkboxes together with the document title - it is actually working, 
+
+						String flag_generate_java = documentResource.getPersistentProperty(new QualifiedName(ExpressDocPlugin.ID_EXPRESS_DOC,".flagGenerateJava"));
+						String flag_enable_incremental = documentResource.getPersistentProperty(new QualifiedName(ExpressDocPlugin.ID_EXPRESS_DOC,".flagEnableIncremental"));
+						if (flag_generate_java != null) {
+//System.out.println("flag_generate_java: " + flag_generate_java);
+							if (flag_generate_java.equals("true")) {
+								generateJavaDocPart.setSelection(true);
+							} else {
+								generateJavaDocPart.setSelection(false);
+							}
+						}
+						if (flag_enable_incremental != null) {
+							if (flag_enable_incremental.equals("true")) {
+								enableIncremental.setSelection(true);
+							} else {
+								enableIncremental.setSelection(false);
+							}
+						}
+
+
+// experiment - end
+
+
+
+		} catch (CoreException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+    if (title_value == null) {
+    	title_value = initialTitle;
+    	//System.out.println("FAILED TO GET TITLE");
+    }
+    titleTextField.setText(title_value);
+	}
+	public void setDocumentTitle(String exd_string) {
+		// we need to get IResource from String and then invoke the method just above
+		//IPath path = ...;
+		//IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		//IWorkspaceRoot root = workspace.getRoot();
+		//IResource resource = root.findMember(path);
+
+		//String myPathStr = "/abc/aa/a.c";
+		Path exd_path = new Path(exd_string);
+		IFile exd_file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(exd_path);
+		if (exd_file != null ) {
+			setDocumentTitle(exd_file);
+		} else {
+			setDefaultDocumentTitle();
+		}
+	}
+
+	public void setDefaultDocumentTitle() {
+    titleTextField.setText(initialTitle);
+	}
+		
 	public void setSourceFileName(String name) {
 		try {
 			sourceFileGroup.setFileName(name);
@@ -154,6 +417,12 @@ public class ExpressDocSettingPage extends WizardPage {
 	public boolean isGenerateJavaDocPart() {
 		return generateJavaDocPart.getSelection();
 	}
+	public boolean isEnableIncremental() {
+		return enableIncremental.getSelection();
+	}
+	public String getDocumentTitle() {
+		return this.titleTextField.getText();
+	}
 
 	/**
 	 *	Use the dialog store to restore widget values to the values that they held
@@ -161,18 +430,60 @@ public class ExpressDocSettingPage extends WizardPage {
 	 */
 	public void restoreWidgetValues() {
 		try {
-			IDialogSettings settings = getDialogSettings();
-			if (settings != null) {
-				sourceFileGroup.restoreSettings(settings);
-				destDirectoryGroup.restoreSettings(settings);
+//System.out.println("@@@ 1 @@@");
+//			IDialogSettings settings = getDialogSettings();
+//			if (settings != null) {
+//				sourceFileGroup.restoreSettings(settings);
+//				destDirectoryGroup.restoreSettings(settings);
 				if(destDirectoryGroup.getSelectedFile() == null) {
 					setInitialDestDirectory();
+//				}
+
+
+				// we need the resource from somewhere
+				File sourceFile = sourceFileGroup.getSelectedFile();
+
+// THIS IS NOT WORKING - sourceFile is null 
+
+				if(sourceFile != null) {
+//System.out.println("@@@ 1 @@@");
+
+					Path exd_path = new Path(sourceFile.getCanonicalPath());
+//System.out.println("trying to get exd_file: " + exd_path);
+					IFile exd_file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(exd_path);
+					if (exd_file != null) {
+//System.out.println("@@@ 2 @@@");
+
+						String flag_generate_java = exd_file.getPersistentProperty(new QualifiedName(ExpressDocPlugin.ID_EXPRESS_DOC,".flagGenerateJava"));
+						String flag_enable_incremental = exd_file.getPersistentProperty(new QualifiedName(ExpressDocPlugin.ID_EXPRESS_DOC,".flagEnableIncremental"));
+						if (flag_generate_java != null) {
+//System.out.println("flag_generate_java: " + flag_generate_java);
+							if (flag_generate_java.equals("true")) {
+								generateJavaDocPart.setSelection(true);
+							} else {
+								generateJavaDocPart.setSelection(false);
+							}
+						}
+						if (flag_enable_incremental != null) {
+							if (flag_enable_incremental.equals("true")) {
+								enableIncremental.setSelection(true);
+							} else {
+								enableIncremental.setSelection(false);
+							}
+						}
+					}
 				}
-				generateJavaDocPart.setSelection(settings.getBoolean(STORE_JAVA_OPTION_ID));
+
+				// old implementation
+				//generateJavaDocPart.setSelection(settings.getBoolean(STORE_JAVA_OPTION_ID));
+				//enableIncremental.setSelection(settings.getBoolean(STORE_INCREMENTAL_DOCS_ID));
+
 				updateWidgetEnablements();
 			}
-		} catch (IOException e) {
-			throw (IllegalArgumentException)new IllegalArgumentException(e.getMessage()).initCause(e);
+		} catch (CoreException e1) {
+			throw (IllegalArgumentException)new IllegalArgumentException(e1.getMessage()).initCause(e1);
+		} catch (IOException e2) {
+			throw (IllegalArgumentException)new IllegalArgumentException(e2.getMessage()).initCause(e2);
 		}
 	}
 
@@ -181,12 +492,16 @@ public class ExpressDocSettingPage extends WizardPage {
 	 *	last time this wizard was used to completion
 	 */
 	public void saveWidgetValues() {
+		return;
+/*	Getting rid of settings altogether	
 		IDialogSettings settings = getDialogSettings();
 		if (settings != null) {
 			sourceFileGroup.saveSettings(settings);
 			destDirectoryGroup.saveSettings(settings);
 			settings.put(STORE_JAVA_OPTION_ID, generateJavaDocPart.getSelection());
+			settings.put(STORE_INCREMENTAL_DOCS_ID, enableIncremental.getSelection());
 		}
+*/
 	}
 
 	/**
@@ -211,8 +526,17 @@ public class ExpressDocSettingPage extends WizardPage {
 	 * @see #validateOptionsGroup
 	 */
 	protected boolean determinePageCompletion() {
+    // added for the title field
+		if (this.titleTextField != null) {
+			if ((this.titleTextField.getText() == null) || (this.titleTextField.getText().equals(""))) {
+				return false;
+			}
+		}
 		boolean complete =
+//			sourceFileGroup.validateSourceGroup() && destDirectoryGroup.validateSourceGroup() && titleGroup.validateSourceGroup();
 			sourceFileGroup.validateSourceGroup() && destDirectoryGroup.validateSourceGroup();
+
+
 
 		// Avoid draw flicker by not clearing the error
 		// message unless all is valid.
@@ -229,7 +553,48 @@ public class ExpressDocSettingPage extends WizardPage {
 
 	private void setInitialDestDirectory() throws IOException {
 		File sourceFile = sourceFileGroup.getSelectedFile();
+		String dest_dir_value = null;
+		boolean done = false;
+
+//System.out.println("setting initial directory, sourceFile: " + sourceFile);
+
+//System.out.println("projectPath: " + projectPath);
+//System.out.println("fProject: " + fProject);
+
+//				currentFileName = projectPath.toOSString();
+
+		
+				try {
+
 		if(sourceFile != null) {
+	
+			Path exd_path = new Path(sourceFile.getCanonicalPath());
+			IFile exd_file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(exd_path);
+
+//System.out.println("exd_file: " + exd_file);
+
+
+			if (exd_file != null ) {
+
+					dest_dir_value = exd_file.getPersistentProperty(new QualifiedName(ExpressDocPlugin.ID_EXPRESS_DOC,".destinationPath"));
+//System.out.println("dest_dir_value" + dest_dir_value);
+				
+				if (dest_dir_value != null) {
+					File destDir = new File(dest_dir_value);
+					if(destDir.exists()) {
+						destDirectoryGroup.setFileName(destDir.getCanonicalPath());
+						done = true;
+					} else {
+					}
+				} else {
+				}
+
+			
+			} else {
+			} // exd_file is null
+	
+		 if (!done) {
+	   // in the case of falure continue with this
 			if(sourceFile.isFile()) {
 				sourceFile = sourceFile.getParentFile();
 			}
@@ -238,7 +603,18 @@ public class ExpressDocSettingPage extends WizardPage {
 				destDir = sourceFile;
 			}
 			destDirectoryGroup.setFileName(destDir.getCanonicalPath());
+		
 		}
+		
+		}
+				} catch (CoreException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IOException e2) {
+					e2.printStackTrace();
+				}
+
+
 	}
 
 	private class FileSelectGroup implements ModifyListener, FocusListener, SelectionListener {
@@ -381,6 +757,11 @@ public class ExpressDocSettingPage extends WizardPage {
 								setErrorMessage(null);
 								setFileName(selectedFile);
 								fileSelectGroupChanged(this);
+								setDocumentTitle(selectedFile);
+								setDestinationDirectory(selectedFile);
+								// experiment:
+
+								
 //							selectionGroup.setFocus();
 							}
 						}
@@ -522,6 +903,8 @@ public class ExpressDocSettingPage extends WizardPage {
 			}
 		}
 		private void restoreSettings(IDialogSettings settings) {
+			return;
+/*
 			String[] sourceNames = settings.getArray(groupId + STORE_SOURCE_NAMES_ID);
 			if (sourceNames != null) {
 				for (int i = 0; i < sourceNames.length; i++)
@@ -532,17 +915,28 @@ public class ExpressDocSettingPage extends WizardPage {
 					setFileName(lastName);
 				}
 			}
+*/		
 		}
 
 		private void saveSettings(IDialogSettings settings) {
+			return; // we don't want use settings anymore
+/*
 			try {
 				updateFromFileNameField();
+				if (settings == null) return;
 				String[] items = fileNameField.getItems();
 				settings.put(groupId + STORE_SOURCE_NAMES_ID, items);
-				settings.put(groupId + STORE_LAST_SOURCE_NAME_ID, getSelectedFile().getCanonicalPath());
+				File selected_file = getSelectedFile();
+				if (selected_file != null) {
+					settings.put(groupId + STORE_LAST_SOURCE_NAME_ID, selected_file.getCanonicalPath());
+				} else {
+					// perhaps to print to log something
+				}
 			} catch (IOException e) {
 				throw (IllegalArgumentException)new IllegalArgumentException(e.getMessage()).initCause(e);
 			}
+*/
+		
 		}
 
 

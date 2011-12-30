@@ -486,28 +486,30 @@ public final class CMappedXIMEntity extends JsdaiLangAccessor {
 				return true;
 			}
 		} else if(domain instanceof EEnumeration_type) {
+			Object origValue = attrValue;
 			if(attrValue instanceof String) {
-				Object origValue = attrValue;
 				attrValue =
 					new Integer(LangUtils.convertEnumerationStringToInt(mappingContext.getContext(),
 							(String)attrValue, (EEnumeration_type)domain));
-				try {
-					assignAttrOrAggr(ximInstance, attrOrAggr, attrValue, selectTypes);
-				} catch(SdaiException e) {
-					throw (SdaiException)
-						new SdaiException(e.getErrorId(), e, "Exception for instance: " + ximInstance +
-										  "\nattribute: " + attrOrAggr + "origValue: " + origValue +
-										  " value: " + attrValue + " domain: " + domain +
-										  " selectTypes: " + selectTypes + " mapping: " +
-										  genAttMapping + "\n").initCause(e);
-				}
-				return true;
-			} else {
+			}else if(attrValue instanceof Integer){
+				
+			}else{
 				//FIXME: implement enumeration support
 				throw new SdaiException(SdaiException.FN_NAVL,
 										"No support for EEnumeration_type attributes yet: " +
 										ximInstance + "\n" + genAttMapping + "\n" + domain + "\n" + attrValue);
 			}
+			try {
+				assignAttrOrAggr(ximInstance, attrOrAggr, attrValue, selectTypes);
+			} catch(SdaiException e) {
+				throw (SdaiException)
+					new SdaiException(e.getErrorId(), e, "Exception for instance: " + ximInstance +
+									  "\nattribute: " + attrOrAggr + "origValue: " + origValue +
+									  " value: " + attrValue + " domain: " + domain +
+									  " selectTypes: " + selectTypes + " mapping: " +
+									  genAttMapping + "\n").initCause(e);
+			}
+			return true;
 		} else if(domain instanceof ESelect_type) {
 			if(attrValue == null) {
 				return false;

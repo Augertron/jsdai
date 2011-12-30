@@ -2141,6 +2141,11 @@ public class CAggregate extends A_basis implements Aggregate {
 				if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 					throw new SdaiException(SdaiException.MX_NRW, owning_model);
 				}
+				SdaiSession session = owning_model.repository.session;
+				if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+					String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+					throw new SdaiException(SdaiException.SY_ERR, base);
+				}
 			}
 		}
 		if (value == null) {
@@ -2406,6 +2411,11 @@ public class CAggregate extends A_basis implements Aggregate {
 		if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 			throw new SdaiException(SdaiException.MX_NRW, owning_model);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		int sel_number = 0;
 		if (myType.select != null && myType.select.is_mixed > 0) {
 			if (select == null || select.length == 0 || select[0] == null) {
@@ -2461,7 +2471,7 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 		if (myLength < 0) {
 			resolveAllConnectors();
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		Object [] myDataA;
 		StaticFields staticFields;
 		if (myType.express_type == DataType.LIST) {
@@ -2864,6 +2874,11 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 		if (!(myType.express_type == DataType.ARRAY)) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myData == null) {
 			return;
 		}
@@ -2876,7 +2891,7 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 		if (index < 0 || index >= myLength) {
 			throw new SdaiException(SdaiException.IX_NVLD, this);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		Object [] myDataA;
 		if (myType.select != null && myType.select.is_mixed > 0) {
 			myDataA = (Object [])myData;
@@ -2930,6 +2945,11 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 					throw new SdaiException(SdaiException.MX_NRW, owning_model);
 				}
+			}
+			SdaiSession session = owning_model.repository.session;
+			if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+				String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+				throw new SdaiException(SdaiException.SY_ERR, base);
 			}
 		} else if (myType == null) {
 			if (owner == null) {
@@ -3304,6 +3324,11 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 		if (myType.express_type != DataType.LIST) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myLength < 0) {
 			resolveAllConnectors();
 		}
@@ -3375,7 +3400,7 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			String base = SdaiSession.line_separator + AdditionalMessages.AI_CREF;
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		Object [] myDataA;
 		ListElement element = null;
 		ListElement new_element;
@@ -3563,6 +3588,11 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			}
 			if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 				throw new SdaiException(SdaiException.MX_NRW, owning_model);
+			}
+			SdaiSession session = owning_model.repository.session;
+			if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+				String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+				throw new SdaiException(SdaiException.SY_ERR, base);
 			}
 		} else if (myType == null) {
 			if (owner == null) {
@@ -3814,6 +3844,11 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 					throw new SdaiException(SdaiException.MX_NRW, owning_model);
 				}
+			}
+			SdaiSession session = owning_model.repository.session;
+			if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+				String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+				throw new SdaiException(SdaiException.SY_ERR, base);
 			}
 		} else if (myType == null) {
 			if (owner == null) {
@@ -4260,6 +4295,11 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 		if (myType.express_type == DataType.ARRAY || myType.express_type == DataType.LIST) {
 			throw new SdaiException(SdaiException.AI_NVLD, this);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		if (myLength < 0) {
 			resolveAllConnectors();
 		}
@@ -4326,7 +4366,7 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
 		Object [] myDataA;
-		owning_model.repository.session.undoRedoModifyPrepare(owning_instance);
+		session.undoRedoModifyPrepare(owning_instance);
 		int ln;
 		if (sel_number <= 0) {
 			if (myLength == 0) {
@@ -4418,6 +4458,11 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			}
 			if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 				throw new SdaiException(SdaiException.MX_NRW, owning_model);
+			}
+			SdaiSession session = owning_model.repository.session;
+			if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+				String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+				throw new SdaiException(SdaiException.SY_ERR, base);
 			}
 		}
 		int i, index = -1;
@@ -5486,6 +5531,11 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			String base = SdaiSession.line_separator + AdditionalMessages.IR_IMPR;
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		int sel_number = 0;
 		if (myType.select != null && myType.select.is_mixed > 0) {
 			if (select == null || select.length == 0 || select[0] == null) {
@@ -5537,7 +5587,7 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			String base = SdaiSession.line_separator + AdditionalMessages.AI_CREF;
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		Object [] myDataA;
 		if (myType.express_type == DataType.LIST) {
 			if (it.myElement == null && (it.behind || myLength == 0 || it.myIndex < 0)) {
@@ -5657,6 +5707,11 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				}
 				if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 					throw new SdaiException(SdaiException.MX_NRW, owning_model);
+				}
+				SdaiSession session = owning_model.repository.session;
+				if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+					String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+					throw new SdaiException(SdaiException.SY_ERR, base);
 				}
 			}
 		}
@@ -5921,6 +5976,11 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				}
 				if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 					throw new SdaiException(SdaiException.MX_NRW, owning_model);
+				}
+				SdaiSession session = owning_model.repository.session;
+				if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+					String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+					throw new SdaiException(SdaiException.SY_ERR, base);
 				}
 			}
 		}
@@ -6368,6 +6428,11 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 						throw new SdaiException(SdaiException.MX_NRW, owning_model);
 					}
 				}
+				SdaiSession session = owning_model.repository.session;
+				if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+					String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+					throw new SdaiException(SdaiException.SY_ERR, base);
+				}
 			}
 		}
 		if (value == null) {
@@ -6784,6 +6849,11 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			String base = SdaiSession.line_separator + AdditionalMessages.IR_IMPR;
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		EBound upper_bound;
 		CList_type list_type = (CList_type)myType;
 		if (list_type.testUpper_bound(null)) {
@@ -6846,7 +6916,7 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			String base = SdaiSession.line_separator + AdditionalMessages.AI_CREF;
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		Object [] myDataA;
 		ListElement element;
 		ListElement new_element;
@@ -7122,6 +7192,11 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			String base = SdaiSession.line_separator + AdditionalMessages.IR_IMPR;
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
+		SdaiSession session = owning_model.repository.session;
+		if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+			String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+			throw new SdaiException(SdaiException.SY_ERR, base);
+		}
 		EBound upper_bound;
 		CList_type list_type = (CList_type)myType;
 		if (list_type.testUpper_bound(null)) {
@@ -7184,7 +7259,7 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 			String base = SdaiSession.line_separator + AdditionalMessages.AI_CREF;
 			throw new SdaiException(SdaiException.SY_ERR, base);
 		}
-		owning_model.repository.session.undoRedoModifyPrepare(aggr_owner);
+		session.undoRedoModifyPrepare(aggr_owner);
 		Object [] myDataA;
 		ListElement element;
 		ListElement new_element;
@@ -7423,7 +7498,12 @@ if (SdaiSession.debug2) System.out.println("   CAggregate  sel_number = " + sel_
 				if ((owning_model.mode & SdaiModel.MODE_MODE_MASK) != SdaiModel.READ_WRITE) {
 					throw new SdaiException(SdaiException.MX_NRW, owning_model);
 				}
-				owning_model.repository.session.undoRedoModifyPrepare(owning_instance);
+				SdaiSession session = owning_model.repository.session;
+				if (session.undo_redo_file != null && session.forbid_undo_on_SdaiEvent) {
+					String base = SdaiSession.line_separator + AdditionalMessages.UR_MOPO;
+					throw new SdaiException(SdaiException.SY_ERR, base);
+				}
+				session.undoRedoModifyPrepare(owning_instance);
 				unsetAllByRef(owning_instance);
 			}
 		} else if (!SdaiSession.isSessionAvailable()) {
