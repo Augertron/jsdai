@@ -1,0 +1,404 @@
+-- modified by RR:
+(*
+	class added to REFERENCE FROM ISO13584_IEC61360_dictionary_schema
+*)
+
+-- received on 2000-02-21, originally from Guy Pierra 
+
+SCHEMA ISO13584_domain_resource_schema;
+
+REFERENCE FROM ISO13584_IEC61360_dictionary_schema(
+	-- RR
+	class,
+	class_BSU,
+	is_subclass,
+	list_to_set);
+
+REFERENCE FROM ISO13584_generic_expressions_schema(
+	generic_variable,
+	variable_semantics,
+	used_variables);
+
+REFERENCE FROM ISO13584_expressions_schema(
+	boolean_expression,
+	literal_number,
+	numeric_expression);
+
+REFERENCE FROM ISO13584_library_expressions_schema (
+	class_instance_expression,
+	compatible_variable_and_library_expression,
+	library_expression,
+	semantics_of, 
+	syntax_of);
+
+REFERENCE FROM ISO13584_table_resource_schema(
+	collects_columns,
+	column_traversal_variable_semantics,
+	table_expression,
+	table_identification,
+	used_table_literals);
+
+REFERENCE FROM ISO13584_external_file_schema(
+	message);
+
+
+TYPE boolean_expression_or_others = SELECT (
+	boolean_expression,
+	others);
+END_TYPE;
+
+
+ENTITY others;
+END_ENTITY;
+
+
+ENTITY domain_restriction
+SUPERTYPE OF (functional_domain_restriction);
+	defines: SET[1:?] OF variable_semantics;
+	assumes: SET[0:?] OF variable_semantics;
+	domains: SET[1:?] OF guarded_simple_domain;
+	constraint_description: OPTIONAL message;
+DERIVE
+	base_tables: SET [0:?] OF table_identification
+			:= used_tables_in_domain (SELF);
+WHERE
+	WR1: SIZEOF (QUERY (g <* SELF.domains |
+		'ISO13584_DOMAIN_RESOURCE_SCHEMA.OTHERS'
+		IN TYPEOF (g.guard))) = 1;
+END_ENTITY;
+
+
+ENTITY guarded_simple_domain;
+	guard: boolean_expression_or_others;
+	domain: simple_domain;
+INVERSE 
+	item_of: domain_restriction FOR domains;
+WHERE
+	WR1: variables_belong_to_assumes(SELF);
+END_ENTITY;
+
+
+ENTITY simple_domain 
+ABSTRACT SUPERTYPE OF (ONEOF(table_defined_domain,
+	type_defined_domain,
+	subclass_defined_domain,
+	constant_range_defined_domain,
+	variable_range_defined_domain,
+	predicate_defined_domain,
+	simple_functional_domain));
+INVERSE 
+	referenced_by: guarded_simple_domain FOR domain;
+END_ENTITY;
+
+
+ENTITY table_defined_domain 
+SUBTYPE OF (simple_domain);
+	from_table: table_expression;
+WHERE
+	WR1: SELF\simple_domain.referenced_by.item_of.defines
+		 <= list_to_set(collects_columns (SELF.from_table));
+	WR2: QUERY ( sem <*collects_var_sem(
+		used_variables(SELF.from_table))
+		| NOT (( sem IN
+		 (SELF\simple_domain.referenced_by.item_of.assumes
+		 + SELF\simple_domain.referenced_by.item_of.defines))
+		OR ((( 'ISO13584_TABLE_RESOURCE_SCHEMA'
+		+ '.COLUMN_TRAVERSAL_VARIABLE_SEMANTICS') 
+		IN TYPEOF (sem))) AND 
+		(sem\column_traversal_variable_semantics.domain 
+		IN collects_columns(SELF.from_table)))) = [];
+END_ENTITY;
+
+
+ENTITY type_defined_domain 
+SUBTYPE OF (simple_domain);
+WHERE
+	WR1: SIZEOF (SELF\simple_domain.referenced_by
+			.item_of.defines) = 1;
+END_ENTITY;
+
+
+ENTITY subclass_defined_domain
+SUBTYPE OF (simple_domain);
+	from_class: class_BSU;
+WHERE
+	WR1: SIZEOF (SELF\simple_domain.referenced_by.item_of.defines) = 
+1;
+	WR2: QUERY (va <* collects_variables( 
+		SELF\simple_domain.referenced_by.item_of.defines)
+		|NOT ('ISO13584_LIBRARY_EXPRESSIONS_SCHEMA'
+			+ '.CLASS_INSTANCE_VARIABLE' IN TYPEOF (va))) = [];
+	WR3: QUERY (va <* collects_variables( 
+		SELF\simple_domain.referenced_by.item_of.defines)
+		|NOT is_subclass (SELF.from_class.definition[1]\class, 
+		va\class_instance_expression.expr_type.definition[1]\class)) 
+= [];
+END_ENTITY;
+
+
+ENTITY constant_range_defined_domain 
+SUBTYPE OF (simple_domain);
+	minimal: literal_number;
+	maximal: literal_number;
+	step: OPTIONAL literal_number;
+WHERE
+	WR1: SIZEOF (SELF\simple_domain.referenced_by
+			.item_of.defines) = 1;
+	WR2: minimal.the_value <= maximal.the_value;
+	WR3: QUERY (va<*collects_variables( 
+		SELF\simple_domain.referenced_by.item_of.defines)|NOT 
+		('ISO13584_EXPRESSIONS_SCHEMA.NUMERIC_VARIABLE' 
+		IN TYPEOF (va))) = [];
+	WR4: (NOT EXISTS(SELF.step)) OR (SELF.step.the_value > 0);
+END_ENTITY;
+
+
+ENTITY variable_range_defined_domain 
+SUBTYPE OF (simple_domain);
+	minimal: numeric_expression;
+	maximal: numeric_expression;
+	step: OPTIONAL numeric_expression;
+WHERE
+	WR1: SIZEOF (SELF\simple_domain.referenced_by.item_of.defines) 
+		= 1;
+	WR2: collects_var_sem(used_variables(SELF.minimal)
+		+ used_variables(SELF.maximal))
+		<= SELF\simple_domain.referenced_by.item_of.assumes;
+	WR3: NOT(EXISTS(SELF.step)) OR
+		(collects_var_sem(used_variables(SELF.step))
+		<= SELF\simple_domain.referenced_by.item_of.assumes);
+	WR4: QUERY (va<*collects_variables
+		(SELF\simple_domain.referenced_by.item_of.defines)
+		| NOT ('ISO13584_EXPRESSIONS_SCHEMA.NUMERIC_VARIABLE'
+		 IN TYPEOF (va))) = [];
+END_ENTITY;
+
+
+ENTITY predicate_defined_domain
+SUBTYPE OF (simple_domain);
+	constraint: boolean_expression;
+WHERE
+	WR1: collects_var_sem( used_variables(SELF.constraint))
+		<= SELF\simple_domain.referenced_by.item_of.defines + 
+		SELF\simple_domain.referenced_by.item_of.assumes;
+END_ENTITY;
+
+
+ENTITY functional_domain_restriction
+SUBTYPE OF (domain_restriction);
+	SELF\domain_restriction.domains: SET[1:?] OF 
+guarded_functional_domain;
+END_ENTITY;
+
+
+ENTITY guarded_functional_domain
+SUBTYPE OF (guarded_simple_domain);
+	SELF\guarded_simple_domain.domain: simple_functional_domain;
+END_ENTITY;
+
+
+ENTITY simple_functional_domain 
+ABSTRACT SUPERTYPE OF (ONEOF(
+	library_expression_defined_value,
+	table_defined_value,
+	null_defined_value))
+SUBTYPE OF (simple_domain );
+END_ENTITY;
+
+
+ENTITY library_expression_defined_value
+SUBTYPE OF (simple_functional_domain);
+	its_value: library_expression;
+WHERE 
+	WR1: SIZEOF (SELF\simple_domain.referenced_by.item_of.defines) 
+		= 1;
+	WR2: QUERY(va<*collects_variables
+		(SELF\simple_domain.referenced_by.item_of.defines)
+		|NOT compatible_variable_and_library_expression
+		(va,SELF.its_value)) = [];
+	WR3: collects_var_sem( used_variables(SELF.its_value))
+		<= SELF\simple_domain.referenced_by.item_of.assumes;
+END_ENTITY;
+
+
+ENTITY table_defined_value 
+SUBTYPE OF (simple_functional_domain);
+	from_table: table_expression;
+WHERE
+	WR1: SELF\simple_domain.referenced_by.item_of.defines
+		<= list_to_set(SELF.from_table\table_expression.its_columns);
+	WR2: SELF\simple_domain.referenced_by.item_of.assumes
+		>= SELF.from_table\table_expression.the_key;
+	WR3: QUERY ( sem <*collects_var_sem(
+		used_variables(SELF.from_table))
+		| NOT (( sem IN
+		 (SELF\simple_domain.referenced_by.item_of.assumes
+		 + SELF\simple_domain.referenced_by.item_of.defines))
+		OR ((( 'ISO13584_TABLE_RESOURCE_SCHEMA'
+		+ '.COLUMN_TRAVERSAL_VARIABLE_SEMANTICS') 
+		IN TYPEOF (sem))) AND 
+		(sem\column_traversal_variable_semantics.domain 
+		IN collects_columns(from_table)))) = [];
+END_ENTITY;
+
+
+ENTITY null_defined_value
+SUBTYPE OF (simple_functional_domain); 
+WHERE
+	WR1: SIZEOF (SELF\simple_domain.referenced_by
+			.item_of.defines) = 1;
+END_ENTITY;
+
+
+FUNCTION collects_variables (v_sem: AGGREGATE OF variable_semantics)
+		: SET OF generic_variable;
+
+LOCAL
+	l: SET OF generic_variable := [];
+END_LOCAL;
+
+REPEAT i := 1 TO SIZEOF (v_sem);
+	l := l + syntax_of (v_sem[i]);
+END_REPEAT;
+
+RETURN (l);
+
+END_FUNCTION; -- collects_variables
+
+
+FUNCTION collects_var_sem (va:AGGREGATE OF generic_variable)
+			:SET OF variable_semantics;
+
+LOCAL
+	l: SET OF variable_semantics := [];
+END_LOCAL;
+
+REPEAT i := 1 TO SIZEOF (va);
+	l := l + semantics_of (va[i]);
+END_REPEAT;
+
+RETURN (l);
+
+END_FUNCTION; -- collects_var_sem
+
+
+FUNCTION used_tables_in_domain (arg: domain_restriction)
+							: SET OF table_identification;
+
+LOCAL
+	result: SET OF table_identification := [];
+END_LOCAL;
+
+REPEAT i := 1 TO SIZEOF (arg.domains);
+	IF 'ISO13584_EXPRESSIONS_SCHEMA.BOOLEAN_EXPRESSION'
+		IN TYPEOF (arg.domains[i].guard) 
+	THEN
+		result := result + used_table_literals 
+			(arg.domains[i].guard);
+	END_IF;
+
+	IF 'ISO13584_DOMAIN_RESOURCE_SCHEMA.TABLE_DEFINED_DOMAIN' 
+		IN TYPEOF (arg.domains[i].domain) 
+	THEN
+		result := result + used_table_literals 
+			(arg.domains[i].domain\table_defined_domain.from_table);
+	END_IF;
+
+	IF 'ISO13584_DOMAIN_RESOURCE_SCHEMA.PREDICATE_DEFINED_DOMAIN' 
+		IN TYPEOF (arg.domains[i].domain) 
+	THEN 
+		result := result + used_table_literals 
+		
+	(arg.domains[i].domain\predicate_defined_domain.constraint);
+	END_IF;
+
+	IF 'ISO13584_DOMAIN_RESOURCE_SCHEMA'
+		+'.LIBRARY_EXPRESSION_DEFINED_VALUE' IN TYPEOF (arg.domains 
+		[i].domain) 
+	THEN
+		result := result + used_table_literals(
+			arg.domains[i].domain\library_expression_defined_value
+			.its_value);
+	END_IF;
+
+	IF 'ISO13584_DOMAIN_RESOURCE_SCHEMA.TABLE_DEFINED_VALUE' 
+		IN TYPEOF (arg.domains[i].domain) 
+	THEN 
+		result := result + used_table_literals 
+			(arg.domains[i].domain\table_defined_value.from_table);
+	END_IF;
+END_REPEAT;
+
+RETURN (result);
+
+END_FUNCTION; -- used_tables_in_domain
+
+
+FUNCTION used_variables_in_domain (arg: domain_restriction)
+							: SET OF generic_variable;
+
+LOCAL
+	result: SET OF generic_variable := [];
+END_LOCAL;
+
+REPEAT i := 1 TO SIZEOF (arg.domains);
+	IF 'ISO13584_EXPRESSIONS_SCHEMA.BOOLEAN_EXPRESSION' 
+		IN TYPEOF (arg.domains [i].guard) 
+	THEN
+		result := result + used_variables (arg.domains [i].guard);
+	END_IF;
+
+	IF 'ISO13584_DOMAIN_RESOURCE_SCHEMA.TABLE_DEFINED_DOMAIN' 
+		IN TYPEOF (arg.domains [i].domain) 
+	THEN
+		result := result + used_variables(
+			arg.domains [i].domain\table_defined_domain
+			.from_table);
+	END_IF;
+
+	IF 'ISO13584_DOMAIN_RESOURCE_SCHEMA.PREDICATE_DEFINED_DOMAIN' 
+		IN TYPEOF (arg.domains [i].domain) 
+	THEN
+		result := result + used_variables(
+			arg.domains[i].domain\predicate_defined_domain
+			.constraint);
+	END_IF;
+
+	IF 'ISO13584_DOMAIN_RESOURCE_SCHEMA' + 
+						'.LIBRARY_EXPRESSION_DEFINED_VALUE' 
+		IN TYPEOF (arg.domains [i].domain) 
+	THEN
+		result := result + used_variables(
+			arg.domains[i].domain\
+library_expression_defined_value.its_value);
+	END_IF;
+
+	IF 'ISO13584_DOMAIN_RESOURCE_SCHEMA.TABLE_DEFINED_VALUE' 
+		IN TYPEOF (arg.domains [i].domain) 
+	THEN
+		result := result + used_variables 
+			(arg.domains [i].domain\table_defined_value.from_table);
+	END_IF;
+END_REPEAT;
+
+RETURN (result);
+
+END_FUNCTION; -- used_variables_in_domain
+
+
+FUNCTION variables_belong_to_assumes(gsd: guarded_simple_domain)
+										: BOOLEAN;
+
+	IF ('ISO13584_EXPRESSIONS_SCHEMA.BOOLEAN_EXPRESSION') 
+		IN TYPEOF(gsd)
+	THEN
+		RETURN(collects_var_sem(used_variables(
+			gsd.guard\boolean_expression)) <= gsd.item_of.assumes);
+	ELSE
+		RETURN(TRUE);
+	END_IF;
+END_FUNCTION; -- variables_belong_to_assumes
+
+
+
+END_SCHEMA; -- ISO13584_domain_resource_schema

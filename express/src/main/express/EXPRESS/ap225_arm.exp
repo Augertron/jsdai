@@ -1,0 +1,341 @@
+-- 2000-05-16
+
+-- Changes to CD: OPTIONAL was inserted  at places marked with (*!!!*) 
+
+SCHEMA ap225_arm;
+
+TYPE length_measure = REAL;
+END_TYPE;
+
+TYPE name = STRING;
+END_TYPE;
+
+TYPE assembly_functional_type = ENUMERATION OF
+  (roof,
+   stairway);
+END_TYPE;
+
+TYPE element_functional_type = ENUMERATION OF
+  (beam,
+   column,
+   foundation,
+   brace,
+   wall,
+   structural_wire,
+   floor,
+   vertical_passage_enclosure);
+END_TYPE;
+
+TYPE opening_functional_type = ENUMERATION OF
+  (doorway,
+   service_opening,
+   window_opening);
+END_TYPE;
+
+TYPE rep_type = ENUMERATION OF
+  (detail,
+   envelope,
+   outline);
+END_TYPE;
+
+TYPE assembly_type = SELECT
+  (name,
+   assembly_functional_type);
+END_TYPE;
+
+TYPE element_assembly_item = SELECT
+  (building_element,
+   element_assembly);
+END_TYPE;
+
+TYPE element_or_component = SELECT
+  (building_element_component,
+   building_element);
+END_TYPE;
+
+TYPE element_type = SELECT
+  (name,
+   element_functional_type);
+END_TYPE;
+
+TYPE opening_type = SELECT
+  (name,
+   opening_functional_type);
+END_TYPE;
+
+TYPE shape_representation_element = SELECT
+  (elementary_face_with_thickness,
+   faceted_b_rep);
+END_TYPE;
+
+TYPE site_shape_type = SELECT
+  (point_and_line_representation,
+   faceted_surface_representation);
+END_TYPE;
+
+TYPE space_shape_representation = SELECT
+  (shell,
+   ground_face);
+END_TYPE;
+
+ENTITY approval;
+  approver : STRING;
+  approved_date : STRING;
+  status : STRING;
+  purpose : STRING;
+END_ENTITY;
+
+ENTITY brep_with_voids
+  SUBTYPE OF (faceted_b_rep);
+  voids : SET [1:?] OF closed_shell;
+END_ENTITY;
+
+ENTITY brep_without_voids
+  SUBTYPE OF (faceted_b_rep);
+END_ENTITY;
+
+ENTITY building;
+  surrounding_grounds_shape : OPTIONAL (*!!!*) site_shape_type;
+  owner : STRING;
+  description : STRING;
+  name : STRING;
+END_ENTITY;
+
+ENTITY building_element
+  SUPERTYPE OF (ONEOF(fixture_equipment_element,structure_enclosure_element,service_element,space));
+  level_assignment : OPTIONAL SET [1:?] OF building_level;
+  element_characterization : OPTIONAL SET [1:?] OF property;
+  element_class : OPTIONAL SET [1:?] OF element_component_classification;
+  approval_information : OPTIONAL SET [1:?] OF approval;
+  description : STRING;
+  id : STRING;
+ INVERSE
+  positioned_in : element_position_in_section FOR positioned_element;
+END_ENTITY;
+
+ENTITY building_element_component
+  SUPERTYPE OF (ONEOF(positive_component,negative_component));
+  position : component_location;
+  shape : building_element_or_component_shape;
+  approval_information : OPTIONAL SET [1:?] OF approval;
+  component_characterization : OPTIONAL SET [1:?] OF property;
+  component_class : OPTIONAL SET [1:?] OF element_component_classification;
+  id : STRING;
+  description : STRING;
+ INVERSE
+  part_of : structure_enclosure_element FOR additions_and_subtractions;
+END_ENTITY;
+
+ENTITY building_element_or_component_shape;
+  representations : SET [1:?] OF building_element_or_component_shape_rep;
+END_ENTITY;
+
+ENTITY building_element_or_component_shape_rep;
+  rep_elements : SET [1:?] OF shape_representation_element;
+  representation_type : rep_type;
+END_ENTITY;
+
+ENTITY building_level
+  SUPERTYPE OF (sublevel);
+  space_boundaries : OPTIONAL (*!!!*) SET [1:?] OF space_shape;
+  level_characterization : OPTIONAL SET [1:?] OF property;
+  level_class : OPTIONAL SET [1:?] OF element_component_classification;
+  name : STRING;
+  id : STRING;
+END_ENTITY;
+
+ENTITY building_section;
+  description : STRING;
+  name : STRING;
+  id : STRING;
+END_ENTITY;
+
+ENTITY cartesian_point
+  SUBTYPE OF (point);
+  coordinates : LIST [3:3] OF length_measure;
+END_ENTITY;
+
+ENTITY change;
+  change_from : element_or_component;
+  change_to : element_or_component;
+  request : STRING;
+  solution : STRING;
+  responsibility : STRING;
+  reason : STRING;
+  requestor : STRING;
+  request_date : STRING;
+  approval_information : approval;
+END_ENTITY;
+
+ENTITY closed_shell
+  SUBTYPE OF (shell);
+END_ENTITY;
+
+ENTITY component_location;
+  location : placement;
+END_ENTITY;
+
+ENTITY direction;
+  direction_ratios : LIST [3:3] OF REAL;
+END_ENTITY;
+
+ENTITY element_assembly;
+  assembly_type : assembly_type;
+  components : SET [1:?] OF element_assembly_item;
+  id : STRING;
+  description : STRING;
+END_ENTITY;
+
+ENTITY element_component_classification;
+  class_id : STRING;
+  code : STRING;
+  description : STRING;
+END_ENTITY;
+
+ENTITY element_position_in_section;
+  positioned_element : building_element;
+  positioned_within : building_section;
+  location : placement;
+END_ENTITY;
+
+ENTITY elementary_face_with_thickness;
+  face_shape : face;
+  thickness : REAL;
+END_ENTITY;
+
+ENTITY face;
+  bounds : SET [1:?] OF face_bound;
+END_ENTITY;
+
+ENTITY face_bound
+  SUPERTYPE OF (face_outer_bound);
+  orientation : BOOLEAN;
+  bound : poly_loop;
+END_ENTITY;
+
+ENTITY face_outer_bound
+  SUBTYPE OF (face_bound);
+END_ENTITY;
+
+ENTITY faceted_b_rep
+  SUPERTYPE OF (ONEOF(brep_without_voids,brep_with_voids));
+  outer : closed_shell;
+END_ENTITY;
+
+ENTITY faceted_surface_representation;
+  facets : SET [1:?] OF polygon;
+END_ENTITY;
+
+ENTITY fixture_equipment_element
+  SUBTYPE OF (building_element);
+  shape : building_element_or_component_shape;
+END_ENTITY;
+
+ENTITY ground_face;
+  face_shape : face;
+END_ENTITY;
+
+ENTITY level_position_in_building;
+  positioned_within : building;
+  positioned_level : building_level;
+  location : placement;
+END_ENTITY;
+
+ENTITY material_property
+  SUBTYPE OF (property);
+END_ENTITY;
+
+ENTITY negative_component
+  SUPERTYPE OF (ONEOF(recess,opening))
+  SUBTYPE OF (building_element_component);
+END_ENTITY;
+
+ENTITY open_shell
+  SUBTYPE OF (shell);
+END_ENTITY;
+
+ENTITY opening
+  SUBTYPE OF (negative_component);
+  opening_type : OPTIONAL opening_type;
+END_ENTITY;
+
+ENTITY placement;
+  location : cartesian_point;
+  axises : LIST [3:3] OF direction;
+END_ENTITY;
+
+ENTITY point
+  SUPERTYPE OF (cartesian_point);
+END_ENTITY;
+
+ENTITY point_and_line_representation;
+  survey_points : SET [1:?] OF point;
+  breaklines : SET [1:?] OF polyline;
+END_ENTITY;
+
+ENTITY poly_loop;
+  polygon : LIST [3:?] OF cartesian_point;
+END_ENTITY;
+
+ENTITY polygon;
+  border : SET [3:4] OF point;
+END_ENTITY;
+
+ENTITY polyline;
+  path : SET [1:?] OF point;
+END_ENTITY;
+
+ENTITY positive_component
+  SUBTYPE OF (building_element_component);
+END_ENTITY;
+
+ENTITY property
+  SUPERTYPE OF (material_property);
+  property_name : STRING;
+  property_value : STRING;
+END_ENTITY;
+
+ENTITY recess
+  SUBTYPE OF (negative_component);
+END_ENTITY;
+
+ENTITY section_position_in_building;
+  positioned_within : building;
+  positioned_section : building_section;
+  location : placement;
+END_ENTITY;
+
+ENTITY service_element
+  SUBTYPE OF (building_element);
+  shape : building_element_or_component_shape;
+END_ENTITY;
+
+ENTITY shell
+  SUPERTYPE OF (ONEOF(open_shell,closed_shell));
+  cfs_faces : SET [1:?] OF face;
+END_ENTITY;
+
+ENTITY space
+  SUBTYPE OF (building_element);
+  space_boundaries : SET [1:?] OF space_shape;
+END_ENTITY;
+
+ENTITY space_shape;
+  rep_elements : SET [1:?] OF space_shape_representation;
+END_ENTITY;
+
+ENTITY structure_enclosure_element
+  SUBTYPE OF (building_element);
+  structure_enclosure_element_type : element_type;
+  additions_and_subtractions : LIST [0:?] OF building_element_component;
+  main_component : positive_component;
+  load_bearing : LOGICAL;
+END_ENTITY;
+
+ENTITY sublevel
+  SUBTYPE OF (building_level);
+  belongs_to : building_level;
+END_ENTITY;
+
+END_SCHEMA;
+

@@ -1,0 +1,1265 @@
+
+-- 2000-12-04
+
+(* Version 1.2 11/16/2000 *)
+
+SCHEMA pdm_schema;
+
+
+
+(* Version 1.2 11/16/2000 *)
+
+
+
+(* change log
+
+Version 1.2 is a maintenance release of the PDM Schema. It provides additional functionality (mainly SELECT type extensions), EXPRESS bug fixes and is based on the latest versions of the Integrated Resources (including all published Technical Corrigenda (TC)).
+
+
+
+new functionality (changes visible both in Shortform and Longform schema)
+
++  SELECT type action_item 
+
+	configuration_effectivity added
+
++  SELECT type action_request_item
+
+	property_definition added
+
++  SELECT type characterized_action_definition added
+
++  SELECT type date_item 			
+
+	organizational_project, security_classification, contract added
+
++  SELECT type date_and_time_item 	
+
+		organizational_project, security_classification, contract added
+
++  SELECT type document_reference_item	
+
+	action_method, versioned_action_request added
+
++- SELECT type identification_item		
+
+	product, product_definition_formation added
+
+	application_context removed
+
++  SELECT type organization_item 		
+
+	approval, contract, security_classification added
+
++  SELECT type organizational_project_item 	
+
+	executed_action added
+
++  SELECT type person_and_organization_item	
+
+	security_classification, contract added
+
++- SELECT type security_classification_item
+
+	document removed
+
+	document_file added
+
++  TYPE celsius_teperature_measure added
+
++  ENTITY founded_item added
+
++  ENTITY action_property added
+
++  ENTITY action_property_representation added
+
+
+
+new functionality (changes implied by changes documented above, only visible in the Longform schema)
+
++  SELECT type derived_property_select
+
+	action_property added
+
++ SELECT type founded_item_select
+
+	founded_item added
+
++ SELECT type id_attribute_select
+
+	action_method, versioned_action_request added
+
++ SELECT type measure_value
+
+	celsius_temperature_measure added
+
+
+
+error correction (changes visible both in Shortform and Longform schema)
+
+- fixed rules in document_file
+
+- fixed WR1 in global rule product_requires_version
+
+
+
+use of the latest version of the IR (changes visible in Longform, only)
+
++ ENTITY address
+
+  	DERIVE attributes name and url added
+
++ ENTITY coordinated_universal_time_offset
+
+	DERIVE attribute actual_minute_offset added
+
+	local rules changed
+
++ ENTITY document
+
+	INVERSE attribute name changed from representation_type into representation_types
+
++ ENTITY document_file
+
+	local rules changed
+
++ ENTITY document_product_equivalence
+
+	local rules changed
+
++ ENTITY product_category
+
+	DERIVE attribute id and local rule added
+
++ ENTITY product_definition_shape
+
+	local rule changed
+
++ ENTITY property_definition
+
+	DERIVE attribute id and local rule added
+
++ ENTITY shape_aspect
+
+	DERIVE attribute id and local rule added
+
++ ENTITY shape_aspect_relationship
+
+	DERIVE attribute id and local rule added
+
++ ENTITY time_interval_with_bounds
+
+	primary_bound attribute changed into OPTIONAL
+
++ ENTITY time_interval_with_bounds
+
+	attribute derivation changed into duration
+
++ ENTITY time_interval_with_bounds
+
+	additional local rule 
+
++ FUNCTION acyclic_product_category_relationship
+
+	type changed from LOGICAL to BOOLEAN
+
++ FUNCTION acyclic_product_definition_relationship
+
+	type changed from LOGICAL to BOOLEAN
+
++ changed FUNCTIONs 
+
+	base_axis, build_2axes, build_axes, cross_product,
+
+	dimension_of, normalise, orthogonal_complement,
+
+	scalar_times_vector, using_items, using_representations, 
+
+	valid_calendar_date, valid_units, vector_difference
+
+*)
+
+
+
+  USE FROM application_context_schema   -- ISO 10303-41
+
+      (application_context,
+
+       application_context_relationship,
+
+       application_protocol_definition,
+
+       product_context,
+
+       product_concept_context,
+
+       product_definition_context);
+
+
+
+  USE FROM product_definition_schema   -- ISO 10303-41
+
+      (product,
+
+       product_category,
+
+       product_category_relationship,
+
+       product_definition,
+
+       product_definition_context_association,
+
+       product_definition_context_role,
+
+       product_definition_effectivity,
+
+       product_definition_formation,
+
+       product_definition_formation_relationship,
+
+       product_definition_formation_with_specified_source,
+
+       product_definition_relationship,
+
+       product_related_product_category,
+
+       product_definition_with_associated_documents);
+
+
+
+  USE FROM product_property_definition_schema  -- ISO 10303-41
+
+      (product_definition_shape,
+
+       characterized_object,
+
+       general_property,
+
+       general_property_association,
+
+       general_property_relationship,
+
+       property_definition,
+
+       shape_aspect,
+
+       shape_aspect_relationship);
+
+
+
+  USE FROM product_property_representation_schema  -- ISO 10303-41
+
+      (property_definition_representation,
+
+       context_dependent_shape_representation,
+
+       shape_definition_representation,
+
+       shape_representation,
+
+       shape_representation_relationship);
+
+
+
+  USE FROM management_resources_schema  -- ISO 10303-41
+
+      (action_assignment,
+
+       action_request_assignment,
+
+       approval_assignment,
+
+       certification_assignment,
+
+       contract_assignment,
+
+       date_and_time_assignment,
+
+       date_assignment,
+
+       document_reference,
+
+       document_usage_constraint_assignment,
+
+       document_usage_role,
+
+       effectivity_assignment,
+
+	event_occurrence_assignment,
+
+       external_identification_assignment,
+
+       identification_assignment,
+
+       organization_assignment,
+
+       organizational_project_assignment,
+
+       organizational_project_role,
+
+       person_and_organization_assignment,
+
+       security_classification_assignment);
+
+
+
+  USE FROM document_schema  -- ISO 10303-41
+
+      (document,
+
+       document_product_association,
+
+       document_usage_constraint,
+
+       document_representation_type,
+
+       document_type,
+
+       document_relationship);
+
+
+
+  USE FROM action_schema  -- ISO 10303-41
+
+      (action,
+
+       action_method,
+
+       action_relationship,
+
+       action_request_solution,
+
+       action_request_status,
+
+       action_status,
+
+       action_directive,
+
+       directed_action,
+
+       executed_action,
+
+       versioned_action_request);
+
+
+
+  USE FROM certification_schema  -- ISO 10303-41
+
+      (certification,
+
+       certification_type);
+
+
+
+  USE FROM approval_schema  -- ISO 10303-41
+
+      (approval_date_time,
+
+       approval_person_organization,
+
+       approval,
+
+       approval_status,
+
+       approval_relationship);
+
+
+
+  USE FROM contract_schema  -- ISO 10303-41
+
+      (contract,
+
+       contract_type);
+
+
+
+  USE FROM security_classification_schema   -- ISO 10303-41
+
+      (security_classification,
+
+       security_classification_level);
+
+
+
+  USE FROM person_organization_schema  -- ISO 10303-41
+
+      (person_and_organization,
+
+       person_and_organization_role,
+
+       organization,
+
+       organization_role,
+
+       organization_relationship,
+
+       personal_address,
+
+       organizational_address,
+
+       organizational_project,
+
+       organizational_project_relationship);
+
+
+
+  USE FROM date_time_schema  -- ISO 10303-41
+
+      (date_and_time,
+
+       date_time_role,
+
+       date,
+
+       date_role,
+
+       event_occurrence,
+
+       event_occurrence_role,
+
+       relative_event_occurrence,
+
+       time_interval,
+
+       time_interval_with_bounds,
+
+       calendar_date);
+
+
+
+  USE FROM effectivity_schema  -- ISO 10303-41
+
+      (effectivity,
+
+       serial_numbered_effectivity,
+
+       dated_effectivity,
+
+       lot_effectivity,
+
+       time_interval_based_effectivity,
+
+	 effectivity_relationship);
+
+
+
+  USE FROM support_resource_schema   -- ISO 10303-41
+
+      (identifier,
+
+       label,
+
+       text);
+
+
+
+  USE FROM measure_schema  -- ISO 10303-41
+
+      (amount_of_substance_measure,
+
+       amount_of_substance_measure_with_unit,
+
+       amount_of_substance_unit,
+
+       area_measure_with_unit,
+
+       area_measure,
+
+       area_unit,
+
+	 celsius_temperature_measure,
+
+       context_dependent_measure,
+
+       context_dependent_unit,
+
+       conversion_based_unit,
+
+       count_measure,
+
+       descriptive_measure,
+
+       derived_unit,
+
+       derived_unit_element,
+
+       electric_current_measure,
+
+       electric_current_measure_with_unit,
+
+       electric_current_unit,
+
+       global_unit_assigned_context,
+
+       length_unit,
+
+       length_measure,
+
+       length_measure_with_unit,
+
+       luminous_intensity_measure,
+
+       luminous_intensity_measure_with_unit,
+
+       luminous_intensity_unit,
+
+       mass_measure,
+
+       mass_unit,
+
+       mass_measure_with_unit,
+
+       measure_with_unit,
+
+       named_unit,
+
+       numeric_measure,
+
+       parameter_value,
+
+       plane_angle_measure,
+
+       plane_angle_measure_with_unit,
+
+       plane_angle_unit,
+
+       positive_length_measure,
+
+       positive_plane_angle_measure,
+
+       positive_ratio_measure,
+
+       ratio_measure,
+
+       ratio_measure_with_unit,
+
+       ratio_unit,
+
+       solid_angle_measure,
+
+       solid_angle_measure_with_unit,
+
+       solid_angle_unit,
+
+       si_unit,
+
+       thermodynamic_temperature_measure,
+
+       thermodynamic_temperature_measure_with_unit,
+
+       thermodynamic_temperature_unit,
+
+       time_measure,
+
+       time_measure_with_unit,
+
+       time_unit,
+
+       volume_unit,
+
+       volume_measure,
+
+       volume_measure_with_unit);
+
+
+
+  USE FROM geometry_schema -- ISO 10303-42
+
+      (axis2_placement_2d,
+
+       axis2_placement_3d,
+
+       cartesian_transformation_operator_2d,
+
+       cartesian_transformation_operator_3d,
+
+       geometric_representation_context);
+
+
+
+  USE FROM representation_schema  -- ISO 10303-43
+
+      (transformation,
+
+       global_uncertainty_assigned_context,
+
+	 founded_item,
+
+       functionally_defined_transformation,
+
+       item_defined_transformation,
+
+       mapped_item,
+
+       uncertainty_measure_with_unit,
+
+       representation_relationship_with_transformation,
+
+       value_representation_item);
+
+
+
+  USE FROM product_structure_schema  -- ISO 10303-44
+
+      (product_definition_usage,
+
+       assembly_component_usage,
+
+       next_assembly_usage_occurrence,
+
+       promissory_usage_occurrence,
+
+       quantified_assembly_component_usage,
+
+       specified_higher_usage_occurrence,
+
+       assembly_component_usage_substitute,
+
+       make_from_usage_option,
+
+       alternate_product_relationship);
+
+
+
+  USE FROM configuration_management_schema  -- ISO 10303-44
+
+      (configuration_item,
+
+       configuration_design,
+
+       configuration_effectivity);
+
+
+
+  USE FROM product_concept_schema  -- ISO 10303-44
+
+      (product_concept);
+
+
+
+  USE FROM qualified_measure_schema -- ISO 10303-45
+
+      (measure_representation_item,
+
+       descriptive_representation_item);
+
+
+
+  USE FROM process_property_representation_schema   -- ISO 10303-49
+
+  (action_property_representation);
+
+
+
+  USE FROM process_property_schema   -- ISO 10303-49
+
+  (action_property);
+
+
+
+
+
+TYPE action_item = SELECT
+
+  (configuration_effectivity,
+
+   product_definition,
+
+   product_definition_formation,
+
+   product_definition_relationship);
+
+END_TYPE; -- action_item
+
+
+
+TYPE action_request_item = SELECT
+
+  (product_definition,
+
+   product_definition_formation,
+
+   product_definition_relationship,
+
+   property_definition);
+
+END_TYPE; -- action_request_item
+
+
+
+TYPE approval_item = SELECT
+
+  (action,
+
+   applied_action_assignment,
+
+   certification,
+
+   configuration_effectivity,
+
+   contract,
+
+   product_definition,
+
+   product_definition_formation,
+
+   product_definition_relationship,
+
+   versioned_action_request);
+
+END_TYPE; -- approval_item
+
+
+
+TYPE certification_item = SELECT
+
+  (product_definition_formation_relationship);
+
+END_TYPE; -- certification_item
+
+
+
+TYPE contract_item = SELECT
+
+  (action,
+
+   product_definition_formation);
+
+END_TYPE; -- contract_item
+
+
+
+TYPE date_and_time_item = SELECT
+
+  (action,
+
+   applied_action_assignment,
+
+   applied_person_and_organization_assignment,
+
+   applied_organization_assignment,
+
+   approval_person_organization,
+
+   certification,
+
+   contract,
+
+   organizational_project, 
+
+   product_definition,
+
+   product_definition_formation,
+
+   security_classification,
+
+   versioned_action_request);
+
+END_TYPE; -- date_and_time_item
+
+
+
+TYPE date_item = SELECT
+
+  (action,
+
+   applied_action_assignment,
+
+   applied_person_and_organization_assignment,
+
+   applied_organization_assignment,
+
+   approval_person_organization,
+
+   certification,
+
+   contract,
+
+   organizational_project, 
+
+   product_definition,
+
+   product_definition_formation,
+
+   security_classification,
+
+   versioned_action_request);
+
+END_TYPE; -- date_item
+
+
+
+TYPE document_reference_item = SELECT
+
+  (action_method,
+
+   product_definition,
+
+   product_definition_formation_relationship,
+
+   product_definition_relationship,
+
+   shape_aspect,
+
+   shape_aspect_relationship,
+
+   versioned_action_request);
+
+END_TYPE; -- document_reference_item
+
+
+
+TYPE effectivity_item = SELECT
+
+  (product_definition,
+
+   product_definition_formation,
+
+   product_definition_relationship);
+
+END_TYPE; -- effectivity_item
+
+
+
+TYPE event_occurrence_item = SELECT
+
+  (organizational_project);
+
+END_TYPE; -- event_occurrence_item 
+
+
+
+TYPE external_identification_item = SELECT
+
+ (document_file,
+
+ product_definition);
+
+END_TYPE; -- external_identification_item
+
+
+
+TYPE identification_item = SELECT
+
+  ( approval_status,
+
+    document_file,
+
+    organization,
+
+    product,
+
+    product_definition,
+
+    product_definition_formation,
+
+    security_classification_level,
+
+    shape_aspect_relationship);
+
+END_TYPE; -- identification_item
+
+
+
+TYPE organization_item = SELECT
+
+  (action,
+
+   applied_action_assignment,
+
+   applied_identification_assignment,
+
+   approval,
+
+   configuration_item,
+
+   contract,
+
+   document_file,
+
+   product,
+
+   product_definition,
+
+   product_definition_formation,
+
+   security_classification,
+
+   versioned_action_request);
+
+END_TYPE; -- organization_item
+
+
+
+TYPE organizational_project_item = SELECT
+
+  (executed_action,product_concept);
+
+END_TYPE; -- organizational_project_item
+
+
+
+TYPE person_and_organization_item = SELECT
+
+  (action,
+
+   applied_action_assignment,
+
+   configuration_item,
+
+   contract,
+
+   document_file,
+
+   product,
+
+   product_definition,
+
+   product_definition_formation,
+
+   security_classification,
+
+   versioned_action_request);
+
+END_TYPE; -- person_and_organization_item
+
+
+
+TYPE security_classification_item = SELECT
+
+  (assembly_component_usage,
+
+   document_file,
+
+   product_definition,
+
+   product_definition_formation);
+
+END_TYPE; -- security_classification_item
+
+
+
+ENTITY applied_action_assignment
+
+  SUBTYPE OF (action_assignment);
+
+    items : SET [1:?] OF action_item;
+
+END_ENTITY; -- applied_action_assignment
+
+
+
+ENTITY applied_action_request_assignment
+
+  SUBTYPE OF (action_request_assignment);
+
+    items : SET [1:?] OF action_request_item;
+
+END_ENTITY; -- applied_action_request_assignment
+
+
+
+ENTITY applied_approval_assignment
+
+  SUBTYPE OF (approval_assignment);
+
+    items : SET [1:?] OF approval_item;
+
+END_ENTITY; -- applied_approval_assignment
+
+
+
+ENTITY applied_certification_assignment
+
+  SUBTYPE OF (certification_assignment);
+
+    items : SET [1:?] OF certification_item;
+
+END_ENTITY; -- applied_certification_assignment
+
+
+
+ENTITY applied_contract_assignment
+
+  SUBTYPE OF (contract_assignment);
+
+    items : SET [1:?] OF contract_item;
+
+END_ENTITY; -- applied_contract_assignment
+
+
+
+ENTITY applied_date_and_time_assignment
+
+  SUBTYPE OF (date_and_time_assignment);
+
+    items : SET [1:?] OF date_and_time_item;
+
+END_ENTITY; -- applied_date_and_time_assignment
+
+
+
+ENTITY applied_date_assignment
+
+  SUBTYPE OF (date_assignment);
+
+    items : SET [1:?] OF date_item;
+
+END_ENTITY; -- applied_date_assignment
+
+
+
+ENTITY applied_document_reference
+
+  SUBTYPE OF (document_reference);
+
+    items : SET [1:?] OF document_reference_item;
+
+END_ENTITY; -- applied_document_reference
+
+
+
+ENTITY applied_document_usage_constraint_assignment
+
+  SUBTYPE OF (document_usage_constraint_assignment);
+
+    items : SET [1:?] OF document_reference_item;
+
+END_ENTITY; -- applied_document_usage_constraint_assignment 
+
+
+
+ENTITY applied_event_occurrence_assignment
+
+  SUBTYPE OF (event_occurrence_assignment);
+
+    items : SET [1:?] OF event_occurrence_item;
+
+END_ENTITY; -- applied_event_occurrence_assignment
+
+
+
+ENTITY applied_effectivity_assignment
+
+  SUBTYPE OF (effectivity_assignment);
+
+    items : SET [1:?] OF effectivity_item;
+
+END_ENTITY; -- applied_effectivity_assignment
+
+
+
+ENTITY applied_external_identification_assignment
+
+  SUBTYPE OF (external_identification_assignment);
+
+    items : SET [1:?] OF external_identification_item;
+
+END_ENTITY; -- applied_external_identification_assignment
+
+
+
+ENTITY applied_identification_assignment
+
+  SUBTYPE OF (identification_assignment);
+
+    items : SET [1:?] OF identification_item;
+
+END_ENTITY; -- applied_identification_assignment
+
+
+
+ENTITY applied_organization_assignment
+
+  SUBTYPE OF (organization_assignment);
+
+    items : SET [1:?] OF organization_item;
+
+END_ENTITY; -- applied_organization_assignment
+
+
+
+ENTITY applied_organizational_project_assignment
+
+  SUBTYPE OF (organizational_project_assignment);
+
+    items : SET [1:?] OF organizational_project_item;
+
+END_ENTITY; -- applied_organizational_project_assignment
+
+
+
+ENTITY applied_person_and_organization_assignment
+
+  SUBTYPE OF (person_and_organization_assignment);
+
+    items : SET [1:?] OF person_and_organization_item;
+
+END_ENTITY; -- applied_person_and_organization_assignment
+
+
+
+ENTITY applied_security_classification_assignment
+
+  SUBTYPE OF (security_classification_assignment);
+
+    items : SET [1:?] OF security_classification_item;
+
+END_ENTITY; -- applied_security_classification_assignment
+
+
+
+ENTITY document_file
+
+  SUBTYPE OF (document, characterized_object);
+
+WHERE
+
+  WR1:SELF\characterized_object. name ='';
+
+  WR2: NOT EXISTS ( SELF\characterized_object. description ) ;
+
+  WR3: SIZEOF ( QUERY ( drt <* SELF\document.
+
+     representation_types | drt. name IN ['digital' ,
+
+     'physical'] ) ) =1;
+
+END_ENTITY; -- document_file
+
+
+
+ENTITY document_product_equivalence
+
+  SUBTYPE OF (document_product_association);
+
+WHERE
+
+ WR1:SELF.name ='equivalence';
+
+ WR2: NOT ( 'PDM_SCHEMA.'+ 'PRODUCT' IN TYPEOF (
+
+     SELF.related_product ) ) OR ( ( SELF.relating_document.
+
+     kind.product_data_type =
+
+     'configuration controlled document' ) AND ( SIZEOF ( QUERY
+
+     ( prpc <* USEDIN ( SELF.related_product ,
+
+     'PDM_SCHEMA.'+'PRODUCT_RELATED_PRODUCT_CATEGORY.'+
+
+     'PRODUCTS' ) | prpc. name ='document' ) ) =1 ) ) ;
+
+ WR3: NOT ( 'PDM_SCHEMA.'+ 'PRODUCT_DEFINITION_FORMATION'
+
+     IN TYPEOF ( SELF.related_product ) ) OR ( (
+
+     SELF.relating_document. kind.product_data_type =
+
+     'configuration controlled document version' ) AND ( SIZEOF
+
+     ( QUERY ( prpc <* USEDIN (
+
+     SELF.related_product\product_definition_formation.
+
+     of_product ,
+
+     'PDM_SCHEMA.PRODUCT_RELATED_PRODUCT_CATEGORY.PRODUCTS'
+
+     ) | prpc. name ='document' ) ) =1 ) ) ;
+
+ WR4: NOT ( 'PDM_SCHEMA.'+ 'PRODUCT_DEFINITION' IN TYPEOF
+
+     ( SELF.related_product ) ) OR ( ( SELF.relating_document.
+
+     kind.product_data_type =
+
+     'configuration controlled document definition' ) AND (
+
+     SIZEOF ( QUERY ( prpc <* USEDIN (
+
+     SELF.related_product\product_definition.
+
+     formation.of_product ,
+
+     'PDM_SCHEMA.PRODUCT_RELATED_PRODUCT_CATEGORY.PRODUCTS'
+
+     ) | prpc. name ='document' ) ) =1 ) ) ;
+
+END_ENTITY;  -- document_product_equivalence 
+
+
+
+
+
+
+
+RULE product_requires_category FOR (product, product_related_product_category);
+
+
+
+WHERE
+
+  wr1: SIZEOF(QUERY ( p <* product | SIZEOF(USEDIN (p,'PDM_SCHEMA.' + 'PRODUCT_RELATED_PRODUCT_CATEGORY.PRODUCTS')) = 0)) = 0;
+
+
+
+END_RULE; -- product_requires_category
+
+
+
+
+
+RULE product_requires_version FOR (product);
+
+WHERE
+
+ WR1: SIZEOF ( QUERY ( prod <* product | ( SIZEOF ( USEDIN (
+
+     prod ,
+
+     'PDM_SCHEMA.'+'PRODUCT_DEFINITION_FORMATION.'+
+
+     'OF_PRODUCT' ) ) =0 ) ) ) =0;
+
+END_RULE;   -- product_requires_version
+
+
+
+
+
+RULE versioned_action_request_requires_status FOR (
+
+           versioned_action_request, action_request_status);
+
+
+
+WHERE
+
+  wr1: SIZEOF(QUERY ( ar <* versioned_action_request | (NOT (SIZEOF(
+
+           QUERY ( ars <* action_request_status | (ar :=: ars.
+
+           assigned_request) )) = 1)) )) = 0;
+
+
+
+END_RULE; -- versioned_action_request_requires_status
+
+
+
+END_SCHEMA;
+
+
+
+
+
+
+
+
+
+
+
+
+

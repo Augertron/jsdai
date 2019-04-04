@@ -1,0 +1,64 @@
+-- 2000-09-08
+
+(*
+
+	WG12 N525 								2000-05-30
+
+	EXPRESS Declarations for ISO 10303-41: 2nd Edition
+*)
+
+SCHEMA group_schema;
+REFERENCE FROM support_resource_schema           -- ISO 10303-41
+    (label,
+     bag_to_set,
+     identifier,
+     text);
+REFERENCE FROM basic_attribute_schema           -- ISO 10303-41
+    (get_id_value,
+     id_attribute);
+
+ENTITY group;
+  name        : label;
+  description : OPTIONAL text;
+DERIVE
+  id            : identifier := get_id_value (SELF);
+WHERE
+  WR1 : SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' +
+                       'ID_ATTRIBUTE.IDENTIFIED_ITEM')) <= 1;
+END_ENTITY; -- group
+
+ENTITY group_relationship;
+  name           : label;
+  description    : OPTIONAL text;
+  relating_group : group;
+  related_group  : group;
+END_ENTITY; -- group_relationship
+
+FUNCTION acyclic_group_relationship
+  (relation          : group_relationship;
+   relatives         : SET [1:?] OF group;
+   specific_relation : STRING) : BOOLEAN;
+  LOCAL
+    x                : SET OF group_relationship;
+  END_LOCAL;
+  IF relation.relating_group IN relatives THEN 
+    RETURN (FALSE);
+  END_IF;
+  x := QUERY (grp <* bag_to_set 
+             (USEDIN (relation.relating_group,
+             'GROUP_SCHEMA.' + 
+             'GROUP_RELATIONSHIP.' +
+             'RELATED_GROUP')) |
+              specific_relation IN TYPEOF (grp));
+  REPEAT i := 1 TO HIINDEX(x);
+    IF NOT acyclic_group_relationship
+      (x[i], 
+       relatives + relation.relating_group, 
+       specific_relation) THEN
+      RETURN(FALSE);
+    END_IF;
+  END_REPEAT;
+  RETURN(TRUE);
+END_FUNCTION; -- acyclic_group_relationship
+
+END_SCHEMA; -- group_schema

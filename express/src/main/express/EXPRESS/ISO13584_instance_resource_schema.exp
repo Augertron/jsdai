@@ -1,0 +1,613 @@
+-- received on 2000-02-21, originally from Guy Pierra 
+
+SCHEMA ISO13584_instance_resource_schema;
+
+REFERENCE FROM ISO13584_IEC61360_dictionary_schema(
+	all_class_descriptions_reachable,
+	basic_semantic_unit,
+	class,
+	class_BSU,
+	content_item,
+	data_type_BSU,
+	definition_available_implies,
+	dependent_P_DET,
+	level,
+	list_to_set,
+	property_BSU) ;
+
+REFERENCE FROM ISO13584_extended_dictionary_schema(
+	applicable_properties,
+	data_type_class_of,
+	data_type_level_spec,
+	data_type_level_value_typeof,
+	data_type_type_name,
+	data_type_typeof,
+	functional_view_v_c_v) ;
+
+REFERENCE FROM ISO13584_library_content_schema(
+	allowed_properties,
+	fm_free_model_properties_list,
+	gm_free_characteristics_list,
+	method_variables,
+	selectable_properties_list) ;
+
+REFERENCE FROM ISO13584_external_file_schema(
+	program_reference,
+	representation_reference) ;
+
+REFERENCE FROM geometry_schema(
+	axis1_placement,
+	axis2_placement_2d,
+	axis2_placement_3d,
+	placement) ;
+
+REFERENCE FROM representation_schema(
+	representation,
+	representation_context,
+	representation_item);
+
+REFERENCE FROM product_definition_schema (
+	product,
+	product_category,
+	product_definition,
+	product_definition_formation);
+
+REFERENCE FROM product_property_definition_schema (
+	property_definition);
+
+REFERENCE FROM person_organization_schema (
+	person_organization_select);
+
+REFERENCE FROM geometry_schema (
+	geometric_representation_context);
+
+
+TYPE primitive_value = SELECT (
+	simple_value,
+	complex_value);
+END_TYPE;
+
+
+TYPE simple_value = SELECT (
+	number_value,
+	string_value,
+	boolean_value);
+END_TYPE;
+
+
+TYPE number_value = SELECT(
+	integer_value,
+	real_value);
+END_TYPE;
+
+
+TYPE integer_value = INTEGER;
+END_TYPE;
+
+
+TYPE real_value = REAL;
+END_TYPE;
+
+
+TYPE boolean_value = BOOLEAN;
+END_TYPE;
+
+
+TYPE string_value = STRING;
+END_TYPE;
+
+
+TYPE complex_value = SELECT (
+	entity_instance_value,
+	level_spec_value,
+	dic_class_instance);
+END_TYPE;
+
+
+TYPE entity_instance_value = SELECT (
+	defined_entity_instance_value,
+	controlled_entity_instance_value,
+	uncontrolled_entity_instance_value);
+END_TYPE;
+
+
+TYPE defined_entity_instance_value = SELECT(
+	placement,
+	axis1_placement,
+	axis2_placement_2d,
+	axis2_placement_3d);
+END_TYPE;
+
+
+TYPE controlled_entity_instance_value = SELECT(
+	STEP_entity_instance_value,
+	PLIB_entity_instance_value);
+END_TYPE;
+
+
+TYPE STEP_entity_instance_value = SELECT(
+	product_category,
+	product,
+	product_definition,
+	product_definition_formation,
+	property_definition,
+	person_organization_select,
+	representation,
+	representation_context,
+	geometric_representation_context,
+	representation_item );
+END_TYPE;
+
+
+TYPE PLIB_entity_instance_value = SELECT(
+	program_reference,
+	representation_reference);
+END_TYPE;
+
+
+ENTITY uncontrolled_entity_instance_value
+ABSTRACT SUPERTYPE;
+END_ENTITY;
+
+
+TYPE property_or_data_type_BSU = SELECT (
+	property_BSU, 
+	data_type_BSU);
+END_TYPE;
+
+
+ENTITY level_spec_value 
+ABSTRACT SUPERTYPE OF (ONEOF (
+			int_level_spec_value,
+			real_level_spec_value));
+	values: ARRAY [1:4] OF OPTIONAL NUMBER;
+END_ENTITY;
+
+
+ENTITY int_level_spec_value
+SUBTYPE OF (level_spec_value);
+	SELF\level_spec_value.values: ARRAY [1:4] OF OPTIONAL INTEGER;
+END_ENTITY;
+
+
+ENTITY real_level_spec_value
+SUBTYPE OF (level_spec_value);
+	SELF\level_spec_value.values: ARRAY [1:4] OF OPTIONAL REAL;
+END_ENTITY;
+
+
+ENTITY dic_class_instance
+ABSTRACT SUPERTYPE OF (ONEOF (dic_item_instance,
+		dic_f_model_instance, dic_f_view_instance));
+	class_def: class_BSU;
+	properties: SET [0:?] OF property_value;
+WHERE
+	WR1: (QUERY (prop <* SELF.properties | 
+	NOT((applicable_properties(
+		SELF.class_def, [prop.prop_def])))) = [ ]);
+	WR2: QUERY (prop <* SELF.properties 
+		|(SIZEOF (QUERY (prop1 <* SELF.properties
+		|prop1.prop_def = prop.prop_def)) = 1))
+		= SELF.properties;
+END_ENTITY;
+
+
+ENTITY dic_item_instance
+ABSTRACT SUPERTYPE OF (ONEOF (dic_component_instance,
+ dic_material_instance,
+ dic_feature_instance) 
+				ANDOR lib_item_instance)
+SUBTYPE OF (dic_class_instance);
+WHERE
+	WR1: definition_available_implies ( SELF\dic_class_instance
+		.class_def, 'ISO13584_IEC61360_DICTIONARY_SCHEMA'
+		+'.ITEM_CLASS' IN TYPEOF(SELF\dic_class_instance
+		.class_def.definition[1]));
+	WR2: NOT (all_class_descriptions_reachable (SELF.class_def))
+		OR (QUERY (prop <*SELF.properties
+		|((SIZEOF(prop.prop_def.definition) = 1)
+		AND ('ISO13584_IEC61360_DICTIONARY_SCHEMA.DEPENDENT_P_DET'
+			IN TYPEOF (prop.prop_def.definition[1]))
+		AND EXISTS (prop.its_value)
+		AND (QUERY (ctxt <* prop.prop_def.definition[1]
+			\dependent_P_DET.depends_on
+			|SIZEOF(QUERY(prop2<*SELF.properties
+			|((prop2.prop_def = ctxt)
+			AND EXISTS (prop2.its_value))))<>1)<>[])))
+		= []);
+END_ENTITY;
+
+
+ENTITY dic_component_instance
+SUPERTYPE OF (lib_component_instance)
+SUBTYPE OF (dic_item_instance);
+WHERE
+	WR1: definition_available_implies ( SELF\dic_class_instance
+		.class_def, 'ISO13584_IEC61360_DICTIONARY_SCHEMA'
+		+'.COMPONENT_CLASS' IN TYPEOF (SELF\dic_class_instance
+		.class_def.definition[1]));
+END_ENTITY;
+
+
+ENTITY dic_material_instance
+SUPERTYPE OF (lib_material_instance)
+SUBTYPE OF (dic_item_instance);
+WHERE
+	WR1: definition_available_implies ( SELF\dic_class_instance
+		.class_def,
+		'ISO13584_IEC61360_DICTIONARY_SCHEMA.MATERIAL_CLASS'
+		 IN TYPEOF( SELF\dic_class_instance.class_def
+			.definition[1]));
+END_ENTITY;
+
+
+ENTITY dic_feature_instance
+SUPERTYPE OF (lib_feature_instance)
+SUBTYPE OF (dic_item_instance);
+WHERE
+	WR1: definition_available_implies ( SELF\dic_class_instance
+		.class_def,
+		'ISO13584_EXTENDED_DICTIONARY_SCHEMA.FEATURE_CLASS'
+		 IN TYPEOF( SELF\dic_class_instance.class_def
+			.definition[1]));
+END_ENTITY;
+
+
+ENTITY lib_item_instance
+ABSTRACT SUPERTYPE OF (ONEOF (lib_component_instance, 
+		lib_material_instance, lib_feature_instance))
+SUBTYPE OF (dic_item_instance);
+	supplier_identification: OPTIONAL STRING;
+	supplier_designation: OPTIONAL STRING;
+	user_identification: OPTIONAL STRING;
+	user_designation: OPTIONAL STRING;
+WHERE
+	WR1: definition_available_implies (SELF\dic_class_instance
+		.class_def, (SIZEOF (SELF\dic_class_instance
+		.class_def.referenced_by) = 1));
+	WR2: QUERY (prop <* SELF.properties | NOT((allowed_properties(
+		SELF\dic_class_instance.class_def, [prop.prop_def])))) = [ ];
+	WR3: NOT all_class_descriptions_reachable (
+		SELF\dic_class_instance.class_def)
+		OR
+		(QUERY (prop <* gm_free_characteristics_list(
+							SELF\dic_class_instance.class_def)
+		| NOT( prop IN collects_assigned_instance_properties(
+			SELF\dic_class_instance.properties))) = []);
+END_ENTITY;
+
+
+ENTITY lib_component_instance 
+SUBTYPE OF (dic_component_instance, lib_item_instance);
+END_ENTITY;
+
+
+ENTITY lib_material_instance
+SUBTYPE OF (dic_material_instance, lib_item_instance);
+END_ENTITY;
+
+
+ENTITY lib_feature_instance
+SUBTYPE OF (dic_feature_instance, lib_item_instance);
+END_ENTITY;
+
+
+ENTITY dic_f_model_instance 
+SUPERTYPE OF ( lib_f_model_instance)
+SUBTYPE OF (dic_class_instance);
+WHERE
+	WR1: definition_available_implies ( SELF\dic_class_instance
+		.class_def, 'ISO13584_EXTENDED_DICTIONARY_SCHEMA'
+						+'.FUNCTIONAL_MODEL_CLASS'
+		 IN TYPEOF( SELF\dic_class_instance.class_def
+		.definition[1]));
+END_ENTITY;
+
+
+ENTITY lib_f_model_instance 
+SUBTYPE OF (dic_f_model_instance);
+WHERE
+	WR1: definition_available_implies( SELF\dic_class_instance
+		.class_def, SIZEOF (SELF\dic_class_instance.class_def
+		.referenced_by) = 1);
+	WR2: QUERY (prop <* SELF\dic_class_instance.properties | 
+		NOT((allowed_properties(SELF\dic_class_instance.class_def, 
+			[prop.prop_def])))) = [ ];
+	WR3: NOT all_class_descriptions_reachable (
+		SELF\dic_class_instance.class_def)
+		OR
+		(QUERY (prop <* fm_free_model_properties_list(
+						SELF\dic_class_instance.class_def)
+		| NOT( prop IN collects_assigned_instance_properties(
+			SELF\dic_class_instance.properties))) = []);
+END_ENTITY;
+
+
+ENTITY dic_f_view_instance 
+SUBTYPE OF (dic_class_instance, representation);
+	generated_by: OPTIONAL dic_f_model_instance;
+	view_of: OPTIONAL dic_item_instance;
+WHERE
+	WR1: definition_available_implies ( 
+		SELF\dic_class_instance.class_def,
+		'ISO13584_EXTENDED_DICTIONARY_SCHEMA.FUNCTIONAL_VIEW_CLASS'
+		IN TYPEOF(SELF\dic_class_instance.class_def.definition[1]));
+	WR2: NOT all_class_descriptions_reachable (
+		SELF\dic_class_instance.class_def)
+		OR (QUERY (prop <* functional_view_v_c_v (
+		SELF\dic_class_instance.class_def)
+		| SIZEOF( QUERY (prop2 <* SELF.properties
+		| prop2.prop_def = prop))<>1) = []);
+	WR3: correct_view_from_model (SELF);
+END_ENTITY;
+
+
+ENTITY property_value;
+	its_value: OPTIONAL primitive_value;
+	prop_def: property_BSU;
+WHERE
+	WR1: (EXISTS(SELF.its_value) AND (compatible_type_and_value 
+		(SELF.prop_def, SELF.its_value) ))
+		OR NOT EXISTS(SELF.its_value);
+END_ENTITY;
+
+
+FUNCTION compatible_class_and_class (cl1:class_BSU; cl2:class_BSU
+		): LOGICAL;
+
+IF 	(cl1.defined_by\basic_semantic_unit.code = 
+		cl2.defined_by\basic_semantic_unit.code) AND 
+		(cl1\basic_semantic_unit.code = 
+		cl2\basic_semantic_unit.code) AND
+		(cl1\basic_semantic_unit.version >= 
+		cl2\basic_semantic_unit.version)
+THEN 
+ 
+	RETURN(TRUE);
+END_IF;
+
+IF (SIZEOF(cl2\basic_semantic_unit.definition) = 0)
+THEN 	
+	RETURN(UNKNOWN);
+END_IF;
+
+IF (SIZEOF(cl2\basic_semantic_unit.definition) = 1)
+	AND (NOT EXISTS (cl2\basic_semantic_unit.
+		definition[1]\class.its_superclass))
+THEN 	
+	RETURN(FALSE);
+END_IF;
+
+RETURN (compatible_class_and_class (cl1, cl2\basic_semantic_unit.
+		definition[1]\class.its_superclass));
+
+END_FUNCTION; -- compatible_class_and_class 
+
+
+FUNCTION right_values_for_level_spec (
+			levels: LIST [1:4] OF UNIQUE level;
+			val: level_spec_value 
+			):BOOLEAN;
+
+LOCAL
+	c_place: BOOLEAN;
+	lev: SET [1:4] OF level;
+END_LOCAL;
+
+c_place	:= TRUE;
+lev 	:= list_to_set(levels);
+
+IF EXISTS (val.values[1]) 
+THEN 
+	IF level.min IN lev
+	THEN lev:= lev - [level.min]; 
+	ELSE c_place:= FALSE;
+	END_IF;
+END_IF;
+
+IF EXISTS (val.values[2]) 
+THEN 
+	IF level.nom IN lev
+	THEN lev:= lev -[level.nom]; 
+	ELSE c_place:= FALSE;
+	END_IF;
+END_IF;
+
+IF EXISTS (val.values[3]) 
+THEN 
+	IF level.typ IN lev
+	THEN lev:= lev - [level.typ]; 
+	ELSE c_place:= FALSE;
+	END_IF;
+END_IF;
+
+IF EXISTS (val.values[4]) 
+THEN 
+	IF level.max IN lev
+	THEN lev:= lev - [level.max]; 
+	ELSE c_place:= FALSE;
+	END_IF;
+END_IF;
+
+IF (c_place AND (SIZEOF(lev) = 0))
+THEN 
+	RETURN(TRUE);
+ ELSE 
+	RETURN(FALSE);
+END_IF;
+
+END_FUNCTION; -- right_values_for_level_spec 
+
+
+FUNCTION compatible_level_type_and_instance (
+			levels: LIST [1:4] OF UNIQUE level;
+			value_typeof: SET OF STRING;
+			val: level_spec_value 
+			):BOOLEAN;
+
+LOCAL
+	c_val: BOOLEAN;
+END_LOCAL;
+
+c_val := FALSE;
+
+IF ('ISO13584_INSTANCE_RESOURCE_SCHEMA.INT_LEVEL_SPEC_VALUE' 
+	IN TYPEOF(val)) 
+	AND NOT('ISO13584_IEC61360_DICTIONARY_SCHEMA.REAL_TYPE' IN 
+	value_typeof)
+THEN 
+	c_val:= TRUE;
+END_IF;
+
+IF ('ISO13584_INSTANCE_RESOURCE_SCHEMA.REAL_LEVEL_SPEC_VALUE' 
+	IN TYPEOF(val)) 
+	AND NOT('ISO13584_IEC61360_DICTIONARY_SCHEMA.INT_TYPE' 
+	IN value_typeof)
+THEN 
+	c_val:= TRUE;
+END_IF;
+
+RETURN (c_val AND (right_values_for_level_spec (levels, val)));
+
+END_FUNCTION; -- compatible_level_type_and_instance 
+
+
+FUNCTION compatible_type_and_value(
+			dom: property_or_data_type_BSU;
+			val: primitive_value
+			): LOGICAL;
+
+LOCAL
+	temp: SET[0:1] OF class_BSU;
+END_LOCAL;
+
+IF data_type_typeof(dom) = [] 
+THEN 
+	RETURN(UNKNOWN);
+END_IF;
+
+
+
+IF 'ISO13584_INSTANCE_RESOURCE_SCHEMA.INTEGER_VALUE' IN TYPEOF(val) 
+THEN	RETURN ( ('ISO13584_IEC61360_DICTIONARY_SCHEMA.INT_TYPE' 
+		IN data_type_typeof (dom)) OR
+	 	(('ISO13584_IEC61360_DICTIONARY_SCHEMA.NUMBER_TYPE' 
+		IN data_type_typeof (dom)) 
+	 	AND NOT ('ISO13584_IEC61360_DICTIONARY_SCHEMA.REAL_TYPE' 
+		IN data_type_typeof (dom))) );
+END_IF;
+
+IF 'ISO13584_INSTANCE_RESOURCE_SCHEMA.REAL_VALUE' IN TYPEOF(val) 
+THEN	RETURN (  ('ISO13584_IEC61360_DICTIONARY_SCHEMA.REAL_TYPE' 
+		IN data_type_typeof (dom)) OR
+		(('ISO13584_IEC61360_DICTIONARY_SCHEMA.NUMBER_TYPE' 
+		IN data_type_typeof (dom)) 
+		AND NOT ('ISO13584_IEC61360_DICTIONARY_SCHEMA.INT_TYPE' 
+		IN data_type_typeof (dom))) );
+END_IF;
+
+IF 'ISO13584_INSTANCE_RESOURCE_SCHEMA.BOOLEAN_VALUE' IN TYPEOF(val) 
+THEN	RETURN ( 'ISO13584_IEC61360_DICTIONARY_SCHEMA.BOOLEAN_TYPE' 
+		IN data_type_typeof (dom) );
+END_IF;
+
+IF 'ISO13584_INSTANCE_RESOURCE_SCHEMA.STRING_VALUE' IN TYPEOF(val) 
+THEN	RETURN ( 'ISO13584_IEC61360_DICTIONARY_SCHEMA.STRING_TYPE' 
+		IN data_type_typeof (dom) );
+END_IF;
+
+
+
+IF 'ISO13584_INSTANCE_RESOURCE_SCHEMA.ENTITY_INSTANCE_VALUE' 
+	IN TYPEOF(val) 
+THEN	IF 'ISO13584_INSTANCE_RESOURCE_SCHEMA' +
+		'.UNCONTROLLED_ENTITY_INSTANCE_VALUE'
+		 IN TYPEOF(val) 
+	THEN
+		RETURN(UNKNOWN);
+	END_IF;
+	IF ('ISO13584_IEC61360_DICTIONARY_SCHEMA.ENTITY_INSTANCE_TYPE' 
+		IN data_type_typeof (dom)) 
+AND (SIZEOF (data_type_type_name(dom)) <> 0)
+		AND (data_type_type_name(dom) <= TYPEOF(val)) 
+	THEN RETURN(TRUE);
+	ELSE RETURN(FALSE); 
+	END_IF;
+END_IF;
+
+IF 'ISO13584_INSTANCE_RESOURCE_SCHEMA.DIC_CLASS_INSTANCE' 
+	IN TYPEOF(val) THEN
+	IF ('ISO13584_IEC61360_DICTIONARY_SCHEMA.CLASS_INSTANCE_TYPE' 
+		IN data_type_typeof (dom))
+		AND (SIZEOF (data_type_class_of(dom)) <> 0)
+	THEN 
+		temp := data_type_class_of(dom);
+		RETURN (compatible_class_and_class(temp[1],
+				val\dic_class_instance.class_def));
+	ELSE 
+		RETURN(FALSE);
+	END_IF;
+END_IF;
+
+IF 'ISO13584_INSTANCE_RESOURCE_SCHEMA.LEVEL_SPEC_VALUE' IN TYPEOF(val) 
+THEN	IF ('ISO13584_IEC61360_DICTIONARY_SCHEMA.LEVEL_TYPE' 
+		IN data_type_typeof (dom))
+	THEN 
+		RETURN (compatible_level_type_and_instance ( 
+			data_type_level_spec(dom),
+			data_type_level_value_typeof(dom),
+			val));
+	ELSE 
+		RETURN(FALSE);
+	END_IF;
+END_IF;
+
+RETURN (FALSE);
+
+END_FUNCTION; -- compatible_type_and_value
+
+
+FUNCTION collects_assigned_instance_properties (
+			props: SET [0:?] OF property_value)
+			:SET OF property_BSU;
+
+LOCAL
+	assign_prop: SET OF property_BSU;
+		--assigned properties of the dic_class_instance
+	i: INTEGER;
+END_LOCAL;
+
+assign_prop := [];
+
+REPEAT i := 1 TO HIBOUND (props);
+	assign_prop := assign_prop + props[i].prop_def;
+END_REPEAT;
+
+RETURN (assign_prop );
+
+END_FUNCTION; -- collects_assigned_instance_properties
+
+
+
+FUNCTION correct_view_from_model ( 
+			fv: dic_f_view_instance): LOGICAL;
+
+IF NOT EXISTS (fv.generated_by)
+THEN
+	RETURN (UNKNOWN) ;
+END_IF ;
+
+IF NOT (SIZEOF(fv.generated_by\dic_class_instance.class_def.
+		definition) = 1)
+THEN
+	RETURN (UNKNOWN) ;
+ELSE
+	RETURN (
+		fv.generated_by\dic_class_instance.class_def
+		.definition[1].created_view
+		= fv\dic_class_instance.class_def);
+END_IF ;
+END_FUNCTION; -- correct_view_from_model
+
+END_SCHEMA; -- ISO13584_instance_resource_schema
+

@@ -1,0 +1,62 @@
+-- 2000-09-08
+
+(*
+
+	WG12 N525 								2000-05-30
+
+	EXPRESS Declarations for ISO 10303-41: 2nd Edition
+*)
+
+SCHEMA contract_schema;
+REFERENCE FROM support_resource_schema              -- ISO 10303-41
+  (bag_to_set,
+   identifier,
+   label,
+   text);
+
+ENTITY contract;
+  name    : label;
+  purpose : text;
+  kind    : contract_type;
+END_ENTITY; -- contract
+
+ENTITY contract_relationship;
+  id                : identifier;
+  name              : label;
+  description       : OPTIONAL text;
+  relating_contract : contract;
+  related_contract  : contract;
+END_ENTITY; -- contract_relationship
+
+ENTITY contract_type;
+  description : label;
+END_ENTITY; -- contract_type
+
+FUNCTION acyclic_contract_relationship
+  (relation          : contract_relationship;
+   relatives         : SET [1:?] OF contract;
+   specific_relation : STRING) : BOOLEAN;
+  LOCAL
+    x                : SET OF contract_relationship;
+  END_LOCAL;
+  IF relation.relating_contract IN relatives THEN 
+    RETURN (FALSE);
+  END_IF;
+  x := QUERY (cont <* bag_to_set 
+             (USEDIN (relation.relating_contract,
+             'CONTRACT_SCHEMA.' + 
+             'CONTRACT_RELATIONSHIP.' +
+             'RELATED_CONTRACT')) |
+              specific_relation IN TYPEOF (cont));
+  REPEAT i := 1 TO HIINDEX(x);
+    IF NOT acyclic_contract_relationship
+      (x[i], 
+       relatives + relation.relating_contract, 
+       specific_relation) THEN
+      RETURN(FALSE);
+    END_IF;
+  END_REPEAT;
+  RETURN(TRUE);
+END_FUNCTION; -- acyclic_contract_relationship
+
+END_SCHEMA; -- contract_schema

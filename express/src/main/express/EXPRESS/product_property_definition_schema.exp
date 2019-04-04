@@ -1,0 +1,233 @@
+-- 2000-09-08
+
+(*
+
+	WG12 N525 								2000-05-30
+
+	EXPRESS Declarations for ISO 10303-41: 2nd Edition
+*)
+
+SCHEMA product_property_definition_schema;
+REFERENCE FROM process_property_schema                   -- ISO 10303-49
+  (action_property,
+   resource_property);
+REFERENCE FROM product_definition_schema                 -- ISO 10303-41
+  (product_definition,
+   product_definition_relationship);
+REFERENCE FROM support_resource_schema                   -- ISO 10303-41
+  (bag_to_set,
+   identifier,
+   label,
+   text);
+REFERENCE FROM basic_attribute_schema                    -- ISO 10303-41
+       (get_id_value,
+       id_attribute);
+
+TYPE characterized_definition = SELECT
+  (characterized_object,
+   characterized_product_definition,
+   shape_definition);
+END_TYPE; -- characterized_definition
+
+TYPE characterized_product_definition = SELECT
+  (product_definition,
+   product_definition_relationship);
+END_TYPE; -- characterized_product_definition
+
+TYPE derived_property_select = SELECT
+  (property_definition,
+   action_property,
+   resource_property);
+END_TYPE; -- derived_property_select
+
+TYPE shape_definition = SELECT
+  (product_definition_shape,
+   shape_aspect,
+   shape_aspect_relationship);
+END_TYPE; -- shape_definition
+
+ENTITY characterized_object;
+  name        : label;
+  description : OPTIONAL text;
+END_ENTITY; -- characterized_object
+
+ENTITY characterized_object_relationship;
+  name            : label;
+  description     : OPTIONAL text;
+  relating_object : characterized_object;
+  related_object  : characterized_object;
+END_ENTITY; -- characterized_object_relationship
+
+ENTITY general_property;
+  id          : identifier;
+  name        : label;
+  description : OPTIONAL text;
+END_ENTITY; -- general_property
+
+ENTITY general_property_association;
+  name               : label;
+  description        : OPTIONAL text;
+  base_definition    : general_property;
+  derived_definition : derived_property_select;
+ WHERE
+  WR1: SIZEOF( USEDIN( derived_definition,
+                       'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' + 
+                       'GENERAL_PROPERTY_ASSOCIATION.' + 
+                       'DERIVED_DEFINITION')) = 1;
+  WR2: derived_definition.name = base_definition.name;
+END_ENTITY; -- general_property_association
+
+ENTITY general_property_relationship; 
+  name              : label;
+  description       : OPTIONAL text;
+  relating_property : general_property;
+  related_property  : general_property;
+END_ENTITY; -- general_property_relationship
+
+ENTITY product_definition_shape
+  SUBTYPE OF (property_definition);
+UNIQUE
+  UR1: SELF\property_definition.definition;
+WHERE
+     WR1: SIZEOF
+     (['PRODUCT_PROPERTY_DEFINITION_SCHEMA.CHARACTERIZED_PRODUCT_DEFINITION',  'PRODUCT_PROPERTY_DEFINITION_SCHEMA.CHARACTERIZED_OBJECT'] *TYPEOF         (SELF\property_definition.definition))>0;
+END_ENTITY; -- product_definition_shape
+
+ENTITY property_definition;
+  name        : label;
+  description : OPTIONAL text;
+  definition  : characterized_definition;
+DERIVE
+  id            : identifier := get_id_value (SELF);
+WHERE
+  WR1 : SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' +
+                       'ID_ATTRIBUTE.IDENTIFIED_ITEM')) <= 1;
+END_ENTITY; -- property_definition
+
+ENTITY shape_aspect;
+  name                 : label;
+  description          : OPTIONAL text;
+  of_shape             : product_definition_shape;
+  product_definitional : LOGICAL;
+DERIVE
+  id            : identifier := get_id_value (SELF);
+WHERE
+  WR1 : SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' +
+                       'ID_ATTRIBUTE.IDENTIFIED_ITEM')) <= 1;
+END_ENTITY; -- shape_aspect
+
+ENTITY shape_aspect_relationship;
+  name                  : label;
+  description           : OPTIONAL text;
+  relating_shape_aspect : shape_aspect;
+  related_shape_aspect  : shape_aspect;
+DERIVE
+  id            : identifier := get_id_value (SELF);
+WHERE
+  WR1 : SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' +
+                       'ID_ATTRIBUTE.IDENTIFIED_ITEM')) <= 1;
+END_ENTITY; -- shape_aspect_relationship
+
+FUNCTION acyclic_characterized_object_relationship
+  (relation          : characterized_object_relationship;
+   relatives         : SET [1:?] OF characterized_object;
+   specific_relation : STRING) : BOOLEAN;
+  LOCAL
+    x                : SET OF characterized_object_relationship;
+  END_LOCAL;
+  IF relation.relating_object IN relatives THEN 
+    RETURN (FALSE);
+  END_IF;
+  x := QUERY (ca <* bag_to_set 
+             (USEDIN (relation.relating_object,
+             'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' + 
+             'CHARACTERIZED_OBJECT_RELATIONSHIP.' +
+             'RELATED_OBJECT')) |
+              specific_relation IN TYPEOF (ca));
+  REPEAT i := 1 TO HIINDEX(x);
+    IF NOT acyclic_characterized_object_relationship
+      (x[i], 
+       relatives + relation.relating_object, 
+       specific_relation) THEN
+      RETURN(FALSE);
+    END_IF;
+  END_REPEAT;
+  RETURN(TRUE);
+END_FUNCTION; -- acyclic_characterized_object_relationship
+
+FUNCTION acyclic_general_property_relationship
+  (relation          : general_property_relationship;
+   relatives         : SET [1:?] OF general_property;
+   specific_relation : STRING) : BOOLEAN;
+  LOCAL
+    x                : SET OF general_property_relationship;
+  END_LOCAL;
+  IF relation.relating_property IN relatives THEN 
+    RETURN (FALSE);
+  END_IF;
+  x := QUERY (genp <* bag_to_set 
+             (USEDIN (relation.relating_property,
+             'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' + 
+             'GENERAL_PROPERTY_RELATIONSHIP.' +
+             'RELATED_PROPERTY')) |
+              specific_relation IN TYPEOF (genp));
+  REPEAT i := 1 TO HIINDEX(x);
+    IF NOT acyclic_general_property_relationship
+      (x[i], 
+       relatives + relation.relating_property, 
+       specific_relation) THEN
+      RETURN(FALSE);
+    END_IF;
+  END_REPEAT;
+  RETURN(TRUE);
+END_FUNCTION; -- acyclic_general_property_relationship
+
+FUNCTION acyclic_shape_aspect_relationship
+  (relation          : shape_aspect_relationship;
+   relatives         : SET [1:?] OF shape_aspect;
+   specific_relation : STRING) : BOOLEAN;
+  LOCAL
+    x                : SET OF shape_aspect_relationship;
+  END_LOCAL;
+  IF relation.relating_shape_aspect IN relatives THEN 
+    RETURN (FALSE);
+  END_IF;
+  x := QUERY (sa <* bag_to_set 
+             (USEDIN (relation.relating_shape_aspect,
+             'PRODUCT_PROPERTY_DEFINITION_SCHEMA.' + 
+             'SHAPE_ASPECT_RELATIONSHIP.' +
+             'RELATED_SHAPE_ASPECT')) |
+              specific_relation IN TYPEOF (sa));
+  REPEAT i := 1 TO HIINDEX(x);
+    IF NOT acyclic_shape_aspect_relationship
+      (x[i], 
+       relatives + relation.relating_shape_aspect, 
+       specific_relation) THEN
+      RETURN(FALSE);
+    END_IF;
+  END_REPEAT;
+  RETURN(TRUE);
+END_FUNCTION; -- acyclic_shape_aspect_relationship
+
+FUNCTION get_shape_aspects 
+      ( c_def_instance : characterized_definition ) : SET OF shape_aspect;
+      
+      LOCAL
+      pd_set : SET OF product_definition_shape := [];
+      pdr_set : SET OF shape_aspect := [];
+      END_LOCAL;
+  pd_set := bag_to_set (QUERY(pd <* USEDIN (c_def_instance,
+     'PRODUCT_PROPERTY_DEFINITION_SCHEMA.PROPERTY_DEFINITION.DEFINITION')
+      | 'PRODUCT_PROPERTY_DEFINITION_SCHEMA.PRODUCT_DEFINITION_SHAPE' IN
+        TYPEOF(pd)));
+ IF (SIZEOF (pd_set) < 1 ) THEN RETURN (pdr_set);
+ END_IF;
+
+ REPEAT i:= 1 to HIINDEX (pd_set);
+    pdr_set := pdr_set + bag_to_set (USEDIN (pd_set[i],
+    'PRODUCT_PROPERTY_DEFINITION_SCHEMA.SHAPE_ASPECT.OF_SHAPE'));
+ END_REPEAT;
+ RETURN (pdr_set);
+END_FUNCTION; 
+
+END_SCHEMA; -- product_property_definition_schema

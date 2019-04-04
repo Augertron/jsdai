@@ -1,0 +1,71 @@
+SCHEMA mtarget;
+
+TYPE lte3 = LIST [0:?] OF te3;
+END_TYPE;
+
+TYPE dt1 = STRING;
+END_TYPE;
+
+TYPE et1 = ENUMERATION OF (e1, e2);
+END_TYPE;
+
+TYPE se1 = SELECT
+	(te1,
+	te2,
+	te3,
+	lte3,
+	dt1,
+	et1);
+END_TYPE;
+
+TYPE se2 = SELECT
+	(se1,
+	et1,
+	te2,
+	te1);
+END_TYPE;
+
+ENTITY te1;
+	te1a1 : STRING;
+	te1a2 : LIST [0:?] OF LIST [0:?] OF te2;
+	te1a3 : LIST [0:?] OF lte3;
+	te1a4 : LIST [0:?] OF te2;
+	te1a5 : te3;
+END_ENTITY;
+
+ENTITY te2;
+	te2a1 : STRING;
+	te2a2 : te1;
+	te2a3 : LIST [0:?] OF STRING;
+	te2a4 : te3;
+END_ENTITY;
+
+ENTITY te3
+		SUPERTYPE OF (ONEOF(te4, te5));
+	te3a1 : te2;
+	te3a2 : LIST [0:?] OF te1;
+	te3a3 : se1;
+	te3a4 : LIST [0:?] OF se1;
+	te3a5 : se2;
+	te3a6 : et1;
+	te3a7 : INTEGER;
+	te3a8 : BOOLEAN;
+	te3a9 : LOGICAL;
+	te3a10 : REAL;
+	te3a11 : dt1;
+END_ENTITY;
+
+ENTITY te4
+		SUBTYPE OF (te3);
+	te4a12 : STRING;
+END_ENTITY;
+
+ENTITY te5
+		SUBTYPE OF (te3);
+	te5a12 : STRING;
+END_ENTITY;
+
+ENTITY t;
+END_ENTITY;
+
+END_SCHEMA;

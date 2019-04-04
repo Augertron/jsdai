@@ -1,0 +1,468 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>net.jsdai</groupId>
+    <artifactId>jsdai_parent</artifactId>
+    <version>4.5.0-SNAPSHOT</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
+
+  <groupId>net.jsdai</groupId>
+  <artifactId>jsdai_runtime</artifactId>
+  <packaging>jar</packaging>
+
+  <properties>
+    <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
+
+    <TODAY>${maven.build.timestamp}</TODAY>
+    <JSDAI.COPYRIGHT>Copyright (c) LKSoftWare GmbH, 1999-2019</JSDAI.COPYRIGHT>
+
+    <express.source.dir>${basedir}/src/main/java-express</express.source.dir>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.jsdai</groupId>
+      <artifactId>jsdai_express_files</artifactId>
+      <classifier>dictionary</classifier>
+      <type>zip</type>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <optimize>true</optimize>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-filtered-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/main/java-filters</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-generated-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/java</source>
+                <source>${express.source.dir}</source>
+              </sources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>timestamp-property</id>
+            <goals>
+              <goal>timestamp-property</goal>
+            </goals>
+            <configuration>
+              <name>current.year</name>
+              <pattern>yyyy</pattern>
+              <unit>year</unit>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.1</version>
+        <executions>
+          <execution>
+            <id>generate-javadoc</id>
+            <phase>package</phase>
+            <goals>
+              <goal>javadoc-no-fork</goal>
+            </goals>
+            <configuration>
+              <windowtitle>JSDAI ${JSDAI.VERSION.MAJOR}.${JSDAI.VERSION.MIDDLE}.${JSDAI.VERSION.MINOR} ${TODAY}</windowtitle>
+              <doctitle>JSDAI(TM) Version ${JSDAI.VERSION.MAJOR}.${JSDAI.VERSION.MIDDLE}.${JSDAI.VERSION.MINOR}</doctitle>
+              <author>false</author>
+              <overview></overview>
+              <footer>Copyright &copy; LKSoftWare GmbH, 1999-${current.year}</footer>
+              <show>public</show>
+              <subpackages>jsdai.lang:jsdai.util:jsdai.xml</subpackages>
+              <failOnError>false</failOnError>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>standard</id>
+      <properties>
+        <NO.MAPPING.OFF>*/ //</NO.MAPPING.OFF>
+        <NO.MAPPING.ON.START>*/</NO.MAPPING.ON.START>
+        <NO.MAPPING.ON.END>/*</NO.MAPPING.ON.END>
+        <NO.REMOTE.OFF>*/ //</NO.REMOTE.OFF>
+        <NO.REMOTE.ON.START>*/</NO.REMOTE.ON.START>
+        <NO.REMOTE.ON.END>/*</NO.REMOTE.ON.END>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-jar-plugin</artifactId>
+            <configuration>
+              <classifier>standard</classifier>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>db</id>
+      <properties>
+        <NO.MAPPING.OFF>*/ //</NO.MAPPING.OFF>
+        <NO.MAPPING.ON.START>*/</NO.MAPPING.ON.START>
+        <NO.MAPPING.ON.END>/*</NO.MAPPING.ON.END>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-jar-plugin</artifactId>
+            <configuration>
+              <classifier>db</classifier>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>compile-express</id>
+      <properties>
+        <express.build.dir>${project.build.directory}/express</express.build.dir>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>unpack-express</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>unpack-dependencies</goal>
+                </goals>
+                <configuration>
+                  <includeGroupIds>net.jsdai</includeGroupIds>
+                  <includeArtifactIds>jsdai_express_files</includeArtifactIds>
+                  <outputDirectory>${express.build.dir}</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>prepare-express</id>
+                <phase>initialize</phase>
+                <configuration>
+                  <tasks>
+                    <mkdir dir="${express.build.dir}"/>
+
+                    <concat destfile="${express.build.dir}/ExpressCompilerRepo.exp">
+                      <filelist dir="${express.build.dir}" files="extended_dictionary_schema.exp,mapping_schema.exp"/>
+                    </concat>
+                    <replace file="${express.build.dir}/ExpressCompilerRepo.exp"
+                             token="SCHEMA extended_dictionary_schema;"
+                             value="SCHEMA SDAI_dictionary_schema;"/>
+                    <replace file="${express.build.dir}/ExpressCompilerRepo.exp"
+                             token="SCHEMA mapping_schema;"
+                             value="SCHEMA sdai_mapping_schema;"/>
+                    <replace file="${express.build.dir}/ExpressCompilerRepo.exp"
+                             token="REFERENCE FROM extended_dictionary_schema;"
+                             value="REFERENCE FROM sdai_dictionary_schema;"/>
+
+                    <propertyfile file="${express.build.dir}/jsdai.properties" comment="Generated by Ant">
+                      <entry key="repositories" value="${express.build.dir}/sdairepo"/>
+                      <entry key="mapping.schema.ELECTRONIC_ASSEMBLY_INTERCONNECT_AND_PACKAGING_DESIGN" value="AP210_ARM_MAPPING_DATA"/>
+                      <entry key="mapping.schema.ELECTROTECHNICAL_DESIGN" value="AP212_ARM_MAPPING_DATA"/>
+                      <entry key="mapping.schema.AUTOMOTIVE_DESIGN" value="AP214_ARM_MAPPING_DATA"/>
+                      <entry key="new.repository.format" value="SDAI"/>
+                    </propertyfile>
+                  </tasks>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>generate-library-system</id>
+                <phase>generate-sources</phase>
+                <configuration>
+                  <tasks>
+                    <property name="plugin_classpath" refid="maven.plugin.classpath"/>
+                    <java fork="yes" dir="${express.build.dir}" classname="jsdai.expressCompiler.Main" failonerror="yes">
+                      <classpath>
+                        <pathelement location="${project.build.directory}/config-licensing-off"/>
+                        <pathelement path="${plugin_classpath}"/>
+                      </classpath>
+                      <sysproperty key="jsdai.properties" value="${express.build.dir}"/>
+                      <arg line="-repository -is -relax -binaries -java -no_active_nodes -no_amendment -nc"/>
+                      <arg value="-express"/>
+                      <arg file="${express.build.dir}/ExpressCompilerRepo.exp"/>
+                      <arg value="-complex"/>
+                      <arg value="${express.build.dir}/dictionary.ce"/>
+                      <arg value="-compilation_sn"/>
+                      <arg value="0"/>
+                      <arg value="-index_file"/>
+                    </java>
+                  </tasks>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>modify-library-system</id>
+                <phase>process-sources</phase>
+                <configuration>
+                  <tasks>
+                    <!-- Manual updates to mapping classes -->
+                    <replace file="${express.build.dir}/jsdai/mapping/CEntity_mapping.java">
+                      <replacetoken>public class CEntity_mapping extends CEntity implements EEntity_mapping {</replacetoken>
+                      <replacevalue>public class CEntity_mapping extends CEntityMappingBase implements EEntity_mapping {</replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CAggregate_member_constraint.java">
+                      <replacetoken>public class CAggregate_member_constraint extends CConstraint_attribute implements EAggregate_member_constraint {
+                      </replacetoken>
+                      <replacevalue>public class CAggregate_member_constraint extends CMappingAggregate_member_constraint implements
+                        EAggregate_member_constraint {
+                      </replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CAnd_constraint_relationship.java">
+                      <replacetoken>public class CAnd_constraint_relationship extends CInstance_constraint implements EAnd_constraint_relationship {
+                      </replacetoken>
+                      <replacevalue>public class CAnd_constraint_relationship extends CMappingAnd_constraint_relationship implements
+                        EAnd_constraint_relationship {
+                      </replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CAttribute_mapping.java">
+                      <replacetoken>public class CAttribute_mapping extends CGeneric_attribute_mapping implements EAttribute_mapping {</replacetoken>
+                      <replacevalue>public class CAttribute_mapping extends CMappingAttribute_mapping implements EAttribute_mapping {</replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CAttribute_mapping_boolean_value.java">
+                      <replacetoken>public class CAttribute_mapping_boolean_value extends CAttribute_mapping_value implements EAttribute_mapping_boolean_value
+                        {
+                      </replacetoken>
+                      <replacevalue>public class CAttribute_mapping_boolean_value extends CMappingAttribute_mapping_boolean_value implements
+                        EAttribute_mapping_boolean_value {
+                      </replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CAttribute_mapping_enumeration_value.java">
+                      <replacetoken>public class CAttribute_mapping_enumeration_value extends CAttribute_mapping_value implements
+                        EAttribute_mapping_enumeration_value {
+                      </replacetoken>
+                      <replacevalue>public class CAttribute_mapping_enumeration_value extends CMappingAttribute_mapping_enumeration_value implements
+                        EAttribute_mapping_enumeration_value {
+                      </replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CAttribute_mapping_int_value.java">
+                      <replacetoken>public class CAttribute_mapping_int_value extends CAttribute_mapping_value implements EAttribute_mapping_int_value {
+                      </replacetoken>
+                      <replacevalue>public class CAttribute_mapping_int_value extends CMappingAttribute_mapping_int_value implements
+                        EAttribute_mapping_int_value {
+                      </replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CAttribute_mapping_logical_value.java">
+                      <replacetoken>public class CAttribute_mapping_logical_value extends CAttribute_mapping_value implements EAttribute_mapping_logical_value
+                        {
+                      </replacetoken>
+                      <replacevalue>public class CAttribute_mapping_logical_value extends CMappingAttribute_mapping_logical_value implements
+                        EAttribute_mapping_logical_value {
+                      </replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CAttribute_mapping_real_value.java">
+                      <replacetoken>public class CAttribute_mapping_real_value extends CAttribute_mapping_value implements EAttribute_mapping_real_value {
+                      </replacetoken>
+                      <replacevalue>public class CAttribute_mapping_real_value extends CMappingAttribute_mapping_real_value implements
+                        EAttribute_mapping_real_value {
+                      </replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CAttribute_mapping_string_value.java">
+                      <replacetoken>public class CAttribute_mapping_string_value extends CAttribute_mapping_value implements EAttribute_mapping_string_value {
+                      </replacetoken>
+                      <replacevalue>public class CAttribute_mapping_string_value extends CMappingAttribute_mapping_string_value implements
+                        EAttribute_mapping_string_value {
+                      </replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CEnd_of_path_constraint.java">
+                      <replacetoken>public class CEnd_of_path_constraint extends CConstraint implements EEnd_of_path_constraint {</replacetoken>
+                      <replacevalue>public class CEnd_of_path_constraint extends CMappingEnd_of_path_constraint implements EEnd_of_path_constraint {
+                      </replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CEntity_constraint.java">
+                      <replacetoken>public class CEntity_constraint extends CConstraint_attribute implements EEntity_constraint {</replacetoken>
+                      <replacevalue>public class CEntity_constraint extends CMappingEntity_constraint implements EEntity_constraint {</replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CIntersection_constraint.java">
+                      <replacetoken>public class CIntersection_constraint extends CConstraint implements EIntersection_constraint {</replacetoken>
+                      <replacevalue>public class CIntersection_constraint extends CMappingIntersection_constraint implements EIntersection_constraint {
+                      </replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CInverse_attribute_constraint.java">
+                      <replacetoken>public class CInverse_attribute_constraint extends CConstraint implements EInverse_attribute_constraint {</replacetoken>
+                      <replacevalue>public class CInverse_attribute_constraint extends CMappingInverse_attribute_constraint implements
+                        EInverse_attribute_constraint {
+                      </replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CPath_constraint.java">
+                      <replacetoken>public class CPath_constraint extends CConstraint_relationship implements EPath_constraint {</replacetoken>
+                      <replacevalue>public class CPath_constraint extends CMappingPath_constraint implements EPath_constraint {</replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CSelect_constraint.java">
+                      <replacetoken>public class CSelect_constraint extends CConstraint_attribute implements ESelect_constraint {</replacetoken>
+                      <replacevalue>public class CSelect_constraint extends CMappingSelect_constraint implements ESelect_constraint {</replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CType_constraint.java">
+                      <replacetoken>public class CType_constraint extends CConstraint implements EType_constraint {</replacetoken>
+                      <replacevalue>public class CType_constraint extends CMappingType_constraint implements EType_constraint {</replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/dictionary/CDerived_attribute.java">
+                      <replacetoken>public class CDerived_attribute extends CEntity implements EDerived_attribute {</replacetoken>
+                      <replacevalue>public class CDerived_attribute extends CMappingDerived_attribute implements EDerived_attribute {</replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/dictionary/CExplicit_attribute.java">
+                      <replacetoken>public class CExplicit_attribute extends AttributeDefinition implements EExplicit_attribute {</replacetoken>
+                      <replacevalue>public class CExplicit_attribute extends CMappingExplicit_attribute implements EExplicit_attribute {</replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/dictionary/CInverse_attribute.java">
+                      <replacetoken>public class CInverse_attribute extends CEntity implements EInverse_attribute {</replacetoken>
+                      <replacevalue>public class CInverse_attribute extends CMappingInverse_attribute implements EInverse_attribute {</replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CNegation_constraint.java">
+                      <replacetoken>public class CNegation_constraint extends CConstraint implements ENegation_constraint {</replacetoken>
+                      <replacevalue>public class CNegation_constraint extends CMappingNegation_constraint implements ENegation_constraint {</replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/COr_constraint_relationship.java">
+                      <replacetoken>public class COr_constraint_relationship extends CInstance_constraint implements EOr_constraint_relationship {
+                      </replacetoken>
+                      <replacevalue>public class COr_constraint_relationship extends CMappingOr_constraint_relationship implements EOr_constraint_relationship
+                        {
+                      </replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CInstance_equal.java">
+                      <replacetoken>public class CInstance_equal extends CInstance_constraint implements EInstance_equal {</replacetoken>
+                      <replacevalue>public class CInstance_equal extends CMappingInstance_equal implements EInstance_equal {</replacevalue>
+                    </replace>
+                    <replace file="${express.build.dir}/jsdai/mapping/CAttribute_value_constraint.java">
+                      <replacetoken>public class CAttribute_value_constraint extends CConstraint_attribute implements EAttribute_value_constraint {
+                      </replacetoken>
+                      <replacevalue>public class CAttribute_value_constraint extends CMappingAttribute_value_constraint implements EAttribute_value_constraint
+                        {
+                      </replacevalue>
+                    </replace>
+
+                    <!-- add license header to all generated files -->
+                    <loadfile property="javaheader" srcFile="${basedir}/license.txt"/>
+                    <replaceregexp match="(/\*.*\*/)" replace="${javaheader}">
+                      <fileset dir="${express.build.dir}">
+                        <include name="jsdai/**/*.java"/>
+                      </fileset>
+                    </replaceregexp>
+                  </tasks>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>copy-generated-sources</id>
+                <phase>process-sources</phase>
+                <configuration>
+                  <tasks>
+                    <delete dir="${express.source.dir}/jsdai/dictionary"/>
+                    <delete dir="${express.source.dir}/jsdai/mapping"/>
+
+                    <copy todir="${express.source.dir}/jsdai/dictionary">
+                      <fileset dir="${express.build.dir}/jsdai/dictionary">
+                        <filename name="**/*.java"/>
+                      </fileset>
+                    </copy>
+                    <copy todir="${express.source.dir}/jsdai/mapping">
+                      <fileset dir="${express.build.dir}/jsdai/mapping">
+                        <filename name="**/*.java"/>
+                      </fileset>
+                    </copy>
+
+                    <delete dir="${basedir}/src/main/resources/jsdai/dictionary"/>
+                    <delete dir="${basedir}/src/main/resources/jsdai/mapping"/>
+
+                    <copy todir="${basedir}/src/main/resources/jsdai/dictionary">
+                      <fileset dir="${express.build.dir}/jsdai/dictionary">
+                        <not>
+                          <filename name="**/*.java"/>
+                        </not>
+                      </fileset>
+                    </copy>
+                    <copy todir="${basedir}/src/main/resources/jsdai/mapping">
+                      <fileset dir="${express.build.dir}/jsdai/mapping">
+                        <not>
+                          <filename name="**/*.java"/>
+                        </not>
+                      </fileset>
+                    </copy>
+                  </tasks>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+            <dependencies>
+              <dependency>
+                <groupId>net.jsdai</groupId>
+                <artifactId>jsdai_express</artifactId>
+                <version>${existing.express.compiler.version}</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

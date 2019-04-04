@@ -1,0 +1,133 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>net.jsdai</groupId>
+    <artifactId>jsdai_parent</artifactId>
+    <version>4.5.0-SNAPSHOT</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
+
+  <groupId>net.jsdai</groupId>
+  <artifactId>jsdai_mappingUtils</artifactId>
+  <packaging>jar</packaging>
+
+  <properties>
+    <antlr.source.dir>${basedir}/src/main/antlr</antlr.source.dir>
+    <generated.sources.dir>${project.build.directory}/generated-sources/antlr</generated.sources.dir>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>net.jsdai</groupId>
+      <artifactId>jsdai_runtime</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.jsdai</groupId>
+      <artifactId>jsdai_extendedDictionary</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.jsdai</groupId>
+      <artifactId>jsdai_express</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.jsdai.3rdParty</groupId>
+      <artifactId>antlr</artifactId>
+      <version>2.7.1</version>
+    </dependency>
+    <dependency>
+      <groupId>ant-contrib</groupId>
+      <artifactId>ant-contrib</artifactId>
+      <version>1.0b2</version>
+    </dependency>
+    <dependency>
+      <groupId>ant</groupId>
+      <artifactId>ant</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.2</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-sources</id>
+            <phase>generate-sources</phase>
+            <configuration>
+              <target>
+                <delete dir="${generated.sources.dir}"/>
+
+                <property name="antlr_output" value="${generated.sources.dir}/jsdai/mappingUtils/paths"/>
+                <mkdir dir="${antlr_output}"/>
+
+                <property name="compile_classpath" refid="maven.compile.classpath"/>
+                <antlr target="${antlr.source.dir}/mappingPathParser.g" outputdirectory="${antlr_output}">
+                  <classpath path="${compile_classpath}"/>
+                </antlr>
+                <antlr target="${antlr.source.dir}/mappingPathWalker.g" outputdirectory="${antlr_output}">
+                  <classpath path="${compile_classpath}"/>
+                </antlr>
+                <antlr target="${antlr.source.dir}/mappingDataWalker.g" outputdirectory="${antlr_output}">
+                  <classpath path="${compile_classpath}"/>
+                </antlr>
+                <antlr target="${antlr.source.dir}/mappingPathPreparser.g" outputdirectory="${antlr_output}">
+                  <classpath path="${compile_classpath}"/>
+                </antlr>
+                <antlr target="${antlr.source.dir}/mappingInfo.g" outputdirectory="${antlr_output}">
+                  <classpath path="${compile_classpath}"/>
+                </antlr>
+                <antlr target="${antlr.source.dir}/pathExtractorM.g" outputdirectory="${antlr_output}">
+                  <classpath path="${compile_classpath}"/>
+                </antlr>
+                <antlr target="${antlr.source.dir}/pathExtractorSgml.g" outputdirectory="${antlr_output}">
+                  <classpath path="${compile_classpath}"/>
+                </antlr>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>net.jsdai.3rdParty</groupId>
+            <artifactId>antlr</artifactId>
+            <version>2.7.1</version>
+          </dependency>
+          <dependency>
+            <groupId>ant</groupId>
+            <artifactId>ant-antlr</artifactId>
+            <version>1.6.5</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${generated.sources.dir}</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -1,0 +1,641 @@
+-- received on 2000-02-21, originally from Guy Pierra 
+
+SCHEMA ISO13584_external_file_schema;
+
+REFERENCE FROM ISO13584_IEC61360_dictionary_schema(
+	basic_semantic_unit,
+	class_BSU,
+	class_related_BSU,
+	content_item,
+	definition_available_implies,
+	graphics,
+	item_names,
+	list_to_set,
+	revision_type,
+	supplier_BSU,
+	supplier_element,
+	supplier_related_BSU,
+	version_len) ;
+
+REFERENCE FROM ISO13584_IEC61360_language_resource_schema(
+	global_language_assignment,
+	language_code,
+	present_translations);
+
+REFERENCE FROM ISO13584_instance_resource_schema(
+	property_or_data_type_BSU);
+
+REFERENCE FROM ISO13584_extended_dictionary_schema (
+	absolute_url_type,
+	document_BSU,
+	program_library_BSU);
+
+REFERENCE FROM ISO13584_library_content_schema(
+	model_class_extension);
+
+REFERENCE FROM support_resource_schema (
+	identifier,
+	label);
+
+REFERENCE FROM person_organization_schema (
+	organization);
+
+REFERENCE FROM measure_schema (
+	length_measure,
+	length_measure_with_unit);
+
+
+
+CONSTANT
+	external_file_address_length: INTEGER := 18;
+
+
+	external_item_code_length: INTEGER := 18;
+
+
+	http_file_name_length: INTEGER := 12;
+
+
+	http_directory_name_length: INTEGER := 8;
+END_CONSTANT;
+
+
+TYPE external_file_address = identifier;
+WHERE
+	WR1: length (SELF) <= external_file_address_length;
+	WR2: NOT (SELF LIKE '* *');
+END_TYPE;
+
+
+TYPE external_item_code_type = identifier;
+WHERE
+	WR1: LENGTH (SELF) <= external_item_code_length;
+	WR2: NOT(SELF LIKE '* *');
+END_TYPE;
+
+
+TYPE http_file_name_type = identifier;
+WHERE
+	WR1: LENGTH (SELF) <= http_file_name_length;
+	WR2: NOT(SELF LIKE '* *');
+	WR3: NOT(SELF LIKE '*.*.*');
+	WR4: ( (NOT(SELF LIKE '*.*'))
+		AND (LENGTH (SELF) <= http_file_name_length - 4))
+		OR ((SELF LIKE '*.?') 
+		AND (LENGTH (SELF) <= http_file_name_length - 2))
+		OR ((SELF LIKE '*.??') 
+		AND (LENGTH (SELF) <= http_file_name_length - 1))
+		OR (SELF LIKE '*.???');
+END_TYPE;
+
+
+TYPE http_directory_name_type = identifier;
+WHERE
+	WR1: LENGTH (SELF) <= http_directory_name_length;
+	WR2: NOT(SELF LIKE '* *');
+END_TYPE;
+
+
+TYPE MIME_type = identifier;
+WHERE
+	WR1: NOT(SELF LIKE '* *');
+END_TYPE;
+
+
+TYPE MIME_subtype = identifier;
+WHERE
+	WR1: NOT(SELF LIKE '* *');
+END_TYPE;
+
+
+TYPE IAB_RFC = integer;
+WHERE
+	WR1: SELF>0;
+END_TYPE;
+
+
+TYPE character_set_type = identifier;
+END_TYPE;
+
+
+TYPE content_encoding_type = identifier;
+WHERE
+	WR1: ( SELF = '7bit' ) OR (SELF = '8bit' ) OR ( SELF = 'binary' ) 
+		OR ( SELF = 'quoted-printable' ) OR ( SELF = 'base64' );
+END_TYPE;
+
+
+TYPE program_status = ENUMERATION OF (source, compiled);
+END_TYPE;
+
+
+TYPE program_reference_name_type = identifier;
+END_TYPE;
+
+
+TYPE compiler_version_type = identifier;
+WHERE
+	WR1: LENGTH(SELF) = version_len;
+	WR2: (SELF LIKE '###') OR (SELF LIKE '#.#') OR 
+		(SELF LIKE '#_#');
+END_TYPE;
+
+
+TYPE illustration_type = ENUMERATION OF (	schematic_drawing,
+								 	realistic_picture,
+									not_static_picture);
+END_TYPE;
+
+
+ENTITY external_file_protocol
+ABSTRACT SUPERTYPE OF (
+	(ONEOF (standard_protocol, non_standard_protocol))
+	ANDOR
+	(ONEOF (program_protocol, data_protocol)));
+	organisation: organization;
+	country: OPTIONAL identifier;
+	protocol_name: identifier;
+	protocol_version: identifier;
+	level: OPTIONAL identifier;
+	designation: item_names;
+	base_protocol: OPTIONAL program_protocol;
+WHERE
+	WR1: (NOT (SELF.protocol_name LIKE '* *'))
+		AND (NOT (SELF.protocol_name LIKE '*.*'))
+		AND (NOT (SELF.protocol_name LIKE '*-*'));
+	WR2: NOT (SELF.protocol_version LIKE '* *');
+END_ENTITY;
+
+
+ENTITY standard_protocol
+ABSTRACT SUPERTYPE OF (ONEOF (standard_simple_program_protocol, 
+	standard_data_protocol))
+SUBTYPE OF (external_file_protocol);
+END_ENTITY;
+
+
+ENTITY non_standard_protocol 
+ABSTRACT SUPERTYPE OF (ONEOF ( non_standard_simple_program_protocol,
+		non_standard_data_protocol))
+SUBTYPE OF (external_file_protocol);
+END_ENTITY;
+
+
+ENTITY data_protocol
+ABSTRACT SUPERTYPE OF (ONEOF (
+	standard_data_protocol,
+	non_standard_data_protocol))
+SUBTYPE OF (external_file_protocol);
+END_ENTITY;
+
+
+ENTITY program_protocol
+ABSTRACT SUPERTYPE OF (ONEOF (
+	linked_interface_program_protocol,
+	simple_program_protocol))
+SUBTYPE OF (external_file_protocol);
+END_ENTITY;
+
+
+ENTITY simple_program_protocol 
+ABSTRACT SUPERTYPE OF (ONEOF (standard_simple_program_protocol,
+		non_standard_simple_program_protocol))
+SUBTYPE OF (program_protocol);
+	language: identifier;
+	status: program_status;
+	compiler_supplier: OPTIONAL organization;
+	compiler_name: OPTIONAL identifier;
+	compiler_version: OPTIONAL compiler_version_type;
+WHERE
+	WR1: ((SELF.status = source) 
+		AND (NOT (EXISTS (SELF.compiler_supplier)))
+		AND (NOT (EXISTS (SELF.compiler_name))) 
+		AND (NOT (EXISTS (SELF.compiler_version))))
+		OR ((SELF.status = compiled)
+		AND (EXISTS (SELF.compiler_supplier)) 
+		AND (EXISTS (SELF.compiler_name)) 
+		AND (EXISTS (SELF.compiler_version)));
+END_ENTITY;
+
+
+ENTITY standard_simple_program_protocol 
+SUBTYPE OF (standard_protocol, simple_program_protocol);
+WHERE
+	WR1: NOT EXISTS (SELF\external_file_protocol.base_protocol);
+END_ENTITY;
+
+
+ENTITY non_standard_simple_program_protocol 
+SUBTYPE OF (non_standard_protocol, simple_program_protocol);
+WHERE
+	WR1: NOT EXISTS (SELF\external_file_protocol.base_protocol);
+END_ENTITY;
+
+
+ENTITY linked_interface_program_protocol
+SUBTYPE OF (program_protocol);
+	link_libraries: SET [1:?] OF program_library_BSU;
+WHERE
+	WR1: QUERY (pl <* SELF.link_libraries
+		| (SIZEOF (pl\basic_semantic_unit.referenced_by) > 0)
+		AND (pl\basic_semantic_unit.referenced_by[1]
+		\dictionary_external_item
+		\external_item.used_protocol
+		<>SELF.base_protocol)) = [];
+	WR2: NOT ('ISO13584_EXTERNAL_FILE_SCHEMA.STANDARD_PROTOCOL'
+		IN TYPEOF (SELF)) AND 
+		NOT ('ISO13584_EXTERNAL_FILE_SCHEMA.NON_STANDARD_PROTOCOL'
+		IN TYPEOF (SELF));
+	WR3: EXISTS(base_protocol) 
+		AND ('ISO13584_EXTERNAL_FILE_SCHEMA.PROGRAM_PROTOCOL' 
+		IN TYPEOF (base_protocol));
+END_ENTITY;
+
+
+ENTITY standard_data_protocol 
+SUBTYPE OF (data_protocol, standard_protocol);
+WHERE
+	WR1: NOT EXISTS (SELF\external_file_protocol.base_protocol);
+END_ENTITY;
+
+
+ENTITY non_standard_data_protocol 
+SUBTYPE OF (data_protocol, non_standard_protocol);
+WHERE
+	WR1: NOT EXISTS (SELF\external_file_protocol.base_protocol);
+END_ENTITY;
+
+
+ENTITY http_protocol 
+SUBTYPE OF (standard_data_protocol);
+	http_RFC: IAB_RFC;
+DERIVE
+	SELF\external_file_protocol.protocol_name : identifier := 'http';
+END_ENTITY;
+
+
+ENTITY external_item 
+ABSTRACT SUPERTYPE OF( ONEOF( 	dictionary_external_item,
+						class_extension_external_item));
+	used_protocol: external_file_protocol;
+	content: external_content;
+END_ENTITY;
+
+
+ENTITY dictionary_external_item 
+ABSTRACT SUPERTYPE OF( ONEOF( 	supplier_BSU_related_content,
+						class_BSU_related_content))
+SUBTYPE OF (content_item, external_item);
+	revision: revision_type;
+END_ENTITY;
+
+
+ENTITY supplier_BSU_related_content 
+ABSTRACT SUPERTYPE OF( program_library_content)
+SUBTYPE OF (dictionary_external_item);
+	SELF\content_item.dictionary_definition: supplier_related_BSU;
+END_ENTITY;
+
+
+ENTITY program_library_content 
+SUBTYPE OF (supplier_BSU_related_content);
+	SELF\content_item.dictionary_definition: program_library_BSU;
+	SELF\external_item.used_protocol: program_protocol;
+END_ENTITY;
+
+
+ENTITY class_BSU_related_content 
+ABSTRACT SUPERTYPE OF( document_content)
+SUBTYPE OF (dictionary_external_item);
+	SELF\content_item.dictionary_definition: class_related_BSU;
+END_ENTITY;
+
+
+ENTITY document_content 
+SUBTYPE OF (class_BSU_related_content);
+	SELF\content_item.dictionary_definition: document_BSU;
+	SELF\external_item.used_protocol: data_protocol;
+END_ENTITY;
+
+
+ENTITY class_extension_external_item 
+ABSTRACT SUPERTYPE OF( ONEOF(	dialogue_resource,
+	representation_reference,
+	program_reference))
+SUBTYPE OF (external_item);
+	code: external_item_code_type;
+INVERSE
+	belongs_to : model_class_extension FOR referenced_external_items;
+UNIQUE
+	UR1: code, belongs_to;
+END_ENTITY;
+
+
+ENTITY representation_reference 
+SUBTYPE OF (class_extension_external_item);
+	SELF\external_item.used_protocol : data_protocol;
+	representation_id	: OPTIONAL label;
+END_ENTITY;
+
+
+ENTITY program_reference
+SUBTYPE OF (class_extension_external_item);
+	SELF\external_item.used_protocol: program_protocol;
+	syntactical_name: program_reference_name_type;
+	in_parameters: OPTIONAL LIST [1:?] OF property_or_data_type_BSU;
+	out_parameters: OPTIONAL LIST [1:?] OF property_or_data_type_BSU;
+	inout_parameters: OPTIONAL LIST [1:?] OF 
+property_or_data_type_BSU;
+END_ENTITY;
+
+
+ENTITY dialogue_resource 
+ABSTRACT SUPERTYPE OF(ONEOF(	message,
+	illustration))
+SUBTYPE OF (class_extension_external_item);
+	SELF\external_item.used_protocol: data_protocol;
+END_ENTITY;
+
+
+ENTITY message
+SUBTYPE OF (dialogue_resource);
+END_ENTITY;
+
+
+ENTITY illustration 
+SUPERTYPE OF (ONEOF(A6_illustration,A9_illustration))
+SUBTYPE OF (dialogue_resource, graphics);
+	kind_of_content : illustration_type;
+	width: OPTIONAL length_measure_with_unit;
+	height: OPTIONAL length_measure_with_unit;
+WHERE
+	WR1: (NOT EXISTS (SELF.width) AND NOT EXISTS (SELF.height))
+		OR (EXISTS (SELF.width) AND EXISTS (SELF.height));
+END_ENTITY;
+
+
+ENTITY A6_illustration 
+SUBTYPE OF (illustration); 
+END_ENTITY;
+
+
+ENTITY A9_illustration
+SUBTYPE OF (illustration); 
+END_ENTITY;
+
+
+ENTITY external_content 
+ABSTRACT SUPERTYPE OF( ONEOF( 
+		translated_external_content,
+		not_translated_external_content,
+		not_translatable_external_content));
+	consists_of: LIST[1:?] OF language_specific_content;
+INVERSE
+	content_of: external_item FOR content;
+END_ENTITY;
+
+
+ENTITY translated_external_content
+SUBTYPE OF (external_content);
+	languages: present_translations;
+WHERE
+	WR1: SIZEOF (SELF\external_content.consists_of) 
+		= SIZEOF (SELF.languages.language_codes);
+END_ENTITY;
+
+
+ENTITY not_translated_external_content
+SUBTYPE OF (external_content);
+WHERE
+	WR1: SIZEOF(SELF\external_content.consists_of) = 1;
+END_ENTITY;
+
+
+ENTITY not_translatable_external_content
+SUBTYPE OF (external_content);
+WHERE
+	WR1: SIZEOF(SELF\external_content.consists_of) = 1;
+END_ENTITY;
+
+
+ENTITY language_specific_content;
+	content_files: SET [1:?] OF external_file_unit; 
+	main_file: OPTIONAL external_file_unit; 
+	character_encoding: OPTIONAL character_set_type;
+INVERSE
+	content_of: external_content FOR consists_of;
+WHERE 
+	WR1: NOT EXISTS(main_file) OR (main_file IN content_files);
+	WR2: EXISTS(main_file) XOR 
+		('ISO13584_EXTERNAL_FILE_SCHEMA.PROGRAM_LIBRARY_CONTENT'
+		IN TYPEOF( SELF.content_of.content_of));
+	WR3: EXISTS (character_encoding) OR NOT
+		('ISO13584_EXTERNAL_FILE_SCHEMA.HTTP_PROTOCOL'
+		IN TYPEOF (SELF.content_of.content_of.used_protocol));
+END_ENTITY;
+
+
+ENTITY external_file_unit
+SUPERTYPE OF (http_file);
+	file				: external_file_address; 
+	content_encoding	: OPTIONAL content_encoding_type;
+INVERSE
+	unit_of: language_specific_content FOR content_files;
+WHERE 
+	WR1: (('ISO13584_EXTERNAL_FILE_SCHEMA.HTTP_PROTOCOL'
+		IN TYPEOF( SELF.unit_of.content_of.content_of.used_protocol))
+			AND ('ISO13584_EXTERNAL_FILE_SCHEMA.HTTP_FILE'
+				IN TYPEOF( SELF)))
+		XOR NOT 
+		(('ISO13584_EXTERNAL_FILE_SCHEMA.HTTP_PROTOCOL'
+		IN TYPEOF( SELF.unit_of.content_of.content_of.used_protocol))
+			OR ('ISO13584_EXTERNAL_FILE_SCHEMA.HTTP_FILE'
+		IN TYPEOF( SELF)));
+END_ENTITY;
+
+
+ENTITY http_file
+SUBTYPE OF (external_file_unit);
+	mime				: MIME_type; 
+	exchange_format	: MIME_subtype; 
+	format_RFC		: OPTIONAL IAB_RFC; 
+	http_file_name		: http_file_name_type; 
+	http_directory		: OPTIONAL http_class_directory; 
+	remote_access		: OPTIONAL absolute_URL_type; 
+UNIQUE
+	UR1: http_file_name, http_directory;
+WHERE
+	WR1: EXISTS(http_directory) XOR 
+		('ISO13584_EXTERNAL_FILE_SCHEMA.SUPPLIER_BSU_RELATED_CONTENT'
+		IN TYPEOF( SELF.unit_of.content_of.content_of));
+END_ENTITY;
+
+
+ENTITY http_class_directory;
+	name: http_directory_name_type;
+	class: class_BSU;
+UNIQUE
+	UR1: class;
+END_ENTITY;
+
+
+FUNCTION supplier_associated_http_files (sup_BSU: supplier_BSU)
+						: SET OF http_file;
+
+LOCAL
+	sup: supplier_element;
+	files: SET OF http_file := [];
+	i,j, k, l, m: INTEGER;
+END_LOCAL;
+
+IF SIZEOF (sup_BSU.definition) > 0
+	THEN sup := sup_BSU.definition[1]\supplier_element;
+ELSE 
+	RETURN (files);
+END_IF;
+
+REPEAT i := LOBOUND(sup.associated_items) TO 
+						HIBOUND(sup.associated_items);
+--supplier_BSU_relationship
+	REPEAT j := LOBOUND(sup.associated_items[i].related_tokens)
+			TO HIBOUND(sup.associated_items[i].related_tokens);
+--supplier_related_BSU
+		REPEAT k := LOBOUND(sup.associated_items[i].related_tokens[j]
+				.referenced_by) TO HIBOUND(sup.associated_items[i]
+				.related_tokens[j].referenced_by); --content_item
+
+			IF ('ISO13584_EXTERNAL_FILE_SCHEMA.EXTERNAL_ITEM'IN 
+				TYPEOF(sup.associated_items[i]
+				.related_tokens[j].referenced_by[k]))
+			THEN
+				REPEAT l := LOBOUND(sup.associated_items[i]
+					.related_tokens[j].referenced_by[k]
+					\external_item.content.consists_of)
+					TO 
+					HIBOUND(sup.associated_items[i]
+					.related_tokens[j].referenced_by[k]
+					\external_item.content.consists_of);
+									--language_specific_content
+
+					REPEAT m := LOBOUND(sup.associated_items[i]
+						.related_tokens[j].referenced_by[k]
+						\external_item.content
+						.consists_of[l].content_files)
+						TO HIBOUND ( sup.associated_items[i]
+						.related_tokens[j].referenced_by[k]
+						\external_item.content
+						.consists_of[l].content_files);
+										--external_file_unit
+						IF 
+						('ISO13584_EXTERNAL_FILE_SCHEMA.HTTP_FILE' 
+							IN TYPEOF (sup.associated_items[i]
+							.related_tokens[j].referenced_by[k]
+							\external_item.content
+							.consists_of[l].content_files[m]))
+						THEN
+							files := files + 
+							sup.associated_items[i]
+							.related_tokens[j].referenced_by[k]
+							\external_item.content
+							.consists_of[l].content_files[m];
+						END_IF; -- http_file
+					END_REPEAT; -- m
+				END_REPEAT; -- l
+			END_IF; -- external_item
+		END_REPEAT; -- k
+	END_REPEAT; -- j
+END_REPEAT; -- i
+
+RETURN (files);
+
+END_FUNCTION; -- supplier_associated_http_files 
+
+
+RULE unique_http_file_name_per_supplier_element_rule FOR 
+							(supplier_BSU);
+WHERE
+	WR1: QUERY (sup_BSU <* supplier_BSU | (SIZEOF 
+		(sup_BSU.definition) = 1) AND
+		( QUERY (fil_1 <* supplier_associated_http_files (sup_BSU)
+		| QUERY (fil_2 <* supplier_associated_http_files (sup_BSU)
+		| fil_1.http_file_name = fil_2.http_file_name)
+		<> [fil_1] ) <> [] ) )
+		= [];
+END_RULE; -- unique_http_file_name_per_supplier_element_rule
+
+
+RULE unique_http_directory_name_per_supplier_rule FOR 
+							(http_class_directory);
+WHERE
+	WR1: QUERY (dir_1 <* http_class_directory
+		| QUERY (dir_2 <* http_class_directory
+		| (dir_1.name = dir_2.name) AND 
+		(dir_1.class.defined_by = dir_2.class.defined_by))
+		<> [dir_1] )
+		= [];
+END_RULE; -- unique_http_directory_name_per_supplier_rule
+
+
+RULE unambiguous_not_translated_content_rule FOR 
+				(not_translated_external_content, 
+				global_language_assignment);
+WHERE
+	WR1: (SIZEOF (not_translated_external_content) = 0)
+		OR (SIZEOF (global_language_assignment) = 1);
+END_RULE; -- unambiguous_not_translated_content_rule
+
+
+RULE no_http_directory_for_supplier_related_file_rule FOR 
+	(http_file, supplier_bsu_related_content);
+WHERE
+	WR1: QUERY (http_f <* http_file |
+	(('ISO13584_EXTERNAL_FILE_SCHEMA.SUPPLIER_BSU_RELATED_CONTENT'
+	IN TYPEOF( http_f\external_file_unit.unit_of
+		.content_of.content_of))
+	AND EXISTS(http_f.http_directory))) = [];
+END_RULE; -- no_http_directory_for_supplier_related_file_rule
+
+
+RULE http_directory_refers_to_bsu_related_class_rule FOR 
+	(http_file, class_bsu_related_content);
+WHERE
+	WR1: QUERY (http_f <* http_file| 
+	(('ISO13584_EXTERNAL_FILE_SCHEMA.CLASS_BSU_RELATED_CONTENT'
+	IN TYPEOF( http_f\external_file_unit.unit_of
+		.content_of.content_of))
+	AND (http_f.http_directory.class <> http_f\
+	external_file_unit.unit_of.content_of.content_of
+			\content_item.dictionary_definition))) = [];
+END_RULE; -- http_directory_refers_to_bsu_related_class_rule
+
+
+RULE http_directory_refers_to_class_extension_rule FOR 
+	(http_file, class_extension_external_item );
+WHERE
+	WR1: QUERY (http_f <* http_file|
+		('ISO13584_EXTERNAL_FILE_SCHEMA' + 
+						'.CLASS_EXTENSION_EXTERNAL_ITEM'
+		IN TYPEOF( http_f\external_file_unit.unit_of
+			.content_of.content_of))
+		AND (http_f.http_directory.class <> http_f\
+		external_file_unit.unit_of.content_of.content_of
+		\class_extension_external_item.belongs_to
+		\content_item.dictionary_definition)) = [];
+END_RULE; -- http_directory_refers_to_class_extension_rule 
+
+
+RULE illustration_is_not_a_referenced_graphics_rule FOR 
+	(graphics );
+WHERE
+	WR1: QUERY (icon <* graphics| 
+		('ISO13584_EXTENDED_DICTIONARY_SCHEMA.REFERENCED_GRAPHICS'
+		IN TYPEOF( icon))
+		AND
+		('ISO13584_EXTERNAL_FILE_SCHEMA.ILLUSTRATION'
+		IN TYPEOF( icon)))
+		= [];
+END_RULE; -- illustration_is_not_a_referenced_graphics_rule 
+
+
+
+END_SCHEMA; -- ISO13584_external_file_schema

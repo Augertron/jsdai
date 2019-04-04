@@ -1,0 +1,63 @@
+-- 2000-10-08
+
+(*
+
+  ISO/WD 10303-5x, Mathematical description, 2000-10-04
+
+  WG12 N620
+
+   This file contains the following schemas:
+      mathematical_identification_schema;
+      distribution_mapping_schema;
+      topological_definition_and_mesh_schema;
+      unstructured_mesh_schema;
+      structured_mesh_schema;
+      mesh_function_schema;
+      fea_definition_relationships_schema.
+*)
+
+
+SCHEMA structured_mesh_schema;
+
+REFERENCE FROM topological_definition_and_mesh_schema -- 10303-5x
+  (mesh,
+  topological_region);
+
+ENTITY cell_of_structured_mesh;
+  Cell               : topological_region;
+  mesh               : structured_mesh;
+  identifier_of_cell : ARRAY[1:topological_dimension] OF INTEGER;
+DERIVE
+  topological_dimension : INTEGER := mesh.topological_dimension;
+END_ENTITY;
+
+ENTITY composition_of_structured_mesh;
+  part : structured_mesh;
+  whole : structured_mesh;
+  lower_corner_vertex  : ARRAY[1:whole_topological_dimension] OF INTEGER;
+  lower_face           : 
+                ARRAY[1:whole_topological_dimension] OF OPTIONAL BOOLEAN;
+-- RR: here changed as well
+--  used_dimensions      : ARRAY[1:part_topologial_dimension] OF INTEGER;
+  used_dimensions      : ARRAY[1:part_topological_dimension] OF INTEGER;
+  used_dimension_sense : ARRAY[1:part_topological_dimension] OF BOOLEAN;
+DERIVE
+  whole_topological_dimension : INTEGER := whole.topological_dimension;
+-- RR: changed name to part_topological_dimension
+--  part_topologial_dimension : INTEGER := part.topological_dimension;
+  part_topological_dimension : INTEGER := part.topological_dimension;
+END_ENTITY;
+
+ENTITY structured_mesh
+  SUBTYPE OF (
+    mesh,
+    topological_region);
+  number_of_cells : ARRAY[1:topological_dimension] OF INTEGER;
+(*
+DERIVE
+  topological_dimension : INTEGER :=
+     SELF\topological_region.topological_dimension;
+*)
+END_ENTITY;
+
+END_SCHEMA;

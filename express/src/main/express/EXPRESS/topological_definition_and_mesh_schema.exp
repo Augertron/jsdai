@@ -1,0 +1,105 @@
+-- 2000-10-08
+
+(*
+
+  ISO/WD 10303-5x, Mathematical description, 2000-10-04
+
+  WG12 N620
+
+   This file contains the following schemas:
+      mathematical_identification_schema;
+      distribution_mapping_schema;
+      topological_definition_and_mesh_schema;
+      unstructured_mesh_schema;
+      structured_mesh_schema;
+      mesh_function_schema;
+      fea_definition_relationships_schema.
+*)
+
+
+
+SCHEMA topological_definition_and_mesh_schema;
+
+REFERENCE FROM topology_schema -- 10303-42
+  (topological_representation_item);
+
+REFERENCE FROM mathematical_identification_schema -- ISO 10303-5x
+  (space_context_select);
+
+ENTITY mesh
+  SUBTYPE OF (topological_representation_item);
+END_ENTITY; 
+
+ENTITY physical_space_topology;
+  physical_space  :  space_context_select;
+  space_topology  :  topological_representation_item;
+END_ENTITY; 
+
+ENTITY product_of_mesh;
+  operands  :  LIST[2:2] OF mesh; 
+  product   :  mesh;
+WHERE 
+  consistent_topological_dimensions : 
+    consistent_topological_dimensions (operands, product);
+  single_dimensional_operand : single_dimension_operand (operands);
+END_ENTITY;
+
+ENTITY topological_region
+  SUBTYPE OF (topological_representation_item);
+  topological_dimension  :  INTEGER;
+  shape                  :  OPTIONAL topological_shape;
+END_ENTITY;
+
+ENTITY topological_shape;
+END_ENTITY;
+
+FUNCTION consistent_topological_dimensions (
+  operands  :  LIST[2:2] OF mesh;
+  product   :  mesh) : BOOLEAN;
+    
+  LOCAL
+    status : BOOLEAN;
+  END_LOCAL;
+  
+  IF ('TOPOLOGICAL_DEFINITION_AND_MESH_SCHEMA.TOPOLOGICAL_REGION' IN
+       TYPEOF(operands[1])) AND
+     ('TOPOLOGICAL_DEFINITION_AND_MESH_SCHEMA.TOPOLOGICAL_REGION' IN
+       TYPEOF(operands[2])) AND
+     ('TOPOLOGICAL_DEFINITION_AND_MESH_SCHEMA.TOPOLOGICAL_REGION' IN
+       TYPEOF(product)) 
+  THEN 
+    status := operands[1]\topological_region.topological_dimension + 
+       operands[2]\topological_region.topological_dimension = 
+       product\topological_region.topological_dimension;
+  ELSE
+    status := FALSE;
+  END_IF;
+  
+  RETURN(status);
+  
+END_FUNCTION;
+
+FUNCTION single_dimension_operand (
+  operands  :  LIST[2:2] OF mesh) : BOOLEAN;
+    
+  LOCAL
+    status : BOOLEAN;
+  END_LOCAL;
+  
+  IF ('TOPOLOGICAL_DEFINITION_AND_MESH_SCHEMA.TOPOLOGICAL_REGION' IN
+       TYPEOF(operands[1])) AND
+       ('TOPOLOGICAL_DEFINITION_AND_MESH_SCHEMA.TOPOLOGICAL_REGION' IN
+       TYPEOF(operands[2]))
+  THEN status := 
+    (operands[1]\topological_region.topological_dimension = 1) OR
+    (operands[2]\topological_region.topological_dimension = 1);
+  ELSE
+    status := FALSE;
+  END_IF;
+  
+  RETURN(status);
+  
+END_FUNCTION;
+
+END_SCHEMA;
+

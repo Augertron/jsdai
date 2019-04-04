@@ -1,0 +1,86 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>net.jsdai</groupId>
+    <artifactId>jsdai_parent</artifactId>
+    <version>4.5.0-SNAPSHOT</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
+
+  <groupId>net.jsdai</groupId>
+  <artifactId>jsdai_lib</artifactId>
+  <packaging>jar</packaging>
+
+  <dependencies>
+    <dependency>
+      <groupId>net.jsdai</groupId>
+      <artifactId>jsdai_runtime</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.jsdai</groupId>
+      <artifactId>jsdai_extendedDictionary</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-repo</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>net.jsdai</groupId>
+                  <artifactId>jsdai_extendedDictionary</artifactId>
+                  <type>sdai</type>
+                  <classifier>repo</classifier>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.outputDirectory}/REPOSITORIES</outputDirectory>
+                  <destFileName>ExpressCompilerRepo.sdai</destFileName>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <artifactSet>
+                <includes>
+                  <include>net.jsdai:jsdai_runtime</include>
+                  <include>net.jsdai:jsdai_extendedDictionary</include>
+                </includes>
+              </artifactSet>
+              <filters>
+                <filter>
+                  <artifact>net.jsdai:jsdai_runtime</artifact>
+                  <includes>
+                    <include>jsdai/dictionary/**</include>
+                    <include>jsdai/mapping/**</include>
+                  </includes>
+                </filter>
+              </filters>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

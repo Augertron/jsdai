@@ -1,0 +1,155 @@
+SCHEMA ESTS;
+
+TYPE chi = LIST [1:3] OF REAL;
+END_TYPE;
+
+TYPE omicron = nu;
+END_TYPE;
+
+TYPE phi = LIST [1:?] OF omega;
+END_TYPE;
+
+TYPE pie = xi;
+END_TYPE;
+
+TYPE psi = LIST [1:?] OF phi;
+END_TYPE;
+
+TYPE upsilon = SET [0:3] OF nu;
+END_TYPE;
+
+TYPE xi = INTEGER;
+END_TYPE;
+
+TYPE tau = ENUMERATION OF
+	(stigma,
+	 digamma,
+	 koppa,
+	 sampi);
+END_TYPE;
+
+TYPE alpha_or_kappa = SELECT
+	(alpha,
+	 kappa);
+END_TYPE;
+
+TYPE nu = SELECT
+	(phi,
+	 psi,
+	 chi,
+	 sigma,
+	 omega,
+	 tau,
+	 xi,
+	 pie);
+END_TYPE;
+
+TYPE rho = SELECT
+	(nu,
+	 omicron,
+	 upsilon);
+END_TYPE;
+
+ENTITY alpha;
+	a1 : kappa;
+	a2 : zeta;
+END_ENTITY;
+
+ENTITY beta
+	SUBTYPE OF (alpha);
+	xxx : INTEGER;
+	yyy : REAL;
+END_ENTITY;
+
+ENTITY delta
+	SUBTYPE OF (beta,gamma);
+ DERIVE
+	SELF\alpha.a1 : mu := xxx;
+END_ENTITY;
+
+ENTITY epsilon;
+	e1 : nu;
+	e2 : LIST [1:?] OF nu;
+	e3 : omicron;
+	e4 : ARRAY [1:3] OF omicron;
+	e5 : rho;
+	e6 : SET [1:?] OF rho;
+	e7 : LIST [0:?] OF alpha;
+END_ENTITY;
+
+ENTITY eta
+	SUBTYPE OF (zeta);
+ INVERSE
+	SELF\zeta.z2 : SET[1:?] OF alpha FOR a2;
+END_ENTITY;
+
+ENTITY gamma
+	SUBTYPE OF (alpha,kappa);
+	SELF\alpha.a1 : lamda;
+	xxx : INTEGER;
+	yyy : STRING;
+END_ENTITY;
+
+ENTITY iota;
+END_ENTITY;
+
+ENTITY kappa;
+	k1 : INTEGER;
+ DERIVE
+	k2 : INTEGER := k1;
+ INVERSE
+	k3 : alpha FOR a1;
+END_ENTITY;
+
+ENTITY lamda
+	SUBTYPE OF (kappa);
+	SELF\kappa.k1 : xi;
+ DERIVE
+	SELF\kappa.k2 : xi := k1;
+END_ENTITY;
+
+ENTITY mu
+	SUBTYPE OF (lamda);
+	SELF\lamda.k1 : pie;
+ DERIVE
+	SELF\lamda.k2 : pie := k1;
+END_ENTITY;
+
+ENTITY omega;
+	o0 : iota;
+	o1 : NUMBER;
+	o2 : REAL;
+	o3 : INTEGER;
+	o4 : LOGICAL;
+	o5 : BOOLEAN;
+	o6 : STRING;
+	o7 : BINARY;
+	o8 : tau;
+	o9 : xi;
+END_ENTITY;
+
+ENTITY sigma;
+	s1 : LIST [0:?] OF NUMBER;
+	s2 : BAG [0:?] OF REAL;
+	s3 : ARRAY [0:4] OF INTEGER;
+	s4 : SET [2:4] OF LOGICAL;
+	s5 : LIST [2:4] OF BOOLEAN;
+	s6 : BAG [2:4] OF STRING;
+	s7 : ARRAY [2:4] OF BINARY;
+	s8 : LIST [1:?] OF tau;
+	s9 : SET [1:?] OF xi;
+END_ENTITY;
+
+ENTITY theta
+	SUBTYPE OF (eta);
+ INVERSE
+	SELF\eta.z2 : SET[2:2] OF alpha FOR a2;
+END_ENTITY;
+
+ENTITY zeta;
+	z1 : alpha_or_kappa;
+ INVERSE
+	z2 : BAG[0:?] OF alpha FOR a2;
+END_ENTITY;
+
+END_SCHEMA;

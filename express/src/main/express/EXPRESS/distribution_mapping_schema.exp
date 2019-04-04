@@ -1,0 +1,78 @@
+-- 2000-10-08
+  
+(*
+
+  ISO/WD 10303-5x, Mathematical description, 2000-10-04
+
+  WG12 N620
+
+   This file contains the following schemas:
+      mathematical_identification_schema;
+      distribution_mapping_schema;
+      topological_definition_and_mesh_schema;
+      unstructured_mesh_schema;
+      structured_mesh_schema;
+      mesh_function_schema;
+      fea_definition_relationships_schema.
+*)
+
+SCHEMA distribution_mapping_schema;
+
+REFERENCE FROM support_resource_schema -- ISO 10303-41
+  (identifier,
+  label,
+  text);
+
+REFERENCE FROM process_property_schema -- ISO 10303-49
+  (action_property,
+  resource_property);
+
+REFERENCE FROM product_property_definition_schema -- ISO 10303-41
+  (property_definition,
+  general_property_relationship);
+
+REFERENCE FROM mathematical_identification_schema -- ISO 10303-5x
+  (maths_space_context);
+
+
+REFERENCE FROM mathematical_functions_schema -- 10303-50
+  (maths_function);
+
+-- RR replaced by mathematical_functions_schema
+--REFERENCE FROM mathematical_constructs_schema -- 10303-50
+--  (maths_function);
+
+TYPE property_distribution_select = SELECT (
+  action_property,
+  property_definition,
+  resource_property,
+  general_property_relationship);
+END_TYPE;
+
+ENTITY maths_space_context_relationship;
+  related_context   :  maths_space_context;
+  relating_context  :  maths_space_context;
+  name              :  label;
+  description       :  OPTIONAL text; 
+END_ENTITY;
+
+ENTITY maths_space_context_relationship_description;
+--RR: -removed duplicate attribute-  description             :  maths_function;
+  described_relationship  :  maths_space_context_relationship;
+  id                      :  identifier;
+  name                    :  label;
+  description             :  OPTIONAL text; 
+END_ENTITY;
+
+ENTITY property_distribution_description;
+  abstract_function  :  maths_function;
+  physical_function  :  property_distribution_select;
+  domain_context     :  maths_space_context;
+  range_context      :  maths_space_context;
+  id                 :  identifier;
+  name               :  label;
+  description        :  OPTIONAL text; 
+END_ENTITY;
+
+END_SCHEMA;
+

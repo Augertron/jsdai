@@ -1,0 +1,213 @@
+-- 2000-09-08
+
+(*
+
+	WG12 N525 								2000-05-30
+
+	EXPRESS Declarations for ISO 10303-41: 2nd Edition
+*)
+
+
+SCHEMA person_organization_schema;
+REFERENCE FROM basic_attribute_schema                  -- ISO 10303-41
+  (description_attribute,
+   get_description_value,
+   get_id_value,
+   get_name_value,
+   get_role,
+   id_attribute,
+   name_attribute,
+   object_role,
+   role_association);
+REFERENCE FROM support_resource_schema                 -- ISO 10303-41
+  (bag_to_set,
+   identifier,
+   label,
+   text);
+
+TYPE person_organization_select = SELECT
+  (person,
+   organization,
+   person_and_organization);
+END_TYPE; -- person_organization_select
+
+ENTITY address;
+  internal_location       : OPTIONAL label;
+  street_number           : OPTIONAL label;
+  street                  : OPTIONAL label;
+  postal_box              : OPTIONAL label;
+  town                    : OPTIONAL label;
+  region                  : OPTIONAL label;
+  postal_code             : OPTIONAL label;
+  country                 : OPTIONAL label;
+  facsimile_number        : OPTIONAL label;
+  telephone_number        : OPTIONAL label;
+  electronic_mail_address : OPTIONAL label;
+  telex_number            : OPTIONAL label;
+DERIVE
+  name          : label := get_name_value (SELF);
+  url           : identifier := get_id_value (SELF);
+WHERE
+  WR1: EXISTS(internal_location)       OR
+       EXISTS(street_number)           OR
+       EXISTS(street)                  OR
+       EXISTS(postal_box)              OR
+       EXISTS(town)                    OR
+       EXISTS(region)                  OR
+       EXISTS(postal_code)             OR
+       EXISTS(country)                 OR
+       EXISTS(facsimile_number)        OR
+       EXISTS(telephone_number)        OR
+       EXISTS(electronic_mail_address) OR
+       EXISTS(telex_number);
+END_ENTITY; -- address
+
+ENTITY organization;
+  id          : OPTIONAL identifier;
+  name        : label;
+  description : OPTIONAL text;
+END_ENTITY; -- organization
+
+ENTITY organization_relationship;
+  name                  : label;
+  description           : OPTIONAL text;
+  relating_organization : organization;
+  related_organization  : organization;
+END_ENTITY; -- organization_relationship
+
+ENTITY organization_role;
+  name        : label;
+DERIVE
+  description : text := get_description_value (SELF);
+WHERE
+  WR1 : SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' +
+                       'DESCRIPTION_ATTRIBUTE.DESCRIBED_ITEM')) <= 1;
+END_ENTITY; -- organization_role
+
+ENTITY organizational_address
+  SUBTYPE OF (address);
+  organizations : SET [1:?] OF organization;
+  description   : OPTIONAL text;
+END_ENTITY; -- organizational_address
+
+ENTITY organizational_project;
+  name                      : label;
+  description               : OPTIONAL text;
+  responsible_organizations : SET[1:?] OF organization;
+DERIVE
+  id                        : identifier := get_id_value (SELF);
+WHERE
+  WR1 : SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' +
+               'ID_ATTRIBUTE.IDENTIFIED_ITEM')) <= 1;
+END_ENTITY; -- organizational_project
+
+ENTITY organizational_project_relationship;
+  name                            : label;
+  description                     : OPTIONAL text;
+  relating_organizational_project : organizational_project;
+  related_organizational_project  : organizational_project;
+END_ENTITY; -- organizational_project_relationship
+
+ENTITY person;
+  id            : identifier;
+  last_name     : OPTIONAL label;
+  first_name    : OPTIONAL label;
+  middle_names  : OPTIONAL LIST [1:?] OF label;
+  prefix_titles : OPTIONAL LIST [1:?] OF label;
+  suffix_titles : OPTIONAL LIST [1:?] OF label;
+WHERE
+  WR1: EXISTS(last_name) OR EXISTS(first_name);
+END_ENTITY; -- person
+
+ENTITY person_and_organization;
+  the_person       : person;
+  the_organization : organization;
+DERIVE
+  name             : label := get_name_value (SELF);
+  description      : text := get_description_value (SELF);
+WHERE
+  WR1 : SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' +
+                       'NAME_ATTRIBUTE.NAMED_ITEM')) <= 1;
+  WR2 : SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' +
+                       'DESCRIPTION_ATTRIBUTE.DESCRIBED_ITEM')) <= 1;
+END_ENTITY; -- person_and_organization
+
+ENTITY person_and_organization_role;
+  name        : label;
+DERIVE
+  description : text := get_description_value (SELF);
+WHERE
+  WR1 : SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' +
+                       'DESCRIPTION_ATTRIBUTE.DESCRIBED_ITEM')) <= 1;
+END_ENTITY; -- person_and_organization_role
+
+ENTITY person_role;
+  name        : label;
+DERIVE
+  description : text := get_description_value (SELF);
+WHERE
+  WR1 : SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' +
+                       'DESCRIPTION_ATTRIBUTE.DESCRIBED_ITEM')) <= 1;
+END_ENTITY; -- person_role
+
+ENTITY personal_address
+  SUBTYPE OF (address);
+  people      : SET [1:?] OF person;
+  description : OPTIONAL text;
+END_ENTITY; -- personal_address
+
+FUNCTION acyclic_organization_relationship
+  (relation          : organization_relationship;
+   relatives         : SET [1:?] OF organization;
+   specific_relation : STRING) : BOOLEAN;
+  LOCAL
+    x                : SET OF organization_relationship;
+  END_LOCAL;
+  IF relation.relating_organization IN relatives THEN
+    RETURN (FALSE);
+  END_IF;
+  x := QUERY (org <* bag_to_set
+             (USEDIN (relation.relating_organization,
+             'PERSON_ORGANIZATION_SCHEMA.' +
+             'ORGANIZATION_RELATIONSHIP.' +
+             'RELATED_ORGANIZATION')) |
+              specific_relation IN TYPEOF (org));
+  REPEAT i := 1 TO HIINDEX(x);
+    IF NOT acyclic_organization_relationship
+      (x[i], 
+       relatives + relation.relating_organization, 
+       specific_relation) THEN
+      RETURN(FALSE);
+    END_IF;
+  END_REPEAT;
+  RETURN(TRUE);
+END_FUNCTION; -- acyclic_organization_relationship
+
+FUNCTION acyclic_organizational_project_relationship
+  (relation          : organizational_project_relationship;
+   relatives         : SET [1:?] OF organizational_project;
+   specific_relation : STRING) : BOOLEAN;
+  LOCAL
+    x                : SET OF organizational_project_relationship;
+  END_LOCAL;
+  IF relation.relating_organizational_project IN relatives THEN 
+    RETURN (FALSE);
+  END_IF;
+  x := QUERY (op <* bag_to_set 
+             (USEDIN (relation.relating_organizational_project,
+             'PERSON_ORGANIZATION_SCHEMA.' + 
+             'ORGANIZATIONAL_PROJECT_RELATIONSHIP.' +
+             'RELATED_ORGANIZATIONAL_PROJECT')) |
+              specific_relation IN TYPEOF (op));
+  REPEAT i := 1 TO HIINDEX(x);
+    IF NOT acyclic_organizational_project_relationship
+      (x[i], 
+       relatives + relation.relating_organizational_project, 
+       specific_relation) THEN
+      RETURN(FALSE);
+    END_IF;
+  END_REPEAT;
+  RETURN(TRUE);
+END_FUNCTION; -- acyclic_organizational_project_relationship
+
+END_SCHEMA; -- person_organization_schema

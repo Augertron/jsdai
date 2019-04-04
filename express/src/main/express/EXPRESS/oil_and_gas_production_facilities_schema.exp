@@ -1,0 +1,2110 @@
+SCHEMA oil_and_gas_production_facilities_schema;
+
+(* ISO 15926-2 CD Version August 1999 *)
+
+  TYPE activity_or_possessed_event_effect = SELECT
+    (activity,
+     possessed_event_effect);
+  END_TYPE;
+
+  TYPE class_or_possessed_characteristic = SELECT
+    (class_of_characteristic,
+     possessed_characteristic);
+  END_TYPE;
+
+  TYPE person_or_organization = SELECT
+    (organization,
+     person);
+  END_TYPE;
+
+  TYPE class_or_possessed_point_in_space = SELECT
+    (class_of_point_in_space,
+     possessed_point_in_space);
+  END_TYPE;
+
+  ENTITY activity
+    SUBTYPE OF(individual);
+  END_ENTITY;
+
+  ENTITY individual
+    ABSTRACT SUPERTYPE OF (ONEOF(activity, physical_object) ANDOR ONEOF(whole_individual, possessed_aspect) ANDOR ONEOF(specific_individual, typical_individual) ANDOR ONEOF(plural_individual, single_individual))
+    SUBTYPE OF(application_object);
+  END_ENTITY;
+
+  ENTITY application_object
+    ABSTRACT SUPERTYPE OF (ONEOF(class, individual, specialization_of_class, possession_of_aspect));
+      exchange_identifier : OPTIONAL STRING;
+  END_ENTITY;
+
+  ENTITY class
+    ABSTRACT SUPERTYPE OF (ONEOF(class_of_class, class_of_individual))
+    SUBTYPE OF(application_object);
+  END_ENTITY;
+
+  ENTITY class_of_class
+    SUBTYPE OF(class);
+  END_ENTITY;
+
+  ENTITY class_of_individual
+    ABSTRACT SUPERTYPE OF (ONEOF(class_of_plural_individual, class_of_single_individual) ANDOR ONEOF(class_of_whole_individual, class_of_aspect) ANDOR ONEOF(class_of_activity, class_of_physical_object))
+    SUBTYPE OF(class);
+  END_ENTITY;
+
+  ENTITY class_of_plural_individual
+    SUBTYPE OF(class_of_individual);
+  END_ENTITY;
+
+  ENTITY class_of_single_individual
+    SUBTYPE OF(class_of_individual);
+  END_ENTITY;
+
+  ENTITY class_of_whole_individual
+    SUBTYPE OF(class_of_individual);
+  END_ENTITY;
+
+  ENTITY class_of_aspect
+    ABSTRACT SUPERTYPE OF (ONEOF(class_of_characteristic, class_of_state, class_of_association, class_of_encoded_information, class_of_information, class_of_characteristic_value, class_of_symbol, class_of_identification_aspect) ANDOR ONEOF(concept_of_aspect, common_aspect))
+    SUBTYPE OF(class_of_individual);
+  END_ENTITY;
+
+  ENTITY class_of_characteristic
+    ABSTRACT SUPERTYPE OF (ONEOF(concept_of_characteristic, common_characteristic) ANDOR ONEOF(class_of_property, class_of_temporal_aspect, class_of_spatial_aspect, class_of_quality, class_of_compound_characteristic))
+    SUBTYPE OF(class_of_aspect);
+  END_ENTITY;
+
+  ENTITY concept_of_characteristic
+    SUPERTYPE OF (ONEOF(concept_of_property, concept_of_temporal_aspect, concept_of_quality, concept_of_compound_characteristic, concept_of_spatial_aspect))
+    SUBTYPE OF(class_of_characteristic, concept_of_aspect);
+  END_ENTITY;
+
+  ENTITY concept_of_aspect
+    SUPERTYPE OF (ONEOF(concept_of_association, concept_of_characteristic, concept_of_state, concept_of_symbol, concept_of_encoded_information, concept_of_information, concept_of_characteristic_value))
+    SUBTYPE OF(class_of_aspect);
+  END_ENTITY;
+
+  ENTITY concept_of_association
+    SUBTYPE OF(class_of_association, concept_of_aspect);
+  END_ENTITY;
+
+  ENTITY class_of_association
+    SUPERTYPE OF (ONEOF(concept_of_association, common_association) ANDOR class_of_comparison_of_characteristic)
+    SUBTYPE OF(class_of_aspect);
+  END_ENTITY;
+
+  ENTITY common_association
+    ABSTRACT SUPERTYPE OF (ONEOF(common_composition_of_individual, common_purpose_of_possessed_aspect, common_derivation_of_characteristic, common_comparison_of_characteristic_with_reference, common_change_of_state, common_purpose_of_aspect, common_temporal_sequence_of_activity, common_installation_of_physical_object_for_functional_physical_object, common_possession_of_decomposition_aspect_of_physical_object, connection_of_physical_object_with_member_of_class_of_physical_object, usage_of_member_of_class_of_physical_object_in_connection, common_physical_feature_of_individual_physical_object, common_connection_of_physical_object, common_usage_of_physical_object_in_connection, common_segregation_of_physical_object, common_usage_of_intermediate_physical_object_for_segregation, common_possession_of_topologic_sequence_aspect_by_physical_object, common_topologic_sequence_of_physical_object, common_protection_of_physical_object, common_physical_object_following_route, common_source_of_route, common_destination_of_route, common_possession_of_routing_aspect_of_physical_object, common_information_about_member_of_class, common_reference_to_object_within_information, common_possession_of_aspect, common_conversion_of_encoded_information, common_component_of_location_of_point_in_space, common_involvement_of_physical_object_in_activity, involvement_of_physical_object_in_member_of_class_of_activity, installation_of_class_of_physical_object_for_functional_physical_object, common_role_in_life_of_physical_object, role_in_life_of_members_of_class_of_physical_object, common_information_about_application_object, common_inclusion_of_information, common_reference_to_member_of_class, common_reference_to_application_object, common_unique_context_for_reference, common_adjacency_of_point_in_space, composition_of_individual_from_members_of_class_of_individual, common_component_of_compound_characteristic, common_adjacency_of_compound_characteristic_point, common_functional_part_of_individual_functional_object, common_controlling_authority_of_reference, common_factorization_of_property_value, common_linear_conversion_of_property_value, common_displacement_of_point_in_space, common_reference_between_physical_object) ANDOR ONEOF(common_asserting_association, common_probalilistic_association, common_denying_association))
+    SUBTYPE OF(class_of_association, common_aspect);
+      role_1_life_lower_cardinality         : INTEGER;
+      role_1_life_upper_cardinality         : OPTIONAL INTEGER;
+      role_2_life_lower_cardinality         : INTEGER;
+      role_2_life_upper_cardinality         : OPTIONAL INTEGER;
+      role_2_simultaneous_upper_cardinality : OPTIONAL INTEGER;
+      role_1_simultaneous_upper_cardinality : OPTIONAL INTEGER;
+      role_2_simultaneous_lower_cardinality : INTEGER;
+      role_1_simultaneous_lower_cardinality : INTEGER;
+  END_ENTITY;
+
+  ENTITY common_aspect
+    SUPERTYPE OF (ONEOF(common_association, common_characteristic, common_state, common_decomposition_aspect_of_activity, common_decomposition_aspect_of_physical_object, common_topologic_sequence_aspect_of_physical_object, common_routing_aspect_of_physical_object, common_point_approximation_of_spatial_aspect, common_characteristic_value, common_point_approximation_of_compound_characteristic, common_symbol, common_information, common_encoded_information))
+    SUBTYPE OF(class_of_aspect);
+  END_ENTITY;
+
+  ENTITY common_characteristic
+    SUPERTYPE OF (ONEOF(common_property, common_temporal_aspect, common_quality, common_compound_characteristic, common_spatial_aspect))
+    SUBTYPE OF(class_of_characteristic, common_aspect);
+  END_ENTITY;
+
+  ENTITY common_property
+    SUBTYPE OF(common_characteristic, class_of_property);
+  END_ENTITY;
+
+  ENTITY class_of_property
+    ABSTRACT SUPERTYPE OF (ONEOF(concept_of_property, common_property))
+    SUBTYPE OF(class_of_characteristic);
+  END_ENTITY;
+
+  ENTITY concept_of_property
+    SUBTYPE OF(concept_of_characteristic, class_of_property);
+  END_ENTITY;
+
+  ENTITY common_temporal_aspect
+    SUBTYPE OF(common_characteristic, class_of_temporal_aspect);
+  END_ENTITY;
+
+  ENTITY class_of_temporal_aspect
+    SUPERTYPE OF (ONEOF(class_of_point_in_time, class_of_period_in_time) ANDOR ONEOF(concept_of_temporal_aspect, common_temporal_aspect))
+    SUBTYPE OF(class_of_characteristic);
+  END_ENTITY;
+
+  ENTITY class_of_point_in_time
+    SUPERTYPE OF (ONEOF(concept_of_point_in_time, common_point_in_time))
+    SUBTYPE OF(class_of_temporal_aspect);
+  END_ENTITY;
+
+  ENTITY concept_of_point_in_time
+    SUBTYPE OF(class_of_point_in_time, concept_of_temporal_aspect);
+  END_ENTITY;
+
+  ENTITY concept_of_temporal_aspect
+    SUPERTYPE OF (ONEOF(concept_of_point_in_time, concept_of_period_in_time))
+    SUBTYPE OF(concept_of_characteristic, class_of_temporal_aspect);
+  END_ENTITY;
+
+  ENTITY concept_of_period_in_time
+    SUBTYPE OF(class_of_period_in_time, concept_of_temporal_aspect);
+  END_ENTITY;
+
+  ENTITY class_of_period_in_time
+    SUPERTYPE OF (ONEOF(common_period_in_time, concept_of_period_in_time))
+    SUBTYPE OF(class_of_temporal_aspect);
+  END_ENTITY;
+
+  ENTITY common_period_in_time
+    SUBTYPE OF(class_of_period_in_time, common_temporal_aspect);
+  END_ENTITY;
+
+  ENTITY common_point_in_time
+    SUBTYPE OF(class_of_point_in_time, common_temporal_aspect);
+  END_ENTITY;
+
+  ENTITY common_quality
+    SUBTYPE OF(class_of_quality, common_characteristic);
+  END_ENTITY;
+
+  ENTITY class_of_quality
+    ABSTRACT SUPERTYPE OF (ONEOF(common_quality, concept_of_quality) ANDOR ONEOF(class_of_atomic_and_subatomic_structure, class_of_phase))
+    SUBTYPE OF(class_of_characteristic);
+  END_ENTITY;
+
+  ENTITY concept_of_quality
+    SUBTYPE OF(concept_of_characteristic, class_of_quality);
+  END_ENTITY;
+
+  ENTITY class_of_atomic_and_subatomic_structure
+    SUBTYPE OF(class_of_quality);
+  END_ENTITY;
+
+  ENTITY class_of_phase
+    SUBTYPE OF(class_of_quality);
+  END_ENTITY;
+
+  ENTITY common_compound_characteristic
+    SUPERTYPE OF (ONEOF(common_compound_characteristic_point, common_compound_characteristic_curve, common_compound_characteristic_surface, common_compound_characteristic_region))
+    SUBTYPE OF(common_characteristic, class_of_compound_characteristic);
+  END_ENTITY;
+
+  ENTITY class_of_compound_characteristic
+    SUPERTYPE OF (ONEOF(class_of_compound_characteristic_point, class_of_compound_characteristic_curve, class_of_compound_characteristic_surface, class_of_compound_characteristic_region) ANDOR ONEOF(concept_of_compound_characteristic, common_compound_characteristic))
+    SUBTYPE OF(class_of_characteristic);
+  END_ENTITY;
+
+  ENTITY class_of_compound_characteristic_point
+    SUPERTYPE OF (ONEOF(concept_of_compound_characteristic_point, common_compound_characteristic_point))
+    SUBTYPE OF(class_of_compound_characteristic);
+  END_ENTITY;
+
+  ENTITY concept_of_compound_characteristic_point
+    SUBTYPE OF(class_of_compound_characteristic_point, concept_of_compound_characteristic);
+  END_ENTITY;
+
+  ENTITY concept_of_compound_characteristic
+    SUPERTYPE OF (ONEOF(concept_of_compound_characteristic_point, concept_of_compound_characteristic_curve, concept_of_compound_characteristic_surface, concept_of_compound_characteristic_region))
+    SUBTYPE OF(concept_of_characteristic, class_of_compound_characteristic);
+  END_ENTITY;
+
+  ENTITY concept_of_compound_characteristic_curve
+    SUBTYPE OF(concept_of_compound_characteristic, class_of_compound_characteristic_curve);
+  END_ENTITY;
+
+  ENTITY class_of_compound_characteristic_curve
+    SUPERTYPE OF (ONEOF(concept_of_compound_characteristic_curve, common_compound_characteristic_curve))
+    SUBTYPE OF(class_of_compound_characteristic);
+  END_ENTITY;
+
+  ENTITY common_compound_characteristic_curve
+    SUBTYPE OF(class_of_compound_characteristic_curve, common_compound_characteristic);
+  END_ENTITY;
+
+  ENTITY concept_of_compound_characteristic_surface
+    SUBTYPE OF(concept_of_compound_characteristic, class_of_compound_characteristic_surface);
+  END_ENTITY;
+
+  ENTITY class_of_compound_characteristic_surface
+    SUPERTYPE OF (ONEOF(concept_of_compound_characteristic_surface, common_compound_characteristic_surface))
+    SUBTYPE OF(class_of_compound_characteristic);
+  END_ENTITY;
+
+  ENTITY common_compound_characteristic_surface
+    SUBTYPE OF(class_of_compound_characteristic_surface, common_compound_characteristic);
+  END_ENTITY;
+
+  ENTITY concept_of_compound_characteristic_region
+    SUBTYPE OF(concept_of_compound_characteristic, class_of_compound_characteristic_region);
+  END_ENTITY;
+
+  ENTITY class_of_compound_characteristic_region
+    SUPERTYPE OF (ONEOF(concept_of_compound_characteristic_region, common_compound_characteristic_region))
+    SUBTYPE OF(class_of_compound_characteristic);
+  END_ENTITY;
+
+  ENTITY common_compound_characteristic_region
+    SUBTYPE OF(class_of_compound_characteristic_region, common_compound_characteristic);
+  END_ENTITY;
+
+  ENTITY common_compound_characteristic_point
+    SUBTYPE OF(class_of_compound_characteristic_point, common_compound_characteristic);
+  END_ENTITY;
+
+  ENTITY common_spatial_aspect
+    SUPERTYPE OF (ONEOF(common_curve_in_space, common_point_in_space, common_surface_in_space, common_volume_in_space))
+    SUBTYPE OF(common_characteristic, class_of_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY class_of_spatial_aspect
+    ABSTRACT SUPERTYPE OF (ONEOF(class_of_point_in_space, class_of_curve_in_space, class_of_surface_in_space, class_of_volume_in_space) ANDOR concept_of_spatial_aspect ANDOR common_spatial_aspect)
+    SUBTYPE OF(class_of_characteristic);
+  END_ENTITY;
+
+  ENTITY class_of_point_in_space
+    SUPERTYPE OF (ONEOF(concept_of_point_in_space, common_point_in_space))
+    SUBTYPE OF(class_of_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY concept_of_point_in_space
+    SUBTYPE OF(class_of_point_in_space, concept_of_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY concept_of_spatial_aspect
+    SUPERTYPE OF (ONEOF(concept_of_point_in_space, concept_of_curve_in_space, concept_of_surface_in_space, concept_of_volume_in_space))
+    SUBTYPE OF(concept_of_characteristic, class_of_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY concept_of_curve_in_space
+    SUBTYPE OF(class_of_curve_in_space, concept_of_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY class_of_curve_in_space
+    SUPERTYPE OF (ONEOF(concept_of_curve_in_space, common_curve_in_space))
+    SUBTYPE OF(class_of_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY common_curve_in_space
+    SUBTYPE OF(class_of_curve_in_space, common_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY concept_of_surface_in_space
+    SUBTYPE OF(class_of_surface_in_space, concept_of_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY class_of_surface_in_space
+    SUPERTYPE OF (ONEOF(concept_of_surface_in_space, common_surface_in_space))
+    SUBTYPE OF(class_of_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY common_surface_in_space
+    SUBTYPE OF(class_of_surface_in_space, common_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY concept_of_volume_in_space
+    SUBTYPE OF(class_of_volume_in_space, concept_of_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY class_of_volume_in_space
+    SUPERTYPE OF (ONEOF(concept_of_volume_in_space, common_volume_in_space))
+    SUBTYPE OF(class_of_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY common_volume_in_space
+    SUBTYPE OF(class_of_volume_in_space, common_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY common_point_in_space
+    SUBTYPE OF(class_of_point_in_space, common_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY common_state
+    SUBTYPE OF(class_of_state, common_aspect);
+  END_ENTITY;
+
+  ENTITY class_of_state
+    ABSTRACT SUPERTYPE OF (ONEOF(concept_of_state, common_state))
+    SUBTYPE OF(class_of_aspect);
+  END_ENTITY;
+
+  ENTITY concept_of_state
+    SUBTYPE OF(class_of_state, concept_of_aspect);
+  END_ENTITY;
+
+  ENTITY common_decomposition_aspect_of_activity
+    SUBTYPE OF(common_aspect);
+  END_ENTITY;
+
+  ENTITY common_decomposition_aspect_of_physical_object
+    SUBTYPE OF(common_aspect);
+  END_ENTITY;
+
+  ENTITY common_topologic_sequence_aspect_of_physical_object
+    SUBTYPE OF(common_aspect);
+  END_ENTITY;
+
+  ENTITY common_routing_aspect_of_physical_object
+    SUBTYPE OF(common_aspect);
+  END_ENTITY;
+
+  ENTITY common_point_approximation_of_spatial_aspect
+    SUBTYPE OF(common_aspect);
+  END_ENTITY;
+
+  ENTITY common_characteristic_value
+    SUPERTYPE OF (ONEOF(common_point_in_time_value, common_property_value, common_spatial_value))
+    SUBTYPE OF(common_aspect, class_of_characteristic_value);
+  END_ENTITY;
+
+  ENTITY class_of_characteristic_value
+    SUPERTYPE OF (ONEOF(class_of_property_value, class_of_spatial_value, class_of_point_in_time_value) ANDOR ONEOF(concept_of_characteristic_value, common_characteristic_value))
+    SUBTYPE OF(class_of_aspect);
+  END_ENTITY;
+
+  ENTITY class_of_property_value
+    SUPERTYPE OF (ONEOF(concept_of_property_value, common_property_value))
+    SUBTYPE OF(class_of_characteristic_value);
+  END_ENTITY;
+
+  ENTITY concept_of_property_value
+    SUBTYPE OF(class_of_property_value, concept_of_characteristic_value);
+  END_ENTITY;
+
+  ENTITY concept_of_characteristic_value
+    SUPERTYPE OF (ONEOF(concept_of_point_in_time_value, concept_of_property_value, concept_of_spatial_value))
+    SUBTYPE OF(concept_of_aspect, class_of_characteristic_value);
+  END_ENTITY;
+
+  ENTITY concept_of_point_in_time_value
+    SUBTYPE OF(class_of_point_in_time_value, concept_of_characteristic_value);
+  END_ENTITY;
+
+  ENTITY class_of_point_in_time_value
+    SUPERTYPE OF (ONEOF(concept_of_point_in_time_value, common_point_in_time_value))
+    SUBTYPE OF(class_of_characteristic_value);
+  END_ENTITY;
+
+  ENTITY common_point_in_time_value
+    SUBTYPE OF(class_of_point_in_time_value, common_characteristic_value);
+  END_ENTITY;
+
+  ENTITY common_calendar_time_value
+    SUBTYPE OF(common_point_in_time_value);
+      year   : INTEGER;
+      month  : OPTIONAL INTEGER;
+      day    : OPTIONAL INTEGER;
+      hour   : OPTIONAL INTEGER;
+      minute : OPTIONAL INTEGER;
+      second : OPTIONAL REAL;
+  END_ENTITY;
+
+  ENTITY concept_of_spatial_value
+    SUBTYPE OF(class_of_spatial_value, concept_of_characteristic_value);
+  END_ENTITY;
+
+  ENTITY class_of_spatial_value
+    SUPERTYPE OF (class_of_location_of_point_in_space ANDOR ONEOF(concept_of_spatial_value, common_spatial_value))
+    SUBTYPE OF(class_of_characteristic_value);
+  END_ENTITY;
+
+  ENTITY class_of_location_of_point_in_space
+    SUPERTYPE OF (ONEOF(concept_of_location_of_point_in_space, common_location_of_point_in_space))
+    SUBTYPE OF(class_of_spatial_value);
+  END_ENTITY;
+
+  ENTITY concept_of_location_of_point_in_space
+    SUBTYPE OF(class_of_location_of_point_in_space, concept_of_spatial_value);
+  END_ENTITY;
+
+  ENTITY common_location_of_point_in_space
+    SUBTYPE OF(class_of_location_of_point_in_space, common_spatial_value);
+  END_ENTITY;
+
+  ENTITY common_spatial_value
+    SUBTYPE OF(class_of_spatial_value, common_characteristic_value);
+  END_ENTITY;
+
+  ENTITY common_property_value
+    SUPERTYPE OF (ONEOF(common_nominal_property_value, common_bounded_property_value, common_lower_bounded_property_value, common_upper_bounded_property_value))
+    SUBTYPE OF(class_of_property_value, common_characteristic_value);
+  END_ENTITY;
+
+  ENTITY common_nominal_property_value
+    SUBTYPE OF(common_property_value);
+      lower_tolerance : OPTIONAL NUMBER;
+      nominal         : NUMBER;
+      upper_tolerance : OPTIONAL NUMBER;
+  END_ENTITY;
+
+  ENTITY common_bounded_property_value
+    SUBTYPE OF(common_property_value);
+      lower_bound : NUMBER;
+      upper_bound : NUMBER;
+  END_ENTITY;
+
+  ENTITY common_lower_bounded_property_value
+    SUBTYPE OF(common_property_value);
+      lower_bound : NUMBER;
+  END_ENTITY;
+
+  ENTITY common_upper_bounded_property_value
+    SUBTYPE OF(common_property_value);
+      upper_bound : NUMBER;
+  END_ENTITY;
+
+  ENTITY common_point_approximation_of_compound_characteristic
+    SUBTYPE OF(common_aspect);
+  END_ENTITY;
+
+  ENTITY common_symbol
+    SUBTYPE OF(class_of_symbol, common_aspect);
+  END_ENTITY;
+
+  ENTITY class_of_symbol
+    SUPERTYPE OF (ONEOF(concept_of_symbol, common_symbol))
+    SUBTYPE OF(class_of_aspect);
+  END_ENTITY;
+
+  ENTITY concept_of_symbol
+    SUBTYPE OF(class_of_symbol, concept_of_aspect);
+  END_ENTITY;
+
+  ENTITY common_information
+    SUBTYPE OF(class_of_information, common_aspect);
+  END_ENTITY;
+
+  ENTITY class_of_information
+    SUPERTYPE OF (ONEOF(concept_of_information, common_information))
+    SUBTYPE OF(class_of_aspect);
+  END_ENTITY;
+
+  ENTITY concept_of_information
+    SUBTYPE OF(class_of_information, concept_of_aspect);
+  END_ENTITY;
+
+  ENTITY common_encoded_information
+    SUPERTYPE OF (ONEOF(common_textual_encoded_information, common_binary_encoded_information))
+    SUBTYPE OF(class_of_encoded_information, common_aspect);
+  END_ENTITY;
+
+  ENTITY class_of_encoded_information
+    SUPERTYPE OF (ONEOF(concept_of_encoded_information, common_encoded_information))
+    SUBTYPE OF(class_of_aspect);
+  END_ENTITY;
+
+  ENTITY concept_of_encoded_information
+    SUBTYPE OF(class_of_encoded_information, concept_of_aspect);
+  END_ENTITY;
+
+  ENTITY common_textual_encoded_information
+    SUBTYPE OF(common_encoded_information);
+      representation : OPTIONAL STRING;
+  END_ENTITY;
+
+  ENTITY common_binary_encoded_information
+    SUBTYPE OF(common_encoded_information);
+      representation : OPTIONAL BINARY;
+  END_ENTITY;
+
+  ENTITY common_composition_of_individual
+    SUPERTYPE OF (ONEOF(common_assembly_of_individual, common_collection_of_individual) ANDOR ONEOF(common_composition_of_aspect, common_composition_of_activity, common_composition_of_physical_object))
+    SUBTYPE OF(common_association);
+      part  : class_of_individual;
+      whole : class_of_individual;
+  END_ENTITY;
+
+  ENTITY common_assembly_of_individual
+    SUBTYPE OF(common_composition_of_individual);
+      SELF\common_composition_of_individual.whole : class_of_single_individual;
+  END_ENTITY;
+
+  ENTITY common_collection_of_individual
+    SUBTYPE OF(common_composition_of_individual);
+      SELF\common_composition_of_individual.whole : class_of_plural_individual;
+  END_ENTITY;
+
+  ENTITY common_composition_of_aspect
+    SUPERTYPE OF (ONEOF(common_composition_of_decomposition_aspect_of_activity, common_composition_of_decomposition_aspect_of_physical_object, common_composition_of_topologic_sequence_aspect_of_physical_object, common_composition_of_routing_aspect_of_physical_object, common_composition_of_spatial_aspect_approximation, common_composition_of_compound_characteristic, common_composition_of_point_approximation_of_compound_characteristic))
+    SUBTYPE OF(common_composition_of_individual);
+      SELF\common_composition_of_individual.part  : class_of_aspect;
+      SELF\common_composition_of_individual.whole : class_of_aspect;
+  END_ENTITY;
+
+  ENTITY common_composition_of_decomposition_aspect_of_activity
+    SUBTYPE OF(common_composition_of_aspect);
+      SELF\common_composition_of_aspect.part  : common_composition_of_activity;
+      SELF\common_composition_of_aspect.whole : common_decomposition_aspect_of_activity;
+  END_ENTITY;
+
+  ENTITY common_composition_of_activity
+    SUBTYPE OF(common_composition_of_individual);
+      SELF\common_composition_of_individual.part  : class_of_activity;
+      SELF\common_composition_of_individual.whole : class_of_activity;
+  END_ENTITY;
+
+  ENTITY class_of_activity
+    SUBTYPE OF(class_of_individual);
+  END_ENTITY;
+
+  ENTITY common_composition_of_decomposition_aspect_of_physical_object
+    SUBTYPE OF(common_composition_of_aspect);
+      SELF\common_composition_of_aspect.part  : common_composition_of_physical_object;
+      SELF\common_composition_of_aspect.whole : common_decomposition_aspect_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_composition_of_physical_object
+    SUPERTYPE OF (ONEOF(common_functional_part_of_physical_object, common_physical_feature_part_of_physical_object))
+    SUBTYPE OF(common_composition_of_individual);
+      SELF\common_composition_of_individual.part  : class_of_physical_object;
+      SELF\common_composition_of_individual.whole : class_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_functional_part_of_physical_object
+    SUBTYPE OF(common_composition_of_physical_object);
+      SELF\common_composition_of_physical_object.part : class_of_functional_physical_object;
+  END_ENTITY;
+
+  ENTITY class_of_physical_object
+    SUPERTYPE OF (ONEOF(class_of_inanimate_physical_object, class_of_organization, class_of_lifeform) ANDOR class_of_physical_feature ANDOR ONEOF(class_of_materialized_physical_object, class_of_functional_physical_object))
+    SUBTYPE OF(class_of_individual);
+  END_ENTITY;
+
+  ENTITY class_of_inanimate_physical_object
+    SUBTYPE OF(class_of_physical_object);
+  END_ENTITY;
+
+  ENTITY class_of_organization
+    SUBTYPE OF(class_of_physical_object);
+  END_ENTITY;
+
+  ENTITY class_of_lifeform
+    SUBTYPE OF(class_of_physical_object);
+  END_ENTITY;
+
+  ENTITY class_of_person
+    SUBTYPE OF(class_of_lifeform);
+  END_ENTITY;
+
+  ENTITY class_of_physical_feature
+    SUBTYPE OF(class_of_physical_object);
+  END_ENTITY;
+
+  ENTITY class_of_materialized_physical_object
+    SUBTYPE OF(class_of_physical_object);
+  END_ENTITY;
+
+  ENTITY class_of_functional_physical_object
+    SUBTYPE OF(class_of_physical_object);
+  END_ENTITY;
+
+  ENTITY common_physical_feature_part_of_physical_object
+    SUBTYPE OF(common_composition_of_physical_object);
+      SELF\common_composition_of_physical_object.part : class_of_physical_feature;
+  END_ENTITY;
+
+  ENTITY common_composition_of_topologic_sequence_aspect_of_physical_object
+    SUBTYPE OF(common_composition_of_aspect);
+      SELF\common_composition_of_aspect.part  : common_topologic_sequence_of_physical_object;
+      SELF\common_composition_of_aspect.whole : common_topologic_sequence_aspect_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_topologic_sequence_of_physical_object
+    SUBTYPE OF(common_association);
+      predecessor : class_of_physical_object;
+      successor   : class_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_composition_of_routing_aspect_of_physical_object
+    SUBTYPE OF(common_composition_of_aspect);
+      SELF\common_composition_of_aspect.part  : common_connection_of_physical_object;
+      SELF\common_composition_of_aspect.whole : common_routing_aspect_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_connection_of_physical_object
+    SUPERTYPE OF (ONEOF(common_logical_connection_of_physical_object, common_physical_connection_of_physical_object))
+    SUBTYPE OF(common_association);
+      connected_1 : class_of_physical_object;
+      connected_2 : class_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_logical_connection_of_physical_object
+    SUBTYPE OF(common_connection_of_physical_object);
+  END_ENTITY;
+
+  ENTITY common_physical_connection_of_physical_object
+    SUBTYPE OF(common_connection_of_physical_object);
+  END_ENTITY;
+
+  ENTITY common_composition_of_spatial_aspect_approximation
+    SUBTYPE OF(common_composition_of_aspect);
+      SELF\common_composition_of_aspect.part  : common_adjacency_of_point_in_space;
+      SELF\common_composition_of_aspect.whole : common_point_approximation_of_spatial_aspect;
+  END_ENTITY;
+
+  ENTITY common_adjacency_of_point_in_space
+    SUBTYPE OF(common_association);
+      adjoint_1 : class_of_point_in_space;
+      adjoint_2 : class_of_point_in_space;
+  END_ENTITY;
+
+  ENTITY common_composition_of_compound_characteristic
+    SUBTYPE OF(common_composition_of_aspect);
+      SELF\common_composition_of_aspect.part  : class_of_compound_characteristic;
+      SELF\common_composition_of_aspect.whole : class_of_compound_characteristic;
+  END_ENTITY;
+
+  ENTITY common_composition_of_point_approximation_of_compound_characteristic
+    SUBTYPE OF(common_composition_of_aspect);
+      SELF\common_composition_of_aspect.part  : common_adjacency_of_compound_characteristic_point;
+      SELF\common_composition_of_aspect.whole : common_point_approximation_of_compound_characteristic;
+  END_ENTITY;
+
+  ENTITY common_adjacency_of_compound_characteristic_point
+    SUBTYPE OF(common_association);
+      adjoint_1 : class_of_compound_characteristic_point;
+      adjoint_2 : class_of_compound_characteristic_point;
+  END_ENTITY;
+
+  ENTITY common_purpose_of_possessed_aspect
+    SUPERTYPE OF (ONEOF(common_purpose_of_approval, common_purpose_of_protection, common_purpose_of_segregation))
+    SUBTYPE OF(common_association);
+      aspect  : possessed_aspect;
+      purpose : class_of_activity;
+  END_ENTITY;
+
+  ENTITY common_purpose_of_approval
+    SUBTYPE OF(common_purpose_of_possessed_aspect);
+      SELF\common_purpose_of_possessed_aspect.aspect : approval_of_object;
+  END_ENTITY;
+
+  ENTITY possessed_aspect
+    SUPERTYPE OF (ONEOF(possessed_association, aspect_possessed_by_individual, possessed_identification_aspect) ANDOR ONEOF(possessed_predicted_aspect, possessed_required_aspect, possessed_planned_aspect, possessed_actual_aspect))
+    SUBTYPE OF(individual);
+  END_ENTITY;
+
+  ENTITY possessed_association
+    ABSTRACT SUPERTYPE OF (ONEOF(classification, custody_of_class_definition, composition_of_individual, purpose_of_possessed_aspect, exception_of_possessed_aspect_from_composition, fulfilment_of_possessed_aspect, comparison_of_characteristic_with_reference, change_of_possessed_state, version_association_between_objects, succession_association_between_objects, alternative_association_between_objects, derivation_association_between_objects, involvement_of_physical_object_in_activity, temporal_sequence_of_activity, installation_of_physical_object_for_functional_physical_object, connection_of_physical_object, usage_of_physical_object_in_connection, segregation_of_physical_object, usage_of_intermediate_physical_object_for_segregation, topologic_sequence_of_physical_object, protection_of_physical_object, physical_object_following_route, source_of_route, destination_of_route, information_about_object, reference_to_object_within_information, approval_of_object, component_of_location_of_point_in_space, adjacency_of_point_in_space, role_in_life_of_physical_object, reference_to_application_object, adjacency_of_compound_characteristic_point, possessed_component_of_compound_characteristic, derivation_of_possessed_characteristic, reference_between_physical_object) ANDOR ONEOF(possessed_asserting_association, possessed_probalilistic_association, possessed_denying_association))
+    SUBTYPE OF(possessed_aspect);
+  END_ENTITY;
+
+  ENTITY classification
+    ABSTRACT SUPERTYPE OF (ONEOF(classification_of_class, classification_of_individual))
+    SUBTYPE OF(possessed_association);
+      classified : application_object;
+      classifier : class;
+  END_ENTITY;
+
+  ENTITY classification_of_class
+    SUBTYPE OF(classification);
+      SELF\classification.classified : class;
+      SELF\classification.classifier : class_of_class;
+  END_ENTITY;
+
+  ENTITY classification_of_individual
+    SUPERTYPE OF (ONEOF(essential_classification_of_individual, incidental_classification_of_individual) ANDOR ONEOF(classification_of_activity, classification_of_physical_object, classification_of_possessed_aspect))
+    SUBTYPE OF(classification);
+      SELF\classification.classified : individual;
+      SELF\classification.classifier : class_of_individual;
+  END_ENTITY;
+
+  ENTITY essential_classification_of_individual
+    SUBTYPE OF(classification_of_individual);
+  END_ENTITY;
+
+  ENTITY incidental_classification_of_individual
+    SUBTYPE OF(classification_of_individual);
+  END_ENTITY;
+
+  ENTITY classification_of_activity
+    SUBTYPE OF(classification_of_individual);
+      SELF\classification_of_individual.classified : activity;
+      SELF\classification_of_individual.classifier : class_of_activity;
+  END_ENTITY;
+
+  ENTITY classification_of_physical_object
+    SUBTYPE OF(classification_of_individual);
+      SELF\classification_of_individual.classified : physical_object;
+      SELF\classification_of_individual.classifier : class_of_physical_object;
+  END_ENTITY;
+
+  ENTITY physical_object
+    ABSTRACT SUPERTYPE OF (ONEOF(inanimate_physical_object, lifeform, organization) ANDOR physical_feature ANDOR ONEOF(materialized_physical_object, functional_physical_object))
+    SUBTYPE OF(individual);
+  END_ENTITY;
+
+  ENTITY inanimate_physical_object
+    SUBTYPE OF(physical_object);
+  END_ENTITY;
+
+  ENTITY lifeform
+    SUBTYPE OF(physical_object);
+  END_ENTITY;
+
+  ENTITY person
+    SUBTYPE OF(lifeform);
+  END_ENTITY;
+
+  ENTITY organization
+    SUBTYPE OF(physical_object);
+  END_ENTITY;
+
+  ENTITY physical_feature
+    SUBTYPE OF(physical_object);
+  END_ENTITY;
+
+  ENTITY materialized_physical_object
+    SUBTYPE OF(physical_object);
+  END_ENTITY;
+
+  ENTITY functional_physical_object
+    SUBTYPE OF(physical_object);
+  END_ENTITY;
+
+  ENTITY classification_of_possessed_aspect
+    SUPERTYPE OF (ONEOF(classification_of_possessed_association, classification_of_possessed_characteristic, classification_of_possessed_encoded_information, classification_of_possessed_information, classification_of_possessed_state, classification_of_possessed_symbol, classification_of_characteristic_value, classification_of_possessed_identification_aspect))
+    SUBTYPE OF(classification_of_individual);
+      SELF\classification_of_individual.classified : possessed_aspect;
+      SELF\classification_of_individual.classifier : class_of_aspect;
+  END_ENTITY;
+
+  ENTITY classification_of_possessed_association
+    SUBTYPE OF(classification_of_possessed_aspect);
+      SELF\classification_of_possessed_aspect.classified : possessed_association;
+      SELF\classification_of_possessed_aspect.classifier : class_of_association;
+  END_ENTITY;
+
+  ENTITY classification_of_comparison_of_characteristic
+    SUBTYPE OF(classification_of_possessed_association);
+      SELF\classification_of_possessed_association.classified : comparison_of_characteristic_with_reference;
+      SELF\classification_of_possessed_association.classifier : class_of_comparison_of_characteristic;
+  END_ENTITY;
+
+  ENTITY comparison_of_characteristic_with_reference
+    SUBTYPE OF(possessed_association);
+      compared : possessed_characteristic;
+      referred : possessed_characteristic;
+  END_ENTITY;
+
+  ENTITY displacement_of_point_in_space
+    SUBTYPE OF(comparison_of_characteristic_with_reference);
+      SELF\comparison_of_characteristic_with_reference.compared : possessed_point_in_space;
+      SELF\comparison_of_characteristic_with_reference.referred : possessed_point_in_space;
+  END_ENTITY;
+
+  ENTITY possessed_characteristic
+    SUPERTYPE OF (ONEOF(possessed_property, possessed_spatial_aspect, possessed_temporal_aspect, possessed_quality, possessed_compound_characteristic))
+    SUBTYPE OF(aspect_possessed_by_individual);
+  END_ENTITY;
+
+  ENTITY aspect_possessed_by_individual
+    SUPERTYPE OF (ONEOF(possessed_characteristic, possessed_state, possessed_event_effect, possessed_decomposition_of_activity, possessed_decomposition_aspect_of_physical_object, possessed_topologic_sequence_aspect_of_physical_object, possessed_routing_aspect_of_physical_object, possessed_information, possessed_encoded_information, possessed_characteristic_value, possessed_point_approximation_of_spatial_aspect, possessed_symbol, possessed_point_approximation_of_compound_characteristic))
+    SUBTYPE OF(possessed_aspect);
+  END_ENTITY;
+
+  ENTITY possessed_state
+    SUBTYPE OF(aspect_possessed_by_individual);
+  END_ENTITY;
+
+  ENTITY possessed_event_effect
+    ABSTRACT SUPERTYPE OF (ONEOF(possessed_begin_effect, possessed_end_effect))
+    SUBTYPE OF(aspect_possessed_by_individual);
+      cause : OPTIONAL activity_or_possessed_event_effect;
+  END_ENTITY;
+
+  ENTITY possessed_begin_effect
+    SUBTYPE OF(possessed_event_effect);
+  END_ENTITY;
+
+  ENTITY possessed_end_effect
+    SUBTYPE OF(possessed_event_effect);
+  END_ENTITY;
+
+  ENTITY possessed_decomposition_of_activity
+    SUBTYPE OF(aspect_possessed_by_individual);
+  END_ENTITY;
+
+  ENTITY possessed_decomposition_aspect_of_physical_object
+    SUBTYPE OF(aspect_possessed_by_individual);
+  END_ENTITY;
+
+  ENTITY possessed_topologic_sequence_aspect_of_physical_object
+    SUBTYPE OF(aspect_possessed_by_individual);
+  END_ENTITY;
+
+  ENTITY possessed_routing_aspect_of_physical_object
+    SUBTYPE OF(aspect_possessed_by_individual);
+  END_ENTITY;
+
+  ENTITY possessed_information
+    SUBTYPE OF(aspect_possessed_by_individual);
+  END_ENTITY;
+
+  ENTITY possessed_encoded_information
+    SUPERTYPE OF (ONEOF(possessed_textual_encoded_information, possessed_binary_encoded_information))
+    SUBTYPE OF(aspect_possessed_by_individual);
+  END_ENTITY;
+
+  ENTITY possessed_textual_encoded_information
+    SUBTYPE OF(possessed_encoded_information);
+      representation : OPTIONAL STRING;
+  END_ENTITY;
+
+  ENTITY possessed_binary_encoded_information
+    SUBTYPE OF(possessed_encoded_information);
+      representation : OPTIONAL BINARY;
+  END_ENTITY;
+
+  ENTITY possessed_characteristic_value
+    SUPERTYPE OF (ONEOF(possessed_property_value, possessed_spatial_value, possessed_point_in_time_value))
+    SUBTYPE OF(aspect_possessed_by_individual);
+  END_ENTITY;
+
+  ENTITY possessed_property_value
+    SUBTYPE OF(possessed_characteristic_value);
+      nominal : REAL;
+  END_ENTITY;
+
+  ENTITY possessed_spatial_value
+    SUBTYPE OF(possessed_characteristic_value);
+  END_ENTITY;
+
+  ENTITY possessed_location_of_point_in_space
+    SUBTYPE OF(possessed_spatial_value);
+  END_ENTITY;
+
+  ENTITY possessed_point_in_time_value
+    SUBTYPE OF(possessed_characteristic_value);
+  END_ENTITY;
+
+  ENTITY possessed_calendar_value
+    SUBTYPE OF(possessed_point_in_time_value);
+      year   : INTEGER;
+      month  : OPTIONAL INTEGER;
+      day    : OPTIONAL INTEGER;
+      hour   : OPTIONAL INTEGER;
+      minute : OPTIONAL INTEGER;
+      second : OPTIONAL REAL;
+  END_ENTITY;
+
+  ENTITY possessed_point_approximation_of_spatial_aspect
+    SUBTYPE OF(aspect_possessed_by_individual);
+  END_ENTITY;
+
+  ENTITY possessed_symbol
+    SUBTYPE OF(aspect_possessed_by_individual);
+  END_ENTITY;
+
+  ENTITY possessed_point_approximation_of_compound_characteristic
+    SUBTYPE OF(aspect_possessed_by_individual);
+  END_ENTITY;
+
+  ENTITY possessed_property
+    SUBTYPE OF(possessed_characteristic);
+  END_ENTITY;
+
+  ENTITY possessed_spatial_aspect
+    SUPERTYPE OF (ONEOF(possessed_point_in_space, possessed_curve_in_space, possessed_surface_in_space, possessed_volume_in_space))
+    SUBTYPE OF(possessed_characteristic);
+  END_ENTITY;
+
+  ENTITY possessed_point_in_space
+    SUBTYPE OF(possessed_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY possessed_curve_in_space
+    SUBTYPE OF(possessed_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY possessed_surface_in_space
+    SUBTYPE OF(possessed_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY possessed_volume_in_space
+    SUBTYPE OF(possessed_spatial_aspect);
+  END_ENTITY;
+
+  ENTITY possessed_temporal_aspect
+    SUPERTYPE OF (ONEOF(possessed_period_in_time, possessed_point_in_time))
+    SUBTYPE OF(possessed_characteristic);
+  END_ENTITY;
+
+  ENTITY possessed_period_in_time
+    SUBTYPE OF(possessed_temporal_aspect);
+  END_ENTITY;
+
+  ENTITY possessed_point_in_time
+    SUBTYPE OF(possessed_temporal_aspect);
+  END_ENTITY;
+
+  ENTITY possessed_quality
+    SUPERTYPE OF (ONEOF(possessed_atomic_and_subatomic_structure, possessed_phase))
+    SUBTYPE OF(possessed_characteristic);
+  END_ENTITY;
+
+  ENTITY possessed_atomic_and_subatomic_structure
+    SUBTYPE OF(possessed_quality);
+  END_ENTITY;
+
+  ENTITY possessed_phase
+    SUBTYPE OF(possessed_quality);
+  END_ENTITY;
+
+  ENTITY possessed_compound_characteristic
+    SUPERTYPE OF (ONEOF(possessed_compound_characteristic_point, possessed_compound_characteristic_curve, possessed_compound_characteristic_surface, possessed_compound_characteristic_region))
+    SUBTYPE OF(possessed_characteristic);
+  END_ENTITY;
+
+  ENTITY possessed_compound_characteristic_point
+    SUBTYPE OF(possessed_compound_characteristic);
+  END_ENTITY;
+
+  ENTITY possessed_compound_characteristic_curve
+    SUBTYPE OF(possessed_compound_characteristic);
+  END_ENTITY;
+
+  ENTITY possessed_compound_characteristic_surface
+    SUBTYPE OF(possessed_compound_characteristic);
+  END_ENTITY;
+
+  ENTITY possessed_compound_characteristic_region
+    SUBTYPE OF(possessed_compound_characteristic);
+  END_ENTITY;
+
+  ENTITY class_of_comparison_of_characteristic
+    SUPERTYPE OF (ONEOF(concept_of_comparison_of_characteristic, common_comparison_of_characteristic_with_reference))
+    SUBTYPE OF(class_of_association);
+  END_ENTITY;
+
+  ENTITY concept_of_comparison_of_characteristic
+    SUBTYPE OF(concept_of_association, class_of_comparison_of_characteristic);
+  END_ENTITY;
+
+  ENTITY common_comparison_of_characteristic_with_reference
+    SUBTYPE OF(common_association, class_of_comparison_of_characteristic);
+      compared   : class_or_possessed_characteristic;
+      referenced : class_or_possessed_characteristic;
+  END_ENTITY;
+
+  ENTITY classification_of_possessed_characteristic
+    SUPERTYPE OF (ONEOF(classification_of_possessed_temporal_aspect, classification_of_possessed_property, classification_of_possessed_compound_characteristic, classification_of_possessed_spatial_aspect, classification_of_possessed_quality))
+    SUBTYPE OF(classification_of_possessed_aspect);
+      SELF\classification_of_possessed_aspect.classified : possessed_characteristic;
+      SELF\classification_of_possessed_aspect.classifier : class_of_characteristic;
+  END_ENTITY;
+
+  ENTITY classification_of_possessed_temporal_aspect
+    SUBTYPE OF(classification_of_possessed_characteristic);
+      SELF\classification_of_possessed_characteristic.classified : possessed_temporal_aspect;
+      SELF\classification_of_possessed_characteristic.classifier : class_of_temporal_aspect;
+  END_ENTITY;
+
+  ENTITY classification_of_possessed_property
+    SUBTYPE OF(classification_of_possessed_characteristic);
+      SELF\classification_of_possessed_characteristic.classified : possessed_property;
+      SELF\classification_of_possessed_characteristic.classifier : class_of_property;
+  END_ENTITY;
+
+  ENTITY classification_of_possessed_compound_characteristic
+    SUBTYPE OF(classification_of_possessed_characteristic);
+      SELF\classification_of_possessed_characteristic.classified : possessed_compound_characteristic;
+      SELF\classification_of_possessed_characteristic.classifier : class_of_compound_characteristic;
+  END_ENTITY;
+
+  ENTITY classification_of_possessed_spatial_aspect
+    SUBTYPE OF(classification_of_possessed_characteristic);
+      SELF\classification_of_possessed_characteristic.classified : possessed_spatial_aspect;
+      SELF\classification_of_possessed_characteristic.classifier : class_of_spatial_aspect;
+  END_ENTITY;
+
+  ENTITY classification_of_possessed_quality
+    SUBTYPE OF(classification_of_possessed_characteristic);
+      SELF\classification_of_possessed_characteristic.classified : possessed_quality;
+      SELF\classification_of_possessed_characteristic.classifier : class_of_quality;
+  END_ENTITY;
+
+  ENTITY classification_of_possessed_encoded_information
+    SUBTYPE OF(classification_of_possessed_aspect);
+      SELF\classification_of_possessed_aspect.classified : possessed_encoded_information;
+      SELF\classification_of_possessed_aspect.classifier : class_of_encoded_information;
+  END_ENTITY;
+
+  ENTITY classification_of_possessed_information
+    SUBTYPE OF(classification_of_possessed_aspect);
+      SELF\classification_of_possessed_aspect.classified : possessed_information;
+      SELF\classification_of_possessed_aspect.classifier : class_of_information;
+  END_ENTITY;
+
+  ENTITY classification_of_possessed_state
+    SUBTYPE OF(classification_of_possessed_aspect);
+      SELF\classification_of_possessed_aspect.classified : possessed_state;
+      SELF\classification_of_possessed_aspect.classifier : class_of_state;
+  END_ENTITY;
+
+  ENTITY classification_of_possessed_symbol
+    SUBTYPE OF(classification_of_possessed_aspect);
+      SELF\classification_of_possessed_aspect.classified : possessed_symbol;
+      SELF\classification_of_possessed_aspect.classifier : class_of_symbol;
+  END_ENTITY;
+
+  ENTITY classification_of_characteristic_value
+    SUPERTYPE OF (ONEOF(classification_of_property_value, classification_of_spatial_value, classification_of_point_in_time_value))
+    SUBTYPE OF(classification_of_possessed_aspect);
+      SELF\classification_of_possessed_aspect.classified : possessed_characteristic_value;
+      SELF\classification_of_possessed_aspect.classifier : class_of_characteristic_value;
+  END_ENTITY;
+
+  ENTITY classification_of_property_value
+    SUBTYPE OF(classification_of_characteristic_value);
+      SELF\classification_of_characteristic_value.classified : possessed_property_value;
+      SELF\classification_of_characteristic_value.classifier : class_of_property_value;
+  END_ENTITY;
+
+  ENTITY classification_of_spatial_value
+    SUBTYPE OF(classification_of_characteristic_value);
+      SELF\classification_of_characteristic_value.classified : possessed_spatial_value;
+      SELF\classification_of_characteristic_value.classifier : class_of_spatial_value;
+  END_ENTITY;
+
+  ENTITY classification_of_point_in_time_value
+    SUBTYPE OF(classification_of_characteristic_value);
+      SELF\classification_of_characteristic_value.classified : possessed_point_in_time_value;
+      SELF\classification_of_characteristic_value.classifier : class_of_point_in_time_value;
+  END_ENTITY;
+
+  ENTITY classification_of_possessed_identification_aspect
+    SUBTYPE OF(classification_of_possessed_aspect);
+      SELF\classification_of_possessed_aspect.classified : possessed_identification_aspect;
+      SELF\classification_of_possessed_aspect.classifier : class_of_identification_aspect;
+  END_ENTITY;
+
+  ENTITY possessed_identification_aspect
+    SUBTYPE OF(possessed_aspect);
+  END_ENTITY;
+
+  ENTITY class_of_identification_aspect
+    SUBTYPE OF(class_of_aspect);
+  END_ENTITY;
+
+  ENTITY custody_of_class_definition
+    SUBTYPE OF(possessed_association);
+      custodian : organization;
+      held      : class;
+  END_ENTITY;
+
+  ENTITY composition_of_individual
+    SUPERTYPE OF (ONEOF(composition_of_possessed_aspect, composition_of_activity, composition_of_physical_object) ANDOR ONEOF(collection_of_individual, assembly_of_individual))
+    SUBTYPE OF(possessed_association);
+      whole : individual;
+      part  : individual;
+  END_ENTITY;
+
+  ENTITY composition_of_possessed_aspect
+    SUPERTYPE OF (ONEOF(composition_of_decomposition_aspect_of_activity, composition_of_decomposition_aspect_of_physical_object, composition_of_topologic_sequence_aspect_of_physical_object, composition_of_routing_aspect_of_physical_object, composition_of_spatial_aspect_point_approximation, composition_of_compound_characteristc, composition_of_compound_characteristic_point_approximation, composition_of_spatial_aspect, composition_of_temporal_aspect))
+    SUBTYPE OF(composition_of_individual);
+      SELF\composition_of_individual.part  : possessed_aspect;
+      SELF\composition_of_individual.whole : possessed_aspect;
+  END_ENTITY;
+
+  ENTITY composition_of_decomposition_aspect_of_activity
+    SUBTYPE OF(composition_of_possessed_aspect);
+      SELF\composition_of_possessed_aspect.part  : composition_of_activity;
+      SELF\composition_of_possessed_aspect.whole : possessed_decomposition_of_activity;
+  END_ENTITY;
+
+  ENTITY composition_of_activity
+    SUBTYPE OF(composition_of_individual);
+      SELF\composition_of_individual.part  : activity;
+      SELF\composition_of_individual.whole : activity;
+  END_ENTITY;
+
+  ENTITY composition_of_decomposition_aspect_of_physical_object
+    SUBTYPE OF(composition_of_possessed_aspect);
+      SELF\composition_of_possessed_aspect.part  : composition_of_physical_object;
+      SELF\composition_of_possessed_aspect.whole : possessed_decomposition_aspect_of_physical_object;
+  END_ENTITY;
+
+  ENTITY composition_of_physical_object
+    SUPERTYPE OF (ONEOF(functional_part_of_physical_object, physical_feature_part_of_physical_object))
+    SUBTYPE OF(composition_of_individual);
+      SELF\composition_of_individual.part  : physical_object;
+      SELF\composition_of_individual.whole : physical_object;
+  END_ENTITY;
+
+  ENTITY functional_part_of_physical_object
+    SUBTYPE OF(composition_of_physical_object);
+      SELF\composition_of_physical_object.part : functional_physical_object;
+  END_ENTITY;
+
+  ENTITY physical_feature_part_of_physical_object
+    SUBTYPE OF(composition_of_physical_object);
+      SELF\composition_of_physical_object.part : physical_feature;
+  END_ENTITY;
+
+  ENTITY composition_of_topologic_sequence_aspect_of_physical_object
+    SUBTYPE OF(composition_of_possessed_aspect);
+      SELF\composition_of_possessed_aspect.part  : topologic_sequence_of_physical_object;
+      SELF\composition_of_possessed_aspect.whole : possessed_topologic_sequence_aspect_of_physical_object;
+  END_ENTITY;
+
+  ENTITY topologic_sequence_of_physical_object
+    SUBTYPE OF(possessed_association);
+      predecessor : physical_object;
+      successor   : physical_object;
+  END_ENTITY;
+
+  ENTITY composition_of_routing_aspect_of_physical_object
+    SUBTYPE OF(composition_of_possessed_aspect);
+      SELF\composition_of_possessed_aspect.part  : connection_of_physical_object;
+      SELF\composition_of_possessed_aspect.whole : possessed_routing_aspect_of_physical_object;
+  END_ENTITY;
+
+  ENTITY connection_of_physical_object
+    SUPERTYPE OF (ONEOF(physical_connection_of_physical_object, logical_connection_of_physical_object))
+    SUBTYPE OF(possessed_association);
+      connected_1 : physical_object;
+      connected_2 : physical_object;
+  END_ENTITY;
+
+  ENTITY physical_connection_of_physical_object
+    SUBTYPE OF(connection_of_physical_object);
+  END_ENTITY;
+
+  ENTITY logical_connection_of_physical_object
+    SUBTYPE OF(connection_of_physical_object);
+  END_ENTITY;
+
+  ENTITY composition_of_spatial_aspect_point_approximation
+    SUBTYPE OF(composition_of_possessed_aspect);
+      SELF\composition_of_possessed_aspect.part  : adjacency_of_point_in_space;
+      SELF\composition_of_possessed_aspect.whole : possessed_point_approximation_of_spatial_aspect;
+  END_ENTITY;
+
+  ENTITY adjacency_of_point_in_space
+    SUBTYPE OF(possessed_association);
+      adjoint_1 : possessed_point_in_space;
+      adjoint_2 : possessed_point_in_space;
+  END_ENTITY;
+
+  ENTITY composition_of_compound_characteristc
+    SUBTYPE OF(composition_of_possessed_aspect);
+      SELF\composition_of_possessed_aspect.part  : possessed_compound_characteristic;
+      SELF\composition_of_possessed_aspect.whole : possessed_compound_characteristic;
+  END_ENTITY;
+
+  ENTITY composition_of_compound_characteristic_point_approximation
+    SUBTYPE OF(composition_of_possessed_aspect);
+      SELF\composition_of_possessed_aspect.part  : adjacency_of_compound_characteristic_point;
+      SELF\composition_of_possessed_aspect.whole : possessed_point_approximation_of_compound_characteristic;
+  END_ENTITY;
+
+  ENTITY adjacency_of_compound_characteristic_point
+    SUBTYPE OF(possessed_association);
+      adjoint_1 : possessed_compound_characteristic_point;
+      adjoint_2 : possessed_compound_characteristic_point;
+  END_ENTITY;
+
+  ENTITY composition_of_spatial_aspect
+    SUBTYPE OF(composition_of_possessed_aspect);
+      SELF\composition_of_possessed_aspect.part  : possessed_spatial_aspect;
+      SELF\composition_of_possessed_aspect.whole : possessed_spatial_aspect;
+  END_ENTITY;
+
+  ENTITY composition_of_temporal_aspect
+    SUBTYPE OF(composition_of_possessed_aspect);
+      SELF\composition_of_possessed_aspect.part  : possessed_temporal_aspect;
+      SELF\composition_of_possessed_aspect.whole : possessed_temporal_aspect;
+  END_ENTITY;
+
+  ENTITY collection_of_individual
+    SUBTYPE OF(composition_of_individual);
+      SELF\composition_of_individual.whole : plural_individual;
+  END_ENTITY;
+
+  ENTITY plural_individual
+    SUBTYPE OF(individual);
+  END_ENTITY;
+
+  ENTITY assembly_of_individual
+    SUBTYPE OF(composition_of_individual);
+      SELF\composition_of_individual.whole : single_individual;
+  END_ENTITY;
+
+  ENTITY single_individual
+    SUBTYPE OF(individual);
+  END_ENTITY;
+
+  ENTITY purpose_of_possessed_aspect
+    SUPERTYPE OF (ONEOF(purpose_of_approval, purpose_of_protection, purpose_of_segregation))
+    SUBTYPE OF(possessed_association);
+      aspect  : possessed_aspect;
+      purpose : activity;
+  END_ENTITY;
+
+  ENTITY purpose_of_approval
+    SUBTYPE OF(purpose_of_possessed_aspect);
+      SELF\purpose_of_possessed_aspect.aspect : approval_of_object;
+  END_ENTITY;
+
+  ENTITY approval_of_object
+    SUBTYPE OF(possessed_association);
+      approved : application_object;
+      approver : person_or_organization;
+  END_ENTITY;
+
+  ENTITY approval_of_possessed_state
+    SUBTYPE OF(approval_of_object);
+      SELF\approval_of_object.approved : possessed_state;
+  END_ENTITY;
+
+  ENTITY purpose_of_protection
+    SUBTYPE OF(purpose_of_possessed_aspect);
+      SELF\purpose_of_possessed_aspect.aspect : protection_of_physical_object;
+  END_ENTITY;
+
+  ENTITY protection_of_physical_object
+    SUBTYPE OF(possessed_association);
+      protected : physical_object;
+      protector : physical_object;
+  END_ENTITY;
+
+  ENTITY purpose_of_segregation
+    SUBTYPE OF(purpose_of_possessed_aspect);
+      SELF\purpose_of_possessed_aspect.aspect : segregation_of_physical_object;
+  END_ENTITY;
+
+  ENTITY segregation_of_physical_object
+    SUBTYPE OF(possessed_association);
+      segregated_1 : physical_object;
+      segregated_2 : physical_object;
+  END_ENTITY;
+
+  ENTITY exception_of_possessed_aspect_from_composition
+    SUBTYPE OF(possessed_association);
+      composition : composition_of_possessed_aspect;
+      excepted    : possessed_aspect;
+  END_ENTITY;
+
+  ENTITY fulfilment_of_possessed_aspect
+    SUBTYPE OF(possessed_association);
+      fulfilled : possessed_aspect;
+      fulfiller : possessed_aspect;
+  END_ENTITY;
+
+  ENTITY change_of_possessed_state
+    SUBTYPE OF(possessed_association);
+      poststate : possessed_state;
+      prestate  : possessed_state;
+  END_ENTITY;
+
+  ENTITY version_association_between_objects
+    SUBTYPE OF(possessed_association);
+      original : application_object;
+      version  : application_object;
+  END_ENTITY;
+
+  ENTITY succession_association_between_objects
+    SUBTYPE OF(possessed_association);
+      predecessor : application_object;
+      successor   : application_object;
+  END_ENTITY;
+
+  ENTITY alternative_association_between_objects
+    SUBTYPE OF(possessed_association);
+      alternative_1 : application_object;
+      alternative_2 : application_object;
+  END_ENTITY;
+
+  ENTITY derivation_association_between_objects
+    SUBTYPE OF(possessed_association);
+      derivative : application_object;
+      source     : application_object;
+  END_ENTITY;
+
+  ENTITY conversion_of_encoded_information
+    SUBTYPE OF(derivation_association_between_objects);
+      SELF\derivation_association_between_objects.derivative : possessed_encoded_information;
+      SELF\derivation_association_between_objects.source     : possessed_encoded_information;
+  END_ENTITY;
+
+  ENTITY involvement_of_physical_object_in_activity
+    SUBTYPE OF(possessed_association);
+      involved : physical_object;
+      involver : activity;
+  END_ENTITY;
+
+  ENTITY temporal_sequence_of_activity
+    SUBTYPE OF(possessed_association);
+      predecessor : activity;
+      successor   : activity;
+  END_ENTITY;
+
+  ENTITY installation_of_physical_object_for_functional_physical_object
+    SUBTYPE OF(possessed_association);
+      functional : functional_physical_object;
+      installed  : physical_object;
+  END_ENTITY;
+
+  ENTITY usage_of_physical_object_in_connection
+    SUBTYPE OF(possessed_association);
+      used  : physical_object;
+      using : connection_of_physical_object;
+  END_ENTITY;
+
+  ENTITY usage_of_physical_feature_in_connection
+    SUBTYPE OF(usage_of_physical_object_in_connection);
+      SELF\usage_of_physical_object_in_connection.used : physical_feature;
+  END_ENTITY;
+
+  ENTITY usage_of_intermediate_physical_object_for_segregation
+    SUBTYPE OF(possessed_association);
+      used  : physical_object;
+      using : segregation_of_physical_object;
+  END_ENTITY;
+
+  ENTITY physical_object_following_route
+    SUBTYPE OF(possessed_association);
+      object : physical_object;
+      route  : possessed_routing_aspect_of_physical_object;
+  END_ENTITY;
+
+  ENTITY source_of_route
+    SUBTYPE OF(possessed_association);
+      route  : possessed_routing_aspect_of_physical_object;
+      source : physical_object;
+  END_ENTITY;
+
+  ENTITY destination_of_route
+    SUBTYPE OF(possessed_association);
+      destination : physical_object;
+      route       : possessed_routing_aspect_of_physical_object;
+  END_ENTITY;
+
+  ENTITY information_about_object
+    SUBTYPE OF(possessed_association);
+      described : application_object;
+      describer : possessed_information;
+  END_ENTITY;
+
+  ENTITY reference_to_object_within_information
+    SUBTYPE OF(possessed_association);
+      referenced : application_object;
+      referencer : possessed_information;
+  END_ENTITY;
+
+  ENTITY component_of_location_of_point_in_space
+    SUBTYPE OF(possessed_association);
+      part  : displacement_of_point_in_space;
+      whole : possessed_location_of_point_in_space;
+  END_ENTITY;
+
+  ENTITY role_in_life_of_physical_object
+    SUBTYPE OF(possessed_association);
+      physical_object : physical_object;
+      role            : functional_physical_object;
+  END_ENTITY;
+
+  ENTITY reference_to_application_object
+    SUBTYPE OF(possessed_association);
+      referenced : application_object;
+      referencer : possessed_symbol;
+  END_ENTITY;
+
+  ENTITY possessed_component_of_compound_characteristic
+    SUBTYPE OF(possessed_association);
+      part  : class_of_characteristic;
+      whole : possessed_compound_characteristic;
+  END_ENTITY;
+
+  ENTITY derivation_of_possessed_characteristic
+    SUBTYPE OF(possessed_association);
+      derivative : possessed_characteristic;
+      source     : LIST [1:?] OF possessed_characteristic;
+  END_ENTITY;
+
+  ENTITY reference_between_physical_object
+    SUBTYPE OF(possessed_association);
+      referred  : physical_object;
+      referring : physical_object;
+  END_ENTITY;
+
+  ENTITY possessed_asserting_association
+    SUBTYPE OF(possessed_association);
+  END_ENTITY;
+
+  ENTITY possessed_probalilistic_association
+    SUBTYPE OF(possessed_association);
+  END_ENTITY;
+
+  ENTITY possessed_denying_association
+    SUBTYPE OF(possessed_association);
+  END_ENTITY;
+
+  ENTITY possessed_predicted_aspect
+    SUBTYPE OF(possessed_aspect);
+  END_ENTITY;
+
+  ENTITY possessed_required_aspect
+    SUBTYPE OF(possessed_aspect);
+  END_ENTITY;
+
+  ENTITY possessed_planned_aspect
+    SUBTYPE OF(possessed_aspect);
+  END_ENTITY;
+
+  ENTITY possessed_actual_aspect
+    SUBTYPE OF(possessed_aspect);
+  END_ENTITY;
+
+  ENTITY common_purpose_of_protection
+    SUBTYPE OF(common_purpose_of_possessed_aspect);
+      SELF\common_purpose_of_possessed_aspect.aspect : protection_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_purpose_of_segregation
+    SUBTYPE OF(common_purpose_of_possessed_aspect);
+      SELF\common_purpose_of_possessed_aspect.aspect : segregation_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_derivation_of_characteristic
+    SUBTYPE OF(common_association);
+      derivative : class_of_characteristic;
+      source     : LIST [1:?] OF class_of_characteristic;
+  END_ENTITY;
+
+  ENTITY common_change_of_state
+    SUBTYPE OF(common_association);
+      poststate : common_state;
+      prestate  : common_state;
+  END_ENTITY;
+
+  ENTITY common_purpose_of_aspect
+    SUPERTYPE OF (ONEOF(common_purpose_of_common_protection, common_purpose_of_common_segregation))
+    SUBTYPE OF(common_association);
+      aspect  : class_of_aspect;
+      purpose : class_of_activity;
+  END_ENTITY;
+
+  ENTITY common_purpose_of_common_protection
+    SUBTYPE OF(common_purpose_of_aspect);
+      SELF\common_purpose_of_aspect.aspect : common_protection_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_protection_of_physical_object
+    SUBTYPE OF(common_association);
+      protected : class_of_physical_object;
+      protector : class_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_purpose_of_common_segregation
+    SUBTYPE OF(common_purpose_of_aspect);
+      SELF\common_purpose_of_aspect.aspect : common_segregation_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_segregation_of_physical_object
+    SUBTYPE OF(common_association);
+      segregated_1 : class_of_physical_object;
+      segregated_2 : class_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_temporal_sequence_of_activity
+    SUBTYPE OF(common_association);
+      predecessor : class_of_activity;
+      successor   : class_of_activity;
+  END_ENTITY;
+
+  ENTITY common_installation_of_physical_object_for_functional_physical_object
+    SUBTYPE OF(common_association);
+      functional : class_of_functional_physical_object;
+      installed  : class_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_possession_of_decomposition_aspect_of_physical_object
+    SUBTYPE OF(common_association);
+      possessed : common_decomposition_aspect_of_physical_object;
+      possessor : class_of_physical_object;
+  END_ENTITY;
+
+  ENTITY connection_of_physical_object_with_member_of_class_of_physical_object
+    SUPERTYPE OF (ONEOF(logical_connection_of_physical_object_with_member_of_class, physical_connection_of_physical_object_with_member_of_class))
+    SUBTYPE OF(common_association);
+      connected_1 : physical_object;
+      connected_2 : class_of_physical_object;
+  END_ENTITY;
+
+  ENTITY logical_connection_of_physical_object_with_member_of_class
+    SUBTYPE OF(connection_of_physical_object_with_member_of_class_of_physical_object);
+  END_ENTITY;
+
+  ENTITY physical_connection_of_physical_object_with_member_of_class
+    SUBTYPE OF(connection_of_physical_object_with_member_of_class_of_physical_object);
+  END_ENTITY;
+
+  ENTITY usage_of_member_of_class_of_physical_object_in_connection
+    SUBTYPE OF(common_association);
+      used  : class_of_physical_object;
+      using : connection_of_physical_object_with_member_of_class_of_physical_object;
+  END_ENTITY;
+
+  ENTITY usage_of_member_of_class_of_physical_feature_in_connection
+    SUBTYPE OF(usage_of_member_of_class_of_physical_object_in_connection);
+      SELF\usage_of_member_of_class_of_physical_object_in_connection.used : class_of_physical_feature;
+  END_ENTITY;
+
+  ENTITY common_physical_feature_of_individual_physical_object
+    SUBTYPE OF(common_association);
+      part  : class_of_physical_feature;
+      whole : physical_object;
+  END_ENTITY;
+
+  ENTITY common_usage_of_physical_object_in_connection
+    SUBTYPE OF(common_association);
+      used  : class_of_physical_object;
+      using : common_connection_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_usage_of_physical_feature_in_connection
+    SUBTYPE OF(common_usage_of_physical_object_in_connection);
+      SELF\common_usage_of_physical_object_in_connection.used : class_of_physical_feature;
+  END_ENTITY;
+
+  ENTITY common_usage_of_intermediate_physical_object_for_segregation
+    SUBTYPE OF(common_association);
+      used  : class_of_physical_object;
+      using : common_segregation_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_possession_of_topologic_sequence_aspect_by_physical_object
+    SUBTYPE OF(common_association);
+      possessed : common_topologic_sequence_aspect_of_physical_object;
+      possessor : class_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_physical_object_following_route
+    SUBTYPE OF(common_association);
+      object : class_of_physical_object;
+      route  : common_routing_aspect_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_source_of_route
+    SUBTYPE OF(common_association);
+      route  : common_routing_aspect_of_physical_object;
+      source : class_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_destination_of_route
+    SUBTYPE OF(common_association);
+      destination : class_of_physical_object;
+      route       : common_routing_aspect_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_possession_of_routing_aspect_of_physical_object
+    SUBTYPE OF(common_association);
+      possessed : common_routing_aspect_of_physical_object;
+      possessor : class_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_information_about_member_of_class
+    SUBTYPE OF(common_association);
+      described : class;
+      describer : class_of_information;
+  END_ENTITY;
+
+  ENTITY common_reference_to_object_within_information
+    SUBTYPE OF(common_association);
+      referenced : class;
+      referencer : class_of_information;
+  END_ENTITY;
+
+  ENTITY common_possession_of_aspect
+    SUPERTYPE OF (ONEOF(common_possession_of_identification_aspect, common_possession_of_characteristic, common_possession_of_state, common_possession_of_association, common_possession_of_value_by_characteristic, common_possession_of_location_by_displacement, common_possession_of_point_approximation_by_spatial_aspect, common_possession_of_decomposition_aspect_of_activity, common_possession_of_information_by_aspect, common_possession_of_symbol_by_individual, common_possession_of_boundary_by_compound_characteristic, common_possession_of_point_approximation_by_compound_characteristic, common_possession_of_aspect_for_identification, common_possession_of_encoded_information_by_individual))
+    SUBTYPE OF(common_association);
+      possessed : class_of_aspect;
+      possessor : class;
+  END_ENTITY;
+
+  ENTITY common_possession_of_identification_aspect
+    SUBTYPE OF(common_possession_of_aspect);
+      SELF\common_possession_of_aspect.possessed : class_of_identification_aspect;
+  END_ENTITY;
+
+  ENTITY common_possession_of_characteristic
+    SUPERTYPE OF (ONEOF(common_possession_of_spatial_aspect, common_possession_of_temporal_aspect, common_possession_of_property, common_possession_of_quality, common_possession_of_result_of_comparison_between_characteristics))
+    SUBTYPE OF(common_possession_of_aspect);
+      SELF\common_possession_of_aspect.possessed : class_of_characteristic;
+  END_ENTITY;
+
+  ENTITY common_possession_of_spatial_aspect
+    SUBTYPE OF(common_possession_of_characteristic);
+      SELF\common_possession_of_characteristic.possessed : class_of_spatial_aspect;
+  END_ENTITY;
+
+  ENTITY common_possession_of_temporal_aspect
+    SUPERTYPE OF (ONEOF(common_possession_of_start_point_by_period_of_time, common_possession_of_end_point_by_period_of_time, common_possession_of_temporal_aspect_by_state))
+    SUBTYPE OF(common_possession_of_characteristic);
+      SELF\common_possession_of_characteristic.possessed : class_of_temporal_aspect;
+  END_ENTITY;
+
+  ENTITY common_possession_of_start_point_by_period_of_time
+    SUBTYPE OF(common_possession_of_temporal_aspect);
+      SELF\common_possession_of_temporal_aspect.possessed : class_of_point_in_time;
+      SELF\common_possession_of_aspect.possessor : class_of_period_in_time;
+  END_ENTITY;
+
+  ENTITY common_possession_of_end_point_by_period_of_time
+    SUBTYPE OF(common_possession_of_temporal_aspect);
+      SELF\common_possession_of_temporal_aspect.possessed : class_of_point_in_time;
+      SELF\common_possession_of_aspect.possessor : class_of_period_in_time;
+  END_ENTITY;
+
+  ENTITY common_possession_of_temporal_aspect_by_state
+    SUBTYPE OF(common_possession_of_temporal_aspect);
+      SELF\common_possession_of_temporal_aspect.possessed : common_temporal_aspect;
+      SELF\common_possession_of_aspect.possessor : class_of_state;
+  END_ENTITY;
+
+  ENTITY common_possession_of_property
+    SUBTYPE OF(common_possession_of_characteristic);
+      SELF\common_possession_of_characteristic.possessed : class_of_property;
+  END_ENTITY;
+
+  ENTITY common_possession_of_property_by_displacement
+    SUBTYPE OF(common_possession_of_property);
+      SELF\common_possession_of_aspect.possessor : common_displacement_of_point_in_space;
+  END_ENTITY;
+
+  ENTITY common_displacement_of_point_in_space
+    SUBTYPE OF(common_association);
+      displaced : class_or_possessed_point_in_space;
+      origin    : class_or_possessed_point_in_space;
+  END_ENTITY;
+
+  ENTITY common_possession_of_quality
+    SUBTYPE OF(common_possession_of_characteristic);
+      SELF\common_possession_of_characteristic.possessed : class_of_quality;
+  END_ENTITY;
+
+  ENTITY common_possession_of_result_of_comparison_between_characteristics
+    SUBTYPE OF(common_possession_of_characteristic);
+      SELF\common_possession_of_aspect.possessor : class_of_comparison_of_characteristic;
+  END_ENTITY;
+
+  ENTITY common_possession_of_state
+    SUBTYPE OF(common_possession_of_aspect);
+      SELF\common_possession_of_aspect.possessed : class_of_state;
+  END_ENTITY;
+
+  ENTITY common_possession_of_association
+    SUBTYPE OF(common_possession_of_aspect);
+      SELF\common_possession_of_aspect.possessed : class_of_association;
+  END_ENTITY;
+
+  ENTITY common_possession_of_value_by_characteristic
+    SUPERTYPE OF (ONEOF(common_possession_of_value_by_property, common_possession_of_value_by_point_in_time, common_possession_of_value_by_spatial_aspect))
+    SUBTYPE OF(common_possession_of_aspect);
+      SELF\common_possession_of_aspect.possessed : class_of_characteristic_value;
+      SELF\common_possession_of_aspect.possessor : class_of_characteristic;
+  END_ENTITY;
+
+  ENTITY common_possession_of_value_by_property
+    SUBTYPE OF(common_possession_of_value_by_characteristic);
+      SELF\common_possession_of_value_by_characteristic.possessed : class_of_property_value;
+      SELF\common_possession_of_value_by_characteristic.possessor : class_of_property;
+  END_ENTITY;
+
+  ENTITY common_possession_of_value_by_point_in_time
+    SUBTYPE OF(common_possession_of_value_by_characteristic);
+      SELF\common_possession_of_value_by_characteristic.possessed : class_of_point_in_time_value;
+      SELF\common_possession_of_value_by_characteristic.possessor : class_of_point_in_time;
+  END_ENTITY;
+
+  ENTITY common_possession_of_value_by_spatial_aspect
+    SUBTYPE OF(common_possession_of_value_by_characteristic);
+      SELF\common_possession_of_value_by_characteristic.possessed : class_of_spatial_value;
+      SELF\common_possession_of_value_by_characteristic.possessor : class_of_spatial_aspect;
+  END_ENTITY;
+
+  ENTITY common_possession_of_location_by_displacement
+    SUBTYPE OF(common_possession_of_aspect);
+      SELF\common_possession_of_aspect.possessed : class_of_location_of_point_in_space;
+      SELF\common_possession_of_aspect.possessor : common_displacement_of_point_in_space;
+  END_ENTITY;
+
+  ENTITY common_possession_of_point_approximation_by_spatial_aspect
+    SUBTYPE OF(common_possession_of_aspect);
+      SELF\common_possession_of_aspect.possessed : common_point_approximation_of_spatial_aspect;
+      SELF\common_possession_of_aspect.possessor : class_of_spatial_aspect;
+  END_ENTITY;
+
+  ENTITY common_possession_of_decomposition_aspect_of_activity
+    SUBTYPE OF(common_possession_of_aspect);
+      SELF\common_possession_of_aspect.possessed : common_decomposition_aspect_of_activity;
+      SELF\common_possession_of_aspect.possessor : class_of_activity;
+  END_ENTITY;
+
+  ENTITY common_possession_of_information_by_aspect
+    SUBTYPE OF(common_possession_of_aspect);
+      SELF\common_possession_of_aspect.possessed : common_information;
+      SELF\common_possession_of_aspect.possessor : class_of_aspect;
+  END_ENTITY;
+
+  ENTITY common_expression_of_information_by_encoded_information
+    SUBTYPE OF(common_possession_of_information_by_aspect);
+      SELF\common_possession_of_information_by_aspect.possessor : common_encoded_information;
+  END_ENTITY;
+
+  ENTITY common_possession_of_symbol_by_individual
+    SUBTYPE OF(common_possession_of_aspect);
+      SELF\common_possession_of_aspect.possessed : common_symbol;
+      SELF\common_possession_of_aspect.possessor : class_of_individual;
+  END_ENTITY;
+
+  ENTITY common_expression_of_symbol_by_encoded_information
+    SUBTYPE OF(common_possession_of_symbol_by_individual);
+      SELF\common_possession_of_symbol_by_individual.possessor : common_encoded_information;
+  END_ENTITY;
+
+  ENTITY common_possession_of_boundary_by_compound_characteristic
+    SUBTYPE OF(common_possession_of_aspect);
+      SELF\common_possession_of_aspect.possessed : class_of_compound_characteristic;
+      SELF\common_possession_of_aspect.possessor : class_of_compound_characteristic;
+  END_ENTITY;
+
+  ENTITY common_possession_of_point_approximation_by_compound_characteristic
+    SUBTYPE OF(common_possession_of_aspect);
+      SELF\common_possession_of_aspect.possessed : common_point_approximation_of_compound_characteristic;
+      SELF\common_possession_of_aspect.possessor : class_of_compound_characteristic;
+  END_ENTITY;
+
+  ENTITY common_possession_of_aspect_for_identification
+    SUBTYPE OF(common_possession_of_aspect);
+      SELF\common_possession_of_aspect.possessor : class_of_identification_aspect;
+  END_ENTITY;
+
+  ENTITY common_possession_of_encoded_information_by_individual
+    SUBTYPE OF(common_possession_of_aspect);
+      SELF\common_possession_of_aspect.possessed : class_of_encoded_information;
+  END_ENTITY;
+
+  ENTITY common_conversion_of_encoded_information
+    SUBTYPE OF(common_association);
+      derivative : class_of_encoded_information;
+      source     : class_of_encoded_information;
+  END_ENTITY;
+
+  ENTITY common_component_of_location_of_point_in_space
+    SUBTYPE OF(common_association);
+      part  : common_displacement_of_point_in_space;
+      whole : class_of_location_of_point_in_space;
+  END_ENTITY;
+
+  ENTITY common_involvement_of_physical_object_in_activity
+    SUBTYPE OF(common_association);
+      involved : class_of_physical_object;
+      involver : class_of_activity;
+  END_ENTITY;
+
+  ENTITY involvement_of_physical_object_in_member_of_class_of_activity
+    SUBTYPE OF(common_association);
+      involved : physical_object;
+      involver : class_of_activity;
+  END_ENTITY;
+
+  ENTITY installation_of_class_of_physical_object_for_functional_physical_object
+    SUBTYPE OF(common_association);
+      functional : functional_physical_object;
+      installed  : class_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_role_in_life_of_physical_object
+    SUBTYPE OF(common_association);
+      physical_object : class_of_physical_object;
+      role            : class_of_functional_physical_object;
+  END_ENTITY;
+
+  ENTITY role_in_life_of_members_of_class_of_physical_object
+    SUBTYPE OF(common_association);
+      physical_object : class_of_physical_object;
+      role            : functional_physical_object;
+  END_ENTITY;
+
+  ENTITY common_information_about_application_object
+    SUBTYPE OF(common_association);
+      described : application_object;
+      describer : class_of_information;
+  END_ENTITY;
+
+  ENTITY common_inclusion_of_information
+    SUBTYPE OF(common_association);
+      included : application_object;
+      includer : class_of_information;
+  END_ENTITY;
+
+  ENTITY common_reference_to_member_of_class
+    SUBTYPE OF(common_association);
+      referenced : class;
+      referencer : class_of_symbol;
+  END_ENTITY;
+
+  ENTITY common_reference_to_application_object
+    SUBTYPE OF(common_association);
+      referenced : application_object;
+      referencer : class_of_symbol;
+  END_ENTITY;
+
+  ENTITY common_unique_context_for_reference
+    SUBTYPE OF(common_association);
+      object_reference  : common_reference_to_application_object;
+      reference_context : application_object;
+  END_ENTITY;
+
+  ENTITY composition_of_individual_from_members_of_class_of_individual
+    SUBTYPE OF(common_association);
+      part  : class_of_individual;
+      whole : individual;
+  END_ENTITY;
+
+  ENTITY common_component_of_compound_characteristic
+    SUBTYPE OF(common_association);
+      part  : class_of_characteristic;
+      whole : class_of_compound_characteristic;
+  END_ENTITY;
+
+  ENTITY common_functional_part_of_individual_functional_object
+    SUBTYPE OF(common_association);
+      part  : class_of_functional_physical_object;
+      whole : physical_object;
+  END_ENTITY;
+
+  ENTITY common_controlling_authority_of_reference
+    SUBTYPE OF(common_association);
+      authority        : organization;
+      object_reference : common_reference_to_application_object;
+  END_ENTITY;
+
+  ENTITY common_factorization_of_property_value
+    SUBTYPE OF(common_association);
+      exponent : NUMBER;
+      factor   : concept_of_property_value;
+      product  : concept_of_property_value;
+  END_ENTITY;
+
+  ENTITY common_linear_conversion_of_property_value
+    SUBTYPE OF(common_association);
+      multiplier : NUMBER;
+      offset     : NUMBER;
+      source     : concept_of_property_value;
+      result     : concept_of_property_value;
+  END_ENTITY;
+
+  ENTITY common_reference_between_physical_object
+    SUBTYPE OF(common_association);
+      referred  : class_of_physical_object;
+      referring : class_of_physical_object;
+  END_ENTITY;
+
+  ENTITY common_asserting_association
+    SUBTYPE OF(common_association);
+  END_ENTITY;
+
+  ENTITY common_probalilistic_association
+    SUBTYPE OF(common_association);
+  END_ENTITY;
+
+  ENTITY common_denying_association
+    SUBTYPE OF(common_association);
+  END_ENTITY;
+
+  ENTITY specialization_of_class
+    SUBTYPE OF(application_object);
+      subclass   : class;
+      superclass : class;
+  END_ENTITY;
+
+  ENTITY specialization_of_concept_of_aspect_by_common_aspect
+    SUBTYPE OF(specialization_of_class);
+      SELF\specialization_of_class.subclass   : common_aspect;
+      SELF\specialization_of_class.superclass : concept_of_aspect;
+  END_ENTITY;
+
+  ENTITY possession_of_aspect
+    SUBTYPE OF(application_object);
+      possessed : possessed_aspect;
+      possessor : application_object;
+  END_ENTITY;
+
+  ENTITY possession_of_aspect_by_individual
+    SUPERTYPE OF (ONEOF(possession_of_value_by_characteristic, possession_of_point_approximation_by_spatial_aspect, possession_of_start_point_by_period_of_time, possession_of_end_point_by_period_of_time, possession_of_temporal_aspect_by_possessed_event_effect, possession_of_spatial_aspect_by_event_effect, possession_of_decomposition_of_activity, possession_of_decomposition_aspect_of_physical_object, possession_of_topologic_sequence_aspect_of_physical_object, possession_of_routing_aspect_of_physical_object, possession_of_symbol_by_individual, possession_of_information_by_aspect, possession_of_encoded_information_by_individual, possession_of_point_approximation_by_compound_characteristic, possession_of_boundary_by_compound_characteristic, possession_of_result_of_comparison_between_characteristics, possession_of_boundary_by_spatial_aspect, possession_of_property_by_dispacement, possession_of_location_by_displacement, possession_of_temporal_aspect_by_state))
+    SUBTYPE OF(possession_of_aspect);
+      SELF\possession_of_aspect.possessed : aspect_possessed_by_individual;
+      SELF\possession_of_aspect.possessor : individual;
+  END_ENTITY;
+
+  ENTITY possession_of_value_by_characteristic
+    SUPERTYPE OF (ONEOF(possession_of_value_by_property, possession_of_value_by_spatial_aspect, possession_of_value_by_point_in_time))
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_characteristic_value;
+      SELF\possession_of_aspect_by_individual.possessor : possessed_characteristic;
+  END_ENTITY;
+
+  ENTITY possession_of_value_by_property
+    SUBTYPE OF(possession_of_value_by_characteristic);
+      SELF\possession_of_value_by_characteristic.possessed : possessed_property_value;
+      SELF\possession_of_value_by_characteristic.possessor : possessed_property;
+  END_ENTITY;
+
+  ENTITY possession_of_value_by_spatial_aspect
+    SUBTYPE OF(possession_of_value_by_characteristic);
+      SELF\possession_of_value_by_characteristic.possessed : possessed_spatial_value;
+      SELF\possession_of_value_by_characteristic.possessor : possessed_spatial_aspect;
+  END_ENTITY;
+
+  ENTITY possession_of_value_by_point_in_time
+    SUBTYPE OF(possession_of_value_by_characteristic);
+      SELF\possession_of_value_by_characteristic.possessed : possessed_point_in_time_value;
+      SELF\possession_of_value_by_characteristic.possessor : possessed_point_in_time;
+  END_ENTITY;
+
+  ENTITY possession_of_point_approximation_by_spatial_aspect
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_point_approximation_of_spatial_aspect;
+      SELF\possession_of_aspect_by_individual.possessor : possessed_spatial_aspect;
+  END_ENTITY;
+
+  ENTITY possession_of_start_point_by_period_of_time
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessor : possessed_period_in_time;
+      SELF\possession_of_aspect_by_individual.possessed : possessed_point_in_time;
+  END_ENTITY;
+
+  ENTITY possession_of_end_point_by_period_of_time
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_point_in_time;
+      SELF\possession_of_aspect_by_individual.possessor : possessed_period_in_time;
+  END_ENTITY;
+
+  ENTITY possession_of_temporal_aspect_by_possessed_event_effect
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_temporal_aspect;
+      SELF\possession_of_aspect_by_individual.possessor : possessed_event_effect;
+  END_ENTITY;
+
+  ENTITY possession_of_spatial_aspect_by_event_effect
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_spatial_aspect;
+      SELF\possession_of_aspect_by_individual.possessor : possessed_event_effect;
+  END_ENTITY;
+
+  ENTITY possession_of_decomposition_of_activity
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_decomposition_of_activity;
+      SELF\possession_of_aspect_by_individual.possessor : activity;
+  END_ENTITY;
+
+  ENTITY possession_of_decomposition_aspect_of_physical_object
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_decomposition_aspect_of_physical_object;
+      SELF\possession_of_aspect_by_individual.possessor : physical_object;
+  END_ENTITY;
+
+  ENTITY possession_of_topologic_sequence_aspect_of_physical_object
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_topologic_sequence_aspect_of_physical_object;
+      SELF\possession_of_aspect_by_individual.possessor : physical_object;
+  END_ENTITY;
+
+  ENTITY possession_of_routing_aspect_of_physical_object
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_routing_aspect_of_physical_object;
+      SELF\possession_of_aspect_by_individual.possessor : physical_object;
+  END_ENTITY;
+
+  ENTITY possession_of_symbol_by_individual
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_symbol;
+  END_ENTITY;
+
+  ENTITY expression_of_symbol_by_encoded_information
+    SUBTYPE OF(possession_of_symbol_by_individual);
+      SELF\possession_of_aspect_by_individual.possessor : possessed_encoded_information;
+  END_ENTITY;
+
+  ENTITY possession_of_information_by_aspect
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_information;
+  END_ENTITY;
+
+  ENTITY expression_of_information_by_encoded_information
+    SUBTYPE OF(possession_of_information_by_aspect);
+      SELF\possession_of_aspect_by_individual.possessor : possessed_encoded_information;
+  END_ENTITY;
+
+  ENTITY possession_of_encoded_information_by_individual
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_encoded_information;
+  END_ENTITY;
+
+  ENTITY possession_of_point_approximation_by_compound_characteristic
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_point_approximation_of_compound_characteristic;
+      SELF\possession_of_aspect_by_individual.possessor : possessed_compound_characteristic;
+  END_ENTITY;
+
+  ENTITY possession_of_boundary_by_compound_characteristic
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_compound_characteristic;
+      SELF\possession_of_aspect_by_individual.possessor : possessed_compound_characteristic;
+  END_ENTITY;
+
+  ENTITY possession_of_result_of_comparison_between_characteristics
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_characteristic;
+      SELF\possession_of_aspect_by_individual.possessor : comparison_of_characteristic_with_reference;
+  END_ENTITY;
+
+  ENTITY possession_of_boundary_by_spatial_aspect
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_spatial_aspect;
+      SELF\possession_of_aspect_by_individual.possessor : possessed_spatial_aspect;
+  END_ENTITY;
+
+  ENTITY possession_of_property_by_dispacement
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_property;
+      SELF\possession_of_aspect_by_individual.possessor : displacement_of_point_in_space;
+  END_ENTITY;
+
+  ENTITY possession_of_location_by_displacement
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_location_of_point_in_space;
+      SELF\possession_of_aspect_by_individual.possessor : displacement_of_point_in_space;
+  END_ENTITY;
+
+  ENTITY possession_of_temporal_aspect_by_state
+    SUBTYPE OF(possession_of_aspect_by_individual);
+      SELF\possession_of_aspect_by_individual.possessed : possessed_temporal_aspect;
+      SELF\possession_of_aspect_by_individual.possessor : possessed_state;
+  END_ENTITY;
+
+  ENTITY possession_of_aspect_for_identification
+    SUBTYPE OF(possession_of_aspect);
+      SELF\possession_of_aspect.possessor : possessed_identification_aspect;
+  END_ENTITY;
+
+  ENTITY whole_individual
+    SUBTYPE OF(individual);
+  END_ENTITY;
+
+  ENTITY specific_individual
+    SUBTYPE OF(individual);
+  END_ENTITY;
+
+  ENTITY typical_individual
+    SUBTYPE OF(individual);
+  END_ENTITY;
+
+END_SCHEMA;
+

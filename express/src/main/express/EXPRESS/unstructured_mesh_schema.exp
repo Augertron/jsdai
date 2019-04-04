@@ -1,0 +1,48 @@
+-- 2000-10-08
+
+(*
+
+  ISO/WD 10303-5x, Mathematical description, 2000-10-04
+
+  WG12 N620
+
+   This file contains the following schemas:
+      mathematical_identification_schema;
+      distribution_mapping_schema;
+      topological_definition_and_mesh_schema;
+      unstructured_mesh_schema;
+      structured_mesh_schema;
+      mesh_function_schema;
+      fea_definition_relationships_schema.
+*)
+
+
+SCHEMA unstructured_mesh_schema;
+
+REFERENCE FROM topology_schema -- 10303-42
+  (vertex);
+
+REFERENCE FROM topological_definition_and_mesh_schema -- 10303-5x
+  (mesh,
+  topological_region);
+
+ENTITY unstructured_mesh
+  SUBTYPE OF (mesh);
+  cells    : LIST[1:?] OF topological_region;
+  vertices : OPTIONAL LIST[1:?] OF vertex;
+END_ENTITY; 
+
+ENTITY vertex_defined_cell
+  SUBTYPE OF (topological_region);
+  order              : ARRAY[1:topological_dimension] OF INTEGER;
+  number_of_vertices : INTEGER;
+  vertices           : ARRAY[1:number_of_vertices] OF OPTIONAL vertex;
+(*
+DERIVE
+  topological_dimension : INTEGER :=
+    SELF/topological_region.topological_dimension; 
+  shape : INTEGER := SELF/topological_region.shape;
+*)
+END_ENTITY;
+
+END_SCHEMA; 

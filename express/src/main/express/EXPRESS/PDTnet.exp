@@ -1,0 +1,1513 @@
+SCHEMA pdtnet_schema_v1_3;
+(* Version 1.4, Dezember 2001 *)
+
+-- Change history:
+
+-- 2001-11-15:
+-- ENTITY item_instance					changed
+-- TYPE activity_element_select			added
+-- TYPE documented_element_sub_select		added
+--  added to SELECT-TYPE documented_element_select
+-- TYPE period_or_date_select				added
+-- ENTITY activity					added
+--  added to SELECT-TYPE approval_element_select
+--  added to SELECT-TYPE general_organizational_data_select
+--  added to SELECT-TYPE process_property_select
+-- ENTITY activity_element				added
+--  added to SELECT-TYPE approval_element_select
+--  added to SELECT-TYPE general_organizational_data_select
+-- ENTITY activity_method				added
+-- ENTITY activity_method_assignment		added
+--  added to SELECT-TYPE approval_element_select
+--  added to SELECT-TYPE general_organizational_data_select
+--  added to SELECT-TYPE process_property_select
+-- ENTITY activity_relationship			added
+-- ENTITY change						added
+-- ENTITY element_delivery				added
+-- ENTITY named_size					added
+-- ENTITY project						added
+--  added to SELECT-TYPE approval_element_select
+--  added to SELECT-TYPE general_organizational_data_sub_select
+-- ENTITY project_relationship			added
+-- ENTITY work_order					added
+--  added to SELECT-TYPE approval_element_select
+--  added to SELECT-TYPE general_organizational_data_sub_select
+-- ENTITY work_request					added
+--  added to SELECT-TYPE approval_element_select
+--  added to SELECT-TYPE general_organizational_data_sub_select
+
+-- 2001-10-19:
+-- TYPE effective_element_select 			added
+-- TYPE geometric_or_external_model_select 	added
+-- TYPE class_source_select 				added
+-- ENTITY external_model 				added
+-- ENTITY cartesian_coordinate_space 		added
+-- ENTITY cartesian_coordinate_space_3d 		added
+-- ENTITY effectivity_assignment 			added
+-- ENTITY external_geometric_model			added
+-- ENTITY external_library_reference 		added
+-- ENTITY external_model 				added
+-- ENTITY general_classification 			added
+--  added to SELECT-TYPE general_organizational_data_select
+--  added to SELECT-TYPE approval_element_select
+--  added to SELECT-TYPE documented_element_select
+--  added to SELECT-TYPE alias_select
+-- ENTITY geometric_model_relationship 		added
+-- ENTITY geometric_model_relationship_with_transformation 	added
+-- ENTITY quantified_instance 			added
+-- ENTITY transformation_3d 				added
+-- ENTITY transformation 				added
+
+-- 2001-12-17:
+-- TYPE    complex_product_select 		added
+-- ENTITY  alternative_solution         added
+-- ENTITY  class_condition_association  added
+--  added to SELECT-TYPE general_organizational_data_select
+--  added to SELECT-TYPE activity_element_select
+--  added to SELECT-TYPE approval_element_select
+--  added to SELECT-TYPE effective_element_select
+-- ENTITY specification_expression       added
+--  added to SELECT-TYPE activity_element_select
+--  added to SELECT-TYPE approval_element_select
+--  added to SELECT-TYPE effective_element_select
+--  added to SELECT-TYPE general_organizational_data_sub_select
+--  TYPE specification_operand_select      added
+-- ENTITY specification                    added
+--  added to SELECT-TYPE activity_element_select
+--  added to SELECT-TYPE approval_element_select
+--  added to SELECT-TYPE alias_select
+--  added to SELECT-TYPE effective_element_select
+--  added to SELECT-TYPE general_organizational_data_sub_select
+--  added to SELECT-TYPE documented_element_sub_select
+-- ENTITY specification_category_hierarchy added
+-- ENTITY product_specification added
+-- ENTITY class_inclusion_association added
+--  added to SELECT-TYPE general_organizational_data_select
+--  added to SELECT-TYPE activity_element_select
+--  added to SELECT-TYPE approval_element_select
+--  added to SELECT-TYPE effective_element_select
+-- ENTITY specification_inclusion added
+--  added to SELECT-TYPE activity_element_select
+--  added to SELECT-TYPE approval_element_select
+--  added to SELECT-TYPE effective_element_select
+--  added to SELECT-TYPE general_organizational_data_sub_select
+-- ENTITY class_specification_association added
+--  added to SELECT-TYPE general_organizational_data_select
+--  added to SELECT-TYPE activity_element_select
+--  added to SELECT-TYPE approval_element_select
+--  added to SELECT-TYPE effective_element_select
+-- ENTITY class_structure_relationship added
+--  added to SELECT-TYPE general_organizational_data_select
+--  added to SELECT-TYPE documented_element_select
+--  added to SELECT-TYPE activity_element_select
+--  added to SELECT-TYPE approval_element_select
+--  added to SELECT-TYPE effective_element_select
+-- TYPE product_function_component_select added
+-- ENTITY collected_item_association added
+-- ENTITY collection_definition added  
+-- ENTITY complex_product_relationship added
+-- added to SELECT-TYPE general_organizational_data_select
+-- added to SELECT-TYPE change_relationship_select
+-- added to SELECT-TYPE effective_element_select
+-- ENTITY component_placement added
+-- TYPE transformation_select added
+-- ENTITY configuration added
+-- added to SELECT-TYPE general_organizational_data_select
+-- added to SELECT-TYPE activity_element_select
+-- added to SELECT-TYPE approval_element_select
+-- added to SELECT-TYPE effective_element_select
+-- TYPE configured_item_select added
+-- TYPE configured_specification_select added
+-- ENTITY descriptive_specification  added
+-- added to SELECT-TYPE documented_element_select
+-- ENTITY design_constraint  added
+-- added to SELECT-TYPE general_organizational_data_select
+-- added to SELECT-TYPE documented_element_select
+-- added to SELECT-TYPE activity_element_select
+-- added to SELECT-TYPE approval_element_select
+-- added to SELECT-TYPE item_property_select  
+-- added to SELECT-TYPE effective_element_select
+-- ENTITY design_constraint_association added
+-- ENTITY design_constraint_relationship added
+-- added to SELECT-TYPE change_relationship_select
+-- ENTITY design_constraint_version added
+-- ENTITY final_solution added
+-- TYPE final_definition_select added
+-- ENTITY general_item_definition_instance_relationship added
+-- ENTITY general_item_instance_relationship added
+-- ENTITY item_instance_relationship added
+-- added to SELECT-TYPE general_organizational_data_select
+-- added to SELECT-TYPE documented_element_select
+-- added to SELECT-TYPE activity_element_select
+-- added to SELECT-TYPE approval_element_select
+-- added to SELECT-TYPE item_property_select 
+-- added to SELECT-TYPE effective_element_select
+-- ENTITY instance_placement added
+-- ENTITY item_function_association added
+-- ENTITY physical_instance_test_result added
+-- added to SELECT-TYPE general_organizational_data_select
+-- added to SELECT-TYPE documented_element_select
+-- added to SELECT-TYPE approval_element_select
+-- TYPE test_activity_select added
+-- ENTITY replaced_usage_relationship added
+-- added to SELECT-TYPE change_relationship_select
+-- TYPE instance_usage_context_select added
+-- ENTITY selected_instance added
+-- ENTITY specified_instance added
+-- ENTITY supplier_solution added
+-- ENTITY technical_solution added
+-- ENTITY manufacturing_configuration added
+-- added to SELECT-TYPE activity_element_select
+-- added to SELECT-TYPE general_organizational_data_select
+-- added to SELECT-TYPE approval_element_select
+-- ENTITY lot_configuration added
+-- ENTITY dated_configuration added
+-- ENTITY serial_configuration added
+
+
+
+ TYPE activity_element_select = SELECT
+      (property,specification_category,class_category_association,class_condition_association,
+	   product_class,activity_method,item_instance,product_identification,
+       document_representation,document_file,document,document_version,
+       product_structure_relationship,item_definition_instance_relationship,
+       complex_product,process_plan,property_value_association,
+       process_operation_definition,design_discipline_item_definition,item,
+       item_version,material,process_operation_occurrence,physical_instance,
+       physical_assembly_relationship,specification_expression,specification,
+	   class_inclusion_association,specification_inclusion,class_specification_association,
+	   class_structure_relationship,configuration,design_constraint,item_instance_relationship,
+	   manufacturing_configuration);
+ END_TYPE;
+
+ TYPE alias_select = SELECT
+      (approval_status,classification_system,design_discipline_item_definition,
+       document,document_representation,document_type_property,document_version
+       ,general_classification,item,item_instance,item_version,organization,
+       property,product_class,specification_category,physical_instance,
+       complex_product,specification);
+ END_TYPE;
+
+ TYPE approval_element_select = SELECT
+      (activity,activity_element,activity_method_assignment,
+       classification_system,class_condition_association,
+	   design_discipline_item_definition,document,
+       document_file,document_version,document_representation,
+       general_classification,item_definition_instance_relationship,
+       item_instance,item_version,property,property_value_association,
+       specification_category,class_category_association,product_class,material
+       ,process_plan,project,physical_assembly_relationship,physical_instance,
+       product_structure_relationship,complex_product,work_order,work_request,
+	   specification_expression,specification,class_inclusion_association,
+	   specification_inclusion,class_specification_association,class_structure_relationship,
+	   configuration,design_constraint,item_instance_relationship,physical_instance_test_result,
+	   manufacturing_configuration);
+ END_TYPE;
+
+ TYPE assigned_document_select = SELECT
+      (document,document_file,document_representation,document_version);
+ END_TYPE;
+
+ TYPE change_relationship_select = SELECT
+      (item_version_relationship,process_plan_relationship,
+       process_operation_occurrence_relationship,complex_product_relationship,
+	   design_constraint_relationship,replaced_usage_relationship);
+ END_TYPE;
+
+ TYPE class_source_select = SELECT
+      (external_library_reference);
+ END_TYPE;
+
+ TYPE complex_product_select = SELECT (
+   alternative_solution,
+   product_component,
+   product_function);
+ END_TYPE;
+
+ TYPE configured_item_select = SELECT (
+   process_operation_occurrence,
+   item_instance,
+   complex_product_select,
+   process_plan
+  );
+ END_TYPE;
+
+ TYPE configured_specification_select = SELECT (
+   class_specification_association,
+   class_condition_association
+  );
+ END_TYPE;
+
+ TYPE date_time_person_organization_element_select = SELECT
+      (general_organizational_data_select);
+ END_TYPE;
+
+ TYPE documented_element_select = SELECT
+      (approval,classification_system,design_discipline_item_definition,item,
+       item_definition_instance_relationship,item_instance,item_version,
+       general_classification,organization,person,property,material,
+       complex_product,physical_assembly_relationship,physical_instance,
+       process_plan,process_operation_occurrence,product_identification,
+       product_class,product_structure_relationship,
+       documented_element_sub_select,class_structure_relationship,
+	   descriptive_specification,design_constraint,item_instance_relationship,
+	   physical_instance_test_result);
+ END_TYPE;
+
+ TYPE documented_element_sub_select = SELECT
+      (work_request,work_order,specification);
+ END_TYPE;
+
+ TYPE effective_element_select = SELECT
+      (item_instance,document_file,class_condition_association,classification_system,
+	   specification_expression,specification,class_inclusion_association,
+	   specification_inclusion,class_specification_association,class_structure_relationship,
+	   complex_product_relationship,configuration,design_constraint,item_instance_relationship);
+ END_TYPE;
+
+ TYPE event_or_date_select = SELECT
+      (date_time);
+ END_TYPE;
+
+ TYPE final_definition_select = SELECT (
+   physical_instance,
+   design_discipline_item_definition,
+   descriptive_specification
+  );
+ END_TYPE;
+
+ TYPE general_organizational_data_select = SELECT
+      (activity,activity_element,activity_method_assignment,approval_status,
+       class_category_association,class_condition_association,classification_system,
+       design_discipline_item_definition,document,document_file,
+       document_representation,document_version,general_classification,item,
+       item_definition_instance_relationship,item_instance,item_version,
+       item_version_relationship,person_in_organization,product_class,
+       product_identification,process_plan,process_operation_occurrence,
+       material,physical_instance,physical_assembly_relationship,
+       product_structure_relationship,complex_product,
+       process_operation_definition,process_operation_resource_assignment,
+       general_organizational_data_sub_select,class_inclusion_association,
+	   class_specification_association,complex_product_relationship,configuration,
+	   design_constraint,item_instance_relationship,physical_instance_test_result,
+	   manufacturing_configuration);
+ END_TYPE;
+
+ TYPE general_organizational_data_sub_select = SELECT
+      (project,work_order,work_request,property,property_value_association,
+       specification_category,specification_expression,specification,specification_inclusion);
+ END_TYPE;
+
+ TYPE geometric_or_external_model_select = SELECT
+      (external_model);
+ END_TYPE;
+
+ TYPE instance_definition_select = SELECT
+      (design_discipline_item_definition,product_identification);
+ END_TYPE;
+ 
+ TYPE instance_usage_context_select = SELECT (
+   product_structure_relationship,
+   item_definition_instance_relationship,
+   process_operation_input_or_output
+  );
+ END_TYPE;
+
+
+ TYPE item_property_select = SELECT
+      (design_discipline_item_definition,document_file,document_representation,
+       item_definition_instance_relationship,item_instance,product_class,
+       product_structure_relationship,complex_product,product_identification,
+	   design_constraint,item_instance_relationship);
+ END_TYPE;
+
+ TYPE period_or_date_select = SELECT
+      (date_time);
+ END_TYPE;
+
+ TYPE person_organization_select = SELECT
+      (organization,person_in_organization);
+ END_TYPE;
+
+ TYPE physical_instance_definition_select = SELECT
+      (product_identification);
+ END_TYPE;
+
+ TYPE process_operation_input_or_output_select = SELECT
+      (item_instance);
+ END_TYPE;
+
+ TYPE process_property_select = SELECT
+      (activity,activity_method_assignment,process_plan,
+       process_operation_occurrence,process_operation_resource_assignment,
+       process_operation_definition);
+ END_TYPE;
+
+ TYPE product_function_component_select = SELECT (
+   product_component,
+   product_function
+  );
+ END_TYPE;
+
+ TYPE resource_definition_select = SELECT
+      (item_instance,physical_instance,product_component);
+ END_TYPE;
+
+ TYPE specification_operand_select = SELECT (
+   specification_expression,
+   specification
+  );
+ END_TYPE;
+
+ TYPE string_select = STRING;
+ END_TYPE;
+
+ TYPE transformation_select = SELECT (
+   geometric_model_relationship_with_transformation
+  );
+ END_TYPE;
+
+ TYPE test_activity_select = SELECT (
+   activity,
+   process_operation_occurrence
+  );
+ END_TYPE;
+
+ TYPE validity_context_select = SELECT
+      (organization,product_class,product_identification);
+ END_TYPE;
+
+ ENTITY activity;
+  activity_type : STRING;
+  id : STRING;
+  status : OPTIONAL STRING;
+  description : OPTIONAL string_select;
+  resolved_request : SET[0:?] OF work_request;
+  concerned_organization : SET[0:?] OF organization;
+  supplying_organization : SET[0:?] OF organization;
+  requestor : OPTIONAL date_and_person_organization;
+  actual_end_date : OPTIONAL date_time;
+  planned_end_date : OPTIONAL period_or_date_select;
+  planned_start_date : OPTIONAL event_or_date_select;
+  actual_start_date : OPTIONAL date_time;
+  internal : OPTIONAL BOOLEAN;
+  chosen_method : OPTIONAL activity_method;
+  INVERSE
+   authorization : SET[0:1] OF work_order FOR is_controlling;
+   associated_project : SET[0:1] OF project FOR work_program;
+ END_ENTITY;
+
+ ENTITY activity_element;
+  element : activity_element_select;
+  associated_activity : activity;
+  role : STRING;
+ END_ENTITY;
+
+ ENTITY activity_method;
+  description : string_select;
+  consequence : OPTIONAL STRING;
+  name : string_select;
+ END_ENTITY;
+
+ ENTITY activity_method_assignment;
+  assigned_method : activity_method;
+  associated_request : work_request;
+  relation_type : STRING;
+ END_ENTITY;
+
+ ENTITY activity_relationship;
+  related : activity;
+  relating : activity;
+  description : OPTIONAL string_select;
+  relation_type : STRING;
+ END_ENTITY;
+
+ ENTITY address;
+  internal_location : OPTIONAL STRING;
+  street_number : OPTIONAL STRING;
+  street : OPTIONAL STRING;
+  postal_box : OPTIONAL STRING;
+  town : OPTIONAL STRING;
+  region : OPTIONAL STRING;
+  postal_code : OPTIONAL STRING;
+  country : OPTIONAL STRING;
+  facsimile_number : OPTIONAL STRING;
+  telephone_number : OPTIONAL STRING;
+  electronic_mail_address : OPTIONAL STRING;
+  telex_number : OPTIONAL STRING;
+  WHERE
+   wr1 : EXISTS(internal_location) OR EXISTS(street_number) OR EXISTS(street) 
+         OR EXISTS(postal_box) OR EXISTS(town) OR EXISTS(region) OR EXISTS(
+         postal_code) OR EXISTS(country) OR EXISTS(facsimile_number) OR EXISTS(
+         telephone_number) OR EXISTS(electronic_mail_address) OR EXISTS(
+         telex_number);
+ END_ENTITY;
+
+ ENTITY alias_identification;
+  alias_id : STRING;
+  alias_version_id : OPTIONAL STRING;
+  is_applied_to : alias_select;
+  alias_scope : OPTIONAL organization;
+  description : OPTIONAL string_select;
+ END_ENTITY;
+
+ ENTITY alternative_solution
+  SUBTYPE OF (complex_product);
+  base_element : complex_product_select;
+ END_ENTITY;
+
+
+ ENTITY application_context;
+  description : OPTIONAL string_select;
+  application_domain : STRING;
+  life_cycle_stage : STRING;
+ END_ENTITY;
+
+ ENTITY approval;
+  status : approval_status;
+  is_applied_to : SET[1:?] OF approval_element_select;
+  is_approved_by : SET[0:?] OF date_and_person_organization;
+  planned_date : OPTIONAL date_time;
+  actual_date : OPTIONAL date_time;
+  scope : SET[0:?] OF organization;
+  level : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY approval_relationship;
+  relating : approval;
+  related : approval;
+  relation_type : STRING;
+  description : OPTIONAL string_select;
+ END_ENTITY;
+
+ ENTITY approval_status;
+  status_name : STRING;
+  used_classification_system : OPTIONAL classification_system;
+ END_ENTITY;
+
+ ENTITY assembly_component_relationship
+  SUPERTYPE OF (next_higher_assembly)
+  SUBTYPE OF (item_definition_instance_relationship);
+  SELF\item_definition_instance_relationship.relating : assembly_definition;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.item_definition_instance_relationship             
+   related : item_instance;
+   relating : design_discipline_item_definition;
+*)
+
+ ENTITY assembly_definition
+  SUBTYPE OF (design_discipline_item_definition);
+  assembly_type : OPTIONAL STRING;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.design_discipline_item_definition             
+   name : OPTIONAL string_select;
+   id : STRING;
+   associated_item_version : item_version;
+   additional_context : SET[0:?] OF application_context;
+   initial_context : application_context;
+*)
+
+ ENTITY axis2_placement_3d;
+  location : cartesian_point;
+  axis : OPTIONAL direction;
+  ref_direction : OPTIONAL direction;
+ END_ENTITY;
+
+ ENTITY cartesian_coordinate_space
+  ABSTRACT SUPERTYPE OF (cartesian_coordinate_space_3d);
+  unit_of_values : OPTIONAL SET[2:?] OF unit;
+ END_ENTITY;
+
+ ENTITY cartesian_coordinate_space_3d
+  SUBTYPE OF (cartesian_coordinate_space);
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.cartesian_coordinate_space             
+   unit_of_values : OPTIONAL SET[2:?] OF unit;
+*)
+
+ ENTITY cartesian_point;
+  coordinates : LIST[3:3] OF REAL;
+ END_ENTITY;
+
+ ENTITY change;
+  description : OPTIONAL string_select;
+  described_change : change_relationship_select;
+ END_ENTITY;
+
+ ENTITY class_category_association;
+  associated_product_class : product_class;
+  mandatory : BOOLEAN;
+  associated_category : specification_category;
+ END_ENTITY;
+
+ ENTITY class_condition_association;
+  condition_type : STRING;
+  associated_product_class : product_class;
+  description : OPTIONAL string_select;
+  associated_condition : specification_expression;
+ END_ENTITY;
+
+ ENTITY class_inclusion_association;
+  associated_product_class : product_class;
+  description : OPTIONAL string_select;
+  associated_inclusion : specification_inclusion;
+ END_ENTITY;
+
+ ENTITY class_specification_association;
+  associated_product_class : product_class;
+  association_type : STRING;
+  associated_specification : specification;
+ END_ENTITY;
+
+ ENTITY class_structure_relationship;
+  related : product_function_component_select;
+  relating : product_class;
+  description : OPTIONAL string_select;
+  relation_type : STRING;
+ END_ENTITY;
+
+ ENTITY classification_system;
+  description : OPTIONAL string_select;
+  id : STRING;
+ END_ENTITY;
+
+ ENTITY collected_item_association
+  SUBTYPE OF (item_definition_instance_relationship);
+  SELF\item_definition_instance_relationship.relating : collection_definition;
+ END_ENTITY;
+
+ ENTITY collection_definition
+  SUBTYPE OF (design_discipline_item_definition);
+  purpose : OPTIONAL string_select;
+ INVERSE
+  collected_items : SET [2:?] OF collected_item_association FOR relating;
+ END_ENTITY;
+
+
+ ENTITY complex_product
+  ABSTRACT SUPERTYPE OF (ONEOF(product_component,product_function));
+  id : STRING;
+  version_id : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY complex_product_relationship;
+  relating : complex_product;
+  related : complex_product;
+  description : OPTIONAL string_select;
+  relation_type : STRING;
+ END_ENTITY;
+
+ ENTITY component_placement;
+  placed_component : product_component;
+  placement : transformation_select;
+  reference_product_component : product_component;
+ END_ENTITY;
+
+ ENTITY configuration;
+  configured_element : configured_item_select;
+  is_solution_for : configured_specification_select;
+  configuration_type : STRING;
+  inheritance_type : STRING;
+ END_ENTITY;
+
+ ENTITY data_environment;
+  environment_name : STRING;
+  description : OPTIONAL string_select;
+ END_ENTITY;
+
+ ENTITY date_and_person_organization;
+  person_or_organization : person_organization_select;
+  actual_date : date_time;
+ END_ENTITY;
+
+ ENTITY date_time;
+  time : OPTIONAL STRING;
+  date : STRING;
+ END_ENTITY;
+
+ ENTITY date_time_assignment;
+  assigned_date_time : date_time;
+  role : STRING;
+  is_applied_to : SET[1:?] OF date_time_person_organization_element_select;
+  description : OPTIONAL string_select;
+ END_ENTITY;
+
+ ENTITY dated_configuration
+  SUBTYPE OF (manufacturing_configuration);
+  start_date : STRING;
+  end_date : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY descriptive_specification;
+  description : string_select;
+  id : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY design_constraint;
+  constraint_id : STRING;
+  name : OPTIONAL string_select;
+  description : OPTIONAL string_select;
+  is_valid_for : SET [0:?] OF product_class;
+ END_ENTITY;
+
+ ENTITY design_constraint_association;
+  is_based_on : design_constraint;
+  name : OPTIONAL string_select;
+  is_constraining : complex_product;
+ END_ENTITY;
+
+ ENTITY design_constraint_relationship;
+  related : design_constraint;
+  relating : design_constraint;
+  relation_type : STRING;
+  description : OPTIONAL string_select;
+ END_ENTITY;
+
+ ENTITY design_constraint_version
+  SUBTYPE OF (design_constraint);
+  version_id : STRING;
+ END_ENTITY;
+
+ ENTITY design_discipline_item_definition;
+  name : OPTIONAL string_select;
+  id : STRING;
+  associated_item_version : item_version;
+  additional_context : SET[0:?] OF application_context;
+  initial_context : application_context;
+ END_ENTITY;
+
+ ENTITY digital_document
+  SUBTYPE OF (document_representation);
+  file : SET[0:?] OF digital_file;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.document_representation             
+   description : OPTIONAL string_select;
+   id : STRING;
+   associated_document_version : document_version;
+   creation : OPTIONAL document_creation_property;
+   common_location : SET[0:?] OF document_location_property;
+   representation_format : OPTIONAL document_format_property;
+   size : OPTIONAL document_size_property;
+   content : OPTIONAL document_content_property;
+*)
+
+ ENTITY digital_file
+  SUBTYPE OF (document_file);
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.document_file             
+   file_id : STRING;
+   version_id : OPTIONAL STRING;
+   document_file_type : OPTIONAL document_type_property;
+   external_id_and_location : SET[0:?] OF external_file_id_and_location;
+   size : OPTIONAL document_size_property;
+   file_format : OPTIONAL document_format_property;
+   content : OPTIONAL document_content_property;
+   creation : OPTIONAL document_creation_property;
+*)
+
+ ENTITY direction;
+  direction_ratios : LIST[3:3] OF REAL;
+ END_ENTITY;
+
+ ENTITY document;
+  description : OPTIONAL string_select;
+  name : string_select;
+  document_id : STRING;
+  INVERSE
+   associated_version : SET[1:?] OF document_version FOR associated_document;
+ END_ENTITY;
+
+ ENTITY document_assignment;
+  assigned_document : assigned_document_select;
+  is_assigned_to : documented_element_select;
+  role : STRING;
+ END_ENTITY;
+
+ ENTITY document_content_property;
+  detail_level : OPTIONAL STRING;
+  geometry_type : OPTIONAL STRING;
+  real_world_scale : OPTIONAL numerical_value;
+  languages : SET[0:?] OF language;
+ END_ENTITY;
+
+ ENTITY document_creation_property;
+  creating_system : STRING;
+  operating_system : OPTIONAL STRING;
+  creating_interface : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY document_file
+  ABSTRACT SUPERTYPE OF (digital_file);
+  file_id : STRING;
+  version_id : OPTIONAL STRING;
+  document_file_type : OPTIONAL document_type_property;
+  external_id_and_location : SET[0:?] OF external_file_id_and_location;
+  size : OPTIONAL document_size_property;
+  file_format : OPTIONAL document_format_property;
+  content : OPTIONAL document_content_property;
+  creation : OPTIONAL document_creation_property;
+ END_ENTITY;
+
+ ENTITY document_format_property;
+  data_format : OPTIONAL STRING;
+  character_code : OPTIONAL STRING;
+  size_format : OPTIONAL rectangular_size;
+ END_ENTITY;
+
+ ENTITY document_location_property;
+  location_name : STRING;
+ END_ENTITY;
+
+ ENTITY document_representation
+  ABSTRACT SUPERTYPE OF (digital_document);
+  description : OPTIONAL string_select;
+  id : STRING;
+  associated_document_version : document_version;
+  creation : OPTIONAL document_creation_property;
+  common_location : SET[0:?] OF document_location_property;
+  representation_format : OPTIONAL document_format_property;
+  size : OPTIONAL document_size_property;
+  content : OPTIONAL document_content_property;
+ END_ENTITY;
+
+ ENTITY document_size_property;
+  file_size : OPTIONAL value_with_unit;
+  page_count : OPTIONAL value_with_unit;
+ END_ENTITY;
+
+ ENTITY document_structure;
+  relating : document_representation;
+  related : document_representation;
+  description : OPTIONAL string_select;
+  relation_type : STRING;
+ END_ENTITY;
+
+ ENTITY document_type_property;
+  document_type_name : STRING;
+  used_classification_system : OPTIONAL classification_system;
+ END_ENTITY;
+
+ ENTITY document_version;
+  associated_document : document;
+  id : STRING;
+  description : OPTIONAL string_select;
+ END_ENTITY;
+
+ ENTITY document_version_relationship;
+  description : OPTIONAL string_select;
+  relating : document_version;
+  related : document_version;
+  relation_type : STRING;
+ END_ENTITY;
+
+ ENTITY duration;
+  time : STRING;
+  time_unit : STRING;
+ END_ENTITY;
+
+ ENTITY effectivity;
+  concerned_organization : SET[0:?] OF organization;
+  description : OPTIONAL string_select;
+  id : OPTIONAL STRING;
+  version_id : OPTIONAL STRING;
+  effectivity_context : OPTIONAL STRING;
+  period : OPTIONAL duration;
+  start_definition : OPTIONAL event_or_date_select;
+  end_definition : OPTIONAL event_or_date_select;
+ END_ENTITY;
+
+ ENTITY effectivity_assignment;
+  assigned_effectivity : effectivity;
+  effective_element : effective_element_select;
+  role : STRING;
+  effectivity_indication : BOOLEAN;
+ END_ENTITY;
+
+ ENTITY element_delivery;
+  destination : organization;
+  quantity : value_with_unit;
+  deliverable_element : activity_element;
+ END_ENTITY;
+
+ ENTITY explicit_transformation_3d
+  SUBTYPE OF (transformation_3d);
+  local_origin : cartesian_point;
+  axis1 : OPTIONAL direction;
+  axis2 : OPTIONAL direction;
+  axis3 : OPTIONAL direction;
+ END_ENTITY;
+
+ ENTITY external_file_id_and_location;
+  location : document_location_property;
+  external_id : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY external_geometric_model
+  SUBTYPE OF (external_model);
+  model_extent : OPTIONAL STRING;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.external_model             
+   is_defined_as : digital_file;
+   is_defined_in : cartesian_coordinate_space;
+   description : OPTIONAL string_select;
+   model_id : STRING;
+*)
+
+ ENTITY external_library_reference;
+  external_id : STRING;
+  library_type : STRING;
+  description : OPTIONAL string_select;
+ END_ENTITY;
+
+ ENTITY external_model
+  ABSTRACT SUPERTYPE OF (external_geometric_model);
+  is_defined_as : digital_file;
+  is_defined_in : cartesian_coordinate_space;
+  description : OPTIONAL string_select;
+  model_id : STRING;
+ END_ENTITY;
+
+ ENTITY final_solution
+  SUBTYPE OF (alternative_solution);
+  final_specification : SET [1:?] OF final_definition_select;
+  final_status : STRING;
+ END_ENTITY;
+
+ ENTITY general_classification;
+  classification_source : OPTIONAL class_source_select;
+  used_classification_system : OPTIONAL classification_system;
+  description : OPTIONAL string_select;
+  id : STRING;
+  version_id : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY general_item_definition_instance_relationship
+  SUBTYPE OF (item_definition_instance_relationship);
+  description : OPTIONAL string_select;
+  relation_type : STRING;
+ END_ENTITY;
+
+ ENTITY general_item_instance_relationship
+  SUBTYPE OF (item_instance_relationship);
+  relation_type : STRING;
+  description : OPTIONAL string_select;
+ END_ENTITY;
+
+ ENTITY general_property
+  SUBTYPE OF (property);
+  property_type : STRING;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.property             
+   allowed_unit : SET[0:?] OF unit;
+   description : OPTIONAL string_select;
+   id : STRING;
+   version_id : OPTIONAL STRING;
+*)
+
+ ENTITY geometric_model_relationship;
+  relating : geometric_or_external_model_select;
+  related : geometric_or_external_model_select;
+  description : OPTIONAL string_select;
+  relation_type : STRING;
+ END_ENTITY;
+
+ ENTITY geometric_model_relationship_with_transformation
+  SUBTYPE OF (geometric_model_relationship);
+  model_placement : transformation;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.geometric_model_relationship             
+   relating : geometric_or_external_model_select;
+   related : geometric_or_external_model_select;
+   description : OPTIONAL string_select;
+   relation_type : STRING;
+*)
+
+ ENTITY implicit_transformation_3d
+  SUBTYPE OF (transformation_3d);
+  transformation_origin : axis2_placement_3d;
+  transformation_target : axis2_placement_3d;
+ END_ENTITY;
+
+ ENTITY instance_placement;
+  reference_product_component : product_component;
+  placed_instance : single_instance;
+  placement : transformation_select;
+ END_ENTITY;
+
+ ENTITY item;
+  id : STRING;
+  name : string_select;
+  description : OPTIONAL string_select;
+  INVERSE
+   associated_version : SET[1:?] OF item_version FOR associated_item;
+   item_classification : SET[1:?] OF specific_item_classification FOR
+                         associated_item;
+ END_ENTITY;
+
+ ENTITY item_definition_instance_relationship
+  ABSTRACT SUPERTYPE OF (ONEOF(assembly_component_relationship,collected_item_association,general_item_definition_instance_relationship));
+  related : item_instance;
+  relating : design_discipline_item_definition;
+ END_ENTITY;
+
+ ENTITY item_function_association;
+  associated_function : product_function;
+  associated_item : design_discipline_item_definition;
+  description : OPTIONAL string_select;
+  association_type : STRING;
+ END_ENTITY;
+
+ ENTITY item_instance
+  ABSTRACT SUPERTYPE OF (ONEOF(single_instance,quantified_instance,selected_instance,specified_instance))
+  SUBTYPE OF (product_constituent);
+  description : OPTIONAL string_select;
+  definition : instance_definition_select;
+  id : STRING;
+ END_ENTITY;
+
+ ENTITY item_instance_relationship
+  ABSTRACT SUPERTYPE OF (ONEOF(general_item_instance_relationship,replaced_usage_relationship));
+  relating : item_instance;
+  related : item_instance;
+ END_ENTITY;
+
+ ENTITY item_property_association
+  SUBTYPE OF (property_value_association);
+  definitional : OPTIONAL BOOLEAN;
+  described_element : item_property_select;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.property_value_association             
+   validity_context : OPTIONAL validity_context_select;
+   description : OPTIONAL string_select;
+   describing_property_value : property_value_representation;
+*)
+
+ ENTITY item_version;
+  id : STRING;
+  associated_item : item;
+  description : OPTIONAL string_select;
+ END_ENTITY;
+
+ ENTITY item_version_relationship;
+  relating : item_version;
+  related : item_version;
+  description : OPTIONAL string_select;
+  relation_type : STRING;
+ END_ENTITY;
+
+ ENTITY language;
+  language_code : STRING;
+  country_code : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY lot_configuration
+  SUBTYPE OF (manufacturing_configuration);
+  lot_id : STRING;
+  lot_size : STRING;
+ END_ENTITY;
+
+ ENTITY manufacturing_configuration
+  ABSTRACT SUPERTYPE OF ( ONEOF(serial_configuration,dated_configuration,lot_configuration) );
+  is_solution_for : product_design;
+  configured_element : item_instance;
+  concerned_organization : SET [0:?] OF organization;
+ END_ENTITY;
+
+ ENTITY material;
+  material_name : STRING;
+  described_element : SET[1:?] OF item_property_select;
+ END_ENTITY;
+
+ ENTITY material_property
+  SUBTYPE OF (property);
+  property_name : STRING;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.property             
+   allowed_unit : SET[0:?] OF unit;
+   description : OPTIONAL string_select;
+   id : STRING;
+   version_id : OPTIONAL STRING;
+*)
+
+ ENTITY material_property_association;
+  described_material : material;
+  associated_property_value : material_property_value_representation;
+  definitional : OPTIONAL BOOLEAN;
+ END_ENTITY;
+
+ ENTITY material_property_value_representation
+  SUBTYPE OF (property_value_representation);
+  environment_condition : data_environment;
+  SELF\property_value_representation.definition : material_property;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.property_value_representation             
+   specified_value : property_value;
+   value_determination : OPTIONAL STRING;
+   global_unit : OPTIONAL unit;
+   qualifier : OPTIONAL STRING;
+   definition : property;
+*)
+
+ ENTITY named_size
+  SUBTYPE OF (rectangular_size);
+  referenced_standard : OPTIONAL classification_system;
+  size : STRING;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.rectangular_size             
+   density : OPTIONAL value_with_unit;
+   width : value_with_unit;
+   height : value_with_unit;
+*)
+
+ ENTITY next_higher_assembly
+  SUBTYPE OF (assembly_component_relationship);
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.assembly_component_relationship             
+   SELF\item_definition_instance_relationship.relating : assembly_definition;
+-- pdtnet_schema_v1_3.item_definition_instance_relationship             
+   related : item_instance;
+   relating : design_discipline_item_definition;
+*)
+
+ ENTITY numerical_value
+  SUBTYPE OF (value_with_unit);
+  value_component : NUMBER;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.value_with_unit             
+   unit_component : OPTIONAL unit;
+   significant_digits : OPTIONAL INTEGER;
+-- pdtnet_schema_v1_3.property_value             
+   value_name : STRING;
+*)
+
+ ENTITY organization;
+  organization_name : STRING;
+  visitor_address : OPTIONAL address;
+  organization_type : OPTIONAL STRING;
+  id : STRING;
+  delivery_address : OPTIONAL address;
+  postal_address : OPTIONAL address;
+ END_ENTITY;
+
+ ENTITY person;
+  person_name : STRING;
+  preferred_business_address : OPTIONAL address;
+  INVERSE
+   associated_organization : SET[1:?] OF person_in_organization FOR
+                             associated_person;
+ END_ENTITY;
+
+ ENTITY person_in_organization;
+  associated_person : person;
+  associated_organization : organization;
+  role : STRING;
+  location : OPTIONAL address;
+  id : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY person_organization_assignment;
+  is_applied_to : SET[1:?] OF date_time_person_organization_element_select;
+  assigned_person_organization : person_organization_select;
+  role : STRING;
+  description : OPTIONAL string_select;
+ END_ENTITY;
+
+ ENTITY physical_assembly_relationship;
+  physical_component : physical_instance;
+  physical_assembly : physical_instance;
+  is_realization_of : item_instance;
+ END_ENTITY;
+
+ ENTITY physical_instance;
+  is_realization_of : OPTIONAL physical_instance_definition_select;
+  serial_number : OPTIONAL STRING;
+  lot_id : OPTIONAL STRING;
+  description : OPTIONAL string_select;
+  inventory_number : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY physical_instance_test_result;
+  test_activity : OPTIONAL test_activity_select;
+  test_result : SET [0:?] OF property_value_representation;
+  tested_instance : physical_instance;
+  description : OPTIONAL string_select;
+  id : STRING;
+ END_ENTITY;
+
+ ENTITY process_operation_definition;
+  id : STRING;
+  name : OPTIONAL string_select;
+  process_type : STRING;
+  description : OPTIONAL string_select;
+  version_id : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY process_operation_definition_relationship;
+  relating : process_operation_definition;
+  related : process_operation_definition;
+  relation_type : STRING;
+ END_ENTITY;
+
+ ENTITY process_operation_input_or_output;
+  role : STRING;
+  description : OPTIONAL string_select;
+  operation : process_operation_occurrence;
+  element : process_operation_input_or_output_select;
+ END_ENTITY;
+
+ ENTITY process_operation_occurrence;
+  plan : process_plan;
+  is_defined_in : OPTIONAL cartesian_coordinate_space;
+  operation_definition : process_operation_definition;
+  id : STRING;
+ END_ENTITY;
+
+ ENTITY process_operation_occurrence_relationship;
+  related : process_operation_occurrence;
+  relation_type : STRING;
+  relating : process_operation_occurrence;
+  waiting_time : OPTIONAL property_value;
+  description : OPTIONAL string_select;
+  cycle_time : OPTIONAL duration;
+ END_ENTITY;
+
+ ENTITY process_operation_resource_assignment;
+  reference_tool : BOOLEAN;
+  operation : process_operation_occurrence;
+  reason : OPTIONAL string_select;
+  resource_definition : resource_definition_select;
+ END_ENTITY;
+
+ ENTITY process_plan;
+  plan_id : STRING;
+  name : OPTIONAL string_select;
+  description : OPTIONAL string_select;
+  produced_output : OPTIONAL SET[1:?] OF item_version;
+ END_ENTITY;
+
+ ENTITY process_plan_relationship;
+  relating : process_plan;
+  related : process_plan;
+  description : OPTIONAL string_select;
+  relation_type : STRING;
+ END_ENTITY;
+
+ ENTITY process_plan_version
+  SUBTYPE OF (process_plan);
+  version_id : STRING;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.process_plan             
+   plan_id : STRING;
+   name : OPTIONAL string_select;
+   description : OPTIONAL string_select;
+   produced_output : OPTIONAL SET[1:?] OF item_version;
+*)
+
+ ENTITY process_property_association
+  SUBTYPE OF (property_value_association);
+  described_element : process_property_select;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.property_value_association             
+   validity_context : OPTIONAL validity_context_select;
+   description : OPTIONAL string_select;
+   describing_property_value : property_value_representation;
+*)
+
+ ENTITY product_class;
+  name : OPTIONAL string_select;
+  id : STRING;
+  description : OPTIONAL string_select;
+  level_type : OPTIONAL STRING;
+  version_id : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY product_component
+  SUBTYPE OF (complex_product,product_constituent);
+  is_influenced_by : SET[0:?] OF class_category_association;
+  name : OPTIONAL string_select;
+  description : OPTIONAL string_select;
+  is_relevant_for : SET[0:?] OF application_context;
+  instance_required : BOOLEAN;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.complex_product             
+   id : STRING;
+   version_id : OPTIONAL STRING;
+*)
+
+ ENTITY product_constituent
+  ABSTRACT SUPERTYPE OF (item_instance);
+ END_ENTITY;
+
+ ENTITY product_design;
+  design : item_version;
+  product : product_identification;
+ END_ENTITY;
+
+ ENTITY product_function
+  SUBTYPE OF (complex_product,product_constituent);
+  name : OPTIONAL string_select;
+  description : OPTIONAL string_select;
+  is_relevant_for : SET[0:?] OF application_context;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.complex_product             
+   id : STRING;
+   version_id : OPTIONAL STRING;
+*)
+
+ ENTITY product_identification;
+  associated_product_class : product_class;
+  name : OPTIONAL string_select;
+  version_id : OPTIONAL STRING;
+  id : STRING;
+  description : OPTIONAL string_select;
+  INVERSE
+   associated_design : SET[0:1] OF product_design FOR product;
+ END_ENTITY;
+
+ ENTITY product_specification
+  SUBTYPE OF (product_identification);
+  defining_specification : SET [1:?] OF specification;
+ END_ENTITY;
+
+
+ ENTITY product_structure_relationship;
+  relating : complex_product;
+  related : product_constituent;
+  relation_type : STRING;
+  description : OPTIONAL string_select;
+ END_ENTITY;
+
+ ENTITY project;
+  id : STRING;
+  name : string_select;
+  description : OPTIONAL string_select;
+  actual_start_date : OPTIONAL date_time;
+  actual_end_date : OPTIONAL date_time;
+  planned_start_date : OPTIONAL event_or_date_select;
+  affected_product_class : SET[0:?] OF product_class;
+  work_program : SET[0:?] OF activity;
+  planned_end_date : OPTIONAL period_or_date_select;
+ END_ENTITY;
+
+ ENTITY project_relationship;
+  related : project;
+  relating : project;
+  relation_type : STRING;
+  description : OPTIONAL string_select;
+ END_ENTITY;
+
+ ENTITY property
+  ABSTRACT SUPERTYPE OF (general_property);
+  allowed_unit : SET[0:?] OF unit;
+  description : OPTIONAL string_select;
+  id : STRING;
+  version_id : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY property_value
+  ABSTRACT SUPERTYPE OF (ONEOF(value_list,value_with_unit,string_value));
+  value_name : STRING;
+ END_ENTITY;
+
+ ENTITY property_value_association
+  ABSTRACT SUPERTYPE OF (item_property_association);
+  validity_context : OPTIONAL validity_context_select;
+  description : OPTIONAL string_select;
+  describing_property_value : property_value_representation;
+ END_ENTITY;
+
+ ENTITY property_value_representation;
+  specified_value : property_value;
+  value_determination : OPTIONAL STRING;
+  global_unit : OPTIONAL unit;
+  qualifier : OPTIONAL STRING;
+  definition : property;
+ END_ENTITY;
+
+ ENTITY quantified_instance
+  SUBTYPE OF (item_instance);
+  quantity : numerical_value;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.item_instance             
+   description : OPTIONAL string_select;
+   definition : instance_definition_select;
+   id : STRING;
+*)
+
+ ENTITY rectangular_size;
+  density : OPTIONAL value_with_unit;
+  width : value_with_unit;
+  height : value_with_unit;
+ END_ENTITY;
+
+ ENTITY replaced_usage_relationship
+  SUBTYPE OF (item_instance_relationship);
+  usage_context : instance_usage_context_select;
+  description : OPTIONAL string_select;
+ END_ENTITY;
+
+ ENTITY single_instance
+  SUBTYPE OF (item_instance);
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.item_instance             
+   description : OPTIONAL string_select;
+   definition : instance_definition_select;
+   id : STRING;
+*)
+
+ ENTITY selected_instance
+  SUBTYPE OF (item_instance);
+  selection_control : STRING;
+  selected_quantity : value_with_unit;
+ END_ENTITY;
+
+ENTITY serial_configuration
+  SUBTYPE OF (manufacturing_configuration);
+  serial_start_number : STRING;
+  serial_end_number : OPTIONAL STRING;
+ END_ENTITY;
+
+
+ ENTITY specific_item_classification;
+  associated_item : SET[1:?] OF item;
+  classification_name : STRING;
+  description : OPTIONAL string_select;
+ END_ENTITY;
+
+ ENTITY specification;
+  id : STRING;
+  name : OPTIONAL string_select;
+  description : OPTIONAL string_select;
+  category : specification_category;
+  version_id : OPTIONAL STRING;
+  package : BOOLEAN;
+ END_ENTITY;
+
+ ENTITY specification_category;
+  implicit_exclusive_condition : BOOLEAN;
+  id : STRING;
+  description : string_select;
+ END_ENTITY;
+
+ ENTITY specification_category_hierarchy;
+  sub_category : specification_category;
+  super_category : specification_category;
+ END_ENTITY;
+
+
+ ENTITY specification_expression;
+  description : OPTIONAL string_select;
+  operation : STRING;
+  operand : SET [1:?] OF specification_operand_select;
+  id : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY specification_inclusion;
+  if_condition : specification_operand_select;
+  included_specification : specification_operand_select;
+  description : OPTIONAL string_select;
+  id : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY specified_instance
+  SUBTYPE OF (item_instance);
+  upper_usage : item_instance;
+  related_instance : item_instance;
+  assembly_context : assembly_definition;
+ END_ENTITY;
+
+ ENTITY string_value
+  SUBTYPE OF (property_value);
+  value_specification : string_select;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.property_value             
+   value_name : STRING;
+*)
+
+ ENTITY supplier_solution
+  SUBTYPE OF (alternative_solution);
+  supplier : organization;
+  probability_rate : OPTIONAL STRING;
+ END_ENTITY;
+
+ ENTITY technical_solution
+  SUBTYPE OF (alternative_solution);
+  description : string_select;
+ END_ENTITY;
+
+ ENTITY transformation
+  ABSTRACT SUPERTYPE OF (transformation_3d);
+ END_ENTITY;
+
+ ENTITY transformation_3d
+  SUBTYPE OF (transformation);
+ END_ENTITY;
+
+ ENTITY unit;
+  unit_name : STRING;
+ END_ENTITY;
+
+ ENTITY value_list
+  SUBTYPE OF (property_value);
+  values : LIST[1:?] OF property_value;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.property_value             
+   value_name : STRING;
+*)
+
+ ENTITY value_with_unit
+  ABSTRACT SUPERTYPE OF (numerical_value)
+  SUBTYPE OF (property_value);
+  unit_component : OPTIONAL unit;
+  significant_digits : OPTIONAL INTEGER;
+ END_ENTITY;
+(*
+-- pdtnet_schema_v1_3.property_value             
+   value_name : STRING;
+*)
+
+ ENTITY work_order;
+  is_controlling : activity;
+  id : STRING;
+  version_id : OPTIONAL STRING;
+  description : OPTIONAL string_select;
+  work_order_type : STRING;
+ END_ENTITY;
+
+ ENTITY work_request;
+  id : STRING;
+  request_type : STRING;
+  status : STRING;
+  notified_person : SET[1:?] OF date_and_person_organization;
+  version_id : OPTIONAL STRING;
+  requestor : date_and_person_organization;
+  scope : SET[0:?] OF activity_element_select;
+  description : OPTIONAL string_select;
+ END_ENTITY;
+
+END_SCHEMA;
+
+
+

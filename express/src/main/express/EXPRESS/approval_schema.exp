@@ -1,0 +1,94 @@
+-- 2000-09-08
+
+(*
+
+	WG12 N525 								2000-05-30
+
+	EXPRESS Declarations for ISO 10303-41: 2nd Edition
+*)
+
+SCHEMA approval_schema;
+REFERENCE FROM basic_attribute_schema                -- ISO 10303-41
+  (description_attribute,
+   get_description_value,
+   get_role,
+   object_role,
+   role_association);
+REFERENCE FROM date_time_schema                      -- ISO 10303-41
+  (date_time_select);
+REFERENCE FROM person_organization_schema            -- ISO 10303-41
+  (person_organization_select);
+REFERENCE FROM support_resource_schema               -- ISO 10303-41
+  (bag_to_set,
+   label,
+   text);
+
+ENTITY approval;
+  status : approval_status;
+  level  : label;
+END_ENTITY; -- approval
+
+ENTITY approval_date_time;
+  date_time      : date_time_select;
+  dated_approval : approval;
+DERIVE
+  role           : object_role := get_role (SELF);
+WHERE
+  WR1 : SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' +
+                       'ROLE_ASSOCIATION.ITEM_WITH_ROLE')) <= 1;
+END_ENTITY; -- approval_date_time
+
+ENTITY approval_person_organization;
+  person_organization : person_organization_select;
+  authorized_approval : approval;
+  role                : approval_role;
+END_ENTITY; -- approval_person_organization
+
+ENTITY approval_relationship;
+  name              : label;
+  description       : OPTIONAL text;
+  relating_approval : approval;
+  related_approval  : approval;
+END_ENTITY; -- approval_relationship
+
+ENTITY approval_role;
+  role        : label;
+DERIVE
+  description : text := get_description_value (SELF);
+WHERE
+  WR1 : SIZEOF (USEDIN (SELF, 'BASIC_ATTRIBUTE_SCHEMA.' +
+                       'DESCRIPTION_ATTRIBUTE.DESCRIBED_ITEM')) <= 1;
+END_ENTITY; -- approval_role
+
+ENTITY approval_status;
+  name : label;
+END_ENTITY; -- approval_status
+
+FUNCTION acyclic_approval_relationship
+  (relation          : approval_relationship;
+   relatives         : SET [1:?] OF approval;
+   specific_relation : STRING) : BOOLEAN;
+  LOCAL
+    x                : SET OF approval_relationship;
+  END_LOCAL;
+  IF relation.relating_approval IN relatives THEN 
+    RETURN (FALSE);
+  END_IF;
+  x := QUERY (app <* bag_to_set 
+             (USEDIN (relation.relating_approval,
+             'APPROVAL_SCHEMA.' + 
+             'APPROVAL_RELATIONSHIP.' +
+             'RELATED_APPROVAL')) |
+              specific_relation IN TYPEOF (app));
+  REPEAT i := 1 TO HIINDEX(x);
+    IF NOT acyclic_approval_relationship
+      (x[i], 
+       relatives + relation.relating_approval, 
+       specific_relation) THEN
+      RETURN(FALSE);
+    END_IF;
+  END_REPEAT;
+  RETURN(TRUE);
+END_FUNCTION; -- acyclic_approval_relationship
+
+END_SCHEMA; -- approval_schema

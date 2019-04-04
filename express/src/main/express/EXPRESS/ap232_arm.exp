@@ -1,0 +1,3813 @@
+-- 2000-10-08 DIS?
+
+(*
+
+
+Title " ARM express listing for ISO/DIS 10303-232"
+
+
+Author: Glen Ziolko
+
+
+Date Sept.24, 2000
+
+
+ISO TC184/SC4/WG3 N963
+
+
+Note: Extracted from WG3 N955 on Sept.23, 2000
+
+
+*)
+
+
+
+
+
+SCHEMA ap232_arm;
+
+
+     
+
+
+TYPE a_number = NUMBER;
+
+
+END_TYPE;
+
+
+     
+
+
+TYPE a_real = REAL;
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY accessed_file
+
+
+  SUBTYPE OF (file);
+
+
+  storage_node_identification : OPTIONAL text;
+
+
+  path_information : OPTIONAL text;
+
+
+ WHERE 
+
+
+  WR1: EXISTS (storage_node_identification) or 
+
+
+       EXISTS (path_information);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY alternate_element_identification;
+
+
+  change_status : OPTIONAL change_identification;
+
+
+  design_activity : OPTIONAL design_authority;
+
+
+  element_classifications: OPTIONAL LIST [1:?] OF element_type;
+
+
+  identifying_number : identifier;
+
+
+  outstanding_changes : OPTIONAL LIST [1:?] OF other_reference_document;
+
+
+  title : OPTIONAL text;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY alternate_identification_of_item;
+
+
+  change_status : OPTIONAL change_identification;
+
+
+  classifications : OPTIONAL LIST [1:?] of label;
+
+
+  design_activity : design_authority;
+
+
+  identifying_number : item_identifying_number_select;
+
+
+  nomenclature_or_name : OPTIONAL label;
+
+
+  source_information : OPTIONAL source_information_type;
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE item_identifying_number_select = SELECT
+
+
+   (identifier,
+
+
+   drawing_suffix_number_combination);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY alternate_item;
+
+
+  interchange_item: usage_context;
+
+
+  type_of_alternate: OPTIONAL label;
+
+
+  usage_conditions: OPTIONAL LIST [1:?]OF usage_condition;
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE usage_context = SELECT
+
+
+  (item,
+
+
+  item_usage);
+
+
+END_TYPE;
+
+
+     
+
+
+TYPE usage_condition = SELECT
+
+
+  (text,
+
+
+  an_integer);
+
+
+END_TYPE;
+
+
+     
+
+
+TYPE an_integer = INTEGER;
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY annotation;
+
+
+  annotation_geometry : OPTIONAL geometry;
+
+
+END_ENTITY;
+
+
+    
+
+
+ENTITY approval;
+
+
+  approval_date : date;
+
+
+  purpose_of : text;
+
+
+  person_organization : OPTIONAL person_and_organization;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY assembly
+
+
+  SUBTYPE OF (locally_defined_item);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY associated_list
+
+
+  ABSTRACT SUPERTYPE OF (ONEOF(document_list,parts_list,other_list))
+
+
+  SUBTYPE OF (tdp_element);
+
+
+  presentation : OPTIONAL list_presentation;
+
+
+  related_to : OPTIONAL drawing_or_product_data_set;
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE drawing_or_product_data_set = SELECT
+
+
+  (drawing,
+
+
+   product_data_set);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY body_presentation;
+
+
+  body_tabulation_presentation : LIST [1:?] OF tabulation;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY change_identification;
+
+
+  action_status : OPTIONAL status;
+
+
+  change_code : OPTIONAL change_type;
+
+
+  change_date : OPTIONAL date;
+
+
+  change_description : OPTIONAL text;
+
+
+  change_level : OPTIONAL text;
+
+
+  issue_date : OPTIONAL date;
+
+
+  issue_level : OPTIONAL text;
+
+
+  revision_authorization_identifications : OPTIONAL SET [1:?] OF
+
+
+  revision_authorization_select;
+
+
+  revision_date : OPTIONAL date;
+
+
+  revision_description : OPTIONAL text;
+
+
+  revision_level : OPTIONAL text;
+
+
+ WHERE
+
+
+   WR1:  EXISTS (revision_level) OR
+
+
+         EXISTS (revision_date) OR EXISTS (change_date) OR 
+
+
+         EXISTS (change_level) OR
+
+
+         EXISTS (issue_level) OR EXISTS (issue_date);
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE change_type = ENUMERATION OF
+
+
+  (change,
+
+
+   original,
+
+
+   original_with_change,
+
+
+   other,
+
+
+   revision,
+
+
+   revision_with_change);
+
+
+END_TYPE;
+
+
+     
+
+
+TYPE revision_authorization_select = SELECT
+
+
+  (identifier,
+
+
+   other_reference_document);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY column_header;
+
+
+  single_column_header_titles : LIST [1:?] OF field_title;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY columnar_data_content_holder;
+
+
+  column_content_presentation : field_content_holder_tabulation;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY company;
+
+
+  address: OPTIONAL text;
+
+
+  name: LABEL;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY company_code;
+
+
+  code : identifier;
+
+
+  code_administrator : OPTIONAL company;
+
+
+  type_of_code : text;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY configuration;
+
+
+  data_usage_rights : OPTIONAL label;
+
+
+  distribution_authorizations : OPTIONAL LIST [1:?] OF 
+
+
+    distribution_notice;
+
+
+  end_item_system_designation : OPTIONAL product_configuration;
+
+
+  preparing_contracts : OPTIONAL LIST [1:?] OF contract;
+
+
+  release_authorizations : OPTIONAL LIST [1:?] OF 
+
+
+    release_authentication;
+
+
+  security_identifications : OPTIONAL LIST [1:?] OF 
+
+
+    security_classification;
+
+
+ WHERE
+
+
+   WR1: EXISTS (preparing_contracts) OR 
+
+
+        EXISTS (end_item_system_designation) OR
+
+
+        EXISTS (release_authorizations) OR
+
+
+        EXISTS (security_identifications) OR
+
+
+        EXISTS (distribution_authorizations) OR
+
+
+        EXISTS (data_usage_rights);
+
+
+ END_ENTITY;
+
+
+     
+
+
+ENTITY contract;
+
+
+  contract_data_requirements_list : OPTIONAL identifier;
+
+
+  contract_number : identifier;
+
+
+  data_item_description_identification : OPTIONAL identifier;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY contract_submission;
+
+
+  date_of_submission : date;
+
+
+  delivered_contract : contract;
+
+
+  location : text;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY data_definition_entry_item;
+
+
+  available_from : OPTIONAL LIST [1:?] OF source_identification;
+
+
+  delivery_accounting_references : OPTIONAL SET [1:?] OF 
+
+
+    delivery_accounting;
+
+
+  entry_files : OPTIONAL LIST [1:?] OF data_definition_file_entry;
+
+
+  entry_item_change_level : OPTIONAL LIST [1:?] OF identifier;
+
+
+  entry_notes : OPTIONAL LIST [1:?] OF notation;
+
+
+  special_conditions : OPTIONAL LIST [1:?] OF special_condition;
+
+
+  superseded_entry : OPTIONAL element_identification;
+
+
+ WHERE
+
+
+   WR1:EXISTS(available_from) 
+
+
+       OR EXISTS(delivery_accounting_references)
+
+
+       OR EXISTS(entry_files) 
+
+
+       OR EXISTS(entry_item_change_level)
+
+
+       OR EXISTS(entry_notes)
+
+
+       OR EXISTS(special_conditions) 
+
+
+       OR EXISTS(superseded_entry);
+
+
+END_ENTITY;
+
+
+  
+
+
+TYPE source_identification = SELECT
+
+
+  (contract_submission,
+
+
+   reference_document);
+
+
+END_TYPE;
+
+
+     
+
+
+TYPE data_definition_file_entry = SELECT
+
+
+  (accessed_file,
+
+
+   exchange_file);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY data_definition_entry_tdp_element;
+
+
+  actual_inclusion_in_data_exchange : OPTIONAL label;
+
+
+  available_from : OPTIONAL LIST [1:?] OF source_identification;
+
+
+  data_usage_rights : OPTIONAL label;
+
+
+  delivery_accounting_references : 
+
+
+     OPTIONAL SET [1:?] OF delivery_accounting;
+
+
+  entry_files : OPTIONAL LIST [1:?] OF data_definition_file_entry;
+
+
+  entry_format : OPTIONAL entry_format_select;
+
+
+  entry_item_change_level : OPTIONAL LIST [1:?] OF identifier;
+
+
+  entry_notes : OPTIONAL LIST [1:?] OF notation;
+
+
+  master_file : OPTIONAL yes_no;
+
+
+  size : OPTIONAL size_characteristics;
+
+
+  special_conditions : OPTIONAL LIST [1:?] OF special_condition;
+
+
+  superseded_entry : OPTIONAL element_identification;
+
+
+ WHERE
+
+
+   WR1: EXISTS(actual_inclusion_in_data_exchange) 
+
+
+     OR EXISTS(available_from) OR EXISTS(data_usage_rights) OR
+
+
+     EXISTS(delivery_accounting_references) OR EXISTS(entry_files) 
+
+
+     OR EXISTS(entry_format) OR EXISTS(entry_item_change_level)
+
+
+     OR EXISTS(entry_notes) OR EXISTS(master_file) OR EXISTS(size)
+
+
+     OR EXISTS(special_conditions) OR EXISTS(superseded_entry);
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE entry_format_select = SELECT
+
+
+  (file_format,
+
+
+   text);
+
+
+END_TYPE;
+
+
+     
+
+
+TYPE yes_no = logical;
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY data_definition_exchange;
+
+
+  list_body : data_definition_exchange_body;
+
+
+  list_header : data_definition_exchange_header;
+
+
+  presentation: OPTIONAL list_presentation;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY data_definition_exchange_body;
+
+
+  list_method : data_definition_exchange_list_method;
+
+
+  notes_list : OPTIONAL LIST [1:?] OF notation;
+
+
+  revision_history : OPTIONAL LIST [1:?] OF revision;
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE data_definition_exchange_list_method = SELECT
+
+
+  (data_definition_indentured_list_method,
+
+
+   simple_list_of_elements,
+
+
+   simple_list_of_files);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY data_definition_exchange_header;
+
+
+  common_header : header;
+
+
+  date_of_transfer : OPTIONAL date;
+
+
+  delivery_accounting_references : OPTIONAL SET [1:?] OF 
+
+
+  delivery_accounting;
+
+
+  destinations : OPTIONAL SET [1:?] OF system_destination;  
+
+
+  exchange_reason : reason;
+
+
+  procurement_references: OPTIONAL LIST [1:?] OF identification_select; 
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE identification_select = SELECT
+
+
+  (element_identification,
+
+
+   item_identification);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY data_definition_exchange_simple_entry;
+
+
+  entry : data_definition_entry_tdp_element;
+
+
+  simple_entry : element_identification;
+
+
+END_ENTITY;
+
+
+  
+
+
+ENTITY data_definition_indentured_entry;
+
+
+  effective_on : OPTIONAL effectivity;
+
+
+  entry_characteristics : data_definition_entry_select;
+
+
+  indentured_entry : list_entry_select;
+
+
+  indenture_level: OPTIONAL label;
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE data_definition_entry_select = SELECT
+
+
+  (data_definition_entry_item,
+
+
+   data_definition_entry_tdp_element);
+
+
+END_TYPE;
+
+
+     
+
+
+TYPE list_entry_select = SELECT
+
+
+  (item_parent_to_item_child_relationship,
+
+
+   item_parent_to_tdp_element_child_relationship,
+
+
+   tdp_element_parent_to_item_child_relationship,
+
+
+   tdp_element_parent_to_tdp_element_child_relationship,
+
+
+   tdp_indentured_item,
+
+
+   tdp_indentured_tdp_element);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY data_definition_indentured_list_method;
+
+
+  method_of_entry_tabulation : indentured_list_method;
+
+
+  order_of : LIST [1:?] OF data_definition_indentured_entry;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY data_list
+
+
+  SUBTYPE OF (single_document_list);
+
+
+  body : data_list_body;
+
+
+  list_header : data_list_header;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY data_list_body;
+
+
+  data_list_notes : OPTIONAL LIST [1:?] OF notation;
+
+
+  data_list_tabulations : LIST [1:?] OF data_list_tabulation;
+
+
+  revision_history : OPTIONAL LIST [1:?] OF revision;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY data_list_entry;
+
+
+  available_from: OPTIONAL LIST [1:?] OF source_identification;
+
+
+  entry_item_change_level : OPTIONAL identifier;
+
+
+  entry_notes : OPTIONAL LIST [1:?] OF notation;
+
+
+  list_entry : valid_tdp_elements_for_data_list;
+
+
+  special_conditions: OPTIONAL LIST [1:?] OF special_condition;
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE valid_tdp_elements_for_data_list = SELECT
+
+
+  (header,
+
+
+   sheet,
+
+
+   reference_document);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY data_list_header;
+
+
+  common_header : header;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY data_list_tabulation;
+
+
+  data_list_entries : OPTIONAL LIST [1:?] OF data_list_entry;
+
+
+  for_item : OPTIONAL item_identification;
+
+
+ WHERE
+
+
+   WR1: EXISTS (data_list_entries) OR EXISTS (for_item);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY date;
+
+
+  day: OPTIONAL INTEGER;
+
+
+  month: OPTIONAL INTEGER;
+
+
+  specific_time: OPTIONAL time;
+
+
+  week: OPTIONAL INTEGER;
+
+
+  year: INTEGER;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY date_effectivity
+
+
+  SUBTYPE OF (effectivity);
+
+
+  end_date : OPTIONAL date;
+
+
+  start_date : date;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY delivery_accounting;
+
+
+  reference_identification : identifier;
+
+
+  reference_identification_description : text;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY design_authority;
+
+
+  design_activity_code : OPTIONAL company_code;
+
+
+  design_activity_identification : company;
+
+
+  person_responsible : OPTIONAL person;
+
+
+  role : OPTIONAL label;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY distribution_notice;
+
+
+  distribution_authority : OPTIONAL person_and_organization;
+
+
+  distribution_code : OPTIONAL label;
+
+
+  distribution_statement : OPTIONAL text;
+
+
+WHERE
+
+
+  WR1: EXISTS (distribution_statement) OR
+
+
+       EXISTS (distribution_authority) OR EXISTS (distribution_code);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY document_list
+
+
+  ABSTRACT 
+
+
+  SUPERTYPE OF (ONEOF(indentured_data_list,single_document_list))
+
+
+  SUBTYPE OF (associated_list);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY document_usage_parameter;
+
+
+  subject : label;
+
+
+  value_of : text;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY drawing
+
+
+  SUBTYPE OF (tdp_element);
+
+
+  heading : header;
+
+
+  pages : LIST [1:?] OF sheet;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY drawing_suffix_number_combination;
+
+
+  drawing_number : element_identification;
+
+
+  suffix_identifier : identifier;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY effectivity
+
+
+  SUPERTYPE OF (ONEOF(sequence_effectivity,lot_effectivity,
+
+
+    date_effectivity));
+
+
+  description: OPTIONAL text;
+
+
+  effectivity_approvals : OPTIONAL LIST [1:?] OF approval;
+
+
+  product : product_configuration;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY element_identification;
+
+
+  alternate_identifications : OPTIONAL SET [1:?] OF
+
+
+  alternate_element_identification;
+
+
+  change_status : OPTIONAL change_identification;
+
+
+  design_activities : SET [1 : ?] OF design_authority;
+
+
+  element_classifications: OPTIONAL LIST [1:?] OF element_type;
+
+
+  identifying_number : identifier;
+
+
+  outstanding_changes : OPTIONAL LIST [1:?] OF other_reference_document;
+
+
+  title : OPTIONAL text;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY element_type;
+
+
+   code_administrator : OPTIONAL company;
+
+
+   element_code : label;
+
+
+   type_of_coding_scheme : OPTIONAL text;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY exchange_file
+
+
+  SUBTYPE OF (file);
+
+
+  destination_system : OPTIONAL system_declaration;
+
+
+  included_in_exchange : label;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY explicit_graphics;
+
+
+  table_geometry : geometry;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY external_graphics_file;
+
+
+  file_id : file;
+
+
+  file_loadpoint_x : real;
+
+
+  file_loadpoint_y : real;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY field_content_holder
+
+
+  ABSTRACT SUPERTYPE OF          
+
+
+   (ONEOF(field_content_holder_singular,
+
+
+          field_content_holder_tabulation));
+
+
+  field_justification : text;
+
+
+  location : field_location;
+
+
+  text_style : label;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY field_content_holder_singular
+
+
+  SUBTYPE OF (field_content_holder);
+
+
+  field_text : text;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY field_content_holder_tabulation
+
+
+  SUBTYPE OF (field_content_holder);
+
+
+  field_text : LIST [1:?] OF text;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY field_location
+
+
+  SUPERTYPE OF 
+
+
+  (ONEOF(string_location_definition,field_location_definition));
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY field_location_definition
+
+
+  SUBTYPE OF (field_location);
+
+
+  field_load_point : load_point;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY field_title;
+
+
+  field_justification : text;
+
+
+  field_style : label;
+
+
+  field_text : text;
+
+
+  location : field_location;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY file 
+
+
+  SUPERTYPE OF (ONEOF (accessed_file, exchange_file, source_file));
+
+
+  change_status : OPTIONAL change_identification;
+
+
+  context_file_format : OPTIONAL file_format;
+
+
+  context_file_name : OPTIONAL identifier;
+
+
+  distribution_authorizations : OPTIONAL LIST [1:?] OF    
+
+
+    distribution_notice;
+
+
+  native_format_file_name : OPTIONAL identifier;
+
+
+  security_identifications : OPTIONAL LIST [1:?] OF 
+
+
+    security_classification;
+
+
+  size : OPTIONAL size_characteristics;
+
+
+  source_system : OPTIONAL system_declaration;
+
+
+ WHERE
+
+
+  WR1: EXISTS(context_file_name) OR EXISTS(native_format_file_name)
+
+
+       OR ('AP232_ARM.ACCESSED_FILE' IN TYPEOF(self));
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY file_format;
+
+
+  change_level : OPTIONAL identifier;
+
+
+  format_code : OPTIONAL identifier;
+
+
+  format_standard : OPTIONAL text;
+
+
+  release_date : OPTIONAL date;
+
+
+  revision_level : OPTIONAL identifier;
+
+
+ WHERE
+
+
+  WR1: EXISTS (format_code) OR EXISTS (format_standard)
+
+
+    OR EXISTS (revision_level) OR EXISTS (change_level)
+
+
+    OR EXISTS (release_date);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY foreign_defined_item
+
+
+  SUBTYPE OF (item_usage);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY geometry;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY group_parent_column_header;
+
+
+  single_group_parent_column_header_titles : LIST [1:?] OF field_title;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY group_parent_content_holder;
+
+
+  group_parent_content_presentation : field_content_holder_tabulation;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY group_parent_header;
+
+
+  single_group_parent_header_titles : LIST [1:?] OF field_title;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY header;
+
+
+  document_abstract : OPTIONAL text;
+
+
+  document_keywords : OPTIONAL SET [1:?] OF text;
+
+
+  header_configuration : 
+
+
+  header_configuration_with_element_identification;
+
+
+  languages: OPTIONAL SET [1:?] OF label;
+
+
+  sheet_count : OPTIONAL an_integer;
+
+
+  size_of_sheet : OPTIONAL size_characteristics_full_size;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY header_block;
+
+
+  single_block_content_presentation : OPTIONAL LIST [1:?] OF
+
+
+    field_content_holder_singular;
+
+
+  single_block_titles : OPTIONAL LIST [1:?] OF field_title;
+
+
+ WHERE
+
+
+  WR1: EXISTS (single_block_content_presentation) OR EXISTS 
+
+
+              (single_block_titles);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY header_configuration_with_element_identification;
+
+
+  data_configuration : OPTIONAL configuration;
+
+
+  identification : element_identification;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY header_presentation;
+
+
+  header_blocks_presentation : LIST [1:?] OF header_block;
+
+
+  header_tabulation_presentation : OPTIONAL LIST [1:?] OF tabulation;
+
+
+END_ENTITY;
+
+
+   
+
+
+TYPE identifier = STRING;
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY indentured_data_list
+
+
+  SUBTYPE OF (document_list);
+
+
+  body : indentured_data_list_body;
+
+
+  header : indentured_data_list_header;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY indentured_data_list_body;
+
+
+  indentured_tabulation : indentured_data_list_tabulation;
+
+
+  notes_list : OPTIONAL LIST [1:?] OF notation;
+
+
+  revision_history : OPTIONAL LIST [1:?] OF revision;
+
+
+  standardization_documents_list : OPTIONAL LIST [1:?] OF
+
+
+    element_identification;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY indentured_data_list_entry;
+
+
+  available_from: OPTIONAL LIST [1:?] OF source_identification;
+
+
+  effective_on : OPTIONAL effectivity;
+
+
+  entry : list_entry_select;
+
+
+  entry_configuration: OPTIONAL configuration;
+
+
+  entry_item_change_level : OPTIONAL identifier;
+
+
+  entry_notes : OPTIONAL LIST [1:?] OF notation;
+
+
+  indenture_level : OPTIONAL label;
+
+
+  special_conditions:   OPTIONAL LIST [1:?] OF special_condition;
+
+
+  superseded_entry: OPTIONAL element_identification; 
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY indentured_data_list_header;
+
+
+  common_header : header;
+
+
+  procurement_references: OPTIONAL LIST [1:?] OF identification_select;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY indentured_data_list_tabulation;
+
+
+  method_of_entry_tabulation : indentured_list_method;
+
+
+  tabulation_of_entries : LIST [1:?] OF indentured_data_list_entry;
+
+
+END_ENTITY;
+
+
+    
+
+
+TYPE indentured_list_method = SELECT
+
+
+  (indentured_list_by_document,
+
+
+   indentured_list_by_part,
+
+
+   indentured_list_by_part_with_document_references_to_parts);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY indentured_list_by_document;
+
+
+  top_indentured_tdp_elements : 
+
+
+    LIST [1:?] OF tdp_indentured_tdp_element;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY indentured_list_by_part;
+
+
+  top_indentured_items : LIST [1:?] OF tdp_indentured_item;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY indentured_list_by_part_with_document_references_to_parts;
+
+
+  top_indentured: LIST [1:?] OF item_or_element;
+
+
+END_ENTITY;
+
+
+    
+
+
+TYPE item_or_element = SELECT
+
+
+  (tdp_indentured_item,
+
+
+   tdp_indentured_tdp_element);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY index_list
+
+
+  SUBTYPE OF (single_document_list);
+
+
+  body : index_list_body;
+
+
+  list_header : index_list_header;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY index_list_body;
+
+
+  index_list_entries : LIST [1:?] OF index_list_entry;
+
+
+  index_list_notes: OPTIONAL LIST [1:?] OF notation;
+
+
+  revision_history : OPTIONAL LIST [1:?] OF revision;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY index_list_entry;
+
+
+  entry_item_change_level : OPTIONAL identifier;
+
+
+  entry_notes : OPTIONAL LIST [1:?] OF notation;
+
+
+  list_entry : header;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY index_list_header;
+
+
+  common_header: header;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY item;
+
+
+  alternates : OPTIONAL LIST [1:?] OF alternate_item;
+
+
+  conditions_defined_through_constrained_document :
+
+
+    OPTIONAL LIST [1:?] OF reference_document_usage;
+
+
+  conditions_defined_through_simple_reference :
+
+
+    OPTIONAL LIST [1:?] OF reference_document;
+
+
+  identification : item_identification;
+
+
+  item_configuration : OPTIONAL configuration;
+
+
+  item_contexts : OPTIONAL LIST [1:?] OF label;
+
+
+  item_weight : OPTIONAL weight;
+
+
+  notes : OPTIONAL LIST [1:?] OF notation;
+
+
+  special_conditions: OPTIONAL LIST [1:?] OF special_condition;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY item_identification;
+
+
+  alternate_identifications :
+
+
+    OPTIONAL SET [1:?] OF alternate_identification_of_item;
+
+
+  change_status : OPTIONAL change_identification;
+
+
+  classifications : OPTIONAL LIST [1:?] OF label;
+
+
+  design_activity : design_authority;
+
+
+  identifying_number : item_identifying_number_select;
+
+
+  nomenclature_or_name : OPTIONAL label;
+
+
+  source_information : OPTIONAL source_information_type;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY item_list;
+
+
+  component_of : LIST[1:?] OF item_usage;
+
+
+  list_for : item_list_applies_to_select;
+
+
+  type_of_component_list : component_list_type_select;
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE item_list_applies_to_select = SELECT
+
+
+  (item_identification,
+
+
+   item_list_drawing);
+
+
+END_TYPE;
+
+
+     
+
+
+TYPE component_list_type_enumeration = ENUMERATION OF
+
+
+  (assembly_defined_on_drawing_component_list,
+
+
+   installation_drawing_component_list,
+
+
+   item_not_defined_on_drawing_next_higher_assembly_component_list,
+
+
+   made_from_component_list_of_one,
+
+
+   net_change_list,
+
+
+   synthetic_part_number_component_list);
+
+
+END_TYPE;
+
+
+     
+
+
+TYPE component_list_type_select = SELECT
+
+
+  (component_list_type_enumeration,
+
+
+   text);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY item_list_drawing;
+
+
+  assembly_item_list_applies_to : OPTIONAL item_identification;
+
+
+  drawing_number : element_identification;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY item_parent_to_item_child_relationship;
+
+
+  child : item_identification;
+
+
+  parent : item_identification;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY item_parent_to_tdp_element_child_relationship;
+
+
+  child : element_identification;
+
+
+  parent : item_identification;
+
+
+END_ENTITY;
+
+
+    
+
+
+ENTITY item_type;
+
+
+  code_administrator : OPTIONAL company;
+
+
+  item_code : label;
+
+
+  type_of_coding_scheme : OPTIONAL text;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY item_usage
+
+
+  SUPERTYPE OF (ONEOF(locally_defined_item,foreign_defined_item));
+
+
+  being_defined_for : item;
+
+
+  effective_on : OPTIONAL effectivity;
+
+
+  list_item : OPTIONAL list_item_usage;
+
+
+  quantity_used_in_next_higher_assembly : OPTIONAL quantity;
+
+
+  retrofit: OPTIONAL retrofit_usage;
+
+
+  special_conditions: OPTIONAL LIST [1:?] OF special_condition;
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE quantity_type_select = SELECT
+
+
+  (text,
+
+
+   weight,
+
+
+   volume,
+
+
+   a_number);
+
+
+END_TYPE;
+
+
+     
+
+
+TYPE label = STRING;
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY list_item_usage;
+
+
+  drawing_zones : OPTIONAL LIST [1:?] OF identifier;
+
+
+  entry_notes: OPTIONAL LIST [1:?] OF notation;
+
+
+  entry_item_change_level : OPTIONAL identifier;
+
+
+  find_number : OPTIONAL identifier;
+
+
+  item_type : OPTIONAL label;
+
+
+  reference_designators: OPTIONAL LIST [1:?] OF identifier;
+
+
+ WHERE
+
+
+  WR1: EXISTS (reference_designators) OR EXISTS (entry_notes) OR  EXISTS 
+
+
+       (entry_item_change_level)
+
+
+       OR EXISTS (drawing_zones) OR EXISTS (item_type) OR
+
+
+       EXISTS (find_number);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY list_presentation;
+
+
+  body_page1_format : body_presentation;
+
+
+  body_pagen_format : OPTIONAL LIST [1:?] OF body_presentation;
+
+
+  header_page1_format : header_presentation;
+
+
+  header_pagen_format : OPTIONAL LIST [1:?] OF header_presentation;
+
+
+  page_format : page_presentation;
+
+
+  unit_of_length : measure;
+
+
+END_ENTITY;
+
+
+    
+
+
+ENTITY load_point;
+
+
+  load_point_x : a_real;
+
+
+  load_point_y : a_real;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY locally_defined_item
+
+
+  SUPERTYPE OF (ONEOF(
+
+
+     make_from_an_item,assembly,made_from_stock_material))
+
+
+  SUBTYPE OF (item_usage);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY lot_effectivity
+
+
+  SUBTYPE OF (effectivity);
+
+
+  lot_identification : identifier;
+
+
+  lot_size : a_number;
+
+
+  lot_unit_of_measure : measure;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY made_from_stock_material
+
+
+  SUBTYPE OF (locally_defined_item);
+
+
+  quantity_of_item_made_from_stock : OPTIONAL number;
+
+
+  size : OPTIONAL stock_size;
+
+
+  specified_by : OPTIONAL LIST [1:?] OF reference_document_usage;
+
+
+  stock : OPTIONAL stock_material;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY make_from_an_item
+
+
+  SUBTYPE OF (locally_defined_item);
+
+
+  item_that_is_acting_as_stock : item;
+
+
+  quantity_of_item_made_from_other_item : OPTIONAL number;
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE measure = STRING;
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY notation;
+
+
+  note : text;
+
+
+  note_parameter : OPTIONAL LIST [1:?] OF text;
+
+
+  note_title: label;
+
+
+  reference_code : OPTIONAL identifier;
+
+
+  referenced_document_in_note : OPTIONAL SET [1:?] OF
+
+
+     element_identification;
+
+
+  type_of_notation : OPTIONAL SET [1:?] OF label;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY number_with_units;
+
+
+  units_of : measure;
+
+
+  value_of : a_real;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY other_list
+
+
+  SUBTYPE OF (associated_list);
+
+
+  list_body : other_list_body;
+
+
+  list_header : other_list_header;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY other_list_body;
+
+
+  list_body_tables : OPTIONAL LIST [1:?] OF other_list_body_table;
+
+
+  notes: OPTIONAL LIST [1:?] OF notation;
+
+
+  revision_history : OPTIONAL LIST [1:?] OF revision;
+
+
+ WHERE
+
+
+  WR1: EXISTS (list_body_tables) OR EXISTS (notes);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY other_list_body_table;
+
+
+  description_of_tabulation : OPTIONAL label;
+
+
+  tabulation_column_descriptions : OPTIONAL LIST [1:?] OF label;
+
+
+  tabulation_rows : LIST [1:?] OF tabulation_entry;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY other_list_header;
+
+
+  common_header : header;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY other_reference_document
+
+
+  SUBTYPE OF (reference_document);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY page_parameters;
+
+
+  page_size_code : OPTIONAL text;
+
+
+  paper_size : OPTIONAL text;
+
+
+  page_anchor_x : a_real;
+
+
+  page_anchor_y : a_real;
+
+
+  graphics_declaration : OPTIONAL graphics_parameters;
+
+
+ WHERE
+
+
+  WR1: EXISTS(page_size_code) OR EXISTS(paper_size);
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE graphics_parameters = SELECT
+
+
+  (explicit_graphics,
+
+
+   external_graphics_file);
+
+
+END_TYPE;
+
+
+   
+
+
+ENTITY page_presentation;     
+
+
+  page_master_parameters : page_parameters;
+
+
+  page1_parameters : OPTIONAL page_parameters;
+
+
+  pagen_parameters : OPTIONAL LIST [1:?] OF page_parameters;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY parts_list
+
+
+  SUBTYPE OF (associated_list);
+
+
+  list_body : parts_list_body;
+
+
+  list_header : parts_list_header;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY parts_list_body;
+
+
+  list_notes : OPTIONAL LIST [1:?] OF notation;
+
+
+  revision_history : OPTIONAL LIST [1:?] OF revision;
+
+
+  parts_tabulations : LIST [1:?] OF item_list;
+
+
+  referenced_tdp_elements : 
+
+
+    OPTIONAL LIST [1:?] OF tdp_element_list_item;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY parts_list_header;
+
+
+  common_header : header;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY person;
+
+
+  first_name : OPTIONAL identifier;
+
+
+  middle_name : OPTIONAL identifier;
+
+
+  last_name : OPTIONAL identifier;
+
+
+  title : OPTIONAL text;
+
+
+  unique_identifier : identifier;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY person_and_organization;
+
+
+  organization : OPTIONAL company;
+
+
+  person_identification : OPTIONAL person;
+
+
+  person_address : OPTIONAL text;
+
+
+ WHERE
+
+
+  WR1: EXISTS (organization) OR EXISTS (person_identification);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY product_configuration;
+
+
+  configuration_id : identifier;
+
+
+  product_name : product_model;
+
+
+  approval_of_configuration : OPTIONAL LIST [1:?] OF approval;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY product_data_set 
+
+
+  ABSTRACT SUPERTYPE OF
+
+
+  (ONEOF(product_data_set_with_format,product_data_set_without_format,
+
+
+   product_data_set_with_shading))SUBTYPE OF (tdp_element);
+
+
+  related : OPTIONAL LIST [1:?] OF drawing_or_product_data_set;
+
+
+  file_configuration : OPTIONAL LIST [1:?] OF source_file;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY product_data_set_with_format
+
+
+  SUBTYPE OF (product_data_set);
+
+
+  presentation_of_product_data_set : OPTIONAL LIST [1:?] OF 
+
+
+    product_presentation;
+
+
+  product_header : header;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY product_data_set_with_shading
+
+
+  SUBTYPE OF (product_data_set);
+
+
+  a_shaded_model : shaded_shape_model;
+
+
+  data_configuration : header_configuration_with_element_identification;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY product_data_set_without_format
+
+
+  SUBTYPE OF (product_data_set);
+
+
+  a_model : OPTIONAL shape_model;
+
+
+  data_configuration : header_configuration_with_element_identification;
+
+
+END_ENTITY;
+
+
+    
+
+
+ENTITY product_model;
+
+
+  model_name : label;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY product_presentation;
+
+
+  annotation_presentation : annotation;
+
+
+  part_shape_views : OPTIONAL LIST [1:?] OF shape_model;
+
+
+END_ENTITY;
+
+
+   
+
+
+ENTITY quantity;
+
+
+  quantity_accuracy : OPTIONAL quantity_accuracy_select;
+
+
+  value_of : quantity_type_select;
+
+
+END_ENTITY;
+
+
+    
+
+
+TYPE quantity_accuracy_select = SELECT
+
+
+  (quantity_accuracy_enumeration,
+
+
+   text);
+
+
+END_TYPE;
+
+
+
+
+
+TYPE quantity_accuracy_enumeration = ENUMERATION OF
+
+
+  (approximate,
+
+
+   as_required,
+
+
+   exact);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY reason;
+
+
+  applicable_to : OPTIONAL LIST [1:?] OF item_identification;
+
+
+  base : OPTIONAL exchange_reason;
+
+
+  exchange_purpose : OPTIONAL text;
+
+
+ WHERE
+
+
+  WR1: EXISTS (exchange_purpose) OR EXISTS (base);
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE exchange_reason = ENUMERATION OF
+
+
+  (acknowledge_receipt_of_delivery,
+
+
+   engineering_design_analysis,
+
+
+   interim_engineering_design_review,
+
+
+   final_design_review,
+
+
+   initial_data_submittal,
+
+
+   procurement_design_package,
+
+
+   provisioning_data_submittal,
+
+
+   request_for_proposal,
+
+
+   request_for_quote,
+
+
+   revision_update_data_submittal,
+
+
+   specification_design_package);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY reference_document
+
+
+  ABSTRACT SUPERTYPE OF (ONEOF(specification_document,
+
+
+   standard_document,other_reference_document))
+
+
+   SUBTYPE OF (tdp_element);
+
+
+  document_identification : element_identification;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY reference_document_usage;
+
+
+  document_referenced : reference_document;
+
+
+  location_in_document: OPTIONAL label;
+
+
+  usage_code : OPTIONAL identifier;
+
+
+  usage_description : OPTIONAL text;
+
+
+  usage_parameter : OPTIONAL document_usage_parameter;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY release_authentication;
+
+
+  release_date : date;
+
+
+  authentication : identifier;
+
+
+  person_responsible : OPTIONAL person;
+
+
+  release_authority : company;
+
+
+  release_authority_code : OPTIONAL company_code;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY retrofit_usage;
+
+
+  retrofit_description : OPTIONAL notation;
+
+
+  defining_document : OPTIONAL other_reference_document;
+
+
+  disposition_for : retrofit_state;
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE retrofit_state = ENUMERATION OF
+
+
+  (add,
+
+
+   delete,
+
+
+   modify);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY revision;
+
+
+  authorizing_documents : 
+
+
+    OPTIONAL LIST [1:?] OF other_reference_document;
+
+
+  revision_approval : OPTIONAL person_and_organization;
+
+
+  revision_date : OPTIONAL date;
+
+
+  revision_description : OPTIONAL text;
+
+
+  revision_level : identifier;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY security_classification;
+
+
+  classification_date: OPTIONAL date;
+
+
+  declassification_date: OPTIONAL date;
+
+
+  item_classification : label;
+
+
+  title_security_classification : OPTIONAL label;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY sequence_effectivity
+
+
+  SUBTYPE OF (effectivity);
+
+
+  from_effectivity_id : identifier;
+
+
+  quantity_unit_of_measure : OPTIONAL measure;
+
+
+  thru_effectivity_id : OPTIONAL identifier;
+
+
+  total_component_quantity_in_product_configuration :
+
+
+    OPTIONAL  quantity;
+
+
+ WHERE
+
+
+  WR1: EXISTS (total_component_quantity_in_product_configuration) 
+
+
+       AND EXISTS (quantity_unit_of_measure);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY shaded_shape_model;
+
+
+  part_shape_views : LIST [1:?] OF shape_model;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY shape_model;
+
+
+  part_shape_representation : geometry;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY sheet;
+
+
+  presentation_format : OPTIONAL product_presentation;
+
+
+  sheet_configuration: OPTIONAL configuration;
+
+
+  sheet_identifier: OPTIONAL element_identification;
+
+
+  sheet_size : OPTIONAL label;
+
+
+ WHERE
+
+
+  WR1:EXISTS (sheet_configuration) OR EXISTS (sheet_identifier) 
+
+
+      OR EXISTS (sheet_size) OR EXISTS (presentation_format);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY simple_list_of_elements;
+
+
+  element_entries : LIST [1:?] OF data_definition_exchange_simple_entry;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY simple_list_of_files;
+
+
+  file_entries : LIST [1:?] OF data_definition_file_entry;
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE data_defintion_file_entry = SELECT
+
+
+  (accessed_file,
+
+
+   exchange_file);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY single_document_list
+
+
+  ABSTRACT SUPERTYPE OF (ONEOF(data_list,index_list))
+
+
+  SUBTYPE OF (document_list);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY size_characteristics SUPERTYPE OF 
+
+
+  (ONEOF (size_characteristics_sheet_across_file,
+
+
+          size_characteristics_full_size,
+
+
+          size_characteristics_internal_divisions));
+
+
+  byte_size : OPTIONAL an_integer;
+
+
+  sheet_size : OPTIONAL label;
+
+
+ WHERE
+
+
+  WR1: EXISTS (byte_size) OR
+
+
+       EXISTS (sheet_size);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY size_characteristics_full_size
+
+
+  SUBTYPE OF (size_characteristics);
+
+
+END_ENTITY;
+
+
+   
+
+
+ENTITY size_characteristics_internal_divisions
+
+
+  SUBTYPE OF (size_characteristics);
+
+
+  internal_division_count : OPTIONAL an_integer;
+
+
+  internal_division_type : OPTIONAL label;
+
+
+ WHERE
+
+
+  WR1: EXISTS (internal_division_type) 
+
+
+       OR EXISTS (internal_division_count);
+
+
+END_ENTITY;
+
+
+    
+
+
+ENTITY size_characteristics_sheet_across_file
+
+
+  SUBTYPE OF (size_characteristics);
+
+
+  frame_number_comprising_this_file : OPTIONAL an_integer;
+
+
+  number_of_frames_for_sheet : OPTIONAL an_integer;
+
+
+ WHERE
+
+
+  WR1: EXISTS (number_of_frames_for_sheet) OR
+
+
+       EXISTS (frame_number_comprising_this_file);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY source_file
+
+
+  SUBTYPE OF (file);
+
+
+END_ENTITY;
+
+
+   
+
+
+ENTITY source_information_type;
+
+
+  source_code : OPTIONAL label;
+
+
+  source_description : OPTIONAL text;
+
+
+  type_of_coding_scheme : OPTIONAL text;
+
+
+ WHERE
+
+
+  WR1: EXISTS (source_code) OR
+
+
+       EXISTS (source_description);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY special_condition;
+
+
+  code : OPTIONAL label;
+
+
+  description : OPTIONAL text;
+
+
+  type_of_coding_scheme : OPTIONAL text;
+
+
+ WHERE
+
+
+  WR1: EXISTS (description) OR EXISTS (code);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY specification_document
+
+
+  SUBTYPE OF (reference_document);
+
+
+END_ENTITY;
+
+
+   
+
+
+ENTITY standard_document
+
+
+  SUBTYPE OF (reference_document);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY status;
+
+
+  status_code : identifier;
+
+
+  status_code_basis : OPTIONAL text;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY stock_material;
+
+
+  material : OPTIONAL item;
+
+
+  size : OPTIONAL stock_size;
+
+
+ WHERE
+
+
+  WR1: EXISTS (material) OR EXISTS (size);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY stock_size;
+
+
+  parameters_for : stock_size_parameters;
+
+
+  catalog : OPTIONAL stock_size_classification;
+
+
+  cross_section : OPTIONAL stock_size_cross_section;
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE stock_size_classification = ENUMERATION OF
+
+
+  (bar, plate, sheet, pipe, tube, block, sphere, roll);
+
+
+END_TYPE;
+
+
+     
+
+
+TYPE stock_size_cross_section = ENUMERATION OF
+
+
+  (angle, channel, hex, I_s, oval, rectangular, round, square, T_s);
+
+
+END_TYPE;
+
+
+     
+
+
+ENTITY stock_size_parameters;
+
+
+  a_length : OPTIONAL number_with_units;
+
+
+  diameter : OPTIONAL number_with_units;
+
+
+  height: OPTIONAL number_with_units;
+
+
+  name_of_parameter : OPTIONAL label;
+
+
+  numeric_parameter : OPTIONAL number_with_units;
+
+
+  radius : OPTIONAL number_with_units;
+
+
+  textual_parameter : OPTIONAL text;
+
+
+  wall_thickness : OPTIONAL number_with_units;
+
+
+  width : OPTIONAL number_with_units;
+
+
+ WHERE
+
+
+  WR1: EXISTS (textual_parameter) OR EXISTS (width) OR
+
+
+       EXISTS (a_length) OR EXISTS (radius) OR EXISTS (height)
+
+
+       OR EXISTS (diameter) OR EXISTS (wall_thickness)
+
+
+       OR EXISTS (numeric_parameter);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY string_location_definition
+
+
+  SUBTYPE OF (field_location);
+
+
+  string_load_point : load_point;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY system_declaration;
+
+
+  creating_interface : OPTIONAL text;
+
+
+  operating_system : OPTIONAL text;
+
+
+  system_element_identifier : OPTIONAL identifier;
+
+
+  system_related_element_identifier : OPTIONAL identifier;
+
+
+  system : OPTIONAL identifier;
+
+
+ WHERE
+
+
+  WR1: EXISTS (system_element_identifier) OR
+
+
+       EXISTS (system_related_element_identifier) OR
+
+
+       EXISTS (system) OR EXISTS(creating_interface) OR
+
+
+       EXISTS (operating_system);
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY system_destination;
+
+
+  target_company : company;
+
+
+  target_company_code : OPTIONAL company_code;
+
+
+  target_person : OPTIONAL person;
+
+
+END_ENTITY;
+
+
+   
+
+
+ENTITY tabulation;
+
+
+  group_parent_headings : OPTIONAL LIST [1:?] OF group_parent_header;
+
+
+  parent_columns : OPTIONAL LIST [1:?] OF group_parent_content_holder;
+
+
+  tabulation_columnar_headings : OPTIONAL LIST [1:?] OF column_header;
+
+
+  tabulation_columns : LIST [1:?] OF columnar_data_content_holder;
+
+
+  tabulation_group_parent_headings : OPTIONAL LIST [1:?] OF 
+
+
+  group_parent_column_header;
+
+
+  tabulation_headings : OPTIONAL LIST [1:?] OF tabulation_header;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY tabulation_entry;
+
+
+  column_information : LIST [1:?] OF text;
+
+
+END_ENTITY;
+
+
+   
+
+
+ENTITY tabulation_header;
+
+
+  single_tabulation_header_titles : LIST [1:?] OF field_title;
+
+
+END_ENTITY;
+
+
+    
+
+
+ENTITY tdp_element
+
+
+  ABSTRACT SUPERTYPE OF (ONEOF(drawing,associated_list,
+
+
+      product_data_set,reference_document));
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY tdp_element_and_item_association;
+
+
+  related_tdp_element : tdp_element;
+
+
+  related_item : item;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY tdp_element_list_item;
+
+
+  reference_code : OPTIONAL identifier;
+
+
+  tdp_element_item : element_identification;
+
+
+END_ENTITY;
+
+
+   
+
+
+ENTITY tdp_element_parent_to_item_child_relationship;
+
+
+  child : item_identification;
+
+
+  parent : element_identification;
+
+
+END_ENTITY;
+
+
+    
+
+
+ENTITY tdp_element_parent_to_tdp_element_child_relationship;
+
+
+  child : element_identification;
+
+
+  parent : element_identification;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY tdp_indentured_item;
+
+
+  top_indenture : item_identification;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY tdp_indentured_tdp_element;
+
+
+  top_indenture : element_identification;
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE text = STRING;
+
+
+END_TYPE;
+
+
+
+
+
+ENTITY time;
+
+
+  hour: an_integer;
+
+
+  minute: OPTIONAL an_integer;
+
+
+  second: OPTIONAL a_real;
+
+
+  zone: text;
+
+
+  END_ENTITY; 
+
+
+     
+
+
+ENTITY volume;
+
+
+  a_value: number_with_units;
+
+
+END_ENTITY;
+
+
+     
+
+
+ENTITY weight;
+
+
+  derivation_method : OPTIONAL weight_derivation;
+
+
+  a_value : a_real;
+
+
+  unit_of_measure : measure;
+
+
+END_ENTITY;
+
+
+     
+
+
+TYPE weight_derivation = ENUMERATION OF
+
+
+ (calculated,
+
+
+  estimated,
+
+
+  weighed);
+
+
+END_TYPE;
+
+
+     
+
+
+END_SCHEMA;

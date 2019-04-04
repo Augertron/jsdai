@@ -1,0 +1,197 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>net.jsdai</groupId>
+    <artifactId>jsdai_parent</artifactId>
+    <version>4.5.0-SNAPSHOT</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
+
+  <groupId>net.jsdai</groupId>
+  <artifactId>jsdai_express</artifactId>
+  <packaging>jar</packaging>
+
+  <properties>
+    <maven.build.timestamp.format>yyyy-MM-dd_HH-mm-ss</maven.build.timestamp.format>
+
+    <express.implementation>JSDAI Express Compiler</express.implementation>
+    <express.version.major>${JSDAI.VERSION.MAJOR}</express.version.major>
+    <express.version.middle>${JSDAI.VERSION.MIDDLE}</express.version.middle>
+    <express.version.minor>${JSDAI.VERSION.MINOR}</express.version.minor>
+
+    <generated.sources.dir>${basedir}/src/main/generated</generated.sources.dir>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>net.jsdai</groupId>
+      <artifactId>jsdai_runtime</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.jsdai</groupId>
+      <artifactId>jsdai_extendedDictionary</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-generated-source</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${generated.sources.dir}</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>jsdai/expressCompiler/SelectCaseGenerator.*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Specification-Title>JSDAI Core</Specification-Title>
+              <Specification-Version>${express.version.major}.${express.version.middle}.${express.version.minor}</Specification-Version>
+              <Specification-Vendor>${jsdai.vendor}</Specification-Vendor>
+              <Implementation-Title>${express.implementation}</Implementation-Title>
+              <Implementation-Version>${maven.build.timestamp}</Implementation-Version>
+              <Implementation-Vendor>${jsdai.vendor}</Implementation-Vendor>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+    <pluginManagement>
+      <plugins>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>javacc-maven-plugin</artifactId>
+                    <versionRange>[2.1,)</versionRange>
+                    <goals>
+                      <goal>jjtree-javacc</goal>
+                      <goal>jjtree</goal>
+                      <goal>javacc</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+  <profiles>
+    <profile>
+      <id>generate</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>javacc-maven-plugin</artifactId>
+            <version>2.1</version>
+            <executions>
+              <execution>
+                <id>run-jjtree</id>
+                <goals>
+                  <goal>jjtree</goal>
+                </goals>
+                <configuration>
+                  <jdkVersion>1.4</jdkVersion>
+                  <outputDirectory>${generated.sources.dir}/jsdai/expressCompiler</outputDirectory>
+                </configuration>
+              </execution>
+              <execution>
+                <id>run-javacc</id>
+                <goals>
+                  <goal>javacc</goal>
+                </goals>
+                <configuration>
+                  <jdkVersion>1.4</jdkVersion>
+                  <outputDirectory>${generated.sources.dir}</outputDirectory>
+                  <sourceDirectory>${generated.sources.dir}</sourceDirectory>
+                  <packageName>jsdai.expressCompiler</packageName>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <!--
+              ideally one would like to delete old generated sources before generating new ones, but SimpleNode looks like modified,
+              so one would need to investigate what is going on there, before being able to delete old sources. in other word, one
+              needs to ensure, that new sources are compatible with old one, before deleting old sources.
+          -->
+          <!--
+                              <plugin>
+                                  <groupId>org.apache.maven.plugins</groupId>
+                                  <artifactId>maven-antrun-plugin</artifactId>
+                                  <version>1.7</version>
+                                  <executions>
+                                      <execution>
+                                          <id>delete-old-sources</id>
+                                          <phase>initialize</phase>
+                                          <configuration>
+                                              <tasks>
+                                                   <delete>
+                                                      <fileset dir="${generated.sources.dir}" includes="**/*.java"/>
+                                                  </delete>
+                                               </tasks>
+                                          </configuration>
+                                          <goals>
+                                              <goal>run</goal>
+                                          </goals>
+                                      </execution>
+                                      <execution>
+                                          <id>add-license</id>
+                                          <phase>process-sources</phase>
+                                          <configuration>
+                                              <tasks>
+                                                   <loadfile property="javaheader" srcFile="${basedir}/license.txt" />
+                                                  <replaceregexp match="(/\*.*\*/)" replace="${javaheader}\1">
+                                                      <fileset dir="${generated.sources.dir}">
+                                                          <include name="jsdai/**/*.java" />
+                                                      </fileset>
+                                                  </replaceregexp>
+                                          </tasks>
+                                          </configuration>
+                                          <goals>
+                                              <goal>run</goal>
+                                          </goals>
+                                      </execution>
+                                  </executions>
+                              </plugin>
+           -->
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

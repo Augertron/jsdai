@@ -1,0 +1,657 @@
+ (* Document WG12 N1046 date 2002-07-31. EXPRESS listing corresponding to part
+ 42  edition IS WG12 N536, as modified by TC1 WG12 N608 and
+ by revision 1 (edition 3)  WG12 N1045 *)
+
+ SCHEMA topology_schema;
+   REFERENCE FROM geometry_schema;
+   REFERENCE FROM representation_schema(representation_item);
+
+ CONSTANT
+    dummy_tri : topological_representation_item := representation_item('')||
+                   topological_representation_item();        
+ END_CONSTANT;
+
+ TYPE list_of_reversible_topology_item =
+                               LIST [0:?] of reversible_topology_item;
+ END_TYPE;
+
+ TYPE reversible_topology = SELECT
+           (reversible_topology_item,
+            list_of_reversible_topology_item,
+            set_of_reversible_topology_item);
+ END_TYPE;
+
+ TYPE reversible_topology_item = SELECT
+   (edge, 
+    path, 
+    face, 
+    face_bound,
+    closed_shell, 
+    open_shell);
+ END_TYPE;
+
+  TYPE set_of_reversible_topology_item =
+                       SET [0:?] of reversible_topology_item;
+  END_TYPE;
+
+ TYPE shell = SELECT
+   (vertex_shell,
+    wire_shell,
+    open_shell,
+    closed_shell);
+ END_TYPE;
+
+ ENTITY closed_shell
+   SUBTYPE OF (connected_face_set);
+ END_ENTITY;
+
+ ENTITY connected_edge_set
+   SUBTYPE OF (topological_representation_item);
+   ces_edges : SET [1:?] OF edge;
+ END_ENTITY;
+
+ ENTITY connected_face_set
+   SUPERTYPE OF (ONEOF (closed_shell, open_shell))
+   SUBTYPE OF (topological_representation_item);
+   cfs_faces : SET [1:?] OF face;
+ END_ENTITY;
+
+ ENTITY connected_face_sub_set
+   SUBTYPE OF (connected_face_set);
+   parent_face_set   :  connected_face_set;
+ END_ENTITY;
+
+ ENTITY edge
+   SUPERTYPE OF(ONEOF(edge_curve, oriented_edge, subedge))
+   SUBTYPE OF (topological_representation_item);
+   edge_start : vertex;
+   edge_end   : vertex;
+ END_ENTITY;
+
+ ENTITY edge_curve
+   SUBTYPE OF(edge,geometric_representation_item);
+   edge_geometry : curve;
+   same_sense    : BOOLEAN;
+ END_ENTITY;
+
+ ENTITY edge_loop
+   SUBTYPE OF (loop,path);
+ DERIVE
+   ne : INTEGER := SIZEOF(SELF\path.edge_list);
+ WHERE
+   WR1: (SELF\path.edge_list[1].edge_start) :=:
+        (SELF\path.edge_list[ne].edge_end);
+ END_ENTITY;
+
+ ENTITY face
+   SUPERTYPE OF(ONEOF(face_surface, subface, oriented_face))
+   SUBTYPE OF (topological_representation_item);
+   bounds : SET[1:?] OF face_bound;
+ WHERE
+   WR1: NOT (mixed_loop_type_set(list_to_set(list_face_loops(SELF))));
+   WR2: SIZEOF(QUERY(temp <* bounds | 'TOPOLOGY_SCHEMA.FACE_OUTER_BOUND' IN
+                                               TYPEOF(temp))) <= 1;
+ END_ENTITY;
+
+ ENTITY face_bound
+   SUBTYPE OF(topological_representation_item);
+   bound       :  loop;
+   orientation :  BOOLEAN;
+ END_ENTITY;
+
+    ENTITY face_outer_bound
+    SUBTYPE OF (face_bound);
+    END_ENTITY;
+
+ ENTITY face_surface
+   SUBTYPE OF(face,geometric_representation_item);
+   face_geometry :  surface;
+   same_sense    :  BOOLEAN;
+ WHERE
+   WR1: NOT ('GEOMETRY_SCHEMA.ORIENTED_SURFACE' IN TYPEOF(face_geometry));
+ END_ENTITY;
+
+ ENTITY loop
+   SUPERTYPE OF (ONEOF(vertex_loop, edge_loop, poly_loop))
+   SUBTYPE OF (topological_representation_item);
+ END_ENTITY;
+
+ ENTITY open_path
+   SUBTYPE OF (path);
+ DERIVE
+   ne : INTEGER := SIZEOF(SELF\path.edge_list);
+ WHERE
+   WR1: (SELF\path.edge_list[1].edge_element.edge_start) :<>:
+                       (SELF\path.edge_list[ne].edge_element.edge_end);
+ END_ENTITY;
+
+ ENTITY open_shell
+   SUBTYPE OF (connected_face_set);
+ END_ENTITY;
+
+ ENTITY oriented_closed_shell
+   SUBTYPE OF (closed_shell);
+   closed_shell_element : closed_shell;
+   orientation          : BOOLEAN;
+ DERIVE
+   SELF\connected_face_set.cfs_faces : SET [1:?] OF face
+                                := conditional_reverse(SELF.orientation,
+                                   SELF.closed_shell_element.cfs_faces);
+ WHERE
+   WR1: NOT ('TOPOLOGY_SCHEMA.ORIENTED_CLOSED_SHELL' 
+                IN TYPEOF (SELF.closed_shell_element));
+ END_ENTITY;
+
+ ENTITY oriented_edge
+   SUBTYPE OF (edge);
+   edge_element : edge;
+   orientation  : BOOLEAN;
+ DERIVE
+   SELF\edge.edge_start : vertex := boolean_choose (SELF.orientation,
+                                            SELF.edge_element.edge_start,
+                                            SELF.edge_element.edge_end);
+   SELF\edge.edge_end   : vertex := boolean_choose (SELF.orientation,
+                                            SELF.edge_element.edge_end,
+                                            SELF.edge_element.edge_start);
+ WHERE
+   WR1: NOT ('TOPOLOGY_SCHEMA.ORIENTED_EDGE' IN TYPEOF (SELF.edge_element));
+ END_ENTITY;
+
+ ENTITY oriented_face
+   SUBTYPE OF (face);
+   face_element : face;
+   orientation  : BOOLEAN;
+ DERIVE
+   SELF\face.bounds : SET[1:?] OF face_bound
+          := conditional_reverse(SELF.orientation,SELF.face_element.bounds);
+ WHERE
+   WR1: NOT ('TOPOLOGY_SCHEMA.ORIENTED_FACE' IN TYPEOF (SELF.face_element));
+ END_ENTITY;
+
+ ENTITY oriented_open_shell
+   SUBTYPE OF (open_shell);
+   open_shell_element : open_shell;
+   orientation        : BOOLEAN;
+ DERIVE
+   SELF\connected_face_set.cfs_faces : SET [1:?] OF face
+                                := conditional_reverse(SELF.orientation,
+                                      SELF.open_shell_element.cfs_faces);
+ WHERE
+   WR1: NOT ('TOPOLOGY_SCHEMA.ORIENTED_OPEN_SHELL' 
+                IN TYPEOF (SELF.open_shell_element));
+ END_ENTITY;
+
+ ENTITY oriented_path
+   SUBTYPE OF (path);
+   path_element : path;
+   orientation  : BOOLEAN;
+ DERIVE
+   SELF\path.edge_list : LIST [1:?] OF UNIQUE oriented_edge
+                           := conditional_reverse(SELF.orientation,
+                                         SELF.path_element.edge_list);
+ WHERE
+   WR1: NOT ('TOPOLOGY_SCHEMA.ORIENTED_PATH' IN TYPEOF (SELF.path_element));
+ END_ENTITY;
+
+ ENTITY path
+   SUPERTYPE OF (ONEOF(open_path, edge_loop, oriented_path))
+   SUBTYPE OF (topological_representation_item);
+   edge_list  : LIST [1:?] OF UNIQUE oriented_edge;
+ WHERE
+   WR1: path_head_to_tail(SELF);
+ END_ENTITY;
+
+ ENTITY poly_loop
+   SUBTYPE OF (loop,geometric_representation_item);
+   polygon : LIST [3:?] OF UNIQUE cartesian_point;
+ END_ENTITY;
+
+ ENTITY seam_edge
+   SUBTYPE OF (oriented_edge);
+     pcurve_reference : pcurve ; 
+ WHERE
+    WR1 : ( 'TOPOLOGY_SCHEMA.EDGE_CURVE' IN TYPEOF (edge_element) )  AND
+                ('TOPOLOGY_SCHEMA.SEAM_CURVE' IN TYPEOF
+                       (edge_element\edge_curve.edge_geometry)) ;
+   WR2 :  pcurve_reference IN edge_element\edge_curve.edge_geometry\
+                                 surface_curve.associated_geometry ;
+ END_ENTITY;
+
+ ENTITY subedge
+   SUBTYPE OF (edge);
+   parent_edge   :  edge;
+ END_ENTITY;
+
+ ENTITY subface
+   SUBTYPE OF (face);
+   parent_face   :  face;
+ WHERE
+   WR1: NOT (mixed_loop_type_set(list_to_set(list_face_loops(SELF)) +
+              list_to_set(list_face_loops(parent_face))));
+ END_ENTITY;
+
+ ENTITY topological_representation_item
+   SUPERTYPE OF (ONEOF(vertex, edge, face_bound, face, vertex_shell,
+                   wire_shell, connected_edge_set, connected_face_set,
+                    (loop ANDOR path)))
+   SUBTYPE OF (representation_item);
+ END_ENTITY;
+
+ ENTITY vertex
+   SUBTYPE OF (topological_representation_item);
+ END_ENTITY;
+
+ ENTITY vertex_point
+ SUBTYPE OF(vertex,geometric_representation_item);
+   vertex_geometry : point;
+ END_ENTITY;
+
+ ENTITY vertex_loop
+   SUBTYPE OF (loop);
+   loop_vertex : vertex;
+ END_ENTITY;
+
+ ENTITY vertex_shell
+   SUBTYPE OF (topological_representation_item);
+   vertex_shell_extent : vertex_loop;
+ END_ENTITY;
+
+ ENTITY wire_shell
+   SUBTYPE OF (topological_representation_item);
+   wire_shell_extent : SET [1:?] OF loop;
+ WHERE
+   WR1: NOT mixed_loop_type_set(wire_shell_extent);
+ END_ENTITY;
+
+   FUNCTION boolean_choose (b : boolean;
+            choice1, choice2 : generic : item)  : generic : item;
+ 
+     IF b THEN
+       RETURN (choice1);
+     ELSE
+       RETURN (choice2);
+     END_IF;
+   END_FUNCTION;
+
+ FUNCTION closed_shell_reversed (a_shell : closed_shell) :
+                                       oriented_closed_shell;
+  LOCAL
+    the_reverse : oriented_closed_shell;
+  END_LOCAL;
+   IF ('TOPOLOGY_SCHEMA.ORIENTED_CLOSED_SHELL' IN TYPEOF (a_shell) ) THEN
+      the_reverse := dummy_tri ||
+                    connected_face_set (
+                       a_shell\connected_face_set.cfs_faces) ||
+                    closed_shell () || oriented_closed_shell(
+                     a_shell\oriented_closed_shell.closed_shell_element,
+                       NOT(a_shell\oriented_closed_shell.orientation));
+   ELSE
+      the_reverse := dummy_tri ||
+               connected_face_set (
+                 a_shell\connected_face_set.cfs_faces) ||
+               closed_shell () || oriented_closed_shell (a_shell, FALSE);
+   END_IF;
+   RETURN (the_reverse);
+ END_FUNCTION;
+
+ FUNCTION conditional_reverse (p       : BOOLEAN;
+                               an_item : reversible_topology)
+                                       : reversible_topology;
+   IF p THEN
+     RETURN (an_item);
+   ELSE
+     RETURN (topology_reversed (an_item));
+   END_IF;
+ END_FUNCTION;
+
+FUNCTION edge_curve_pcurves (an_edge  : edge_curve;
+                       the_surface_curves : SET OF surface_curve)
+      : SET OF pcurve;
+LOCAL
+  a_curve      : curve;
+  result       : SET OF pcurve;
+  the_geometry : LIST[1:2] OF pcurve_or_surface;
+END_LOCAL;
+  a_curve := an_edge.edge_geometry;
+  result := [];
+  IF 'GEOMETRY_SCHEMA.PCURVE' IN TYPEOF(a_curve) THEN
+    result := result + a_curve;
+  ELSE
+    IF 'GEOMETRY_SCHEMA.SURFACE_CURVE' IN TYPEOF(a_curve) THEN
+      the_geometry := a_curve\surface_curve.associated_geometry;
+      REPEAT k := 1 TO SIZEOF(the_geometry);
+         IF 'GEOMETRY_SCHEMA.PCURVE' IN TYPEOF (the_geometry[k])
+         THEN
+            result := result + the_geometry[k];
+         END_IF;
+      END_REPEAT;
+    ELSE
+      REPEAT j := 1 TO SIZEOF(the_surface_curves);
+        the_geometry := the_surface_curves[j].associated_geometry;
+        IF the_surface_curves[j].curve_3d :=: a_curve
+        THEN
+          REPEAT k := 1 TO SIZEOF(the_geometry);
+            IF 'GEOMETRY_SCHEMA.PCURVE' IN TYPEOF (the_geometry[k])
+            THEN
+              result := result + the_geometry[k];
+            END_IF;
+          END_REPEAT;
+        END_IF;
+      END_REPEAT;
+    END_IF;
+  END_IF;
+
+  RETURN (RESULT);
+END_FUNCTION;
+
+ FUNCTION edge_reversed (an_edge : edge) : oriented_edge;
+   LOCAL
+     the_reverse : oriented_edge;
+   END_LOCAL;
+
+   IF ('TOPOLOGY_SCHEMA.ORIENTED_EDGE' IN TYPEOF (an_edge) ) THEN
+     the_reverse  := dummy_tri ||
+             edge(an_edge.edge_end, an_edge.edge_start) ||
+             oriented_edge(an_edge\oriented_edge.edge_element,
+                        NOT (an_edge\oriented_edge.orientation)) ;
+   ELSE
+     the_reverse := dummy_tri ||
+             edge(an_edge.edge_end, an_edge.edge_start) ||
+             oriented_edge(an_edge, FALSE);
+   END_IF;
+   RETURN (the_reverse);
+ END_FUNCTION;
+
+ FUNCTION face_bound_reversed (a_face_bound : face_bound) : face_bound;
+   LOCAL
+     the_reverse : face_bound ;
+   END_LOCAL;
+   IF ('TOPOLOGY_SCHEMA.FACE_OUTER_BOUND' IN TYPEOF (a_face_bound) ) THEN
+     the_reverse := dummy_tri ||
+                      face_bound(a_face_bound\face_bound.bound,
+                           NOT (a_face_bound\face_bound.orientation))
+                            || face_outer_bound() ;
+   ELSE
+     the_reverse := dummy_tri ||
+         face_bound(a_face_bound.bound, NOT(a_face_bound.orientation));
+   END_IF;
+  RETURN (the_reverse);
+ END_FUNCTION;
+
+ FUNCTION face_reversed (a_face : face) : oriented_face;
+   LOCAL
+     the_reverse : oriented_face ;
+   END_LOCAL;
+   IF ('TOPOLOGY_SCHEMA.ORIENTED_FACE' IN TYPEOF (a_face) ) THEN
+     the_reverse := dummy_tri ||
+       face(set_of_topology_reversed(a_face.bounds)) ||
+          oriented_face(a_face\oriented_face.face_element,
+                           NOT (a_face\oriented_face.orientation)) ;
+   ELSE
+     the_reverse := dummy_tri ||
+       face(set_of_topology_reversed(a_face.bounds)) ||
+                               oriented_face(a_face, FALSE) ;
+   END_IF;
+      RETURN (the_reverse);
+ END_FUNCTION;
+
+ FUNCTION list_face_loops(f: face) : LIST[0:?] OF loop;
+   LOCAL
+     loops : LIST[0:?] OF loop := [];
+   END_LOCAL;
+   
+   REPEAT i := 1 TO SIZEOF(f.bounds);
+     loops := loops +(f.bounds[i].bound);
+   END_REPEAT;
+      
+   RETURN(loops);
+ END_FUNCTION;
+
+ FUNCTION list_loop_edges(l: loop): LIST[0:?] OF edge;
+   LOCAL
+     edges : LIST[0:?] OF edge := [];
+   END_LOCAL;
+      
+   IF 'TOPOLOGY_SCHEMA.EDGE_LOOP' IN TYPEOF(l) THEN
+     REPEAT i := 1 TO SIZEOF(l\path.edge_list);
+       edges := edges + (l\path.edge_list[i].edge_element);
+     END_REPEAT;
+   END_IF;
+
+   RETURN(edges);
+ END_FUNCTION;
+
+ FUNCTION list_of_topology_reversed (a_list
+                                  : list_of_reversible_topology_item)
+                                  : list_of_reversible_topology_item;
+   LOCAL
+     the_reverse : list_of_reversible_topology_item;
+   END_LOCAL;
+    
+   the_reverse := [];
+   REPEAT i := 1 TO SIZEOF (a_list);
+     the_reverse := topology_reversed (a_list [i]) + the_reverse;
+   END_REPEAT;
+  
+   RETURN (the_reverse);
+ END_FUNCTION;
+
+ FUNCTION list_shell_edges(s : shell) : LIST[0:?] OF edge;
+   LOCAL
+     edges : LIST[0:?] OF edge := [];
+   END_LOCAL;
+      
+   REPEAT i := 1 TO SIZEOF(list_shell_loops(s));
+     edges := edges + list_loop_edges(list_shell_loops(s)[i]);
+   END_REPEAT;
+   
+   RETURN(edges);
+ END_FUNCTION;
+
+ FUNCTION list_shell_faces(s : shell) : LIST[0:?] OF face;
+   LOCAL
+     faces : LIST[0:?] OF face := [];
+   END_LOCAL;
+   
+   IF ('TOPOLOGY_SCHEMA.CLOSED_SHELL' IN TYPEOF(s)) OR 
+      ('TOPOLOGY_SCHEMA.OPEN_SHELL' IN TYPEOF(s)) THEN
+     REPEAT i := 1 TO SIZEOF(s\connected_face_set.cfs_faces);
+       faces := faces + s\connected_face_set.cfs_faces[i];
+     END_REPEAT;
+   END_IF;
+      
+   RETURN(faces);
+ END_FUNCTION;
+
+ FUNCTION list_shell_loops(s : shell) : LIST[0:?] OF loop;
+   LOCAL
+     loops : LIST[0:?] OF loop := [];
+   END_LOCAL;
+      
+   IF 'TOPOLOGY_SCHEMA.VERTEX_SHELL' IN TYPEOF(s) THEN
+     loops := loops + s.vertex_shell_extent;
+   END_IF;
+      
+   IF 'TOPOLOGY_SCHEMA.WIRE_SHELL' IN TYPEOF(s) THEN
+     REPEAT i := 1 TO SIZEOF(s.wire_shell_extent);
+       loops := loops + s.wire_shell_extent[i];
+     END_REPEAT;
+   END_IF;
+      
+   IF ('TOPOLOGY_SCHEMA.OPEN_SHELL' IN TYPEOF(s)) OR 
+      ('TOPOLOGY_SCHEMA.CLOSED_SHELL' IN TYPEOF(s)) THEN
+     REPEAT i := 1 TO SIZEOF(s.cfs_faces);
+       loops := loops + list_face_loops(s.cfs_faces[i]);
+     END_REPEAT;
+   END_IF;
+      
+   RETURN(loops);
+ END_FUNCTION;
+
+ FUNCTION list_to_set(l : LIST [0:?] OF GENERIC:T) : SET OF GENERIC:T;
+   LOCAL
+     s : SET OF GENERIC:T := [];
+   END_LOCAL;
+      
+   REPEAT i := 1 TO SIZEOF(l);
+     s := s + l[i];
+   END_REPEAT;
+   
+   RETURN(s);
+ END_FUNCTION;
+
+ FUNCTION mixed_loop_type_set(l: SET[0:?] OF loop): LOGICAL;
+    LOCAL
+      poly_loop_type: LOGICAL;
+    END_LOCAL;
+    IF(SIZEOF(l) <= 1) THEN
+      RETURN(FALSE);
+    END_IF;
+    poly_loop_type := ('TOPOLOGY_SCHEMA.POLY_LOOP' IN TYPEOF(l[1]));
+    REPEAT i := 2 TO SIZEOF(l);
+      IF(('TOPOLOGY_SCHEMA.POLY_LOOP' IN TYPEOF(l[i])) <> poly_loop_type)
+          THEN
+          RETURN(TRUE);
+       END_IF;
+    END_REPEAT;
+    RETURN(FALSE);
+  END_FUNCTION;
+
+ FUNCTION open_shell_reversed ( a_shell : open_shell) :
+                                         oriented_open_shell;
+   LOCAL
+     the_reverse : oriented_open_shell;
+   END_LOCAL;
+   IF ('TOPOLOGY_SCHEMA.ORIENTED_OPEN_SHELL' IN TYPEOF (a_shell) ) THEN
+     the_reverse := dummy_tri ||
+                  connected_face_set (
+                      a_shell\connected_face_set.cfs_faces) ||
+                  open_shell () || oriented_open_shell(
+                    a_shell\oriented_open_shell.open_shell_element,
+                      (NOT (a_shell\oriented_open_shell.orientation)));
+   ELSE
+     the_reverse := dummy_tri ||
+                 connected_face_set (
+                     a_shell\connected_face_set.cfs_faces) ||
+                 open_shell () ||  oriented_open_shell (a_shell, FALSE);
+   END_IF;
+   RETURN (the_reverse);
+ END_FUNCTION;
+
+ FUNCTION path_head_to_tail(a_path : path) : LOGICAL;
+   LOCAL
+     n : INTEGER;
+     p : LOGICAL := TRUE;
+   END_LOCAL;
+     
+     n := SIZEOF (a_path.edge_list);
+     REPEAT i := 2 TO n;
+       p := p AND (a_path.edge_list[i-1].edge_end :=:
+                   a_path.edge_list[i].edge_start);
+     END_REPEAT;
+     
+     RETURN (p);
+ END_FUNCTION;
+
+FUNCTION path_reversed (a_path : path) : oriented_path;
+  LOCAL
+    the_reverse : oriented_path ;
+  END_LOCAL;
+  IF ('TOPOLOGY_SCHEMA.ORIENTED_PATH' IN TYPEOF (a_path) ) THEN
+    the_reverse := dummy_tri ||
+       path(list_of_topology_reversed (a_path.edge_list)) ||
+          oriented_path(a_path\oriented_path.path_element,
+                          NOT(a_path\oriented_path.orientation)) ;
+  ELSE
+    the_reverse := dummy_tri ||
+                   path(list_of_topology_reversed (a_path.edge_list)) ||
+                       oriented_path(a_path, FALSE);
+  END_IF;
+
+  RETURN (the_reverse);
+END_FUNCTION;
+
+ FUNCTION set_of_topology_reversed (a_set : set_of_reversible_topology_item)
+                                          : set_of_reversible_topology_item;
+   LOCAL
+     the_reverse : set_of_reversible_topology_item;
+   END_LOCAL;
+   
+   the_reverse := [];
+   REPEAT i := 1 TO SIZEOF (a_set);
+     the_reverse := the_reverse + topology_reversed (a_set [i]);
+   END_REPEAT;
+   
+   RETURN (the_reverse);
+ END_FUNCTION;
+
+ FUNCTION shell_reversed (a_shell : shell) : shell;
+   IF ('TOPOLOGY_SCHEMA.OPEN_SHELL' IN TYPEOF (a_shell) ) THEN
+     RETURN (open_shell_reversed (a_shell));
+   ELSE
+     IF ('TOPOLOGY_SCHEMA.CLOSED_SHELL' IN TYPEOF (a_shell) ) THEN
+       RETURN (closed_shell_reversed (a_shell));
+     ELSE
+       RETURN (?);
+     END_IF;
+   END_IF;
+ END_FUNCTION;
+
+ FUNCTION topology_reversed (an_item : reversible_topology)
+                                     : reversible_topology;
+
+   IF ('TOPOLOGY_SCHEMA.EDGE' IN TYPEOF (an_item)) THEN
+     RETURN (edge_reversed (an_item));
+   END_IF;
+
+   IF ('TOPOLOGY_SCHEMA.PATH' IN TYPEOF (an_item)) THEN
+     RETURN (path_reversed (an_item));
+   END_IF;
+
+   IF ('TOPOLOGY_SCHEMA.FACE_BOUND' IN TYPEOF (an_item)) THEN
+     RETURN (face_bound_reversed (an_item));
+   END_IF;
+  
+   IF ('TOPOLOGY_SCHEMA.FACE' IN TYPEOF (an_item)) THEN
+     RETURN (face_reversed (an_item));
+   END_IF;
+
+   IF ('TOPOLOGY_SCHEMA.SHELL' IN TYPEOF (an_item)) THEN
+     RETURN (shell_reversed (an_item));
+   END_IF;
+
+   IF ('SET' IN TYPEOF (an_item)) THEN
+     RETURN (set_of_topology_reversed (an_item));
+   END_IF;
+
+   IF ('LIST' IN TYPEOF (an_item)) THEN
+     RETURN (list_of_topology_reversed (an_item));
+   END_IF;
+
+   RETURN (?);
+ END_FUNCTION;
+
+
+FUNCTION vertex_point_pcurves (a_vertex  : vertex_point; 
+      the_degenerates : SET OF evaluated_degenerate_pcurve)
+      : SET OF degenerate_pcurve;
+LOCAL
+  a_point : point;
+  result  : SET OF degenerate_pcurve;
+END_LOCAL;
+  a_point := a_vertex.vertex_geometry;
+  result := [];
+  IF 'GEOMETRY_SCHEMA.DEGENERATE_PCURVE' IN TYPEOF(a_point) THEN
+    result := result + a_point;
+  ELSE
+      REPEAT j := 1 TO SIZEOF(the_degenerates);
+         IF (the_degenerates[j].equivalent_point :=: a_point)  THEN
+            result := result + the_degenerates[j];
+         END_IF;
+      END_REPEAT;
+  END_IF;
+
+  RETURN (RESULT);
+END_FUNCTION;
+
+ END_SCHEMA;

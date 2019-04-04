@@ -1,0 +1,542 @@
+(*  
+    The following EXPRESS is for ISO 10303-46:1994 Technical Corrigendum 2
+
+    This is document ISO TC184/SC4/WG12 N953
+*)
+
+SCHEMA presentation_organization_schema;
+
+
+REFERENCE FROM presentation_resource_schema
+
+   (colour,
+
+    planar_box,
+
+    planar_extent,
+
+    presentation_scaled_placement);
+
+
+REFERENCE FROM presentation_definition_schema
+    (annotation_occurrence,
+     symbol_representation,
+     symbol_representation_relationship);
+
+REFERENCE FROM presentation_appearance_schema
+    (styled_item);
+
+REFERENCE FROM geometry_schema
+    (axis2_placement_2d,
+     axis2_placement_3d,
+     cartesian_point,
+     curve,
+     direction,
+     dot_product,
+     geometric_representation_context,
+     geometric_representation_item,
+     plane
+     );
+ 
+REFERENCE FROM representation_schema
+    (founded_item,
+     item_defined_transformation,
+     item_in_context,
+     mapped_item,
+     representation,
+     representation_item,
+     representation_map,
+     representation_relationship,
+     representation_relationship_with_transformation);
+ 
+REFERENCE FROM measure_schema
+
+   (length_measure,
+
+    positive_ratio_measure,
+
+    positive_plane_angle_measure);
+
+ 
+REFERENCE FROM support_resource_schema
+    (identifier,
+     label,
+     text,
+     bag_to_set);
+
+TYPE presentation_size_assignment_select = SELECT 
+  (presentation_view,
+   presentation_area,
+   area_in_set);
+END_TYPE;
+
+TYPE area_or_view = SELECT 
+  (presentation_area,
+   presentation_view);
+END_TYPE;
+
+TYPE central_or_parallel = ENUMERATION OF 
+  (central, 
+   parallel);
+END_TYPE;
+
+TYPE layered_item = SELECT 
+  (presentation_representation,
+   representation_item);
+END_TYPE;
+
+TYPE presentation_representation_select = SELECT 
+  (presentation_representation,
+   presentation_set);
+END_TYPE;
+
+ENTITY presentation_set;
+INVERSE
+  areas : SET [1:?] OF area_in_set FOR in_set;
+END_ENTITY;
+
+ENTITY presentation_representation
+  SUBTYPE OF (representation);
+WHERE
+  WR1: SELF\representation.
+            context_of_items\geometric_representation_context.
+            coordinate_space_dimension = 2;
+  WR2: 'GEOMETRY_SCHEMA.GEOMETRIC_REPRESENTATION_CONTEXT'
+       IN TYPEOF (SELF\representation.context_of_items);
+END_ENTITY;
+
+ENTITY presentation_area
+  SUBTYPE OF (presentation_representation);
+WHERE
+  WR1: ((SIZEOF (QUERY (ais <* USEDIN (SELF, 'PRESENTATION_ORGANIZATION_SCHEMA.' +
+                                             'AREA_IN_SET.AREA') | 
+           SIZEOF (USEDIN (ais, 'PRESENTATION_ORGANIZATION_SCHEMA.' +
+                                'PRESENTATION_SIZE.UNIT')) =1)) > 0) OR
+         (SIZEOF (USEDIN (SELF, 'PRESENTATION_ORGANIZATION_SCHEMA.' +
+                                'PRESENTATION_SIZE.UNIT')) =1));
+END_ENTITY;
+
+ENTITY area_in_set;
+  area   : presentation_area;
+  in_set : presentation_set;
+END_ENTITY;
+
+ENTITY presentation_view
+  SUBTYPE OF (presentation_representation);
+END_ENTITY;
+
+ENTITY area_dependent_annotation_representation
+  SUBTYPE OF (presentation_representation);
+WHERE
+  WR1: SIZEOF (QUERY (item <* SELF\representation.items |
+       NOT (SIZEOF (['PRESENTATION_DEFINITION_SCHEMA.' +
+                     'ANNOTATION_OCCURRENCE',
+                     'GEOMETRY_SCHEMA.AXIS2_PLACEMENT'] * 
+            TYPEOF(item)) = 1
+       ))) = 0;
+  WR2: SIZEOF (QUERY (item <* SELF\representation.items | 
+       ('PRESENTATION_DEFINITION_SCHEMA.ANNOTATION_OCCURRENCE' IN
+         TYPEOF (item))
+       )) >= 1;
+END_ENTITY;
+
+ENTITY product_data_representation_view
+  SUBTYPE OF (presentation_representation);
+WHERE
+  WR1: SIZEOF (QUERY (item <* SELF\representation.items |
+       NOT (SIZEOF (['PRESENTATION_ORGANIZATION_SCHEMA.CAMERA_IMAGE',
+                     'GEOMETRY_SCHEMA.AXIS2_PLACEMENT'] *
+                    TYPEOF (item)) = 1
+       ))) = 0;
+  WR2: SIZEOF (QUERY (item <* SELF\representation.items | 
+       ('PRESENTATION_ORGANIZATION_SCHEMA.CAMERA_IMAGE' IN
+        TYPEOF (item))
+       )) >= 1;
+END_ENTITY;
+
+ENTITY view_dependent_annotation_representation
+  SUBTYPE OF (presentation_representation);
+WHERE
+  WR1: SIZEOF (QUERY (item <* SELF\representation.items |
+       NOT (SIZEOF (['PRESENTATION_DEFINITION_SCHEMA.' +
+                     'ANNOTATION_OCCURRENCE',
+                     'GEOMETRY_SCHEMA.AXIS2_PLACEMENT'] * 
+            TYPEOF(item)) = 1
+       ))) = 0;
+  WR2: SIZEOF (QUERY (item <* SELF\representation.items |
+       ('PRESENTATION_DEFINITION_SCHEMA.ANNOTATION_OCCURRENCE' IN
+        TYPEOF (item))
+       )) >= 1;
+END_ENTITY;
+
+ENTITY presentation_size;
+  unit : presentation_size_assignment_select;
+  size : planar_box;
+WHERE
+  WR1: (('PRESENTATION_ORGANIZATION_SCHEMA.PRESENTATION_REPRESENTATION'
+         IN TYPEOF (SELF.unit)) AND
+         item_in_context (SELF.size, 
+                          SELF.unit\representation.context_of_items)
+       )
+            OR
+       (
+        ('PRESENTATION_ORGANIZATION_SCHEMA.AREA_IN_SET'
+          IN TYPEOF (SELF.unit)) AND
+        (SIZEOF (QUERY ( ais <* SELF.unit\area_in_set.in_set.areas |
+                NOT item_in_context (SELF.size, ais.area\representation.
+                                                context_of_items) )) = 0)
+       ); 
+END_ENTITY;
+
+ENTITY background_colour
+  SUBTYPE OF (colour);
+  presentation : area_or_view;
+UNIQUE
+  UR1:  presentation;
+END_ENTITY;
+
+ENTITY presentation_representation_relationship
+  SUBTYPE OF (representation_relationship_with_transformation);
+WHERE
+  WR1: 'PRESENTATION_DEFINITION_SCHEMA.PRESENTATION_REPRESENTATION' IN
+         TYPEOF (SELF\representation_relationship.rep_1);
+  WR2: 'PRESENTATION_DEFINITION_SCHEMA.PRESENTATION_REPRESENTATION' IN
+         TYPEOF (SELF\representation_relationship.rep_2);
+  WR3: acyclic_presentation_representation_relationship (SELF,
+         [SELF\representation_relationship.rep_2]);
+  WR4: NOT (('PRESENTATION_ORGANIZATION_SCHEMA.PRESENTATION_AREA' IN
+         TYPEOF (SELF\representation_relationship.rep_1)) 
+                 AND
+         NOT (SIZEOF (['PRESENTATION_ORGANIZATION_SCHEMA.' +
+                       'PRODUCT_DATA_REPRESENTATION_VIEW',
+                       'PRESENTATION_ORGANIZATION_SCHEMA.' +
+                       'VIEW_DEPENDENT_ANNOTATION_REPRESENTATION'] *
+         TYPEOF (SELF\representation_relationship.rep_2)) = 0));
+  WR5: NOT (('PRESENTATION_ORGANIZATION_SCHEMA.PRESENTATION_VIEW'
+         IN TYPEOF (SELF\representation_relationship.rep_1))
+                 AND
+       NOT (SIZEOF (['PRESENTATION_ORGANIZATION_SCHEMA.' +
+                     'PRESENTATION_AREA',
+                     'PRESENTATION_ORGANIZATION_SCHEMA.' +
+                     'PRESENTATION_VIEW',
+                     'PRESENTATION_ORGANIZATION_SCHEMA.' +
+                     'AREA_DEPENDENT_ANNOTATION_REPRESENTATION'] *
+              TYPEOF (SELF\representation_relationship.rep_2))=0));
+  WR6: (NOT ('PRESENTATION_ORGANIZATION_SCHEMA.PRESENTATION_VIEW' IN
+         TYPEOF(SELF\representation_relationship.rep_2)))
+              XOR
+         ('PRESENTATION_ORGANIZATION_SCHEMA.PRESENTATION_AREA'IN
+         TYPEOF(SELF\representation_relationship.rep_1));
+  WR7: (NOT ('PRESENTATION_ORGANIZATION_SCHEMA.' +
+             'PRODUCT_DATA_REPRESENTATION_VIEW' IN
+         (TYPEOF(SELF\representation_relationship.rep_1) +
+          TYPEOF(SELF\representation_relationship.rep_2))))
+              XOR
+       ('PRESENTATION_ORGANIZATION_SCHEMA.PRESENTATION_VIEW' IN
+         TYPEOF(SELF\representation_relationship.rep_1))
+                AND
+       ('PRESENTATION_ORGANIZATION_SCHEMA.PRODUCT_DATA_REPRESENTATION_VIEW' IN
+         TYPEOF(SELF\representation_relationship.rep_2));
+  WR8: 'PRESENTATION_ORGANIZATION_SCHEMA.GRAPHICAL_TRANSFORMATION' IN
+         TYPEOF(SELF\representation_relationship_with_transformation.
+                     transformation_operator);
+END_ENTITY;
+
+ENTITY graphical_transformation
+  SUBTYPE OF (item_defined_transformation);
+WHERE
+  WR1: 'GEOMETRY_SCHEMA.AXIS2_PLACEMENT_2D' IN
+         TYPEOF (SELF\item_defined_transformation.transform_item_1);
+  WR2: 'PRESENTATION_RESOURCE_SCHEMA.PRESENTATION_SCALED_PLACEMENT' IN
+         TYPEOF (SELF\item_defined_transformation.transform_item_2);
+END_ENTITY;
+
+ENTITY camera_model
+  SUPERTYPE OF (ONEOF(camera_model_d2, camera_model_d3))
+  SUBTYPE OF (geometric_representation_item);
+WHERE
+  WR1: (SIZEOF (USEDIN (SELF, 'REPRESENTATION_SCHEMA.' +
+                              'ITEM_DEFINED_TRANSFORMATION.' +
+                              'TRANSFORM_ITEM_1')) +
+        SIZEOF (USEDIN (SELF, 'REPRESENTATION_SCHEMA.' +
+                              'REPRESENTATION_MAP.MAPPING_ORIGIN'))
+       ) > 0;
+  WR2: SIZEOF(USEDIN(SELF,'PRESENTATION_APPEARANCE_SCHEMA.'+
+                          'STYLED_ITEM.ITEM')) = 0;
+END_ENTITY;
+
+ENTITY camera_model_d2
+  SUBTYPE OF (camera_model);
+  view_window          : planar_box;
+  view_window_clipping : BOOLEAN;
+WHERE
+  WR1: SELF\geometric_representation_item.dim = 2;
+END_ENTITY;
+
+ENTITY camera_model_d2_shape_clipping
+  SUBTYPE OF (camera_model_d2);
+  shape_clipping : curve;
+END_ENTITY;
+
+ENTITY camera_model_d3
+  SUBTYPE OF (camera_model);
+  view_reference_system : axis2_placement_3d;
+  perspective_of_volume : view_volume;
+WHERE
+  WR1: (dot_product (SELF.view_reference_system.p[3],
+         SELF.perspective_of_volume.view_window.placement.p[3]) = 1.0)
+         AND
+       (SELF.view_reference_system.location.coordinates[3] =
+        SELF.perspective_of_volume.view_window.
+             placement.location.coordinates[3]);
+  WR2: SELF\geometric_representation_item.dim = 3;
+END_ENTITY;
+
+ENTITY view_volume
+  SUBTYPE OF (founded_item);
+  projection_type            : central_or_parallel;
+  projection_point           : cartesian_point;
+  view_plane_distance        : length_measure;
+  front_plane_distance       : length_measure;
+  front_plane_clipping       : BOOLEAN;
+  back_plane_distance        : length_measure;
+  back_plane_clipping        : BOOLEAN;
+  view_volume_sides_clipping : BOOLEAN;
+  view_window                : planar_box;
+END_ENTITY;
+
+ENTITY camera_model_d3_with_hlhsr
+  SUBTYPE OF (camera_model_d3);
+  hidden_line_surface_removal : BOOLEAN;
+END_ENTITY;
+
+ENTITY camera_model_d3_multi_clipping
+  SUBTYPE OF (camera_model_d3);
+  shape_clipping : SET [1:?] OF plane;
+END_ENTITY;
+
+ENTITY camera_model_with_light_sources
+  SUBTYPE OF (camera_model_d3);
+  sources : SET [1:?] OF light_source;
+END_ENTITY;
+
+ENTITY light_source
+  SUPERTYPE OF (ONEOF(light_source_ambient,
+                      light_source_directional,
+                      light_source_positional,
+                      light_source_spot))
+  SUBTYPE OF (geometric_representation_item);
+  light_colour : colour;
+WHERE
+  WR1: SIZEOF(USEDIN(SELF,'PRESENTATION_APPEARANCE_SCHEMA.'+
+                         'STYLED_ITEM.ITEM')) = 0;
+END_ENTITY;
+
+ENTITY light_source_ambient
+  SUBTYPE OF (light_source);
+END_ENTITY;
+
+ENTITY light_source_directional
+  SUBTYPE OF (light_source);
+  orientation : direction;
+END_ENTITY;
+
+ENTITY light_source_positional
+  SUBTYPE OF (light_source);
+  position             : cartesian_point;
+  constant_attenuation : REAL;
+  distance_attenuation : REAL;
+END_ENTITY;
+
+ENTITY light_source_spot
+  SUBTYPE OF (light_source);
+  position               : cartesian_point;
+  orientation            : direction;
+  concentration_exponent : REAL;
+  constant_attenuation   : REAL;
+  distance_attenuation   : REAL;
+  spread_angle           : positive_plane_angle_measure;
+END_ENTITY;
+
+ENTITY camera_image
+  SUBTYPE OF (mapped_item);
+WHERE
+  WR1: 'PRESENTATION_ORGANIZATION_SCHEMA.CAMERA_USAGE'
+       IN TYPEOF (SELF\mapped_item.mapping_source);
+  WR2: 'PRESENTATION_RESOURCE_SCHEMA.PLANAR_BOX'
+       IN TYPEOF (SELF\mapped_item.mapping_target);
+  WR3: 'GEOMETRY_SCHEMA.GEOMETRIC_REPRESENTATION_ITEM'
+       IN TYPEOF (SELF);
+END_ENTITY;
+
+ENTITY camera_usage
+  SUBTYPE OF (representation_map);
+WHERE
+  WR1: NOT ('PRESENTATION_ORGANIZATION_SCHEMA.PRESENTATION_REPRESENTATION'
+       IN TYPEOF(SELF\representation_map.mapped_representation));
+  WR2: 'PRESENTATION_ORGANIZATION_SCHEMA.CAMERA_MODEL'
+       IN TYPEOF (SELF\representation_map.mapping_origin);
+END_ENTITY;
+
+
+ENTITY camera_image_3d_with_scale
+
+  SUBTYPE OF (camera_image);
+
+DERIVE
+
+  scale: positive_ratio_measure := ((SELF\mapped_item.mapping_target\
+
+         planar_extent.size_in_x) / (SELF\mapped_item.mapping_source.
+
+         mapping_origin\camera_model_d3.perspective_of_volume.view_window.
+
+         size_in_x));
+
+WHERE
+
+  WR1: ('PRESENTATION_ORGANIZATION_SCHEMA.CAMERA_MODEL_D3'
+
+       IN TYPEOF (SELF\mapped_item.mapping_source.mapping_origin));
+
+  WR2: aspect_ratio(SELF\mapped_item.mapping_target) =
+
+       aspect_ratio(SELF\mapped_item.mapping_source.mapping_origin\
+
+       camera_model_d3.perspective_of_volume.view_window);
+
+  WR3: SELF\mapped_item.mapping_source.mapping_origin\camera_model_d3.
+
+       perspective_of_volume.front_plane_clipping
+
+       AND
+
+       SELF\mapped_item.mapping_source.mapping_origin\camera_model_d3.
+
+       perspective_of_volume.view_volume_sides_clipping;
+
+  WR4: (SELF\mapped_item.mapping_target\planar_extent.size_in_x > 0)
+
+       AND
+
+       (SELF\mapped_item.mapping_target\planar_extent.size_in_y > 0);
+
+  WR5: (SELF\mapped_item.mapping_source.mapping_origin\camera_model_d3.
+
+       perspective_of_volume.view_window.size_in_x > 0)
+
+       AND
+
+       (SELF\mapped_item.mapping_source.mapping_origin\camera_model_d3.
+
+       perspective_of_volume.view_window.size_in_y > 0);
+
+  WR6: ('GEOMETRY_SCHEMA.' +
+
+       'AXIS2_PLACEMENT_2D' IN TYPEOF (SELF\mapped_item.
+
+       mapping_target\planar_box.placement))
+
+       AND NOT ('GEOMETRY_SCHEMA.' +
+
+       'AXIS2_PLACEMENT_3D' IN TYPEOF (SELF\mapped_item.
+
+       mapping_target\planar_box.placement));
+
+END_ENTITY;
+
+
+ENTITY presentation_layer_assignment;
+  name           : label;
+  description    : text;
+  assigned_items : SET [1:?] OF layered_item;
+END_ENTITY;
+
+ENTITY representation_item_dependent_layer_assignment
+  SUBTYPE OF (presentation_layer_assignment);
+  item_context : representation_item;
+END_ENTITY;
+
+ENTITY presentation_layer_usage;
+  assignment   : presentation_layer_assignment;
+  presentation : presentation_representation;
+UNIQUE
+  UR1: assignment, presentation;
+END_ENTITY;
+
+ENTITY presented_item_representation;
+  presentation : presentation_representation_select;
+  item         : presented_item;
+END_ENTITY;
+
+ENTITY presented_item
+  ABSTRACT SUPERTYPE;
+END_ENTITY;
+
+RULE symbol_representation_rule
+  FOR (presentation_representation_relationship);
+WHERE
+  WR1: SIZEOF(QUERY(each_1 <* presentation_representation_relationship  |
+              NOT ('PRESENTATION_DEFINITION_SCHEMA.'+
+              'SYMBOL_REPRESENTATION_RELATIONSHIP' IN TYPEOF(each_1)) AND
+         (SIZEOF(QUERY(each_2 <* [each_1\representation_relationship.rep_1,
+                                  each_1\representation_relationship.rep_2] |
+         'PRESENTATION_DEFINITION_SCHEMA.SYMBOL_REPRESENTATION' IN TYPEOF(each_2)
+         )) > 0)
+       )) = 0;
+END_RULE;
+
+FUNCTION acyclic_presentation_representation_relationship
+  ( relation : presentation_representation_relationship;
+    children : SET OF presentation_representation ) : BOOLEAN;
+
+  LOCAL
+    x : SET OF presentation_representation_relationship;
+    local_children : SET OF presentation_representation;
+  END_LOCAL;
+
+  REPEAT i:=1 TO HIINDEX(children);
+    IF relation\representation_relationship.rep_1 :=: children[i] THEN
+       RETURN(FALSE);
+    END_IF;
+  END_REPEAT;
+
+  x := bag_to_set (USEDIN ( relation\representation_relationship.rep_1,
+                  'REPRESENTATION_SCHEMA.'+
+                  'REPRESENTATION_RELATIONSHIP.REP_2'));
+  local_children := children + relation\representation_relationship.rep_1;
+
+  IF SIZEOF (x) > 0 THEN
+    REPEAT i:=1 TO HIINDEX (x);
+       IF NOT acyclic_presentation_representation_relationship
+              (x[i] , local_children) THEN
+         RETURN (FALSE);
+       END_IF;
+    END_REPEAT;
+  END_IF;
+
+  RETURN (TRUE);
+
+END_FUNCTION;
+
+
+FUNCTION aspect_ratio (p : planar_box) : positive_ratio_measure;
+
+(* if the dimensions of the planar_box are greater than zero,
+
+      compute the aspect ratio and return the resulting value. *)
+
+   IF (p.size_in_x > 0.) AND (p.size_in_y > 0.) THEN
+
+      RETURN (p.size_in_x / p.size_in_y);
+
+   ELSE
+
+      RETURN (?);
+
+   END_IF;
+
+END_FUNCTION; 
+
+
+END_SCHEMA; -- presentation_organization_schema 

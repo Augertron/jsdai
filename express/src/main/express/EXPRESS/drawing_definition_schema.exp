@@ -1,0 +1,104 @@
+-- from ir.exp, --, 99-02-22
+(* 
+
+This is WG12 N268.  It contains the proposed modification to 
+ISO 10303-101:1994 to incorporate ISO 10303-101:1994.Corr1
+
+*)
+
+SCHEMA drawing_definition_schema;
+
+REFERENCE FROM support_resource_schema
+    (label,
+     text,
+     identifier,
+     bag_to_set);
+
+REFERENCE FROM representation_schema
+    (mapped_item,
+     representation_relationship,
+     representation);
+
+REFERENCE FROM presentation_organization_schema
+    (area_in_set,
+     presentation_area,
+     presentation_set,
+     presentation_representation_relationship);
+
+TYPE draughting_titled_item = SELECT 
+  (drawing_revision,
+   drawing_sheet_revision);
+END_TYPE;
+
+ENTITY drawing_definition;
+  drawing_number : identifier;
+  drawing_type   : OPTIONAL label;
+END_ENTITY;
+
+ENTITY drawing_revision
+  SUBTYPE OF (presentation_set);
+  revision_identifier : identifier;
+  drawing_identifier  : drawing_definition;
+  intended_scale      : OPTIONAL text;
+UNIQUE
+  UR1: revision_identifier, drawing_identifier;
+END_ENTITY;
+
+ENTITY drawing_revision_sequence;
+  predecessor : drawing_revision;
+  successor   : drawing_revision;
+WHERE
+  WR1: predecessor :<>: successor;
+END_ENTITY;
+
+ENTITY drawing_sheet_revision
+  SUBTYPE OF (presentation_area);
+  revision_identifier : identifier;
+WHERE
+  WR1: SIZEOF( QUERY(item <* SELF\representation.items |
+       ('REPRESENTATION_SCHEMA.MAPPED_ITEM' IN (TYPEOF(item)))
+       AND
+       ('DRAWING_DEFINITION_SCHEMA.DRAWING_SHEET_REVISION' IN
+       (TYPEOF(item\mapped_item.mapping_source.mapped_representation)))))=0;
+END_ENTITY;
+
+ENTITY drawing_sheet_revision_sequence
+  SUBTYPE OF (representation_relationship);
+WHERE
+  WR1: SELF\representation_relationship.rep_1 :<>:                            
+       SELF\representation_relationship.rep_2;
+  WR2: 'DRAWING_DEFINITION_SCHEMA.DRAWING_SHEET_REVISION'
+       IN TYPEOF (SELF\representation_relationship.rep_1);
+  WR3: 'DRAWING_DEFINITION_SCHEMA.DRAWING_SHEET_REVISION'
+       IN TYPEOF (SELF\representation_relationship.rep_2);
+END_ENTITY;
+
+ENTITY drawing_sheet_revision_usage
+  SUBTYPE OF (area_in_set);
+  sheet_number : identifier;
+UNIQUE
+  UR1: sheet_number, in_set;
+WHERE
+  WR1: ('DRAWING_DEFINITION_SCHEMA.DRAWING_SHEET_REVISION' IN 
+                  TYPEOF(SELF\area_in_set.area)) 
+              AND
+              ('DRAWING_DEFINITION_SCHEMA.DRAWING_REVISION' 
+               IN TYPEOF (SELF\area_in_set.in_set));
+END_ENTITY;
+
+ENTITY draughting_title;
+  items    : SET [1:?] OF draughting_titled_item;
+  language : label;
+  contents : text;
+END_ENTITY;
+
+RULE drawing_sheets_not_nested FOR (presentation_representation_relationship);
+WHERE
+  WR1: SIZEOF( QUERY(p_r_r <* presentation_representation_relationship |      
+         ('DRAWING_DEFINITION_SCHEMA.DRAWING_SHEET_REVISION' 
+        IN (TYPEOF(p_r_r.rep_1))) AND
+        ('DRAWING_DEFINITION_SCHEMA.DRAWING_SHEET_REVISION'
+        IN (TYPEOF( p_r_r.rep_2))))) = 0;
+END_RULE;
+
+END_SCHEMA; -- drawing_definition_schema

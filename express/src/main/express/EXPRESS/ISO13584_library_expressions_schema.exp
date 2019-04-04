@@ -1,0 +1,649 @@
+-- received on 2000-02-21, originally from Guy Pierra 
+
+SCHEMA ISO13584_library_expressions_schema;
+
+REFERENCE FROM ISO13584_IEC61360_dictionary_schema(
+	class_BSU,
+	definition_available_implies,
+	level,
+	list_to_set,
+	number_type,
+	property_BSU) ;
+
+REFERENCE FROM ISO13584_generic_expressions_schema(
+	binary_generic_expression,
+	environment,
+	generic_expression,
+	generic_literal,
+	generic_variable,
+	multiple_arity_generic_expression,
+	simple_generic_expression,
+	unary_generic_expression,
+	variable_semantics) ;
+
+REFERENCE FROM ISO13584_expressions_schema(
+	boolean_defined_function,
+	expression,
+	is_int_expr,
+	variable) ;
+
+REFERENCE FROM ISO13584_instance_resource_schema(
+	compatible_class_and_class,
+	compatible_level_type_and_instance,
+	dic_class_instance,
+	entity_instance_value,
+	int_level_spec_value,
+	level_spec_value,
+	property_or_data_type_BSU,
+	real_level_spec_value) ;
+
+REFERENCE FROM ISO13584_extended_dictionary_schema(
+	applicable_properties,
+	data_type_class_of,
+	data_type_level_spec,
+	data_type_level_value_typeof,
+	data_type_type_name,
+	data_type_typeof) ;
+
+
+TYPE library_expression = SELECT (
+	expression,
+	level_spec_expression,
+	entity_instance_expression,
+	class_instance_expression);
+END_TYPE;
+
+
+TYPE library_variable = SELECT (
+	variable,
+	level_spec_variable,
+	entity_instance_variable,
+	class_instance_variable);
+END_TYPE;
+
+
+ENTITY level_spec_expression
+ABSTRACT SUPERTYPE OF (simple_level_spec_expression)
+SUBTYPE OF (generic_expression);
+	levels: LIST[1: 4] OF UNIQUE level;
+	value_type: number_type;
+END_ENTITY;
+
+
+ENTITY simple_level_spec_expression
+ABSTRACT SUPERTYPE OF (ONEOF (
+	level_spec_variable,
+	level_spec_literal))
+SUBTYPE OF (level_spec_expression, simple_generic_expression);
+END_ENTITY;
+
+
+ENTITY level_spec_variable
+ABSTRACT SUPERTYPE OF (ONEOF (
+	int_level_spec_variable,
+	real_level_spec_variable))
+SUBTYPE OF (simple_level_spec_expression, generic_variable);
+END_ENTITY;
+
+
+ENTITY int_level_spec_variable
+SUBTYPE OF (level_spec_variable);
+WHERE
+	WR1: 'ISO13584_IEC61360_DICTIONARY_SCHEMA.INT_TYPE' 
+		IN TYPEOF (SELF\level_spec_expression.value_type);
+END_ENTITY;
+
+
+ENTITY real_level_spec_variable
+SUBTYPE OF (level_spec_variable);
+WHERE
+	WR1: 'ISO13584_IEC61360_DICTIONARY_SCHEMA.REAL_TYPE' 
+		IN TYPEOF (SELF\level_spec_expression.value_type);
+END_ENTITY;
+
+
+ENTITY level_spec_literal
+ABSTRACT SUPERTYPE OF (ONEOF ( 
+	int_level_spec_literal,
+	real_level_spec_literal))
+SUBTYPE OF (simple_level_spec_expression, generic_literal);
+	the_value: level_spec_value;
+WHERE
+	WR1: compatible_level_type_and_instance(
+		SELF\level_spec_expression.levels,
+		TYPEOF (SELF\level_spec_expression.value_type), 
+		SELF.the_value);
+END_ENTITY;
+
+
+ENTITY int_level_spec_literal
+SUBTYPE OF (level_spec_literal);
+	SELF\level_spec_literal.the_value: int_level_spec_value;
+WHERE
+	WR1: 'ISO13584_IEC61360_DICTIONARY_SCHEMA.INT_TYPE' 
+		IN TYPEOF (SELF\level_spec_expression.value_type);
+	WR2: compatible_level_type_and_instance(
+		SELF\level_spec_expression.levels, 
+		['ISO13584_IEC61360_DICTIONARY_SCHEMA.INT_TYPE'],
+		 SELF.the_value);
+END_ENTITY;
+
+
+ENTITY real_level_spec_literal
+SUBTYPE OF (level_spec_literal);
+	SELF\level_spec_literal.the_value: real_level_spec_value;
+WHERE
+	WR1: 'ISO13584_IEC61360_DICTIONARY_SCHEMA.REAL_TYPE' 
+		IN TYPEOF (SELF\level_spec_expression.value_type);
+	WR2: compatible_level_type_and_instance(
+		SELF\level_spec_expression.levels,
+ 		['ISO13584_IEC61360_DICTIONARY_SCHEMA.REAL_TYPE'], 
+		SELF.the_value);
+END_ENTITY;
+
+
+ENTITY entity_instance_expression
+ABSTRACT SUPERTYPE OF (simple_entity_instance_expression)
+SUBTYPE OF (generic_expression);
+	type_name: SET [1:?] OF STRING;
+END_ENTITY;
+
+
+ENTITY simple_entity_instance_expression
+ABSTRACT SUPERTYPE OF (ONEOF (
+	entity_instance_variable,
+	entity_instance_literal))
+SUBTYPE OF (entity_instance_expression, simple_generic_expression);
+END_ENTITY;
+
+
+ENTITY entity_instance_variable
+SUBTYPE OF (simple_entity_instance_expression, generic_variable);
+END_ENTITY;
+
+
+ENTITY entity_instance_literal
+SUBTYPE OF (simple_entity_instance_expression, generic_literal);
+	the_value: entity_instance_value;
+WHERE
+	WR1: (SELF\entity_instance_expression.type_name 
+		<= TYPEOF (SELF.the_value))
+		OR (('ISO13584_INSTANCE_RESOURCE_SCHEMA'
+		+ '.UNCONTROLLED_ENTITY_INSTANCE_VALUE') 
+		IN TYPEOF (SELF.the_value));
+END_ENTITY;
+
+
+ENTITY class_instance_expression
+ABSTRACT SUPERTYPE OF (ONEOF(
+	simple_class_instance_expression,
+	unary_class_instance_expression,
+	binary_class_instance_expression,
+	multiple_arity_class_instance_expression))
+SUBTYPE OF (generic_expression);
+	expr_type: class_BSU;
+END_ENTITY;
+
+
+ENTITY simple_class_instance_expression
+ABSTRACT SUPERTYPE OF (ONEOF(
+	class_instance_variable,
+	class_instance_literal))
+SUBTYPE OF (class_instance_expression, simple_generic_expression);
+END_ENTITY;
+
+
+ENTITY class_instance_variable
+SUBTYPE OF (simple_class_instance_expression, generic_variable);
+END_ENTITY;
+
+
+ENTITY class_instance_literal
+SUBTYPE OF (simple_class_instance_expression, generic_literal);
+	the_value: dic_class_instance;
+WHERE
+	WR1: compatible_class_and_class (
+		SELF\class_instance_expression.expr_type, 
+		SELF.the_value\dic_class_instance.class_def);
+END_ENTITY;
+
+
+ENTITY class_instance_constructor
+ABSTRACT SUPERTYPE OF (ONEOF(
+	unary_class_instance_constructor,
+	binary_class_instance_constructor,
+	multiple_arity_class_instance_constructor))
+SUBTYPE OF (class_instance_expression);
+	properties: SET [1:?] OF property_assignment;
+WHERE
+	WR1: definition_available_implies 
+		(SELF\class_instance_expression.expr_type, 
+		applicable_properties (
+		SELF\class_instance_expression.expr_type, 
+		list_to_set(collects_assigned_properties(SELF.properties))));
+END_ENTITY;
+
+
+ENTITY property_assignment;
+	its_value: OPTIONAL library_expression;
+	prop_def: property_BSU;
+WHERE
+	WR1: (EXISTS(SELF.its_value) AND 
+		(compatible_type_and_library_expression (
+		 SELF.prop_def, SELF.its_value))) 
+		OR NOT EXISTS(SELF.its_value);
+END_ENTITY;
+
+
+ENTITY unary_class_instance_expression
+ABSTRACT SUPERTYPE OF (unary_class_instance_constructor)
+SUBTYPE OF (class_instance_expression, unary_generic_expression);
+END_ENTITY;
+
+
+ENTITY binary_class_instance_expression
+ABSTRACT SUPERTYPE OF (binary_class_instance_constructor)
+SUBTYPE OF (class_instance_expression, binary_generic_expression);
+END_ENTITY;
+
+
+ENTITY multiple_arity_class_instance_expression
+ABSTRACT SUPERTYPE OF (multiple_arity_class_instance_constructor)
+SUBTYPE OF (class_instance_expression, 
+		  multiple_arity_generic_expression);
+END_ENTITY;
+
+
+ENTITY unary_class_instance_constructor
+SUBTYPE OF (class_instance_constructor,
+		  unary_class_instance_expression);
+	SELF\class_instance_constructor.properties:
+				SET [1 :1] OF property_assignment;
+DERIVE
+	SELF\unary_generic_expression.operand: library_expression
+	:= collects_referenced_library_expressions(SELF.properties)[1];
+END_ENTITY;
+
+
+ENTITY binary_class_instance_constructor
+SUBTYPE OF (class_instance_constructor,
+	binary_class_instance_expression);
+	SELF\class_instance_constructor.properties: SET [2:2] OF 
+property_assignment;
+DERIVE
+	SELF\binary_generic_expression.operands:
+		 LIST [2:2] OF library_expression
+		:= collects_referenced_library_expressions (SELF.properties);
+WHERE
+	WR1: SIZEOF(list_to_set(collects_assigned_properties (
+		SELF.properties)))
+		= SIZEOF(collects_assigned_properties(SELF.properties));
+END_ENTITY;
+
+
+ENTITY multiple_arity_class_instance_constructor
+SUBTYPE OF (class_instance_constructor, 
+	multiple_arity_class_instance_expression);
+SELF\class_instance_constructor.properties: SET [2:?] OF 
+property_assignment;
+DERIVE
+	SELF\multiple_arity_generic_expression.operands:
+		 LIST [2:?] OF library_expression
+		:= collects_referenced_library_expressions (SELF.properties);
+WHERE
+	WR1: SIZEOF(list_to_set(collects_assigned_properties (
+		SELF.properties)))
+		= SIZEOF(collects_assigned_properties(SELF.properties));
+END_ENTITY;
+
+
+ENTITY exists_value 
+SUBTYPE OF (unary_generic_expression, boolean_defined_function);
+	for_variable: library_variable;
+DERIVE
+	SELF\unary_generic_expression.operand : generic_expression
+		:= SELF.for_variable;
+END_ENTITY;
+
+
+ENTITY instance_comparison_equal 
+SUBTYPE OF (binary_generic_expression, boolean_defined_function);
+END_ENTITY;
+
+
+FUNCTION syntax_of (sem: variable_semantics ): SET OF generic_variable;
+	
+LOCAL
+	env : BAG  OF environment;
+	vars : SET OF generic_variable;
+	i : INTEGER;
+END_LOCAL;
+
+env := USEDIN ( sem,
+	'ISO13584_GENERIC_EXPRESSIONS_SCHEMA.ENVIRONMENT.SEMANTICS');
+vars := [];
+
+REPEAT i := LOINDEX (env) TO HIINDEX (env); 
+	vars := vars + env[i].syntactic_representation;
+END_REPEAT;		
+
+RETURN (vars);
+
+END_FUNCTION; -- syntax_of
+
+
+FUNCTION semantics_of (vars: generic_variable ):variable_semantics;
+	
+RETURN (vars.interpretation.semantics);
+
+END_FUNCTION; -- semantics_of 
+
+
+FUNCTION collects_assigned_properties (
+		p_a: AGGREGATE OF property_assignment)
+			: LIST OF property_BSU;
+
+LOCAL
+	assign_prop: LIST OF property_BSU;
+	--assigned properties of the 
+	--multiple_arity_class_instance_constructor
+	i: INTEGER;
+END_LOCAL;
+
+assign_prop:= [];
+
+REPEAT i:= 1 TO HIBOUND (p_a);
+	assign_prop:= assign_prop + p_a[i].prop_def;
+END_REPEAT;
+
+RETURN (assign_prop );
+
+END_FUNCTION; -- collects_assigned_properties 
+
+
+FUNCTION collects_referenced_library_expressions (
+			p_a: AGGREGATE OF property_assignment )
+			: LIST [1:?] OF library_expression;
+
+LOCAL
+	assign_exp: LIST [0:?] OF library_expression;
+	i: INTEGER;
+END_LOCAL;
+
+assign_exp:= [];
+
+REPEAT i:= 1 TO HIBOUND (p_a);
+	IF EXISTS (p_a[i].its_value)
+	THEN	assign_exp:= assign_exp 
+			+ p_a[i].its_value;
+	END_IF;
+END_REPEAT;
+
+RETURN (assign_exp);
+
+END_FUNCTION; -- collects_referenced_library_expressions 
+
+
+
+FUNCTION compatible_simple_type_and_expression( 
+		dom:property_or_data_type_BSU; 
+		expr: expression): LOGICAL; 
+
+IF data_type_typeof(dom) = []  
+THEN
+	RETURN(UNKNOWN); 
+END_IF;
+
+IF ('ISO13584_EXPRESSIONS_SCHEMA.NUMERIC_EXPRESSION' IN TYPEOF (expr))  
+AND is_int_expr (expr) 
+THEN 
+	IF (('ISO13584_IEC61360_DICTIONARY_SCHEMA.INT_TYPE' IN  
+	data_type_typeof (dom)) OR 
+	('ISO13584_IEC61360_DICTIONARY_SCHEMA.NUMBER_TYPE' IN  
+	data_type_typeof (dom)))  
+	AND (NOT ('ISO13584_IEC61360_DICTIONARY_SCHEMA.REAL_TYPE' IN  
+	data_type_typeof (dom)))  
+	THEN  
+		RETURN(TRUE); 
+	ELSE  
+		RETURN(FALSE); 
+	END_IF; 
+END_IF; 
+ 
+IF ('ISO13584_EXPRESSIONS_SCHEMA.NUMERIC_EXPRESSION' IN TYPEOF (expr))  
+AND NOT is_int_expr (expr) 
+THEN 
+	IF (('ISO13584_IEC61360_DICTIONARY_SCHEMA.REAL_TYPE' IN  
+		data_type_typeof (dom)) OR 
+		('ISO13584_IEC61360_DICTIONARY_SCHEMA.NUMBER_TYPE' IN  
+		data_type_typeof (dom)))  
+		AND (NOT ('ISO13584_IEC61360_DICTIONARY_SCHEMA.INT_TYPE' IN  
+		data_type_typeof (dom)))  
+	THEN  
+		RETURN(TRUE); 
+	ELSE  
+		RETURN(FALSE); 
+	END_IF; 
+END_IF; 
+ 
+IF ('ISO13584_EXPRESSIONS_SCHEMA.BOOLEAN_EXPRESSION'  
+IN TYPEOF (expr)) 
+THEN 
+	IF 'ISO13584_IEC61360_DICTIONARY_SCHEMA.BOOLEAN_TYPE' IN  
+		data_type_typeof (dom)  
+	THEN 
+		RETURN(TRUE); 
+	ELSE 
+		RETURN(FALSE);  
+	END_IF; 
+END_IF; 
+ 
+IF ('ISO13584_EXPRESSIONS_SCHEMA.STRING_EXPRESSION'  
+IN TYPEOF (expr)) 
+THEN 
+	IF 'ISO13584_IEC61360_DICTIONARY_SCHEMA.STRING_TYPE' IN  
+		data_type_typeof (dom)  
+	THEN 
+		RETURN(TRUE); 
+	ELSE 
+		RETURN(FALSE);  
+	END_IF; 
+END_IF;	-- all simple types have been considered 
+RETURN(UNKNOWN); -- added by AM
+END_FUNCTION; -- compatible_simple_type_and_expression 
+
+
+
+FUNCTION compatible_type_and_library_expression(
+			dom: property_or_data_type_BSU;
+			expr: library_expression)
+			:LOGICAL;
+
+LOCAL
+	temp: SET[0:1] OF class_BSU;
+END_LOCAL;
+
+IF data_type_typeof(dom) = [] 
+THEN 
+	RETURN(UNKNOWN);
+END_IF;
+
+
+IF 'ISO13584_LIBRARY_EXPRESSIONS_SCHEMA.LEVEL_SPEC_EXPRESSION' 
+	IN TYPEOF (expr) 
+THEN
+	IF ('ISO13584_IEC61360_DICTIONARY_SCHEMA.LEVEL_TYPE' 
+		IN data_type_typeof (dom)) 
+		AND (list_to_set(data_type_level_spec(dom)) 
+		= list_to_set(expr\level_spec_expression.levels))
+		AND (TYPEOF(expr\level_spec_expression.value_type)
+		<= data_type_level_value_typeof(dom)) 
+	THEN 
+		RETURN (TRUE);
+	ELSE 
+		RETURN(FALSE);
+	END_IF;
+END_IF;
+
+
+
+IF 'ISO13584_LIBRARY_EXPRESSIONS_SCHEMA.ENTITY_INSTANCE_EXPRESSION' 
+	IN TYPEOF (expr) 
+THEN
+	IF ('ISO13584_IEC61360_DICTIONARY_SCHEMA.ENTITY_INSTANCE_TYPE' 
+		IN data_type_typeof (dom)) 
+		AND (data_type_type_name(dom) 
+		<= expr\entity_instance_expression.type_name )
+	THEN 
+		RETURN (TRUE);
+	ELSE 
+		RETURN(FALSE);
+	END_IF;
+END_IF;
+
+
+
+IF 'ISO13584_LIBRARY_EXPRESSIONS_SCHEMA.CLASS_INSTANCE_EXPRESSION' 
+	IN TYPEOF (expr) 
+THEN
+	IF ('ISO13584_IEC61360_DICTIONARY_SCHEMA.CLASS_INSTANCE_TYPE' 
+		IN data_type_typeof (dom)) AND 
+		(SIZEOF(data_type_class_of(dom)) = 1)
+	THEN 
+		temp := data_type_class_of(dom);
+		RETURN (compatible_class_and_class (
+			temp[1], expr\class_instance_expression.expr_type));
+	ELSE 
+		RETURN(FALSE);
+	END_IF;
+END_IF;
+
+		
+RETURN (compatible_simple_type_and_expression (dom, expr));
+
+END_FUNCTION; -- compatible_type_and_library_expression
+
+
+FUNCTION compatible_variable_and_expression(
+		va: generic_variable;
+		expr: expression): LOGICAL;
+
+IF ('ISO13584_EXPRESSIONS_SCHEMA.NUMERIC_EXPRESSION' IN TYPEOF (expr)) 
+	AND is_int_expr (expr)
+THEN
+	IF ('ISO13584_EXPRESSIONS_SCHEMA.INT_NUMERIC_VARIABLE'
+		IN TYPEOF(va)) 
+	THEN 
+		RETURN(TRUE);
+	ELSE 
+		RETURN(FALSE);
+	END_IF;
+END_IF;
+
+IF ('ISO13584_EXPRESSIONS_SCHEMA.NUMERIC_EXPRESSION' IN TYPEOF (expr))
+
+THEN
+	IF ('ISO13584_EXPRESSIONS_SCHEMA.REAL_NUMERIC_VARIABLE'
+		IN TYPEOF(va))
+	THEN 
+		RETURN(TRUE);
+	ELSE 
+		RETURN(FALSE);
+	END_IF;
+END_IF;
+
+IF ('ISO13584_EXPRESSIONS_SCHEMA.BOOLEAN_EXPRESSION' IN TYPEOF (expr)) 
+THEN
+	IF('ISO13584_EXPRESSIONS_SCHEMA.BOOLEAN_VARIABLE'
+ IN TYPEOF(va)) 
+	THEN
+		RETURN(TRUE);
+	ELSE
+		RETURN(FALSE); 
+	END_IF;
+END_IF;
+
+IF ('ISO13584_EXPRESSIONS_SCHEMA.STRING_EXPRESSION' 
+	IN TYPEOF (expr))
+THEN
+	IF ('ISO13584_EXPRESSIONS_SCHEMA.STRING_VARIABLE'
+		IN TYPEOF(va)) 
+	THEN
+		RETURN(TRUE);
+	ELSE
+		RETURN(FALSE); 
+	END_IF;
+END_IF;
+-- all simple types have been considered
+RETURN(UNKNOWN);
+END_FUNCTION; 	-- compatible_variable_and_expression
+
+
+FUNCTION compatible_variable_and_library_expression(
+		va: library_variable;
+		expr: library_expression): LOGICAL;
+
+
+IF 'ISO13584_LIBRARY_EXPRESSIONS_SCHEMA.LEVEL_SPEC_EXPRESSION' 
+	IN TYPEOF (expr) 
+THEN
+	IF (('ISO13584_LIBRARY_EXPRESSIONS_SCHEMA.LEVEL_SPEC_VARIABLE' 
+		IN TYPEOF (va)) 
+		AND ((list_to_set(va\level_spec_expression.levels)) 
+		= list_to_set(expr\level_spec_expression.levels))
+		AND (TYPEOF(va\level_spec_expression.value_type)
+		<= TYPEOF(expr\level_spec_expression.value_type)))
+	THEN 
+		RETURN (TRUE);
+	ELSE 
+		RETURN(FALSE);
+	END_IF;
+END_IF;
+
+
+
+IF 'ISO13584_LIBRARY_EXPRESSIONS_SCHEMA.ENTITY_INSTANCE_EXPRESSION' 
+	IN TYPEOF (expr) 
+THEN
+	IF ('ISO13584_LIBRARY_EXPRESSIONS_SCHEMA.ENTITY_INSTANCE_VARIABLE' 
+		IN TYPEOF (va)) 
+		AND (va\entity_instance_expression.type_name 
+		<= expr\entity_instance_expression.type_name )
+	THEN 
+		RETURN (TRUE);
+	ELSE 
+		RETURN(FALSE);
+	END_IF;
+END_IF;
+
+
+
+IF 'ISO13584_LIBRARY_EXPRESSIONS_SCHEMA.CLASS_INSTANCE_EXPRESSION' 
+	IN TYPEOF (expr) 
+THEN
+	IF ('ISO13584_LIBRARY_EXPRESSIONS_SCHEMA.CLASS_INSTANCE_VARIABLE' 
+		IN TYPEOF (va)) 
+	THEN 
+		RETURN (compatible_class_and_class (
+			va\class_instance_expression.expr_type, 
+			expr\class_instance_expression.expr_type));
+	ELSE 
+		RETURN(FALSE);
+	END_IF;
+END_IF;
+
+
+RETURN (compatible_variable_and_expression (va, expr));
+
+END_FUNCTION; -- compatible_variable_and_library_expression
+
+
+RULE two_fold_variable_representation_rule FOR (variable_semantics);
+WHERE
+	WR1: QUERY (vs<*variable_semantics
+		|SIZEOF ( syntax_of(vs)) > 1) = [];
+END_RULE; -- two_fold_variable_representation_rule 
+
+
+
+END_SCHEMA; -- ISO13584_library_expressions_schema

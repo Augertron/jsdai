@@ -1,0 +1,98 @@
+-- 2000-09-08
+
+(*
+
+	WG12 N525 								2000-05-30
+
+	EXPRESS Declarations for ISO 10303-41: 2nd Edition
+*)
+
+SCHEMA document_schema;
+REFERENCE FROM product_definition_schema           -- ISO 10303-41
+  (product,
+   product_definition,
+   product_definition_formation);
+REFERENCE FROM support_resource_schema             -- ISO 10303-41
+  (bag_to_set,
+   identifier,
+   label,
+   text);
+
+TYPE product_or_formation_or_definition = SELECT
+  (product,
+   product_definition_formation,
+   product_definition);
+END_TYPE; -- product_or_formation_or_definition
+
+ENTITY document;
+  id                  : identifier;
+  name                : label;
+  description         : OPTIONAL text;
+  kind                : document_type;
+INVERSE
+  representation_types : SET[0:?] OF document_representation_type
+                          FOR represented_document; 
+END_ENTITY; -- document
+
+ENTITY document_product_association;
+  name              : label;
+  description       : OPTIONAL text;
+  relating_document : document;
+  related_product   : product_or_formation_or_definition;
+END_ENTITY; -- document_product_association
+
+ENTITY document_relationship;
+  name                : label;
+  description         : OPTIONAL text;
+  relating_document   : document;
+  related_document    : document;
+END_ENTITY; -- document_relationship
+
+ENTITY document_representation_type;
+  name                 : label;
+  represented_document : document;
+END_ENTITY; -- document_representation_type
+
+ENTITY document_type;
+  product_data_type : label;
+END_ENTITY; -- document_type
+
+ENTITY document_usage_constraint;
+  source                : document;
+  subject_element       : label;
+  subject_element_value : text;
+END_ENTITY; -- document_usage_constraint
+
+ENTITY document_with_class
+  SUBTYPE OF (document);
+  class : identifier;
+END_ENTITY; -- document_with_class
+
+FUNCTION acyclic_document_relationship
+  (relation          : document_relationship;
+   relatives         : SET [1:?] OF document;
+   specific_relation : STRING) : BOOLEAN;
+  LOCAL
+    x                : SET OF document_relationship;
+  END_LOCAL;
+  IF relation.relating_document IN relatives THEN 
+    RETURN (FALSE);
+  END_IF;
+  x := QUERY (doc <* bag_to_set 
+             (USEDIN (relation.relating_document,
+             'DOCUMENT_SCHEMA.' + 
+             'DOCUMENT_RELATIONSHIP.' +
+             'RELATED_DOCUMENT')) |
+              specific_relation IN TYPEOF (doc));
+  REPEAT i := 1 TO HIINDEX(x);
+    IF NOT acyclic_document_relationship
+      (x[i], 
+       relatives + relation.relating_document, 
+       specific_relation) THEN
+      RETURN(FALSE);
+    END_IF;
+  END_REPEAT;
+  RETURN(TRUE);
+END_FUNCTION; -- acyclic_document_relationship
+
+END_SCHEMA; -- document_schema

@@ -1,0 +1,1837 @@
+-- modified by RR:
+(*
+	abstract_functional_model_class added to REFERENCE FROM ISO13584_extended_dictionary_schema
+*)
+
+-- received on 2000-02-21, originally from Guy Pierra 
+
+SCHEMA ISO13584_library_content_schema;
+
+REFERENCE FROM ISO13584_IEC61360_dictionary_schema(
+	all_class_descriptions_reachable,
+	basic_semantic_unit,
+	class,
+	class_BSU,
+	content_item,
+	definition_available_implies,
+	dictionary_element,
+	list_to_set,
+	non_quantitative_int_type,
+	property_BSU,
+	revision_type,
+	version_type);
+
+REFERENCE FROM ISO13584_variable_semantics_schema(
+	property_semantics);
+
+REFERENCE FROM ISO13584_domain_resource_schema(
+	domain_restriction,
+	functional_domain_restriction);
+
+REFERENCE FROM ISO13584_extended_dictionary_schema(
+	-- RR
+	abstract_functional_model_class,
+	applicable_properties,
+	applicable_tables,
+	data_exchange_specification_id,
+	data_type_non_quantitative_int_type,
+	data_type_typeof,
+	dictionary,
+	dictionary_in_standard_format,
+	get_property_BSU_from_property_semantics,
+	library_iim_id,
+	functional_view_class,
+	functional_view_v_c_v,
+	view_control_variable_range,
+	view_exchange_protocol_id);
+
+REFERENCE FROM ISO13584_external_file_schema(
+	A6_illustration, 
+	A9_illustration, 
+	class_extension_external_item,
+	dictionary_external_item,
+	external_file_protocol,
+	external_item,
+	illustration,
+	illustration_type,
+	linked_interface_program_protocol,
+	message,
+	program_reference);
+
+REFERENCE FROM ISO13584_library_expressions_schema(
+	class_instance_constructor,
+	collects_assigned_properties);
+
+REFERENCE FROM ISO13584_method_schema(
+	method);
+
+REFERENCE FROM ISO13584_expressions_schema(
+	string_expression);
+
+REFERENCE FROM measure_schema(
+	global_unit_assigned_context);
+
+REFERENCE FROM representation_schema (
+	representation);
+
+
+ENTITY library
+SUPERTYPE OF (library_in_standard_format)
+SUBTYPE OF (dictionary);
+	linked_interfaces: SET [0:?] OF external_file_protocol;
+WHERE
+	WR1: QUERY(class <* SELF\dictionary.contained_classes | 
+		referenced_veps_exist_in_supported_veps(
+		SELF, class)) = [];
+	WR2: QUERY(class <* SELF.contained_classes | 
+		referenced_protocols_exist_in_supported_protocols(
+		SELF, class)) = [];
+	WR3: QUERY (int <*SELF.linked_interfaces
+		|NOT (('ISO13584_EXTERNAL_FILE_SCHEMA'+
+		'.LINKED_INTERFACE_PROGRAM_PROTOCOL') 
+		IN TYPEOF (int))) = [];
+END_ENTITY;
+
+
+ENTITY library_in_standard_format
+SUBTYPE OF (library, dictionary_in_standard_format);
+WHERE
+	WR1: QUERY (int <* SELF\library.linked_interfaces
+		| SIZEOF ( QUERY (vep <* SELF\dictionary.supported_vep
+		| int\external_file_protocol.base_protocol IN 
+		vep\data_exchange_specification_id
+		.external_file_protocols )) = 0) = [];
+END_ENTITY;
+
+
+ENTITY class_extension
+ABSTRACT SUPERTYPE OF (ONEOF(model_class_extension))
+SUBTYPE OF (content_item);
+	SELF\content_item.dictionary_definition: class_BSU;
+WHERE
+	WR1:no_extension_for_superclass (SELF);
+END_ENTITY;
+
+
+ENTITY opt_or_mand_property_BSU;
+	property: property_BSU;
+	is_optional: BOOLEAN;
+	displayable: BOOLEAN;
+END_ENTITY;
+
+
+ENTITY model_class_extension
+ABSTRACT SUPERTYPE OF (ONEOF(item_class_extension,
+			functional_model_class_extension))
+SUBTYPE OF (class_extension);
+	selectable_properties	: LIST [0:?] OF UNIQUE 
+							opt_or_mand_property_BSU;
+	required_properties	: LIST [0:?] OF UNIQUE 
+							opt_or_mand_property_BSU;
+	derived_properties	: LIST [0:?] OF UNIQUE 
+							opt_or_mand_property_BSU;
+	new_derived_prop		: SET [0:?] OF property_BSU;
+	new_mandatory_prop	: SET [0:?] OF property_BSU;
+	class_extension		: SET [0:?] OF domain_restriction;
+	derivation			: SET [0:?] OF 
+						functional_domain_restriction;
+	filters				: SET [0:?] OF domain_restriction;
+	referenced_external_items	: SET [0:?] OF 
+							class_extension_external_item;
+	used_protocols		: SET [0:?] OF external_file_protocol;
+	referenced_view_exchange_protocol 	: LIST [0:?] OF
+							 view_exchange_protocol_id; 
+	content_version		: version_type;
+	content_revision		: revision_type;
+WHERE 
+	WR1: QUERY ( opt_or_mand <* SELF.selectable_properties 
+		|NOT applicable_properties 
+		(SELF\content_item.dictionary_definition,
+		[opt_or_mand.property])) = [];
+	WR2: QUERY ( opt_or_mand <* SELF.derived_properties
+		|NOT applicable_properties 
+		(SELF\content_item.dictionary_definition,
+		[opt_or_mand.property])) = [];
+	WR3: selectable_properties_not_defined_twice(SELF);
+	WR4: derived_properties_not_defined_twice(SELF);
+	WR5: (NOT all_class_descriptions_reachable(
+		SELF.dictionary_definition)) 
+		OR (SIZEOF (SELF.new_derived_prop) = 0)
+		OR (exists_super(SELF.dictionary_definition)
+		AND (QUERY (prop<*SELF.new_derived_prop
+		|NOT (prop IN selectable_properties_list(
+		super (SELF.dictionary_definition)[1]))) = [])); 
+	WR6: (NOT all_class_descriptions_reachable(
+		SELF.dictionary_definition))
+		OR (SIZEOF (SELF.new_mandatory_prop) = 0)
+		OR (exists_super(SELF.dictionary_definition)
+		AND (QUERY (prop<*SELF.new_mandatory_prop
+		|NOT (prop IN optional_properties_list(
+		super (SELF.dictionary_definition)[1]))) = []));
+	WR7: QUERY (dom<*
+		( SELF.class_extension + SELF.derivation + SELF.filters)
+		|(QUERY (sem<*dom.defines
+		| NOT ('ISO13584_VARIABLE_SEMANTICS_SCHEMA'
+		+'.SELF_PROPERTY_VALUE_SEMANTICS' IN TYPEOF(sem)))
+		 <> [])
+		OR (QUERY (sem<* dom.assumes
+		| NOT ('ISO13584_VARIABLE_SEMANTICS_SCHEMA'
+		+'.SELF_PROPERTY_VALUE_SEMANTICS' IN TYPEOF(sem)))
+		 <> [])) = [];
+	WR8: QUERY (dom<*( SELF.class_extension + SELF.derivation)
+		|QUERY (sem<* dom.defines
+		| EXISTS (sem.its_own_property)) 
+		<> []) = [];
+	WR9: NOT all_class_descriptions_reachable(
+		SELF.dictionary_definition)
+		OR (QUERY (dom<*
+		( SELF.class_extension + SELF.derivation + SELF.filters)
+		|(QUERY (sem<*dom.assumes
+		| NOT (sem\property_semantics.the_property IN 
+		provided_properties_list (
+		SELF.dictionary_definition))) <> [])) = []);
+	WR10: NOT all_class_descriptions_reachable(
+		SELF.dictionary_definition)
+		OR (QUERY (dom<* (SELF.class_extension + SELF.filters)
+		|(QUERY (sem<*dom.defines
+		| NOT (sem\property_semantics.the_property IN 
+		selectable_properties_list (
+		SELF.dictionary_definition))) <> [])) = []);
+	WR11: NOT all_class_descriptions_reachable(
+		SELF.dictionary_definition)
+		OR (QUERY (dom<*
+		( SELF.class_extension + SELF.derivation + SELF.filters)
+		|(QUERY (tab<*dom.base_tables
+		| NOT applicable_tables (
+		SELF.dictionary_definition, [tab])) <> [])) = []);
+	WR12: acyclic_class_extension_definition(
+		SELF.dictionary_definition);
+	WR13: QUERY (prop<*SELF.selectable_properties
+		|SIZEOF (QUERY (choi<*SELF.class_extension
+		|(prop.property IN get_property_BSU_from_property_semantics(
+		choi\domain_restriction.defines))))<> 1) = [];
+	WR14: QUERY (prop<*SELF.derived_properties
+		|SIZEOF (QUERY (f<*SELF.derivation
+		|(prop.property IN get_property_BSU_from_property_semantics( 
+		f.defines)))) <> 1) = [];
+	WR15: QUERY (prop<*SELF.new_derived_prop
+		|SIZEOF (QUERY (f<*SELF.derivation
+		|prop IN get_property_BSU_from_property_semantics(
+		f.defines))) <> 1) = [];
+	WR16: NOT all_class_descriptions_reachable(
+		SELF.dictionary_definition)
+		OR (QUERY (f<*SELF.derivation
+		|(QUERY (prop<*f.defines 
+		|NOT (get_property_BSU_from_property_semantics([prop])[1]
+		 IN derived_properties_list 					
+		(SELF.dictionary_definition))) 
+		<> [])) = []);
+	WR17: NOT all_class_descriptions_reachable(
+		SELF.dictionary_definition)
+		OR (QUERY (prop<* derived_properties_list (
+		SELF.dictionary_definition)
+		|SIZEOF (QUERY (f<*defined_derivation_function(
+		SELF.dictionary_definition)
+		|QUERY (sem<* f.defines
+		|sem\property_semantics.the_property = prop) <>[])) <> 1 ) 
+		= []);
+	WR18: QUERY (item<*SELF.referenced_external_items
+		|NOT (item\external_item.used_protocol
+		IN SELF.used_protocols)) = [];
+	WR19: QUERY (filt<*filters
+		|NOT( EXISTS(filt.constraint_description))) = [];
+	WR20: QUERY (dom_1 <* class_extension |
+		NOT ( QUERY ( dom_2 <* dom_1.domains |
+		'ISO13584_DOMAIN_RESOURCE_SCHEMA.PREDICATE_DEFINED_DOMAIN'
+		IN TYPEOF (dom_2.domain)) = [] )) = [];
+END_ENTITY;
+
+
+ENTITY item_class_extension
+SUBTYPE OF (model_class_extension);
+	selection_context_parameters: LIST [0:?] OF UNIQUE
+							opt_or_mand_property_BSU;
+	free_characteristics 		: LIST [0:?] OF UNIQUE
+							opt_or_mand_property_BSU;
+	derived_characteristics	: LIST [0:?] OF UNIQUE
+							opt_or_mand_property_BSU;
+	context_dependent_characteristics: LIST [0:?] OF UNIQUE
+							opt_or_mand_property_BSU;
+	identified_item			: BOOLEAN;
+	supplier_identification	: OPTIONAL string_expression;
+	supplier_designation		: OPTIONAL string_expression;
+	access_icon				: OPTIONAL A9_illustration;
+	content_msg				: OPTIONAL message;
+	create_icon 				: LIST [0:?] OF A6_illustration;
+	create_msg 				: OPTIONAL message;
+	class_presentation_on_paper	: LIST [0:?] OF illustration;
+	class_presentation_on_screen	: LIST [0:?] OF illustration;
+DERIVE
+	SELF\model_class_extension.selectable_properties 
+		: LIST [0:?] OF UNIQUE opt_or_mand_property_BSU
+		:= SELF.selection_context_parameters 
+			+ SELF.free_characteristics;
+	SELF\model_class_extension.derived_properties
+		: LIST [0:?] OF UNIQUE opt_or_mand_property_BSU
+		:= SELF.derived_characteristics
+			+ SELF.context_dependent_characteristics;
+	SELF\model_class_extension.required_properties
+		: LIST [0:?] OF UNIQUE opt_or_mand_property_BSU
+		:= [];
+WHERE
+	WR1: definition_available_implies(
+		SELF\content_item.dictionary_definition,
+		'ISO13584_IEC61360_DICTIONARY_SCHEMA.ITEM_CLASS' IN
+		TYPEOF(
+		(SELF\content_item.dictionary_definition.definition[1])));
+	WR2: QUERY (elt <* SELF.selection_context_parameters|
+		in_typeof ( 'ISO13584_IEC61360_DICTIONARY_SCHEMA' + 
+			'.CONDITION_DET', elt))
+		= SELF.selection_context_parameters;
+	WR3: QUERY (elt <* SELF.free_characteristics|
+		in_typeof ('ISO13584_IEC61360_DICTIONARY_SCHEMA' + 
+			'.NON_DEPENDENT_P_DET',elt)) 
+		= SELF.free_characteristics;
+	WR4: QUERY (elt <* SELF.free_characteristics| 
+		(data_type_typeof(elt.property)<>[])
+		AND NOT ('ISO13584_IEC61360_DICTIONARY_SCHEMA.SIMPLE_TYPE' IN
+		data_type_typeof(elt.property))
+		AND NOT 
+		('ISO13584_IEC61360_DICTIONARY_SCHEMA.CLASS_INSTANCE_TYPE' IN
+		data_type_typeof(elt.property))) = [];
+	WR5: QUERY (elt <* SELF.derived_characteristics|
+		in_typeof ('ISO13584_IEC61360_DICTIONARY_SCHEMA' + 
+			'.NON_DEPENDENT_P_DET',elt)) 
+		=SELF.derived_properties;
+	WR6: QUERY (elt <* SELF.context_dependent_characteristics|
+		in_typeof ('ISO13584_IEC61360_DICTIONARY_SCHEMA' + 
+			'.DEPENDENT_P_DET',elt)) 
+		= SELF.context_dependent_characteristics;
+	WR7: SELF.access_icon IN 
+		SELF\model_class_extension.referenced_external_items;
+	WR8: SELF.content_msg IN 
+		SELF\model_class_extension.referenced_external_items;
+	WR9: list_to_set(SELF.create_icon)
+		 <= SELF\model_class_extension.referenced_external_items;
+	WR10: SELF.create_msg IN SELF\model_class_extension
+		.referenced_external_items;
+	WR11: SELF.identified_item
+		OR (NOT EXISTS (SELF.supplier_identification)
+		AND NOT EXISTS (SELF.supplier_designation));
+	WR12: list_to_set(SELF.class_presentation_on_paper)
+		 <= SELF\model_class_extension.referenced_external_items;
+	WR13: list_to_set(SELF.class_presentation_on_screen)
+		 <= SELF\model_class_extension.referenced_external_items;
+	WR14: QUERY (icon <* SELF.class_presentation_on_paper |
+		(NOT EXISTS (icon.width)) OR (icon.kind_of_content 
+		= illustration_type.not_static_picture)) = [];
+	WR15: QUERY (icon <* SELF.class_presentation_on_screen |
+		(NOT EXISTS (icon.width))) = [];
+END_ENTITY;
+
+
+ENTITY functional_model_class_extension
+SUBTYPE OF (model_class_extension);
+	measure_unit			: OPTIONAL global_unit_assigned_context;
+	required_item_characteristics	: LIST [0:?] OF UNIQUE
+					opt_or_mand_property_BSU;
+	free_model_properties 	: LIST [0:?] OF UNIQUE 				
+					opt_or_mand_property_BSU;
+	representation_properties: LIST [0:?] OF UNIQUE
+					opt_or_mand_property_BSU;
+	method_variables		: SET [0:?] OF opt_or_mand_property_BSU;
+	referenced_representation: SET [0:?] OF representation;
+	provided_methods 		: SET [0:?] OF method;
+	available_views_icon 	: OPTIONAL A6_illustration; 
+	available_views_msg 	: OPTIONAL message; 
+	context_param_icon	: LIST [0:?] OF A6_illustration; 
+	context_param_msg		: OPTIONAL message; 
+DERIVE
+	SELF\model_class_extension.selectable_properties 
+		: LIST [0:?] OF UNIQUE opt_or_mand_property_BSU 
+		:= SELF.free_model_properties;
+	SELF\model_class_extension.required_properties
+		: LIST [0:?] OF UNIQUE opt_or_mand_property_BSU 
+		:= SELF.required_item_characteristics;
+	SELF\model_class_extension.derived_properties 
+		:LIST [0:?] OF UNIQUE opt_or_mand_property_BSU
+		:= SELF.representation_properties;
+WHERE
+	WR1:definition_available_implies(
+		SELF\content_item.dictionary_definition,
+		'ISO13584_EXTENDED_DICTIONARY_SCHEMA.'+
+		'ABSTRACT_FUNCTIONAL_MODEL_CLASS' 
+		IN TYPEOF 
+		(SELF\content_item.dictionary_definition.definition[1]));
+	WR2: required_properties_are_non_dependent_p_det(SELF);
+	WR3: QUERY (elt <* SELF.method_variables|
+		in_typeof('ISO13584_EXTENDED_DICTIONARY_SCHEMA' + 
+		'.REPRESENTATION_P_DET', elt)) = SELF.method_variables;
+	WR4: QUERY (elt <* SELF.method_variables|
+		applicable_properties (
+				SELF\content_item.dictionary_definition, 		
+		[elt.property])) 
+		= SELF.method_variables;
+	WR5: SELF.available_views_icon IN 
+		SELF\model_class_extension.referenced_external_items;
+	WR6: SELF.available_views_msg IN 
+		SELF\model_class_extension.referenced_external_items;
+	WR7: list_to_set(SELF.context_param_icon) <= 
+		SELF\model_class_extension.referenced_external_items;
+	WR8: SELF.context_param_msg IN 
+		SELF\model_class_extension.referenced_external_items;
+END_ENTITY;
+
+
+FUNCTION acyclic_class_extension_definition (cl:class_BSU): LOGICAL;
+
+LOCAL	
+	edges: SET OF domain_restriction;
+	prop: LIST OF property_BSU;
+	i: INTEGER;
+END_LOCAL;
+
+IF NOT all_class_descriptions_reachable(cl)
+THEN
+	RETURN (UNKNOWN);
+ELSE
+	prop := provided_properties_list (cl);
+	edges := defined_domain (cl) + defined_derivation_function (cl);
+	REPEAT i := LOINDEX(prop) TO HIINDEX(prop);
+		IF NOT acyclic_order (prop[i], edges, [])
+		THEN
+			RETURN (FALSE);
+		END_IF;
+	END_REPEAT;
+
+	RETURN (TRUE);
+END_IF;
+
+END_FUNCTION; -- acyclic_class_extension_definition 
+
+
+FUNCTION acyclic_order (p: property_BSU;
+			edges: SET OF domain_restriction;
+			nodes: SET OF property_BSU)
+			: BOOLEAN;
+
+LOCAL	
+	succ: SET OF property_BSU;	
+	-- set of property_BSU that depends (recursively) on p
+	out_edges: SET OF domain_restriction;
+	-- set of domain_restrictions that contain one of the 
+	-- property_BSU of the set nodes in the the_property attribute
+	-- of one of their assumes variable_semantics
+	i, j: INTEGER;
+END_LOCAL;
+
+out_edges := QUERY(e<* edges|
+			(QUERY (v<*e.assumes
+				|v\property_semantics.the_property IN nodes)
+		<> [] ));
+succ := [];
+REPEAT i := LOINDEX (out_edges) TO HIINDEX (out_edges);
+	REPEAT j := LOINDEX (out_edges[i].defines)
+							TO HIINDEX (out_edges[i].defines);
+		succ := succ + out_edges[i].defines[j]
+							\property_semantics.the_property;
+	END_REPEAT;
+END_REPEAT;
+
+-- p depends on itself:
+IF p IN succ 
+THEN 
+	RETURN (FALSE);
+END_IF;
+
+-- all the depending properties are reached
+IF succ <= nodes
+THEN
+	RETURN (TRUE);
+END_IF;
+
+RETURN (acyclic_order (p, edges, nodes+succ));
+
+END_FUNCTION; -- acyclic_order
+
+
+FUNCTION defined_domain (cl: class_BSU): SET OF domain_restriction;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF NOT (all_class_descriptions_reachable(cl)) 
+THEN
+	RETURN ([]); -- some dictionary_element are not available
+ELSE
+	RETURN (retrieve_domain(cl, []));
+END_IF;
+
+END_FUNCTION; -- defined_domain 
+
+
+FUNCTION retrieve_domain (cl: class_BSU;
+			d: SET OF domain_restriction)
+			: SET OF domain_restriction;
+
+LOCAL
+	i: INTEGER;
+	dom: SET OF domain_restriction := d;	-- existing set
+END_LOCAL;
+
+IF SIZEOF(cl.definition) = 0 		-- anormal case
+	THEN RETURN([]);
+END_IF;
+
+IF SIZEOF(cl.referenced_by) = 1	-- new domain defined at this
+ 							--level
+THEN
+	REPEAT i := 1 TO SIZEOF (cl.referenced_by[1] 
+						\model_class_extension.class_extension);
+		dom := dom + cl.referenced_by[1] 
+			 \model_class_extension.class_extension[i];
+				-- domain of this class
+	END_REPEAT;
+END_IF;
+
+IF NOT(EXISTS(cl.definition[1]\class.its_superclass)) 
+THEN 
+	RETURN (dom);
+ELSE
+	RETURN (retrieve_domain( cl.definition[1]\class.its_superclass,
+						dom));
+END_IF;
+
+END_FUNCTION; -- retrieve_domain 
+
+
+FUNCTION defined_derivation_function (cl: class_BSU)
+			: SET OF functional_domain_restriction;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF NOT(all_class_descriptions_reachable(cl)) 
+THEN 
+	RETURN ([]); 	-- some dictionary_element are not available
+ELSE
+	RETURN (retrieve_derivation_function(cl, []));
+END_IF;
+
+END_FUNCTION; -- defined_derivation_function 
+
+
+FUNCTION retrieve_derivation_function (cl: class_BSU;
+					d: SET OF functional_domain_restriction)
+					: SET OF functional_domain_restriction;
+
+LOCAL
+	i: INTEGER;
+	der: SET OF functional_domain_restriction := d; -- existing set
+END_LOCAL;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+
+IF SIZEOF(cl.definition) = 0 -- anormal case
+THEN 
+	RETURN([]);
+END_IF;
+
+IF SIZEOF(cl.referenced_by) = 1 	-- new derivation_function defined at 
+ 							-- this level
+THEN 
+	REPEAT i := 1 TO SIZEOF (cl.referenced_by[1] 
+			\model_class_extension.derivation);
+		der := der + cl.referenced_by[1] 
+			 \model_class_extension.derivation[i];
+				-- derivation_function of this class
+	END_REPEAT;
+END_IF;
+
+IF NOT(EXISTS(cl.definition[1]\class.its_superclass)) 
+THEN 
+	RETURN (der);
+ELSE
+	RETURN (retrieve_derivation_function(
+			cl.definition[1]\class.its_superclass, der));
+END_IF;
+
+END_FUNCTION; -- retrieve_derivation_function 
+
+
+FUNCTION allowed_properties (cl: class_BSU;
+			prop: SET OF property_BSU)
+			: LOGICAL;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN(UNKNOWN); -- the class itself is indeterminate
+END_IF;
+
+IF NOT(all_class_descriptions_reachable(cl))
+THEN 
+	RETURN(UNKNOWN);
+END_IF;
+
+IF prop <= (list_to_set(provided_properties_list (cl)))
+THEN 
+	RETURN (TRUE);
+ELSE 
+	RETURN (FALSE);
+END_IF;
+
+END_FUNCTION; -- allowed_properties 
+
+
+FUNCTION provided_properties_list (cl: class_BSU)
+								: LIST OF property_BSU;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF NOT(all_class_descriptions_reachable(cl)) 
+THEN 
+	RETURN ([]); 	-- some dictionary_element are not available
+ELSE
+	RETURN (retrieve_provided_properties(cl, []));
+END_IF;
+
+END_FUNCTION; -- provided_properties_list 
+
+
+FUNCTION retrieve_provided_properties (cl: class_BSU;
+						pr: LIST OF property_BSU)
+						: LIST OF property_BSU;
+
+LOCAL
+	i: INTEGER;
+	prop: LIST OF property_BSU := pr;	--end of the list
+END_LOCAL;
+
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF SIZEOF(cl.definition) = 0 		-- anormal case
+THEN
+	RETURN([]);
+END_IF;
+
+IF SIZEOF(cl.referenced_by) = 1 	-- new properties defined at this 
+							-- level
+THEN 
+	REPEAT i := SIZEOF (cl.referenced_by[1] 
+		\model_class_extension.derived_properties) TO 1 BY -1;
+		prop := cl.referenced_by[1] 
+		\model_class_extension.derived_properties[i].property+prop;
+	END_REPEAT;		-- derived properties of this class
+
+	REPEAT i := SIZEOF (cl.referenced_by[1] 
+			\model_class_extension.required_properties) TO 1 BY -1;
+		prop := cl.referenced_by[1] 
+			\model_class_extension.required_properties[i].property
+			+ prop;	-- required properties of this class
+	END_REPEAT;
+
+	REPEAT i := SIZEOF (cl.referenced_by[1] 
+		\model_class_extension.selectable_properties) TO 1 BY -1;
+		prop := cl.referenced_by[1] 
+			\model_class_extension.selectable_properties[i].property
+			+ prop;	-- selectable properties of this class
+	END_REPEAT;
+END_IF;
+
+IF NOT(EXISTS(cl.definition[1]\class.its_superclass)) 
+THEN 
+	RETURN (prop);
+ELSE
+	RETURN (retrieve_provided_properties(
+			cl.definition[1]\class.its_superclass,prop));
+END_IF;
+
+END_FUNCTION; -- retrieve_provided_properties 
+
+
+FUNCTION provided_properties_or_method_variables (cl: class_BSU)
+			: SET OF property_BSU;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF NOT(all_class_descriptions_reachable(cl)) 
+THEN 
+	RETURN ([]); 	-- some dictionary_element are not available
+ELSE
+	RETURN (method_variables (cl) + provided_properties_list (cl));
+END_IF;
+
+END_FUNCTION; -- provided_properties_or_method_variables 
+
+
+FUNCTION selectable_properties_list (cl: class_BSU)
+			: LIST OF property_BSU;
+
+LOCAL
+	i: INTEGER;
+	selec: LIST OF property_BSU := [];	--non redefined properties
+	def: LIST OF property_BSU;		--selectable defined properties
+	redef: SET OF property_BSU;		--derived redefined properties
+END_LOCAL;
+
+def := selectable_defined_properties (cl);
+redef := derived_redefined_properties (cl);
+
+REPEAT i := 1 TO SIZEOF (def);
+	IF NOT(def[i] IN redef) 
+	THEN 
+		selec := selec + def[i];
+	END_IF;
+END_REPEAT;
+
+RETURN (selec);
+
+END_FUNCTION; -- selectable_properties_list 
+
+
+FUNCTION selectable_defined_properties (cl: class_BSU)
+			: LIST OF property_BSU;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF NOT (all_class_descriptions_reachable(cl)) 
+THEN 
+	RETURN ([]); 	-- some dictionary_element are not available
+ELSE
+	RETURN (retrieve_selectable_properties(cl, []));
+END_IF;
+
+END_FUNCTION; -- selectable_defined_properties 
+
+
+FUNCTION retrieve_selectable_properties (cl: class_BSU;
+			pr: LIST OF property_BSU)
+			: LIST OF property_BSU;
+
+LOCAL
+	i: INTEGER;
+	prop: LIST OF property_BSU := pr;	-- end of the list
+END_LOCAL;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF SIZEOF(cl.definition) = 0 		-- anormal case
+	THEN RETURN([]);
+END_IF;
+
+IF SIZEOF(cl.referenced_by) = 1 	-- new properties defined at this
+ 						--level
+THEN 
+	REPEAT i := SIZEOF (cl.referenced_by[1] 
+			\model_class_extension.selectable_properties)
+			TO 1 BY -1;
+		prop := cl.referenced_by[1] 
+			\model_class_extension.selectable_properties[i].property
+			+ prop;	-- selectable properties of this class
+	END_REPEAT;
+END_IF;
+
+IF NOT(EXISTS(cl.definition[1]\class.its_superclass)) 
+THEN 
+	RETURN (prop);
+ELSE
+	RETURN (retrieve_selectable_properties(
+			cl.definition[1]\class.its_superclass, prop));
+END_IF;
+
+END_FUNCTION; -- retrieve_selectable_properties 
+
+
+FUNCTION required_defined_properties (cl: class_BSU)
+			: LIST OF property_BSU;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF NOT(all_class_descriptions_reachable(cl))
+THEN 
+	RETURN ([]); 	-- some dictionary_element are not available
+ELSE
+	RETURN (retrieve_required_properties(cl, []));
+END_IF;
+
+END_FUNCTION; -- required_defined_properties 
+
+
+FUNCTION retrieve_required_properties (cl: class_BSU;
+			pr: LIST OF property_BSU)
+			: LIST OF property_BSU;
+
+LOCAL
+	i: INTEGER;
+	prop: LIST OF property_BSU := pr;	-- end of the list
+END_LOCAL;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF SIZEOF(cl.definition) = 0 		-- anormal case
+THEN 
+	RETURN([]);
+END_IF;
+
+IF SIZEOF(cl.referenced_by) = 1 	-- new properties defined at this
+							--level
+THEN 
+	REPEAT i := SIZEOF (cl.referenced_by[1] 
+			\model_class_extension.required_properties)
+			TO 1 BY -1;
+		prop := cl.referenced_by[1] 
+			 \model_class_extension.required_properties[i].property
+			+ prop;	-- required properties of this class
+	END_REPEAT;
+END_IF;
+
+IF NOT(EXISTS(cl.definition[1]\class.its_superclass)) 
+THEN 
+	RETURN (prop);
+ELSE
+	RETURN (retrieve_required_properties(
+			cl.definition[1]\class.its_superclass, prop));
+END_IF;
+
+END_FUNCTION; -- retrieve_required_properties 
+
+
+FUNCTION derived_redefined_properties (cl: class_BSU)
+			: SET OF property_BSU;
+
+IF NOT EXISTS (cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF NOT(all_class_descriptions_reachable(cl)) 
+THEN 
+	RETURN ([]); 	-- some dictionary_element are not available
+ELSE
+	RETURN (retrieve_derived_redefined_properties(cl, []));
+END_IF;
+
+END_FUNCTION; -- derived_redefined_properties 
+
+
+FUNCTION retrieve_derived_redefined_properties (cl: class_BSU;
+			pr:SET OF property_BSU)
+			: SET OF property_BSU;
+
+LOCAL
+	prop: SET OF property_BSU := pr;	-- already computed set
+END_LOCAL;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF SIZEOF(cl.definition) = 0 		-- anormal case
+THEN
+	RETURN([]);
+END_IF;
+
+IF SIZEOF(cl.referenced_by) = 1 	-- new properties redefined at 
+							-- this level
+THEN 
+	prop := prop + cl.referenced_by[1] 
+		\model_class_extension.new_derived_prop;
+END_IF;
+
+IF NOT(EXISTS(cl.definition[1]\class.its_superclass)) 
+THEN 
+	RETURN (prop);
+ELSE
+	RETURN (retrieve_derived_redefined_properties(
+		 cl.definition[1]\class.its_superclass, prop));
+END_IF;
+
+END_FUNCTION; -- retrieve_derived_redefined_properties 
+
+
+FUNCTION derived_properties_list (cl: class_BSU)
+			: LIST OF property_BSU;
+
+LOCAL
+	i: INTEGER;
+	deriv: LIST OF property_BSU := [];	--derived properties
+	prov: LIST OF property_BSU;			--provided properties
+	selec: LIST OF property_BSU;			--selectable properties
+	req: LIST OF property_BSU;			--required properties
+END_LOCAL;
+
+prov := provided_properties_list (cl);
+selec := selectable_properties_list (cl);
+req := required_defined_properties (cl);
+
+REPEAT i := 1 TO SIZEOF (prov);
+	IF NOT(prov[i] IN selec) 
+	THEN 
+		deriv := deriv + prov[i];
+	END_IF;
+END_REPEAT;
+
+REPEAT i := 1 TO SIZEOF (req);
+	IF NOT(req[i] IN selec) 
+	THEN 
+		deriv := deriv + req[i];
+	END_IF;
+END_REPEAT;
+
+RETURN (deriv); 	
+
+END_FUNCTION; -- derived_properties_list 
+
+
+FUNCTION optional_properties_list (cl: class_BSU)
+			: LIST OF property_BSU;
+
+LOCAL
+	i: INTEGER;
+	opt: LIST OF property_BSU := [];	-- non redefined properties
+	def: LIST OF property_BSU	;	-- optional defined properties
+	redef: SET OF property_BSU;	-- mandatory redefined properties
+END_LOCAL;
+
+def := optional_defined_properties (cl);
+redef := mandatory_redefined_properties (cl);		
+
+REPEAT i := 1 TO SIZEOF (def);
+	IF NOT(def[i] IN redef) 
+	THEN 
+		opt := opt + def[i];
+	END_IF;
+END_REPEAT;
+
+RETURN (opt); 
+
+END_FUNCTION; -- optional_properties_list 
+
+
+FUNCTION optional_defined_properties (cl: class_BSU)
+								: LIST OF property_BSU;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF NOT (all_class_descriptions_reachable(cl)) 
+THEN 
+	RETURN ([]); 	-- some dictionary_element are not available
+ELSE
+	RETURN (retrieve_optional_properties(cl, []));
+END_IF;
+
+END_FUNCTION; -- optional_defined_properties 
+
+
+FUNCTION retrieve_optional_properties (cl: class_BSU;
+			pr: LIST OF property_BSU)
+			: LIST OF property_BSU;
+
+LOCAL
+	i: INTEGER;
+	prop: LIST OF property_BSU := pr;	-- end of the list
+END_LOCAL;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF SIZEOF(cl.definition) = 0 		-- anormal case
+THEN
+	RETURN([]);
+END_IF;
+
+IF SIZEOF(cl.referenced_by) = 1 	-- new properties defined at this
+ 							-- level
+THEN 
+	REPEAT i := SIZEOF (cl.referenced_by[1] 
+			\model_class_extension.derived_properties)
+			TO 1 BY -1;
+		IF (cl.referenced_by[1]\model_class_extension
+			.derived_properties[i].is_optional)
+		THEN
+			prop := cl.referenced_by[1] 
+				\model_class_extension.derived_properties[i]
+				.property + prop;
+		END_IF;
+	END_REPEAT;		-- derived optional properties of this class
+
+	REPEAT i := SIZEOF (cl.referenced_by[1] 
+			\model_class_extension.selectable_properties) TO 1 
+													BY -1;
+		IF (cl.referenced_by[1]\model_class_extension
+			.selectable_properties[i].is_optional)
+		THEN
+			prop := cl.referenced_by[1] 
+				\model_class_extension.selectable_properties[i]
+				.property + prop;		--selectable optional 
+									--properties 	
+		END_IF;
+	END_REPEAT;
+END_IF;
+
+IF NOT (EXISTS(cl.definition[1]\class.its_superclass)) 
+THEN 
+	RETURN (prop);
+ELSE
+	RETURN (retrieve_optional_properties(
+			cl.definition[1]\class.its_superclass,prop));
+END_IF;
+
+END_FUNCTION; -- retrieve_optional_properties 
+
+
+FUNCTION mandatory_redefined_properties (cl: class_BSU)
+			: SET OF property_BSU;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF NOT(all_class_descriptions_reachable(cl)) 
+THEN 
+	RETURN ([]); 	-- some dictionary_element are not available
+ELSE
+	RETURN (retrieve_mandatory_redefined_properties(cl, []));
+END_IF;
+
+END_FUNCTION; -- mandatory_redefined_properties 
+
+
+FUNCTION retrieve_mandatory_redefined_properties (
+			cl: class_BSU;
+			pr: SET OF property_BSU)
+			: SET OF property_BSU;
+
+LOCAL
+	prop: SET OF property_BSU := pr;	--already computed set	
+END_LOCAL;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF SIZEOF(cl.definition) = 0 		-- anormal case
+THEN
+	RETURN([]);
+END_IF;
+
+IF SIZEOF(cl.referenced_by) = 1 	-- new properties redefined at this
+ 							--level
+THEN 
+	prop := prop + cl.referenced_by[1] 
+		\model_class_extension.new_mandatory_prop;
+END_IF;
+
+IF NOT(EXISTS(cl.definition[1]\class.its_superclass)) 
+THEN 
+	RETURN (prop);
+ELSE
+	RETURN (retrieve_mandatory_redefined_properties(
+			cl.definition[1]\class.its_superclass, prop));
+END_IF;
+
+END_FUNCTION; -- retrieve_mandatory_redefined_properties 
+
+
+FUNCTION method_variables (cl: class_BSU): SET OF property_BSU;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF (NOT(all_class_descriptions_reachable(cl)))
+THEN
+	RETURN ([]); 	-- some dictionary_element are not available
+ELSE
+	RETURN (retrieve_method_variables(cl, []));
+END_IF;
+
+END_FUNCTION; -- method_variables 
+
+
+FUNCTION retrieve_method_variables (cl: class_BSU;
+			pr: SET OF property_BSU)
+			: SET OF property_BSU;
+
+LOCAL
+	i: INTEGER;
+	prop: SET OF property_BSU := pr;	-- already computed set	
+END_LOCAL;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF SIZEOF(cl.definition) = 0 		-- anormal case
+THEN
+	RETURN ([]);
+END_IF;
+
+IF NOT ('ISO13584_EXTENDED_DICTIONARY_SCHEMA.'
+	+ 'ABSTRACT_FUNCTIONAL_MODEL_CLASS' 
+		IN TYPEOF(cl.definition[1]))		-- anormal case
+THEN 
+	RETURN([ ]);
+ELSE
+	REPEAT i := 1 TO SIZEOF (cl.referenced_by[1]
+			\functional_model_class_extension.method_variables);
+		prop := prop + cl.referenced_by[1]\
+			functional_model_class_extension.method_variables[i]
+			.property;
+	END_REPEAT;
+END_IF;
+
+IF NOT(EXISTS(cl.definition[1]\class.its_superclass)) 
+THEN 
+	RETURN (prop);
+ELSE
+	RETURN (retrieve_method_variables (
+		cl.definition[1]\class.its_superclass, prop));
+END_IF;
+
+END_FUNCTION; -- retrieve_method_variables 
+
+
+FUNCTION gm_free_characteristics_list (cl: class_BSU)
+			: LIST OF property_BSU;
+
+LOCAL
+	i: INTEGER;
+	selec: LIST OF property_BSU := [];	--non redefined properties
+	def: LIST OF property_BSU	;	--free defined characteristics
+	redef: SET OF property_BSU;		--derived redefined properties
+END_LOCAL;
+
+def := free_defined_characteristics (cl);
+redef := derived_redefined_properties (cl);		
+
+REPEAT i := 1 TO SIZEOF (def);
+	IF NOT(def[i] IN redef) 
+	THEN 
+		selec := selec + def[i];
+	END_IF;
+END_REPEAT;
+
+RETURN (selec); 
+
+END_FUNCTION; -- gm_free_characteristics_list 
+
+
+FUNCTION free_defined_characteristics (cl: class_BSU)
+			: LIST OF property_BSU;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF NOT(all_class_descriptions_reachable(cl)) 
+THEN 
+	RETURN ([]); 	-- some dictionary_element are not available
+ELSE
+	RETURN (retrieve_gm_free_characteristics(cl, []));
+END_IF;
+
+END_FUNCTION; -- free_defined_characteristics 
+
+
+FUNCTION retrieve_gm_free_characteristics (cl: class_BSU;
+			pr: LIST OF property_BSU)
+			: LIST OF property_BSU;
+
+LOCAL
+	i: INTEGER;
+	prop: LIST OF property_BSU := pr;	--end of the list
+END_LOCAL;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF SIZEOF(cl.definition) = 0 		-- anormal case
+THEN
+	RETURN([]);
+END_IF;
+
+IF SIZEOF(cl.referenced_by) = 1 	-- new properties defined at this
+ 							-- level
+THEN 
+	IF NOT ('ISO13584_LIBRARY_CONTENT_SCHEMA.ITEM_CLASS_EXTENSION'
+			IN TYPEOF(cl.referenced_by[1])) -- anormal case
+	THEN
+		RETURN([]);				-- anormal case
+	END_IF;
+
+	REPEAT i := SIZEOF (cl.referenced_by[1] 
+			\item_class_extension.free_characteristics) TO 1 BY -1;
+		prop := cl.referenced_by[1] 
+			\item_class_extension.free_characteristics[i].property
+			+ prop;	-- free characteristics of this class
+	END_REPEAT;
+END_IF;
+
+IF NOT(EXISTS(cl.definition[1]\class.its_superclass)) 
+THEN 
+	RETURN (prop);
+ELSE
+	RETURN (retrieve_gm_free_characteristics(
+			cl.definition[1]\class.its_superclass, prop));
+END_IF;
+
+END_FUNCTION; -- retrieve_gm_free_characteristics 
+
+
+FUNCTION fm_free_model_properties_list (cl: class_BSU)
+			: LIST OF property_BSU;
+
+LOCAL
+	i: INTEGER;
+	selec: LIST OF property_BSU := [];	-- non redefined properties
+	def: LIST OF property_BSU;		-- free model properties defined 
+	redef: SET OF property_BSU;		-- derived redefined properties
+END_LOCAL;
+
+def := free_model_properties_defined (cl);
+redef := derived_redefined_properties (cl);		
+
+REPEAT i := 1 TO SIZEOF (def);
+	IF NOT(def[i] IN redef) 
+	THEN 
+		selec := selec + def[i];
+	END_IF;
+END_REPEAT;
+
+RETURN (selec); 
+
+END_FUNCTION; -- fm_free_model_properties_list 
+
+
+FUNCTION free_model_properties_defined (cl: class_BSU)
+			: LIST OF property_BSU;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF NOT(all_class_descriptions_reachable(cl)) 
+THEN 
+	RETURN ([]); 	-- some dictionary_element are not available
+ELSE
+	RETURN (retrieve_fm_free_model_properties(cl, []));
+END_IF;
+
+END_FUNCTION; -- free_model_properties_defined 
+
+
+FUNCTION retrieve_fm_free_model_properties (cl: class_BSU;
+			pr: LIST OF property_BSU)
+			: LIST OF property_BSU;
+
+LOCAL
+	i: INTEGER;
+	prop: LIST OF property_BSU := pr;	-- end of the list
+END_LOCAL;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF SIZEOF(cl.definition) = 0 		-- anormal case
+THEN
+	RETURN([]);
+END_IF;
+
+IF SIZEOF(cl.referenced_by) = 1 	-- new properties defined at this
+							-- level
+THEN 
+	IF NOT ('ISO13584_LIBRARY_CONTENT_SCHEMA'
+						+'.FUNCTIONAL_MODEL_CLASS_EXTENSION'
+			IN TYPEOF(cl.referenced_by[1])) -- normal case
+	THEN
+		RETURN([]);				-- anormal case
+	END_IF;
+
+	REPEAT i := SIZEOF (cl.referenced_by[1] 
+			\functional_model_class_extension.free_model_properties)
+			TO 1 BY -1;
+		prop := cl.referenced_by[1] 
+		\functional_model_class_extension.free_model_properties[i]
+		.property + prop;	-- free model properties of this class
+	END_REPEAT;
+END_IF;
+
+IF NOT (EXISTS(cl.definition[1]\class.its_superclass)) 
+THEN 
+	RETURN (prop);
+ELSE
+	RETURN (retrieve_fm_free_model_properties(
+		cl.definition[1]\class.its_superclass,prop));
+END_IF;
+
+END_FUNCTION; -- retrieve_fm_free_model_properties 
+
+
+FUNCTION are_properties_in ( 
+			opt_or_mand: AGGREGATE OF opt_or_mand_property_BSU; 
+			prop: AGGREGATE OF property_BSU) 
+			: BOOLEAN; 
+LOCAL
+	res : LOGICAL ;
+END_LOCAL;
+
+res :=(SIZEOF (QUERY(elt<*opt_or_mand| 
+			(NOT (elt.property IN prop))))=0);
+
+--RR IF res= UNKNOWN OR res=FALSE 
+IF (res= UNKNOWN) OR (res=FALSE) 
+	THEN 
+		RETURN(FALSE) ;
+	ELSE 
+		RETURN(TRUE);
+END_IF;
+ 
+END_FUNCTION; -- are_properties_in  
+
+
+FUNCTION are_properties_not_in ( 
+			opt_or_mand: AGGREGATE OF opt_or_mand_property_BSU; 
+			prop: AGGREGATE OF property_BSU) 
+			: BOOLEAN; 
+
+IF (SIZEOF (QUERY (elt <* opt_or_mand| 
+					(elt.property IN prop))) = 0)
+THEN
+	RETURN(TRUE);
+ELSE
+	RETURN(FALSE);
+END_IF;
+
+END_FUNCTION; -- are_properties_not_in  
+
+
+FUNCTION exists_super (cl: class_BSU): LOGICAL;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN (UNKNOWN); -- the class itself is indeterminate
+END_IF;
+
+IF (SIZEOF (cl.definition) = 0)
+THEN
+	RETURN (UNKNOWN);
+ELSE
+	IF EXISTS(cl.definition[1]\class.its_superclass)
+	THEN
+		RETURN (TRUE);
+	ELSE
+		RETURN (FALSE);
+	END_IF;
+END_IF;
+
+END_FUNCTION; -- exists_super 
+
+
+FUNCTION super (cl: class_BSU): SET [0:1] OF class_BSU;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN ([]); -- the class itself is indeterminate
+END_IF;
+
+IF (SIZEOF (cl.definition) = 1)
+THEN
+	IF EXISTS(cl.definition[1]\class.its_superclass)
+	THEN
+		RETURN ([cl.definition[1]\class.its_superclass]);
+	END_IF;
+END_IF;
+
+RETURN ([]);
+
+END_FUNCTION; -- super 
+
+
+FUNCTION index (prop: GENERIC; in_list: LIST [0:?] OF GENERIC)
+			: INTEGER;
+LOCAL
+	i: INTEGER;
+END_LOCAL;
+
+REPEAT i:= 1 TO SIZEOF (in_list);
+	IF prop = in_list [i]
+	THEN
+		RETURN (i);
+	END_IF;
+END_REPEAT;
+
+RETURN (0);
+
+END_FUNCTION; -- index 
+
+
+FUNCTION is_in_v_c_v_range (P: Property_BSU;  
+					L : SET OF view_control_variable_range ) 
+				: Boolean ; 
+ 
+IF (SIZEOF(QUERY(elt <* L|elt.parameter_type = P)) = 1)
+THEN 
+	RETURN(TRUE);
+ELSE
+	RETURN(FALSE);
+END_IF;
+END_FUNCTION; -- is_in_v_c_v_range
+
+
+FUNCTION get_v_c_v_range(P: Property_BSU; 
+					L : SET OF view_control_variable_range )
+				: view_control_variable_range;
+
+LOCAL
+	x : SET OF view_control_variable_range;
+END_LOCAL;
+
+x:= QUERY(elt <* L|elt.parameter_type = P);
+
+RETURN(x[1]);
+
+END_FUNCTION; -- get_v_c_v_range
+
+
+FUNCTION all_v_c_v_range_available(L: LIST OF Property_BSU) 
+					: Boolean; 
+LOCAL 
+	res : Boolean:= TRUE; 
+END_LOCAL; 
+ 
+REPEAT i:= 1 TO SIZEOF(L); 
+	IF NOT (SIZEOF (data_type_non_quantitative_int_type(L[i])) = 1)
+	THEN 
+		res := FALSE ;
+	END_IF;
+END_REPEAT; 
+ 
+RETURN(res); 
+END_FUNCTION; -- all_v_c_v_range_available
+
+
+FUNCTION make_ordered_list_of_v_c_v_range ( 
+			L: LIST OF Property_BSU; 
+			L_range: SET OF view_control_variable_range) 
+			: LIST OF view_control_variable_range; 
+LOCAL 
+	y 	: view_control_variable_range;
+	res 	: LIST OF view_control_variable_range:=[]; 
+	s	: SET[0:1] OF non_quantitative_int_type ; 
+	x	: non_quantitative_int_type ; 
+END_LOCAL; 
+
+IF NOT all_v_c_v_range_available(L) 
+THEN 
+	RETURN([]);
+END_IF; 
+ 
+REPEAT i:= 1 TO SIZEOF(L); 
+	IF is_in_v_c_v_range(L[i], L_range) 
+	THEN  
+		res:= res + get_v_c_v_range(L[i],L_range); 
+	ELSE 
+		y.parameter_type := L[i]; 
+		s := data_type_non_quantitative_int_type(L[i]); 
+		x := s[1]; 
+		y.range_lobound := x.domain.its_values[1].value_code ; 
+		y.range_hibound := y.range_lobound   
+			+ SIZEOF(x.domain.its_values) - 1; 
+		res := res + y;
+	END_IF; 
+END_REPEAT; 
+
+RETURN(res); 
+END_FUNCTION; -- make_ordered_list_of_v_c_v_range
+
+
+FUNCTION cdr_list(L: LIST [2:?] OF GENERIC : type_elem) 
+		: LIST OF GENERIC: type_elem; 
+ 
+LOCAL 
+cdr: LIST OF GENERIC: type_elem := []; 
+END_LOCAL; 
+ 
+REPEAT i := 2 TO SIZEOF(L); 
+	cdr := cdr + L[i]; 
+END_REPEAT; 
+
+RETURN(cdr); 
+END_FUNCTION;    -- cdr_list 
+
+
+FUNCTION make_tuple(L: LIST[1:?] of view_control_variable_range)
+			: SET [1:?] OF LIST[1:?] OF INTEGER;
+LOCAL
+	result: SET OF LIST OF INTEGER := [];
+	list_sub_tuple: SET OF LIST OF INTEGER;
+END_LOCAL;
+
+IF SIZEOF(L) = 1 THEN 
+	REPEAT i := L[1]\view_control_variable_range.range_lobound TO 
+			L[1]\view_control_variable_range.range_hibound ;
+		result := [[i]] + result;
+	END_REPEAT;
+ELSE
+	list_sub_tuple := make_tuple(cdr_list(L));
+	REPEAT i := 1 TO SIZEOF(list_sub_tuple);	-- for each sub-tuple
+		REPEAT j := L[1]\view_control_variable_range.range_lobound 
+				TO L[1]\view_control_variable_range.range_hibound ;
+					-- creates one new tuple for each value of L[1]
+			result := result +[j + list_sub_tuple[i]] ;
+		END_REPEAT;
+	END_REPEAT;
+END_IF;
+
+RETURN(result);
+END_FUNCTION;	-- make_tuple
+
+
+FUNCTION computable_set_of_created_views_from_model(
+		cl: class_BSU) : BOOLEAN;
+
+IF NOT EXISTS(cl)
+THEN
+	RETURN (FALSE); -- the class itself is indeterminate
+END_IF;
+
+IF SIZEOF(cl.definition) = 0
+THEN 
+	RETURN(FALSE);
+END_IF;
+
+IF SIZEOF(cl.referenced_by) = 0
+THEN
+	RETURN(FALSE);
+END_IF;
+IF NOT('ISO13584_EXTENDED_DICTIONARY_SCHEMA.'+
+	'ABSTRACT_FUNCTIONAL_MODEL_CLASS' IN TYPEOF(cl.definition[1]))
+THEN
+	RETURN(FALSE);
+END_IF;
+IF NOT('ISO13584_LIBRARY_CONTENT_SCHEMA.'+
+	'FUNCTIONAL_MODEL_CLASS_EXTENSION' IN TYPEOF
+									(cl.referenced_by[1]))
+THEN
+	RETURN(FALSE);
+END_IF;
+
+IF SIZEOF(functional_view_v_c_v(cl.definition[1]
+		\abstract_functional_model_class.created_view)) = 0
+THEN
+	RETURN(FALSE);
+END_IF;
+
+RETURN(all_v_c_v_range_available(functional_view_v_c_v(cl.definition[1]
+		\abstract_functional_model_class.created_view)));
+
+END_FUNCTION;	-- computable_set_of_created_views_from_model
+
+
+FUNCTION declared_created_views(cl : class_BSU)
+			: SET OF LIST OF INTEGER;
+LOCAL
+	res: SET OF LIST OF INTEGER:=[];
+	v_c_vs : LIST OF view_control_variable_range;
+END_LOCAL;
+
+IF NOT computable_set_of_created_views_from_model (cl)
+THEN 
+	RETURN([]);
+END_IF;
+
+v_c_vs:= make_ordered_list_of_v_c_v_range(functional_view_v_c_v(
+	cl.definition[1]\abstract_functional_model_class.created_view),
+	cl.definition[1]\abstract_functional_model_class.v_c_v_range);
+
+res := make_tuple(v_c_vs);
+
+RETURN(res);
+
+END_FUNCTION;	--declared_created_views
+
+
+FUNCTION created_views_by_methods(cl: class_BSU)
+				: SET OF LIST OF INTEGER;
+LOCAL
+	res: SET OF LIST OF INTEGER:=[];
+	v_c_vs : LIST OF view_control_variable_range;
+END_LOCAL;
+
+IF NOT computable_set_of_created_views_from_model (cl)
+THEN 
+	RETURN([]);
+END_IF;
+
+REPEAT i:= 1 TO SIZEOF(cl.referenced_by[1]
+		\functional_model_class_extension.provided_methods);
+	v_c_vs:= make_ordered_list_of_v_c_v_range(
+		functional_view_v_c_v(cl.definition[1]
+		\abstract_functional_model_class.created_view),
+		cl.referenced_by[1]\functional_model_class_extension
+		.provided_methods[i].specification.v_c_v_range);
+
+	res := res + make_tuple(v_c_vs);
+
+END_REPEAT;
+
+RETURN(res);
+
+END_FUNCTION;	-- created_views_by_methods
+
+
+FUNCTION no_extension_for_superclass (
+		 cl : class_extension) : LOGICAL;
+
+IF SIZEOF (
+	cl\content_item.dictionary_definition.definition) = 0
+THEN
+	RETURN (UNKNOWN);
+END_IF;
+
+RETURN (
+	cl\content_item.dictionary_definition.definition[1]
+		\class.subclasses = []);
+END_FUNCTION;	-- no_extension_for_superclass
+
+
+FUNCTION selectable_properties_not_defined_twice (
+				class_ext : model_class_extension):LOGICAL;
+
+IF NOT exists_super(class_ext.dictionary_definition\class_BSU)
+THEN
+	RETURN (UNKNOWN) ;
+ELSE
+	RETURN (are_properties_not_in(
+		class_ext.selectable_properties, provided_properties_list(
+		super(class_ext.dictionary_definition)[1])));
+END_IF;
+END_FUNCTION;	-- selectable_properties_not_defined_twice
+
+
+FUNCTION derived_properties_not_defined_twice (
+				class_ext: model_class_extension):LOGICAL; 
+
+IF NOT exists_super(class_ext.dictionary_definition\class_BSU) 
+THEN 
+	RETURN (UNKNOWN) ;
+ELSE
+	RETURN (are_properties_not_in(class_ext.derived_properties,
+		provided_properties_list(
+		super(class_ext.dictionary_definition)[1])));
+END_IF;
+END_FUNCTION;	-- derived_properties_not_defined_twice
+
+
+FUNCTION in_typeof (typ: STRING; elt: opt_or_mand_property_BSU )
+									:LOGICAL ;
+
+IF SIZEOF(elt.property.definition) = 1 THEN
+	RETURN ( typ IN TYPEOF (elt.property.definition [1]));
+ELSE
+	RETURN (TRUE);
+END_IF;
+END_FUNCTION; -- in_typeof
+
+
+FUNCTION referenced_veps_exist_in_supported_veps(
+	lib: library; cl: class_BSU): LOGICAL;
+LOCAL
+	class_extension: SET [0:1] OF content_item := 
+			cl\basic_semantic_unit.referenced_by;
+	class_extension_referenced_veps: SET OF 
+			view_exchange_protocol_id;
+	dictionary_supported_veps: SET OF view_exchange_protocol_id;
+	tmp: LOGICAL;
+END_LOCAL;
+
+IF SIZEOF(class_extension) = 1
+THEN
+	class_extension_referenced_veps := 
+		list_to_set(class_extension[1]\model_class_extension
+			.referenced_view_exchange_protocol);
+	dictionary_supported_veps := lib\dictionary.supported_vep;
+	tmp := (class_extension_referenced_veps <= 
+			dictionary_supported_veps);
+	RETURN(('ISO13584_LIBRARY_CONTENT_SCHEMA.MODEL_CLASS_EXTENSION' 
+			IN TYPEOF (class_extension[1]))
+		AND NOT (tmp));
+ELSE
+	RETURN(FALSE);
+END_IF;
+END_FUNCTION; -- referenced_veps_exist_in_supported_veps
+
+
+FUNCTION referenced_protocols_exist_in_supported_protocols(
+	lib: library; cl: class_BSU): LOGICAL;
+LOCAL
+	class_extension: SET [0:1] OF content_item := 
+		cl\basic_semantic_unit.referenced_by;
+END_LOCAL;
+
+IF SIZEOF(class_extension) = 1
+THEN
+	RETURN(('ISO13584_LIBRARY_CONTENT_SCHEMA' + 
+		'.MODEL_CLASS_EXTENSION' IN TYPEOF(class_extension))
+		AND
+		(SIZEOF(QUERY(pr <* class_extension[1]\model_class_extension
+			.referenced_external_items | NOT (
+			pr\external_item.used_protocol IN 
+			lib\dictionary.base_protocols) 
+			AND NOT (pr\external_item.used_protocol IN 
+			lib.linked_interfaces))) <> 0)
+	);
+ELSE
+	RETURN(FALSE);
+END_IF;
+
+END_FUNCTION; -- referenced_protocols_exist_in_supported_protocols
+
+
+FUNCTION required_properties_are_non_dependent_p_det(
+	fm_class_ext: functional_model_class_extension): LOGICAL;
+LOCAL
+	is_fm_class_view_of: LOGICAL;
+	res: LIST OF opt_or_mand_property_bsu;
+END_LOCAL;
+
+IF (SIZEOF(fm_class_ext\content_item.dictionary_definition.definition) 
+		= 1)
+THEN
+	is_fm_class_view_of := 'ISO13584_EXTENDED_DICTIONARY_SCHEMA' +
+		 '.FM_CLASS_VIEW_OF' IN TYPEOF(fm_class_ext\content_item
+		.dictionary_definition.definition[1]);
+ELSE
+	RETURN(UNKNOWN);
+END_IF;
+
+IF (SIZEOF(fm_class_ext.required_item_characteristics) <> 0)
+THEN
+	res := QUERY (elt <* fm_class_ext.required_item_characteristics|
+	in_typeof('ISO13584_IEC61360_DICTIONARY_SCHEMA' + 
+						'.NON_DEPENDENT_P_DET', elt));
+ELSE
+	RETURN(is_fm_class_view_of);
+END_IF;	
+
+RETURN (is_fm_class_view_of AND (res = 
+		fm_class_ext.required_item_characteristics));
+
+END_FUNCTION; -- required_properties_are_non_dependent_p_det
+
+
+RULE assert_oneof_for_library FOR (library);
+WHERE
+	WR1: QUERY (temp <* library| 
+		NOT ( 'ISO13584_LIBRARY_CONTENT_SCHEMA'
+			+'.LIBRARY_IN_STANDARD_FORMAT'
+		IN TYPEOF (temp))
+		AND
+		('ISO13584_EXTENDED_DICTIONARY_SCHEMA'
+			+'.DICTIONARY_IN_STANDARD_FORMAT'
+		IN TYPEOF (temp)))
+		= [];
+
+END_RULE; -- assert_oneof_for_library
+
+
+RULE declared_created_views_are_created FOR (
+			functional_model_class_extension,	
+			functional_view_class);
+WHERE
+	WR1: QUERY (a_model <* functional_model_class_extension | 
+		 (computable_set_of_created_views_from_model
+		(a_model\content_item.dictionary_definition\class_BSU)) AND 
+		NOT ((declared_created_views(
+			a_model\content_item.dictionary_definition\class_BSU)
+		<= (created_views_by_methods(a_model\content_item
+		.dictionary_definition\class_BSU)))))
+		= [];
+
+END_RULE; -- declared_created_views_are_created
+
+
+RULE complete_identification_for_instance 
+			FOR (class_instance_constructor);
+WHERE
+	WR1: (QUERY (inst <* class_instance_constructor |
+		NOT(definition_available_implies (inst.expr_type,
+		(SIZEOF (inst.expr_type.referenced_by) = 0) OR
+		('ISO13584_LIBRARY_CONTENT_SCHEMA.MODEL_CLASS_EXTENSION'
+		IN TYPEOF (inst.expr_type.referenced_by[1])))))
+		= []);
+	WR2: (QUERY (inst <* class_instance_constructor |
+		NOT(
+		definition_available_implies (inst.expr_type,
+		(SIZEOF (inst.expr_type.referenced_by) = 0) OR
+		(('ISO13584_LIBRARY_CONTENT_SCHEMA.ITEM_CLASS_EXTENSION'
+		IN TYPEOF (inst.expr_type.referenced_by[1]))
+		AND
+		(collects_assigned_properties(inst.properties) 
+				= (gm_free_characteristics_list(inst.expr_type))))
+		OR
+		(('ISO13584_LIBRARY_CONTENT_SCHEMA.'
+							+'FUNCTIONAL_MODEL_CLASS_EXTENSION'
+		IN TYPEOF (inst.expr_type.referenced_by[1]))
+		AND
+		(collects_assigned_properties(inst.properties)
+				= fm_free_model_properties_list(inst.expr_type ))))
+		)) = []);
+	WR3: (QUERY (inst <* class_instance_constructor |
+		QUERY (prop <* 
+		(list_to_set(collects_assigned_properties(inst.properties)) - 
+		list_to_set(optional_properties_list (inst.expr_type))) | 
+		NOT (EXISTS (prop.its_value))) = [] ) =[]);
+		
+END_RULE;
+
+
+
+END_SCHEMA; -- ISO13584_library_content_schema

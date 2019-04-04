@@ -1,0 +1,1471 @@
+
+-- second edition, received 2000-02-20
+
+SCHEMA ap224_arm;
+
+TYPE Angle_or_directed_taper = SELECT
+	(Angle_taper,
+	 Directed_taper);
+END_TYPE;
+
+TYPE Compound_feature_select = SELECT
+	(Machining_feature,
+	 Transition_feature);
+END_TYPE;
+
+TYPE Datum_representation_select = SELECT
+	(Datum_target_set,
+	 Shape_element);
+END_TYPE;
+
+TYPE Hole_bottom_condition_select = SELECT
+	(Through_bottom_condition,
+	 Blind_bottom_condition);
+END_TYPE;
+
+TYPE Manufacturing_group_select = SELECT
+	(Manufacturing_feature,
+	 Manufacturing_feature_group);
+END_TYPE;
+
+TYPE Numeric_parameter_tolerance_select = SELECT
+	(Plus_minus_value,
+	 Tolerance_limit);
+END_TYPE;
+
+TYPE Pocket_bottom_condition_select = SELECT
+	(Through_pocket_bottom_condition,
+	 Pocket_bottom_condition);
+END_TYPE;
+
+TYPE Profile_select = SELECT
+	(Through_profile_floor,
+	 Profile_floor);
+END_TYPE;
+
+TYPE Replicate_base_select = SELECT
+	(Machining_feature,
+	 Replicate_feature);
+END_TYPE;
+
+TYPE Taper_select = SELECT
+	(Angle_taper,
+	 Diameter_taper,
+	 Directed_taper);
+END_TYPE;
+
+TYPE Tolerance_definition_select = SELECT
+	(Tolerance_range,
+	 Plus_minus_value,
+	 Tolerance_limit,
+	 Limits_and_fits);
+END_TYPE;
+
+ENTITY Alternate_material;
+	alternate_ranking : INTEGER;
+	material_substitute : Material;
+ INVERSE
+	replacement_material : SET[1:?] OF Single_piece_part FOR alternate_material_definition;
+END_ENTITY;
+
+ENTITY Angle_taper;
+	angle : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Angular_dimension_tolerance
+ SUBTYPE OF (Location_tolerance);
+	major_angle : BOOLEAN;
+	mirror_origin : BOOLEAN;
+	mirror_termination : BOOLEAN;
+END_ENTITY;
+
+ENTITY Angular_size_dimension_tolerance
+ SUBTYPE OF (Size_tolerance);
+	major_angle : BOOLEAN;
+	full_or_half : BOOLEAN;
+END_ENTITY;
+
+ENTITY Angularity_tolerance
+ SUBTYPE OF (Geometric_tolerance);
+	geometric_reference : Datum;
+	segment_size : OPTIONAL INTEGER;
+END_ENTITY;
+
+ENTITY Approval;
+	approval_authority : SET [1:?] OF Person_in_organization;
+	status : STRING;
+	approval_date : STRING;
+ INVERSE
+	authorizes : SET[0:1] OF Project_order FOR release_authorization;
+END_ENTITY;
+
+ENTITY Base_shape
+	ABSTRACT SUPERTYPE OF (ONEOF(Explicit_base_shape_representation,Implicit_base_shape_representation));
+END_ENTITY;
+
+ENTITY Blind_bottom_condition
+	ABSTRACT SUPERTYPE OF (ONEOF(Flat_hole_bottom,Flat_with_taper_hole_bottom,Spherical_hole_bottom,Conical_hole_bottom,Flat_with_radius_hole_bottom));
+	start_or_end : BOOLEAN;
+END_ENTITY;
+
+ENTITY Block_base_shape
+ SUBTYPE OF (Implicit_base_shape_representation);
+	width : Numeric_parameter;
+	height : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Boss
+	ABSTRACT SUPERTYPE OF (ONEOF(General_boss,Circular_boss,Rectangular_boss))
+ SUBTYPE OF (Multi_axis_feature);
+	top_condition : Boss_top_condition;
+	boss_height : Linear_path;
+	fillet_radius : OPTIONAL Numeric_parameter;
+	top_radius : OPTIONAL Numeric_parameter;
+END_ENTITY;
+
+ENTITY Boss_top_condition
+	ABSTRACT SUPERTYPE OF (ONEOF(Planar_top_condition,General_top_condition));
+	start_or_end : BOOLEAN;
+END_ENTITY;
+
+ENTITY Brep_model;
+END_ENTITY;
+
+ENTITY Brep_model_element;
+	element : Brep_model;
+END_ENTITY;
+
+ENTITY Brep_shape_aspect_representation;
+	shape_definition : Brep_model;
+END_ENTITY;
+
+ENTITY Brep_shape_representation;
+	shape_definition : Brep_model;
+END_ENTITY;
+
+ENTITY Catalogue_knurl
+ SUBTYPE OF (Knurl);
+	documentation : Specification;
+END_ENTITY;
+
+ENTITY Catalogue_marking
+ SUBTYPE OF (Marking);
+	documentation : Specification;
+END_ENTITY;
+
+ENTITY Catalogue_thread
+ SUBTYPE OF (Thread);
+	documentation : Specification;
+END_ENTITY;
+
+ENTITY Chamfer
+ SUBTYPE OF (Transition_feature);
+	first_face_offset : First_offset;
+	second_face_offset : Second_chamfer_offset;
+	chamfer_face : Face_shape_element;
+END_ENTITY;
+
+ENTITY Chamfer_angle
+ SUBTYPE OF (Second_chamfer_offset);
+	angle_amount : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Circular_boss
+ SUBTYPE OF (Boss);
+	circular_profile : Circular_closed_profile;
+	change_in_diameter : OPTIONAL Taper_select;
+END_ENTITY;
+
+ENTITY Circular_closed_profile
+ SUBTYPE OF (Closed_profile);
+	diameter : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Circular_closed_shape_profile
+ SUBTYPE OF (Shape_profile);
+	closed_boundary : Circular_closed_profile;
+END_ENTITY;
+
+ENTITY Circular_cutout
+ SUBTYPE OF (Cutout);
+	circular_boundary : Circular_closed_profile;
+END_ENTITY;
+
+ENTITY Circular_offset_pattern;
+	angular_offset : Numeric_parameter;
+	index_number : Numeric_parameter;
+ INVERSE
+	relocated_base_feature_for : SET[1:?] OF Circular_pattern FOR relocated_base_feature;
+END_ENTITY;
+
+ENTITY Circular_omit_pattern;
+	omit_index : Numeric_parameter;
+ INVERSE
+	missing_base_feature_for : SET[1:?] OF Circular_pattern FOR missing_base_feature;
+END_ENTITY;
+
+ENTITY Circular_path
+	ABSTRACT SUPERTYPE OF (ONEOF(Complete_circular_path,Partial_circular_path))
+ SUBTYPE OF (Path);
+	radius : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Circular_pattern
+ SUBTYPE OF (Replicate_feature);
+	relocated_base_feature : SET [0:?] OF Circular_offset_pattern;
+	missing_base_feature : SET [0:?] OF Circular_omit_pattern;
+	angular_spacing : Numeric_parameter;
+	base_feature_diameter : OPTIONAL Numeric_parameter;
+	base_feature_rotation : Numeric_parameter;
+	number_of_features : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Circular_runout_tolerance
+ SUBTYPE OF (Geometric_tolerance);
+	runout_angle : OPTIONAL REAL;
+	geometric_reference : SET [1:2] OF Datum;
+END_ENTITY;
+
+ENTITY Circularity_tolerance
+ SUBTYPE OF (Geometric_tolerance);
+END_ENTITY;
+
+ENTITY Closed_profile
+	ABSTRACT SUPERTYPE OF (ONEOF(Circular_closed_profile,Rectangular_closed_profile,Ngon_profile,General_closed_profile))
+ SUBTYPE OF (Profile);
+END_ENTITY;
+
+ENTITY Complete_circular_path
+ SUBTYPE OF (Circular_path);
+END_ENTITY;
+
+ENTITY Compound_datum
+ SUBTYPE OF (Datum);
+	element : LIST [2:?] OF Datum_feature;
+END_ENTITY;
+
+ENTITY Compound_feature
+ SUBTYPE OF (Machining_feature);
+	feature_name : STRING;
+	feature_description : STRING;
+	element : SET [2:?] OF Compound_feature_element;
+END_ENTITY;
+
+ENTITY Compound_feature_element;
+	element : Compound_feature_select;
+END_ENTITY;
+
+ENTITY Compound_feature_relationship;
+	successor : Compound_feature_element;
+	predecessor : Compound_feature_element;
+END_ENTITY;
+
+ENTITY Concentricity_tolerance
+ SUBTYPE OF (Geometric_tolerance);
+	geometric_reference : Datum;
+	value_qualifier : REAL;
+END_ENTITY;
+
+ENTITY Conical_hole_bottom
+ SUBTYPE OF (Blind_bottom_condition);
+	tip_angle : Numeric_parameter;
+	tip_radius : OPTIONAL Numeric_parameter;
+END_ENTITY;
+
+ENTITY Constant_radius_edge_round
+ SUBTYPE OF (Edge_round);
+	second_face_offset : OPTIONAL Numeric_parameter;
+	first_face_offset : OPTIONAL Numeric_parameter;
+	radius : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Constant_radius_fillet
+ SUBTYPE OF (Fillet);
+	radius : Numeric_parameter;
+	first_face_offset : OPTIONAL Numeric_parameter;
+	second_face_offset : OPTIONAL Numeric_parameter;
+END_ENTITY;
+
+ENTITY Counterbore_hole
+ SUBTYPE OF (Hole);
+	smaller_hole : Round_hole;
+	larger_hole : Round_hole;
+END_ENTITY;
+
+ENTITY Countersunk_hole
+ SUBTYPE OF (Hole);
+	constant_diameter_hole : Round_hole;
+	tapered_hole : Round_hole;
+END_ENTITY;
+
+ENTITY Curved_dimension_tolerance
+ SUBTYPE OF (Size_tolerance);
+END_ENTITY;
+
+ENTITY Customer_order;
+	customer : Person_in_organization;
+	quantity_ordered : SET [1:?] OF Ordered_part;
+	order_number : STRING;
+	material_disposition : STRING;
+	order_status : STRING;
+	special_instructions : STRING;
+	delivery_date : STRING;
+	initiated_order : SET [1:?] OF Project_order;
+END_ENTITY;
+
+ENTITY Cutout
+	ABSTRACT SUPERTYPE OF (Circular_cutout ANDOR General_cutout)
+ SUBTYPE OF (Pocket);
+   SELF\Pocket.bottom_condition : Through_pocket_bottom_condition;
+END_ENTITY;
+
+ENTITY Cutting_tool_requisition
+ SUBTYPE OF (Requisition);
+END_ENTITY;
+
+ENTITY Cylindrical_base_shape
+ SUBTYPE OF (Implicit_base_shape_representation);
+	diameter : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Cylindricity_tolerance
+ SUBTYPE OF (Geometric_tolerance);
+END_ENTITY;
+
+ENTITY Datum
+	ABSTRACT SUPERTYPE OF (ONEOF(Compound_datum,Datum_feature));
+	name : STRING;
+	precedence : INTEGER;
+END_ENTITY;
+
+ENTITY Datum_feature
+ SUBTYPE OF (Datum);
+	modifier : OPTIONAL Material_condition_modifier;
+	datum_representation : Datum_representation_select;
+END_ENTITY;
+
+ENTITY Datum_target
+	ABSTRACT SUPERTYPE OF (ONEOF(Target_area,Placed_target));
+	identifier : STRING;
+END_ENTITY;
+
+ENTITY Datum_target_set;
+	rule_description : OPTIONAL STRING;
+	target_shape : SET [1:?] OF Datum_target;
+END_ENTITY;
+
+ENTITY Dedicated_fixture_requisition
+ SUBTYPE OF (Requisition);
+END_ENTITY;
+
+ENTITY Defined_marking
+ SUBTYPE OF (Marking);
+	special_instructions : OPTIONAL Descriptive_parameter;
+	font_name : OPTIONAL Descriptive_parameter;
+	character_height : OPTIONAL Numeric_parameter;
+	character_spacing : OPTIONAL Numeric_parameter;
+END_ENTITY;
+
+ENTITY Defined_thread
+ SUBTYPE OF (Thread);
+	pitch_diameter : Numeric_parameter;
+	minor_diameter : OPTIONAL Numeric_parameter;
+	crest : OPTIONAL Numeric_parameter;
+END_ENTITY;
+
+ENTITY Descriptive_parameter
+ SUBTYPE OF (Property_parameter);
+	descriptive_string : STRING;
+END_ENTITY;
+
+ENTITY Design_exception_notice;
+	discrepant_part : SET [1:?] OF Part;
+	issues : SET [0:?] OF Engineering_change_proposal;
+	notice_number : STRING;
+	notice_description : STRING;
+	technical_recommendation : STRING;
+	issuing_date : STRING;
+END_ENTITY;
+
+ENTITY Diagonal_knurl
+ SUBTYPE OF (Turned_knurl);
+	helix_angle : Numeric_parameter;
+	helix_hand : Descriptive_parameter;
+END_ENTITY;
+
+ENTITY Diameter_dimension_tolerance
+ SUBTYPE OF (Size_tolerance);
+END_ENTITY;
+
+ENTITY Diameter_taper;
+	final_diameter : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Diamond_knurl
+ SUBTYPE OF (Turned_knurl);
+	helix_angle : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Digital_technical_data_package_work_order;
+	order_id : STRING;
+END_ENTITY;
+
+ENTITY Dimensional_tolerance
+	ABSTRACT SUPERTYPE OF (ONEOF(Size_tolerance,Location_tolerance));
+	limit : OPTIONAL Tolerance_value;
+	dimension_value : REAL;
+	unit_of_measure : STRING;
+	significant_digits : OPTIONAL INTEGER;
+	dimension_description : OPTIONAL STRING;
+END_ENTITY;
+
+ENTITY Directed_taper;
+	angle : Numeric_parameter;
+	direction : Direction_element;
+END_ENTITY;
+
+ENTITY Direction_element
+ SUBTYPE OF (Shape_element);
+END_ENTITY;
+
+ENTITY Distance_along_curve_tolerance
+ SUBTYPE OF (Location_tolerance);
+	with_curve_direction : BOOLEAN;
+	path : Shape_aspect;
+END_ENTITY;
+
+ENTITY Edge_round
+ SUBTYPE OF (Transition_feature);
+	first_face_shape : Face_shape_element;
+	edge_round_face : Face_shape_element;
+	second_face_shape : Face_shape_element;
+END_ENTITY;
+
+ENTITY Engineering_change_order;
+	new_version : SET [1:?] OF Part;
+	change_order_number : STRING;
+ INVERSE
+	approved_proposal : Engineering_change_proposal FOR incorporated_proposal;
+END_ENTITY;
+
+ENTITY Engineering_change_proposal;
+	incorporated_proposal : SET [1:?] OF Engineering_change_order;
+	change_proposal_number : STRING;
+ INVERSE
+	formalizes : Design_exception_notice FOR issues;
+END_ENTITY;
+
+ENTITY Explicit_base_shape_representation
+ SUBTYPE OF (Base_shape);
+	B_rep_form : Brep_shape_representation;
+END_ENTITY;
+
+ENTITY Face_shape_element
+ SUBTYPE OF (Shape_element);
+END_ENTITY;
+
+ENTITY Face_shape_element_relationship;
+	successor : Face_shape_element;
+	predecessor : Face_shape_element;
+END_ENTITY;
+
+ENTITY Fillet
+ SUBTYPE OF (Transition_feature);
+	fillet_face : Face_shape_element;
+	second_face_shape : Face_shape_element;
+	first_face_shape : Face_shape_element;
+END_ENTITY;
+
+ENTITY First_offset;
+	offset_amount : Numeric_parameter;
+	face_shape : Face_shape_element;
+END_ENTITY;
+
+ENTITY Flat_hole_bottom
+ SUBTYPE OF (Blind_bottom_condition);
+END_ENTITY;
+
+ENTITY Flat_slot_end_type
+ SUBTYPE OF (Slot_end_type);
+	second_radius : Numeric_parameter;
+	first_radius : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Flat_with_radius_hole_bottom
+ SUBTYPE OF (Blind_bottom_condition);
+	corner_radius : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Flat_with_taper_hole_bottom
+ SUBTYPE OF (Blind_bottom_condition);
+	taper_angle : Numeric_parameter;
+	final_diameter : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Flatness_tolerance
+ SUBTYPE OF (Geometric_tolerance);
+	segment_size : OPTIONAL INTEGER;
+END_ENTITY;
+
+ENTITY General_boss
+ SUBTYPE OF (Boss);
+	enclosed_boundary : Closed_profile;
+	change_in_boundary : OPTIONAL Angle_taper;
+END_ENTITY;
+
+ENTITY General_closed_profile
+ SUBTYPE OF (Closed_profile);
+	closed_profile_shape : Path_element;
+END_ENTITY;
+
+ENTITY General_cutout
+ SUBTYPE OF (Cutout);
+	boundary : Profile;
+END_ENTITY;
+
+ENTITY General_open_path_profile
+ SUBTYPE OF (Open_profile);
+	enclosed_boundary : Path_element;
+END_ENTITY;
+
+ENTITY General_outside_profile
+ SUBTYPE OF (Profile_feature);
+	boundary : Profile;
+END_ENTITY;
+
+ENTITY General_path
+ SUBTYPE OF (Path);
+	sweep_path : Path_element;
+END_ENTITY;
+
+ENTITY General_pattern
+ SUBTYPE OF (Replicate_feature);
+	feature_placement : SET [1:?] OF Orientation;
+END_ENTITY;
+
+ENTITY General_pocket
+ SUBTYPE OF (Pocket);
+	boundary : Profile;
+END_ENTITY;
+
+ENTITY General_pocket_bottom_condition
+ SUBTYPE OF (Pocket_bottom_condition);
+	floor : Face_shape_element;
+	floor_radius : OPTIONAL Numeric_parameter;
+END_ENTITY;
+
+ENTITY General_profile_floor
+ SUBTYPE OF (Profile_floor);
+	floor : Face_shape_element;
+END_ENTITY;
+
+ENTITY General_removal_volume
+ SUBTYPE OF (Multi_axis_feature);
+	removal_volume : SET [1:?] OF Shape_element;
+END_ENTITY;
+
+ENTITY General_revolution
+ SUBTYPE OF (Revolved_feature);
+	outer_edge_shape : General_open_path_profile;
+END_ENTITY;
+
+ENTITY General_rib_top_floor
+ SUBTYPE OF (Rib_top_floor);
+	rib_top_face : SET [1:?] OF Face_shape_element;
+END_ENTITY;
+
+ENTITY General_shape_profile
+ SUBTYPE OF (Shape_profile);
+	profile_boundary : Profile;
+END_ENTITY;
+
+ENTITY General_top_condition
+ SUBTYPE OF (Boss_top_condition);
+	top_face : Face_shape_element;
+END_ENTITY;
+
+ENTITY Geometric_tolerance
+ SUPERTYPE OF (ONEOF(Cylindricity_tolerance,Circularity_tolerance,Flatness_tolerance,Angularity_tolerance,Symmetry_tolerance,Position_tolerance,Surface_profile_tolerance,Parallelism_tolerance,Perpendicularity_tolerance,Concentricity_tolerance,Linear_profile_tolerance,Total_runout_tolerance,Circular_runout_tolerance,Straightness_tolerance));
+	modifier_control : OPTIONAL Material_condition_modifier;
+	applied_shape : SET [1:?] OF Shape_aspect;
+	significant_digits : STRING;
+	unit_of_measure : STRING;
+	geometric_tolerance_value : REAL;
+	zone_definition : OPTIONAL Tolerance_zone;
+END_ENTITY;
+
+ENTITY Geometric_tolerance_precedence_relationship;
+	base_shape_tolerance : Geometric_tolerance;
+	pattern_shape_tolerance : Geometric_tolerance;
+END_ENTITY;
+
+ENTITY Groove
+ SUBTYPE OF (Revolved_feature);
+	sweep : Open_profile;
+END_ENTITY;
+
+ENTITY Hardness;
+	scale : STRING;
+	high_value : STRING;
+	low_value : STRING;
+	nominal : STRING;
+END_ENTITY;
+
+ENTITY Hole
+	ABSTRACT SUPERTYPE OF (ONEOF(Counterbore_hole,Round_hole,Countersunk_hole))
+ SUBTYPE OF (Multi_axis_feature);
+END_ENTITY;
+
+ENTITY Implicit_base_shape_representation
+	ABSTRACT SUPERTYPE OF (ONEOF(Cylindrical_base_shape,Ngon_base_shape,Block_base_shape))
+ SUBTYPE OF (Base_shape);
+	base_shape_length : Numeric_parameter;
+	placement : Orientation;
+END_ENTITY;
+
+ENTITY Indirect_stock_requisition
+ SUBTYPE OF (Requisition);
+END_ENTITY;
+
+ENTITY Knurl
+	ABSTRACT SUPERTYPE OF (ONEOF(Catalogue_knurl,Turned_knurl))
+ SUBTYPE OF (Machining_feature);
+	partial_profile : OPTIONAL Partial_area_definition;
+	applied_shape : Shape;
+END_ENTITY;
+
+ENTITY Limits_and_fits;
+	deviation : REAL;
+	grade : REAL;
+	fitting_type : OPTIONAL REAL;
+END_ENTITY;
+
+ENTITY Linear_path
+ SUBTYPE OF (Path);
+	distance : Numeric_parameter;
+	direction : Direction_element;
+END_ENTITY;
+
+ENTITY Linear_profile
+ SUBTYPE OF (Open_profile);
+	profile_length : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Linear_profile_tolerance
+ SUBTYPE OF (Geometric_tolerance);
+	geometric_reference : SET [0:3] OF Datum;
+	affected_plane : OPTIONAL Orientation;
+END_ENTITY;
+
+ENTITY Location_dimension_tolerance
+ SUBTYPE OF (Location_tolerance);
+	directed : BOOLEAN;
+	plane_and_direction : OPTIONAL Orientation;
+END_ENTITY;
+
+ENTITY Location_element
+ SUBTYPE OF (Shape_element);
+END_ENTITY;
+
+ENTITY Location_tolerance
+	ABSTRACT SUPERTYPE OF (ONEOF(Distance_along_curve_tolerance,Angular_dimension_tolerance,Location_dimension_tolerance))
+ SUBTYPE OF (Dimensional_tolerance);
+	origin_shape : Shape_element;
+	termination_shape : Shape_element;
+END_ENTITY;
+
+ENTITY Machine_requisition
+ SUBTYPE OF (Requisition);
+END_ENTITY;
+
+ENTITY Machining_feature
+ SUPERTYPE OF (ONEOF(Knurl,Spherical_cap,Revolved_feature,Marking,Thread,Outer_round,Compound_feature,Multi_axis_feature))
+ SUBTYPE OF (Manufacturing_feature);
+	placement : Orientation;
+	usage_name : OPTIONAL STRING;
+END_ENTITY;
+
+ENTITY Manufactured_assembly
+ SUBTYPE OF (Part);
+ INVERSE
+	components : SET[2:?] OF Manufactured_assembly_relationship FOR assembly;
+END_ENTITY;
+
+ENTITY Manufactured_assembly_relationship;
+	component : Part;
+	assembly : Manufactured_assembly;
+	orientation : Part_placement;
+END_ENTITY;
+
+ENTITY Manufacturing_feature
+	ABSTRACT SUPERTYPE OF (ONEOF(Machining_feature,Replicate_feature,Transition_feature))
+ SUBTYPE OF (Shape_element);
+END_ENTITY;
+
+ENTITY Manufacturing_feature_group;
+	group_name : STRING;
+	group_description : STRING;
+	feature_groups : SET [2:?] OF Manufacturing_group_select;
+END_ENTITY;
+
+ENTITY Marking
+	ABSTRACT SUPERTYPE OF (ONEOF(Catalogue_marking,Defined_marking))
+ SUBTYPE OF (Machining_feature);
+	applied_to_shape : Shape;
+	text : Descriptive_parameter;
+END_ENTITY;
+
+ENTITY Material;
+	material_id : STRING;
+	material_description : STRING;
+	stock_size : OPTIONAL STRING;
+	material_specification : SET [0:?] OF Specification;
+	material_characteristics : SET [0:?] OF Material_property;
+ INVERSE
+	raw_stock : SET[1:?] OF Single_piece_part FOR material_definition;
+END_ENTITY;
+
+ENTITY Material_condition_modifier;
+	material_type : STRING;
+END_ENTITY;
+
+ENTITY Material_property;
+	material_hardness : SET [0:?] OF Hardness;
+	property_characteristic : SET [0:?] OF Property_parameter;
+END_ENTITY;
+
+ENTITY Material_requisition
+ SUBTYPE OF (Requisition);
+END_ENTITY;
+
+ENTITY Mating_definition;
+	mating_type : STRING;
+	mating_solution : SET [0:?] OF Single_piece_part;
+	applied_assembly : Manufactured_assembly;
+ INVERSE
+	mated_part : SET[2:?] OF Mating_definition_relationship FOR mating_part_definition;
+END_ENTITY;
+
+ENTITY Mating_definition_relationship;
+	mated_part : Single_piece_part;
+	orientation : OPTIONAL Part_placement;
+	mating_part_definition : Mating_definition;
+END_ENTITY;
+
+ENTITY Mating_relationship;
+	sucessor : Single_piece_part;
+	predecessor : Single_piece_part;
+END_ENTITY;
+
+ENTITY Modular_fixture_requisition
+ SUBTYPE OF (Requisition);
+END_ENTITY;
+
+ENTITY Multi_axis_feature
+ SUPERTYPE OF (ONEOF(Boss,Profile_feature,General_removal_volume,Hole,Planar_face,Pocket,Protrusion,Rib_top,Rounded_end,Slot,Step))
+ SUBTYPE OF (Machining_feature);
+	maximum_feature_limit : OPTIONAL Planar_element;
+END_ENTITY;
+
+ENTITY Ngon_base_shape
+ SUBTYPE OF (Implicit_base_shape_representation);
+	number_of_sides : Numeric_parameter;
+	diameter : Numeric_parameter;
+	corner_radius : Numeric_parameter;
+	circumscribed_or_across_flats : BOOLEAN;
+END_ENTITY;
+
+ENTITY Ngon_profile
+ SUBTYPE OF (Closed_profile);
+	diameter : Numeric_parameter;
+	number_of_sides : Numeric_parameter;
+	corner_radius : OPTIONAL Numeric_parameter;
+	circumscribed_or_across_flats : BOOLEAN;
+END_ENTITY;
+
+ENTITY Numeric_parameter
+ SUPERTYPE OF (Numeric_parameter_with_tolerance)
+ SUBTYPE OF (Property_parameter);
+	parameter_value : REAL;
+	parameter_unit : STRING;
+END_ENTITY;
+
+
+ENTITY Numeric_parameter_with_tolerance
+ SUBTYPE OF (Numeric_parameter);
+	implicit_tolerance : Numeric_parameter_tolerance_select;
+END_ENTITY;
+
+ENTITY Open_profile
+	ABSTRACT SUPERTYPE OF (General_open_path_profile ANDOR Square_U_profile ANDOR Rounded_U_profile ANDOR Linear_profile ANDOR Vee_profile ANDOR Partial_circular_profile ANDOR Tee_profile)
+ SUBTYPE OF (Profile);
+	profile_limit : OPTIONAL Planar_element;
+END_ENTITY;
+
+ENTITY Open_slot_end_type
+ SUBTYPE OF (Slot_end_type);
+END_ENTITY;
+
+ENTITY Ordered_part;
+	quantity_required : INTEGER;
+	quantity_unit_of_measure : STRING;
+ INVERSE
+	ordered_by : SET[0:1] OF Customer_order FOR quantity_ordered;
+	quantity : Part FOR quantity_ordered;
+END_ENTITY;
+
+ENTITY Organization;
+	organization_id : STRING;
+	organization_name : STRING;
+	organization_address : STRING;
+END_ENTITY;
+
+ENTITY Orientation;
+	axis : SET [9:9] OF REAL;
+	location : SET [3:3] OF REAL;
+END_ENTITY;
+
+ENTITY Outer_diameter
+ SUBTYPE OF (Outer_round);
+	reduced_size : OPTIONAL Taper_select;
+	feature_length : Numeric_parameter;
+	diameter : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Outer_diameter_to_shoulder
+ SUBTYPE OF (Outer_round);
+	diameter : Numeric_parameter;
+	v_shape_boundary : Vee_profile;
+END_ENTITY;
+
+ENTITY Outer_round
+	ABSTRACT SUPERTYPE OF (ONEOF(Outer_diameter,Outer_diameter_to_shoulder))
+ SUBTYPE OF (Machining_feature);
+END_ENTITY;
+
+ENTITY Parallelism_tolerance
+ SUBTYPE OF (Geometric_tolerance);
+	geometric_reference : Datum;
+	affected_plane : OPTIONAL Orientation;
+	segment_size : OPTIONAL INTEGER;
+END_ENTITY;
+
+ENTITY Part
+	ABSTRACT SUPERTYPE OF (Manufactured_assembly ANDOR Single_piece_part);
+	part_name : STRING;
+	part_revision_id : STRING;
+	part_id : STRING;
+	part_description : STRING;
+	security_classification : STRING;
+	manufactured_by_organization : SET [1:?] OF Organization;
+	physical_form : Shape;
+	manufactured_by_person : SET [1:?] OF Person_in_organization;
+	manufacture_authorization : SET [0:?] OF Approval;
+	owned_by_person : SET [1:?] OF Person_in_organization;
+	owned_by_organization : SET [1:?] OF Organization;
+	property_characteristic : SET [0:?] OF Property;
+	quantity_ordered : SET [1:?] OF Ordered_part;
+ INVERSE
+	new_version_changes : SET[0:1] OF Engineering_change_order FOR new_version;
+END_ENTITY;
+
+ENTITY Part_placement;
+	resulting_orientation : Orientation;
+	orientated_physical_form : Shape;
+	originating_orientation : Orientation;
+END_ENTITY;
+
+ENTITY Part_property;
+	property_characterisitic : SET [0:?] OF Property_parameter;
+END_ENTITY;
+
+ENTITY Partial_area_definition;
+	effective_length : Numeric_parameter;
+	placement : Orientation;
+	maximum_length : OPTIONAL Numeric_parameter;
+END_ENTITY;
+
+ENTITY Partial_circular_path
+ SUBTYPE OF (Circular_path);
+	sweep_angle : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Partial_circular_profile
+ SUBTYPE OF (Open_profile);
+	radius : Numeric_parameter;
+	sweep_angle : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Partial_circular_shape_profile
+ SUBTYPE OF (Shape_profile);
+	open_boundary : Partial_circular_profile;
+END_ENTITY;
+
+ENTITY Path
+	ABSTRACT SUPERTYPE OF (ONEOF(General_path,Circular_path,Linear_path));
+	placement : Orientation;
+END_ENTITY;
+
+ENTITY Path_element
+ SUBTYPE OF (Shape_element);
+END_ENTITY;
+
+ENTITY Pedigree_creation_order;
+	order_id : STRING;
+END_ENTITY;
+
+ENTITY Perpendicularity_tolerance
+ SUBTYPE OF (Geometric_tolerance);
+	geometric_reference : Datum;
+	affected_plane : OPTIONAL Orientation;
+	segment_size : OPTIONAL INTEGER;
+END_ENTITY;
+
+ENTITY Person;
+	person_name : STRING;
+	person_address : STRING;
+	person_phone_number : STRING;
+	person_id : STRING;
+END_ENTITY;
+
+ENTITY Person_in_organization;
+	employee : Person;
+	company : Organization;
+	role : STRING;
+END_ENTITY;
+
+ENTITY Placed_target
+	ABSTRACT SUPERTYPE OF (ONEOF(Target_rectangle,Target_line,Target_point,Target_circle))
+ SUBTYPE OF (Datum_target);
+	placement : Orientation;
+END_ENTITY;
+
+ENTITY Planar_element
+ SUBTYPE OF (Shape_element);
+	location : Location_element;
+	normal : Direction_element;
+END_ENTITY;
+
+ENTITY Planar_face
+ SUBTYPE OF (Multi_axis_feature);
+	removal_direction : Direction_element;
+	course_of_travel : Linear_path;
+	removal_boundary : Linear_profile;
+	face_boundary : OPTIONAL Closed_profile;
+END_ENTITY;
+
+ENTITY Planar_pocket_bottom_condition
+ SUBTYPE OF (Pocket_bottom_condition);
+	floor_normal : Direction_element;
+	floor_location : Location_element;
+	floor_radius : OPTIONAL Numeric_parameter;
+END_ENTITY;
+
+ENTITY Planar_profile_floor
+ SUBTYPE OF (Profile_floor);
+	floor : Planar_element;
+END_ENTITY;
+
+ENTITY Planar_rib_top_floor
+ SUBTYPE OF (Rib_top_floor);
+	boundary : Closed_profile;
+	floor_face : Planar_element;
+END_ENTITY;
+
+ENTITY Planar_top_condition
+ SUBTYPE OF (Boss_top_condition);
+	top_normal : Direction_element;
+	top_location : Location_element;
+END_ENTITY;
+
+ENTITY Plus_minus_value;
+	upper_limit : REAL;
+	lower_limit : REAL;
+	significant_digits : REAL;
+END_ENTITY;
+
+ENTITY Pocket
+	ABSTRACT SUPERTYPE OF (ONEOF(Rectangular_open_pocket,Rectangular_closed_pocket,General_pocket,Recess,Cutout))
+ SUBTYPE OF (Multi_axis_feature);
+	bottom_condition : Pocket_bottom_condition_select;
+	pocket_depth : Linear_path;
+	change_in_boundary : OPTIONAL Angle_or_directed_taper;
+	base_radius : OPTIONAL Numeric_parameter;
+END_ENTITY;
+
+ENTITY Pocket_bottom_condition
+	ABSTRACT SUPERTYPE OF (ONEOF(Planar_pocket_bottom_condition,General_pocket_bottom_condition));
+	start_or_end : BOOLEAN;
+END_ENTITY;
+
+ENTITY Position_tolerance
+ SUBTYPE OF (Geometric_tolerance);
+	geometric_reference : SET [1:3] OF Datum;
+	value_qualifier : INTEGER;
+	affected_plane : OPTIONAL Orientation;
+END_ENTITY;
+
+ENTITY Process_property;
+	process_name : STRING;
+	property_characterisitic : SET [0:?] OF Property_parameter;
+END_ENTITY;
+
+ENTITY Profile
+	ABSTRACT SUPERTYPE OF (ONEOF(Open_profile,Closed_profile));
+	placement : Orientation;
+END_ENTITY;
+
+ENTITY Profile_feature
+	ABSTRACT SUPERTYPE OF (General_outside_profile ANDOR Shape_profile)
+ SUBTYPE OF (Multi_axis_feature);
+END_ENTITY;
+
+ENTITY Profile_floor
+	ABSTRACT SUPERTYPE OF (ONEOF(General_profile_floor,Planar_profile_floor));
+	floor_radius : OPTIONAL Numeric_parameter;
+	start_or_end : LOGICAL;
+END_ENTITY;
+
+ENTITY Project_order;
+	shop_work_status : OPTIONAL Shop_work_order;
+	resource_acquisition_status : OPTIONAL Resource_acquisition_order;
+	pedigree_creation_status : OPTIONAL Pedigree_creation_order;
+	technical_data_package_status : OPTIONAL Digital_technical_data_package_work_order;
+	ordered_resource : SET [0:?] OF Requisition;
+	project_order_id : STRING;
+	part_status : SET [1:?] OF Part;
+	release_authorization : Approval;
+ INVERSE
+	initiated_by : SET[0:1] OF Customer_order FOR initiated_order;
+END_ENTITY;
+
+ENTITY Projection;
+	projection_end : Shape_element;
+	projection_length : REAL;
+ INVERSE
+	defined_shape : SET[1:?] OF Tolerance_zone FOR extended_shape;
+END_ENTITY;
+
+ENTITY Property;
+	property_name : STRING;
+	property_description : SET [0:?] OF Specification;
+	property_characteristic : SET [0:?] OF Shape_aspect;
+	material_characteristic : SET [0:?] OF Material_property;
+	surface_characteristic : SET [0:?] OF Surface_property;
+	part_property_characteristic : SET [0:?] OF Part_property;
+	process_characteristic : SET [0:?] OF Process_property;
+ INVERSE
+	applied_to : Part FOR property_characteristic;
+END_ENTITY;
+
+ENTITY Property_parameter
+ SUPERTYPE OF (ONEOF(Descriptive_parameter,Numeric_parameter));
+	parameter_name : OPTIONAL STRING;
+END_ENTITY;
+
+ENTITY Protrusion
+ SUBTYPE OF (Multi_axis_feature);
+	shape_volume : SET [1:?] OF Shape_element;
+END_ENTITY;
+
+ENTITY Radial_dimension_tolerance
+ SUBTYPE OF (Size_tolerance);
+END_ENTITY;
+
+ENTITY Radiused_slot_end_type
+ SUBTYPE OF (Slot_end_type);
+END_ENTITY;
+
+ENTITY Recess
+ SUBTYPE OF (Pocket);
+   SELF\Pocket.bottom_condition : Pocket_bottom_condition;
+	fillet_boundary : Profile;
+END_ENTITY;
+
+ENTITY Rectangular_boss
+ SUBTYPE OF (Boss);
+	rectangular_profile : Rectangular_closed_profile;
+	change_in_boundary : OPTIONAL Angle_taper;
+END_ENTITY;
+
+ENTITY Rectangular_closed_pocket
+ SUBTYPE OF (Pocket);
+	closed_boundary : Rectangular_closed_profile;
+END_ENTITY;
+
+ENTITY Rectangular_closed_profile
+ SUBTYPE OF (Closed_profile);
+	corner_radius : OPTIONAL Numeric_parameter;
+	profile_width : Numeric_parameter;
+	profile_length : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Rectangular_closed_shape_profile
+ SUBTYPE OF (Shape_profile);
+	closed_boundary : Rectangular_closed_profile;
+END_ENTITY;
+
+ENTITY Rectangular_offset_pattern;
+	row_index : Numeric_parameter;
+	column_index : Numeric_parameter;
+	offset_distance : Numeric_parameter;
+	offset_direction : Direction_element;
+ INVERSE
+	relocated_base_feature_for : SET[1:?] OF Rectangular_pattern FOR relocated_base_feature;
+END_ENTITY;
+
+ENTITY Rectangular_omit_pattern;
+	column_index : Numeric_parameter;
+	row_index : Numeric_parameter;
+ INVERSE
+	missing_base_feature_for : SET[1:?] OF Rectangular_pattern FOR missing_base_feature;
+END_ENTITY;
+
+ENTITY Rectangular_open_pocket
+ SUBTYPE OF (Pocket);
+	open_boundary : Square_U_profile;
+END_ENTITY;
+
+ENTITY Rectangular_open_shape_profile
+ SUBTYPE OF (Shape_profile);
+	open_boundary : Square_U_profile;
+END_ENTITY;
+
+ENTITY Rectangular_pattern
+ SUBTYPE OF (Replicate_feature);
+	relocated_base_feature : SET [0:?] OF Rectangular_offset_pattern;
+	missing_base_feature : SET [0:?] OF Rectangular_omit_pattern;
+	rows : Numeric_parameter;
+	columns : Numeric_parameter;
+	row_spacing : Numeric_parameter;
+	column_spacing : Numeric_parameter;
+	row_layout_direction : Direction_element;
+	column_layout_direction : Direction_element;
+END_ENTITY;
+
+ENTITY Replicate_base;
+	base_feature : Replicate_base_select;
+ INVERSE
+	defined_replicate_base : SET[1:?] OF Replicate_feature FOR replicate_base_feature;
+END_ENTITY;
+
+ENTITY Replicate_feature
+	ABSTRACT SUPERTYPE OF (Circular_pattern ANDOR Rectangular_pattern ANDOR General_pattern)
+ SUBTYPE OF (Manufacturing_feature);
+	replicate_base_feature : Replicate_base;
+	placement : Orientation;
+END_ENTITY;
+
+ENTITY Requisition
+ SUPERTYPE OF (Material_requisition ANDOR Dedicated_fixture_requisition ANDOR Indirect_stock_requisition ANDOR Machine_requisition ANDOR Cutting_tool_requisition ANDOR Modular_fixture_requisition);
+	requisition_number : STRING;
+	quantity_ordered : INTEGER;
+	requisition_date : STRING;
+	requisition_description : STRING;
+	required_delivery_date : STRING;
+END_ENTITY;
+
+ENTITY Resource_acquisition_order;
+	order_id : STRING;
+END_ENTITY;
+
+ENTITY Revolved_feature
+	ABSTRACT SUPERTYPE OF (ONEOF(Revolved_round,Revolved_flat,General_revolution,Groove))
+ SUBTYPE OF (Machining_feature);
+	material_side : Direction_element;
+	radius : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Revolved_flat
+ SUBTYPE OF (Revolved_feature);
+	flat_edge_shape : Linear_profile;
+END_ENTITY;
+
+ENTITY Revolved_round
+ SUBTYPE OF (Revolved_feature);
+	rounded_edge_shape : Partial_circular_profile;
+END_ENTITY;
+
+ENTITY Rib_top
+ SUBTYPE OF (Multi_axis_feature);
+	floor_condition : Rib_top_floor;
+	removal_direction : Direction_element;
+END_ENTITY;
+
+ENTITY Rib_top_floor
+	ABSTRACT SUPERTYPE OF (ONEOF(Planar_rib_top_floor,General_rib_top_floor));
+END_ENTITY;
+
+ENTITY Round_hole
+ SUBTYPE OF (Hole);
+	change_in_diameter : OPTIONAL Taper_select;
+	bottom_condition : Hole_bottom_condition_select;
+	diameter : Circular_closed_profile;
+	hole_depth : Linear_path;
+END_ENTITY;
+
+ENTITY Rounded_U_profile
+ SUBTYPE OF (Open_profile);
+	width : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Rounded_end
+ SUBTYPE OF (Multi_axis_feature);
+	course_of_travel : Linear_path;
+	partial_circular_boundary : Partial_circular_profile;
+END_ENTITY;
+
+ENTITY Second_chamfer_offset
+	ABSTRACT SUPERTYPE OF (ONEOF(Second_offset,Chamfer_angle));
+	second_face : Face_shape_element;
+END_ENTITY;
+
+ENTITY Second_offset
+ SUBTYPE OF (Second_chamfer_offset);
+	offset_amount : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Shape;
+	element : SET [0:?] OF Shape_aspect;
+	base_shape_definition : OPTIONAL Base_shape;
+	B_rep_form : SET [0:?] OF Brep_shape_representation;
+END_ENTITY;
+
+ENTITY Shape_aspect;
+	B_rep_form : SET [1:?] OF Brep_shape_aspect_representation;
+	B_rep_shape : SET [0:?] OF Brep_model_element;
+	element : OPTIONAL Shape_element;
+END_ENTITY;
+
+ENTITY Shape_element
+	ABSTRACT SUPERTYPE OF (ONEOF(Path_element,Face_shape_element,Direction_element,Location_element,Planar_element,Manufacturing_feature));
+END_ENTITY;
+
+ENTITY Shape_profile
+	ABSTRACT SUPERTYPE OF (General_shape_profile ANDOR Partial_circular_shape_profile ANDOR Circular_closed_shape_profile ANDOR Rectangular_open_shape_profile ANDOR Rectangular_closed_shape_profile)
+ SUBTYPE OF (Profile_feature);
+	floor_condition : Profile_select;
+	profile_swept_shape : Linear_path;
+	removal_direction : Direction_element;
+END_ENTITY;
+
+ENTITY Shop_work_order;
+	order_id : STRING;
+END_ENTITY;
+
+ENTITY Single_piece_part
+ SUBTYPE OF (Part);
+	alternate_material_definition : SET [0:?] OF Alternate_material;
+	material_definition : SET [1:?] OF Material;
+END_ENTITY;
+
+ENTITY Size_tolerance
+	ABSTRACT SUPERTYPE OF (ONEOF(Radial_dimension_tolerance,Diameter_dimension_tolerance,Curved_dimension_tolerance,Angular_size_dimension_tolerance))
+ SUBTYPE OF (Dimensional_tolerance);
+	applied_shape : Shape_element;
+END_ENTITY;
+
+ENTITY Slot
+ SUBTYPE OF (Multi_axis_feature);
+	end_conditions : SET [2:2] OF Slot_end_type;
+	course_of_travel : Path;
+	swept_shape : Open_profile;
+END_ENTITY;
+
+ENTITY Slot_end_type
+	ABSTRACT SUPERTYPE OF (ONEOF(Radiused_slot_end_type,Open_slot_end_type,Flat_slot_end_type,Woodruff_slot_end_type));
+	first_or_second : BOOLEAN;
+END_ENTITY;
+
+ENTITY Specification;
+	constraint : SET [0:?] OF Specification_usage_constraint;
+	specification_id : STRING;
+	specification_description : OPTIONAL STRING;
+	specification_class : OPTIONAL STRING;
+END_ENTITY;
+
+ENTITY Specification_usage_constraint;
+	element : STRING;
+	class_id : STRING;
+END_ENTITY;
+
+ENTITY Spherical_cap
+ SUBTYPE OF (Machining_feature);
+	internal_angle : Numeric_parameter;
+	radius : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Spherical_hole_bottom
+ SUBTYPE OF (Blind_bottom_condition);
+	radius : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Square_U_profile
+ SUBTYPE OF (Open_profile);
+	first_angle : Numeric_parameter;
+	first_radius : OPTIONAL Numeric_parameter;
+	second_angle : Numeric_parameter;
+	second_radius : OPTIONAL Numeric_parameter;
+	width : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Step
+ SUBTYPE OF (Multi_axis_feature);
+	removal_boundary : Vee_profile;
+	course_of_travel : Linear_path;
+END_ENTITY;
+
+ENTITY Straight_knurl
+ SUBTYPE OF (Turned_knurl);
+END_ENTITY;
+
+ENTITY Straightness_tolerance
+ SUBTYPE OF (Geometric_tolerance);
+	affected_plane : OPTIONAL Orientation;
+	segment_size : OPTIONAL INTEGER;
+END_ENTITY;
+
+ENTITY Surface_profile_tolerance
+ SUBTYPE OF (Geometric_tolerance);
+	geometric_reference : SET [0:3] OF Datum;
+END_ENTITY;
+
+ENTITY Surface_property;
+	property_characterisitic : SET [0:?] OF Property_parameter;
+	surface_finish : BOOLEAN;
+END_ENTITY;
+
+ENTITY Symmetry_tolerance
+ SUBTYPE OF (Geometric_tolerance);
+	geometric_reference : SET [1:3] OF Datum;
+	affected_plane : OPTIONAL Orientation;
+END_ENTITY;
+
+ENTITY Target_area
+ SUBTYPE OF (Datum_target);
+	area_shape : Shape_element;
+END_ENTITY;
+
+ENTITY Target_circle
+ SUBTYPE OF (Placed_target);
+	target_diameter : REAL;
+END_ENTITY;
+
+ENTITY Target_line
+ SUBTYPE OF (Placed_target);
+	target_length : REAL;
+END_ENTITY;
+
+ENTITY Target_point
+ SUBTYPE OF (Placed_target);
+END_ENTITY;
+
+ENTITY Target_rectangle
+ SUBTYPE OF (Placed_target);
+	target_length : REAL;
+	target_width : REAL;
+END_ENTITY;
+
+ENTITY Tee_profile
+ SUBTYPE OF (Open_profile);
+	first_angle : Numeric_parameter;
+	second_angle : Numeric_parameter;
+	cross_bar_width : Numeric_parameter;
+	width : Numeric_parameter;
+	depth : Numeric_parameter;
+	second_offset : Numeric_parameter;
+	first_offset : Numeric_parameter;
+	cross_bar_depth : Numeric_parameter;
+	radius : OPTIONAL Numeric_parameter;
+END_ENTITY;
+
+ENTITY Thread
+	ABSTRACT SUPERTYPE OF (ONEOF(Defined_thread,Catalogue_thread))
+ SUBTYPE OF (Machining_feature);
+	partial_profile : Partial_area_definition;
+	applied_shape : Shape;
+	inner_or_outer_thread : BOOLEAN;
+	qualifier : OPTIONAL Descriptive_parameter;
+	fit_class : Descriptive_parameter;
+	form : Descriptive_parameter;
+	major_diameter : Numeric_parameter;
+	number_of_threads : Numeric_parameter;
+	thread_hand : Descriptive_parameter;
+END_ENTITY;
+
+ENTITY Through_bottom_condition;
+END_ENTITY;
+
+ENTITY Through_pocket_bottom_condition;
+END_ENTITY;
+
+ENTITY Through_profile_floor;
+END_ENTITY;
+
+ENTITY Tolerance_limit;
+	limit_qualifier : STRING;
+END_ENTITY;
+
+ENTITY Tolerance_range;
+	upper_range : REAL;
+	lower_range : REAL;
+	significant_digits : REAL;
+END_ENTITY;
+
+ENTITY Tolerance_value;
+	defined_value : Tolerance_definition_select;
+	envelope : BOOLEAN;
+END_ENTITY;
+
+ENTITY Tolerance_zone;
+	zone_definition : Tolerance_zone_definition;
+	extended_shape : SET [0:3] OF Projection;
+	form_type : STRING;
+	common_zone : BOOLEAN;
+END_ENTITY;
+
+ENTITY Tolerance_zone_definition;
+	first_element : Shape_element;
+	second_element : OPTIONAL Shape_element;
+ INVERSE
+	defined_zones : SET[1:?] OF Tolerance_zone FOR zone_definition;
+END_ENTITY;
+
+ENTITY Total_runout_tolerance
+ SUBTYPE OF (Geometric_tolerance);
+	geometric_reference : SET [1:2] OF Datum;
+	runout : OPTIONAL REAL;
+END_ENTITY;
+
+ENTITY Transition_feature
+	ABSTRACT SUPERTYPE OF (ONEOF(Fillet,Edge_round,Chamfer))
+ SUBTYPE OF (Manufacturing_feature);
+END_ENTITY;
+
+ENTITY Turned_knurl
+	ABSTRACT SUPERTYPE OF (ONEOF(Straight_knurl,Diagonal_knurl,Diamond_knurl))
+ SUBTYPE OF (Knurl);
+	tooth_depth : OPTIONAL Numeric_parameter;
+	root_fillet : OPTIONAL Numeric_parameter;
+	major_diameter : Numeric_parameter;
+	nominal_diameter : Numeric_parameter;
+	number_of_teeth : OPTIONAL Numeric_parameter;
+	diametral_pitch : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Vee_profile
+ SUBTYPE OF (Open_profile);
+	profile_radius : OPTIONAL Numeric_parameter;
+	tilt_angle : Numeric_parameter;
+	profile_angle : Numeric_parameter;
+END_ENTITY;
+
+ENTITY Woodruff_slot_end_type
+ SUBTYPE OF (Slot_end_type);
+	radius : Numeric_parameter;
+END_ENTITY;
+
+END_SCHEMA;
+
+
+

@@ -1,0 +1,66 @@
+package jsdai.tools.refPath;
+
+import java.util.*;
+import java.io.*;
+import jsdai.lang.*;
+import jsdai.util.*;
+import jsdai.SMapping_schema.*;
+import jsdai.SExtended_dictionary_schema.*;
+
+class Constraint implements PathElement {
+		
+	protected LastConstraintElement lastElement = null;
+	protected PathElements path = null;
+	
+	public void parse(EEntity entry, 
+							EEntity_mapping eMapping)
+								throws SdaiException {
+		if (path == null)
+			path = new PathElements();
+		if (entry instanceof EEntity_constraint) {
+			Forward f = new Forward();
+			path.add(f);
+			f.parse((EEntity_constraint) entry, eMapping);
+			return;
+		}
+		if (entry instanceof EPath_constraint) {
+			EEntity element1 = ((EPath_constraint) entry).getElement1(null);
+			parse(element1, eMapping);
+			EEntity element2 = ((EPath_constraint) entry).getElement2(null);
+			parse(element2, eMapping);
+			return;
+		}		
+		if (entry instanceof EExplicit_attribute) {
+			Forward f = new Forward();
+			path.add(f);
+			f.parse((EExplicit_attribute) entry, eMapping);
+			return;
+		}		
+		if (entry instanceof EString_constraint) {
+			ConstrainingElement c = new ConstrainingElement();
+			path.add(c);
+			c.parse((EString_constraint) entry, eMapping);
+			return;
+		}
+		if (entry instanceof EInverse_attribute_constraint) {
+			Backward b = new Backward();
+			path.add(b);
+			b.parse((EInverse_attribute_constraint) entry, eMapping);
+			return;
+		}
+		System.out.println("PROBLEM: Constraint.parse(EEntity) dont know howto parse."+entry);
+	}
+
+	public String display() {
+		String result = "{";
+		if (path != null) {
+			result += path.display();
+		}
+		if (lastElement != null) {
+			result += lastElement.display();
+		}
+		result += "}";
+		return result;
+	}
+		
+}

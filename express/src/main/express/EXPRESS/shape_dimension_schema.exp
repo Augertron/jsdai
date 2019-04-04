@@ -1,0 +1,174 @@
+-- 2000-05-08
+
+(* 
+
+This is WG12 N548.  This incorporates the changes identified in ISO 10303-47 TC1 
+
+  into the EXPRESS of the document
+
+*)
+
+
+
+SCHEMA shape_dimension_schema;
+
+REFERENCE FROM measure_schema
+
+   (measure_with_unit);
+
+REFERENCE FROM representation_schema
+
+    (representation);
+
+REFERENCE FROM qualified_measure_schema
+
+    (measure_representation_item, 
+
+     qualified_representation_item);
+
+REFERENCE FROM product_property_representation_schema
+
+    (shape_representation);
+
+REFERENCE FROM product_property_definition_schema
+
+    (shape_aspect,
+
+     shape_aspect_relationship);
+
+REFERENCE FROM support_resource_schema
+
+    (label,
+
+     text);
+
+
+
+TYPE angle_relator = ENUMERATION OF
+
+  (equal,
+
+   large,
+
+   small);
+
+END_TYPE;
+
+
+
+TYPE dimensional_characteristic = SELECT (dimensional_location,
+
+                                          dimensional_size);
+
+END_TYPE;
+
+
+
+ENTITY angular_location
+
+  SUBTYPE OF (dimensional_location);
+
+  angle_selection : angle_relator;
+
+END_ENTITY;
+
+
+
+ENTITY angular_size
+
+  SUBTYPE OF (dimensional_size);
+
+  angle_selection : angle_relator;
+
+END_ENTITY;
+
+
+
+ENTITY dimensional_characteristic_representation;
+
+  dimension      : dimensional_characteristic; 
+
+  representation : shape_dimension_representation;
+
+END_ENTITY;
+
+
+
+ENTITY dimensional_location
+
+  SUPERTYPE OF (ONEOF (angular_location,
+
+                       dimensional_location_with_path))
+
+  SUBTYPE OF (shape_aspect_relationship);
+
+END_ENTITY;
+
+
+
+ENTITY dimensional_location_with_path
+
+  SUBTYPE OF (dimensional_location);
+
+  path : shape_aspect;
+
+END_ENTITY;
+
+
+
+ENTITY dimensional_size
+
+  SUPERTYPE OF (ONEOF (angular_size,
+
+                       dimensional_size_with_path));
+
+  applies_to : shape_aspect;
+
+  name       : label;
+
+WHERE
+
+  WR1: applies_to.product_definitional = TRUE;
+
+END_ENTITY;
+
+
+
+ENTITY dimensional_size_with_path
+
+  SUBTYPE OF (dimensional_size);
+
+  path : shape_aspect;
+
+END_ENTITY;
+
+
+
+ENTITY shape_dimension_representation
+
+                SUBTYPE OF (shape_representation);
+
+  WHERE
+
+   WR1: SIZEOF (QUERY (temp <* SELF\representation.items | 
+
+    NOT ('QUALIFIED_MEASURE_SCHEMA.MEASURE_REPRESENTATION_ITEM' 
+
+        IN TYPEOF (temp)))) = 0;
+
+   WR2: SIZEOF (SELF\representation.items) <= 3;
+
+   WR3: SIZEOF (QUERY (pos_mri <* QUERY (real_mri <*
+
+        SELF\representation.items | 'REAL' IN TYPEOF
+
+        (real_mri\measure_with_unit.value_component) ) |        
+
+     NOT  (pos_mri\measure_with_unit.value_component > 0.0 ))) = 0;
+
+END_ENTITY;
+
+
+
+END_SCHEMA;   --  shape_dimension_schema
+

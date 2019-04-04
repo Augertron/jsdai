@@ -1,0 +1,239 @@
+-- received on 2000-02-21, originally from Guy Pierra 
+
+SCHEMA ISO13584_variable_semantics_schema;
+
+REFERENCE FROM ISO13584_IEC61360_dictionary_schema(
+	property_BSU);
+
+REFERENCE FROM ISO13584_generic_expressions_schema(
+	variable_semantics);
+
+REFERENCE FROM ISO13584_library_expressions_schema(
+	compatible_type_and_library_expression,
+	syntax_of);
+
+REFERENCE FROM ISO13584_extended_dictionary_schema(
+	applicable_properties,
+	data_type_typeof,
+	data_type_class_of);
+
+
+
+TYPE property_semantics_or_path = SELECT(
+	property_semantics,
+	sub_property_path);
+END_TYPE;
+
+
+ENTITY property_semantics
+ABSTRACT SUPERTYPE OF (ONEOF(
+	self_property_semantics,
+	open_view_property_semantics))
+SUBTYPE OF (variable_semantics);
+	the_property: property_BSU;
+	its_own_property: OPTIONAL sub_property_path;
+WHERE
+	WR1: check_property_semantics(SELF);
+END_ENTITY;
+
+
+ENTITY sub_property_path; 
+	the_property: property_BSU;
+	its_own_property: OPTIONAL sub_property_path;
+WHERE
+	WR1: (NOT (EXISTS (SELF.its_own_property)))
+		OR (data_type_typeof(SELF.the_property) = [])
+		OR 
+		(('ISO13584_IEC61360_DICTIONARY_SCHEMA.CLASS_INSTANCE_TYPE'
+		IN data_type_typeof(SELF.the_property))
+		AND applicable_properties (data_type_class_of(
+		SELF.the_property)[1],[SELF.its_own_property.the_property]));
+END_ENTITY;
+
+
+ENTITY self_variable_semantics
+ABSTRACT SUPERTYPE OF (ONEOF (
+	self_property_semantics,
+	self_class_variable_semantics))
+SUBTYPE OF (variable_semantics);
+END_ENTITY;
+
+
+ENTITY self_property_semantics
+ABSTRACT SUPERTYPE OF (ONEOF (
+	self_property_value_semantics,
+	self_property_name_semantics))
+SUBTYPE OF (self_variable_semantics, property_semantics);
+END_ENTITY;
+
+
+ENTITY self_property_value_semantics 
+SUBTYPE OF (self_property_semantics);
+WHERE
+	WR1: QUERY(v<*syntax_of(SELF)
+		|NOT compatible_type_and_library_expression(
+		BSU_of_property_semantics(SELF), v)) = [];
+END_ENTITY;
+
+
+ENTITY self_property_name_semantics 
+ABSTRACT SUPERTYPE OF (ONEOF (
+	self_property_preferred_name_semantics,
+	self_property_short_name_semantics,
+	self_property_code_semantics,
+	self_property_version_semantics,
+	self_property_class_code_semantics,
+	self_property_class_supplier_code_semantics,
+	self_property_class_version_semantics))
+SUBTYPE OF (self_property_semantics);
+WHERE
+	WR1: QUERY(v<*syntax_of(SELF)
+		|NOT('ISO13584_EXPRESSIONS_SCHEMA.STRING_VARIABLE'
+		IN TYPEOF(v))) = [];
+END_ENTITY;
+
+
+ENTITY self_property_preferred_name_semantics 
+SUBTYPE OF (self_property_name_semantics );
+END_ENTITY;
+
+
+ENTITY self_property_short_name_semantics 
+SUBTYPE OF (self_property_name_semantics );
+END_ENTITY;
+
+
+ENTITY self_property_code_semantics 
+SUBTYPE OF (self_property_name_semantics );
+END_ENTITY;
+
+
+ENTITY self_property_version_semantics 
+SUBTYPE OF (self_property_name_semantics );
+END_ENTITY;
+
+
+ENTITY self_property_class_code_semantics
+SUBTYPE OF (self_property_name_semantics );
+END_ENTITY;
+
+
+ENTITY self_property_class_supplier_code_semantics 
+SUBTYPE OF (self_property_name_semantics );
+END_ENTITY;
+
+
+ENTITY self_property_class_version_semantics 
+SUBTYPE OF (self_property_name_semantics );
+END_ENTITY;
+
+
+ENTITY self_class_variable_semantics
+ABSTRACT SUPERTYPE OF (self_class_name_semantics)
+SUBTYPE OF (self_variable_semantics);
+END_ENTITY;
+
+
+ENTITY self_class_name_semantics
+ABSTRACT SUPERTYPE OF (ONEOF (
+	self_class_preferred_name_semantics,
+	self_class_short_name_semantics,
+	self_class_code_semantics,
+	self_class_supplier_code_semantics,
+	self_class_version_semantics))
+SUBTYPE OF (self_class_variable_semantics);
+WHERE
+	WR1: SIZEOF (QUERY(v<*syntax_of(SELF) | NOT
+		('ISO13584_EXPRESSIONS_SCHEMA.STRING_VARIABLE'
+		IN TYPEOF(v)))) = 0;
+END_ENTITY;
+
+
+ENTITY self_class_preferred_name_semantics 
+SUBTYPE OF (self_class_name_semantics);
+END_ENTITY;
+
+
+ENTITY self_class_short_name_semantics 
+SUBTYPE OF (self_class_name_semantics);
+END_ENTITY;
+
+
+ENTITY self_class_code_semantics 
+SUBTYPE OF (self_class_name_semantics);
+END_ENTITY;
+
+
+ENTITY self_class_supplier_code_semantics 
+SUBTYPE OF (self_class_name_semantics);
+END_ENTITY;
+
+
+ENTITY self_class_version_semantics
+SUBTYPE OF (self_class_name_semantics);
+END_ENTITY;
+
+
+ENTITY open_view_variable_semantics
+ABSTRACT SUPERTYPE OF (open_view_property_semantics)
+SUBTYPE OF (variable_semantics);
+END_ENTITY;
+
+
+ENTITY open_view_property_semantics
+ABSTRACT SUPERTYPE OF (open_view_property_value_semantics)
+SUBTYPE OF (open_view_variable_semantics, property_semantics);
+END_ENTITY;
+
+
+ENTITY open_view_property_value_semantics
+SUBTYPE OF (open_view_property_semantics);
+WHERE
+	WR1: SIZEOF (QUERY(v<*syntax_of(SELF)
+		|NOT compatible_type_and_library_expression(
+		BSU_of_property_semantics(SELF), v))) = 0;
+END_ENTITY;
+
+
+FUNCTION BSU_of_property_semantics(v: property_semantics_or_path)
+			: property_BSU;
+
+LOCAL
+	prop: property_BSU;
+END_LOCAL;
+
+prop := v.the_property;
+
+IF EXISTS (v.its_own_property)
+THEN
+	RETURN (BSU_of_property_semantics(v.its_own_property));
+ELSE
+	RETURN (prop);
+END_IF;
+
+END_FUNCTION; -- BSU_of_property_semantics
+
+
+FUNCTION check_property_semantics(sem: property_semantics): LOGICAL;
+LOCAL
+	res: LOGICAL;
+END_LOCAL;
+
+IF (EXISTS (sem.its_own_property)) AND 
+	NOT(data_type_typeof(sem.the_property) = [])
+THEN
+	res := ('ISO13584_IEC61360_DICTIONARY_SCHEMA.CLASS_INSTANCE_TYPE' 
+			IN data_type_typeof(sem.the_property))
+		 AND 
+	applicable_properties(data_type_class_of(sem.the_property)[1],
+			[sem.its_own_property.the_property]);
+
+	RETURN(res);
+ELSE 
+	RETURN (UNKNOWN);
+END_IF;
+
+END_FUNCTION; -- check_property_semantics
+
+
+END_SCHEMA; -- ISO13584_variable_semantics_schema

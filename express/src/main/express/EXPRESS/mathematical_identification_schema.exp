@@ -1,0 +1,125 @@
+-- RR in entity membership_of_maths_space_context, attribute "value" name changed to "merit"
+
+
+-- 2000-10-08
+
+(*
+
+  ISO/WD 10303-5x, Mathematical description, 2000-10-04
+
+  WG12 N620
+
+   This file contains the following schemas:
+      mathematical_identification_schema;
+      distribution_mapping_schema;
+      topological_definition_and_mesh_schema;
+      unstructured_mesh_schema;
+      structured_mesh_schema;
+      mesh_function_schema;
+      fea_definition_relationships_schema.
+*)
+
+SCHEMA mathematical_identification_schema;
+
+REFERENCE FROM support_resource_schema -- ISO 10303-41
+  (identifier,
+  label,
+  text);
+
+REFERENCE FROM product_definition_schema -- ISO 10303-41
+  (product_definition);
+
+REFERENCE FROM action_schema -- ISO 10303-41
+  (action,
+  action_method);
+
+REFERENCE FROM product_property_definition_schema -- ISO 10303-41
+  (general_property,
+  shape_aspect);
+
+REFERENCE FROM measure_schema -- ISO 10303-41
+  (unit);
+
+REFERENCE FROM representation_schema -- ISO 10303-43
+  (representation_context,
+  representation_item);
+
+--RR: instead
+--REFERENCE FROM mathematical_constructs_schema -- 10303-50
+--  (maths_space,
+--  maths_value);
+
+-- RR: use this
+REFERENCE FROM mathematical_functions_schema -- 10303-50
+  (maths_space,
+  maths_value);
+
+
+TYPE space_context_select = EXTENSIBLE SELECT (
+  product_definition,
+  action,
+  action_method,
+  shape_aspect,
+  general_property);
+END_TYPE;
+
+TYPE value_context_select = EXTENSIBLE SELECT (
+  product_definition,
+  action,
+  action_method,
+  shape_aspect,
+  general_property);
+END_TYPE;
+
+ENTITY compound_maths_space_context
+  SUBTYPE OF (maths_space_context);
+  components  :  LIST [2:?] OF maths_space_context;
+END_ENTITY;
+
+ENTITY defined_maths_space_context
+  SUPERTYPE OF (
+    representation_context_defined_maths_space_context
+  ANDOR
+    unit_defined_maths_space_context)
+  SUBTYPE OF (maths_space_context);
+END_ENTITY;
+
+ENTITY explicitly_enumerated_maths_space_context
+  SUBTYPE OF (maths_space_context);
+  members  :  SET [1:?] OF maths_value_context;
+END_ENTITY;
+
+ENTITY maths_space_context
+  SUPERTYPE OF (ONEOF (
+    compound_maths_space_context,
+    explicitly_enumerated_maths_space_context,
+    defined_maths_space_context));
+  abstract_space  :  maths_space;
+  physical_space  :  space_context_select;
+  id              :  identifier;
+  name            :  label;
+  description     :  OPTIONAL text; 
+END_ENTITY;
+
+ENTITY maths_value_context;
+  abstract_value  :  maths_value;
+  physical_value  :  value_context_select;
+END_ENTITY;
+
+ENTITY membership_of_maths_space_context;
+  space  :  maths_space_context;
+-- RR  value  :  maths_value_context;
+  merit  :  maths_value_context;
+END_ENTITY;
+
+ENTITY representation_context_defined_maths_space_context
+  SUBTYPE OF (maths_space_context);
+  basis  :  representation_context;
+END_ENTITY;
+
+ENTITY unit_defined_maths_space_context
+  SUBTYPE OF (maths_space_context);
+  basis  :  unit;
+END_ENTITY;
+
+END_SCHEMA;

@@ -1,0 +1,323 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>net.jsdai</groupId>
+  <artifactId>jsdai_parent</artifactId>
+  <version>4.5.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>${project.artifactId}</name>
+
+  <properties>
+    <timestamp>${maven.build.timestamp}</timestamp>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <JSDAI.VERSION.MAJOR>4</JSDAI.VERSION.MAJOR>
+    <JSDAI.VERSION.MIDDLE>5</JSDAI.VERSION.MIDDLE>
+    <JSDAI.VERSION.MINOR>0</JSDAI.VERSION.MINOR>
+    <jsdai.version>${JSDAI.VERSION.MAJOR}.${JSDAI.VERSION.MIDDLE}.${JSDAI.VERSION.MINOR}-SNAPSHOT</jsdai.version>
+    <jsdai.version.full>${JSDAI.VERSION.MAJOR}.${JSDAI.VERSION.MIDDLE}.${JSDAI.VERSION.MINOR}-${timestamp}</jsdai.version.full>
+
+    <jsdai.vendor>LKSoftWare GmbH</jsdai.vendor>
+
+    <!--
+        version of express compiler to use for compiling runtime express. since express compiler depends on the runtime itself,
+        it means, that current version of express compiler can not be used to compile current runtime express files.
+    -->
+    <existing.express.compiler.version>4.4.1-SNAPSHOT</existing.express.compiler.version>
+
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>lksoft-releases</id>
+      <name>LKSoft internal repository (releases)</name>
+      <url>https://intranet.lksoft.net/nexus/content/repositories/releases</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>lksoft-snapshots</id>
+      <name>LKSoft internal repository (snapshots)</name>
+      <url>https://intranet.lksoft.net/nexus/content/repositories/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>lksoft-releases</id>
+      <name>LKSoft internal repository (releases)</name>
+      <url>https://intranet.lksoft.net/nexus/content/repositories/releases</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </pluginRepository>
+    <pluginRepository>
+      <id>lksoft-snapshots</id>
+      <name>LKSoft internal repository (snapshots)</name>
+      <url>https://intranet.lksoft.net/nexus/content/repositories/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.3</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-lang</groupId>
+        <artifactId>commons-lang</artifactId>
+        <version>1.0.1</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-collections</groupId>
+        <artifactId>commons-collections</artifactId>
+        <version>2.1</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.0.4</version>
+      </dependency>
+      <dependency>
+        <groupId>ant</groupId>
+        <artifactId>ant</artifactId>
+        <version>1.5.2</version>
+      </dependency>
+      <dependency>
+        <groupId>net.jsdai</groupId>
+        <artifactId>jsdai_runtime</artifactId>
+        <version>${jsdai.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.jsdai</groupId>
+        <artifactId>jsdai_extendedDictionary</artifactId>
+        <version>${jsdai.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.jsdai</groupId>
+        <artifactId>jsdai_tools</artifactId>
+        <version>${jsdai.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.jsdai</groupId>
+        <artifactId>jsdai_express_files</artifactId>
+        <version>${jsdai.version}</version>
+        <classifier>dictionary</classifier>
+        <type>zip</type>
+      </dependency>
+      <dependency>
+        <groupId>net.jsdai</groupId>
+        <artifactId>jsdai_express</artifactId>
+        <version>${jsdai.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <finalName>${project.artifactId}</finalName>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.6.1</version>
+          <configuration>
+            <source>${maven.compiler.source}</source>
+            <target>${maven.compiler.target}</target>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.0.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.10.4</version>
+          <executions>
+            <execution>
+              <id>attach-javadocs</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+              <configuration>
+                <javadocVersion>${maven.compiler.source}</javadocVersion>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.0.1</version>
+          <executions>
+            <execution>
+              <id>attach-sources</id>
+              <goals>
+                <goal>jar-no-fork</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.8.2</version>
+          <configuration>
+            <retryFailedDeploymentCount>5</retryFailedDeploymentCount>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.8</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.0.2</version>
+          <configuration>
+            <archive>
+              <index>true</index>
+              <manifest>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+              </manifest>
+              <manifestEntries>
+                <Build-Number>${jsdai.version.full}</Build-Number>
+                <Application-Version>${JSDAI.VERSION.MAJOR}.${JSDAI.VERSION.MIDDLE}.${JSDAI.VERSION.MINOR}</Application-Version>
+                <Build-Time>${timestamp}</Build-Time>
+                <Built-By>${user.name}</Built-By>
+              </manifestEntries>
+            </archive>
+          </configuration>
+        </plugin>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <versionRange>[2.8,)</versionRange>
+                    <goals>
+                      <goal>copy</goal>
+                      <goal>unpack-dependencies</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <versionRange>[1.7,)</versionRange>
+                    <goals>
+                      <goal>run</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>timestamp-property</id>
+            <goals>
+              <goal>timestamp-property</goal>
+            </goals>
+            <configuration>
+              <name>current.year</name>
+              <pattern>yyyy</pattern>
+              <unit>year</unit>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <organization>
+    <name>LKSoftWare GmbH</name>
+    <url>http://www.lksoft.com</url>
+  </organization>
+
+  <url>http://www.jsdai.net</url>
+
+  <licenses>
+    <license>
+      <name>GNU AFFERO GENERAL PUBLIC LICENSE, AGPL v3</name>
+      <url>http://www.gnu.org/licenses/agpl-3.0.html</url>
+      <distribution>manual</distribution>
+      <comments>A friendly OSS license</comments>
+    </license>
+    <license>
+      <name>JSDAI Commercial license</name>
+      <url>http://www.jsdai.net/license</url>
+      <distribution>manual</distribution>
+      <comments>Commercial licenses of JSDAI</comments>
+    </license>
+  </licenses>
+
+</project>

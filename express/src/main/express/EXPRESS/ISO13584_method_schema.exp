@@ -1,0 +1,802 @@
+-- modified by RR:
+(*
+	abstract_functional_model_class added to REFERENCE FROM ISO13584_extended_dictionary_schema
+*)
+
+-- received on 2000-02-21, originally from Guy Pierra 
+
+SCHEMA ISO13584_method_schema;
+
+REFERENCE FROM ISO13584_IEC61360_dictionary_schema(
+	all_class_descriptions_reachable,
+	class_BSU,
+	content_item,
+	definition_available_implies,
+	list_to_set,
+	property_BSU);
+
+REFERENCE FROM ISO13584_library_expressions_schema(
+	class_instance_constructor,
+	class_instance_expression,
+	collects_assigned_properties,
+	collects_referenced_library_expressions,
+	compatible_variable_and_library_expression,
+	library_expression,
+	library_variable,
+	property_assignment);
+
+REFERENCE FROM ISO13584_variable_semantics_schema(
+	property_semantics,
+	property_semantics_or_path,
+	self_property_value_semantics);
+
+REFERENCE FROM ISO13584_domain_resource_schema(
+	collects_variables,
+	functional_domain_restriction,
+	used_variables_in_domain);
+
+REFERENCE FROM ISO13584_extended_dictionary_schema(
+	-- RR
+	abstract_functional_model_class,
+	applicable_properties,
+	applicable_tables,
+	data_type_class_of,
+	data_type_typeof,
+	data_type_type_name,
+	functional_model_class,
+	functional_view_class,
+	functional_view_v_c_v,
+	view_control_variable_range);
+
+REFERENCE FROM ISO13584_generic_expressions_schema(
+	generic_variable,
+	used_variables);
+
+REFERENCE FROM ISO13584_expressions_schema(
+	boolean_expression, 
+	numeric_expression,
+	string_expression);
+
+REFERENCE FROM ISO13584_library_content_schema(
+	exists_super,
+	functional_model_class_extension,
+	method_variables,
+	model_class_extension,
+	provided_properties_list,
+	super);
+
+REFERENCE FROM ISO13584_external_file_schema(
+	external_file_protocol);
+
+
+
+TYPE accessible_variable_for_method = library_variable;
+WHERE
+	WR1:(('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+'SELF_VARIABLE_SEMANTICS')
+		IN TYPEOF (SELF\generic_variable.interpretation
+		.semantics))
+		OR
+		(('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+'OPEN_VIEW_VARIABLE_SEMANTICS')
+		IN TYPEOF (SELF\generic_variable.interpretation
+		.semantics))
+		OR
+		(('ISO13584_TABLE_RESOURCE_SCHEMA.'
+		+'COLUMN_TRAVERSAL_VARIABLE_SEMANTICS')
+		IN TYPEOF (SELF\generic_variable.interpretation
+		.semantics));
+END_TYPE;
+
+
+TYPE assignment_allowed_variable = library_variable;
+WHERE
+	WR1:(('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+'SELF_PROPERTY_VALUE_SEMANTICS')
+		IN TYPEOF (SELF\generic_variable.interpretation
+		.semantics))
+		OR
+		(('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+'OPEN_VIEW_PROPERTY_VALUE_SEMANTICS')
+		IN TYPEOF (SELF\generic_variable.interpretation
+		.semantics));
+END_TYPE;
+
+
+TYPE control_allowed_variable = library_variable;
+WHERE
+	WR1: (('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+'SELF_PROPERTY_VALUE_SEMANTICS')
+		IN TYPEOF (SELF\generic_variable.interpretation
+		.semantics))
+		OR
+		(('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+'OPEN_VIEW_PROPERTY_VALUE_SEMANTICS')
+		IN TYPEOF (SELF\generic_variable.interpretation
+		.semantics))
+		OR
+		(('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+'SELF_PROPERTY_CODE_SEMANTICS')
+		IN TYPEOF (SELF\generic_variable.interpretation
+		.semantics))
+		OR
+		(('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+'SELF_PROPERTY_VERSION_SEMANTICS')
+		IN TYPEOF (SELF\generic_variable.interpretation
+		.semantics))
+		OR
+		(('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+'SELF_PROPERTY_CLASS_CODE_SEMANTICS')
+		IN TYPEOF (SELF\generic_variable.interpretation
+		.semantics))
+		OR
+		(('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+'SELF_PROPERTY_CLASS_VERSION_SEMANTICS')
+		IN TYPEOF (SELF\generic_variable.interpretation
+		.semantics))
+		OR
+		(('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+'SELF_PROPERTY_CLASS_SUPPLIER_CODE_SEMANTICS')
+		IN TYPEOF (SELF\generic_variable.interpretation
+		.semantics))
+		OR
+		(('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+'SELF_CLASS_CODE_SEMANTICS')
+		IN TYPEOF (SELF\generic_variable.interpretation
+		.semantics))
+		OR
+		(('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+'SELF_CLASS_VERSION_SEMANTICS')
+		IN TYPEOF (SELF\generic_variable.interpretation
+		.semantics))
+		OR
+		(('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+'SELF_CLASS_SUPPLIER_CODE_SEMANTICS')
+		IN TYPEOF (SELF\generic_variable.interpretation
+		.semantics));
+END_TYPE;
+
+
+ENTITY method;
+	specification: method_specif;
+	body: method_body;
+	representation_interface: OPTIONAL external_file_protocol;
+INVERSE
+	its_class: functional_model_class_extension
+						 FOR provided_methods;
+WHERE
+	WR1: (EXISTS (SELF.representation_interface))
+		AND (SELF.representation_interface
+		IN SELF.its_class\model_class_extension
+			.used_protocols)
+		OR (NOT (EXISTS (SELF.representation_interface)));
+END_ENTITY;
+
+
+ENTITY method_specif;
+	created_view: class_BSU;
+	v_c_v_range: SET [0:?] OF view_control_variable_range;
+	model_needed_properties: SET [0:?] OF property_BSU;
+	referred_subobject_models: SET [0:?] OF class_BSU;
+INVERSE
+	specifies: method FOR specification;
+WHERE
+	WR1: NOT all_class_descriptions_reachable(
+		SELF.specifies.its_class.dictionary_definition)
+		OR (SELF.model_needed_properties 
+		<= list_to_set(provided_properties_list(
+		SELF.specifies.its_class.dictionary_definition)));
+	WR2: same_view_model_method(SELF);
+	WR3: SIZEOF (QUERY (models <* SELF.referred_subobject_models |
+		definition_available_implies(models,
+		('ISO13584_IEC61360_DICTIONARY_SCHEMA.ITEM_CLASS' 
+		IN TYPEOF(models.definition[1])) OR (
+		('ISO13584_EXTENDED_DICTIONARY_SCHEMA'
+							+'.FUNCTIONAL_MODEL_CLASS' 
+		IN TYPEOF(models.definition[1])))))) = 
+		SIZEOF(SELF.referred_subobject_models);
+END_ENTITY;
+
+
+ENTITY method_body;
+	declaration: SET [1:?] OF accessible_variable_for_method;
+	view_generation: LIST [1:?] OF method_statement;
+INVERSE 
+	describes: method FOR body;
+WHERE
+	WR1: QUERY (prop <*
+		SELF.describes.specification.model_needed_properties| 
+		SIZEOF (QUERY ( v <* SELF.declaration| 
+		('ISO13584_VARIABLE_SEMANTICS_SCHEMA.PROPERTY_SEMANTICS' 
+		IN TYPEOF (v\generic_variable.interpretation
+		.semantics))
+		AND
+		(v\generic_variable.interpretation.semantics\
+		property_semantics.the_property :=: prop))) <> 1)
+		= [];
+	WR2: QUERY ( v <* SELF.declaration| 
+		('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+ 'SELF_PROPERTY_SEMANTICS' IN TYPEOF 
+		(v\generic_variable.interpretation.semantics)) AND
+		NOT (v\generic_variable.interpretation
+		.semantics\property_semantics.the_property
+		IN SELF.describes.specification.model_needed_properties) 
+		AND all_class_descriptions_reachable(
+		SELF.describes.its_class.dictionary_definition)
+		AND
+		NOT (v\generic_variable.interpretation.semantics
+		\property_semantics.the_property 
+		IN method_variables 
+		(SELF.describes.its_class.dictionary_definition)))
+		= [];
+	WR3: QUERY ( v <* SELF.declaration| 
+		('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+ 'OPEN_VIEW_PROPERTY_SEMANTICS' 
+		IN TYPEOF (v\generic_variable.interpretation
+		.semantics))
+		AND
+		NOT applicable_properties ( 
+		SELF.describes.specification.created_view, 
+		[v\generic_variable.interpretation.semantics\
+		property_semantics.the_property] )) 
+		= [];
+	WR4: QUERY ( v <* SELF.declaration| 
+		('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+ 'SELF_PROPERTY_SEMANTICS' 
+		IN TYPEOF (v\generic_variable.interpretation
+		.semantics))
+		AND
+		NOT checks_applicable_properties_in_path 
+		(v\generic_variable.interpretation.semantics))
+		= [];
+	WR5: QUERY ( v <* SELF.declaration| 
+		('ISO13584_VARIABLE_SEMANTICS_SCHEMA.'
+		+ 'SELF_PROPERTY_SEMANTICS' 
+		IN TYPEOF (v\generic_variable.interpretation
+		.semantics))
+		AND
+		NOT checks_classes_in_path (v\generic_variable
+		.interpretation.semantics,
+		SELF.describes.specification.referred_subobject_models))
+		= [];
+END_ENTITY;
+
+
+ENTITY method_statement;
+	statements: LIST [1:?] OF guarded_statement;
+INVERSE
+	defines: method_body FOR view_generation;
+END_ENTITY;
+
+
+ENTITY guarded_statement;
+	guard: boolean_expression;
+	statement: simple_statement;
+INVERSE 
+	item_of: method_statement FOR statements;
+WHERE
+	WR1: QUERY(elt<* used_variables(SELF.guard)| 
+		NOT ('ISO13584_method_schema.CONTROL_ALLOWED_VARIABLE' IN 
+		TYPEOF(elt))) = [];
+	WR2: QUERY(elt<* used_variables(SELF.guard)| 
+			NOT (elt IN SELF.item_of.defines.declaration)) = [];
+END_ENTITY;
+
+
+ENTITY simple_statement 
+ABSTRACT SUPERTYPE OF (ONEOF (
+			null_statement,
+			modelling_statement,
+			predefined_representation_call_statement,
+			assignment_statement,
+			sub_object_view_statement));
+INVERSE
+	referenced_by: guarded_statement FOR statement;
+END_ENTITY;
+
+
+ENTITY null_statement 
+SUBTYPE OF (simple_statement);
+END_ENTITY;
+
+
+ENTITY modelling_statement 
+ABSTRACT SUPERTYPE OF (ONEOF (set_reference_lcs,
+				begin_set, 
+				close_set,
+				set_2d_relative_view_level)) 
+SUBTYPE OF (simple_statement);
+END_ENTITY;
+
+
+ENTITY set_reference_lcs 
+SUBTYPE OF (modelling_statement);
+	x_rotation 		: numeric_expression;
+	y_rotation 		: numeric_expression;
+	z_rotation 		: numeric_expression;
+	x_translation		: numeric_expression;
+	y_translation		: numeric_expression;
+	z_translation		: numeric_expression;
+WHERE
+	WR1: QUERY(elt<* used_variables(SELF.y_rotation)| 
+		NOT ('ISO13584_METHOD_SCHEMA.CONTROL_ALLOWED_VARIABLE' 
+		IN TYPEOF(elt)))+
+		QUERY(elt<* used_variables(SELF.z_rotation)| 
+		NOT ('ISO13584_METHOD_SCHEMA.CONTROL_ALLOWED_VARIABLE' 
+		IN TYPEOF(elt)))+
+		QUERY(elt<* used_variables(SELF.x_translation)| 
+		NOT ('ISO13584_METHOD_SCHEMA.CONTROL_ALLOWED_VARIABLE' 
+		IN TYPEOF(elt)))+
+		QUERY(elt<* used_variables(SELF.y_translation)| 
+		NOT ('ISO13584_METHOD_SCHEMA.CONTROL_ALLOWED_VARIABLE' 
+		IN TYPEOF(elt)))+
+		QUERY(elt<* used_variables(SELF.z_translation)| 
+		NOT ('ISO13584_METHOD_SCHEMA.CONTROL_ALLOWED_VARIABLE' 
+		IN TYPEOF(elt)))+
+		QUERY(elt<* used_variables(SELF.x_rotation)| 
+		NOT ('ISO13584_METHOD_SCHEMA.CONTROL_ALLOWED_VARIABLE' 
+		IN TYPEOF(elt)))
+		= [];
+	WR2: QUERY(elt<* used_variables(SELF.x_rotation)| 
+		NOT (elt IN SELF\simple_statement.referenced_by
+		.item_of.defines.declaration))+
+		QUERY(elt<* used_variables(SELF.y_rotation)| 
+		NOT (elt IN SELF\simple_statement.referenced_by
+		.item_of.defines.declaration))+
+		QUERY(elt<* used_variables(SELF.z_rotation)| 
+		NOT (elt IN SELF\simple_statement.referenced_by
+		.item_of.defines.declaration))+
+		QUERY(elt<* used_variables(SELF.x_translation)| 
+		NOT (elt IN SELF\simple_statement.referenced_by
+		.item_of.defines.declaration))+
+		QUERY(elt<* used_variables(SELF.y_translation)| 
+		NOT (elt IN SELF\simple_statement.referenced_by
+		.item_of.defines.declaration))+
+		QUERY(elt<* used_variables(SELF.z_translation)| 
+		NOT (elt IN SELF\simple_statement.referenced_by
+		.item_of.defines.declaration))
+		= [];
+END_ENTITY;
+
+
+ENTITY begin_set 
+SUBTYPE OF (modelling_statement);
+	set_name: string_expression;
+WHERE
+	WR1: QUERY(elt<* used_variables(SELF.set_name)
+		|NOT (elt IN SELF\simple_statement.referenced_by.item_of
+		.defines.declaration)) =[];
+END_ENTITY;
+
+
+ENTITY close_set 
+SUBTYPE OF (modelling_statement);
+	set_name: string_expression;
+WHERE
+	WR1: QUERY(elt<* used_variables(SELF.set_name)| 
+		NOT (elt IN SELF\simple_statement.referenced_by
+		.item_of.defines.declaration)) = [];
+END_ENTITY;
+
+
+ENTITY set_2d_relative_view_level 
+SUBTYPE OF (modelling_statement);
+	offset: numeric_expression;
+WHERE 
+	WR1: QUERY(elt<* used_variables(SELF.offset)| 
+		NOT ('ISO13584_METHOD_SCHEMA.CONTROL_ALLOWED_VARIABLE' 
+		IN TYPEOF(elt))) = [];
+	WR2: QUERY(elt<* used_variables(SELF.offset)| 
+		NOT (elt IN SELF\simple_statement.referenced_by
+		.item_of.defines.declaration)) = [];
+END_ENTITY;
+
+
+ENTITY predefined_representation_call_statement 
+ABSTRACT SUPERTYPE OF (ONEOF (send_representation_statement,
+		send_representation_reference_statement,
+		call_program_statement)) 
+SUBTYPE OF (simple_statement);
+END_ENTITY;
+
+
+ENTITY send_representation_statement 
+SUBTYPE OF (predefined_representation_call_statement );
+	corresponding_method_variable: assignment_allowed_variable;
+	representation_to_be_processed: functional_domain_restriction;
+WHERE
+	WR1: SELF.representation_to_be_processed.defines
+		=[SELF.corresponding_method_variable\generic_variable.
+		interpretation.semantics];
+	WR2: SELF.corresponding_method_variable
+		IN SELF.referenced_by.item_of.defines.declaration;
+	WR3: collects_variables (SELF.representation_to_be_processed
+		.assumes)
+		<= SELF.referenced_by.item_of.defines.declaration;
+	WR4: definition_available_implies(
+		SELF.corresponding_method_variable\generic_variable
+		.interpretation.semantics\property_semantics.the_property,
+		(('ISO13584_IEC61360_DICTIONARY_SCHEMA.ENTITY_INSTANCE_TYPE'
+		IN data_type_typeof(SELF.corresponding_method_variable
+		\generic_variable.interpretation.semantics
+		\property_semantics.the_property))
+		AND ('REPRESENTATION_SCHEMA.REPRESENTATION' IN 
+		data_type_type_name
+		(SELF.corresponding_method_variable\generic_variable
+		.interpretation.semantics\property_semantics.the_property)))
+		OR (data_type_typeof(SELF.corresponding_method_variable
+		\generic_variable.interpretation.semantics\property_semantics
+		.the_property) = []));
+	WR5: NOT all_class_descriptions_reachable 
+		(SELF.referenced_by.item_of.defines.describes.its_class
+		.dictionary_definition) OR 
+		((SELF.corresponding_method_variable\generic_variable
+		.interpretation.semantics\property_semantics.the_property) IN 
+		method_variables (SELF.referenced_by.item_of.defines
+		.describes.its_class.dictionary_definition));
+	WR6: applicable_tables (SELF.referenced_by.item_of
+		.defines.describes.its_class.dictionary_definition,
+		 SELF.representation_to_be_processed.base_tables);
+	WR7: used_variables_in_domain 
+		(SELF.representation_to_be_processed)
+		<= SELF.referenced_by.item_of.defines.declaration;
+END_ENTITY;
+
+
+ENTITY send_representation_reference_statement 
+SUBTYPE OF (predefined_representation_call_statement );
+	corresponding_method_variable: assignment_allowed_variable;
+	representation_reference_to_be_processed
+							: functional_domain_restriction;
+WHERE
+	WR1: SELF.representation_reference_to_be_processed.defines
+		=[SELF.corresponding_method_variable\generic_variable
+		.interpretation.semantics];
+	WR2: SELF.corresponding_method_variable
+		IN SELF.referenced_by.item_of.defines.declaration;
+	WR3: collects_variables (
+		SELF.representation_reference_to_be_processed.assumes)
+		<= SELF.referenced_by.item_of.defines.declaration;
+	WR4: definition_available_implies(
+		SELF.corresponding_method_variable\generic_variable
+		.interpretation.semantics\property_semantics.the_property,
+		(('ISO13584_IEC61360_DICTIONARY_SCHEMA.ENTITY_INSTANCE_TYPE'
+		IN data_type_typeof(SELF.corresponding_method_variable
+		\generic_variable.interpretation.semantics
+		\property_semantics.the_property))
+		AND ('ISO13584_EXTERNAL_FILE_SCHEMA.REPRESENTATION_REFERENCE' 
+		IN data_type_type_name (SELF.corresponding_method_variable
+		\generic_variable.interpretation.semantics
+		\property_semantics.the_property)))
+		OR 
+		(data_type_typeof(SELF.corresponding_method_variable
+		\generic_variable.interpretation.semantics
+		\property_semantics.the_property)
+		 = []));
+	WR5: NOT all_class_descriptions_reachable 
+		(SELF.referenced_by.item_of.defines.describes.its_class
+		.dictionary_definition) OR 
+		((SELF.corresponding_method_variable\generic_variable
+		.interpretation.semantics\property_semantics.the_property) IN 
+		method_variables (SELF.referenced_by.item_of.defines
+		.describes.its_class.dictionary_definition));
+	WR6: applicable_tables (SELF.referenced_by.item_of
+		.defines.describes.its_class.dictionary_definition,
+		 SELF.representation_reference_to_be_processed.base_tables);
+	WR7: used_variables_in_domain (
+		SELF.representation_reference_to_be_processed)
+		<= SELF.referenced_by.item_of.defines.declaration;
+END_ENTITY;
+
+
+ENTITY call_program_statement 
+SUBTYPE OF (predefined_representation_call_statement );
+	corresponding_method_variable: assignment_allowed_variable;
+	program_reference_to_be_processed 
+							: functional_domain_restriction;
+	input_parameters: LIST [0:?] OF library_expression;
+	output_parameters: LIST [0:?] OF assignment_allowed_variable;
+	inout_parameters: LIST [0:?] OF assignment_allowed_variable;
+WHERE
+	WR1: SELF.program_reference_to_be_processed.defines
+		=[SELF.corresponding_method_variable\generic_variable
+		.interpretation.semantics];
+	WR2: SELF.corresponding_method_variable
+		IN SELF.referenced_by.item_of.defines.declaration;
+	WR3: collects_variables (
+		SELF.program_reference_to_be_processed.assumes)
+		<= SELF.referenced_by.item_of.defines.declaration;
+	WR4: definition_available_implies(
+		SELF.corresponding_method_variable\generic_variable
+		.interpretation.semantics\property_semantics.the_property,
+		(('ISO13584_IEC61360_DICTIONARY_SCHEMA.ENTITY_INSTANCE_TYPE'
+		IN data_type_typeof(SELF.corresponding_method_variable
+		\generic_variable.interpretation.semantics
+		\property_semantics.the_property))
+		AND ('ISO13584_EXTERNAL_FILE_SCHEMA.PROGRAM_REFERENCE' IN 
+		data_type_type_name(SELF.corresponding_method_variable
+		\generic_variable.interpretation.semantics
+		\property_semantics.the_property)))
+		OR (data_type_typeof(SELF.corresponding_method_variable
+		\generic_variable.interpretation.semantics
+		\property_semantics.the_property)
+		= []));
+	WR5: NOT all_class_descriptions_reachable 
+		(SELF.referenced_by.item_of.defines.describes.its_class
+		.dictionary_definition) OR 
+		((SELF.corresponding_method_variable\generic_variable
+		.interpretation.semantics\property_semantics.the_property) IN 
+		method_variables (SELF.referenced_by.item_of.defines
+		.describes.its_class.dictionary_definition));
+	WR6: applicable_tables (SELF.referenced_by.item_of
+		.defines.describes.its_class.dictionary_definition,
+		 SELF.program_reference_to_be_processed.base_tables);
+	WR7: QUERY (expr <* SELF.input_parameters
+		| QUERY (v <* used_variables (expr)
+		| NOT (v IN SELF\simple_statement.referenced_by
+		.item_of.defines.declaration)) <> []) = [];
+	WR8: QUERY (v <* SELF.output_parameters
+		| NOT (v IN SELF\simple_statement.referenced_by
+		.item_of.defines.declaration)) = [];
+	WR9: QUERY (v <* SELF.inout_parameters
+		| NOT (v IN SELF\simple_statement.referenced_by
+		.item_of.defines.declaration)) = [];
+	WR10: used_variables_in_domain(
+		SELF.program_reference_to_be_processed)
+		<= SELF.referenced_by.item_of.defines.declaration;
+END_ENTITY;
+
+
+ENTITY assignment_statement 
+SUBTYPE OF (simple_statement);
+	assigned_variable: assignment_allowed_variable;
+	assigned_value: library_expression;
+WHERE
+	WR1: SELF.assigned_variable IN 
+		SELF\simple_statement.referenced_by.item_of.defines
+		.declaration;
+	WR2: compatible_variable_and_library_expression(
+		SELF.assigned_variable, SELF.assigned_value);
+	WR3: QUERY (v <* used_variables (
+		SELF\assignment_statement.assigned_value) 
+		|NOT (v IN SELF\simple_statement.referenced_by
+		.item_of.defines.declaration)) = [];
+	WR4: NOT (SELF.assigned_variable\generic_variable
+		.interpretation.semantics\property_semantics.the_property
+		IN provided_properties_list (
+		SELF\simple_statement.referenced_by.item_of.defines
+		.describes.its_class.dictionary_definition));
+END_ENTITY;
+
+
+ENTITY sub_object_view_statement
+ABSTRACT SUPERTYPE OF( ONEOF(referenced_sub_item_view_statement,
+						constructed_sub_model_view_statement))
+SUBTYPE OF (simple_statement);
+	created_view: class_BSU;
+	v_c_v_values: SET [0:?] OF property_assignment;
+WHERE
+	WR1: definition_available_implies(SELF.created_view,
+		'ISO13584_EXTENDED_DICTIONARY_SCHEMA.FUNCTIONAL_VIEW_CLASS'
+		IN TYPEOF(SELF.created_view.definition[1]));
+	WR2: QUERY (e <* collects_referenced_library_expressions ( 
+		SELF.v_c_v_values)
+		| QUERY (v <* used_variables (e)
+		| NOT (v IN SELF\simple_statement.referenced_by
+		.item_of.defines.declaration)) <> [] ) = [];
+END_ENTITY;
+
+
+ENTITY referenced_sub_item_view_statement
+SUBTYPE OF (sub_object_view_statement);
+	sub_object: self_property_value_semantics;
+WHERE
+	WR1: definition_available_implies(SELF.sub_object
+		\property_semantics.the_property,
+		(data_type_typeof( SELF.sub_object
+		\property_semantics.the_property) = [])
+		OR ('ISO13584_IEC61360_DICTIONARY_SCHEMA.CLASS_INSTANCE_TYPE'
+		IN data_type_typeof( SELF.sub_object
+		\property_semantics.the_property)));
+	WR2: self_property_value_semantics_is_item_class (SELF);
+	WR3: definition_available_implies(SELF.sub_object
+		\property_semantics.the_property,
+		(data_type_class_of( SELF.sub_object
+		\property_semantics.the_property) = []))
+		OR 
+		definition_available_implies(data_type_class_of( 
+		SELF.sub_object\
+		property_semantics.the_property)[1], data_type_class_of(
+		SELF.sub_object\property_semantics.the_property)[1] IN 
+		SELF\simple_statement.referenced_by.item_of.defines
+		.describes.specification.referred_subobject_models);
+
+END_ENTITY;
+
+
+ENTITY constructed_sub_model_view_statement
+SUBTYPE OF (sub_object_view_statement);
+	sub_model: class_instance_constructor;
+WHERE
+	WR1: SELF.sub_model\class_instance_expression.expr_type IN 
+		SELF\simple_statement.referenced_by.item_of.defines
+		.describes.specification.referred_subobject_models;
+	WR2: definition_available_implies(
+		SELF.sub_model\class_instance_expression.expr_type,
+		'ISO13584_EXTENDED_DICTIONARY_SCHEMA'
+		+'.FUNCTIONAL_MODEL_CLASS' IN 
+		TYPEOF(SELF.sub_model\class_instance_expression.expr_type
+		.definition[1]));
+	WR3: definition_available_implies(
+		SELF.sub_model\class_instance_expression.expr_type,
+		SIZEOF(SELF.sub_model\class_instance_expression.expr_type
+		.referenced_by) = 1);
+	WR4: definition_available_implies(
+		SELF.sub_model\class_instance_expression.expr_type, 
+		SELF.sub_model\class_instance_expression.expr_type
+		= SELF\sub_object_view_statement.created_view);
+	WR5: QUERY (v <* used_variables (SELF.sub_model)
+		| NOT (v IN SELF\simple_statement.referenced_by
+		.item_of.defines.declaration)) = [];
+END_ENTITY;
+
+
+FUNCTION checks_classes_in_path ( v: property_semantics_or_path;
+		cl: SET OF class_BSU) : LOGICAL;
+
+LOCAL
+	prop: property_BSU;
+	temp: SET [0:1] OF class_BSU;
+END_LOCAL;
+
+prop := v.the_property;
+
+IF data_type_typeof(prop) = []
+THEN					-- domain is unknown
+	RETURN (UNKNOWN);
+ELSE					-- domain is known
+	IF('ISO13584_IEC61360_DICTIONARY_SCHEMA.CLASS_INSTANCE_TYPE' IN 
+		data_type_typeof(prop))
+	THEN
+		temp := data_type_class_of(prop);
+		IF NOT (temp[1] IN cl)
+		THEN
+			RETURN(FALSE);
+		ELSE				-- domain in cl, check forward
+			IF EXISTS (v.its_own_property)
+			THEN
+				RETURN (checks_classes_in_path(
+					v.its_own_property, cl));
+			ELSE 
+				RETURN (TRUE);		-- all path checked
+			END_IF;
+		END_IF;
+	ELSE 
+		RETURN (TRUE);			-- domain is not a class
+	END_IF;
+END_IF;
+
+END_FUNCTION; --checks_classes_in_path 
+
+
+FUNCTION checks_applicable_properties_in_path(
+		v: property_semantics_or_path) : LOGICAL;
+
+LOCAL
+	prop: property_BSU;
+	temp: SET[0:1] OF class_BSU;
+END_LOCAL;
+
+prop := v.the_property;
+
+IF data_type_typeof(prop) = []
+THEN					--domain is unknown
+	RETURN (UNKNOWN);
+ELSE					--domain is known
+	IF ('ISO13584_IEC61360_DICTIONARY_SCHEMA.CLASS_INSTANCE_TYPE' IN 
+		data_type_typeof(prop))
+	THEN
+		IF EXISTS (v.its_own_property)
+		THEN
+			temp := data_type_class_of(prop);
+			RETURN (applicable_properties( 
+				temp[1], [v.its_own_property
+				.the_property]) AND 
+				checks_applicable_properties_in_path (
+				v.its_own_property));
+		ELSE 
+			RETURN (TRUE);		--all paths checked
+		END_IF;
+	ELSE 
+		RETURN (TRUE);			-- no sub_property
+	END_IF;
+END_IF;
+
+END_FUNCTION; --checks_applicable_properties_in_path 
+
+
+FUNCTION same_view_model_method(meth : method_specif) : LOGICAL ;
+		
+IF SIZEOF (meth.specifies.its_class
+	\content_item.dictionary_definition.definition) = 0
+THEN
+	RETURN (UNKNOWN);
+END_IF;
+
+RETURN (
+	meth.specifies.its_class
+	\content_item.dictionary_definition.definition[1]
+	\abstract_functional_model_class.created_view :=: 
+	meth.created_view);
+
+END_FUNCTION;	-- same_view_model_method
+
+
+FUNCTION self_property_value_semantics_is_item_class  (
+		 it : referenced_sub_item_view_statement) : LOGICAL;
+		
+IF SIZEOF (it.sub_object
+	\property_semantics.the_property.definition) = 0
+THEN
+	RETURN (UNKNOWN);
+END_IF;
+
+IF (data_type_class_of( it.sub_object
+	\property_semantics.the_property) = [])
+THEN
+	RETURN (UNKNOWN);
+END_IF;
+
+IF SIZEOF (data_type_class_of( it.sub_object
+	\property_semantics.the_property)[1].definition) = 0
+THEN
+	RETURN (UNKNOWN);
+END_IF;
+
+RETURN (('ISO13584_IEC61360_DICTIONARY_SCHEMA.ITEM_CLASS' IN 
+		TYPEOF (data_type_class_of( it.sub_object
+		\property_semantics.the_property)[1].definition[1])));
+
+END_FUNCTION;	-- self_property_value_semantics_is_item_class 
+
+
+RULE created_view_v_c_v_rule FOR (method_specif, 
+		functional_view_class);
+WHERE
+	WR1 : QUERY (meth <* method_specif | 
+		all_class_descriptions_reachable(meth.created_view) 
+		AND (QUERY ( temp <* meth.v_c_v_range | NOT (
+		temp.parameter_type IN functional_view_v_c_v(
+									meth.created_view))
+		) <> [] )) = [];
+END_RULE; -- created_view_v_c_v_rule 
+
+
+RULE v_c_v_values_set_and_created_view_v_c_v_set_equality_rule FOR
+ 		(sub_object_view_statement, functional_view_class);
+WHERE
+	WR1 : QUERY (sub <* sub_object_view_statement | 
+		all_class_descriptions_reachable(sub.created_view) 
+		AND 
+		(collects_assigned_properties(sub.v_c_v_values) <> 
+		functional_view_v_c_v(sub.created_view))) = [];
+END_RULE; -- v_c_v_values_set_and_created_view_v_c_v_set_equality_rule
+
+
+RULE no_v_c_v_in_assigned_variables_set_rule FOR
+	(assignment_statement, functional_view_class);
+WHERE
+	WR1 : QUERY (ass <* assignment_statement | 
+		all_class_descriptions_reachable(ass\simple_statement.
+		referenced_by.item_of.defines.describes
+		.specification.created_view) 
+		AND 
+		(ass.assigned_variable\generic_variable
+		.interpretation.semantics\property_semantics.the_property IN 
+		functional_view_v_c_v(ass\simple_statement.referenced_by
+		.item_of.defines.describes.specification.created_view)))
+		=[];
+END_RULE; -- no_v_c_v_in_assigned_variables_set_rule
+
+
+END_SCHEMA; -- ISO13584_method_schema

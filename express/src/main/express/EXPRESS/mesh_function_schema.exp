@@ -1,0 +1,101 @@
+-- 2000-10-08
+
+(*
+
+  ISO/WD 10303-5x, Mathematical description, 2000-10-04
+
+  WG12 N620
+
+   This file contains the following schemas:
+      mathematical_identification_schema;
+      distribution_mapping_schema;
+      topological_definition_and_mesh_schema;
+      unstructured_mesh_schema;
+      structured_mesh_schema;
+      mesh_function_schema;
+      fea_definition_relationships_schema.
+*)
+
+SCHEMA mesh_function_schema;
+
+REFERENCE FROM topological_definition_and_mesh_schema -- 10303-5x
+  (mesh);
+
+--RR: instead of
+(*
+REFERENCE FROM mathematical_constructs_schema -- 10303-50
+  (application_defined_function,
+  maths_function,
+  function_is_table);
+*)
+
+
+--RR use this:
+REFERENCE FROM mathematical_functions_schema -- 10303-50
+  (application_defined_function,
+  maths_function,
+  function_is_table);
+
+REFERENCE FROM ISO13584_generic_expressions_schema -- 13584-20
+  (unary_generic_expression); 
+
+ENTITY mesh_function
+  SUBTYPE OF (
+    application_defined_function,
+    unary_generic_expression);
+  basis              : OPTIONAL LIST[1:?] OF mesh_function_basis;
+  mesh               : mesh;
+  uniform_basis      : OPTIONAL BOOLEAN;
+  values_at_vertices : BOOLEAN;
+DERIVE
+--RR:  control_values     : maths_function := SELF\unary_generic_function.operand;
+  control_values     : maths_function := SELF\unary_generic_expression.operand;
+WHERE
+  control_values_as_table : function_is_table (control_values);
+  necessary_basis         : values_at_vertices OR EXISTS (basis);
+  uniform_specified       : EXISTS (basis) = EXISTS (uniform_basis);
+  one_basis_if_uniform    : one_basis_if_uniform (basis, uniform_basis);
+END_ENTITY;
+
+ENTITY mesh_function_basis
+  SUBTYPE OF (
+    application_defined_function,
+    unary_generic_expression);
+  cell_topological_dimension    : INTEGER;
+  control_value_array_dimension : INTEGER;
+  control_value_array_order     : 
+      ARRAY[1:control_value_array_dimension] OF INTEGER;
+DERIVE
+  control_value_positions : maths_function := 
+--RR:      SELF\unary_generic_function.operand;
+      SELF\unary_generic_expression.operand;
+WHERE 
+  control_value_positions_as_table : 
+      function_is_table (control_value_positions);
+END_ENTITY;
+
+FUNCTION one_basis_if_uniform (
+  basis          :  LIST[1:?] OF mesh_function_basis;
+  uniform_basis  :  BOOLEAN) : BOOLEAN;
+    
+  LOCAL
+    status : BOOLEAN;
+  END_LOCAL;
+  
+  IF EXISTS (basis) AND EXISTS (uniform_basis)
+  THEN
+    IF uniform_basis
+    THEN 
+      status := (SIZEOF (basis) = 1);
+    ELSE
+      status := TRUE;
+    END_IF;
+  ELSE
+    status := TRUE;
+  END_IF;
+  
+  RETURN(status);
+  
+END_FUNCTION;
+
+END_SCHEMA;

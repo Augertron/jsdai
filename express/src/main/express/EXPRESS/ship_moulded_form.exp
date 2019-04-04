@@ -1,0 +1,5132 @@
+-- modified by RR:
+(*
+	REFERENCE FROM geometry_schema (dummy_gri) instead of USE FROM
+	REFERENCE FROM topology_schema (dummy_tri) instead of USE FROM
+	REFERENCE FROM support_resource_schema (bag_to_set) instead of USE FROM
+*)
+
+-- 2000-09-01
+
+(* AIM short form for ISO/CD 10303-216
+   Author: Len Slovensky
+   Date: 2000-07-27
+   N-NUMBER: ISO TC184/SC4/WG3 N951 *)
+
+
+SCHEMA ship_moulded_form;
+
+USE FROM approval_schema 
+(approval,
+approval_status);
+
+USE FROM action_schema 
+(action,
+executed_action,
+action_method,
+action_request_solution,
+action_relationship,
+versioned_action_request);
+
+USE FROM management_resources_schema
+(classification_assignment,
+group_assignment,
+identification_assignment,
+external_identification_assignment,
+organization_assignment,
+document_reference,
+action_assignment,
+action_request_assignment,
+approval_assignment,
+date_and_time_assignment,
+person_and_organization_assignment);
+
+USE FROM aic_non_manifold_surface
+(non_manifold_surface_shape_representation);
+
+USE FROM aic_shell_based_wireframe
+(shell_based_wireframe_shape_representation);
+
+USE FROM document_schema
+(document,
+document_usage_constraint);
+
+USE FROM group_schema
+(group,
+group_relationship);
+
+USE FROM product_definition_schema
+(product,
+product_definition,
+product_definition_relationship,
+product_category,
+product_related_product_category);
+
+USE FROM product_property_definition_schema
+(product_definition_shape,
+property_definition,
+shape_aspect,
+characterized_product_definition);
+
+USE FROM person_organization_schema
+(organization,
+organizational_project);
+
+USE FROM material_property_definition_schema
+(property_definition_relationship);
+
+USE FROM product_property_representation_schema
+(property_definition_representation,
+shape_representation);
+
+USE FROM geometry_schema
+(axis2_placement_3d,
+axis1_placement,
+cartesian_point,
+-- RR
+-- dummy_gri,
+elementary_surface,
+placement,
+surface,
+vector,
+point,
+curve,
+plane,
+geometric_representation_item,
+geometric_representation_context);
+
+-- RR
+REFERENCE FROM geometry_schema (dummy_gri);
+
+USE FROM topology_schema
+(vertex,
+vertex_point,
+wire_shell,
+topological_representation_item,
+-- RR
+-- dummy_tri,
+edge_curve);
+
+-- RR
+REFERENCE FROM topology_schema (dummy_tri); 
+
+USE FROM geometric_model_schema
+(shell_based_wireframe_model,
+face_based_surface_model);
+
+USE FROM external_reference_schema
+(external_source,
+external_source_relationship);
+
+USE FROM qualified_measure_schema
+(descriptive_representation_item);
+
+USE FROM measure_schema
+(named_unit,
+si_unit,
+conversion_based_unit,
+derived_unit,
+global_unit_assigned_context,
+measure_with_unit,
+length_measure,
+positive_length_measure,
+ratio_measure,
+plane_angle_measure,
+parameter_value,
+area_measure);
+
+USE FROM representation_schema 
+(representation,
+representation_relationship,
+representation_context,
+representation_item,
+value_representation_item,
+compound_representation_item,
+item_defined_transformation,
+list_representation_item);
+
+  USE FROM support_resource_schema	-- ISO 10303-41
+      (
+       -- RR	
+       -- bag_to_set,
+       identifier,
+       label,
+       text);
+
+	-- RR
+	REFERENCE FROM support_resource_schema (bag_to_set);
+
+TYPE classification_item = SELECT
+(product_definition,
+product_definition_relationship,
+product_definition_shape,
+group,
+extended_property_definition,
+extended_product_definition_shape,
+shape_representation,
+representation_relationship,
+property_definition,
+product,
+extended_product_related_product_category,
+representation,
+compound_representation_item,
+axis2_placement_3d,
+edge_curve,
+vertex_point,
+measure_with_unit);
+END_TYPE;
+
+TYPE document_reference_item = SELECT
+(property_definition);
+END_TYPE;
+
+TYPE group_item = SELECT
+(product_definition,
+product_definition_shape,
+product_definition_relationship);
+END_TYPE;
+
+TYPE organization_item = SELECT
+(product_definition,
+property_definition);
+END_TYPE;
+
+TYPE identification_item = SELECT
+(product_definition,
+extended_property_definition,
+extended_product_definition_shape,
+extended_product_related_product_category,
+compound_representation_item,
+product_definition_relationship,
+group);
+END_TYPE;
+
+TYPE external_identification_item = SELECT
+(product,
+product_definition);
+END_TYPE;
+
+TYPE action_request_item = SELECT
+(action,
+executed_action);
+END_TYPE;
+
+TYPE action_item = SELECT
+(action_request_solution,
+executed_action,
+product_definition,
+product_definition_relationship,
+product_definition_shape,
+group,
+property_definition,
+product,
+product_related_product_category);
+END_TYPE;
+
+TYPE approval_item = SELECT
+(product_definition,
+product_definition_shape,
+property_definition,
+product_related_product_category);
+END_TYPE;
+
+TYPE person_and_organization_item = SELECT
+(action_request_solution,
+executed_action,
+versioned_action_request,
+action);
+END_TYPE;
+
+TYPE date_and_time_item = SELECT
+(action_request_solution,
+executed_action,
+versioned_action_request,
+action);
+END_TYPE;
+
+ENTITY applied_classification_assignment
+SUBTYPE OF (classification_assignment);
+  items : SET [1:?] OF classification_item;
+END_ENTITY;
+
+ENTITY applied_document_reference
+SUBTYPE OF (document_reference);
+  items : SET [1:?] OF document_reference_item;
+END_ENTITY;
+
+ENTITY applied_group_assignment
+SUBTYPE OF (group_assignment);
+  items : SET [1:?] OF group_item;
+END_ENTITY;
+
+ENTITY applied_external_identification_assignment
+SUBTYPE OF (external_identification_assignment);
+  items : SET [1:?] OF external_identification_item;
+END_ENTITY;
+
+ENTITY applied_identification_assignment
+SUBTYPE OF (identification_assignment);
+  items : SET [1:?] OF identification_item;
+END_ENTITY;
+
+ENTITY applied_organization_assignment
+SUBTYPE OF (organization_assignment);
+  items : SET [1:?] OF organization_item;
+END_ENTITY;
+
+ENTITY applied_action_request_assignment
+SUBTYPE OF (action_request_assignment);
+  items : SET [1:?] OF action_request_item;
+END_ENTITY;
+
+ENTITY applied_action_assignment
+SUBTYPE OF (action_assignment);
+  items : SET [1:?] OF action_item;
+END_ENTITY;
+
+ENTITY applied_approval_assignment
+SUBTYPE OF (approval_assignment);
+  items : SET [1:?] OF approval_item;
+END_ENTITY;
+
+ENTITY applied_person_and_organization_assignment
+SUBTYPE OF (person_and_organization_assignment);
+  items : SET [1:?] OF person_and_organization_item;
+END_ENTITY;
+
+ENTITY applied_date_and_time_assignment
+SUBTYPE OF (date_and_time_assignment);
+  items : SET [1:?] OF date_and_time_item;
+END_ENTITY;
+
+ENTITY class
+SUBTYPE OF (group);
+END_ENTITY;
+
+ENTITY extended_property_definition
+SUBTYPE OF (property_definition);
+--RR: revomed duplicate DERIVE
+-- id: identifier := get_extended_property_definition_id_value(SELF);
+END_ENTITY;
+
+ENTITY extended_product_definition_shape
+SUBTYPE OF (product_definition_shape);
+--RR: removed duplicate - DERIVE
+--  id: identifier := get_extended_product_definition_shape_id_value(SELF);
+END_ENTITY;
+
+ENTITY extended_product_related_product_category
+SUBTYPE OF (product_related_product_category);
+--RR: removed duplicate DERIVE
+--  id: identifier := 
+--             get_extended_product_related_product_category_id_value(SELF);
+END_ENTITY;
+
+RULE 
+prod_def_w_class_id_class_and_statutory_designation_ref_by_exactly_one_prop_def_rep_via_prop_def 
+FOR (product_definition, 
+     property_definition, 
+     property_definition_representation, 
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF applied_classification_assignment := [];
+  t1_set:    SET OF product_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  t3_set:    SET OF property_definition := [];
+  t4_set:    SET OF product_definition := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'class and statutory designation'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'class and statutory designation');
+
+(*get all instances of product_definition that have class id *)
+(*'class and statutory designation'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*get all property_definition_representation instances with name *)
+(*'class and statutory designation'*)
+
+t2_set:= QUERY(i <* PROPERTY_DEFINITION_REPRESENTATION |
+  i.NAME = 'class and statutory designation');
+  
+(*  get all property_definition instances which are the .definition of the *)
+(*  property_definition_representation *)
+
+REPEAT i := 1 TO HIINDEX(t2_set);
+  t3_set := t3_set + t2_set[i].definition;
+END_REPEAT;
+
+(* get all product_definition instances which are the .definition of the *)
+(* property_definition *)
+
+REPEAT i := 1 TO HIINDEX(t3_set);
+  t4_set := t4_set + t3_set[i].definition;
+END_REPEAT;
+
+(* compare both lists with product_definition instances *)
+(* which have TO be identical *)
+
+violation := t1_set = t4_set;
+WHERE
+WR1: NOT violation;
+END_RULE;
+
+RULE 
+prod_def_w_class_id_class_parameters_ref_by_exactly_one_prop_def_rep_via_prop_def 
+FOR (product_definition, 
+     property_definition, 
+     property_definition_representation, 
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF applied_classification_assignment := [];
+  t1_set:    SET OF product_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  t3_set:    SET OF property_definition := [];
+  t4_set:    SET OF product_definition := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'class parameters'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+   i.ASSIGNED_CLASSIFICATION.NAME = 'class parameters');
+   
+(*get all instances of product_definition that have class id 'class parameters'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* get all property_definition_representation instances with *)
+(* name 'class parameters'*)
+
+t2_set:= QUERY(i <* PROPERTY_DEFINITION_REPRESENTATION |
+    i.NAME = 'class parameters');
+
+(* get all property_definition instances which are the .definition of the *)
+(* property_definition_representation*)
+
+REPEAT i := 1 TO HIINDEX(t2_set);
+  t3_set := t3_set + t2_set[i].definition;
+END_REPEAT;
+
+(* get all product_definition instances which are the .definition of the *)
+(* property_definition*)
+
+REPEAT i := 1 TO HIINDEX(t3_set);
+  t4_set := t4_set + t3_set[i].definition;
+END_REPEAT;
+
+(* compare both lists with product_definition instances *)
+(* which have TO be identical*)
+
+violation := t1_set = t4_set;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prod_def_w_class_id_global_axis_placement_designation_ref_by_exactly_one_prop_def_rep_via_prop_def 
+FOR (product_definition, 
+     property_definition, 
+     property_definition_representation, 
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF applied_classification_assignment := [];
+  t1_set:    SET OF product_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  t3_set:    SET OF property_definition := [];
+  t4_set:    SET OF product_definition := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'global axis placement'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'global axis placement');
+
+(*  get all instances of product_definition that have class id *)
+(*  'global axis placement'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*  get all property_definition_representation instances with name *)
+(*  'global axis placement'*)
+
+t2_set:= QUERY(i <* PROPERTY_DEFINITION_REPRESENTATION |
+  i.NAME = 'global axis placement');
+
+(*  get all property_definition instances which are the .definition of the *)
+(* property_definition_representation*)
+
+REPEAT i := 1 TO HIINDEX(t2_set);
+  t3_set := t3_set + t2_set[i].definition;
+END_REPEAT;
+
+(* get all product_definition instances which are the *)
+(* .definition OF the property_definition             *)
+
+REPEAT i := 1 TO HIINDEX(t3_set);
+  t4_set := t4_set + t3_set[i].definition;
+END_REPEAT;
+
+(* compare both lists with product_definition instances *)
+(* which have TO be identical                           *)
+
+violation := t1_set = t4_set;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prod_def_w_class_id_principal_characteristics_designation_ref_by_exactly_one_prop_def_rep_via_prop_def 
+FOR (product_definition, 
+     property_definition, 
+     property_definition_representation, 
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF applied_classification_assignment := [];
+  t1_set:    SET OF product_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  t3_set:    SET OF property_definition := [];
+  t4_set:    SET OF product_definition := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'principal characteristics'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'principal characteristics');
+
+(*  get all instances of product_definition that have class id *)
+(*  'principal characteristics'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* get all property_definition_representation instances with name *)
+(* 'principal characteristics'*)
+
+t2_set:= QUERY(i <* PROPERTY_DEFINITION_REPRESENTATION |
+  i.NAME = 'global axis placement');
+
+(*get all property_definition instances which are the  *)
+(*.definition OF the property_definition_representation*)
+
+REPEAT i := 1 TO HIINDEX(t2_set);
+  t3_set := t3_set + t2_set[i].definition;
+END_REPEAT;
+
+(*  get all product_definition instances which are the *)
+(*  .definition OF the property_definition*)
+
+REPEAT i := 1 TO HIINDEX(t3_set);
+  t4_set := t4_set + t3_set[i].definition;
+END_REPEAT;
+
+(* compare both lists with product_definition instances *)
+(* which have TO be identical*)
+
+violation := t1_set = t4_set;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_or_more_items_in_rep_if_used_in_prop_def_rep_w_name_eq_class_notation 
+FOR (representation);
+
+LOCAL
+reps:      BAG OF REPRESENTATION := [];
+arg_list:  LIST OF STRING := ['class notations hull', 'class notations machinery'];
+violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation which are used by a *)
+(* property_definition_representation with name equal TO 'class notation'*)
+
+reps := QUERY(temp_rep <* representation |
+    SIZEOF (QUERY(temp_prop_def_rep <* USEDIN(temp_rep,
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.USED_REPRESENTATION')| 
+    (temp_prop_def_rep.name = 'class notation'))) > 0 );
+
+(* iterate over all representations found above; stop,                       *) 
+(* if one OF them has NOT exactly one rep_item FOR each name IN the arg_list *)
+
+REPEAT i:=1 TO HIINDEX(reps) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation := (SIZEOF(QUERY(rep_item <* reps[i].items |
+    rep_item.name = arg_list[j])) < 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prod_def_w_class_id_ship_designation_ref_by_exactly_one_apl_id_ass_w_role_name_eq_IMO_number_or_pennant_hull_number 
+FOR(product_definition, 
+    applied_classification_assignment);
+    
+LOCAL
+  c_a_set:   SET OF applied_classification_assignment := [];
+  t1_set:    SET OF product_definition := [];
+  t2_set:    SET OF applied_classification_assignment := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'ship designation'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'ship designation');
+
+(*get all instances of T1 that have class id 'ship designation'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set); 
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* for all instances of product_definition in t1_set: get the       *)
+(* applied_classification_assignment instances that are referencing *)
+(* a product_definition instance via .ITEMS, filter out those       *)
+(* applied_classification_assignment instances whose attribute      *)
+(* .ROLE.NAME has the VALUE 'IMO number' OR 'pennant hull number',  *)
+(* check IF their NUMBER is equal 1                                 *)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 'SHIP_MOULDED_FORM_AIM.' + 
+  'APPLIED_IDENTIFICATION_ASSIGNMENT.ITEMS'));
+  violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+  (i.ROLE.NAME = 'IMO number')OR 
+  (i.ROLE.NAME = 'pennant hull number') )) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE one_rep_item_in_compound_rep_item_if_class_eq_floating_position 
+FOR (compound_representation_item, 
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:    LIST OF representation_item := [];
+  arg_list:  LIST OF STRING := [
+                 'moulded form displacement', 'draught at amidships', 
+                 'length of waterline',       'breadth of waterline', 
+                 'angle of trim',             'angle of heel'];
+violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'floating position'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'floating position');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'floating position'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* iterate over all compound_representation_item found above; stop,         *) 
+(* if one OF them has NOT exactly one rep_item FOR each name IN the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    t2_set := t1_set[i].item_element; 
+    violation := (SIZEOF(QUERY(items <* t2_set | 
+    items.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_rep_item_in_compound_rep_item_if_class_eq_hydrostatic_property 
+FOR (compound_representation_item, 
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:    LIST OF representation_item := [];
+  arg_list:  LIST OF STRING := ['property type'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'hydrostatic property'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'hydrostatic property');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'hydrostatic property'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* iterate over all compound_representation_item found above; stop,         *) 
+(* if one OF them has NOT exactly one rep_item FOR each name IN the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    t2_set := t1_set[i].item_element; 
+    violation := (SIZEOF(QUERY(items <* t2_set | 
+    items.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE one_rep_item_in_compound_rep_item_if_class_eq_ship_point 
+FOR (compound_representation_item,  
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:    LIST OF representation_item := [];
+  arg_list:  LIST OF STRING := ['point shape'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'ship point'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'ship point');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'ship point'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* iterate over all compound_representation_item found above; stop,         *) 
+(* if one OF them has NOT exactly one rep_item FOR each name IN the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    t2_set := t1_set[i].item_element; 
+    violation := (SIZEOF(QUERY(items <* t2_set | 
+    items.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE one_rep_item_in_compound_rep_item_if_class_eq_ship_curve 
+FOR (compound_representation_item,  
+     applied_classification_assignment);
+
+LOCAL 
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:    LIST OF representation_item := [];
+  arg_list:  LIST OF STRING := ['side condition', 'curve shape'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'ship curve'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'ship curve');
+
+(* get all instances of compound_representation_item that have class id *) 
+(* 'ship curve'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* iterate over all compound_representation_item found above; stop, *)  
+(* if one OF them has NOT exactly one rep_item FOR each name IN the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    t2_set := t1_set[i].item_element; 
+    violation := (SIZEOF(QUERY(items <* t2_set | 
+    items.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE one_rep_item_in_compound_rep_item_if_class_eq_ship_surface 
+FOR (compound_representation_item,  
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:    LIST OF representation_item := [];
+  arg_list:  LIST OF STRING := ['surface shape'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'ship surface'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'ship surface');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'ship surface'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+t1_set := t1_set + c_a_set[i].items[j];
+END_REPEAT;
+END_REPEAT;
+
+ (* iterate over all compound_representation_item found above; stop, *) 
+ (* if one OF them has NOT exactly one rep_item FOR each name IN the arg_list*)
+ 
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    t2_set := t1_set[i].item_element; 
+    violation := (SIZEOF(QUERY(items <* t2_set | 
+    items.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_rep_item_in_compound_rep_item_if_class_eq_offset_point_table_model 
+FOR (compound_representation_item,  
+     applied_classification_assignment);
+ 
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:    LIST OF representation_item := [];
+  arg_list:  LIST OF STRING := ['offset point table type'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id '*)
+(* offset point table model'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'offset point table model');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'offset point table model'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+ (* iterate over all compound_representation_item found above; stop,         *)
+ (* if one of them has not exactly one rep_item for each name in the arg_list*)
+ 
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    t2_set := t1_set[i].item_element; 
+    violation := (SIZEOF(QUERY(items <* t2_set | items.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_rep_item_in_compound_rep_item_if_class_eq_spacing_position_with_offset 
+FOR (compound_representation_item,  
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:    LIST OF representation_item := [];
+  arg_list:  LIST OF STRING := ['offset'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'spacing position with offset'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'spacing position with offset');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'spacing position with offset'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+ (* iterate over all compound_representation_item found above; stop, *)
+ (* if one of them has not exactly one rep_item for each name in the arg_list*)
+ 
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    t2_set := t1_set[i].item_element; 
+    violation := (SIZEOF(QUERY(items <* t2_set | 
+    items.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+WR1: NOT violation;
+END_RULE;
+
+RULE one_rep_item_in_compound_rep_item_if_class_eq_spacing_position 
+FOR (compound_representation_item,  
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:   LIST OF representation_item := [];
+  arg_list:  LIST OF STRING := ['position number', 'position'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'spacing position'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'spacing position');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'spacing position'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+ (* iterate over all compound_representation_item found above; stop,         *)
+ (* if one of them has not exactly one rep_item for each name in the arg_list*)
+ 
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    t2_set := t1_set[i].item_element; 
+    violation := (SIZEOF(QUERY(items <* t2_set | 
+    items.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE one_rep_item_in_compound_rep_item_if_class_eq_stability_property 
+FOR (compound_representation_item,  
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:    LIST OF representation_item := [];
+  arg_list:  LIST OF STRING := [
+             'angle of heel', 'righting arm', 'centre of buoyancy'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'stability property'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'stability property');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'stability property'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+ (* iterate over all compound_representation_item found above; stop,         *)
+ (* if one of them has not exactly one rep_item for each name in the arg_list*)
+ 
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    t2_set := t1_set[i].item_element; 
+    violation := (SIZEOF(QUERY(items <* t2_set | 
+    items.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_compound_rep_item_with_class_floating_position_in_compound_rep_item_with_class_hydrostatic_properties_for_constant_floating_position 
+FOR (compound_representation_item, 
+     applied_classification_assignment);
+
+LOCAL
+c_a_set: SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+c_a_set2 : SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+t1_set:  SET OF COMPOUND_REPRESENTATION_ITEM := [];
+t2_set:  SET OF COMPOUND_REPRESENTATION_ITEM := [];
+t3_set:  SET OF REPRESENTATION_ITEM := [];
+violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id    *)
+(* 'hydrostatic properties for constant floating position'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 
+  'hydrostatic properties for constant floating position');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'hydrostatic properties for constant floating position'              *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* get all classification_assignment instances with id *)
+(* 'floating position'*)
+
+c_a_set2 := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'floating position');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'floating position'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set2);
+  REPEAT j := 1 TO HIINDEX(c_a_set2[i].items);
+    t2_set := t2_set + c_a_set2[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* iterate over all compound_representation_item found in the first list;  *)
+(* then iterate over all item_element for each compound_representation_item,  *)
+(* check that the intersection of these item_elements and and the second list *)
+(* of compound_representation_item is equal 1*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j := 1 TO HIINDEX(t1_set[i].item_element);
+    t3_set := t3_set + t1_set[j].item_element;
+  END_REPEAT;
+  violation := (SIZEOF(t3_set * t2_set) <> 1);
+  t3_set:= [];
+END_REPEAT;
+WHERE 
+    WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_compound_rep_item_with_class_ship_curve_in_compound_rep_item_with_class_ship_curve_segment 
+FOR (compound_representation_item,  
+     applied_classification_assignment);
+     
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  c_a_set2 : SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t3_set:    SET OF REPRESENTATION_ITEM := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'ship curve segment'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'ship curve segment');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'ship curve segment'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*get all classification_assignment instances with id 'ship curve'*)
+
+c_a_set2 := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'ship curve');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'ship curve'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set2);
+  REPEAT j := 1 TO HIINDEX(c_a_set2[i].items);
+    t2_set := t2_set + c_a_set2[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* iterate over all compound_representation_item found in the first list;    *)
+(* then iterate over all item_element for each compound_representation_item, *)
+(* check that the intersection of these item_elements and and the second     *)
+(* list of compound_representation_item is equal 1                           *)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j := 1 TO HIINDEX(t1_set[i].item_element);
+    t3_set := t3_set + t1_set[j].item_element;
+  END_REPEAT;
+  violation := (SIZEOF(t3_set * t2_set) <> 1);
+  t3_set:= [];
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_compound_rep_item_with_class_spacing_position_in_compound_rep_item_with_class_ship_curve_with_spacing_position 
+FOR (compound_representation_item,  
+     applied_classification_assignment);
+     
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  c_a_set2 : SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t3_set:    SET OF REPRESENTATION_ITEM := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'ship curve with spacing position'*) 
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'ship curve with spacing position');
+
+(*get all instances of compound_representation_item that have class id *)
+(*'ship curve with spacing position'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*get all classification_assignment instances with id 'spacing position'*)
+
+c_a_set2 := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'spacing position');
+
+(* get all instances of compound_representation_item that have *)
+(* class id 'spacing position'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set2);
+  REPEAT j := 1 TO HIINDEX(c_a_set2[i].items);
+    t2_set := t2_set + c_a_set2[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*iterate over all compound_representation_item found in the first list; *)
+(* then iterate over all item_element for each compound_representation_item, *)
+(* check that the intersection of these item_elements and and the second *)
+(* list of compound_representation_item is equal 1*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j := 1 TO HIINDEX(t1_set[i].item_element);
+    t3_set := t3_set + t1_set[j].item_element;
+  END_REPEAT;
+  violation := (SIZEOF(t3_set * t2_set) <> 1);
+  t3_set:= [];
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_compound_rep_item_with_class_spacing_position_in_compound_rep_item_with_class_spacing_position_with_offset 
+FOR (compound_representation_item, 
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  c_a_set2 : SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t3_set:    SET OF REPRESENTATION_ITEM := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'spacing position with offset'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'spacing position with offset');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'spacing position with offset'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* get all classification_assignment instances with id *)
+(* 'spacing position'*)
+
+c_a_set2 := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'spacing position');
+
+(* get all instances of compound_representation_item that have *)
+(* class id 'spacing position'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set2);
+  REPEAT j := 1 TO HIINDEX(c_a_set2[i].items);
+    t2_set := t2_set + c_a_set2[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*iterate over all compound_representation_item found in the first list;     *)
+(* then iterate over all item_element for each compound_representation_item, *)
+(* check that the intersection of these item_elements and                    *)
+(* and the second list of compound_representation_item is equal 1            *)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j := 1 TO HIINDEX(t1_set[i].item_element);
+    t3_set := t3_set + t1_set[j].item_element;
+  END_REPEAT;
+  violation := (SIZEOF(t3_set * t2_set) <> 1);
+  t3_set:= [];
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_or_more_compound_rep_item_with_class_stability_property_in_compound_rep_item_with_class_stability_properties_for_one_floating_position 
+FOR (compound_representation_item, 
+    applied_classification_assignment);
+    
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  c_a_set2 : SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t3_set:    SET OF REPRESENTATION_ITEM := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'stability properties for one floating position'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 
+  'stability properties for one floating position');
+
+(*get all instances of compound_representation_item that have *)
+(* class id 'stability properties for one floating position'  *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*get all classification_assignment instances with id 'stability property'*)
+
+c_a_set2 := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'stability property');
+
+(* get all instances of compound_representation_item that have *)
+(* class id 'stability property'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set2);
+  REPEAT j := 1 TO HIINDEX(c_a_set2[i].items);
+    t2_set := t2_set + c_a_set2[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*iterate over all compound_representation_item found in        *)
+(* the first list; then iterate over all item_element for each  *)
+(* compound_representation_item, check that the intersection of *)
+(* these item_elements and and the second list of               *)
+(* compound_representation_item is equal 1                      *)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j := 1 TO HIINDEX(t1_set[i].item_element);
+    t3_set := t3_set + t1_set[j].item_element;
+  END_REPEAT;
+  violation := (SIZEOF(t3_set * t2_set) < 1);
+  t3_set:= [];
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE one_item_in_representation_if_class_eq_hydrostatic_table 
+    FOR(representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['mean shell thickness'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'hydrostatic table'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'hydrostatic table');
+
+(* get all instances of representation that have class id *)
+(* 'hydrostatic table'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+ END_REPEAT;
+END_REPEAT;
+
+(*iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *) 
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE one_item_in_representation_if_class_eq_midship_tumble 
+    FOR (representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := [
+               'tumble out at bottom', 'tumble in at top', 
+               'tumble out at side',   'tumble in at side'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'midship tumble'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'midship tumble');
+
+(* get all instances of representation that have class id *)
+(* 'midship tumble'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+ END_REPEAT;
+END_REPEAT;
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE one_item_in_representation_if_class_eq_propeller_location 
+    FOR (representation, 
+    applied_classification_assignment);
+    
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := [
+                 'shaft line inclination x', 'shaft line inclination y', 
+                 'shaft line location',      'propeller location'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'propeller location'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'propeller location');
+
+(* get all instances of representation that have class id *)
+(* 'propeller location'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+ END_REPEAT;
+END_REPEAT;
+
+  (*iterate over all representation instances found above; *)
+  (* stop, IF one OF them has NOT exactly one rep_item FOR *)
+  (* each name IN the arg_list*)
+  
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_item_in_representation_if_class_eq_ship_moulded_form_wireframe_model 
+    FOR (representation, 
+    applied_classification_assignment);
+    
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['wireframe'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'ship moulded form wireframe model'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'ship moulded form wireframe model');
+
+(* get all instances of representation that have class id *)
+(* 'ship moulded form wireframe model'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+ END_REPEAT;
+END_REPEAT;
+
+(* iterate over all representation instances found above; stop, *) 
+(* one OF them has NOT exactly one rep_item FOR each name IN *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE one_item_in_representation_if_class_eq_stability_table 
+    FOR (representation, 
+    applied_classification_assignment);
+    
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['mean shell thickness'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'stability table'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'stability table');
+
+(* get all instances of representation that have class id *)
+(* 'stability table'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+ END_REPEAT;
+END_REPEAT;
+
+(*iterate over all representation instances found above; stop,  *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_hydrostatic_definition_ref_by_one_or_more_rep_w_class_id_hydrostatic_table 
+    FOR (property_definition, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  c2_a_set:  SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF representation := [];
+  t3_set:    SET OF property_definition_representation := [];
+  t4_set:    SET OF property_definition := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'hydrostatic definition'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'hydrostatic definition');
+
+(* get all instances of property_definition that have class id *)
+(* 'hydrostatic definition'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+  t1_set := t1_set + c_a_set[i].items[j];
+END_REPEAT;
+END_REPEAT;
+
+(*get all classification_assignment instances with id 'hydrostatic table'*)
+
+c2_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+    i.ASSIGNED_CLASSIFICATION.NAME = 'hydrostatic table');
+
+(*get all instances of representation that have class id 'hydrostatic table'*)
+
+REPEAT i := 1 TO HIINDEX(c2_a_set);
+REPEAT j := 1 TO HIINDEX(c2_a_set[i].items);
+  t2_set := t2_set + c2_a_set[i].items[j];
+END_REPEAT;
+END_REPEAT;
+
+(* get all property_definition_representation instances which have as the *)
+(* .used_representation the representation instances that have class id   *)
+(* 'hydrostatic table'*)
+
+REPEAT i := 1 TO HIINDEX(t2_set);
+  t3_set := t3_set + USEDIN(t2_set[i],
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.USED_REPRESENTATION');
+END_REPEAT;
+
+(* get all property_definition instances which are the *)
+(* .definition of the property_definition *)
+
+REPEAT i := 1 TO HIINDEX(t3_set);
+  t4_set := t4_set + t3_set[i].definition;
+END_REPEAT;
+
+(* compare both lists with property_definition instances *)
+(* which have TO be identical*)
+
+violation := t1_set = t4_set;
+
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_stability_definition_ref_by_one_or_more_rep_w_class_id_stability_table 
+    FOR (property_definition, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  c2_a_set:  SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF representation := [];
+  t3_set:    SET OF property_definition_representation := [];
+  t4_set:    SET OF property_definition := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'stability definition'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'stability definition');
+
+(*get all instances of property_definition that have class id 'stability definition'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+  t1_set := t1_set + c_a_set[i].items[j];
+END_REPEAT;
+END_REPEAT;
+
+(*get all classification_assignment instances with id 'stability table'*)
+
+c2_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+    i.ASSIGNED_CLASSIFICATION.NAME = 'stability table');
+
+(*get all instances of representation that have class id 'stability table'*)
+
+REPEAT i := 1 TO HIINDEX(c2_a_set);
+REPEAT j := 1 TO HIINDEX(c2_a_set[i].items);
+  t2_set := t2_set + c2_a_set[i].items[j];
+END_REPEAT;
+END_REPEAT;
+
+(* get all property_definition_representation instances which have as the *)
+(* .used_representation the representation instances that have class id   *)
+(* 'stability table'*)
+
+REPEAT i := 1 TO HIINDEX(t2_set);
+  t3_set := t3_set + USEDIN(t2_set[i],
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.USED_REPRESENTATION');
+END_REPEAT;
+
+(* get all property_definition instances which are the .definition of the *)
+(* property_definition *)
+
+REPEAT i := 1 TO HIINDEX(t3_set);
+  t4_set := t4_set + t3_set[i].definition;
+END_REPEAT;
+
+(* compare both lists with property_definition instances which have *) 
+(*  to be identical*)
+
+violation := t1_set = t4_set;
+
+WHERE
+    WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_or_more_items_with_class_hydrostatic_properties_for_constant_floating_position_in_representation_w_class_hydrostatic_table 
+    FOR (representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  c2_a_set:  SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF representation := [];
+  t2_set:    SET OF representation_item := [];
+  t3_set:    SET OF representation_item := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'hydrostatic table'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+    i.ASSIGNED_CLASSIFICATION.NAME = 'hydrostatic table');
+
+(*get all instances of representation that have class id 'hydrostatic table'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+END_REPEAT;
+END_REPEAT;
+
+(* get all classification_assignment instances with id 'hydrostatic properties *)
+(* for constant floating position'*)
+
+c2_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+    i.ASSIGNED_CLASSIFICATION.NAME = 
+    'hydrostatic properties for constant floating position');
+    
+(* get all instances of representation_item that have class id *)
+(* 'hydrostatic properties for constant floating position'*)
+
+REPEAT i := 1 TO HIINDEX(c2_a_set);
+REPEAT j := 1 TO HIINDEX(c2_a_set[i].items);
+    t2_set := t2_set + c2_a_set[i].items[j];
+END_REPEAT;
+END_REPEAT;
+
+(*  get all representation_item instances which are the .items of the *)
+(*  representation instances that have class id 'hydrostatic table'   *)
+
+REPEAT i := 1 TO HIINDEX(t1_set) WHILE (NOT violation);
+REPEAT j := 1 TO HIINDEX(t1_set[i].items);
+
+(* compare both lists with representation_item instances and the *)
+(* intersection has TO be greater 0 *)
+
+  t3_set := t3_set + t1_set[i].items[j];
+END_REPEAT;
+  violation := (SIZEOF(t3_set* t2_set) < 1);
+  t3_set:= [];
+END_REPEAT;
+WHERE
+    WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_or_more_items_with_class_hydrostatic_property_in_representation_w_class_hydrostatic_table 
+    FOR (representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  c2_a_set:  SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF representation := [];
+  t2_set:    SET OF representation_item := [];
+  t3_set:    SET OF representation_item := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'hydrostatic table'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'hydrostatic table');
+
+(*get all instances of representation that have class id 'hydrostatic table'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+END_REPEAT;
+END_REPEAT;
+
+(*get all classification_assignment instances with id 'hydrostatic property'*)
+
+c2_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'hydrostatic property');
+  
+(*get all instances of representation_item that have class id 'hydrostatic property'*)
+
+REPEAT i := 1 TO HIINDEX(c2_a_set);
+REPEAT j := 1 TO HIINDEX(c2_a_set[i].items);
+  t2_set := t2_set + c2_a_set[i].items[j];
+END_REPEAT;
+END_REPEAT;
+
+(* get all representation_item instances which are the .items of the *)
+(* representation instances that have class id 'hydrostatic table'   *)
+
+REPEAT i := 1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j := 1 TO HIINDEX(t1_set[i].items);
+
+(*  compare both lists with representation_item instances and the *)
+(*  intersection has TO be greater 0 *)
+
+      t3_set := t3_set + t1_set[i].items[j];
+  END_REPEAT;
+   violation := (SIZEOF(t3_set* t2_set) < 1);
+   t3_set:= [];
+END_REPEAT;
+WHERE
+    WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_or_more_items_with_class_in_representation_w_class_offset_point_table_model 
+    FOR (representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:  SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  c2_a_set:  SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF representation := [];
+  t2_set:    SET OF representation_item := [];
+  t3_set:    SET OF representation_item := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'offset point table model'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+    i.ASSIGNED_CLASSIFICATION.NAME = 'offset point table model');
+    
+(* get all instances of representation that have class id *)
+(* 'offset point table model'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+  t1_set := t1_set + c_a_set[i].items[j];
+END_REPEAT;
+END_REPEAT;
+
+(*get all classification_assignment instances with id *)
+(* 'section of offset point table'*)
+
+c2_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+    i.ASSIGNED_CLASSIFICATION.NAME = 'section of offset point table');
+
+(* get all instances of representation_item that have class id 'section *)
+(* of offset point table'*)
+
+REPEAT i := 1 TO HIINDEX(c2_a_set);
+  REPEAT j := 1 TO HIINDEX(c2_a_set[i].items);
+    t2_set := t2_set + c2_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* get all representation_item instances which are the .items of the       *)
+(* representation instances that have class id 'offset point table model'  *)
+
+REPEAT i := 1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j := 1 TO HIINDEX(t1_set[i].items);
+
+(* compare both lists with representation_item instances and the *)
+(* intersection has TO be greater 0 *)
+
+    t3_set := t3_set + t1_set[i].items[j];
+  END_REPEAT;
+  violation := (SIZEOF(t3_set* t2_set) < 1);
+  t3_set:= [];
+END_REPEAT;
+WHERE
+   WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_or_more_items_with_class_in_representation_w_class_offset_point_table_model2 
+  FOR (representation, 
+  applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  c2_a_set:  SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF representation := [];
+  t2_set:    SET OF representation_item := [];
+  t3_set:    SET OF representation_item := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'offset point table model'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'offset point table model');
+
+(*get all instances of representation that have class id 'offset point table model'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*get all classification_assignment instances with id 'ship point'*)
+
+c2_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'ship point');
+
+(*get all instances of representation_item that have class id 'ship point'*)
+
+REPEAT i := 1 TO HIINDEX(c2_a_set);
+  REPEAT j := 1 TO HIINDEX(c2_a_set[i].items);
+    t2_set := t2_set + c2_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* get all representation_item instances which are the .items of the     *)
+(* representation instances that have class id 'offset point table model'*)
+
+REPEAT i := 1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j := 1 TO HIINDEX(t1_set[i].items);
+  
+(* compare both lists with representation_item instances and the *)
+(* intersection has TO be greater 0 *)
+
+    t3_set := t3_set + t1_set[i].items[j];
+  END_REPEAT;
+  violation := (SIZEOF(t3_set* t2_set) < 1);
+  t3_set:= [];
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_or_more_items_with_class_in_representation_w_class_offset_table_shape_representation 
+FOR (representation, APPLIED_CLASSIFICATION_ASSIGNMENT);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  c2_a_set:  SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF representation := [];
+  t2_set:    SET OF representation_item := [];
+  t3_set:    SET OF representation_item := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'offset table shape representation'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'offset table shape representation');
+
+(* get all instances of representation that have class id *)
+(* 'offset table shape representation'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+t1_set := t1_set + c_a_set[i].items[j];
+END_REPEAT;
+END_REPEAT;
+
+(* get all classification_assignment instances with id *)
+(* 'offset point table model'*)
+
+c2_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'offset point table model');
+
+(* get all instances of representation_item that have class id *)
+(* 'offset point table model'*)
+
+REPEAT i := 1 TO HIINDEX(c2_a_set);
+  REPEAT j := 1 TO HIINDEX(c2_a_set[i].items);
+    t2_set := t2_set + c2_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* get all representation_item instances which are the .items of the *)
+(* representation instances that have class id                       *)
+(* 'offset table shape representation'                               *)
+
+REPEAT i := 1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j := 1 TO HIINDEX(t1_set[i].items);
+
+(* compare both lists with representation_item instances and the *)
+(* intersection has TO be greater 0                              *)
+
+    t3_set := t3_set + t1_set[i].items[j];
+  END_REPEAT;
+  violation := (SIZEOF(t3_set* t2_set) < 1);
+  t3_set:= [];
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_or_more_items_with_class_in_representation_w_class_stability_table 
+FOR (representation, APPLIED_CLASSIFICATION_ASSIGNMENT);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  c2_a_set:  SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF representation := [];
+  t2_set:    SET OF representation_item := [];
+  t3_set:    SET OF representation_item := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'stability table'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'stability table');
+
+(*get all instances of representation that have class id 'stability table'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* get all classification_assignment instances with id *)
+(* 'stability properties for one floating position'    *)
+
+c2_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'stability properties for one floating position');
+
+(* get all instances of representation_item that have class id *)
+(* 'stability properties for one floating position'            *)
+
+REPEAT i := 1 TO HIINDEX(c2_a_set);
+  REPEAT j := 1 TO HIINDEX(c2_a_set[i].items);
+    t2_set := t2_set + c2_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*  get all representation_item instances which are the .items of    *)
+(*  the representation instances that have class id 'stability table'*)
+
+REPEAT i := 1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j := 1 TO HIINDEX(t1_set[i].items);
+
+(*compare both lists with representation_item instances and the *)
+(*intersection has TO be greater 0 *)
+
+    t3_set := t3_set + t1_set[i].items[j];
+  END_REPEAT;
+  violation := (SIZEOF(t3_set* t2_set) < 1);
+  t3_set:= [];
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_or_more_rep_item_in_compound_rep_item_if_class_eq_hydrostatic_properties_for_constant_floating_position 
+FOR (compound_representation_item, APPLIED_CLASSIFICATION_ASSIGNMENT);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:    LIST OF representation_item := [];
+  arg_list:  LIST OF STRING := ['hydrostatic property value'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id    *)
+(* 'hydrostatic properties for constant floating position'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 
+  'hydrostatic properties for constant floating position');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'hydrostatic properties for constant floating position'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+ (* iterate over all compound_representation_item found above; stop, *)
+ (* if one of them has not exactly one rep_item for each name in the arg_list*)
+ 
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+  t2_set := t1_set[i].item_element; 
+  violation := (SIZEOF(QUERY(items <* t2_set | 
+  items.name = arg_list[j])) < 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_rep_item_in_compound_rep_item_if_class_eq_stability_properties_for_one_floating_position 
+FOR (compound_representation_item,  
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:    LIST OF representation_item := [];
+  arg_list:  LIST OF STRING := ['centre of gravity above keel', 
+                                'definition of starting floating position'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'stability properties for one floating position'    *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'stability properties for one floating position');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'stability properties for one floating position'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+ (* iterate over all compound_representation_item found above; stop, *)
+ (*if one of them has not exactly one rep_item for each name in the arg_list*)
+ 
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    t2_set := t1_set[i].item_element; 
+    violation := (SIZEOF(QUERY(items <* t2_set | 
+    items.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+four_or_more_item_in_representation_if_class_eq_ship_moulded_form_wireframe_model 
+FOR (representation,  
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['mesh definition ship curve'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'ship moulded form wireframe model'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'ship moulded form wireframe model');
+
+(*get all instances of representation that have class id *)
+(*'ship moulded form wireframe model'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+ END_REPEAT;
+END_REPEAT;
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) < 4);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+two_or_more_compound_rep_item_with_class_ship_curve_in_compound_rep_item_with_class_knot 
+FOR (compound_representation_item,  
+     applied_classification_assignment);
+     
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  c_a_set2 : SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t2_set:    SET OF COMPOUND_REPRESENTATION_ITEM := [];
+  t3_set:    SET OF REPRESENTATION_ITEM := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id 'knot'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'knot');
+
+(*get all instances of compound_representation_item that have class id *)
+(* 'knot'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* get all classification_assignment instances with id *)
+(* 'ship curve'*)
+
+c_a_set2 := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'ship curve');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'ship curve'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set2);
+  REPEAT j := 1 TO HIINDEX(c_a_set2[i].items);
+    t2_set := t2_set + c_a_set2[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* iterate over all compound_representation_item found in the first list;    *)
+(* then iterate over all item_element for each compound_representation_item, *)
+(* check that the intersection of these item_elements and and the second     *)
+(* list of compound_representation_item is equal 1                           *)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j := 1 TO HIINDEX(t1_set[i].item_element);
+    t3_set := t3_set + t1_set[j].item_element;
+  END_REPEAT;
+  violation := (SIZEOF(t3_set * t2_set) < 2);
+  t3_set:= [];
+END_REPEAT;
+WHERE 
+    WR1: NOT violation;
+END_RULE;
+
+RULE 
+valid_prod_def_w_classs_moulded_form_in_prod_def_w_class_ship_moulded_form 
+FOR (product_definition, applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  c2_a_set:  SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF PRODUCT_DEFINITION := [];
+  t2_set:    SET OF PRODUCT_DEFINITION:= [];
+  gr_ass:    SET OF GROUP_ASSIGNMENT := [];
+  group_ass: SET OF GROUP_ASSIGNMENT := [];
+  groups:    SET OF GROUP := [];
+  t3_set:    SET OF PRODUCT_DEFINITION:= [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'ship moulded form'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'ship moulded form');
+
+(* get all instances of product_definition that have class id *)
+(* 'ship moulded form'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*get the groups associated with these product_definitions *)
+
+gr_ass := QUERY(i <* group_ass |
+i.role.name = 'equivalence');
+REPEAT i := 1 TO HIINDEX(gr_ass);
+  REPEAT j := 1 TO HIINDEX(gr_ass[i].items); 
+    (*should always be just one*)
+    IF (gr_ass[i].items[j] IN t1_set) THEN
+    groups := groups + gr_ass[i].assigned_group;
+    END_IF;
+  END_REPEAT;
+END_REPEAT;
+
+(*get all classification_assignment instances with id 'moulded form'*)
+
+c2_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'moulded form');
+
+(* get all instances of product_definition that have class id *)
+(* 'moulded form'*)
+
+REPEAT i := 1 TO HIINDEX(c2_a_set);
+  REPEAT j := 1 TO HIINDEX(c2_a_set[i].items);
+    t2_set := t2_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* get the non-empty group_assignments having role 'item structure' *)
+(* and referencing these groups*)
+
+gr_ass := QUERY(i <* group_ass |
+  (SIZEOF(i.items) <> 0) AND
+  (i.role.name = 'item structure') AND
+  (i.assigned_group IN groups));
+
+(* check if there are only product_definition classed as *)
+(* 'moulded form'in each group_assignment.items*)
+
+REPEAT i := 1 TO HIINDEX(gr_ass);
+  REPEAT j := 1 TO HIINDEX(gr_ass[i].items);
+    t3_set := t3_set + gr_ass[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+violation := NOT(t2_set <= t3_set);
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+valid_prod_def_rel_w_classs_moulded_form_relationship_in_prod_def_w_class_ship_moulded_form 
+FOR (product_definition, 
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  c2_a_set:  SET OF APPLIED_CLASSIFICATION_ASSIGNMENT:= [];
+  t1_set:    SET OF PRODUCT_DEFINITION := [];
+  t2_set:    SET OF PRODUCT_DEFINITION_RELATIONSHIP:= [];
+  group_ass: SET OF GROUP_ASSIGNMENT := [];
+  gr_ass:    SET OF GROUP_ASSIGNMENT := [];
+  groups:    SET OF GROUP := [];
+  t3_set:    SET OF PRODUCT_DEFINITION_RELATIONSHIP:= [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'ship moulded form'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'ship moulded form');
+
+(* get all instances of product_definition that have class id *)
+(* 'ship moulded form'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*get the groups associated with these product_definitions *)
+
+gr_ass := QUERY(i <* group_ass |i.role.name = 'equivalence');
+REPEAT i := 1 TO HIINDEX(gr_ass);
+  REPEAT j := 1 TO HIINDEX(gr_ass[i].items); 
+
+    (*should always be just one*)
+
+    IF (gr_ass[i].items[j] IN t1_set) THEN
+    groups := groups + gr_ass[i].assigned_group;
+    END_IF;
+  END_REPEAT;
+END_REPEAT;
+
+(* get all classification_assignment instances with id *)
+(* 'moulded form relationship'*)
+
+c2_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'moulded form relationship');
+
+(* get all instances of product_definition_relationship that have class id *)
+(*'moulded form relationship'*)
+
+REPEAT i := 1 TO HIINDEX(c2_a_set);
+  REPEAT j := 1 TO HIINDEX(c2_a_set[i].items);
+    t2_set := t2_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* get the non-empty group_assignments having role 'item structure' *)
+(* and referencing these groups*)
+
+gr_ass := QUERY(i <* group_ass |
+  (SIZEOF(i.items) <> 0) AND
+  (i.role.name = 'item structure') AND
+  (i.assigned_group IN groups));
+
+(* check if there are only product_definition_relationship classed as *)
+(* 'moulded form relationship'in each group_assignment.items          *)
+
+REPEAT i := 1 TO HIINDEX(gr_ass);
+  REPEAT j := 1 TO HIINDEX(gr_ass[i].items);
+    t3_set := t3_set + gr_ass[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+violation := NOT(t2_set <= t3_set);
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prod_def_rel_w_class_moulded_form_relationship_related_prod_def_shall_have_class_moulded_form 
+FOR (product_definition_relationship, 
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  c2_a_set:  SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF PRODUCT_DEFINITION_RELATIONSHIP := [];
+  t2_set:    SET OF PRODUCT_DEFINITION:= [];
+  t3_set:    SET OF PRODUCT_DEFINITION:= [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'moulded form relationship'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'moulded form relationship');
+
+(* get all instances of product_definition_relationship that have class id *)
+(* 'moulded form relationship'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*get all .related_product_definition attribute instances of the *)
+(*product_definition_relationship*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+t2_set := t2_set + t1_set[i].related_product_definition;
+END_REPEAT;
+
+(* get all classification_assignment instances with id *)
+(* 'moulded form'*)
+
+c2_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'moulded form');
+
+(* get all instances of product_definition that have class id *)
+(* 'moulded form'*)
+
+REPEAT i := 1 TO HIINDEX(c2_a_set);
+  REPEAT j := 1 TO HIINDEX(c2_a_set[i].items);
+    t3_set := t3_set + c2_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+violation := NOT(t2_set <= t3_set);
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prod_def_rel_w_class_moulded_form_relationship_relating_prod_def_shall_have_class_moulded_form 
+FOR (product_definition_relationship, 
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  c2_a_set:  SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF PRODUCT_DEFINITION_RELATIONSHIP := [];
+  t2_set:    SET OF PRODUCT_DEFINITION:= [];
+  t3_set:    SET OF PRODUCT_DEFINITION:= [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'moulded form relationship'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'moulded form relationship');
+
+(* get all instances of product_definition_relationship that have class id *)
+(* 'moulded form relationship'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* get all .relating_product_definition attribute instances of the *)
+(* product_definition_relationship*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+t2_set := t2_set + t1_set[i].relating_product_definition;
+END_REPEAT;
+
+(*get all classification_assignment instances with id 'moulded form'*)
+
+c2_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'moulded form');
+
+(*get all instances of $1 that have class id 'moulded form'*)
+
+REPEAT i := 1 TO HIINDEX(c2_a_set);
+  REPEAT j := 1 TO HIINDEX(c2_a_set[i].items);
+    t3_set := t3_set + c2_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+violation := NOT(t2_set <= t3_set);
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+dsc_rep_item_w_n_user_def_function_if_dsc_rep_item_w_n_function_and_d_user_defined 
+FOR (REPRESENTATION);
+
+LOCAL
+  rep_set:   SET OF representation := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+REPEAT i := 1 TO HIINDEX(REPRESENTATION) WHILE NOT violation;
+  violation := (SIZEOF(QUERY(r <* REPRESENTATION[i].ITEMS |
+  (r.NAME = 'function') AND (r.DESCRIPTION = 'user defined'))) > 0) AND
+  (SIZEOF(QUERY(r <* REPRESENTATION[i].ITEMS |
+  (r.NAME = 'user def function'))) = 0);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+ID_of_extended_property_definition_with_class_versionable_object_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(*find all instances being classified to be a 'versionable object'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT[i].assigned_classification.name = 
+  'versionable object') THEN
+  clfied_inst := clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE ID_of_product_with_class_definable_object_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(*find all instances being classified to be a 'definable object'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT 
+  [i].assigned_classification.name = 'definable object') THEN
+  clfied_inst := clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE 
+ID_of_product_definition_with_class_class_and_statutory_designation_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(* find all instances being classified to be a *)
+(* 'class and statutory designation'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT [i].assigned_classification.name = 
+  'class and statutory designation') 
+    THEN
+      clfied_inst := 
+         clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE ID_of_product_definition_with_class_definable_object_pattern 
+FOR (applied_classification_assignment);
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(*find all instances being classified to be a 'definable object'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT 
+    [i].assigned_classification.name = 'definable object') THEN
+    clfied_inst := 
+      clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE 
+ID_of_product_definition_with_class_global_axis_placement_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(*find all instances being classified to be a 'global axis placement'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT 
+    [i].assigned_classification.name = 'global axis placement') THEN
+    clfied_inst := 
+      clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+   WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE ID_of_product_definition_with_class_owner_designation_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(*find all instances being classified to be a 'owner designation'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT [i].assigned_classification.name = 
+    'owner designation') THEN
+    clfied_inst := 
+      clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE 
+ID_of_product_definition_with_class_principal_characteristics_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(*find all instances being classified to be a 'principal characteristics'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT [i].assigned_classification.name =
+     'principal characteristics') THEN
+    clfied_inst := clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE ID_of_product_definition_with_class_ship_designation_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(*find all instances being classified to be a 'ship designation'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT [i].assigned_classification.name = 
+    'ship designation') THEN
+    clfied_inst := clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE ID_of_product_definition_with_class_shipyard_designation_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(*find all instances being classified to be a 'shipyard designation'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT [i].assigned_classification.name =
+     'shipyard designation') THEN
+    clfied_inst := clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE 
+ID_of_product_definition_relationship_with_class_definable_object_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(*find all instances being classified to be a 'definable object'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT 
+    [i].assigned_classification.name = 'definable object') THEN
+    clfied_inst := clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE 
+ID_of_product_related_product_category_with_class_ship_type_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(*find all instances being classified to be a 'ship type'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT [i].assigned_classification.name = 
+    'ship type') THEN
+    clfied_inst := clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE 
+ID_of_property_definition_with_class_deck_moulded_form_design_parameter_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(* find all instances being classified to be a *)
+(* 'deck moulded form design parameter'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT [i].assigned_classification.name = 
+    'deck moulded form design parameter') THEN
+    clfied_inst := clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE 
+ID_of_property_definition_with_class_hydrostatic_definition_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(*find all instances being classified to be a 'hydrostatic definition'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT [i].assigned_classification.name =
+    'hydrostatic definition') THEN
+    clfied_inst := clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE 
+ID_of_property_definition_with_class_local_co_ordinate_system_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(* find all instances being classified to be a *)
+(* 'local co-ordinate system'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT [i].assigned_classification.name = 
+    'local co-ordinate system') THEN
+    clfied_inst := clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE 
+ID_of_property_definition_with_class_moulded_form_characteristics_definition_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(* find all instances being classified to be a *)
+(* 'moulded form characteristics definition'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT [i].assigned_classification.name = 
+    'moulded form characteristics definition') THEN
+    clfied_inst := clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE 
+ID_of_property_definition_with_class_ship_overall_dimensions_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(*find all instances being classified to be a 'ship overall dimensions'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT [i].assigned_classification.name = 
+    'ship overall dimensions') THEN
+    clfied_inst := clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE ID_of_property_definition_with_class_spacing_table_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(*find all instances being classified to be a 'spacing table'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT [i].assigned_classification.name = 
+    'spacing table') THEN
+    clfied_inst := clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE 
+ID_of_property_definition_with_class_stability_definition_pattern 
+FOR (applied_classification_assignment);
+
+LOCAL
+  clfied_inst : SET OF GENERIC := [];
+END_LOCAL;
+
+(*find all instances being classified to be a 'stability definition'*)
+
+REPEAT i := 1 TO HIINDEX(APPLIED_CLASSIFICATION_ASSIGNMENT);
+  IF (APPLIED_CLASSIFICATION_ASSIGNMENT [i].assigned_classification.name =
+     'stability definition') THEN
+    clfied_inst := clfied_inst + APPLIED_CLASSIFICATION_ASSIGNMENT [i].items;
+  END_IF;
+END_REPEAT;
+WHERE
+  WR1: SIZEOF(QUERY(i <* clfied_inst | NOT(i.id LIKE '*\:*'))) = 0;
+END_RULE;
+
+RULE rep_has_guac 
+FOR (representation);
+
+LOCAL
+  v_r_i:    STRING  := 'SHIP_MOULDED_FORM_AIM.VALUE_REPRESENTATION_ITEM';
+  g_r_i:    STRING  := 'SHIP_MOULDED_FORM_AIM.GEOMETRIC_REPRESENTATION_ITEM';
+  g_u_a_c:  STRING  := 'SHIP_MOULDED_FORM_AIM.GLOBAL_UNIT_ASSIGNED_CONTEXT';
+  has_guac: BOOLEAN := TRUE;
+END_LOCAL;
+
+REPEAT i := 1 TO HIINDEX(REPRESENTATION) WHILE has_guac;
+  REPEAT j := 1 TO SIZEOF(REPRESENTATION[i].ITEMS) WHILE has_guac;
+    IF ((v_r_i IN TYPEOF(REPRESENTATION[i].ITEMS[j])) OR
+      (g_r_i IN TYPEOF(REPRESENTATION[i].ITEMS[j]))) THEN
+      has_guac := (g_u_a_c IN 
+      TYPEOF(REPRESENTATION[i].CONTEXT_OF_ITEMS));
+    END_IF;
+  END_REPEAT;
+END_REPEAT;
+WHERE
+  WR1: has_guac;
+END_RULE;
+
+RULE max_one_version_id_per_versionable_object 
+FOR (applied_identification_assignment);
+
+LOCAL
+  version_ids:         SET OF APPLIED_IDENTIFICATION_ASSIGNMENT := [];
+  versionable_objects: BAG OF GENERIC := [];
+  duplicate:           BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all applied_identification_assignments whose role is *)
+(* 'version identifier' *)
+
+version_ids := QUERY(i <* APPLIED_IDENTIFICATION_ASSIGNMENT |
+  i.ROLE.NAME = 'version identifier');
+
+(*collect all instances that are referenced*)
+
+REPEAT i := 1 TO HIINDEX(version_ids);
+  versionable_objects := versionable_objects + 
+  version_ids[i].items;
+END_REPEAT;
+
+(*search if there are duplicate instances*)
+
+REPEAT i := 1 TO HIINDEX(versionable_objects) WHILE NOT duplicate;
+  REPEAT j := i + 1 TO HIINDEX(versionable_objects) WHILE NOT 
+    duplicate;
+    duplicate := versionable_objects[i] :=: 
+    versionable_objects[j];
+  END_REPEAT;
+END_REPEAT;
+WHERE
+  WR1: NOT duplicate;
+END_RULE;
+
+RULE id_is_globally_unique 
+FOR (applied_classification_assignment);
+
+LOCAL
+  duplicate:      BOOLEAN := FALSE;
+  def_obj_cl_ass: SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  clfied_inst:    SET OF GENERIC := [];
+END_LOCAL;
+
+(*get all instances of applied_classification_assignment having *)
+(* a group with name 'definable object'                         *)
+
+def_obj_cl_ass := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.assigned_classification.name = 'definable object');
+
+(*get all instances refered to by these classification_assignments *)
+
+REPEAT i := 1 TO HIINDEX(def_obj_cl_ass);
+  clfied_inst := clfied_inst + def_obj_cl_ass[i].items;
+END_REPEAT;
+
+(*iterate over the instance list and check the uniqueness *)
+
+REPEAT i := 1 TO HIINDEX(clfied_inst) WHILE NOT duplicate;
+  REPEAT j := i + 1 TO HIINDEX(clfied_inst) WHILE NOT duplicate;
+    IF (clfied_inst[i].id = clfied_inst[j].id) THEN
+      duplicate := TRUE;
+    END_IF;
+  END_REPEAT;
+END_REPEAT;
+
+(*there has to be no duplication in the values of the .id attributes*)
+
+WHERE
+  WR1: NOT(duplicate);
+END_RULE;
+
+RULE 
+prod_def_w_class_id_class_and_statutory_designation_ref_by_one_prop_def_w_class_id_class_notation 
+FOR (product_definition, 
+    property_definition, 
+    applied_classification_assignment);
+    
+LOCAL
+  c_a_set:   SET OF CLASSIFICATION_ASSIGNMENT := [];
+  c2_a_set:  SET OF CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF PRODUCT_DEFINITION := [];
+  t2_set:    SET OF PROPERTY_DEFINITION := [];
+  t3_set:    SET OF PROPERTY_DEFINITION := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'class and statutory designation'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'class and statutory designation');
+
+(* get all instances of PRODUCT_DEFINITION that have class id *)
+(* 'class and statutory designation'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* get all classification_assignment instances with id *)
+(* 'class notation '*)
+
+c2_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'class notation');
+
+(*get all instances of PROPERTY_DEFINITION that have class id 'class notation'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c2_a_set[i].items);
+    t3_set := t3_set + c2_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of PRODUCT_DEFINITION in t1_set; get the        *)
+(* PROPERTY_DEFINITION instances that are referencing a             *)
+(* PRODUCT_DEFINITION instance via .definition, filter out those    *)
+(* PROPERTY_DEFINITION instances whose class id is 'class notation' *)
+(* check IF their NUMBER equals 1                                   *)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+  'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION.DEFINITION'));
+END_REPEAT;
+violation := t3_set <= t2_set;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prod_def_w_class_id_class_and_statutory_designation_ref_by_one_prop_def_w_class_id_regulation 
+FOR (product_definition, 
+    property_definition, 
+    applied_classification_assignment);
+     
+LOCAL
+  c_a_set:   SET OF CLASSIFICATION_ASSIGNMENT := [];
+  c2_a_set:  SET OF CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF PRODUCT_DEFINITION := [];
+  t2_set:    SET OF PROPERTY_DEFINITION := [];
+  t3_set:    SET OF PROPERTY_DEFINITION := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'class and statutory designation'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'class and statutory designation');
+
+(* get all instances of PRODUCT_DEFINITION that have class id *)
+(* 'class and statutory designation'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*get all classification_assignment instances with id 'regulation'*)
+
+c2_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'regulation');
+
+(* get all instances of PROPERTY_DEFINITION that have class id *)
+(* 'regulation'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c2_a_set[i].items);
+    t3_set := t3_set + c2_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of PRODUCT_DEFINITION in t1_set; get the     *)
+(* PROPERTY_DEFINITION instances that are referencing a          *)
+(* PRODUCT_DEFINITION instance via .definition, filter out those *)
+(* PROPERTY_DEFINITION instances whose class id is 'regulation'  *)
+(* check IF their NUMBER equals 1                                *)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+  'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION.DEFINITION'));
+END_REPEAT;
+violation := t3_set <= t2_set;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_item_in_representation_if_name_eq_appendage_moulded_form_design_parameter 
+FOR (representation);
+
+LOCAL
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['appendage length','appendage breadth',
+                                'appendage depth', 'type of appendage'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*find all instances of representation whose name is equal to *)
+(* 'appendage moulded form design parameter'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+  temp_rep.name = 'appendage moulded form design parameter');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_item_in_representation_if_name_eq_bottom_moulded_form_design_parameter 
+FOR (representation);
+
+LOCAL
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := [
+             'bilge radius',              'rise of floor',
+             'aft end of flat of bottom', 'front end of flat of bottom',
+             'flat of bottom breadth',    'length of flat of bottom breadth',
+             'rake of keel'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*find all instances of representation whose name is equal to *)
+(* 'bottom moulded form design parameter'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+temp_rep.name = 'bottom moulded form design parameter');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_item_in_representation_if_name_eq_bulb_moulded_form_design_parameter 
+FOR (representation);
+
+LOCAL
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := 
+             ['bulb length', 'bulb length from pp',
+              'bulb breadth','bulb breadth pp',
+              'bulb depth',  'bulb depth pp',
+              'bulb frame section area at pp',
+              'bulb location'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*find all instances of representation whose name is equal to *)
+(* 'bulb moulded form design parameter'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+temp_rep.name = 'bulb moulded form design parameter');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_item_in_representation_if_name_eq_deck_moulded_form_design_parameter 
+FOR (representation);
+
+LOCAL
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['camber','sheer at AP','sheer at FP'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation whose name is equal to *)
+(* 'deck moulded form design parameter'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+  temp_rep.name = 'deck moulded form design parameter');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_item_in_representation_if_name_eq_hull_moulded_form_design_parameter 
+FOR (representation);
+
+LOCAL
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := [
+               'aft end of parallel midbody at design draught', 
+               'front end of parallel midbody at design draught', 
+               'length of parallel midbody at design draught',
+               'aft end of flat of side', 'front end of flat of side', 
+               'length of flat of side',  'block coefficient', 
+               'prismatic coefficient',   'max wetted frame section area'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation whose name is equal to *)
+(* 'hull moulded form design parameter'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+temp_rep.name = 'hull moulded form design parameter');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_item_in_representation_if_name_eq_propeller_moulded_form_design_parameter 
+FOR (representation);
+
+LOCAL
+t1_set:    SET OF REPRESENTATION := [];
+arg_list:  LIST OF STRING := [
+           'type of propulsion',         'propeller diameter', 
+           'chord length at 0 7 radius', 'thickness at 0 7 radius', 
+           'number of propeller blades', 'expanded area ratio', 
+           'hub diameter ratio',         'nominal design pitch ratio', 
+           'type of propeller blades',   'rake', 
+           'skew',                       'design sense of rotation'];
+violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation whose name is equal to *)
+(* 'propeller moulded form design parameter'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+  temp_rep.name = 'propeller moulded form design parameter');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_item_in_representation_if_name_eq_rudder_moulded_form_design_parameter 
+FOR (representation);
+
+LOCAL
+t1_set:    SET OF REPRESENTATION := [];
+arg_list:  LIST OF STRING := ['rudder height',      'rudder mean height', 
+                              'rudder length',      'rudder mean length', 
+                              'rudder thickness',   'projected rudder area', 
+                              'type of the rudder', 'rudder location', 
+                              'aspect ratio'];
+violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation whose name is equal to *)
+(* 'rudder moulded form design parameter'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+temp_rep.name = 'rudder moulded form design parameter');
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_item_in_representation_if_name_eq_thruster_moulded_form_design_parameter 
+FOR (representation);
+
+LOCAL
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['thruster tunnel diameter',
+                                'thruster tunnel min length', 
+                                'thruster tunnel max length', 
+                                'geometric thruster location', 
+                                'thruster location'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation whose name is equal to *)
+(* 'thruster moulded form design parameter'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+temp_rep.name = 'thruster moulded form design parameter');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_item_in_representation_if_name_eq_class_and_statutory_designation 
+FOR (representation);
+
+LOCAL
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['class number'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation whose name is equal to *)
+(* 'class and statutory designation'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+temp_rep.name = 'class and statutory designation');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE one_item_in_representation_if_name_eq_class_notation 
+FOR (representation);
+
+LOCAL
+t1_set:  SET OF REPRESENTATION := [];
+arg_list:  LIST OF STRING := 
+              ['service area', 
+               'approval required for oil cargo',
+               'approval required for loading unloading aground', 
+               'approval required for unloading grabs'];
+violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*find all instances of representation whose name is equal to *)
+(* 'class notation'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+  temp_rep.name = 'class notation');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE one_item_in_representation_if_name_eq_class_parameters 
+FOR (representation);
+
+LOCAL
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := [
+               'length class',       'length solas', 
+               'scantlings draught', 'block coefficient class', 
+               'design speed ahead', 'design speed astern',
+               'froude number'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation whose name is equal to *)
+(* 'class parameters'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+  temp_rep.name = 'class parameters');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE one_item_in_representation_if_name_eq_global_axis_placement 
+FOR (representation);
+
+LOCAL
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := [
+              'global axes and origin', 
+              'after perpendicular offset', 
+              'orientation'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation whose name is equal to *)
+(* 'global axis placement'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+temp_rep.name = 'global axis placement');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_item_in_representation_if_name_eq_local_co_ordinate_system_with_position_REFERENCE 
+FOR (representation);
+
+LOCAL
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['local axes and origin'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation whose name is equal to *)
+(* 'local co-ordinate system with position reference'          *)
+
+t1_set:= QUERY(temp_rep <* representation |
+temp_rep.name = 'local co-ordinate system with position reference');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE one_item_in_representation_if_name_eq_local_co_ordinate_system 
+FOR (representation);
+
+LOCAL
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['local axes and origin'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation whose name is equal to *)
+(* 'local co-ordinate system'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+temp_rep.name = 'local co-ordinate system');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_item_in_representation_if_name_eq_moulded_form_characteristics_definition 
+FOR (representation);
+
+LOCAL
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['moulded form outer surface', 
+                                'moulded form displacement'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation whose name is equal to *)
+(* 'moulded form characteristics definition'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+temp_rep.name = 'moulded form characteristics definition');
+
+(*iterate over all representation instances found above; stop,  *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+one_item_in_representation_if_name_eq_moulded_form_function_parameters 
+FOR (representation);
+
+LOCAL
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['function'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation whose name is equal to *)
+(* 'moulded form function parameters'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+  temp_rep.name = 'moulded form function parameters');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE one_item_in_representation_if_name_eq_principal_characteristics 
+FOR (representation);
+
+LOCAL
+t1_set:  SET OF REPRESENTATION := [];
+arg_list:  LIST OF STRING := ['length between perpendiculars', 
+                              'moulded breadth', 'moulded depth', 
+                              'design draught',  'design deadweight',
+                              'min daught at fp','max daught at fp', 
+                              'min daught at ap','max daught at ap'];
+violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation whose name is equal to *)
+(* 'principal characteristics'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+temp_rep.name = 'principal characteristics');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE one_item_in_representation_if_name_eq_ship_overall_dimensions 
+FOR (representation);
+
+LOCAL
+  t1_set:    SET OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['overall breadth', 'overall depth', 
+                                'overall length',  'stem overhang', 
+                                'stern overhang'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation whose name is equal to *)
+(* 'ship overall dimensions'*)
+
+t1_set:= QUERY(temp_rep <* representation |
+  temp_rep.name = 'ship overall dimensions');
+
+(* iterate over all representation instances found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list*)
+
+REPEAT i:=1 TO HIINDEX(t1_set) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation:= (SIZEOF(QUERY(rep_item<* t1_set[i].items |
+    rep_item.name = arg_list[j])) <> 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+zero_or_one_items_in_rep_if_used_in_prop_def_rep_w_name_eq_class_notation 
+FOR (representation);
+
+LOCAL
+  reps:      BAG OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['ice class notation','service factor',
+                                'approval required for heavy cargo'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation which are used by a *)
+(* property_definition_representation with name equal to    *)
+(* 'class notation'*)
+
+reps := QUERY(temp_rep <* representation |
+  SIZEOF (QUERY(temp_prop_def_rep <* USEDIN(temp_rep,
+  'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.USED_REPRESENTATION')| 
+  (temp_prop_def_rep.name = 'class notation'))) > 0 );
+  
+(* iterate over all representations found above; stop, if one of them has not *)
+(* exactly one rep_item for each name in the arg_list *)
+
+REPEAT i:=1 TO HIINDEX(reps) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation := (SIZEOF(QUERY(rep_item <* reps[i].items |
+    rep_item.name = arg_list[j])) > 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+zero_or_one_items_in_rep_if_used_in_prop_def_rep_w_name_eq_hull_moulded_form_design_parameter 
+FOR (representation);
+
+LOCAL
+  reps:      BAG OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['waterline angle of entrance at stern',
+                                'waterline angle of entrance at bow', 
+                                'max frame section area location', 
+                                'hull length pp', 'hull breadth', 
+                                'hull depth',     'hull design draught', 
+                                'gunwale radius'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation which are used by a *)
+(* property_definition_representation with name equal to    *)
+(* 'hull moulded form design parameter'*)
+
+reps := QUERY(temp_rep <* representation |
+  SIZEOF (QUERY(temp_prop_def_rep <* USEDIN(temp_rep,
+  'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION'+
+  '.USED_REPRESENTATION')| 
+  (temp_prop_def_rep.name = 'hull moulded form design parameter'))) > 0 );
+
+(* iterate over all representations found above; stop,  *)
+(* if one of them has not exactly one rep_item for each *)
+(* name in the arg_list *)
+
+REPEAT i:=1 TO HIINDEX(reps) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation := (SIZEOF(QUERY(rep_item <* reps[i].items |
+    rep_item.name = arg_list[j])) > 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+zero_or_one_items_in_rep_if_used_in_prop_def_rep_w_name_eq_moulded_form_function_parameters 
+FOR (representation);
+
+LOCAL
+  reps:      BAG OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['user def function'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation which are used by a *)
+(* property_definition_representation with name equal to    *)
+(* 'moulded form function parameters'*)
+
+reps := QUERY(temp_rep <* representation |
+  SIZEOF (QUERY(temp_prop_def_rep <* USEDIN(temp_rep,
+  'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION'+
+  '.USED_REPRESENTATION')| 
+  (temp_prop_def_rep.name = 'moulded form function parameters'))) > 0 );
+
+(* iterate over all representations found above; stop,          *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list *)
+
+REPEAT i:=1 TO HIINDEX(reps) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation := (SIZEOF(QUERY(rep_item <* reps[i].items |
+    rep_item.name = arg_list[j])) > 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+zero_or_one_items_in_rep_if_used_in_prop_def_rep_w_name_eq_principal_characteristics 
+FOR (representation);
+
+LOCAL
+  reps:      BAG OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['block coefficient'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*find all instances of representation which are used by a *)
+(* property_definition_representation with name equal to   *)
+(* 'principal characteristics'*)
+
+reps := QUERY(temp_rep <* representation |
+  SIZEOF (QUERY(temp_prop_def_rep <* USEDIN(temp_rep,
+  'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION'+
+  '.USED_REPRESENTATION')| 
+  (temp_prop_def_rep.name = 'principal characteristics'))) > 0 );
+
+(* iterate over all representations found above; stop, *)
+(* if one of them has not exactly one rep_item for each name in *)
+(* the arg_list *)
+
+REPEAT i:=1 TO HIINDEX(reps) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation := (SIZEOF(QUERY(rep_item <* reps[i].items |
+    rep_item.name = arg_list[j])) > 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+zero_or_one_items_in_rep_if_used_in_prop_def_rep_w_name_eq_propeller_moulded_form_design_parameter 
+FOR (representation);
+
+LOCAL
+  reps:      BAG OF REPRESENTATION := [];
+  arg_list:  LIST OF STRING := ['blade mean height'];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of representation which are used by a  *)
+(* property_definition_representation with name equal to     *)
+(* 'propeller moulded form design parameter'*)
+
+reps := QUERY(temp_rep <* representation |
+  SIZEOF (QUERY(temp_prop_def_rep <* USEDIN(temp_rep,
+  'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION'+
+  '.USED_REPRESENTATION')| 
+  (temp_prop_def_rep.name = 
+  'propeller moulded form design parameter'))) > 0 );
+
+(* iterate over all representations found above; stop,       *)
+(* if one of them has not exactly one rep_item for each name *)
+(* in the arg_list *)
+
+REPEAT i:=1 TO HIINDEX(reps) WHILE (NOT violation);
+  REPEAT j:=1 TO HIINDEX(arg_list) WHILE (NOT violation);
+    violation := (SIZEOF(QUERY(rep_item <* reps[i].items |
+    rep_item.name = arg_list[j])) > 1);
+  END_REPEAT;
+END_REPEAT;
+WHERE 
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+comp_rep_item_w_class_id_section_of_offset_point_table_ref_by__one_class_ass_w_role_section_identifier 
+FOR(compound_representation_item, applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF compound_representation_item := [];
+  t2_set:    SET OF applied_classification_assignment := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'section of offset point table' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'section of offset point table');
+
+(* get all instances of compound_representation_item that have class id *)
+(* 'section of offset point table' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of compound_representation_item in t1_set,    *)
+(* get the applied_classification_assignment instances that are   *)
+(* referencing a compound_representation_item instance via items, *)
+(* filter out those applied_classification_assignment instances   *)
+(* whose attribute role has the value 'section identifier'        *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+
+t2_set := bag_to_set(USEDIN(t1_set[i], 
+  'SHIP_MOULDED_FORM_AIM.APPLIED_CLASSIFICATION_ASSIGNMENT.ITEMS'));
+  violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+  i.ROLE.NAME = 'section identifier')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prod_def_w_class_id_owner_designation_ref_by_one_organ_ass_w_role_managing_company 
+FOR(product_definition, 
+    applied_organization_assignment, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF product_definition := [];
+  t2_set:    SET OF applied_organization_assignment := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'owner designation' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'owner designation');
+
+(* get all instances of product_definition that have class id *)
+(* 'owner designation' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of product_definition in t1_set,          *)
+(* get the applied_organization_assignment instances that     *)
+(* are referencing a product_definition instance via items,   *)
+(* filter out those applied_organization_assignment instances *)
+(* whose attribute role has the value 'managing company'      *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+  'SHIP_MOULDED_FORM_AIM.APPLIED_ORGANIZATION_ASSIGNMENT.ITEMS'));
+  violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+  i.ROLE.NAME = 'managing company')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prod_def_w_class_id_owner_designation_ref_by_one_organ_ass_w_role_ordering_company 
+FOR(product_definition, 
+    applied_organization_assignment, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF product_definition := [];
+  t2_set:    SET OF applied_organization_assignment := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'owner designation' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'owner designation');
+
+(* get all instances of product_definition that have class id *)
+(* 'owner designation' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* for all instances of product_definition in t1_set, *)
+(* get the applied_organization_assignment instances *)
+(* that are referencing a product_definition instance *)
+(* via items, filter out those applied_organization_assignment *)
+(* instances whose attribute role has the value 'ordering company' *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+t2_set := bag_to_set(USEDIN(t1_set[i], 
+  'SHIP_MOULDED_FORM_AIM.APPLIED_ORGANIZATION_ASSIGNMENT.ITEMS'));
+  violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+  i.ROLE.NAME = 'ordering company')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prod_def_w_class_id_owner_designation_ref_by_one_organ_ass_w_role_owning_company 
+FOR(product_definition, 
+    applied_organization_assignment, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF product_definition := [];
+  t2_set:    SET OF applied_organization_assignment := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'owner designation' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'owner designation');
+
+(* get all instances of product_definition that have class id *)
+(* 'owner designation' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* for all instances of product_definition in t1_set,            *)
+(* get the applied_organization_assignment instances             *)
+(* that are referencing a product_definition instance            *)
+(* via items, filter out those applied_organization_assignment   *)
+(* instances whose attribute role has the value 'owning company' *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.APPLIED_ORGANIZATION_ASSIGNMENT.ITEMS'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.ROLE.NAME = 'owning company')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prod_def_w_class_id_ship_designation_ref_by_one_class_ass_w_role_call_sign 
+FOR(product_definition, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF product_definition := [];
+  t2_set:    SET OF applied_classification_assignment := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id *)
+(* 'ship designation' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'ship designation');
+
+(* get all instances of product_definition that have class id *)
+(* 'ship designation' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of product_definition in t1_set,             *)
+(* get the applied_classification_assignment instances           *)
+(* that are referencing a product_definition instance            *)
+(* via items, filter out those applied_classification_assignment *)
+(* instances whose attribute role has the value 'call sign'      *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.APPLIED_CLASSIFICATION_ASSIGNMENT.ITEMS'));  
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.ROLE.NAME = 'call sign')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prod_def_w_class_id_ship_designation_ref_by_one_class_ass_w_role_flag_state 
+FOR(product_definition,  
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF product_definition := [];
+  t2_set:    SET OF applied_classification_assignment := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'ship designation' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'ship designation');
+
+(* get all instances of product_definition that have class id *)
+(* 'ship designation' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of product_definition in t1_set, *)
+(* get the applied_classification_assignment instances *)
+(* that are referencing a product_definition instance *)
+(* via items, filter out those applied_classification_assignment *)
+(* instances whose attribute role has the value 'flag state' *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.APPLIED_CLASSIFICATION_ASSIGNMENT.ITEMS'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.ROLE.NAME = 'flag state')) = 1);
+END_REPEAT;
+WHERE
+    WR1: NOT violation;
+END_RULE;
+
+RULE 
+prod_def_w_class_id_ship_designation_ref_by_one_class_ass_w_role_port_of_registration 
+FOR(product_definition, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF product_definition := [];
+  t2_set:    SET OF applied_classification_assignment := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'ship designation' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'ship designation');
+
+(* get all instances of product_definition that have class id *)
+(* 'ship designation' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of product_definition in t1_set,                   *)
+(* get the applied_classification_assignment instances                 *)
+(* that are referencing a product_definition instance                  *)
+(* via items, filter out those applied_classification_assignment       *)
+(* instances whose attribute role has the value 'port of registration' *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.APPLIED_CLASSIFICATION_ASSIGNMENT.ITEMS'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.ROLE.NAME = 'port of registration')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prod_def_w_class_id_shipyard_designation_ref_by_one_organ_ass_w_role_shipyard 
+FOR(product_definition, 
+    applied_organization_assignment, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF product_definition := [];
+  t2_set:    SET OF applied_organization_assignment := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'shipyard designation'*)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'shipyard designation');
+
+(* get all instances of product_definition that have class id *)
+(* 'shipyard designation'*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of product_definition in t1_set,           *)
+(* get the applied_organization_assignment instances           *)
+(* that are referencing a product_definition instance          *)
+(* via items, filter out those applied_organization_assignment *)
+(* instances whose attribute role has the value 'shipyard'     *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.APPLIED_ORGANIZATION_ASSIGNMENT.ITEMS'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.ROLE.NAME = 'shipyard')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_appendage_moulded_form_design_parameter_ref_by_one_prop_def_rep_w_name_appendage_moulded_form_design_parameter 
+FOR(property_definition, 
+    property_definition_representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'appendage moulded form design parameter' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'appendage moulded form design parameter');
+
+(* get all instances of property_definition that have class id *)
+(* 'appendage moulded form design parameter' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of property_definition in t1_set,                  *)
+(* get the property_definition_representation instances                *)
+(* that are referencing a property_definition instance                 *)
+(* via definition, filter out those property_definition_representation *)
+(* instances whose attribute name has the value                        *)
+(* 'appendage moulded form design parameter'                           *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.name = 'appendage moulded form design parameter')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_bottom_moulded_form_design_parameter_ref_by_one_prop_def_rep_w_name_bottom_moulded_form_design_parameter 
+FOR(property_definition, 
+    property_definition_representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'bottom moulded form design parameter' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'bottom moulded form design parameter');
+
+(* get all instances of property_definition that have class id *)
+(* 'bottom moulded form design parameter' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of property_definition in t1_set,                  *)
+(* get the property_definition_representation instances                *)
+(* that are referencing a property_definition instance                 *)
+(* via definition, filter out those property_definition_representation *)
+(* instances whose attribute name has the value                        *)
+(* 'bottom moulded form design parameter'                              *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.name = 'bottom moulded form design parameter')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_bulb_moulded_form_design_parameter_ref_by_one_prop_def_rep_w_name_bulb_moulded_form_design_parameter 
+FOR(property_definition, 
+    property_definition_representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'bulb moulded form design parameter' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'bulb moulded form design parameter');
+
+(* get all instances of property_definition that have class id *)
+(* 'bulb moulded form design parameter' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+t1_set := t1_set + c_a_set[i].items[j];
+END_REPEAT;
+END_REPEAT;
+
+(*for all instances of property_definition in t1_set, *)
+(* get the property_definition_representation instances *)
+(* that are referencing a property_definition instance *)
+(* via definition, filter out those property_definition_representation *)
+(* instances whose attribute name has the value *)
+(* 'bulb moulded form design parameter' *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.name = 'bulb moulded form design parameter')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_deck_moulded_form_design_parameter_ref_by_one_prop_def_rep_w_name_deck_moulded_form_design_parameter 
+FOR(property_definition, 
+    property_definition_representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'deck moulded form design parameter' *) 
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'deck moulded form design parameter');
+
+(*get all instances of property_definition that have class id *)
+(* 'deck moulded form design parameter' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of property_definition in t1_set,                  *)
+(* get the property_definition_representation instances                *)
+(* that are referencing a property_definition instance                 *)
+(* via definition, filter out those property_definition_representation *)
+(* instances whose attribute name has the value                        *)
+(* 'deck moulded form design parameter'                                *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.name = 'deck moulded form design parameter')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_hull_moulded_form_design_parameter_ref_by_one_prop_def_rep_w_name_hull_moulded_form_design_parameter 
+FOR(property_definition, 
+    property_definition_representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'hull moulded form design parameter' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 
+  'hull moulded form design parameter');
+
+(* get all instances of property_definition that have class id *)
+(* 'hull moulded form design parameter' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of property_definition in t1_set, *)
+(* get the property_definition_representation instances *)
+(* that are referencing a property_definition instance *)
+(* via definition, filter out those property_definition_representation *)
+(* instances whose attribute name has the value *)
+(* 'hull moulded form design parameter' *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.name = 'hull moulded form design parameter')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_propeller_moulded_form_design_parameter_ref_by_one_prop_def_rep_w_name_propeller_moulded_form_design_parameter 
+FOR(property_definition, 
+    property_definition_representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'propeller moulded form design parameter' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'propeller moulded form design parameter');
+
+(* get all instances of property_definition that have class id *)
+(* 'propeller moulded form design parameter' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of property_definition in t1_set,                  *)
+(* get the property_definition_representation instances                *)
+(* that are referencing a property_definition instance                 *)
+(* via definition, filter out those property_definition_representation *)
+(* instances whose attribute name has the value                        *)
+(* 'propeller moulded form design parameter'                           *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.name = 'propeller moulded form design parameter')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_rudder_moulded_form_design_parameter_ref_by_one_prop_def_rep_w_name_rudder_moulded_form_design_parameter 
+FOR(property_definition, 
+    property_definition_representation, 
+    applied_classification_assignment);
+
+LOCAL
+    c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+    t1_set:    SET OF property_definition := [];
+    t2_set:    SET OF property_definition_representation := [];
+    violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(*get all classification_assignment instances with id *)
+(* 'rudder moulded form design parameter' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'rudder moulded form design parameter');
+
+(*get all instances of property_definition that have class id *)
+(* 'rudder moulded form design parameter' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of property_definition in t1_set,                  *)
+(* set the property_definition_representation instances                *)
+(* that are referencing a property_definition instance                 *)
+(* via definition, filter out those property_definition_representation *)
+(* instances whose attribute name has the value                        *)
+(* 'rudder moulded form design parameter'                              *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.name = 'rudder moulded form design parameter')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_thruster_moulded_form_design_parameter_ref_by_one_prop_def_rep_w_name_thruster_moulded_form_design_parameter 
+FOR(property_definition, 
+    property_definition_representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'thruster moulded form design parameter' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'thruster moulded form design parameter');
+
+(* get all instances of property_definition that have class id *)
+(* 'thruster moulded form design parameter' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of property_definition in t1_set,                  *)
+(* get the property_definition_representation instances                *)
+(* that are referencing a property_definition instance                 *)
+(* via definition, filter out those property_definition_representation *)
+(* instances whose attribute name has the value                        *)
+(* 'thruster moulded form design parameter'                            *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.name = 'thruster moulded form design parameter')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_class_notation_ref_by_one_organ_assw_role_class_society 
+FOR(property_definition, 
+    applied_organization_assignment, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF applied_organization_assignment := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'class notation' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'class notation');
+
+(* get all instances of property_definition that have class id *)
+(* 'class notation' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+(*for all instances of property_definition in t1_set,           *)
+(* get the applied_organization_assignment instances            *)
+(* that are referencing a property_definition instance          *)
+(* via items, filter out those applied_organization_assignment  *)
+(* instances whose attribute role has the value 'class society' *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+  'SHIP_MOULDED_FORM_AIM.APPLIED_ORGANIZATION_ASSIGNMENT.ITEMS'));
+  violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+  i.ROLE.NAME = 'class society')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_class_notation_ref_by_one_prop_def_rep_w_name_class_notation 
+FOR(property_definition, 
+    property_definition_representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'class notation' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'class notation');
+
+(* get all instances of property_definition that have class id *)
+(* 'class notation' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+t1_set := t1_set + c_a_set[i].items[j];
+END_REPEAT;
+END_REPEAT;
+
+(*for all instances of property_definition in t1_set, *)
+(* get the property_definition_representation instances *)
+(* that are referencing a property_definition instance *)
+(* via definition, filter out those property_definition_representation *)
+(* instances whose attribute name has the value 'class notation' *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+  'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION'));
+  violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+  i.name = 'class notation')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_local_co_ordinate_system_with_position_reference_ref_by_one_prop_def_rep_w_name_local_co_ordinate_system_with_position_reference
+ FOR(property_definition, 
+     property_definition_representation, 
+     applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'local co-ordinate system with position reference' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 
+'local co-ordinate system with position reference');
+
+(* get all instances of property_definition that have class id *)
+(* 'local co-ordinate system with position reference' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+t1_set := t1_set + c_a_set[i].items[j];
+END_REPEAT;
+END_REPEAT;
+
+(*for all instances of property_definition in t1_set,                  *)
+(* get the property_definition_representation instances                *)
+(* that are referencing a property_definition instance                 *)
+(* via definition, filter out those property_definition_representation *)
+(* instances whose attribute name has the value                        *)
+(* 'local co-ordinate system with position reference'                  *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.name = 'local co-ordinate system with position reference')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_local_co_ordinate_system_ref_by_one_prop_def_rep_w_name_local_co_ordinate_system 
+FOR(property_definition, 
+    property_definition_representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'local co-ordinate system' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'local co-ordinate system');
+
+(* get all instances of property_definition that have class id *)
+(* 'local co-ordinate system' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of property_definition in t1_set, *)
+(* get the property_definition_representation instances *)
+(* that are referencing a property_definition instance *)
+(* via definition, filter out those property_definition_representation *)
+(* instances whose attribute name has the value *)
+(* 'local co-ordinate system' *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.name = 'local co-ordinate system')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_moulded_form_characteristics_definition_ref_by_one_prop_def_rep_w_name_moulded_form_characteristics_definition 
+FOR(property_definition, 
+    property_definition_representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'moulded form characteristics definition' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'moulded form characteristics definition');
+
+(* get all instances of property_definition that have class id *)
+(* 'moulded form characteristics definition' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of property_definition in t1_set, *)
+(* get the property_definition_representation instances *)
+(* that are referencing a property_definition instance *)
+(* via definition, filter out those property_definition_representation *)
+(* instances whose attribute name has the value *)
+(* 'moulded form characteristics definition' *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.name = 'moulded form characteristics definition')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_ship_overall_dimensions_ref_by_one_prop_def_rep_w_name_ship_overall_dimensions 
+FOR(property_definition, 
+    property_definition_representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:  SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'ship overall dimensions' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+i.ASSIGNED_CLASSIFICATION.NAME = 'ship overall dimensions');
+
+(* get all instances of property_definition that have class id *)
+(* 'ship overall dimensions' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of property_definition in t1_set,                  *)
+(* get the property_definition_representation instances                *)
+(* that are referencing a property_definition instance                 *)
+(* via definition, filter out those property_definition_representation *)
+(* instances whose attribute name has the value                        *)
+(* 'ship overall dimensions'                                           *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.name = 'ship overall dimensions')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_local_co_ordinate_system_ref_by_one_item_defined_transformation_w_name_transformation_to_parent 
+FOR(property_definition, 
+    item_defined_transformation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF item_defined_transformation := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'local co-ordinate system' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'local co-ordinate system');
+
+(* get all instances of property_definition that have class id *)
+(* 'local co-ordinate system' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(* for all instances of property_definition in t1_set,                  *)
+(* get the item_defined_transformation instances that                   *)
+(* are referencing a property_definition instance via transform_item_1, *)
+(* filter out those item_defined_transformation instances               *)
+(* whose attribute name has the value 'transformation to parent'        *)
+(* check if their number equals 1                                       *)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+ (* t2_set := bag_to_set(USEDIN(t1_set[i], 'SHIP_MOULDED_FORM_AIM.' + *)
+ (*'ITEM_DEFINED_TRANSFORMATION.TRANSFORM_ITEM_1'));                       *)
+  violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+  i.name = 'transformation to parent')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_moulded_form_functional_definition_ref_by_one_prop_def_rep_w_name_moulded_form_function_parameters 
+FOR(property_definition, 
+    property_definition_representation, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF property_definition_representation := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'moulded form functional definition' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'moulded form functional definition');
+
+(*get all instances of property_definition that have class id *)
+(* 'moulded form functional definition' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+
+(*for all instances of property_definition in t1_set,                  *) 
+(* get the property_definition_representation instances                *)
+(* that are referencing a property_definition instance                 *)
+(* via definition, filter out those property_definition_representation *)
+(* instances whose attribute name has the value                        *)
+(* 'moulded form function parameters'                                  *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_REPRESENTATION.DEFINITION'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.name = 'moulded form function parameters')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE 
+prop_def_w_class_id_thruster_moulded_form_design_parameter_ref_by_one_prop_def_rel_w_name_thruster_propeller_parameter 
+FOR(property_definition, 
+    property_definition_relationship, 
+    applied_classification_assignment);
+
+LOCAL
+  c_a_set:   SET OF APPLIED_CLASSIFICATION_ASSIGNMENT := [];
+  t1_set:    SET OF property_definition := [];
+  t2_set:    SET OF property_definition_relationship := [];
+  violation: BOOLEAN := FALSE;
+END_LOCAL;
+
+(* get all classification_assignment instances with id *)
+(* 'thruster moulded form design parameter' *)
+
+c_a_set := QUERY(i <* APPLIED_CLASSIFICATION_ASSIGNMENT |
+  i.ASSIGNED_CLASSIFICATION.NAME = 'thruster moulded form design parameter');
+
+(*get all instances of property_definition that have class id *)
+(* 'thruster moulded form design parameter' *)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+  END_REPEAT;
+END_REPEAT;
+(*for all instances of property_definition in t1_set,          *)
+(* get the property_definition_relationship instances          *)
+(* that are referencing a property_definition instance         *)
+(* via relating_property_definition, filter out those          *)
+(* property_definition_relationship instances whose            *)
+(* attribute name has the value 'thruster propeller parameter' *)
+(* check if their number equals 1*)
+
+REPEAT i := 1 TO HIINDEX(t1_set);
+  t2_set := bag_to_set(USEDIN(t1_set[i], 
+    'SHIP_MOULDED_FORM_AIM.PROPERTY_DEFINITION_RELATIONSHIP.'+
+    'RELATING_PROPERTY_DEFINITION'));
+    violation := NOT (SIZEOF(QUERY(i <* t2_set | 
+    i.name = 'thruster propeller parameter')) = 1);
+END_REPEAT;
+WHERE
+  WR1: NOT violation;
+END_RULE;
+
+RULE components_related_to_address 
+FOR (external_source);
+
+LOCAL
+
+  parm_list:         LIST OF STRING := 
+                       ['internal location', 'street number', 
+                        'street',            'postal box', 
+                        'town',              'region', 
+                        'postal code',       'country', 
+                        'facsimile number',  'telephone number', 
+                        'electronic mail address','telex number'];
+  addr_list:          SET OF EXTERNAL_SOURCE;
+  comp_list:          SET OF EXTERNAL_SOURCE;
+  addr_relationships: SET OF EXTERNAL_SOURCE_RELATIONSHIP := [];
+  comp_relationships: SET OF EXTERNAL_SOURCE_RELATIONSHIP := [];
+  found:              BOOLEAN := FALSE;
+END_LOCAL;
+
+(* find all instances of external_source with class 'address' *)
+
+addr_list := QUERY(temp <* EXTERNAL_SOURCE 
+                    | 'ADDRESS' IN WHICH_CLASS(temp));
+
+(* find all instances of external_source_relationship in which these *)
+(* external_sources are used AS related_source *)
+
+REPEAT i:=1 TO HIINDEX(addr_list);
+   addr_relationships := addr_relationships + bag_to_set(USEDIN(addr_list[i], 
+   'SHIP_MOULDED_FORM_AIM.EXTERNAL_SOURCE_RELATIONSHIP.RELATED_SOURCE'));
+END_REPEAT;
+
+(* For each parameter: find all instances of external_source with *)
+(*description attribute equal TO this parameter *)
+
+REPEAT i:=1 TO HIINDEX(parm_list) WHILE (NOT found);
+    comp_list := QUERY(temp <* EXTERNAL_SOURCE | 
+    temp.description = parm_list[i] );
+END_REPEAT;
+
+(* search whether there is an external_source_relationship that relates *)
+(* an external_sources AS image OF an address component TO another      *)
+(*external_source, that represents the address                          *) 
+
+REPEAT j:=1 TO HIINDEX(comp_list) WHILE (NOT found);
+   comp_relationships := bag_to_set(USEDIN(comp_list[j], 
+   'SHIP_MOULDED_FORM_AIM.EXTERNAL_SOURCE_RELATIONSHIP.RELATING_SOURCE'));
+   found := SIZEOF(addr_relationships * comp_relationships) = 0 ;
+END_REPEAT;
+
+WHERE 
+   wr1: NOT found;
+END_RULE;
+
+FUNCTION get_extended_property_definition_id_value 
+(obj : extended_property_definition) : identifier;
+
+LOCAL
+  appl_ident_ass: SET OF applied_identification_assignment := [];
+  c_a_set:        SET OF applied_identification_assignment := [];
+  t1_set:         SET OF extended_property_definition:= [];
+  global_id :     identifier;
+END_LOCAL;
+
+(*get all identification_assignment instances with role.name *)
+(* 'global id'*)
+
+c_a_set := QUERY(i <* appl_ident_ass |
+i.ROLE.NAME = 'global id');
+
+(* get all instances of extended_property_definition *)
+(* that are IN the .items LIST*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+    IF obj :=: c_a_set[i].items[j] THEN
+       global_id := c_a_set[i].assigned_id;
+    END_IF;
+  END_REPEAT;
+END_REPEAT;
+IF obj IN t1_set
+  THEN RETURN (global_id);
+  ELSE RETURN (?);
+END_IF;
+END_FUNCTION;
+
+FUNCTION get_extended_product_definition_shape_id_value 
+(obj : extended_product_definition_shape) : identifier;
+
+LOCAL
+  appl_ident_ass: SET OF applied_identification_assignment := [];
+  c_a_set:        SET OF applied_identification_assignment := [];
+  t1_set:         SET OF extended_product_definition_shape := [];
+  global_id :     identifier;
+END_LOCAL;
+
+(* get all identification_assignment instances with role.name *)
+(* 'global id'*)
+
+c_a_set := QUERY(i <* appl_ident_ass |
+  i.ROLE.NAME = 'global id');
+
+(* get all instances of extended_product_definition_shape *)
+(* that are IN the .items LIST*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+    IF obj :=: c_a_set[i].items[j] THEN
+        global_id := c_a_set[i].assigned_id;
+    END_IF;
+  END_REPEAT;
+END_REPEAT;
+IF obj IN t1_set
+  THEN RETURN (global_id);
+  ELSE RETURN (?);
+END_IF;
+END_FUNCTION;
+
+FUNCTION get_extended_product_related_product_category_id_value 
+(obj : extended_product_related_product_category) : identifier;
+
+LOCAL
+  appl_ident_ass: SET OF applied_identification_assignment := [];
+  c_a_set:        SET OF applied_identification_assignment := [];
+  t1_set:         SET OF extended_product_related_product_category := [];
+  global_id :     identifier;
+END_LOCAL;
+
+(*get all identification_assignment instances with role.name *)
+(* 'global id'*)
+
+c_a_set := QUERY(i <* appl_ident_ass |
+  i.ROLE.NAME = 'global id');
+
+(*get all instances of extended_product_related_product_category *)
+(* that are IN the .items LIST*)
+
+REPEAT i := 1 TO HIINDEX(c_a_set);
+  REPEAT j := 1 TO HIINDEX(c_a_set[i].items);
+    t1_set := t1_set + c_a_set[i].items[j];
+    IF obj :=: c_a_set[i].items[j] THEN
+        global_id := c_a_set[i].assigned_id;
+    END_IF;
+  END_REPEAT;
+END_REPEAT;
+  IF obj IN t1_set
+    THEN RETURN (global_id);
+    ELSE RETURN (?);
+  END_IF;
+END_FUNCTION;
+
+FUNCTION WHICH_CLASS(T: GENERIC): BAG OF STRING;
+LOCAL
+  elements:  BAG OF APPLIED_CLASSIFICATION_ASSIGNMENT;
+  class_bag: BAG OF STRING :=[];
+END_LOCAL;
+
+elements :=
+  USEDIN(T, 'SHIP_MOULDED_FORM_AIM.APPLIED_CLASSIFICATION_ASSIGNMENT.ITEMS');
+
+REPEAT i:=1 TO HIINDEX(elements);
+  IF (elements[i]\classification_assignment.role.name =
+      'class membership') THEN
+     class_bag := class_bag + 
+     elements[i]\classification_assignment.assigned_classification\group.name;
+ END_IF;
+END_REPEAT;
+
+RETURN(class_bag);
+
+END_FUNCTION;
+
+
+END_SCHEMA; -- ship_moulded_form_AIM
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

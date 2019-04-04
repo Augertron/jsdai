@@ -1,0 +1,78 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>net.jsdai</groupId>
+    <artifactId>jsdai_parent</artifactId>
+    <version>4.5.0-SNAPSHOT</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
+
+  <groupId>net.jsdai</groupId>
+  <artifactId>jsdai_express_files</artifactId>
+  <packaging>pom</packaging>
+
+  <properties>
+    <express.directory>${basedir}/src/main/express</express.directory>
+    <zip.classifier>dictionary</zip.classifier>
+  </properties>
+
+  <build>
+    <outputDirectory>target/output</outputDirectory>
+    <finalName>${project.artifactId}-${zip.classifier}</finalName>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>create-express-zip</id>
+            <phase>package</phase>
+            <configuration>
+              <tasks>
+                <mkdir dir="${project.build.outputDirectory}"/>
+
+                <copy todir="${project.build.outputDirectory}" flatten="true">
+                  <resources>
+                    <file file="${express.directory}/COMPLEX_ENTITIES/dictionary.ce"/>
+                    <file file="${express.directory}/EXPRESS/extended_dictionary_schema.exp"/>
+                    <file file="${express.directory}/EXPRESS/mapping_schema.exp"/>
+                  </resources>
+                </copy>
+
+                <zip destfile="${project.build.directory}/${project.build.finalName}.zip" basedir="${project.build.outputDirectory}"/>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-artifact</id>
+            <phase>package</phase>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${project.build.directory}/${project.build.finalName}.zip</file>
+                  <classifier>${zip.classifier}</classifier>
+                  <type>zip</type>
+                </artifact>
+              </artifacts>
+            </configuration>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

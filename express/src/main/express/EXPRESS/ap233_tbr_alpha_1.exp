@@ -1,0 +1,526 @@
+SCHEMA AP233_TBR_ALPHA_1;
+
+--Version History
+--14th January 2002		Alpha-1		Ian Bailey
+
+--Notes
+--This model is intended to be an implementable ARM model which covers sufficient scope to demonstrate
+--the "Text Based Requirements" functionality of AP-233
+
+(*
+
+*)
+
+  (* Textual representation module *)
+
+   (* A Text_representation is used to describe something (e.g. a requirement) using natural language
+      (i.e. in text). The text may be informally structured. The text representation is linked to the
+      requirement using the propery_representation (property_representation_ARM) and element_property
+      entities (property_assignment_ARM) *)
+
+   ENTITY Text_representation
+   SUBTYPE OF (Representation);
+      SELF\Representation.items : SET[1:?] OF Text_representation_item;
+   END_ENTITY;
+
+
+   (* A Text_representation_item is a single element of a Text_representation. The content attribute
+      contains the text description of the requriement. Structured text may be constructed from
+      text_representation_items using the text_representation_item_relationship_entity. *)
+
+   ENTITY Text_representation_item
+   SUBTYPE OF (Representation_item);
+      content : STRING;
+   END_ENTITY;
+
+
+   (* A Text_representation_item_relationship is a relationship between two Text_representation_item
+      instances. This is used to build  text structures - such as paragraphs and sub-paragraphs, or
+      tables with columns and elements. *)
+   (* NOTE: As AP233 heads towards standardisation, it may be necessary to restrict these relationships
+      to specific types to ensure that one structure can be represented the same way by many different systems. *)
+
+   ENTITY Text_representation_item_relationship;
+      name : STRING;
+      description : OPTIONAL STRING;
+      text_representation_item_1 : Text_representation_item;
+      text_representation_item_2 : Text_representation_item;
+   END_ENTITY;
+
+
+(* Requirement_view_definition module *)
+
+(* This part of the model is used to group together information about requirements in a context. The
+   requirement_view_definition entity is the key to this - it is used as a collection point for all information
+   about a version of a requirement. *)
+
+(* Requirement_view_definitions can be individual requirements, or sets of requirements, and they can also be
+   effectiveness measures. Relationships between requirement_view_definitions can be established - such as
+   tracing and relative weighting. *)
+
+   (* The Individual_requirement entity represents a single requirement - i.e. not a set of requirements. *)
+   ENTITY Individual_requirement
+   SUBTYPE OF (Requirement_view_definition);
+   END_ENTITY;
+
+   (* A Requirement_relationship is a generic entity used for relating two requirements. Subtypes of the entity are
+      used for more specific tasks - such as tracing and relative weigtings of effectiveness_measures.  *)
+   ENTITY Requirement_relationship ABSTRACT SUPERTYPE;
+      requirement_1 : Requirement_view_definition;
+      requirement_2 : Requirement_view_definition;
+   END_ENTITY;
+
+   (* The Requirement_set entity represents a set of requirements which may be made up of other requirements or sets
+      of requirements. *)
+   ENTITY Requirement_set
+   SUBTYPE OF (Requirement_view_definition);
+      requirements : SET [2 : ?] OF Requirement_view_definition;
+   END_ENTITY;
+
+   (* A Requirement_view_definition is a view of a requirement version relevant for the requirements of one or more
+      life cycle stages and application domains. This view collects requirement data for a specific task. A
+      requirement_view_definition can be instantiated as an individual_requirement or a requirement_set. In addition,
+      and individual or a set may also be an effectiveness_measure, which means that it is a requirement with a
+      weighting factor. *)
+   ENTITY Requirement_view_definition
+   ABSTRACT SUPERTYPE OF (ONEOF(requirement_set, individual_requirement))
+   SUBTYPE OF (Product_view_definition);
+      SELF\Product_view_definition.definition_for : Requirement_version;
+      name : OPTIONAL STRING;
+      satisfied : OPTIONAL BOOLEAN;
+   END_ENTITY;
+
+   (* The Tracing_relationship shows tracing from (requirement_1) one requirement to another (requirement_2). *)
+   ENTITY Tracing_relationship
+   SUBTYPE OF (Requirement_relationship);
+   END_ENTITY;
+
+(* From Requirement_and_version_identification module *)
+
+   (* The Requirement entity is used to uniquely identify a requirement. There may be many versions of that
+      requirement (requirement_version). There may also be more than one domain-specific view of a given requirement_version
+      (using the requirement_view_definition entity). The requirement entity is really just a placeholder for holding a
+      unique requirement. Most associations and properties are defined at the requirement_view_definition level 
+      - i.e. they are in context of a domain. *)
+   ENTITY Requirement
+   SUBTYPE OF (Product);
+   END_ENTITY;
+
+   (* The Requirement_version entity represents a version of a requirement. This entity is used to record the different
+      versions of a requirement. In this case, the word "version" implies "revision" - i.e. a particular release of a
+      requirement. For example, a given requriement may have versions 1.0, 1.1, 1.2 and 2.0 *)
+   ENTITY Requirement_version
+   SUBTYPE OF (Product_version);
+   END_ENTITY;
+
+   (* The System_view_definition entity provides a domain-specific view of a version of a system (system_version entity). *)
+   ENTITY System_view_definition
+   SUBTYPE OF (Product_view_definition);
+      name : OPTIONAL STRING;
+      (* "complete" indicates whether this view of the system is complete - i.e. are all the system components (sub-systems) described ? *)
+      complete : BOOLEAN;
+   END_ENTITY;
+
+(* From System_and_version_identification module *)
+
+   (* The System entity is used to identify systems. There may be versions of systems (using the system_version entity)
+      and domain-specifc views of versions of systems (using the system_view_definition entity).
+      SEDRES Definition: "An assembly of interacting, active components or elements forming a whole". *)
+   ENTITY System
+   SUBTYPE OF (Product);
+   END_ENTITY;
+
+   (* The System_version entity represents a version of a system. In this case, this means "revision". So for a given
+      system (e.g. a fuel injection system) we may have several versions of the system design (e.g. v1, v1.1 etc.) *)
+   ENTITY System_version
+   SUBTYPE OF (Product_version);
+   END_ENTITY;
+
+(* From System_view_definition_structure module *)
+
+
+   (* System_assembly_component is used to show the usage of one system in another system
+      - i.e. a system -> sub-system relationship. The parent is represented by the view_1 attribute, and the child by the view_2 attribute.
+     This entity inherits quantity and location attributes from Assembly_component, so can be used to show the usage of several identical
+     components, and also how one system is located relative to another. *)
+   ENTITY System_assembly_component
+   SUBTYPE OF (Assembly_component);
+      SELF\View_definition_relationship.view_1 : System_view_definition;
+      SELF\View_definition_relationship.view_2 : System_view_definition;
+   END_ENTITY;
+
+   (* System_view_definition_relationship defines any general relationship between two systems. The type of the relationship is
+      given by the "name" attribute. NOTE: As the AP develops, there will be certain allowed values entries for the "name"
+      attribute will be established. *)
+   ENTITY System_view_definition_relationship
+   SUBTYPE OF (View_definition_relationship);
+      description : OPTIONAL STRING;
+      name : OPTIONAL STRING;
+      SELF\View_definition_relationship.view_1 : System_view_definition;
+      SELF\View_definition_relationship.view_2 : System_view_definition;
+   END_ENTITY;
+
+(* From System_requirement_assignment module *)
+
+   TYPE regularize_select = SELECT (Effectiveness_measure, Regularization_function);
+   END_TYPE;
+
+   (* The Effectiveness_measure entity represents a weighting factor for a requirement in context of a system 
+      - which is used in regularization functions. An effectiveness_measure must be specified in context of a system.  *)
+   ENTITY Effectiveness_measure
+   SUBTYPE OF (System_requirement_relationship);
+      weight : REAL;
+   END_ENTITY;
+
+   (* A Regularization_function operates on on effectiveness measures or on other regularisation functions. It is assumed that
+      there is only one result from a regularization function - hence one need only refer to the entity to refer to the result.
+      A regularization_function requires at least two inputs which may be effectiveness_measures or the results of other
+      regularization_functions. Although the function is currently specified in MathML, it is likely that AP233 will eventually
+      use the Engineering Analysis Core ARM model to represent functions.  *)
+   ENTITY Regularization_function;
+      inputs : LIST [2 : ?] OF regularize_select;
+      MathML_function : STRING;
+   END_ENTITY;
+
+   (* The Relative_weighting relationship relates two effectiveness_measures, and records the relative weigtings for those effectiveness
+      measures. In cases where a system has more than two effectivenes_measures, the appropriate algorithm (e.g. Saaty or Bolles) should
+      be used to calculate all the relative weightings. The scope of this schema is just to store the relative weightings rather than 
+      calculate them. *)
+   ENTITY Relative_weighting;
+      denominator : Effectiveness_measure;
+      numerator : Effectiveness_measure;
+      relative_weight : REAL;
+   END_ENTITY;
+
+   (* System_requirement_relationship is used to relate a requirement to the system which it describes. A system may have many requirements,
+      and similarly, the same requirement may apply to more than one system. *)
+   ENTITY System_requirement_relationship
+   SUBTYPE OF (View_definition_relationship);
+      SELF\View_definition_relationship.view_1 : System_view_definition;
+      SELF\View_definition_relationship.view_2 : Requirement_view_definition;
+   END_ENTITY;
+
+
+(* From Risk module *)
+
+   (* Note: Currently working on the assumption that risk can be assigned to anything. Hence this is a generic entity select in the EXP-G.
+      However, for the implementation model, we can apply risk to any of the product/version/view subtypes - which includes systems and
+      requirements *)
+   TYPE risk_assigned_item = SELECT (Product,
+                                     Product_version,
+                                     Product_view_definition);
+   END_TYPE;
+
+   (* A Relative_risk entity is used to represent the relative risk ratings between risk categories. As with effectiveness measure, 
+      this relative risk would be calculated using a method such as Saaty's or Bolle's *)
+   ENTITY Relative_risk;
+      relative_rating : REAL;
+      risk_1 : Risk_category;
+      risk_2 : Risk_category;
+   END_ENTITY;
+
+   (* A Risk_assignment entity is used to assign a risk category to an item. An item can be anything defined by AP233.
+      Note - we may wish to narrow down "item" to specific entities as the model development progresses. *)
+   ENTITY Risk_assignment;
+      category : Risk_category;
+      items : SET [1 : ?] OF risk_assigned_item;
+   END_ENTITY;
+
+   (* A Risk_category entity is used to describe a type of risk - using a simple name (and optional description).
+      A numeric rating may also be described for risk - enabling relative risk comparisons. *)
+   ENTITY Risk_category;
+      description : OPTIONAL STRING;
+      name : STRING;
+      Risk_rating : OPTIONAL REAL;
+   END_ENTITY;
+
+(* From Resource_allocation module *)
+
+   (* A Requirement_budget_allocation entity represents the allocation of monetary resources or labour hours to a requirement. 
+      The budget resource can be anything that can be described by a property with a unit - e.g. money, man-hours, CPU cycles etc. *)
+   ENTITY Requirement_budget_allocation
+   SUBTYPE OF (Requirement_resource_allocation);
+      allocated_budget : Independent_property;
+   END_ENTITY;
+
+   (* A Requirement_human_resource_allocation entity represents the allocation of a person or organization to a requirement *)
+   ENTITY Requirement_human_resource_allocation
+   SUBTYPE OF (Requirement_resource_allocation);
+      allocated_human_resource : organisation_or_person_in_organisation_item;
+   END_ENTITY;
+
+   (* A Requirement_resource_allocation is an abstract entity which describes the allocation of resources to a requirement.
+      Specific resources are targeted by the subtypes. *)
+   ENTITY Requirement_resource_allocation
+   ABSTRACT SUPERTYPE OF (ONEOF(Requirement_budget_allocation, Requirement_human_resource_allocation, Requirement_scope_allocation));
+      allocated_to : Requirement_view_definition;
+   END_ENTITY;
+
+   (* The Requirement_scope_allocation entity is used to describe how a requirement may be allocated some scope.
+      For example, if a requirement states that a car must have a top speed of 150mph, scope of +/- 10mph could be allocated. *)
+   ENTITY Requirement_scope_allocation
+   SUBTYPE OF (Requirement_resource_allocation);
+      allocated_scope : STRING;
+   END_ENTITY;
+
+
+(*
+PDM Module ARM entities start here. Note that only those entities required to support the TBR model have been included
+*)
+
+(* From the Foundation_representation module *)
+
+   ENTITY Representation;
+      foundation : Representation_context;
+      items : SET [1 : ?] OF Representation_item;
+      name : STRING;
+   END_ENTITY;
+
+   ENTITY Representation_context;
+      identifier : STRING;
+      kind : STRING;
+   INVERSE
+      representations_in_context : SET [1 : ?] OF Representation FOR foundation;
+   END_ENTITY;
+
+   ENTITY Representation_item;
+      name : STRING;
+   END_ENTITY;
+
+(* From the Product_identification module *)
+
+   ENTITY Product;
+      categories : SET [1 : ?] OF Product_category;
+      description : OPTIONAL STRING;
+      id : STRING;
+      name : STRING;
+      product_type : Product_category;
+   UNIQUE
+      UR1: id, product_type;
+   WHERE
+      WR2: SELF.product_type.name IN ['part', 'raw material', 'document', 'functionality', 'requirement', 'system']; -- extended with "system"
+   END_ENTITY;
+
+(* From the Product_categorization module *)
+
+   ENTITY Product_category;
+      description : OPTIONAL STRING;
+      name : STRING;
+   END_ENTITY;
+
+   ENTITY Product_category_hierarchy;
+      sub_category : Product_category;
+      super_category : Product_category;
+   END_ENTITY;
+
+(* From the Product_version module *)
+
+   ENTITY Product_version;
+      description : STRING;
+      id : STRING;
+      of_product : Product;
+   INVERSE
+      security : SET [0 : 1] OF Security_classification_assignment FOR items;
+   UNIQUE
+      id, of_product;
+   END_ENTITY;
+
+(* From the Product_view_definition module *)
+
+
+   ENTITY Product_view_definition;
+      defining_context : View_definition_context;
+      definition_for : Product_version;
+      description : OPTIONAL STRING;
+      id : STRING;
+      using_contexts : OPTIONAL SET [1 : ?] OF View_definition_context;
+   END_ENTITY;
+
+   ENTITY View_definition_context;
+      life_cycle_stage : STRING;
+      relevant_role : OPTIONAL STRING;
+      view_name : STRING;
+   END_ENTITY;
+
+(* From the Product_definition_structure module *)
+
+   ENTITY Assembly_component
+   SUBTYPE OF (View_definition_usage);
+      location_indicator : STRING;
+      quantity : STRING;
+   END_ENTITY;
+
+   ENTITY Make_from
+   SUBTYPE OF (View_definition_usage);
+      priority : STRING;
+      quantity : STRING;
+   END_ENTITY;
+
+   ENTITY View_definition_relationship;
+      view_1 : Product_view_definition;
+      view_2 : Product_view_definition;
+   END_ENTITY;
+
+   ENTITY View_definition_usage
+   SUBTYPE OF (View_definition_relationship);
+--RR: wrong inverse attribute removed   INVERSE
+--      security : Security_classification_assignment FOR items;
+   END_ENTITY;
+
+
+(* From the Identification_assignment module *)
+
+   -- identification_item has been extended to include PDM and TBR items
+   TYPE identification_item = SELECT(Product,
+                                     Product_version,
+                                     Product_view_definition, 
+                                     Effectiveness_measure,
+                                     Regularization_function);
+   END_TYPE;
+
+   ENTITY Identification_assignment;
+      identifier : STRING;
+      items : SET [1 : ?] OF identification_item;
+      role_: OPTIONAL STRING;  -- underscore added to attribute name because "role" is an EXPRESS reserved word.
+   END_ENTITY;
+
+(* From the Independent module *)
+
+TYPE property_source_select = SELECT(External_library_reference);
+END_TYPE; -- property_source_select
+  
+ENTITY External_library_reference;
+  description     : OPTIONAL STRING;
+  external_id     : STRING;
+  library_type    : STRING;
+END_ENTITY; -- External_library_reference
+  
+ENTITY Independent_property;
+  allowed_unit     : SET [0:?] OF STRING;
+  description      : OPTIONAL STRING;
+  id               : STRING;
+  property_source  : OPTIONAL property_source_select;
+END_ENTITY; -- Independent_property
+  
+ENTITY Independent_property_relationship;
+  description     : OPTIONAL STRING;
+  related         : Independent_property;
+  relating        : Independent_property;
+  relation_type   : STRING;
+END_ENTITY; -- Independent_property_relationship
+
+
+(* From the Person_organization module *)
+
+TYPE organisation_or_person_in_organisation_select = SELECT(Organisation, Person_in_organisation);
+END_TYPE;
+
+ENTITY Address;
+  street_number           : OPTIONAL STRING;
+  street                  : OPTIONAL STRING;
+  postal_box              : OPTIONAL STRING;
+  town                    : OPTIONAL STRING;
+  region                  : OPTIONAL STRING;
+  postal_code             : OPTIONAL STRING;
+  country                 : OPTIONAL STRING;
+  internal_location       : OPTIONAL STRING;
+  facsimile_number        : OPTIONAL STRING;
+  telephone_number        : OPTIONAL STRING;
+  electronic_mail_address : OPTIONAL STRING;
+  telex_number            : OPTIONAL STRING;
+WHERE
+  WR1 : (EXISTS (street_number) OR
+         EXISTS (street) OR
+         EXISTS (postal_box) OR
+         EXISTS (town) OR
+         EXISTS (region) OR
+         EXISTS (postal_code) OR
+         EXISTS (country) OR
+         EXISTS (internal_location) OR
+         EXISTS (facsimile_number) OR
+         EXISTS (telephone_number) OR
+         EXISTS (electronic_mail_address) OR
+         EXISTS (telex_number));
+END_ENTITY;
+  
+ENTITY Organisation;
+  id            : STRING;
+  short_name    : OPTIONAL STRING;
+  long_name     : OPTIONAL STRING;
+  address       : OPTIONAL Address;
+UNIQUE
+  organisations_are_unique : id;
+END_ENTITY;
+  
+ENTITY Person_in_organisation;
+  id            : STRING;
+  id_org        : Organisation;
+  last_name     : OPTIONAL STRING;
+  first_name    : OPTIONAL STRING;
+  middle_names  : OPTIONAL LIST [1:?] OF STRING;
+  prefix_titles : OPTIONAL LIST [1:?] OF STRING;
+  suffix_titles : OPTIONAL LIST [1:?] OF STRING;
+  address       : OPTIONAL Address;
+UNIQUE
+  person_is_unique: id, id_org;
+END_ENTITY;
+
+
+(* From Person_organisation_assignment module *)
+
+TYPE organisation_or_person_in_organisation_item = SELECT(Product, Product_version, Product_view_definition);
+END_TYPE;
+  
+ENTITY Organisation_or_person_in_organisation_assignment;
+  assigned_entity : organisation_or_person_in_organisation_select;
+  role            : STRING;
+  items           : SET [1:?] OF organisation_or_person_in_organisation_item;
+END_ENTITY;
+
+(* From Security Classification Module *)
+
+TYPE security_classification_item = SELECT(Product, Product_version, Product_view_definition);
+END_TYPE;
+  
+  
+ENTITY Security_classification;
+  classification  : STRING;
+  description     : OPTIONAL STRING;
+WHERE
+  WR1: ((SELF.classification IN ['unclassified', 'confidential',
+        'secret', 'top secret', 'proprietary']) OR EXISTS(SELF.description));
+  WR2: NOT ((SELF.classification = 'classified') AND (NOT EXISTS(SELF.description)));
+END_ENTITY; 
+  
+ENTITY Security_classification_assignment;
+  classification  : Security_classification;
+  items           : SET [1:?] OF security_classification_item;
+END_ENTITY;
+
+
+(* From Property_representation_arm *)
+
+TYPE represented_item_select  = SELECT(Element_property);
+END_TYPE;
+  
+ENTITY property_representation;
+  item           : represented_item_select;
+  representation : Representation;
+  role           : OPTIONAL STRING;
+END_ENTITY;
+
+
+(* From Property_assignment_arm *)
+
+--Property assignment select extended with the things we want to represent with text   
+TYPE property_assignment_select  = SELECT(product, product_version, product_view_definition);
+END_TYPE;
+  
+ENTITY Element_property;
+  name              : OPTIONAL STRING;
+  description       : OPTIONAL STRING;
+  described_element : property_assignment_select;
+END_ENTITY;
+
+  
+END_SCHEMA;
