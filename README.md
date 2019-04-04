@@ -35,4 +35,4 @@ Version 3, 19 November 2007
 Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
 ```
 
-Full license text can be found [here](license.txt).
+Full license text can be found [here](https://www.gnu.org/licenses/agpl-3.0.en.html).
